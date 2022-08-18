@@ -54,7 +54,7 @@ public class FeatureStatsbeat extends BaseStatsbeat {
    * Returns a long that represents a list of instrumentations. Each bitfield maps to an
    * instrumentation.
    */
-  long getInstrumentation() {
+  long[] getInstrumentation() {
     return Instrumentations.encode(instrumentationList);
   }
 
@@ -70,20 +70,25 @@ public class FeatureStatsbeat extends BaseStatsbeat {
 
   @Override
   protected void send(TelemetryClient telemetryClient) {
-    long encodedLong;
     String featureType;
+    String featureValue = "";
 
     if (type == FeatureType.FEATURE) {
-      encodedLong = getFeature();
+      featureValue = String.valueOf(getFeature());
       featureType = "0";
     } else {
-      encodedLong = getInstrumentation();
+      long[] encodedLongArray = getInstrumentation();
+      if (encodedLongArray.length == 1) {
+        featureValue = String.valueOf(encodedLongArray[0]);
+      } else if (encodedLongArray.length == 2) {
+        featureValue = encodedLongArray[0] + "," + encodedLongArray[1];
+      }
       featureType = "1";
     }
 
     StatsbeatTelemetryBuilder telemetryBuilder =
         createStatsbeatTelemetry(telemetryClient, FEATURE_METRIC_NAME, 0);
-    telemetryBuilder.addProperty("feature", String.valueOf(encodedLong));
+    telemetryBuilder.addProperty("feature", featureValue);
     telemetryBuilder.addProperty("type", featureType);
 
     telemetryClient.trackStatsbeatAsync(telemetryBuilder.build());

@@ -114,8 +114,8 @@ class Instrumentations {
   }
 
   // encode BitSet to a long
-  static long encode(Set<String> instrumentations) {
-    BitSet bitSet = new BitSet(64);
+  static long[] encode(Set<String> instrumentations) {
+    BitSet bitSet = new BitSet(64 * 2);
     for (String instrumentation : instrumentations) {
       Integer index = INSTRUMENTATION_MAP.get(instrumentation);
       if (index != null) {
@@ -124,13 +124,7 @@ class Instrumentations {
         logger.debug("{} is not part of INSTRUMENTATION_MAP.", instrumentation);
       }
     }
-
-    long[] longArray = bitSet.toLongArray();
-    if (longArray.length > 0) {
-      return longArray[0];
-    }
-
-    return 0L;
+    return bitSet.toLongArray();
   }
 
   private Instrumentations() {}
