@@ -84,7 +84,7 @@ abstract class GrpcTest {
     assertThat(rd1.getProperties().get("_MS.ProcessedByMetricExtractors")).isEqualTo("True");
     assertThat(rd1.getSuccess()).isTrue();
 
-    assertThat(rdd.getProperties()).isEmpty();
+    assertThat(rdd.getProperties().get("_MS.ProcessedByMetricExtractors")).isEqualTo("True");
     assertThat(rdd.getSuccess()).isTrue();
 
     // TODO (trask): verify rd2
