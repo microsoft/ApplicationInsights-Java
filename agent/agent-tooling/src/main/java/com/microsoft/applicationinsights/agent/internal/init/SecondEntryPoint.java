@@ -312,12 +312,6 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
       tracerProvider.addSpanProcessor(
           new InheritedAttributesSpanProcessor(configuration.preview.inheritedAttributes));
     }
-    // legacy span processor is used to pass legacy attributes from the context (extracted by the
-    // AiLegacyPropagator) to the span attributes (since there is no way to update attributes on
-    // span directly from propagator)
-    if (configuration.preview.legacyRequestIdPropagation.enabled) {
-      tracerProvider.addSpanProcessor(new AiLegacyHeaderSpanProcessor());
-    }
     if (!configuration.preview.instrumentationKeyOverrides.isEmpty()) {
       tracerProvider.addSpanProcessor(
           new InheritedInstrumentationKeySpanProcessor(
@@ -327,10 +321,15 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
       tracerProvider.addSpanProcessor(
           new InheritedRoleNameSpanProcessor(configuration.preview.roleNameOverrides));
     }
-
     if (configuration.preview.profiler.enabled
         && configuration.preview.profiler.enableRequestTriggering) {
       tracerProvider.addSpanProcessor(new AlertTriggerSpanProcessor());
+    }
+    // legacy span processor is used to pass legacy attributes from the context (extracted by the
+    // AiLegacyPropagator) to the span attributes (since there is no way to update attributes on
+    // span directly from propagator)
+    if (configuration.preview.legacyRequestIdPropagation.enabled) {
+      tracerProvider.addSpanProcessor(new AiLegacyHeaderSpanProcessor());
     }
 
     String tracesExporter = config.getString("otel.traces.exporter");
@@ -435,9 +434,13 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
       ConfigProperties config,
       Configuration configuration) {
 
-    builder.addLogProcessor(
-        new AzureMonitorLogProcessor(
-            new InheritedAttributesLogProcessor(configuration.preview.inheritedAttributes)));
+    builder.addLogProcessor(new AzureMonitorLogProcessor());
+    if (!configuration.preview.inheritedAttributes.isEmpty()) {
+      builder.addLogProcessor(
+          new InheritedAttributesLogProcessor(configuration.preview.inheritedAttributes));
+    }
+    builder.addLogProcessor(new InheritedInstrumentationKeyLogProcessor());
+    builder.addLogProcessor(new InheritedRoleNameLogProcessor());
 
     String logsExporter = config.getString("otel.logs.exporter");
     if ("none".equals(logsExporter)) { // "none" is the default set in AiConfigCustomizer

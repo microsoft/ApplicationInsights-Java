@@ -24,7 +24,6 @@ package com.microsoft.applicationinsights.agent.internal.init;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.LogProcessor;
 import io.opentelemetry.sdk.logs.ReadWriteLogRecord;
 import io.opentelemetry.sdk.trace.ReadableSpan;
@@ -73,17 +72,4 @@ public class InheritedAttributesLogProcessor implements LogProcessor {
       }
     }
   }
-
-  @Override
-  public CompletableResultCode shutdown() {
-    return CompletableResultCode.ofSuccess();
-  }
-
-  @Override
-  public CompletableResultCode forceFlush() {
-    return CompletableResultCode.ofSuccess();
-  }
-
-  @Override
-  public void close() {}
 }

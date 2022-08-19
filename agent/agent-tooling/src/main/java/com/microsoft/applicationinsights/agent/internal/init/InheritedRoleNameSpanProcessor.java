@@ -39,7 +39,6 @@ public class InheritedRoleNameSpanProcessor implements SpanProcessor {
   private final List<Configuration.RoleNameOverride> overrides;
 
   public InheritedRoleNameSpanProcessor(List<Configuration.RoleNameOverride> overrides) {
-
     this.overrides = overrides;
   }
 

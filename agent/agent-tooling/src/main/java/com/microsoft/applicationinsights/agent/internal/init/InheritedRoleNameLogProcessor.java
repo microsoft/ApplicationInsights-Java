@@ -19,16 +19,18 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.azure.monitor.opentelemetry.exporter;
+package com.microsoft.applicationinsights.agent.internal.init;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.AiSemanticAttributes;
-import com.azure.monitor.opentelemetry.exporter.implementation.OperationNames;
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.sdk.logs.LogProcessor;
 import io.opentelemetry.sdk.logs.ReadWriteLogRecord;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 
-public class AzureMonitorLogProcessor implements LogProcessor {
+public class InheritedRoleNameLogProcessor implements LogProcessor {
+
+  private static final AttributeKey<String> ROLE_NAME_KEY =
+      AttributeKey.stringKey("ai.preview.service_name");
 
   @Override
   public void onEmit(ReadWriteLogRecord logRecord) {
@@ -36,14 +38,10 @@ public class AzureMonitorLogProcessor implements LogProcessor {
     if (!(currentSpan instanceof ReadableSpan)) {
       return;
     }
-
-    ReadableSpan readableSpan = (ReadableSpan) currentSpan;
-
-    logRecord.setAttribute(
-        AiSemanticAttributes.OPERATION_NAME, OperationNames.getOperationName(readableSpan));
-    Long itemCount = readableSpan.getAttribute(AiSemanticAttributes.ITEM_COUNT);
-    if (itemCount != null) {
-      logRecord.setAttribute(AiSemanticAttributes.ITEM_COUNT, itemCount);
+    ReadableSpan currentReadableSpan = (ReadableSpan) currentSpan;
+    String roleName = currentReadableSpan.getAttribute(ROLE_NAME_KEY);
+    if (roleName != null) {
+      logRecord.setAttribute(ROLE_NAME_KEY, roleName);
     }
   }
 }
