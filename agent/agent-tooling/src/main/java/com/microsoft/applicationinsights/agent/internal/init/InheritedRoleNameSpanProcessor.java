@@ -24,6 +24,7 @@ package com.microsoft.applicationinsights.agent.internal.init;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.sdk.trace.ReadableSpan;
@@ -43,12 +44,11 @@ public class InheritedRoleNameSpanProcessor implements SpanProcessor {
   }
 
   @Override
-  @SuppressWarnings("unchecked")
   public void onStart(Context parentContext, ReadWriteSpan span) {
     Span parentSpan = Span.fromContextOrNull(parentContext);
-    if (parentSpan == null) {
+    SpanContext parentSpanContext = parentSpan.getSpanContext();
+    if (!parentSpanContext.isValid() || parentSpanContext.isRemote()) {
       // this part (setting the attribute on the local root span) could be moved to Sampler
-
       String target = span.getAttribute(SemanticAttributes.HTTP_TARGET);
       if (target == null) {
         return;
