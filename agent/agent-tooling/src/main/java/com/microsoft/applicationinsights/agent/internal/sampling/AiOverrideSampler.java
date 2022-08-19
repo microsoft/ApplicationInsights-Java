@@ -21,31 +21,42 @@
 
 package com.microsoft.applicationinsights.agent.internal.sampling;
 
-import com.azure.monitor.opentelemetry.exporter.AzureMonitorSampler;
-import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.context.Context;
+import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
+import io.opentelemetry.sdk.trace.samplers.SamplingResult;
+import java.util.List;
 
-public class Samplers {
+class AiOverrideSampler implements Sampler {
 
-  public static Sampler getSampler(float samplingPercentage, Configuration config) {
-    Sampler sampler = new AzureMonitorSampler(samplingPercentage);
+  private final SamplingOverrides samplingOverrides;
+  private final Sampler delegate;
 
-    if (!config.preview.sampling.overrides.isEmpty()) {
-      sampler =
-          new AiOverrideSampler(new SamplingOverrides(config.preview.sampling.overrides), sampler);
-    }
-
-    if (!config.preview.sampling.parentBased) {
-      return sampler;
-    }
-
-    // when using parent-based sampling, sampling overrides still take precedence
-
-    // IMPORTANT, the parent-based sampler is useful for interop with other sampling mechanisms, as
-    // it will ensure consistent traces, however it does not accurately compute item counts, since
-    // item counts are not propagated in trace state (yet)
-    return Sampler.parentBasedBuilder(sampler).build();
+  AiOverrideSampler(SamplingOverrides samplingOverrides, Sampler delegate) {
+    this.samplingOverrides = samplingOverrides;
+    this.delegate = delegate;
   }
 
-  private Samplers() {}
+  @Override
+  public SamplingResult shouldSample(
+      Context parentContext,
+      String traceId,
+      String name,
+      SpanKind spanKind,
+      Attributes attributes,
+      List<LinkData> parentLinks) {
+
+    Sampler override = samplingOverrides.getOverride(spanKind, attributes);
+    if (override != null) {
+      return override.shouldSample(parentContext, traceId, name, spanKind, attributes, parentLinks);
+    }
+    return delegate.shouldSample(parentContext, traceId, name, spanKind, attributes, parentLinks);
+  }
+
+  @Override
+  public String getDescription() {
+    return "AiOverrideSampler";
+  }
 }

@@ -29,8 +29,6 @@ import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTag
 import com.azure.monitor.opentelemetry.exporter.implementation.models.SeverityLevel;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedTime;
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.TelemetryUtil;
-import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.sdk.logs.data.LogData;
@@ -46,9 +44,6 @@ import org.slf4j.LoggerFactory;
 public class LogDataMapper {
 
   private static final Logger logger = LoggerFactory.getLogger(LogDataMapper.class);
-
-  private static final AttributeKey<String> AI_OPERATION_NAME_KEY =
-      AttributeKey.stringKey("applicationinsights.internal.operation_name");
 
   private final boolean captureLoggingLevelAsCustomDimension;
   private final BiConsumer<AbstractTelemetryBuilder, Resource> telemetryInitializer;
@@ -76,7 +71,7 @@ public class LogDataMapper {
     // set standard properties
     setOperationTags(telemetryBuilder, log);
     setTime(telemetryBuilder, log.getEpochNanos());
-    setSampleRate(telemetryBuilder, log);
+    setItemCount(telemetryBuilder, log);
 
     // update tags
     Attributes attributes = log.getAttributes();
@@ -102,7 +97,7 @@ public class LogDataMapper {
     // set standard properties
     setOperationTags(telemetryBuilder, log);
     setTime(telemetryBuilder, log.getEpochNanos());
-    setSampleRate(telemetryBuilder, log);
+    setItemCount(telemetryBuilder, log);
 
     // update tags
     Attributes attributes = log.getAttributes();
@@ -137,7 +132,7 @@ public class LogDataMapper {
 
   private static void setOperationName(
       AbstractTelemetryBuilder telemetryBuilder, Attributes attributes) {
-    String operationName = attributes.get(AI_OPERATION_NAME_KEY);
+    String operationName = attributes.get(AiSemanticAttributes.OPERATION_NAME);
     if (operationName != null) {
       telemetryBuilder.addTag(ContextTagKeys.AI_OPERATION_NAME.toString(), operationName);
     }
@@ -147,13 +142,10 @@ public class LogDataMapper {
     telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromEpochNanos(epochNanos));
   }
 
-  private static void setSampleRate(AbstractTelemetryBuilder telemetryBuilder, LogData log) {
-    // standalone logs (not part of an existing trace) will not have sampling percentage encoded in
-    // their trace state
-    float samplingPercentage =
-        TelemetryUtil.getSamplingPercentage(log.getSpanContext().getTraceState(), 100, false);
-    if (samplingPercentage != 100) {
-      telemetryBuilder.setSampleRate(samplingPercentage);
+  private static void setItemCount(AbstractTelemetryBuilder telemetryBuilder, LogData log) {
+    Long itemCount = log.getAttributes().get(AiSemanticAttributes.ITEM_COUNT);
+    if (itemCount != null && itemCount != 1) {
+      telemetryBuilder.setSampleRate(100.0f / itemCount);
     }
   }
 

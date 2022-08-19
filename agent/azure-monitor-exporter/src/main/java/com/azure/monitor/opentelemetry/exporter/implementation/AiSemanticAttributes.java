@@ -19,31 +19,17 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.azure.monitor.opentelemetry.exporter.implementation.logging;
+package com.azure.monitor.opentelemetry.exporter.implementation;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMsgId;
-import javax.annotation.Nullable;
-import org.slf4j.MDC;
+import io.opentelemetry.api.common.AttributeKey;
 
-// aggregated warnings for a given 5-min window
-public class WarningLogger {
+public final class AiSemanticAttributes {
 
-  private final AggregatingLogger aggregatingLogger;
+  public static final AttributeKey<String> OPERATION_NAME =
+      AttributeKey.stringKey("applicationinsights.internal.operation_name");
 
-  public WarningLogger(Class<?> source, String operation) {
-    this(source, operation, 300);
-  }
+  public static final AttributeKey<Long> ITEM_COUNT =
+      AttributeKey.longKey("applicationinsights.internal.item_count");
 
-  // visible for testing
-  WarningLogger(Class<?> source, String operation, int intervalSeconds) {
-    aggregatingLogger = new AggregatingLogger(source, operation, false, intervalSeconds);
-  }
-
-  // warningMessage should have low cardinality
-  public void recordWarning(
-      String warningMessage, @Nullable Throwable exception, AzureMonitorMsgId msgId) {
-    try (MDC.MDCCloseable ignored = msgId.makeActive()) {
-      aggregatingLogger.recordWarning(warningMessage, exception);
-    }
-  }
+  private AiSemanticAttributes() {}
 }

@@ -29,7 +29,7 @@ import com.azure.core.http.HttpRequest;
 import com.azure.core.http.HttpResponse;
 import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
 import com.azure.monitor.opentelemetry.exporter.implementation.logging.NetworkFriendlyExceptions;
-import com.azure.monitor.opentelemetry.exporter.implementation.logging.WarningLogger;
+import com.azure.monitor.opentelemetry.exporter.implementation.logging.OperationLogger;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.ThreadPoolUtils;
 import com.microsoft.applicationinsights.agent.bootstrap.AiAppId;
 import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
@@ -53,8 +53,8 @@ public class AppIdSupplier implements AiAppId.Supplier {
       Executors.newSingleThreadScheduledExecutor(
           ThreadPoolUtils.createDaemonThreadFactory(AppIdSupplier.class));
 
-  private static final WarningLogger warningLogger =
-      new WarningLogger(GetAppIdTask.class, "Unable to retrieve appId");
+  private static final OperationLogger operationLogger =
+      new OperationLogger(GetAppIdTask.class, "Retrieving appId");
 
   // guarded by taskLock
   private GetAppIdTask task;
@@ -147,7 +147,7 @@ public class AppIdSupplier implements AiAppId.Supplier {
       } catch (RuntimeException ex) {
         if (!NetworkFriendlyExceptions.logSpecialOneTimeFriendlyException(
             ex, url.toString(), friendlyExceptionThrown, logger)) {
-          warningLogger.recordWarning("exception sending request to " + url, ex, APP_ID_ERROR);
+          operationLogger.recordFailure("exception sending request to " + url, ex, APP_ID_ERROR);
         }
         backOff();
         return;
@@ -161,7 +161,7 @@ public class AppIdSupplier implements AiAppId.Supplier {
       String body = response.getBodyAsString().block();
       int statusCode = response.getStatusCode();
       if (statusCode != 200) {
-        warningLogger.recordWarning(
+        operationLogger.recordFailure(
             "received " + statusCode + " from " + url + "\nfull response:\n" + body,
             null,
             APP_ID_ERROR);
@@ -171,12 +171,12 @@ public class AppIdSupplier implements AiAppId.Supplier {
 
       // check for case when breeze returns invalid value
       if (body == null || body.isEmpty()) {
-        warningLogger.recordWarning("received empty body from " + url, null, APP_ID_ERROR);
+        operationLogger.recordFailure("received empty body from " + url, null, APP_ID_ERROR);
         backOff();
         return;
       }
 
-      logger.debug("appId retrieved: {}", body);
+      operationLogger.recordSuccess();
       appId = body;
     }
 

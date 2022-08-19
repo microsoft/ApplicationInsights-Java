@@ -21,20 +21,16 @@
 
 package com.microsoft.applicationinsights.agent.internal.sampling;
 
+import com.azure.monitor.opentelemetry.exporter.AzureMonitorSampler;
 import com.azure.monitor.opentelemetry.exporter.implementation.SpanDataMapper;
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.TelemetryUtil;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.MatchType;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.SamplingOverride;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.SamplingOverrideAttribute;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanKind;
-import io.opentelemetry.api.trace.TraceState;
-import io.opentelemetry.sdk.trace.samplers.SamplingDecision;
-import io.opentelemetry.sdk.trace.samplers.SamplingResult;
+import io.opentelemetry.sdk.trace.samplers.Sampler;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
-import java.math.BigDecimal;
-import java.math.MathContext;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -53,101 +49,20 @@ class SamplingOverrides {
   }
 
   @Nullable
-  MatcherGroup getOverride(SpanKind spanKind, Attributes attributes) {
+  Sampler getOverride(SpanKind spanKind, Attributes attributes) {
     LazyHttpUrl lazyHttpUrl = new LazyHttpUrl(attributes);
     for (MatcherGroup matcherGroups : matcherGroups) {
       if (matcherGroups.matches(spanKind, attributes, lazyHttpUrl)) {
-        return matcherGroups;
+        return matcherGroups.getSampler();
       }
     }
     return null;
   }
 
-  static SamplingResult getRecordAndSampleAndOverwriteTraceState(double samplingPercentage) {
-    return new TraceStateUpdatingSamplingResult(
-        SamplingDecision.RECORD_AND_SAMPLE, toRoundedString(samplingPercentage), true);
-  }
-
-  static SamplingResult getRecordAndSampleAndAddTraceStateIfMissing(double samplingPercentage) {
-    return new TraceStateUpdatingSamplingResult(
-        SamplingDecision.RECORD_AND_SAMPLE, toRoundedString(samplingPercentage), false);
-  }
-
-  // TODO write test for
-  //  * 33.33333333333
-  //  * 66.66666666666
-  //  * 1.123456
-  //  * 50.0
-  //  * 1.0
-  //  * 0
-  //  * 0.001
-  //  * 0.000001
-  // 5 digit of precision, and remove any trailing zeros beyond the decimal point
-  private static String toRoundedString(double percentage) {
-    BigDecimal bigDecimal = new BigDecimal(percentage);
-    bigDecimal = bigDecimal.round(new MathContext(5));
-    String formatted = bigDecimal.toString();
-    double dv = bigDecimal.doubleValue();
-    if (dv > 0 && dv < 1) {
-      while (formatted.endsWith("0")) {
-        formatted = formatted.substring(0, formatted.length() - 1);
-      }
-    }
-    return formatted;
-  }
-
-  private static final class TraceStateUpdatingSamplingResult implements SamplingResult {
-
-    private final SamplingDecision decision;
-    private final String samplingPercentage;
-    private final TraceState traceState;
-    private final boolean overwriteExisting;
-
-    private TraceStateUpdatingSamplingResult(
-        SamplingDecision decision, String samplingPercentage, boolean overwriteExisting) {
-      this.decision = decision;
-      this.samplingPercentage = samplingPercentage;
-      this.overwriteExisting = overwriteExisting;
-      traceState =
-          TraceState.builder()
-              .put(TelemetryUtil.SAMPLING_PERCENTAGE_TRACE_STATE, samplingPercentage)
-              .build();
-    }
-
-    @Override
-    public SamplingDecision getDecision() {
-      return decision;
-    }
-
-    @Override
-    public Attributes getAttributes() {
-      return Attributes.empty();
-    }
-
-    @Override
-    public TraceState getUpdatedTraceState(TraceState parentTraceState) {
-      if (parentTraceState.isEmpty()) {
-        return traceState;
-      }
-      String existingSamplingPercentage =
-          parentTraceState.get(TelemetryUtil.SAMPLING_PERCENTAGE_TRACE_STATE);
-      if (samplingPercentage.equals(existingSamplingPercentage)) {
-        return parentTraceState;
-      }
-      if (existingSamplingPercentage != null && !overwriteExisting) {
-        return parentTraceState;
-      }
-      return parentTraceState.toBuilder()
-          .put(TelemetryUtil.SAMPLING_PERCENTAGE_TRACE_STATE, samplingPercentage)
-          .build();
-    }
-  }
-
-  static class MatcherGroup {
+  private static class MatcherGroup {
     @Nullable private final SpanKind spanKind;
     private final List<TempPredicate> predicates;
-    private final double percentage;
-    private final SamplingResult recordAndSampleAndOverwriteTraceState;
+    private final Sampler sampler;
 
     private MatcherGroup(SamplingOverride override) {
       spanKind = override.spanKind != null ? override.spanKind.otelSpanKind : null;
@@ -155,17 +70,11 @@ class SamplingOverrides {
       for (SamplingOverrideAttribute attribute : override.attributes) {
         predicates.add(toPredicate(attribute));
       }
-      percentage = override.percentage;
-      recordAndSampleAndOverwriteTraceState =
-          SamplingOverrides.getRecordAndSampleAndOverwriteTraceState(percentage);
+      sampler = new AzureMonitorSampler(override.percentage, false);
     }
 
-    double getPercentage() {
-      return percentage;
-    }
-
-    SamplingResult getRecordAndSampleAndOverwriteTraceState() {
-      return recordAndSampleAndOverwriteTraceState;
+    Sampler getSampler() {
+      return sampler;
     }
 
     private boolean matches(SpanKind spanKind, Attributes attributes, LazyHttpUrl lazyHttpUrl) {

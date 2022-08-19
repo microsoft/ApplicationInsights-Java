@@ -19,28 +19,25 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.azure.monitor.opentelemetry.exporter.implementation.utils;
+package com.microsoft.applicationinsights.agent.internal.classicsdk;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.ExceptionDetailBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.StackFrameBuilder;
-import io.opentelemetry.api.trace.TraceState;
-import io.opentelemetry.instrumentation.api.internal.cache.Cache;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-// naming convention:
-// * MonitorDomain data
-// * TelemetryItem telemetry
-public class TelemetryUtil {
+class TelemetryUtil {
 
-  private static final int MAX_PARSED_STACK_LENGTH =
-      32768; // Breeze will reject parsedStack exceeding 65536 bytes. Each char is 2 bytes long.
+  private static final Logger logger = LoggerFactory.getLogger(TelemetryUtil.class);
 
-  public static List<ExceptionDetailBuilder> getExceptions(Throwable throwable) {
+  // Breeze will reject parsedStack exceeding 65536 bytes. Each char is 2 bytes long.
+  private static final int MAX_PARSED_STACK_LENGTH = 32768;
+
+  static List<ExceptionDetailBuilder> getExceptions(Throwable throwable) {
     List<ExceptionDetailBuilder> exceptions = new ArrayList<>();
     convertExceptionTree(throwable, null, exceptions, Integer.MAX_VALUE);
     return exceptions;
@@ -148,75 +145,6 @@ public class TelemetryUtil {
 
   private static int getStackFrameLength(@Nullable String text) {
     return text == null ? 0 : text.length();
-  }
-
-  public static final String SAMPLING_PERCENTAGE_TRACE_STATE = "ai-internal-sp";
-
-  private static final Cache<String, OptionalFloat> parsedSamplingPercentageCache =
-      Cache.bounded(100);
-
-  private static final AtomicBoolean alreadyLoggedSamplingPercentageMissing = new AtomicBoolean();
-  private static final AtomicBoolean alreadyLoggedSamplingPercentageParseError =
-      new AtomicBoolean();
-
-  private static final Logger logger = LoggerFactory.getLogger(TelemetryUtil.class);
-
-  public static float getSamplingPercentage(
-      TraceState traceState, float defaultValue, boolean warnOnMissing) {
-    String samplingPercentageStr = traceState.get(SAMPLING_PERCENTAGE_TRACE_STATE);
-    if (samplingPercentageStr == null) {
-      if (warnOnMissing && !alreadyLoggedSamplingPercentageMissing.getAndSet(true)) {
-        // sampler should have set the trace state
-        logger.warn("did not find sampling percentage in trace state: {}", traceState);
-      }
-      return defaultValue;
-    }
-    return parseSamplingPercentage(samplingPercentageStr).orElse(defaultValue);
-  }
-
-  private static OptionalFloat parseSamplingPercentage(String samplingPercentageStr) {
-    return parsedSamplingPercentageCache.computeIfAbsent(
-        samplingPercentageStr,
-        str -> {
-          try {
-            return OptionalFloat.of(Float.parseFloat(str));
-          } catch (NumberFormatException e) {
-            if (!alreadyLoggedSamplingPercentageParseError.getAndSet(true)) {
-              logger.warn("error parsing sampling percentage trace state: {}", str, e);
-            }
-            return OptionalFloat.empty();
-          }
-        });
-  }
-
-  private static class OptionalFloat {
-
-    private static final OptionalFloat EMPTY = new OptionalFloat();
-
-    private final boolean present;
-    private final float value;
-
-    private OptionalFloat() {
-      this.present = false;
-      this.value = Float.NaN;
-    }
-
-    private OptionalFloat(float value) {
-      this.present = true;
-      this.value = value;
-    }
-
-    public static OptionalFloat empty() {
-      return EMPTY;
-    }
-
-    public static OptionalFloat of(float value) {
-      return new OptionalFloat(value);
-    }
-
-    public float orElse(float other) {
-      return present ? value : other;
-    }
   }
 
   private TelemetryUtil() {}

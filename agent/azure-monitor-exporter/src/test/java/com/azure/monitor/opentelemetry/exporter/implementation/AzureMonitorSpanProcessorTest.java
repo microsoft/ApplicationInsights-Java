@@ -31,6 +31,7 @@ import com.azure.core.http.policy.HttpPipelinePolicy;
 import com.azure.core.util.Configuration;
 import com.azure.core.util.FluxUtil;
 import com.azure.monitor.opentelemetry.exporter.AzureMonitorExporterBuilder;
+import com.azure.monitor.opentelemetry.exporter.AzureMonitorSpanProcessor;
 import com.azure.monitor.opentelemetry.exporter.AzureMonitorTraceExporter;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
@@ -48,7 +49,7 @@ import java.util.zip.GZIPInputStream;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Mono;
 
-public class AiOperationNameSpanProcessorTest {
+public class AzureMonitorSpanProcessorTest {
 
   private static Tracer configureAzureMonitorExporter(HttpPipelinePolicy validator) {
     String connectionStringTemplate =
@@ -64,7 +65,7 @@ public class AiOperationNameSpanProcessorTest {
 
     SdkTracerProvider tracerProvider =
         SdkTracerProvider.builder()
-            .addSpanProcessor(new AiOperationNameSpanProcessor())
+            .addSpanProcessor(new AzureMonitorSpanProcessor())
             .addSpanProcessor(SimpleSpanProcessor.create(exporter))
             .build();
 
@@ -84,7 +85,7 @@ public class AiOperationNameSpanProcessorTest {
     Span parentSpan =
         tracer
             .spanBuilder("parent-span")
-            .setAttribute(AiOperationNameSpanProcessor.AI_OPERATION_NAME_KEY, "myop")
+            .setAttribute(AiSemanticAttributes.OPERATION_NAME, "myop")
             .startSpan();
     parentSpan.updateName("parent-span-changed");
     parentSpan.setAttribute(SemanticAttributes.HTTP_METHOD, "POST");

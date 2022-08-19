@@ -19,33 +19,35 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.sampling;
+package com.azure.monitor.opentelemetry.exporter.implementation;
 
-import com.azure.monitor.opentelemetry.exporter.AzureMonitorSampler;
-import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
-import io.opentelemetry.sdk.trace.samplers.Sampler;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.sdk.logs.data.Body;
+import io.opentelemetry.sdk.logs.data.LogData;
 
-public class Samplers {
+// TODO (trask) delete after updating to 1.17.0
+public class MyLogData extends DelegatingLogData {
 
-  public static Sampler getSampler(float samplingPercentage, Configuration config) {
-    Sampler sampler = new AzureMonitorSampler(samplingPercentage);
+  private final Attributes attributes;
+  private final Body body;
 
-    if (!config.preview.sampling.overrides.isEmpty()) {
-      sampler =
-          new AiOverrideSampler(new SamplingOverrides(config.preview.sampling.overrides), sampler);
-    }
-
-    if (!config.preview.sampling.parentBased) {
-      return sampler;
-    }
-
-    // when using parent-based sampling, sampling overrides still take precedence
-
-    // IMPORTANT, the parent-based sampler is useful for interop with other sampling mechanisms, as
-    // it will ensure consistent traces, however it does not accurately compute item counts, since
-    // item counts are not propagated in trace state (yet)
-    return Sampler.parentBasedBuilder(sampler).build();
+  public MyLogData(LogData delegate, Attributes attributes) {
+    this(delegate, attributes, delegate.getBody());
   }
 
-  private Samplers() {}
+  public MyLogData(LogData delegate, Attributes attributes, Body body) {
+    super(delegate);
+    this.attributes = attributes;
+    this.body = body;
+  }
+
+  @Override
+  public Body getBody() {
+    return body;
+  }
+
+  @Override
+  public Attributes getAttributes() {
+    return attributes;
+  }
 }

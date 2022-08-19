@@ -19,50 +19,27 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.microsoft.applicationinsights.agent.internal.init;
+package com.azure.monitor.opentelemetry.exporter;
 
-import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
-import com.microsoft.applicationinsights.agent.internal.processors.MyLogData;
-import io.opentelemetry.api.common.AttributeKey;
+import com.azure.monitor.opentelemetry.exporter.implementation.AiSemanticAttributes;
+import com.azure.monitor.opentelemetry.exporter.implementation.MyLogData;
+import com.azure.monitor.opentelemetry.exporter.implementation.OperationNames;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.LogProcessor;
 import io.opentelemetry.sdk.logs.data.LogData;
 import io.opentelemetry.sdk.trace.ReadableSpan;
-import java.util.ArrayList;
-import java.util.List;
 
-public class InheritedAttributesLogProcessor implements LogProcessor {
+public class AzureMonitorLogProcessor implements LogProcessor {
 
-  private static final AttributeKey<String> INSTRUMENTATION_KEY_KEY =
-      AttributeKey.stringKey("ai.preview.instrumentation_key");
-
-  private static final AttributeKey<String> ROLE_NAME_KEY =
-      AttributeKey.stringKey("ai.preview.service_name");
-
-  private final List<AttributeKey<?>> inheritedAttributes;
   private final LogProcessor delegate;
 
-  public InheritedAttributesLogProcessor(
-      List<Configuration.InheritedAttribute> inheritedAttributes, LogProcessor delegate) {
-    this.inheritedAttributes = buildInheritedAttributesList(inheritedAttributes);
+  public AzureMonitorLogProcessor(LogProcessor delegate) {
     this.delegate = delegate;
   }
 
-  private static List<AttributeKey<?>> buildInheritedAttributesList(
-      List<Configuration.InheritedAttribute> inheritedAttributes) {
-    List<AttributeKey<?>> list = new ArrayList<>();
-    for (Configuration.InheritedAttribute inheritedAttribute : inheritedAttributes) {
-      list.add(inheritedAttribute.getAttributeKey());
-    }
-    list.add(INSTRUMENTATION_KEY_KEY);
-    list.add(ROLE_NAME_KEY);
-    return list;
-  }
-
   @Override
-  @SuppressWarnings("unchecked")
   public void emit(LogData log) {
     Span currentSpan = Span.current();
     if (!(currentSpan instanceof ReadableSpan)) {
@@ -72,20 +49,14 @@ public class InheritedAttributesLogProcessor implements LogProcessor {
 
     ReadableSpan readableSpan = (ReadableSpan) currentSpan;
     AttributesBuilder builder = log.getAttributes().toBuilder();
-    for (AttributeKey<?> inheritedAttributeKey : inheritedAttributes) {
-      Object value = readableSpan.getAttribute(inheritedAttributeKey);
-      if (value != null) {
-        if (builder == null) {
-          builder = log.getAttributes().toBuilder();
-        }
-        builder.put((AttributeKey<Object>) inheritedAttributeKey, value);
-      }
-    }
-    if (builder != null) {
-      log = new MyLogData(log, builder.build());
+
+    builder.put(AiSemanticAttributes.OPERATION_NAME, OperationNames.getOperationName(readableSpan));
+    Long itemCount = readableSpan.getAttribute(AiSemanticAttributes.ITEM_COUNT);
+    if (itemCount != null) {
+      builder.put(AiSemanticAttributes.ITEM_COUNT, itemCount);
     }
 
-    delegate.emit(log);
+    delegate.emit(new MyLogData(log, builder.build()));
   }
 
   @Override

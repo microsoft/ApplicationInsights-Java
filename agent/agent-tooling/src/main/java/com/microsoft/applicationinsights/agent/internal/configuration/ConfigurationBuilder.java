@@ -139,6 +139,13 @@ public class ConfigurationBuilder {
           "\"httpMethodInOperationName\" is no longer in preview and it is now the"
               + " (one and only) default behavior");
     }
+    if (config.preview.ignoreRemoteParentNotSampled != null) {
+      configurationLogger.warn(
+          "\"ignoreRemoteParentNotSampled\" has been deprecated and"
+              + " \"ignoreRemoteParentNotSampled\": false has replaced with"
+              + " \"preview\": { \"sampling\": { \"parentBased\": true } } (while"
+              + " \"ignoreRemoteParentNotSampled\": true is just the default behavior)");
+    }
     if (config.preview.openTelemetryApiSupport) {
       configurationLogger.warn(
           "\"openTelemetryApiSupport\" is no longer in preview and it is now the"
