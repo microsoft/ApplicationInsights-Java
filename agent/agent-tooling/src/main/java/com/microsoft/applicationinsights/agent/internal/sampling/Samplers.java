@@ -39,6 +39,8 @@ public class Samplers {
       return sampler;
     }
 
+    // when using parent-based sampling, sampling overrides still take precedence
+
     // IMPORTANT, the parent-based sampler is useful for interop with other sampling mechanisms, as
     // it will ensure consistent traces, however it does not accurately compute item counts, since
     // item counts are not propagated in trace state (yet)
