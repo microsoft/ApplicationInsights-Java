@@ -73,11 +73,9 @@ public final class SpanDataMapper {
   // TODO (trask) add to generated ContextTagKeys class
   private static final ContextTagKeys AI_DEVICE_OS = ContextTagKeys.fromString("ai.device.os");
 
-  // TODO (trask) remove once these make it into SemanticAttributes
+  // TODO (trask) remove once this makes it into SemanticAttributes
   private static final AttributeKey<String> NET_SOCK_PEER_ADDR =
       AttributeKey.stringKey("net.sock.peer.addr");
-  private static final AttributeKey<String> NET_SOCK_PEER_NAME =
-      AttributeKey.stringKey("net.sock.peer.name");
 
   // TODO (trask) this can go away once new indexer is rolled out to gov clouds
   private static final AttributeKey<List<String>> AI_REQUEST_CONTEXT_KEY =
@@ -459,7 +457,7 @@ public final class SpanDataMapper {
     } else {
       defaultPort = 0;
     }
-    target = getTargetFromNetAttributes(attributes, defaultPort);
+    target = getTargetFromNetClientAttributes(attributes, defaultPort);
     if (target != null) {
       return target;
     }
@@ -473,7 +471,7 @@ public final class SpanDataMapper {
     if (target != null) {
       return target;
     }
-    return getTargetFromNetAttributes(attributes, defaultPort);
+    return getTargetFromNetClientAttributes(attributes, defaultPort);
   }
 
   @Nullable
@@ -483,8 +481,8 @@ public final class SpanDataMapper {
   }
 
   @Nullable
-  private static String getTargetFromNetAttributes(Attributes attributes, int defaultPort) {
-    String target = getHostFromNetAttributes(attributes);
+  private static String getTargetFromNetClientAttributes(Attributes attributes, int defaultPort) {
+    String target = getHostFromNetClientAttributes(attributes);
     if (target == null) {
       return null;
     }
@@ -497,12 +495,12 @@ public final class SpanDataMapper {
   }
 
   @Nullable
-  private static String getHostFromNetAttributes(Attributes attributes) {
-    String host = attributes.get(NET_SOCK_PEER_NAME);
+  private static String getHostFromNetClientAttributes(Attributes attributes) {
+    String host = attributes.get(SemanticAttributes.NET_PEER_NAME);
     if (host != null) {
       return host;
     }
-    return attributes.get(NET_SOCK_PEER_ADDR);
+    return attributes.get(SemanticAttributes.NET_PEER_IP);
   }
 
   private static void applyRpcClientSpan(
