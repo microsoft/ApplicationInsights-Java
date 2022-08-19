@@ -231,20 +231,30 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
 
     autoConfiguration
         .addPropertiesCustomizer(new AiConfigCustomizer())
-        // exporter customizer also applies to otlp exporter
         .addSpanExporterCustomizer(
-            (spanExporter, config) -> wrapSpanExporter(spanExporter, configuration))
+            (spanExporter, config) -> {
+              if ("none".equals(config.getString("otel.traces.exporter"))) {
+                // in this case the spanExporter here is the noop spanExporter
+                return spanExporter;
+              } else {
+                return wrapSpanExporter(spanExporter, configuration);
+              }
+            })
         .addTracerProviderCustomizer(
-            (builder, configProperties) ->
-                configureTracing(
-                    builder, telemetryClient, quickPulse, configProperties, configuration))
-        // exporter customizer also applies to otlp exporter
+            (builder, config) ->
+                configureTracing(builder, telemetryClient, quickPulse, config, configuration))
         .addLogExporterCustomizer(
-            (logExporter, config) -> wrapLogExporter(logExporter, configuration))
+            (logExporter, config) -> {
+              if ("none".equals(config.getString("otel.logs.exporter"))) {
+                // in this case the logExporter here is the noop spanExporter
+                return logExporter;
+              } else {
+                return wrapLogExporter(logExporter, configuration);
+              }
+            })
         .addLogEmitterProviderCustomizer(
-            (builder, configProperties) ->
-                configureLogging(
-                    builder, telemetryClient, quickPulse, configProperties, configuration))
+            (builder, config) ->
+                configureLogging(builder, telemetryClient, quickPulse, config, configuration))
         .addMeterProviderCustomizer(
             (builder, configProperties) ->
                 configureMetrics(metricFilters, builder, telemetryClient, configuration));
@@ -337,6 +347,8 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
       SpanExporter spanExporter =
           createSpanExporter(
               telemetryClient, quickPulse, configuration.preview.captureHttpServer4xxAsError);
+
+      spanExporter = wrapSpanExporter(spanExporter, configuration);
 
       // using BatchSpanProcessor in order to get off of the application thread as soon as possible
       batchSpanProcessor =
@@ -445,6 +457,8 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
     String logsExporter = config.getString("otel.logs.exporter");
     if ("none".equals(logsExporter)) { // "none" is the default set in AiConfigCustomizer
       LogExporter logExporter = createLogExporter(telemetryClient, quickPulse, configuration);
+
+      logExporter = wrapLogExporter(logExporter, configuration);
 
       // using BatchLogProcessor in order to get off of the application thread as soon as possible
       batchLogProcessor =

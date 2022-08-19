@@ -73,6 +73,12 @@ public final class SpanDataMapper {
   // TODO (trask) add to generated ContextTagKeys class
   private static final ContextTagKeys AI_DEVICE_OS = ContextTagKeys.fromString("ai.device.os");
 
+  // TODO (trask) remove once these make it into SemanticAttributes
+  private static final AttributeKey<String> NET_SOCK_PEER_ADDR =
+      AttributeKey.stringKey("net.sock.peer.addr");
+  private static final AttributeKey<String> NET_SOCK_PEER_NAME =
+      AttributeKey.stringKey("net.sock.peer.name");
+
   // TODO (trask) this can go away once new indexer is rolled out to gov clouds
   private static final AttributeKey<List<String>> AI_REQUEST_CONTEXT_KEY =
       AttributeKey.stringArrayKey("http.response.header.request_context");
@@ -492,11 +498,11 @@ public final class SpanDataMapper {
 
   @Nullable
   private static String getHostFromNetAttributes(Attributes attributes) {
-    String host = attributes.get(SemanticAttributes.NET_PEER_NAME);
+    String host = attributes.get(NET_SOCK_PEER_NAME);
     if (host != null) {
       return host;
     }
-    return attributes.get(SemanticAttributes.NET_PEER_IP);
+    return attributes.get(NET_SOCK_PEER_ADDR);
   }
 
   private static void applyRpcClientSpan(
@@ -647,7 +653,7 @@ public final class SpanDataMapper {
     String locationIp = attributes.get(SemanticAttributes.HTTP_CLIENT_IP);
     if (locationIp == null) {
       // only use net.peer.ip if http.client_ip is not available
-      locationIp = attributes.get(SemanticAttributes.NET_PEER_IP);
+      locationIp = attributes.get(NET_SOCK_PEER_ADDR);
     }
     if (locationIp != null) {
       telemetryBuilder.addTag(ContextTagKeys.AI_LOCATION_IP.toString(), locationIp);
