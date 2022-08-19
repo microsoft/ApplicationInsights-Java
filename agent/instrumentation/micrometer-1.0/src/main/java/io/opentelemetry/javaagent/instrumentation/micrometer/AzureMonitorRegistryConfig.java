@@ -22,7 +22,7 @@
 package io.opentelemetry.javaagent.instrumentation.micrometer;
 
 import io.micrometer.core.instrument.step.StepRegistryConfig;
-import io.opentelemetry.instrumentation.api.config.Config;
+import io.opentelemetry.javaagent.bootstrap.internal.InstrumentationConfig;
 import java.time.Duration;
 
 public class AzureMonitorRegistryConfig implements StepRegistryConfig {
@@ -30,7 +30,9 @@ public class AzureMonitorRegistryConfig implements StepRegistryConfig {
   private final Duration step;
 
   public AzureMonitorRegistryConfig() {
-    step = Config.get().getDuration("otel.micrometer.step.millis", Duration.ofSeconds(60));
+    step =
+        InstrumentationConfig.get()
+            .getDuration("otel.micrometer.step.millis", Duration.ofSeconds(60));
   }
 
   @Override
