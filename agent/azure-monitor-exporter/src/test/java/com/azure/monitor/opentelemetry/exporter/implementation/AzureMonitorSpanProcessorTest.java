@@ -85,7 +85,7 @@ public class AzureMonitorSpanProcessorTest {
     Span parentSpan =
         tracer
             .spanBuilder("parent-span")
-            .setAttribute(OperationNames.AI_OPERATION_NAME_KEY, "myop")
+            .setAttribute(AiSemanticAttributes.OPERATION_NAME, "myop")
             .startSpan();
     parentSpan.updateName("parent-span-changed");
     parentSpan.setAttribute(SemanticAttributes.HTTP_METHOD, "POST");

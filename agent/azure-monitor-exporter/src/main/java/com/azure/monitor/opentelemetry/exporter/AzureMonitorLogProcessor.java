@@ -50,8 +50,7 @@ public class AzureMonitorLogProcessor implements LogProcessor {
     ReadableSpan readableSpan = (ReadableSpan) currentSpan;
     AttributesBuilder builder = log.getAttributes().toBuilder();
 
-    builder.put(
-        OperationNames.AI_OPERATION_NAME_KEY, OperationNames.getOperationName(readableSpan));
+    builder.put(AiSemanticAttributes.OPERATION_NAME, OperationNames.getOperationName(readableSpan));
     Long itemCount = readableSpan.getAttribute(AiSemanticAttributes.ITEM_COUNT);
     if (itemCount != null) {
       builder.put(AiSemanticAttributes.ITEM_COUNT, itemCount);

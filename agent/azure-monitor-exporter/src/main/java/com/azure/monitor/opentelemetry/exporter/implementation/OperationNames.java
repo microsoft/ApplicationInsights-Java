@@ -23,7 +23,7 @@ package com.azure.monitor.opentelemetry.exporter.implementation;
 
 import io.opentelemetry.sdk.trace.ReadableSpan;
 
-public class OperationNames {
+public final class OperationNames {
 
   public static String getOperationName(ReadableSpan span) {
     String operationName = span.getAttribute(AiSemanticAttributes.OPERATION_NAME);
