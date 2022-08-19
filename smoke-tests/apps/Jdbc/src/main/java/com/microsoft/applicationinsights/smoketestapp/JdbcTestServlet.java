@@ -200,7 +200,7 @@ public class JdbcTestServlet extends HttpServlet {
 
   private void executeStatement(Connection connection) throws SQLException {
     Statement statement = connection.createStatement();
-    ResultSet rs = statement.executeQuery("select * from abc");
+    ResultSet rs = statement.executeQuery("select * from abc where xyz = 'y'");
     while (rs.next()) {}
     rs.close();
     statement.close();

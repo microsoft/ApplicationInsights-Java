@@ -1,0 +1,9 @@
+{
+  "instrumentation": {
+    "jdbc": {
+      "masking": {
+        "enabled": false
+      }
+    }
+  }
+}

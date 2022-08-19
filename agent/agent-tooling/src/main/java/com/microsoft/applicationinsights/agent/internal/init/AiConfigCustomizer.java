@@ -222,6 +222,12 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
     }
     if (config.instrumentation.jdbc.enabled) {
       properties.put("otel.instrumentation.jdbc.enabled", "true");
+      if (!config.instrumentation.jdbc.masking.enabled) {
+        properties.put("otel.instrumentation.jdbc.statement-sanitizer.enabled", "false");
+        // TODO (trask) this line is temporary until 1.18.0, see
+        // https://github.com/open-telemetry/opentelemetry-java-instrumentation/pull/6492
+        System.setProperty("otel.instrumentation.jdbc.statement-sanitizer.enabled", "false");
+      }
     }
     if (config.instrumentation.jms.enabled) {
       properties.put("otel.instrumentation.jms.enabled", "true");
