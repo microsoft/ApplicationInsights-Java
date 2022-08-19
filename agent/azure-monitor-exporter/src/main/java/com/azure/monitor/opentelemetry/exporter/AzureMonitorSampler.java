@@ -21,8 +21,8 @@
 
 package com.azure.monitor.opentelemetry.exporter;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.AiSemanticAttributes;
 import com.azure.monitor.opentelemetry.exporter.implementation.SamplingScoreGeneratorV2;
-import com.azure.monitor.opentelemetry.exporter.implementation.SpanDataMapper;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
@@ -101,7 +101,7 @@ public class AzureMonitorSampler implements Sampler {
       return SamplingResult.drop();
     }
     if (parentSpan instanceof ReadableSpan) {
-      Long itemCount = ((ReadableSpan) parentSpan).getAttribute(SpanDataMapper.AI_ITEM_COUNT_KEY);
+      Long itemCount = ((ReadableSpan) parentSpan).getAttribute(AiSemanticAttributes.ITEM_COUNT);
       if (itemCount != null) {
         return new RecordAndSampleWithItemCount(itemCount);
       }
@@ -131,7 +131,7 @@ public class AzureMonitorSampler implements Sampler {
     private final Attributes attributes;
 
     RecordAndSampleWithItemCount(long itemCount) {
-      attributes = Attributes.builder().put(SpanDataMapper.AI_ITEM_COUNT_KEY, itemCount).build();
+      attributes = Attributes.builder().put(AiSemanticAttributes.ITEM_COUNT, itemCount).build();
     }
 
     @Override
