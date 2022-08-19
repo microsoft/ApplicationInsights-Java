@@ -21,8 +21,8 @@
 
 package com.azure.monitor.opentelemetry.exporter;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.AiSemanticAttributes;
 import com.azure.monitor.opentelemetry.exporter.implementation.OperationNames;
-import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
@@ -35,9 +35,6 @@ import io.opentelemetry.sdk.trace.SpanProcessor;
 // startSpan
 public class AzureMonitorSpanProcessor implements SpanProcessor {
 
-  private static final AttributeKey<Long> AI_ITEM_COUNT_KEY =
-      AttributeKey.longKey("applicationinsights.internal.item_count");
-
   @Override
   public void onStart(Context parentContext, ReadWriteSpan span) {
 
@@ -49,9 +46,9 @@ public class AzureMonitorSpanProcessor implements SpanProcessor {
       span.setAttribute(
           OperationNames.AI_OPERATION_NAME_KEY,
           OperationNames.getOperationName((ReadableSpan) parentSpan));
-      Long itemCount = ((ReadableSpan) parentSpan).getAttribute(AI_ITEM_COUNT_KEY);
+      Long itemCount = ((ReadableSpan) parentSpan).getAttribute(AiSemanticAttributes.ITEM_COUNT);
       if (itemCount != null) {
-        span.setAttribute(AI_ITEM_COUNT_KEY, itemCount);
+        span.setAttribute(AiSemanticAttributes.ITEM_COUNT, itemCount);
       }
     }
   }

@@ -77,11 +77,6 @@ public final class SpanDataMapper {
   private static final AttributeKey<List<String>> AI_REQUEST_CONTEXT_KEY =
       AttributeKey.stringArrayKey("http.response.header.request_context");
 
-  public static final AttributeKey<String> AI_OPERATION_NAME_KEY =
-      AttributeKey.stringKey("applicationinsights.internal.operation_name");
-  public static final AttributeKey<Long> AI_ITEM_COUNT_KEY =
-      AttributeKey.longKey("applicationinsights.internal.item_count");
-
   public static final AttributeKey<String> AI_LEGACY_PARENT_ID_KEY =
       AttributeKey.stringKey("applicationinsights.internal.legacy_parent_id");
   public static final AttributeKey<String> AI_LEGACY_ROOT_ID_KEY =
@@ -364,7 +359,7 @@ public final class SpanDataMapper {
 
   private static void setOperationName(
       AbstractTelemetryBuilder telemetryBuilder, Attributes attributes) {
-    String operationName = attributes.get(AI_OPERATION_NAME_KEY);
+    String operationName = attributes.get(AiSemanticAttributes.OPERATION_NAME);
     if (operationName != null) {
       setOperationName(telemetryBuilder, operationName);
     }
@@ -782,7 +777,7 @@ public final class SpanDataMapper {
   }
 
   private static String getOperationName(SpanData span) {
-    String operationName = span.getAttributes().get(AI_OPERATION_NAME_KEY);
+    String operationName = span.getAttributes().get(AiSemanticAttributes.OPERATION_NAME);
     if (operationName != null) {
       return operationName;
     }
@@ -892,7 +887,7 @@ public final class SpanDataMapper {
   }
 
   private static long getItemCount(SpanData span) {
-    Long itemCount = span.getAttributes().get(AI_ITEM_COUNT_KEY);
+    Long itemCount = span.getAttributes().get(AiSemanticAttributes.ITEM_COUNT);
     return itemCount == null ? 1 : itemCount;
   }
 

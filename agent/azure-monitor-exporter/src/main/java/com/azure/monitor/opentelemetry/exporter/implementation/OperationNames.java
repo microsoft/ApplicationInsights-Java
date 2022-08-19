@@ -21,16 +21,12 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation;
 
-import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 
 public class OperationNames {
 
-  public static final AttributeKey<String> AI_OPERATION_NAME_KEY =
-      AttributeKey.stringKey("applicationinsights.internal.operation_name");
-
   public static String getOperationName(ReadableSpan span) {
-    String operationName = span.getAttribute(AI_OPERATION_NAME_KEY);
+    String operationName = span.getAttribute(AiSemanticAttributes.OPERATION_NAME);
     if (operationName != null) {
       return operationName;
     }

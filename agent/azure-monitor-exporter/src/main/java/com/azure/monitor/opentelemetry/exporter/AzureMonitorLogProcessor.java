@@ -21,9 +21,9 @@
 
 package com.azure.monitor.opentelemetry.exporter;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.AiSemanticAttributes;
 import com.azure.monitor.opentelemetry.exporter.implementation.MyLogData;
 import com.azure.monitor.opentelemetry.exporter.implementation.OperationNames;
-import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.sdk.common.CompletableResultCode;
@@ -32,9 +32,6 @@ import io.opentelemetry.sdk.logs.data.LogData;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 
 public class AzureMonitorLogProcessor implements LogProcessor {
-
-  private static final AttributeKey<Long> AI_ITEM_COUNT_KEY =
-      AttributeKey.longKey("applicationinsights.internal.item_count");
 
   private final LogProcessor delegate;
 
@@ -55,9 +52,9 @@ public class AzureMonitorLogProcessor implements LogProcessor {
 
     builder.put(
         OperationNames.AI_OPERATION_NAME_KEY, OperationNames.getOperationName(readableSpan));
-    Long itemCount = readableSpan.getAttribute(AI_ITEM_COUNT_KEY);
+    Long itemCount = readableSpan.getAttribute(AiSemanticAttributes.ITEM_COUNT);
     if (itemCount != null) {
-      builder.put(AI_ITEM_COUNT_KEY, itemCount);
+      builder.put(AiSemanticAttributes.ITEM_COUNT, itemCount);
     }
 
     delegate.emit(new MyLogData(log, builder.build()));
