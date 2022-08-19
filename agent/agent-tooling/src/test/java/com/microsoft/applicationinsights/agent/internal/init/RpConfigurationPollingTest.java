@@ -23,7 +23,7 @@ package com.microsoft.applicationinsights.agent.internal.init;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.SpanDataMapper;
+import com.azure.monitor.opentelemetry.exporter.implementation.AiSemanticAttributes;
 import com.microsoft.applicationinsights.agent.internal.classicsdk.BytecodeUtilImpl;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.configuration.RpConfiguration;
@@ -161,7 +161,7 @@ class RpConfigurationPollingTest {
                 SpanKind.SERVER,
                 Attributes.empty(),
                 Collections.emptyList());
-    Long itemCount = samplingResult.getAttributes().get(SpanDataMapper.AI_ITEM_COUNT_KEY);
+    Long itemCount = samplingResult.getAttributes().get(AiSemanticAttributes.ITEM_COUNT);
     return 100.0 / itemCount;
   }
 }

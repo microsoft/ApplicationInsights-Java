@@ -24,9 +24,9 @@ package com.microsoft.applicationinsights.agent.internal.classicsdk;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.AiSemanticAttributes;
 import com.azure.monitor.opentelemetry.exporter.implementation.OperationNames;
 import com.azure.monitor.opentelemetry.exporter.implementation.SamplingScoreGeneratorV2;
-import com.azure.monitor.opentelemetry.exporter.implementation.SpanDataMapper;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.AbstractTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.EventTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.ExceptionTelemetryBuilder;
@@ -436,7 +436,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
     }
 
     if (isPartOfTheCurrentTrace && applySampling && span instanceof ReadableSpan) {
-      Long itemCount = ((ReadableSpan) span).getAttribute(SpanDataMapper.AI_ITEM_COUNT_KEY);
+      Long itemCount = ((ReadableSpan) span).getAttribute(AiSemanticAttributes.ITEM_COUNT);
       if (itemCount != null && itemCount != 1) {
         telemetryBuilder.setSampleRate(100.0f / itemCount);
       }
