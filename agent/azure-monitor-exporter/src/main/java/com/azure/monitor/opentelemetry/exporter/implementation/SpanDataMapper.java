@@ -177,10 +177,12 @@ public final class SpanDataMapper {
   }
 
   public TelemetryItem map(SpanData span, float samplingPercentage) {
+    boolean isPreAggregated = checkIsPreAggregated(span);
     if (isRequest(span)) {
-      return exportRequest(span, samplingPercentage);
+      return exportRequest(span, samplingPercentage, isPreAggregated);
     } else {
-      return exportRemoteDependency(span, span.getKind() == SpanKind.INTERNAL, samplingPercentage);
+      return exportRemoteDependency(
+          span, span.getKind() == SpanKind.INTERNAL, samplingPercentage, isPreAggregated);
     }
   }
 
@@ -205,8 +207,13 @@ public final class SpanDataMapper {
     }
   }
 
+  private static boolean checkIsPreAggregated(SpanData span) {
+    String isPreAggregated = span.getAttributes().get(AttributeKey.stringKey("isPreAggregated"));
+    return isPreAggregated != null && Boolean.valueOf(isPreAggregated);
+  }
+
   private TelemetryItem exportRemoteDependency(
-      SpanData span, boolean inProc, float samplingPercentage) {
+      SpanData span, boolean inProc, float samplingPercentage, boolean isPreAggregated) {
     RemoteDependencyTelemetryBuilder telemetryBuilder = RemoteDependencyTelemetryBuilder.create();
     telemetryInitializer.accept(telemetryBuilder, span.getResource());
 
@@ -231,6 +238,10 @@ public final class SpanDataMapper {
       telemetryBuilder.setType("InProc");
     } else {
       applySemanticConventions(telemetryBuilder, span);
+    }
+
+    if (isPreAggregated) {
+      telemetryBuilder.addProperty(MS_PROCESSED_BY_METRIC_EXTRACTORS, "True");
     }
 
     return telemetryBuilder.build();
@@ -382,11 +393,6 @@ public final class SpanDataMapper {
 
     String url = attributes.get(SemanticAttributes.HTTP_URL);
     telemetryBuilder.setData(url);
-
-    // TODO is it safe to assume that all http instrumentations support duration?
-    // http.client.request.size and http.client.response.size will not get post-aggregated
-    // http.server.request.size and http.server.response.size will not get post aggregated
-    telemetryBuilder.addProperty(MS_PROCESSED_BY_METRIC_EXTRACTORS, "True");
   }
 
   @Nullable
@@ -580,7 +586,8 @@ public final class SpanDataMapper {
     }
   }
 
-  private TelemetryItem exportRequest(SpanData span, float samplingPercentage) {
+  private TelemetryItem exportRequest(
+      SpanData span, float samplingPercentage, boolean isPreAggregated) {
     RequestTelemetryBuilder telemetryBuilder = RequestTelemetryBuilder.create();
     telemetryInitializer.accept(telemetryBuilder, span.getResource());
 
@@ -667,7 +674,9 @@ public final class SpanDataMapper {
       telemetryBuilder.addTag(ContextTagKeys.AI_DEVICE_OS_VERSION.toString(), deviceOsVersion);
     }
 
-    addFlagForPreAggMetrics(telemetryBuilder, span);
+    if (isPreAggregated) {
+      telemetryBuilder.addProperty(MS_PROCESSED_BY_METRIC_EXTRACTORS, "True");
+    }
 
     // TODO(trask)? for batch consumer, enqueuedTime should be the average of this attribute
     //  across all links
@@ -684,16 +693,6 @@ public final class SpanDataMapper {
     }
 
     return telemetryBuilder.build();
-  }
-
-  private static void addFlagForPreAggMetrics(
-      RequestTelemetryBuilder telemetryBuilder, SpanData span) {
-    Attributes attributes = span.getAttributes();
-    String httpMethod = attributes.get(SemanticAttributes.HTTP_METHOD);
-    String rpcSystem = attributes.get(SemanticAttributes.RPC_SYSTEM);
-    if (httpMethod != null || rpcSystem != null) {
-      telemetryBuilder.addProperty(MS_PROCESSED_BY_METRIC_EXTRACTORS, "True");
-    }
   }
 
   private boolean getSuccess(SpanData span) {

@@ -21,6 +21,7 @@
 
 package io.opentelemetry.instrumentation.api.instrumenter.http;
 
+import static io.opentelemetry.instrumentation.api.instrumenter.Utils.IS_PRE_AGGREGATED;
 import static io.opentelemetry.instrumentation.api.instrumenter.Utils.IS_SYNTHETIC;
 import static io.opentelemetry.instrumentation.api.instrumenter.Utils.isUserAgentBot;
 import static java.util.logging.Level.FINE;
@@ -32,6 +33,7 @@ import io.opentelemetry.api.metrics.DoubleHistogram;
 import io.opentelemetry.api.metrics.LongHistogram;
 import io.opentelemetry.api.metrics.LongUpDownCounter;
 import io.opentelemetry.api.metrics.Meter;
+import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.ContextKey;
 import io.opentelemetry.instrumentation.api.instrumenter.OperationListener;
@@ -124,6 +126,11 @@ public final class HttpServerMetrics implements OperationListener {
         TemporaryMetricsView.applyServerDurationAndSizeView(state.startAttributes(), endAttributes);
 
     // START APPLICATION INSIGHTS CODE
+
+    // this is needed for detecting telemetry signals that will trigger pre-aggregated metrics via
+    // auto instrumentations
+    Span.fromContext(context).setAttribute(IS_PRE_AGGREGATED, "True");
+
     Attributes durationAttributes =
         durationAndSizeAttributes.toBuilder()
             .put(

@@ -29,6 +29,7 @@ public final class Utils {
 
   public static final String IS_SYNTHETIC = "isSynthetic";
   public static final String TARGET = "target";
+  public static final String IS_PRE_AGGREGATED = "isPreAggregated";
 
   @SuppressWarnings("SystemOut")
   public static boolean isUserAgentBot(Attributes endAttributes, Attributes startAttributes) {
