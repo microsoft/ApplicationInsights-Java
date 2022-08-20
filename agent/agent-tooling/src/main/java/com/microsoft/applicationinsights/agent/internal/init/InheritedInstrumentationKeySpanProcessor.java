@@ -47,7 +47,7 @@ public class InheritedInstrumentationKeySpanProcessor implements SpanProcessor {
 
   @Override
   public void onStart(Context parentContext, ReadWriteSpan span) {
-    Span parentSpan = Span.fromContextOrNull(parentContext);
+    Span parentSpan = Span.fromContext(parentContext);
     SpanContext parentSpanContext = parentSpan.getSpanContext();
     if (!parentSpanContext.isValid() || parentSpanContext.isRemote()) {
       // this part (setting the attribute on the local root span) could be moved to Sampler

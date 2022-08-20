@@ -42,14 +42,16 @@ public class AzureMonitorSpanProcessor implements SpanProcessor {
     // first before creating child span
 
     Span parentSpan = Span.fromContextOrNull(parentContext);
-    if (parentSpan instanceof ReadableSpan) {
-      span.setAttribute(
-          AiSemanticAttributes.OPERATION_NAME,
-          OperationNames.getOperationName((ReadableSpan) parentSpan));
-      Long itemCount = ((ReadableSpan) parentSpan).getAttribute(AiSemanticAttributes.ITEM_COUNT);
-      if (itemCount != null) {
-        span.setAttribute(AiSemanticAttributes.ITEM_COUNT, itemCount);
-      }
+    if (!(parentSpan instanceof ReadableSpan)) {
+      return;
+    }
+    ReadableSpan parentReadableSpan = (ReadableSpan) parentSpan;
+
+    span.setAttribute(
+        AiSemanticAttributes.OPERATION_NAME, OperationNames.getOperationName(parentReadableSpan));
+    Long itemCount = parentReadableSpan.getAttribute(AiSemanticAttributes.ITEM_COUNT);
+    if (itemCount != null) {
+      span.setAttribute(AiSemanticAttributes.ITEM_COUNT, itemCount);
     }
   }
 
