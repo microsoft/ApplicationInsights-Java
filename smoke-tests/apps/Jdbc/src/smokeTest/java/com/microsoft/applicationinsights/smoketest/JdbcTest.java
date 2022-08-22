@@ -256,7 +256,8 @@ abstract class JdbcTest {
   void sqlServerPreparedStatement() throws Exception {
     Telemetry telemetry = testing.getTelemetry(1);
 
-    assertThat(telemetry.rd.getProperties()).isEmpty();
+    assertThat(telemetry.rd.getProperties().get("_MS.ProcessedByMetricExtractors"))
+        .isEqualTo("True");
     assertThat(telemetry.rd.getSuccess()).isTrue();
 
     assertThat(telemetry.rdd1.getName()).isEqualTo("SELECT abc");

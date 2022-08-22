@@ -65,7 +65,7 @@ abstract class HttpHeadersTest {
     assertThat(telemetry.rdd1.getProperties().get("http.request.header.abc"))
         .isEqualTo("testing123");
     assertThat(telemetry.rdd1.getProperties()).containsKey("http.response.header.date");
-    assertThat(telemetry.rdd1.getProperties()).hasSize(2);
+    assertThat(telemetry.rdd1.getProperties()).hasSize(3);
     assertThat(telemetry.rdd1.getSuccess()).isTrue();
   }
 

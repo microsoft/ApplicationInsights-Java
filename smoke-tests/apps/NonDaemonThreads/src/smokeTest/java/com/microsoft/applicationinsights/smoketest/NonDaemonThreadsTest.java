@@ -75,7 +75,7 @@ abstract class NonDaemonThreadsTest {
     assertThat(rdd.getType()).isEqualTo("Http");
     assertThat(rdd.getTarget()).isEqualTo("www.bing.com");
     assertThat(rdd.getData()).isEqualTo("https://www.bing.com/search?q=test");
-    assertThat(rdd.getProperties()).isEmpty();
+    assertThat(rdd.getProperties().get("_MS.ProcessedByMetricExtractors")).isEqualTo("True");
     assertThat(rdd.getSuccess()).isTrue();
 
     assertThat(md.getMessage()).isEqualTo("done");

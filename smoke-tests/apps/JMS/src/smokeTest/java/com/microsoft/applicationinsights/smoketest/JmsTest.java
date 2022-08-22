@@ -93,7 +93,7 @@ abstract class JmsTest {
     assertThat(rdd2.getData()).isEqualTo("https://www.bing.com");
     assertThat(rdd2.getType()).isEqualTo("Http");
     assertThat(rdd2.getTarget()).isEqualTo("www.bing.com");
-    assertThat(rdd2.getProperties()).isEmpty();
+    assertThat(rdd2.getProperties().get("_MS.ProcessedByMetricExtractors")).isEqualTo("True");
     assertThat(rdd2.getSuccess()).isTrue();
 
     SmokeTestExtension.assertParentChild(rd1, rdEnvelope1, rddEnvelope1, "GET /sendMessage");

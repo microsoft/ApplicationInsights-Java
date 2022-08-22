@@ -80,7 +80,8 @@ abstract class WebFluxTest {
     assertThat(telemetry.rd.getResponseCode()).isEqualTo("500");
     assertThat(telemetry.rd.getSuccess()).isFalse();
     assertThat(telemetry.rd.getSource()).isNull();
-    assertThat(telemetry.rd.getProperties()).isEmpty();
+    assertThat(telemetry.rd.getProperties().get("_MS.ProcessedByMetricExtractors"))
+        .isEqualTo("True");
     assertThat(telemetry.rd.getMeasurements()).isEmpty();
   }
 
