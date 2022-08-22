@@ -107,7 +107,8 @@ abstract class HttpClientSmokeTest {
     assertThat(telemetry.rdd1.getType()).isEqualTo("Http");
     assertThat(telemetry.rdd1.getTarget()).isEqualTo("mock.codes");
     assertThat(telemetry.rdd1.getResultCode()).isEqualTo("200");
-    assertThat(telemetry.rdd1.getProperties()).isEmpty();
+    assertThat(telemetry.rdd1.getProperties().get("_MS.ProcessedByMetricExtractors"))
+        .isEqualTo("True");
     assertThat(telemetry.rdd1.getSuccess()).isTrue();
     assertThat(telemetry.rddEnvelope1.getSampleRate()).isNull();
 
@@ -116,7 +117,8 @@ abstract class HttpClientSmokeTest {
     assertThat(telemetry.rdd2.getType()).isEqualTo("Http");
     assertThat(telemetry.rdd2.getTarget()).isEqualTo("mock.codes");
     assertThat(telemetry.rdd2.getResultCode()).isEqualTo("404");
-    assertThat(telemetry.rdd2.getProperties()).isEmpty();
+    assertThat(telemetry.rdd2.getProperties().get("_MS.ProcessedByMetricExtractors"))
+        .isEqualTo("True");
     assertThat(telemetry.rdd2.getSuccess()).isFalse();
     assertThat(telemetry.rddEnvelope2.getSampleRate()).isNull();
 
@@ -125,7 +127,8 @@ abstract class HttpClientSmokeTest {
     assertThat(telemetry.rdd3.getType()).isEqualTo("Http");
     assertThat(telemetry.rdd3.getTarget()).isEqualTo("mock.codes");
     assertThat(telemetry.rdd3.getResultCode()).isEqualTo("500");
-    assertThat(telemetry.rdd3.getProperties()).isEmpty();
+    assertThat(telemetry.rdd3.getProperties().get("_MS.ProcessedByMetricExtractors"))
+        .isEqualTo("True");
     assertThat(telemetry.rdd3.getSuccess()).isFalse();
     assertThat(telemetry.rddEnvelope3.getSampleRate()).isNull();
 
