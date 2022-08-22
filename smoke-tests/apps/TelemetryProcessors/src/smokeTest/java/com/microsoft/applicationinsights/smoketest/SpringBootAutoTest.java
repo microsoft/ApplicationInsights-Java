@@ -53,7 +53,8 @@ abstract class SpringBootAutoTest {
     assertThat(telemetry.rd.getProperties().get("httpPath"))
         .isEqualTo("*/TelemetryProcessors/test*");
     assertThat(telemetry.rd.getProperties()).hasSize(5);
-    assertThat(telemetry.rd.getProperties().get("_MS.ProcessedByMetricExtractors")).isEqualTo("True");
+    assertThat(telemetry.rd.getProperties().get("_MS.ProcessedByMetricExtractors"))
+        .isEqualTo("True");
     assertThat(telemetry.rd.getSuccess()).isTrue();
     // Log processor test
     List<MessageData> logs = testing.mockedIngestion.getMessageDataInRequest();
