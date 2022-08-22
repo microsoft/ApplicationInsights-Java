@@ -133,11 +133,18 @@ public class JfrProfiler implements ProfilerConfigurationHandler, Profiler {
         flightRecorderConnection = FlightRecorderDiagnosticCommandConnection.connect(mbeanServer);
       }
     } catch (Exception e) {
-      LOGGER.error("Failed to connect to mbean", e);
+      String message = "Unable to initialize the profiler." + (isOpenJ9Jvm()
+          ? " OpenJ9 JVM is not supported. Instead, please use an OpenJDK JVM." : "");
+      LOGGER.error(message, e);
       return false;
     }
 
     return true;
+  }
+
+  private static boolean isOpenJ9Jvm() {
+    String jvmName = System.getProperty("java.vm.name");
+    return jvmName.contains("OpenJ9");
   }
 
   /** Apply new configuration settings obtained from Service Profiler. */
