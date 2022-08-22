@@ -65,7 +65,7 @@ class JmsDisabledTest {
 
     assertThat(rdd.getName()).isEqualTo("GET /");
     assertThat(rdd.getData()).isEqualTo("https://www.bing.com");
-    assertThat(rdd.getProperties()).isEmpty();
+    assertThat(rdd.getProperties().get("_MS.ProcessedByMetricExtractors")).isEqualTo("True");
     assertThat(rdd.getSuccess()).isTrue();
 
     // sleep a bit and make sure no kafka "requests" or dependencies are reported

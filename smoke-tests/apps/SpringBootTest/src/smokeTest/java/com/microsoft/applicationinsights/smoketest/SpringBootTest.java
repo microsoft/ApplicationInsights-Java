@@ -140,7 +140,7 @@ abstract class SpringBootTest {
     assertThat(rdd1.getName()).isEqualTo("GET /");
     assertThat(rdd1.getData()).isEqualTo("https://www.bing.com");
     assertThat(rdd1.getTarget()).isEqualTo("www.bing.com");
-    assertThat(rdd1.getProperties()).isEmpty();
+    assertThat(rdd1.getProperties().get("_MS.ProcessedByMetricExtractors")).isEqualTo("True");
     assertThat(rdd1.getSuccess()).isTrue();
 
     SmokeTestExtension.assertParentChild(
