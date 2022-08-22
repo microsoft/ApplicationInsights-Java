@@ -24,6 +24,7 @@ package io.opentelemetry.instrumentation.api.instrumenter;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import javax.annotation.Nullable;
+import org.slf4j.LoggerFactory;
 
 public final class UserAgents {
 
@@ -31,16 +32,12 @@ public final class UserAgents {
   public static final String TARGET = "target";
   public static final String IS_PRE_AGGREGATED = "isPreAggregated";
 
-  @SuppressWarnings("SystemOut")
   public static boolean isUserAgentBot(Attributes endAttributes, Attributes startAttributes) {
     String aiUserAgent =
         getAttribute(AttributeKey.stringKey("ai.user.userAgent"), endAttributes, startAttributes);
     // TODO to be removed debug log
-    System.out.println("############## HttpServerMetrics::aiUserAgent: " + aiUserAgent);
-    if (aiUserAgent != null && aiUserAgent.indexOf("AlwaysOn") >= 0) {
-      return true;
-    }
-    return false;
+    LoggerFactory.getLogger(UserAgents.class).debug("############## aiUserAgent: {}", aiUserAgent);
+    return aiUserAgent != null && aiUserAgent.indexOf("AlwaysOn") >= 0;
   }
 
   @Nullable
