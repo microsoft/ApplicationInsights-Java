@@ -21,9 +21,9 @@
 
 package io.opentelemetry.instrumentation.api.instrumenter.rpc;
 
-import static io.opentelemetry.instrumentation.api.instrumenter.Utils.IS_PRE_AGGREGATED;
-import static io.opentelemetry.instrumentation.api.instrumenter.Utils.IS_SYNTHETIC;
-import static io.opentelemetry.instrumentation.api.instrumenter.Utils.isUserAgentBot;
+import static io.opentelemetry.instrumentation.api.instrumenter.UserAgents.IS_PRE_AGGREGATED;
+import static io.opentelemetry.instrumentation.api.instrumenter.UserAgents.IS_SYNTHETIC;
+import static io.opentelemetry.instrumentation.api.instrumenter.UserAgents.isUserAgentBot;
 import static io.opentelemetry.instrumentation.api.instrumenter.rpc.MetricsView.applyServerView;
 import static java.util.logging.Level.FINE;
 

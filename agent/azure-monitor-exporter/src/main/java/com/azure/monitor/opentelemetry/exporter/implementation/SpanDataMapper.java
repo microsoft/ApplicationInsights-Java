@@ -604,8 +604,7 @@ public final class SpanDataMapper {
     }
   }
 
-  private TelemetryItem exportRequest(
-      SpanData span, long itemCount, boolean isPreAggregated) {
+  private TelemetryItem exportRequest(SpanData span, long itemCount, boolean isPreAggregated) {
     RequestTelemetryBuilder telemetryBuilder = RequestTelemetryBuilder.create();
     telemetryInitializer.accept(telemetryBuilder, span.getResource());
 

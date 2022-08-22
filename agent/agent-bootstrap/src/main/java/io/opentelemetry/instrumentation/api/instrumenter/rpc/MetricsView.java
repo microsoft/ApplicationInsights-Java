@@ -21,8 +21,8 @@
 
 package io.opentelemetry.instrumentation.api.instrumenter.rpc;
 
-import static io.opentelemetry.instrumentation.api.instrumenter.Utils.IS_SYNTHETIC;
-import static io.opentelemetry.instrumentation.api.instrumenter.Utils.TARGET;
+import static io.opentelemetry.instrumentation.api.instrumenter.UserAgents.IS_SYNTHETIC;
+import static io.opentelemetry.instrumentation.api.instrumenter.UserAgents.TARGET;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;

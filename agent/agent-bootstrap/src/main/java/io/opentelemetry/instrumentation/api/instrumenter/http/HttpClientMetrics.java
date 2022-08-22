@@ -21,10 +21,10 @@
 
 package io.opentelemetry.instrumentation.api.instrumenter.http;
 
-import static io.opentelemetry.instrumentation.api.instrumenter.Utils.IS_PRE_AGGREGATED;
-import static io.opentelemetry.instrumentation.api.instrumenter.Utils.IS_SYNTHETIC;
-import static io.opentelemetry.instrumentation.api.instrumenter.Utils.TARGET;
-import static io.opentelemetry.instrumentation.api.instrumenter.Utils.isUserAgentBot;
+import static io.opentelemetry.instrumentation.api.instrumenter.UserAgents.IS_PRE_AGGREGATED;
+import static io.opentelemetry.instrumentation.api.instrumenter.UserAgents.IS_SYNTHETIC;
+import static io.opentelemetry.instrumentation.api.instrumenter.UserAgents.TARGET;
+import static io.opentelemetry.instrumentation.api.instrumenter.UserAgents.isUserAgentBot;
 import static io.opentelemetry.instrumentation.api.instrumenter.http.TemporaryMetricsView.applyClientDurationAndSizeView;
 import static java.util.logging.Level.FINE;
 

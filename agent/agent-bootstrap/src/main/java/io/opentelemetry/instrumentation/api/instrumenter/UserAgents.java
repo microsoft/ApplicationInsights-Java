@@ -25,7 +25,7 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import javax.annotation.Nullable;
 
-public final class Utils {
+public final class UserAgents {
 
   public static final String IS_SYNTHETIC = "isSynthetic";
   public static final String TARGET = "target";
@@ -54,5 +54,5 @@ public final class Utils {
     return null;
   }
 
-  private Utils() {}
+  private UserAgents() {}
 }

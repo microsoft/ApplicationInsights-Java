@@ -44,7 +44,9 @@ import io.opentelemetry.sdk.metrics.data.MetricDataType;
 import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import org.slf4j.Logger;
@@ -52,7 +54,7 @@ import org.slf4j.LoggerFactory;
 
 public class MetricDataMapper {
 
-  private static final List<String> OTEL_PRE_AGGREGATED_METRIC_NAMES = new ArrayList<>();
+  private static final Set<String> OTEL_PRE_AGGREGATED_METRIC_NAMES = new HashSet<>(4);
   private static final List<String> EXCLUDED_METRIC_NAMES = new ArrayList<>();
 
   private static final Logger logger = LoggerFactory.getLogger(MetricDataMapper.class);
