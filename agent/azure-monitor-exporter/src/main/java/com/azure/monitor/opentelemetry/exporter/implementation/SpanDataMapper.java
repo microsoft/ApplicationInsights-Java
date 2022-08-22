@@ -952,6 +952,9 @@ public final class SpanDataMapper {
               && !stringKey.startsWith("http.response.header.")) {
             return;
           }
+          if (stringKey.equals("isPreAggregated")) {
+            return;
+          }
           String val = convertToString(value, key.getType());
           if (value != null) {
             telemetryBuilder.addProperty(key.getKey(), val);
