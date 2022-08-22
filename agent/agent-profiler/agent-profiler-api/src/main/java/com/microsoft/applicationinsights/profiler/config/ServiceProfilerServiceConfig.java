@@ -50,6 +50,10 @@ public class ServiceProfilerServiceConfig {
   // cpu profiling
   private final String cpuTriggeredSettings;
 
+  // Either an inbuilt profile as defined in ProfileTypes, or a path to a custom JFC file to use for
+  // manual profiling
+  private final String manualTriggeredSettings;
+
   // Location to which jfr files will be temporarily held
   private final File tempDirectory;
 
@@ -62,6 +66,7 @@ public class ServiceProfilerServiceConfig {
       URL serviceProfilerFrontEndPoint,
       String memoryTriggeredSettings,
       String cpuTriggeredSettings,
+      String manualTriggeredSettings,
       File tempDirectory,
       boolean enableDiagnostics) {
     this.configPollPeriod = configPollPeriod;
@@ -70,6 +75,7 @@ public class ServiceProfilerServiceConfig {
     this.serviceProfilerFrontEndPoint = serviceProfilerFrontEndPoint;
     this.memoryTriggeredSettings = memoryTriggeredSettings;
     this.cpuTriggeredSettings = cpuTriggeredSettings;
+    this.manualTriggeredSettings = manualTriggeredSettings;
     this.tempDirectory = tempDirectory;
     this.enableDiagnostics = enableDiagnostics;
   }
@@ -100,6 +106,10 @@ public class ServiceProfilerServiceConfig {
 
   public String cpuTriggeredSettings() {
     return cpuTriggeredSettings;
+  }
+
+  public String getManualTriggeredSettings() {
+    return manualTriggeredSettings;
   }
 
   public File tempDirectory() {

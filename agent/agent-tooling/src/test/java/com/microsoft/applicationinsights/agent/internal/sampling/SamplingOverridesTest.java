@@ -31,6 +31,7 @@ import com.microsoft.applicationinsights.agent.internal.configuration.Configurat
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -42,33 +43,45 @@ class SamplingOverridesTest {
   void shouldSampleByDefault() {
     // given
     List<SamplingOverride> overrides = new ArrayList<>();
-    SamplingOverrides sampler = new SamplingOverrides(overrides);
+    SamplingOverrides samplingOverrides = new SamplingOverrides(overrides);
     Attributes attributes = Attributes.empty();
 
+    // when
+    Sampler sampler = samplingOverrides.getOverride(SpanKind.SERVER, attributes);
+
     // expect
-    assertThat(sampler.getOverride(SpanKind.SERVER, attributes)).isNull();
+    assertThat(sampler).isNull();
   }
 
   @Test
   void shouldFilterBySpanKind() {
     // given
-    List<SamplingOverride> overrides = singletonList(newOverride(Configuration.SpanKind.SERVER, 0));
-    SamplingOverrides sampler = new SamplingOverrides(overrides);
+    List<SamplingOverride> overrides =
+        singletonList(newOverride(Configuration.SpanKind.SERVER, 25));
+    SamplingOverrides samplingOverrides = new SamplingOverrides(overrides);
     Attributes attributes = Attributes.empty();
 
+    // when
+    Sampler sampler = samplingOverrides.getOverride(SpanKind.SERVER, attributes);
+
     // expect
-    assertThat(sampler.getOverride(SpanKind.SERVER, attributes)).isNotNull();
+    assertThat(sampler).isNotNull();
+    assertThat(sampler.getDescription()).isEqualTo("AzureMonitorSampler{25.000%}");
   }
 
   @Test
   void shouldNotFilterBySpanKind() {
     // given
-    List<SamplingOverride> overrides = singletonList(newOverride(Configuration.SpanKind.SERVER, 0));
-    SamplingOverrides sampler = new SamplingOverrides(overrides);
+    List<SamplingOverride> overrides =
+        singletonList(newOverride(Configuration.SpanKind.SERVER, 25));
+    SamplingOverrides samplingOverrides = new SamplingOverrides(overrides);
     Attributes attributes = Attributes.empty();
 
+    // when
+    Sampler sampler = samplingOverrides.getOverride(SpanKind.CLIENT, attributes);
+
     // expect
-    assertThat(sampler.getOverride(SpanKind.CLIENT, attributes)).isNull();
+    assertThat(sampler).isNull();
   }
 
   @Test
@@ -76,24 +89,32 @@ class SamplingOverridesTest {
     // given
     List<SamplingOverride> overrides =
         singletonList(
-            newOverride(Configuration.SpanKind.SERVER, 0, newStrictAttribute("one", "1")));
-    SamplingOverrides sampler = new SamplingOverrides(overrides);
+            newOverride(Configuration.SpanKind.SERVER, 25, newStrictAttribute("one", "1")));
+    SamplingOverrides samplingOverrides = new SamplingOverrides(overrides);
     Attributes attributes = Attributes.of(AttributeKey.stringKey("one"), "1");
 
+    // when
+    Sampler sampler = samplingOverrides.getOverride(SpanKind.SERVER, attributes);
+
     // expect
-    assertThat(sampler.getOverride(SpanKind.SERVER, attributes).getPercentage()).isEqualTo(0);
+    assertThat(sampler).isNotNull();
+    assertThat(sampler.getDescription()).isEqualTo("AzureMonitorSampler{25.000%}");
   }
 
   @Test
   void shouldFilterStrictMatchWithNullSpanKind() {
     // given
     List<SamplingOverride> overrides =
-        singletonList(newOverride(null, 0, newStrictAttribute("one", "1")));
-    SamplingOverrides sampler = new SamplingOverrides(overrides);
+        singletonList(newOverride(null, 25, newStrictAttribute("one", "1")));
+    SamplingOverrides samplingOverrides = new SamplingOverrides(overrides);
     Attributes attributes = Attributes.of(AttributeKey.stringKey("one"), "1");
 
+    // when
+    Sampler sampler = samplingOverrides.getOverride(SpanKind.SERVER, attributes);
+
     // expect
-    assertThat(sampler.getOverride(SpanKind.SERVER, attributes).getPercentage()).isEqualTo(0);
+    assertThat(sampler).isNotNull();
+    assertThat(sampler.getDescription()).isEqualTo("AzureMonitorSampler{25.000%}");
   }
 
   @Test
@@ -101,12 +122,15 @@ class SamplingOverridesTest {
     // given
     List<SamplingOverride> overrides =
         singletonList(
-            newOverride(Configuration.SpanKind.SERVER, 0, newStrictAttribute("one", "1")));
-    SamplingOverrides sampler = new SamplingOverrides(overrides);
+            newOverride(Configuration.SpanKind.SERVER, 25, newStrictAttribute("one", "1")));
+    SamplingOverrides samplingOverrides = new SamplingOverrides(overrides);
     Attributes attributes = Attributes.of(AttributeKey.stringKey("one"), "1");
 
+    // when
+    Sampler sampler = samplingOverrides.getOverride(SpanKind.CLIENT, attributes);
+
     // expect
-    assertThat(sampler.getOverride(SpanKind.CLIENT, attributes)).isNull();
+    assertThat(sampler).isNull();
   }
 
   @Test
@@ -114,12 +138,15 @@ class SamplingOverridesTest {
     // given
     List<SamplingOverride> overrides =
         singletonList(
-            newOverride(Configuration.SpanKind.SERVER, 0, newStrictAttribute("one", "1")));
-    SamplingOverrides sampler = new SamplingOverrides(overrides);
+            newOverride(Configuration.SpanKind.SERVER, 25, newStrictAttribute("one", "1")));
+    SamplingOverrides samplingOverrides = new SamplingOverrides(overrides);
     Attributes attributes = Attributes.of(AttributeKey.stringKey("one"), "2");
 
+    // when
+    Sampler sampler = samplingOverrides.getOverride(SpanKind.SERVER, attributes);
+
     // expect
-    assertThat(sampler.getOverride(SpanKind.SERVER, attributes)).isNull();
+    assertThat(sampler).isNull();
   }
 
   @Test
@@ -127,12 +154,15 @@ class SamplingOverridesTest {
     // given
     List<SamplingOverride> overrides =
         singletonList(
-            newOverride(Configuration.SpanKind.SERVER, 0, newStrictAttribute("one", "1")));
-    SamplingOverrides sampler = new SamplingOverrides(overrides);
+            newOverride(Configuration.SpanKind.SERVER, 25, newStrictAttribute("one", "1")));
+    SamplingOverrides samplingOverrides = new SamplingOverrides(overrides);
     Attributes attributes = Attributes.of(AttributeKey.stringKey("two"), "1");
 
+    // when
+    Sampler sampler = samplingOverrides.getOverride(SpanKind.SERVER, attributes);
+
     // expect
-    assertThat(sampler.getOverride(SpanKind.SERVER, attributes)).isNull();
+    assertThat(sampler).isNull();
   }
 
   @Test
@@ -140,12 +170,16 @@ class SamplingOverridesTest {
     // given
     List<SamplingOverride> overrides =
         singletonList(
-            newOverride(Configuration.SpanKind.SERVER, 0, newRegexpAttribute("one", "1.*")));
-    SamplingOverrides sampler = new SamplingOverrides(overrides);
+            newOverride(Configuration.SpanKind.SERVER, 25, newRegexpAttribute("one", "1.*")));
+    SamplingOverrides samplingOverrides = new SamplingOverrides(overrides);
     Attributes attributes = Attributes.of(AttributeKey.stringKey("one"), "11");
 
+    // when
+    Sampler sampler = samplingOverrides.getOverride(SpanKind.SERVER, attributes);
+
     // expect
-    assertThat(sampler.getOverride(SpanKind.SERVER, attributes).getPercentage()).isEqualTo(0);
+    assertThat(sampler).isNotNull();
+    assertThat(sampler.getDescription()).isEqualTo("AzureMonitorSampler{25.000%}");
   }
 
   @Test
@@ -153,12 +187,15 @@ class SamplingOverridesTest {
     // given
     List<SamplingOverride> overrides =
         singletonList(
-            newOverride(Configuration.SpanKind.SERVER, 0, newRegexpAttribute("one", "1.*")));
-    SamplingOverrides sampler = new SamplingOverrides(overrides);
+            newOverride(Configuration.SpanKind.SERVER, 25, newRegexpAttribute("one", "1.*")));
+    SamplingOverrides samplingOverrides = new SamplingOverrides(overrides);
     Attributes attributes = Attributes.of(AttributeKey.stringKey("one"), "22");
 
+    // when
+    Sampler sampler = samplingOverrides.getOverride(SpanKind.SERVER, attributes);
+
     // expect
-    assertThat(sampler.getOverride(SpanKind.SERVER, attributes)).isNull();
+    assertThat(sampler).isNull();
   }
 
   @Test
@@ -166,36 +203,46 @@ class SamplingOverridesTest {
     // given
     List<SamplingOverride> overrides =
         singletonList(
-            newOverride(Configuration.SpanKind.SERVER, 0, newRegexpAttribute("one", "1.*")));
-    SamplingOverrides sampler = new SamplingOverrides(overrides);
+            newOverride(Configuration.SpanKind.SERVER, 25, newRegexpAttribute("one", "1.*")));
+    SamplingOverrides samplingOverrides = new SamplingOverrides(overrides);
     Attributes attributes = Attributes.of(AttributeKey.stringKey("two"), "11");
 
+    // when
+    Sampler sampler = samplingOverrides.getOverride(SpanKind.SERVER, attributes);
+
     // expect
-    assertThat(sampler.getOverride(SpanKind.SERVER, attributes)).isNull();
+    assertThat(sampler).isNull();
   }
 
   @Test
   void shouldFilterKeyOnlyMatch() {
     // given
     List<SamplingOverride> overrides =
-        singletonList(newOverride(Configuration.SpanKind.SERVER, 0, newKeyOnlyAttribute("one")));
-    SamplingOverrides sampler = new SamplingOverrides(overrides);
+        singletonList(newOverride(Configuration.SpanKind.SERVER, 25, newKeyOnlyAttribute("one")));
+    SamplingOverrides samplingOverrides = new SamplingOverrides(overrides);
     Attributes attributes = Attributes.of(AttributeKey.stringKey("one"), "11");
 
+    // when
+    Sampler sampler = samplingOverrides.getOverride(SpanKind.SERVER, attributes);
+
     // expect
-    assertThat(sampler.getOverride(SpanKind.SERVER, attributes).getPercentage()).isEqualTo(0);
+    assertThat(sampler).isNotNull();
+    assertThat(sampler.getDescription()).isEqualTo("AzureMonitorSampler{25.000%}");
   }
 
   @Test
   void shouldNotFilterKeyOnlyMatch() {
     // given
     List<SamplingOverride> overrides =
-        singletonList(newOverride(Configuration.SpanKind.SERVER, 0, newKeyOnlyAttribute("one")));
-    SamplingOverrides sampler = new SamplingOverrides(overrides);
+        singletonList(newOverride(Configuration.SpanKind.SERVER, 25, newKeyOnlyAttribute("one")));
+    SamplingOverrides samplingOverrides = new SamplingOverrides(overrides);
     Attributes attributes = Attributes.of(AttributeKey.stringKey("two"), "22");
 
+    // when
+    Sampler sampler = samplingOverrides.getOverride(SpanKind.SERVER, attributes);
+
     // expect
-    assertThat(sampler.getOverride(SpanKind.SERVER, attributes)).isNull();
+    assertThat(sampler).isNull();
   }
 
   @Test
@@ -205,15 +252,19 @@ class SamplingOverridesTest {
         singletonList(
             newOverride(
                 Configuration.SpanKind.SERVER,
-                0,
+                25,
                 newStrictAttribute("one", "1"),
                 newRegexpAttribute("two", "2.*")));
-    SamplingOverrides sampler = new SamplingOverrides(overrides);
+    SamplingOverrides samplerOverride = new SamplingOverrides(overrides);
     Attributes attributes =
         Attributes.of(AttributeKey.stringKey("one"), "1", AttributeKey.stringKey("two"), "22");
 
+    // when
+    Sampler sampler = samplerOverride.getOverride(SpanKind.SERVER, attributes);
+
     // expect
-    assertThat(sampler.getOverride(SpanKind.SERVER, attributes).getPercentage()).isEqualTo(0);
+    assertThat(sampler).isNotNull();
+    assertThat(sampler.getDescription()).isEqualTo("AzureMonitorSampler{25.000%}");
   }
 
   @Test
@@ -223,15 +274,18 @@ class SamplingOverridesTest {
         singletonList(
             newOverride(
                 Configuration.SpanKind.SERVER,
-                0,
+                25,
                 newStrictAttribute("one", "1"),
                 newRegexpAttribute("two", "2.*")));
-    SamplingOverrides sampler = new SamplingOverrides(overrides);
+    SamplingOverrides samplingOverrides = new SamplingOverrides(overrides);
     Attributes attributes =
         Attributes.of(AttributeKey.stringKey("one"), "2", AttributeKey.stringKey("two"), "22");
 
+    // when
+    Sampler sampler = samplingOverrides.getOverride(SpanKind.SERVER, attributes);
+
     // expect
-    assertThat(sampler.getOverride(SpanKind.SERVER, attributes)).isNull();
+    assertThat(sampler).isNull();
   }
 
   @Test
@@ -239,14 +293,18 @@ class SamplingOverridesTest {
     // given
     List<SamplingOverride> overrides =
         Arrays.asList(
-            newOverride(Configuration.SpanKind.SERVER, 0, newStrictAttribute("one", "1")),
+            newOverride(Configuration.SpanKind.SERVER, 25, newStrictAttribute("one", "1")),
             newOverride(Configuration.SpanKind.SERVER, 0, newRegexpAttribute("two", "2.*")));
-    SamplingOverrides sampler = new SamplingOverrides(overrides);
+    SamplingOverrides samplingOverrides = new SamplingOverrides(overrides);
     Attributes attributes =
         Attributes.of(AttributeKey.stringKey("one"), "1", AttributeKey.stringKey("two"), "22");
 
+    // when
+    Sampler sampler = samplingOverrides.getOverride(SpanKind.SERVER, attributes);
+
     // expect
-    assertThat(sampler.getOverride(SpanKind.SERVER, attributes).getPercentage()).isEqualTo(0);
+    assertThat(sampler).isNotNull();
+    assertThat(sampler.getDescription()).isEqualTo("AzureMonitorSampler{25.000%}");
   }
 
   @Test
@@ -254,14 +312,18 @@ class SamplingOverridesTest {
     // given
     List<SamplingOverride> overrides =
         Arrays.asList(
-            newOverride(Configuration.SpanKind.SERVER, 0, newStrictAttribute("one", "1")),
-            newOverride(Configuration.SpanKind.SERVER, 0, newRegexpAttribute("two", "2.*")));
-    SamplingOverrides sampler = new SamplingOverrides(overrides);
+            newOverride(Configuration.SpanKind.SERVER, 50, newStrictAttribute("one", "1")),
+            newOverride(Configuration.SpanKind.SERVER, 25, newRegexpAttribute("two", "2.*")));
+    SamplingOverrides samplingOverrides = new SamplingOverrides(overrides);
     Attributes attributes =
         Attributes.of(AttributeKey.stringKey("one"), "2", AttributeKey.stringKey("two"), "22");
 
+    // when
+    Sampler sampler = samplingOverrides.getOverride(SpanKind.SERVER, attributes);
+
     // expect
-    assertThat(sampler.getOverride(SpanKind.SERVER, attributes).getPercentage()).isEqualTo(0);
+    assertThat(sampler).isNotNull();
+    assertThat(sampler.getDescription()).isEqualTo("AzureMonitorSampler{25.000%}");
   }
 
   @Test
@@ -269,14 +331,17 @@ class SamplingOverridesTest {
     // given
     List<SamplingOverride> overrides =
         Arrays.asList(
-            newOverride(Configuration.SpanKind.SERVER, 0, newStrictAttribute("one", "1")),
-            newOverride(Configuration.SpanKind.SERVER, 0, newRegexpAttribute("two", "2.*")));
-    SamplingOverrides sampler = new SamplingOverrides(overrides);
+            newOverride(Configuration.SpanKind.SERVER, 50, newStrictAttribute("one", "1")),
+            newOverride(Configuration.SpanKind.SERVER, 25, newRegexpAttribute("two", "2.*")));
+    SamplingOverrides samplingOverrides = new SamplingOverrides(overrides);
     Attributes attributes =
         Attributes.of(AttributeKey.stringKey("one"), "2", AttributeKey.stringKey("two"), "33");
 
+    // when
+    Sampler sampler = samplingOverrides.getOverride(SpanKind.SERVER, attributes);
+
     // expect
-    assertThat(sampler.getOverride(SpanKind.SERVER, attributes)).isNull();
+    assertThat(sampler).isNull();
   }
 
   private static SamplingOverride newOverride(

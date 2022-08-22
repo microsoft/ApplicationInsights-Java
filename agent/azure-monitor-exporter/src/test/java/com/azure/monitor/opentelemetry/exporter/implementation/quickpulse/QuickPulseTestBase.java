@@ -21,7 +21,6 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation.quickpulse;
 
-import static com.azure.monitor.opentelemetry.exporter.implementation.utils.TelemetryUtil.getExceptions;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 import com.azure.core.credential.TokenCredential;
@@ -40,7 +39,6 @@ import com.azure.core.test.TestMode;
 import com.azure.core.test.utils.TestResourceNamer;
 import com.azure.core.util.FluxUtil;
 import com.azure.identity.ClientSecretCredentialBuilder;
-import com.azure.monitor.opentelemetry.exporter.implementation.builders.ExceptionTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.RemoteDependencyTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.RequestTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
@@ -136,12 +134,6 @@ public class QuickPulseTestBase extends TestBase {
     telemetryBuilder.setData(command);
     telemetryBuilder.setDuration(FormattedDuration.fromNanos(MILLISECONDS.toNanos(durationMillis)));
     telemetryBuilder.setSuccess(success);
-    return telemetryBuilder.build();
-  }
-
-  public static TelemetryItem createExceptionTelemetry(Exception exception) {
-    ExceptionTelemetryBuilder telemetryBuilder = ExceptionTelemetryBuilder.create();
-    telemetryBuilder.setExceptions(getExceptions(exception));
     return telemetryBuilder.build();
   }
 

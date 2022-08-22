@@ -43,7 +43,7 @@ class AggregatingLogger {
   private final Logger logger;
   private final String grouping;
 
-  // Period for scheduled executor in secs
+  // Period for scheduled executor
   private final int intervalSeconds;
 
   private final boolean trackingOperations;
@@ -89,19 +89,17 @@ class AggregatingLogger {
     if (!firstFailure.getAndSet(true)) {
       // log the first time we see an exception as soon as it occurs, along with full stack trace
       logger.warn(
-          grouping
-              + ": "
-              + warningMessage
-              + " (future warnings will be aggregated and logged once every "
-              + intervalSeconds / 60
-              + " minutes)",
+          "{}: {} (future warnings will be aggregated and logged once every {} minutes)",
+          grouping,
+          warningMessage,
+          intervalSeconds / 60,
           exception);
       scheduledExecutor.scheduleWithFixedDelay(
           new ExceptionStatsLogger(), intervalSeconds, intervalSeconds, TimeUnit.SECONDS);
       return;
     }
 
-    logger.debug(grouping + " " + warningMessage, exception);
+    logger.debug("{} {}", grouping, warningMessage, exception);
 
     synchronized (lock) {
       if (failureMessages.size() < 10) {

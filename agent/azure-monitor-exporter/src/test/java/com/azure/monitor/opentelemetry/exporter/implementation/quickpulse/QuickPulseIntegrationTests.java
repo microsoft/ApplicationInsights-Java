@@ -21,11 +21,14 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation.quickpulse;
 
+import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.azure.core.http.HttpRequest;
 import com.azure.core.http.policy.HttpPipelinePolicy;
+import com.azure.monitor.opentelemetry.exporter.implementation.builders.ExceptionDetailBuilder;
+import com.azure.monitor.opentelemetry.exporter.implementation.builders.ExceptionTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import java.util.Date;
@@ -148,7 +151,12 @@ public class QuickPulseIntegrationTests extends QuickPulseTestBase {
     dependencyTelemetry.setInstrumentationKey(instrumentationKey);
     collector.add(dependencyTelemetry);
     // Exception Telemetry
-    TelemetryItem exceptionTelemetry = createExceptionTelemetry(new Exception("test"));
+    ExceptionTelemetryBuilder builder = ExceptionTelemetryBuilder.create();
+    ExceptionDetailBuilder detailBuilder = new ExceptionDetailBuilder();
+    detailBuilder.setMessage("test");
+    detailBuilder.setTypeName(Exception.class.getName());
+    builder.setExceptions(singletonList(detailBuilder));
+    TelemetryItem exceptionTelemetry = builder.build();
     exceptionTelemetry.setInstrumentationKey(instrumentationKey);
     collector.add(exceptionTelemetry);
 

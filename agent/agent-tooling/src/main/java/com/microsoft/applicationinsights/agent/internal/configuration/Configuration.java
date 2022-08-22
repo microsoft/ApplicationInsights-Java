@@ -156,6 +156,28 @@ public class Configuration {
 
   public static class SamplingPreview {
 
+    // this is not the default for now at least, because
+    //
+    // parent not-sampled -> child not-sampled (always, to avoid broken traces)
+    // parent sampled -> child will still sample at its desired rate
+    //                   note: this is just sample rate of child, not sample rate of parent times
+    //                         sample rate of child, as both are using the same trace-id hash
+    //
+    // ??? if child sample rate is higher than the parent sample rate
+    //     parent sampled --> child sampled
+    //     parent not-sampled --> child not-sampled
+    //     which means that child has same effective sample rate as parent, and so its item count
+    //           will be wrong
+    //
+    // AND SO: if want to use parent-based sampler, then need to propagate the sample rate,
+    //         otherwise can end up with incorrect math
+    //
+    // Another (lesser) reason is because .NET SDK always propagates trace flags "00" (not
+    // sampled)
+    //
+    // IMPORTANT if changing this default, we need to keep it at least on Azure Functions
+    public boolean parentBased;
+
     public List<SamplingOverride> overrides = new ArrayList<>();
   }
 
@@ -261,10 +283,8 @@ public class Configuration {
     // world,
     // so safer to only allow single interval for now
     public int metricIntervalSeconds = 60;
-    // ignoreRemoteParentNotSampled is sometimes needed because .NET SDK always propagates trace
-    // flags "00" (not sampled)
-    // in particular, it is always needed in Azure Functions worker
-    public boolean ignoreRemoteParentNotSampled = DiagnosticsHelper.rpIntegrationChar() == 'f';
+    // this is just here to detect if using this old setting in order to give a helpful message
+    @Deprecated public Boolean ignoreRemoteParentNotSampled;
     public boolean captureControllerSpans;
     // this is just here to detect if using this old setting in order to give a helpful message
     @Deprecated public boolean httpMethodInOperationName;
@@ -1307,6 +1327,7 @@ public class Configuration {
     public boolean enabled = false;
     public String memoryTriggeredSettings = "profile-without-env-data";
     public String cpuTriggeredSettings = "profile-without-env-data";
+    public String manualTriggeredSettings = "profile-without-env-data";
     @Nullable public String serviceProfilerFrontEndPoint = null;
     public boolean enableDiagnostics = false;
     public boolean enableRequestTriggering = false;

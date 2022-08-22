@@ -63,7 +63,13 @@ public class OperationLogger {
   }
 
   // failureMessage should have low cardinality
-  public void recordFailure(String failureMessage, @Nullable Throwable exception) {
+  public void recordFailure(String failureMessage) {
+    if (aggregatingLogger != null) {
+      aggregatingLogger.recordWarning(failureMessage, null);
+    }
+  }
+
+  public void recordFailure(String failureMessage, Throwable exception) {
     if (aggregatingLogger != null) {
       aggregatingLogger.recordWarning(failureMessage, exception);
     }

@@ -23,10 +23,10 @@ package com.microsoft.applicationinsights.agent.internal.init;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.TelemetryUtil;
+import com.azure.monitor.opentelemetry.exporter.implementation.AiSemanticAttributes;
+import com.microsoft.applicationinsights.agent.internal.classicsdk.BytecodeUtilImpl;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.configuration.RpConfiguration;
-import com.microsoft.applicationinsights.agent.internal.legacysdk.BytecodeUtilImpl;
 import com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampler;
 import com.microsoft.applicationinsights.agent.internal.sampling.Samplers;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
@@ -144,7 +144,7 @@ class RpConfigurationPollingTest {
 
   private static double getCurrentSamplingPercentage() {
     SpanContext spanContext =
-        SpanContext.create(
+        SpanContext.createFromRemoteParent(
             "12341234123412341234123412341234",
             "1234123412341234",
             TraceFlags.getSampled(),
@@ -154,12 +154,14 @@ class RpConfigurationPollingTest {
         DelegatingSampler.getInstance()
             .shouldSample(
                 parentContext,
-                "12341234123412341234123412341234",
+                // traceId=27272727272727272727272727272727 is known to produce a score of 0.66 (out
+                // of 100) so will be sampled as long as samplingPercentage > 1%
+                "27272727272727272727272727272727",
                 "my span name",
                 SpanKind.SERVER,
                 Attributes.empty(),
                 Collections.emptyList());
-    TraceState traceState = samplingResult.getUpdatedTraceState(TraceState.getDefault());
-    return Double.parseDouble(traceState.get(TelemetryUtil.SAMPLING_PERCENTAGE_TRACE_STATE));
+    Long itemCount = samplingResult.getAttributes().get(AiSemanticAttributes.ITEM_COUNT);
+    return 100.0 / itemCount;
   }
 }

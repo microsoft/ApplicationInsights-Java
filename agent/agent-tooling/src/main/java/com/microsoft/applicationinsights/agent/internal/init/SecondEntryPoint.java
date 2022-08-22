@@ -23,7 +23,8 @@ package com.microsoft.applicationinsights.agent.internal.init;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.AiOperationNameSpanProcessor;
+import com.azure.monitor.opentelemetry.exporter.AzureMonitorLogProcessor;
+import com.azure.monitor.opentelemetry.exporter.AzureMonitorSpanProcessor;
 import com.azure.monitor.opentelemetry.exporter.implementation.LogDataMapper;
 import com.azure.monitor.opentelemetry.exporter.implementation.MetricDataMapper;
 import com.azure.monitor.opentelemetry.exporter.implementation.SpanDataMapper;
@@ -36,6 +37,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.utils.TempDirs;
 import com.google.auto.service.AutoService;
 import com.microsoft.applicationinsights.agent.bootstrap.AiAppId;
 import com.microsoft.applicationinsights.agent.bootstrap.AzureFunctions;
+import com.microsoft.applicationinsights.agent.internal.classicsdk.BytecodeUtilImpl;
 import com.microsoft.applicationinsights.agent.internal.common.FriendlyException;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.ProcessorConfig;
@@ -46,13 +48,12 @@ import com.microsoft.applicationinsights.agent.internal.exporter.AgentSpanExport
 import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
 import com.microsoft.applicationinsights.agent.internal.legacyheaders.AiLegacyHeaderSpanProcessor;
 import com.microsoft.applicationinsights.agent.internal.legacyheaders.DelegatingPropagator;
-import com.microsoft.applicationinsights.agent.internal.legacysdk.BytecodeUtilImpl;
 import com.microsoft.applicationinsights.agent.internal.processors.ExporterWithLogProcessor;
 import com.microsoft.applicationinsights.agent.internal.processors.ExporterWithSpanProcessor;
 import com.microsoft.applicationinsights.agent.internal.processors.LogExporterWithAttributeProcessor;
 import com.microsoft.applicationinsights.agent.internal.processors.MySpanData;
 import com.microsoft.applicationinsights.agent.internal.processors.SpanExporterWithAttributeProcessor;
-import com.microsoft.applicationinsights.agent.internal.profiler.triggers.AlertTriggerSpanExporter;
+import com.microsoft.applicationinsights.agent.internal.profiler.triggers.AlertTriggerSpanProcessor;
 import com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampler;
 import com.microsoft.applicationinsights.agent.internal.sampling.Samplers;
 import com.microsoft.applicationinsights.agent.internal.statsbeat.StatsbeatModule;
@@ -295,35 +296,30 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
       // and the default for DelegatingSampler is to not sample anything)
     }
 
-    // operation name span processor is only applied on span start, so doesn't need to be chained
-    // with the batch span processor
-    tracerProvider.addSpanProcessor(new AiOperationNameSpanProcessor());
-    // inherited attributes span processor is only applied on span start, so doesn't need to be
-    // chained with the batch span processor
+    tracerProvider.addSpanProcessor(new AzureMonitorSpanProcessor());
     if (!configuration.preview.inheritedAttributes.isEmpty()) {
       tracerProvider.addSpanProcessor(
           new InheritedAttributesSpanProcessor(configuration.preview.inheritedAttributes));
     }
-    // legacy span processor is only applied on span start, so doesn't need to be chained with the
-    // batch span processor
-    // it is used to pass legacy attributes from the context (extracted by the AiLegacyPropagator)
-    // to the span attributes (since there is no way to update attributes on span directly from
-    // propagator)
+    // legacy span processor is used to pass legacy attributes from the context (extracted by the
+    // AiLegacyPropagator) to the span attributes (since there is no way to update attributes on
+    // span directly from propagator)
     if (configuration.preview.legacyRequestIdPropagation.enabled) {
       tracerProvider.addSpanProcessor(new AiLegacyHeaderSpanProcessor());
     }
-    // instrumentation key overrides span processor is only applied on span start, so doesn't need
-    // to be chained with the batch span processor
     if (!configuration.preview.instrumentationKeyOverrides.isEmpty()) {
       tracerProvider.addSpanProcessor(
           new InheritedInstrumentationKeySpanProcessor(
               configuration.preview.instrumentationKeyOverrides));
     }
-    // role name overrides span processor is only applied on span start, so doesn't need
-    // to be chained with the batch span processor
     if (!configuration.preview.roleNameOverrides.isEmpty()) {
       tracerProvider.addSpanProcessor(
           new InheritedRoleNameSpanProcessor(configuration.preview.roleNameOverrides));
+    }
+
+    if (configuration.preview.profiler.enabled
+        && configuration.preview.profiler.enableRequestTriggering) {
+      tracerProvider.addSpanProcessor(new AlertTriggerSpanProcessor());
     }
 
     String tracesExporter = config.getString("otel.traces.exporter");
@@ -407,11 +403,6 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
       spanExporter = new BackCompatHttpUrlProcessor(spanExporter);
     }
 
-    if (configuration.preview.profiler.enabled
-        && configuration.preview.profiler.enableRequestTriggering) {
-      spanExporter = new AlertTriggerSpanExporter(spanExporter);
-    }
-
     return spanExporter;
   }
 
@@ -439,12 +430,10 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
     batchLogProcessor =
         BatchLogProcessor.builder(logExporter).setScheduleDelay(getBatchProcessorDelay()).build();
 
-    // inherited attributes log processor also handles operation name, ikey and role name attributes
-    // and these all need access to Span.current(), so must be run before passing off to the
-    // BatchLogProcessor
     return builder.addLogProcessor(
-        new InheritedAttributesLogProcessor(
-            configuration.preview.inheritedAttributes, batchLogProcessor));
+        new AzureMonitorLogProcessor(
+            new InheritedAttributesLogProcessor(
+                configuration.preview.inheritedAttributes, batchLogProcessor)));
   }
 
   private static LogExporter createLogExporter(

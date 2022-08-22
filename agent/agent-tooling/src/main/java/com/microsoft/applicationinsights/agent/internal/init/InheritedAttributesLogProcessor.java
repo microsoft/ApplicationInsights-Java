@@ -21,7 +21,6 @@
 
 package com.microsoft.applicationinsights.agent.internal.init;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.AiOperationNameSpanProcessor;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.processors.MyLogData;
 import io.opentelemetry.api.common.AttributeKey;
@@ -35,9 +34,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class InheritedAttributesLogProcessor implements LogProcessor {
-
-  private static final AttributeKey<String> AI_OPERATION_NAME_KEY =
-      AttributeKey.stringKey("applicationinsights.internal.operation_name");
 
   private static final AttributeKey<String> INSTRUMENTATION_KEY_KEY =
       AttributeKey.stringKey("ai.preview.instrumentation_key");
@@ -60,7 +56,6 @@ public class InheritedAttributesLogProcessor implements LogProcessor {
     for (Configuration.InheritedAttribute inheritedAttribute : inheritedAttributes) {
       list.add(inheritedAttribute.getAttributeKey());
     }
-    list.add(AI_OPERATION_NAME_KEY);
     list.add(INSTRUMENTATION_KEY_KEY);
     list.add(ROLE_NAME_KEY);
     return list;
@@ -78,12 +73,7 @@ public class InheritedAttributesLogProcessor implements LogProcessor {
     ReadableSpan readableSpan = (ReadableSpan) currentSpan;
     AttributesBuilder builder = log.getAttributes().toBuilder();
     for (AttributeKey<?> inheritedAttributeKey : inheritedAttributes) {
-      Object value;
-      if (inheritedAttributeKey == AI_OPERATION_NAME_KEY) {
-        value = AiOperationNameSpanProcessor.getOperationName(readableSpan);
-      } else {
-        value = readableSpan.getAttribute(inheritedAttributeKey);
-      }
+      Object value = readableSpan.getAttribute(inheritedAttributeKey);
       if (value != null) {
         if (builder == null) {
           builder = log.getAttributes().toBuilder();

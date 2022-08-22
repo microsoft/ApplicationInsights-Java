@@ -98,6 +98,7 @@ class ProfilingInitializer {
         serviceProfilerFrontEndPoint,
         configuration.memoryTriggeredSettings,
         configuration.cpuTriggeredSettings,
+        configuration.manualTriggeredSettings,
         TempDirs.getSubDir(tempDir, "profiles"),
         configuration.enableDiagnostics);
   }

@@ -48,9 +48,9 @@ public final class StatsbeatTestUtils {
     INSTRUMENTATION_MAP_DECODING.put(12, "io.opentelemetry.grpc-1.6");
     INSTRUMENTATION_MAP_DECODING.put(13, "io.opentelemetry.http-url-connection");
     INSTRUMENTATION_MAP_DECODING.put(14, "io.opentelemetry.servlet-5.0");
-    INSTRUMENTATION_MAP_DECODING.put(15, "io.opentelemetry.java-util-logging-spans");
+    // index 15 retired in 3.3.0 GA (was java-util-logging)
     INSTRUMENTATION_MAP_DECODING.put(16, "io.opentelemetry.jaxrs-1.0");
-    INSTRUMENTATION_MAP_DECODING.put(17, "io.opentelemetry.jaxrs-2.0-common");
+    // index 17 retired in 3.3.0 GA (was jaxrs-2.0-common)
     INSTRUMENTATION_MAP_DECODING.put(18, "io.opentelemetry.async-http-client-1.9");
     INSTRUMENTATION_MAP_DECODING.put(19, "io.opentelemetry.async-http-client-2.0");
     INSTRUMENTATION_MAP_DECODING.put(20, "io.opentelemetry.google-http-client-1.19");
@@ -66,11 +66,11 @@ public final class StatsbeatTestUtils {
     INSTRUMENTATION_MAP_DECODING.put(30, "io.opentelemetry.lettuce-5.0");
     INSTRUMENTATION_MAP_DECODING.put(31, "io.opentelemetry.lettuce-5.1");
     INSTRUMENTATION_MAP_DECODING.put(32, "io.opentelemetry.spring-rabbit-1.0");
-    INSTRUMENTATION_MAP_DECODING.put(33, "io.opentelemetry.jaxrs-client-2.0");
-    INSTRUMENTATION_MAP_DECODING.put(34, "io.opentelemetry.log4j-spans-1.2");
-    INSTRUMENTATION_MAP_DECODING.put(35, "io.opentelemetry.log4j-spans-2.0");
-    INSTRUMENTATION_MAP_DECODING.put(36, "io.opentelemetry.jaxrs-client-2.0-resteasy-3.0");
-    INSTRUMENTATION_MAP_DECODING.put(37, "io.opentelemetry.logback-spans-1.0");
+    // index 33 retired in 3.3.0 GA (was jaxrs-2.0-client)
+    // index 34 retired in 3.3.0 GA (was log4j-1.2)
+    // index 35 retired in 3.3.0 GA (was log4j-2.0)
+    // index 36 retired in 3.3.0 GA (was jaxrs-client-2.0-resteasy-3.0)
+    // index 37 retired in 3.3.0 GA (was logback-1.0)
     INSTRUMENTATION_MAP_DECODING.put(38, "io.opentelemetry.micrometer-1.0");
     INSTRUMENTATION_MAP_DECODING.put(
         39, "io.opentelemetry.mongo-3.1"); // mongo 4.0 is covered in 3.1
@@ -87,8 +87,27 @@ public final class StatsbeatTestUtils {
     INSTRUMENTATION_MAP_DECODING.put(50, "io.opentelemetry.reactor-netty-1.0");
     INSTRUMENTATION_MAP_DECODING.put(51, "io.opentelemetry.servlet-2.2");
     INSTRUMENTATION_MAP_DECODING.put(52, "io.opentelemetry.servlet-3.0");
-    INSTRUMENTATION_MAP_DECODING.put(53, "io.opentelemetry.servlet-common");
+    // index 53 is open (was servlet-common but that instrumentation doesn't emit telemetry)
     INSTRUMENTATION_MAP_DECODING.put(54, "io.opentelemetry.spring-scheduling-3.1");
+    INSTRUMENTATION_MAP_DECODING.put(55, "io.opentelemetry.play-mvc-2.4");
+    INSTRUMENTATION_MAP_DECODING.put(56, "io.opentelemetry.play-mvc-2.6");
+    INSTRUMENTATION_MAP_DECODING.put(57, "io.opentelemetry.vertx-http-client-3.0");
+    INSTRUMENTATION_MAP_DECODING.put(58, "io.opentelemetry.vertx-http-client-4.0");
+    INSTRUMENTATION_MAP_DECODING.put(59, "io.opentelemetry.spring-jms-2.0");
+    INSTRUMENTATION_MAP_DECODING.put(60, "io.opentelemetry.tomcat-10.0");
+    INSTRUMENTATION_MAP_DECODING.put(61, "io.opentelemetry.jetty-11.0");
+    INSTRUMENTATION_MAP_DECODING.put(62, "io.opentelemetry.liberty");
+    INSTRUMENTATION_MAP_DECODING.put(63, "io.opentelemetry.liberty-dispatcher");
+    INSTRUMENTATION_MAP_DECODING.put(
+        64, "io.opentelemetry.methods"); // used by "custom instrumentation"
+    INSTRUMENTATION_MAP_DECODING.put(65, "io.opentelemetry.okhttp-2.2");
+    INSTRUMENTATION_MAP_DECODING.put(
+        66, "io.opentelemetry.opentelemetry-instrumentation-annotations-1.16");
+    INSTRUMENTATION_MAP_DECODING.put(67, "io.opentelemetry.undertow-1.4");
+    INSTRUMENTATION_MAP_DECODING.put(68, "io.opentelemetry.play-ws-1.0");
+    INSTRUMENTATION_MAP_DECODING.put(69, "io.opentelemetry.play-ws-2.0");
+    INSTRUMENTATION_MAP_DECODING.put(70, "io.opentelemetry.play-ws-2.1");
+    INSTRUMENTATION_MAP_DECODING.put(71, "io.opentelemetry.vertx-kafka-client-3.5");
 
     FEATURE_MAP_DECODING = new HashMap<>();
     FEATURE_MAP_DECODING.put(0, Feature.JAVA_VENDOR_ORACLE);
@@ -117,21 +136,39 @@ public final class StatsbeatTestUtils {
     FEATURE_MAP_DECODING.put(23, Feature.AKKA_DISABLED);
   }
 
-  static Set<String> decodeInstrumentations(long number) {
-    return decode(number, INSTRUMENTATION_MAP_DECODING);
+  static Set<String> decodeInstrumentations(long[] longArray) {
+    Set<String> result = new HashSet<>();
+    if (longArray.length > 0) {
+      result.addAll(decode(false, longArray[0], INSTRUMENTATION_MAP_DECODING));
+      if (longArray.length == 2) {
+        result.addAll(decode(true, longArray[1], INSTRUMENTATION_MAP_DECODING));
+      }
+    }
+    return result;
   }
 
   static Set<Feature> decodeFeature(long num) {
-    return decode(num, FEATURE_MAP_DECODING);
+    return decode(false, num, FEATURE_MAP_DECODING);
   }
 
-  private static <E> Set<E> decode(long num, Map<Integer, E> decodedMap) {
+  private static <E> Set<E> decode(
+      boolean greaterThan64Bits, long num, Map<Integer, E> decodedMap) {
     Set<E> result = new HashSet<>();
     for (Map.Entry<Integer, E> entry : decodedMap.entrySet()) {
-      double value = entry.getKey();
-      long powerVal = (long) Math.pow(2, value);
+      int value = entry.getKey();
+      long powerVal;
+      if (greaterThan64Bits && value > 63) {
+        powerVal = (long) Math.pow(2, value - 64);
+      } else {
+        powerVal = (long) Math.pow(2, value);
+      }
       if ((powerVal & num) == powerVal) {
-        result.add(entry.getValue());
+        E target = decodedMap.get(value + 64);
+        if (greaterThan64Bits && target != null) {
+          result.add(target);
+        } else {
+          result.add(entry.getValue());
+        }
       }
     }
     return result;

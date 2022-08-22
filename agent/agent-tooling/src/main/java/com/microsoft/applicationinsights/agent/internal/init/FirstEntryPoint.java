@@ -117,16 +117,20 @@ public class FirstEntryPoint implements LoggingCustomizer {
         "Application Insights Java Agent {} started successfully (PID {})",
         agentVersion,
         new PidFinder().getValue());
-    startupLogger.info(
-        "Java version: {}, vendor: {}, home: {}",
-        System.getProperty("java.version"),
-        System.getProperty("java.vendor"),
-        System.getProperty("java.home"));
+
+    String javaVersion = System.getProperty("java.version");
+    String javaVendor = System.getProperty("java.vendor");
+    String javaHome = System.getProperty("java.home");
+    startupLogger.info("Java version: {}, vendor: {}, home: {}", javaVersion, javaVendor, javaHome);
 
     MDC.put(DiagnosticsHelper.MDC_PROP_OPERATION, "Startup");
     try (MDC.MDCCloseable ignored = INITIALIZATION_SUCCESS.makeActive()) {
       LoggerFactory.getLogger(DiagnosticsHelper.DIAGNOSTICS_LOGGER_NAME)
-          .info("Application Insights Java Agent {} started successfully", agentVersion);
+          .info(
+              "Application Insights Java Agent {} started successfully; Java version: {}, vendor: {}",
+              agentVersion,
+              javaVersion,
+              javaVendor);
     } finally {
       MDC.remove(DiagnosticsHelper.MDC_PROP_OPERATION);
     }

@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights.agent.internal.telemetry;
 
 import com.azure.core.http.HttpPipeline;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.AbstractTelemetryBuilder;
+import com.azure.monitor.opentelemetry.exporter.implementation.builders.AvailabilityTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.EventTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.ExceptionTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.MessageTelemetryBuilder;
@@ -370,6 +371,10 @@ public class TelemetryClient {
 
   public RequestTelemetryBuilder newRequestTelemetryBuilder() {
     return newTelemetryBuilder(RequestTelemetryBuilder::create);
+  }
+
+  public AvailabilityTelemetryBuilder newAvailabilityTelemetryBuilder() {
+    return newTelemetryBuilder(AvailabilityTelemetryBuilder::create);
   }
 
   private <T extends AbstractTelemetryBuilder> T newTelemetryBuilder(Supplier<T> creator) {
