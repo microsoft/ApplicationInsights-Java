@@ -183,7 +183,7 @@ abstract class CoreAndFilterTests {
     testing.mockedIngestion.waitForItems("RequestData", 5);
 
     int totalItems = testing.mockedIngestion.getItemCount();
-    assertThat(totalItems).isEqualTo(6);
+    assertThat(totalItems).isEqualTo(5);
 
     // TODO get HttpRequest data envelope and verify value
     List<RequestData> requests = testing.mockedIngestion.getTelemetryDataByType("RequestData");
