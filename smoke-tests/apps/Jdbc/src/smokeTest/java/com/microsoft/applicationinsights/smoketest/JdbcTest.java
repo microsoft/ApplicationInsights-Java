@@ -236,7 +236,8 @@ abstract class JdbcTest {
   void postgresStatement() throws Exception {
     Telemetry telemetry = testing.getTelemetry(1);
 
-    assertThat(telemetry.rd.getProperties()).isEmpty();
+    assertThat(telemetry.rd.getProperties().get("_MS.ProcessedByMetricExtractors"))
+        .isEqualTo("True");
     assertThat(telemetry.rd.getSuccess()).isTrue();
 
     assertThat(telemetry.rdd1.getName()).isEqualTo("SELECT postgres.abc");

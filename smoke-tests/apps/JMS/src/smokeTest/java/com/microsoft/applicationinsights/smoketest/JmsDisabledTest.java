@@ -50,7 +50,7 @@ class JmsDisabledTest {
 
     assertThat(rd.getName()).isEqualTo("GET /sendMessage");
     assertThat(rd.getResponseCode()).isEqualTo("200");
-    assertThat(rd.getProperties()).isEmpty();
+    assertThat(rd.getProperties().get("_MS.ProcessedByMetricExtractors")).isEqualTo("True");
     assertThat(rd.getSuccess()).isTrue();
 
     // verify the downstream http dependency that is no longer part of the same trace

@@ -111,7 +111,7 @@ class SpringBootControllerSpansEnabledTest {
 
     assertThat(rd.getName()).isEqualTo("GET /SpringBootTest/throwsException");
     assertThat(rd.getResponseCode()).isEqualTo("500");
-    assertThat(rd.getProperties()).isEmpty();
+    assertThat(rd.getProperties().get("_MS.ProcessedByMetricExtractors")).isEqualTo("True");
     assertThat(rd.getSuccess()).isFalse();
 
     assertThat(rdd1.getName()).isEqualTo("TestController.resultCodeTest");
