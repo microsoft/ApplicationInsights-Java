@@ -68,7 +68,7 @@ abstract class NonDaemonThreadsTest {
         (RemoteDependencyData) ((Data<?>) rddEnvelope.getData()).getBaseData();
     MessageData md = (MessageData) ((Data<?>) mdEnvelope.getData()).getBaseData();
 
-    assertThat(rd.getProperties()).isEmpty();
+    assertThat(rd.getProperties().get("_MS.ProcessedByMetricExtractors")).isEqualTo("True");
     assertThat(rd.getSuccess()).isTrue();
 
     assertThat(rdd.getName()).isEqualTo("GET /search");

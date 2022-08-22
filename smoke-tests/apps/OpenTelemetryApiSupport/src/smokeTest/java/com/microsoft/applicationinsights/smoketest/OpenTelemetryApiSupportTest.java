@@ -54,7 +54,8 @@ abstract class OpenTelemetryApiSupportTest {
     assertThat(telemetry.rd.getProperties()).hasSize(2);
     assertThat(telemetry.rd.getProperties()).containsEntry("myattr1", "myvalue1");
     assertThat(telemetry.rd.getProperties()).containsEntry("myattr2", "myvalue2");
-    assertThat(telemetry.rd.getMeasurements()).isEmpty();
+    assertThat(telemetry.rd.getProperties().get("_MS.ProcessedByMetricExtractors"))
+        .isEqualTo("True");
 
     // ideally want the properties below on rd, but can't get SERVER span yet
     // see

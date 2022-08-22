@@ -90,7 +90,7 @@ abstract class KafkaTest {
         (RemoteDependencyData) ((Data<?>) rddEnvelope2.getData()).getBaseData();
 
     assertThat(rd1.getName()).isEqualTo("GET /sendMessage");
-    assertThat(rd1.getProperties()).isEmpty();
+    assertThat(rd1.getProperties().get("_MS.ProcessedByMetricExtractors")).isEqualTo("True");
     assertThat(rd1.getSuccess()).isTrue();
 
     assertThat(rdd1.getName()).isEqualTo("mytopic send");

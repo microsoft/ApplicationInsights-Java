@@ -96,7 +96,8 @@ abstract class HttpClientSmokeTest {
   private static void verify(String successUrlWithQueryString) throws Exception {
     Telemetry telemetry = testing.getTelemetry(3);
 
-    assertThat(telemetry.rd.getProperties()).isEmpty();
+    assertThat(telemetry.rd.getProperties().get("_MS.ProcessedByMetricExtractors"))
+        .isEqualTo("True");
     assertThat(telemetry.rd.getSuccess()).isTrue();
     // TODO (trask) add this check in all smoke tests?
     assertThat(telemetry.rdEnvelope.getSampleRate()).isNull();

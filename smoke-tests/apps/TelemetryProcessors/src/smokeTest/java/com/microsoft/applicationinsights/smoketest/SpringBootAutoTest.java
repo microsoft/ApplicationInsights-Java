@@ -73,7 +73,7 @@ abstract class SpringBootAutoTest {
     assertThat(telemetry.rd.getProperties()).containsEntry("sensitiveAttribute1", "redacted");
     assertThat(telemetry.rd.getProperties().get("httpPath"))
         .isEqualTo("*/TelemetryProcessors/sensitivedata*");
-    assertThat(telemetry.rd.getProperties()).hasSize(4);
+    assertThat(telemetry.rd.getProperties()).hasSize(5);
     assertThat(telemetry.rd.getSuccess()).isTrue();
   }
 

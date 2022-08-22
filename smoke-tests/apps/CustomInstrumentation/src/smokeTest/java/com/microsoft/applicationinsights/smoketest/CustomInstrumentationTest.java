@@ -69,7 +69,7 @@ public abstract class CustomInstrumentationTest {
 
     assertThat(rd1.getName()).isEqualTo("GET /test");
     assertThat(rd1.getResponseCode()).isEqualTo("200");
-    assertThat(rd1.getProperties()).isEmpty();
+    assertThat(rd1.getProperties().get("_MS.ProcessedByMetricExtractors")).isEqualTo("True");
     assertThat(rd1.getSuccess()).isTrue();
 
     assertThat(rd2.getName()).isEqualTo("TestController.run");
