@@ -175,7 +175,8 @@ abstract class JdbcTest {
     Telemetry telemetry =
         testing.getTelemetry(1, rdd -> !rdd.getData().startsWith("/* mysql-connector-java? "));
 
-    assertThat(telemetry.rd.getProperties()).isEmpty();
+    assertThat(telemetry.rd.getProperties().get("_MS.ProcessedByMetricExtractors"))
+        .isEqualTo("True");
     assertThat(telemetry.rd.getSuccess()).isTrue();
 
     assertThat(telemetry.rdd1.getName()).isEqualTo("SELECT mysql.abc");
