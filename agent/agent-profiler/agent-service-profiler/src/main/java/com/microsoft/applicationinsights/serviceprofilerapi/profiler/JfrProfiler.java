@@ -123,31 +123,39 @@ public class JfrProfiler implements ProfilerConfigurationHandler, Profiler {
     // TODO -  allow user configuration of profile options
     recordingOptionsBuilder = new RecordingOptions.Builder();
 
-    try {
-      // connect to mbeans
-      MBeanServerConnection mbeanServer = ManagementFactory.getPlatformMBeanServer();
-      try {
-        flightRecorderConnection = FlightRecorderConnection.connect(mbeanServer);
-      } catch (JfrStreamingException | InstanceNotFoundException jfrStreamingException) {
-        // Possibly an older JVM, try using Diagnostic command
-        flightRecorderConnection = FlightRecorderDiagnosticCommandConnection.connect(mbeanServer);
-      }
-    } catch (Exception e) {
-      String message =
-          "Unable to initialize the profiler."
-              + (isOpenJ9Jvm()
-                  ? " OpenJ9 JVM is not supported. Instead, please use an OpenJDK JVM."
-                  : "");
-      LOGGER.error(message, e);
+    flightRecorderConnection = createFlightRecorderConnection();
+
+    if (flightRecorderConnection == null) {
       return false;
     }
 
     return true;
   }
 
+  private static FlightRecorderConnection createFlightRecorderConnection() {
+    if (isOpenJ9Jvm()) {
+      LOGGER.error(
+          "Unable to initialize the profiler. OpenJ9 JVM is not supported. Instead, please use an OpenJDK JVM");
+      return null;
+    }
+    try {
+      // connect to mbeans
+      MBeanServerConnection mbeanServer = ManagementFactory.getPlatformMBeanServer();
+      try {
+        return FlightRecorderConnection.connect(mbeanServer);
+      } catch (JfrStreamingException | InstanceNotFoundException jfrStreamingException) {
+        // Possibly an older JVM, try using Diagnostic command
+        return FlightRecorderDiagnosticCommandConnection.connect(mbeanServer);
+      }
+    } catch (Exception e) {
+      LOGGER.error("Failed to connect to mbean", e);
+    }
+    return null;
+  }
+
   private static boolean isOpenJ9Jvm() {
     String jvmName = System.getProperty("java.vm.name");
-    return jvmName.contains("OpenJ9");
+    return jvmName != null && jvmName.contains("OpenJ9");
   }
 
   /** Apply new configuration settings obtained from Service Profiler. */
