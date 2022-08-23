@@ -132,6 +132,7 @@ public class JfrProfiler implements ProfilerConfigurationHandler, Profiler {
     return true;
   }
 
+  @Nullable
   private static FlightRecorderConnection createFlightRecorderConnection() {
     if (isOpenJ9Jvm()) {
       LOGGER.error(
