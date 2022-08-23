@@ -31,7 +31,6 @@ public class SpringBootActuatorIgnoredTypesConfigurer implements IgnoredTypesCon
 
   @Override
   public void configure(IgnoredTypesBuilder builder, ConfigProperties config) {
-    builder.allowClass("org.springframework.core.io.ClassPathResource");
     builder.allowClass("org.springframework.boot.autoconfigure.AutoConfigurationImportSelector");
   }
 }
