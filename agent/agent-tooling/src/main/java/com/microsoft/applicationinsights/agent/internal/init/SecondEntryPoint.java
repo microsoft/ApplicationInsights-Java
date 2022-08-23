@@ -322,15 +322,15 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
       tracerProvider.addSpanProcessor(
           new InheritedAttributesSpanProcessor(configuration.preview.inheritedAttributes));
     }
-    if (!configuration.preview.instrumentationKeyOverrides.isEmpty()) {
-      tracerProvider.addSpanProcessor(
-          new InheritedInstrumentationKeySpanProcessor(
-              configuration.preview.instrumentationKeyOverrides));
-    }
-    if (!configuration.preview.roleNameOverrides.isEmpty()) {
-      tracerProvider.addSpanProcessor(
-          new InheritedRoleNameSpanProcessor(configuration.preview.roleNameOverrides));
-    }
+    // adding this even if there are no instrumentationKeyOverrides, in order to support
+    // "ai.preview.instrumentation_key" being set programmatically on CONSUMER spans
+    tracerProvider.addSpanProcessor(
+        new InheritedInstrumentationKeySpanProcessor(
+            configuration.preview.instrumentationKeyOverrides));
+    // adding this even if there are no roleNameOverrides, in order to support
+    // "ai.preview.service_name" being set programmatically on CONSUMER spans
+    tracerProvider.addSpanProcessor(
+        new InheritedRoleNameSpanProcessor(configuration.preview.roleNameOverrides));
     if (configuration.preview.profiler.enabled
         && configuration.preview.profiler.enableRequestTriggering) {
       tracerProvider.addSpanProcessor(new AlertTriggerSpanProcessor());
@@ -451,7 +451,11 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
       builder.addLogProcessor(
           new InheritedAttributesLogProcessor(configuration.preview.inheritedAttributes));
     }
+    // adding this even if there are no instrumentationKeyOverrides, in order to support
+    // "ai.preview.instrumentation_key" being set programmatically on CONSUMER spans
     builder.addLogProcessor(new InheritedInstrumentationKeyLogProcessor());
+    // adding this even if there are no roleNameOverrides, in order to support
+    // "ai.preview.service_name" being set programmatically on CONSUMER spans
     builder.addLogProcessor(new InheritedRoleNameLogProcessor());
 
     String logsExporter = otelConfig.getString("otel.logs.exporter");
