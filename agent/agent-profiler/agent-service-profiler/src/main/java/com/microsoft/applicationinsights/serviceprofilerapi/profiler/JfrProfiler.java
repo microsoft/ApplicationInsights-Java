@@ -114,30 +114,23 @@ public class JfrProfiler implements ProfilerConfigurationHandler, Profiler {
    *     enabled.
    */
   @Override
-  public boolean initialize(
+  public void initialize(
       ProfileHandler profileHandler, ScheduledExecutorService scheduledExecutorService)
-      throws IOException, InstanceNotFoundException {
+      throws Exception {
     this.profileHandler = profileHandler;
     this.scheduledExecutorService = scheduledExecutorService;
 
     // TODO -  allow user configuration of profile options
     recordingOptionsBuilder = new RecordingOptions.Builder();
 
+    // connect to mbeans
+    MBeanServerConnection mbeanServer = ManagementFactory.getPlatformMBeanServer();
     try {
-      // connect to mbeans
-      MBeanServerConnection mbeanServer = ManagementFactory.getPlatformMBeanServer();
-      try {
-        flightRecorderConnection = FlightRecorderConnection.connect(mbeanServer);
-      } catch (JfrStreamingException | InstanceNotFoundException jfrStreamingException) {
-        // Possibly an older JVM, try using Diagnostic command
-        flightRecorderConnection = FlightRecorderDiagnosticCommandConnection.connect(mbeanServer);
-      }
-    } catch (Exception e) {
-      LOGGER.error("Failed to connect to mbean", e);
-      return false;
+      flightRecorderConnection = FlightRecorderConnection.connect(mbeanServer);
+    } catch (JfrStreamingException | InstanceNotFoundException jfrStreamingException) {
+      // Possibly an older JVM, try using Diagnostic command
+      flightRecorderConnection = FlightRecorderDiagnosticCommandConnection.connect(mbeanServer);
     }
-
-    return true;
   }
 
   /** Apply new configuration settings obtained from Service Profiler. */
