@@ -54,8 +54,9 @@ final class MetricsView {
     // START APPLICATION INSIGHTS CODE
     view.add(TARGET);
     view.add(IS_SYNTHETIC);
-    return view;
     // END APPLICATION INSIGHTS CODE
+
+    return view;
   }
 
   private static Set<AttributeKey> buildClientView() {
