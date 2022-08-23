@@ -25,7 +25,6 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import javax.annotation.Nullable;
-import org.slf4j.LoggerFactory;
 
 public final class UserAgents {
 
@@ -36,8 +35,6 @@ public final class UserAgents {
   public static boolean isUserAgentBot(Attributes endAttributes, Attributes startAttributes) {
     String aiUserAgent =
         getAttribute(SemanticAttributes.HTTP_USER_AGENT, endAttributes, startAttributes);
-    // TODO to be removed debug log
-    LoggerFactory.getLogger(UserAgents.class).debug("############## aiUserAgent: {}", aiUserAgent);
     return aiUserAgent != null && aiUserAgent.indexOf("AlwaysOn") >= 0;
   }
 
