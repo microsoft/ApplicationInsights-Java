@@ -113,8 +113,8 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
             "Telemetry will not be stored to disk and retried later"
                 + " on sporadic network failures");
 
-    Configuration config = FirstEntryPoint.getConfiguration();
-    if (Strings.isNullOrEmpty(config.connectionString)) {
+    Configuration configuration = FirstEntryPoint.getConfiguration();
+    if (Strings.isNullOrEmpty(configuration.connectionString)) {
       // TODO we can update this check after the new functions model is deployed.
       if (!"java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME"))) {
         throw new FriendlyException(
@@ -122,17 +122,17 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
       }
     }
     // TODO (trask) should configuration validation be performed earlier?
-    config.validate();
+    configuration.validate();
 
-    if (config.proxy.host != null) {
-      LazyHttpClient.proxyHost = config.proxy.host;
-      LazyHttpClient.proxyPortNumber = config.proxy.port;
-      LazyHttpClient.proxyUsername = config.proxy.username;
-      LazyHttpClient.proxyPassword = config.proxy.password;
+    if (configuration.proxy.host != null) {
+      LazyHttpClient.proxyHost = configuration.proxy.host;
+      LazyHttpClient.proxyPortNumber = configuration.proxy.port;
+      LazyHttpClient.proxyUsername = configuration.proxy.username;
+      LazyHttpClient.proxyPassword = configuration.proxy.password;
     }
 
     List<MetricFilter> metricFilters =
-        config.preview.processors.stream()
+        configuration.preview.processors.stream()
             .filter(processor -> processor.type == Configuration.ProcessorType.METRIC_FILTER)
             .map(MetricFilter::new)
             .collect(Collectors.toList());
@@ -140,24 +140,24 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
     StatsbeatModule statsbeatModule = new StatsbeatModule();
     TelemetryClient telemetryClient =
         TelemetryClient.builder()
-            .setCustomDimensions(config.customDimensions)
+            .setCustomDimensions(configuration.customDimensions)
             .setMetricFilters(metricFilters)
             .setStatsbeatModule(statsbeatModule)
             .setTempDir(tempDir)
-            .setGeneralExportQueueSize(config.preview.generalExportQueueCapacity)
-            .setMetricsExportQueueSize(config.preview.metricsExportQueueCapacity)
-            .setAadAuthentication(config.preview.authentication)
+            .setGeneralExportQueueSize(configuration.preview.generalExportQueueCapacity)
+            .setMetricsExportQueueSize(configuration.preview.metricsExportQueueCapacity)
+            .setAadAuthentication(configuration.preview.authentication)
             .setConnectionStrings(
-                config.connectionString,
-                config.internal.statsbeat.instrumentationKey,
-                config.internal.statsbeat.endpoint)
-            .setRoleName(config.role.name)
-            .setRoleInstance(config.role.instance)
-            .setDiskPersistenceMaxSizeMb(config.preview.diskPersistenceMaxSizeMb)
+                configuration.connectionString,
+                configuration.internal.statsbeat.instrumentationKey,
+                configuration.internal.statsbeat.endpoint)
+            .setRoleName(configuration.role.name)
+            .setRoleInstance(configuration.role.instance)
+            .setDiskPersistenceMaxSizeMb(configuration.preview.diskPersistenceMaxSizeMb)
             .build();
 
     // interval longer than 15 minutes is not allowed since we use this data for usage telemetry
-    long intervalSeconds = Math.min(config.heartbeat.intervalSeconds, MINUTES.toSeconds(15));
+    long intervalSeconds = Math.min(configuration.heartbeat.intervalSeconds, MINUTES.toSeconds(15));
     Consumer<List<TelemetryItem>> telemetryItemsConsumer =
         telemetryItems -> {
           for (TelemetryItem telemetryItem : telemetryItems) {
@@ -172,15 +172,15 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
 
     TelemetryClient.setActive(telemetryClient);
 
-    BytecodeUtilImpl.samplingPercentage = config.sampling.percentage;
+    BytecodeUtilImpl.samplingPercentage = configuration.sampling.percentage;
     BytecodeUtilImpl.featureStatsbeat = statsbeatModule.getFeatureStatsbeat();
 
     AppIdSupplier appIdSupplier = new AppIdSupplier(telemetryClient);
     AiAppId.setSupplier(appIdSupplier);
 
-    if (config.preview.profiler.enabled) {
+    if (configuration.preview.profiler.enabled) {
       try {
-        ProfilingInitializer.initialize(tempDir, appIdSupplier, config, telemetryClient);
+        ProfilingInitializer.initialize(tempDir, appIdSupplier, configuration, telemetryClient);
       } catch (RuntimeException e) {
         startupLogger.warn("Failed to initialize profiler", e);
       }
@@ -197,11 +197,12 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
 
     RpConfiguration rpConfiguration = FirstEntryPoint.getRpConfiguration();
     if (rpConfiguration != null) {
-      RpConfigurationPolling.startPolling(rpConfiguration, config, telemetryClient, appIdSupplier);
+      RpConfigurationPolling.startPolling(
+          rpConfiguration, configuration, telemetryClient, appIdSupplier);
     }
 
     // initialize StatsbeatModule
-    statsbeatModule.start(telemetryClient, config);
+    statsbeatModule.start(telemetryClient, configuration);
 
     AfterAgentListener.setAppIdSupplier(appIdSupplier);
 
@@ -209,10 +210,11 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
     ((AutoConfiguredOpenTelemetrySdkBuilder) autoConfiguration).registerShutdownHook(false);
 
     QuickPulse quickPulse;
-    if (config.preview.liveMetrics.enabled) {
+    if (configuration.preview.liveMetrics.enabled) {
       quickPulse =
           QuickPulse.create(
-              LazyHttpClient.newHttpPipeLineWithDefaultRedirect(config.preview.authentication),
+              LazyHttpClient.newHttpPipeLineWithDefaultRedirect(
+                  configuration.preview.authentication),
               () -> {
                 ConnectionString connectionString = telemetryClient.getConnectionString();
                 return connectionString == null ? null : connectionString.getLiveEndpoint();
@@ -220,7 +222,7 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
               telemetryClient::getInstrumentationKey,
               telemetryClient.getRoleName(),
               telemetryClient.getRoleInstance(),
-              config.preview.useNormalizedValueForNonNormalizedCpuPercentage,
+              configuration.preview.useNormalizedValueForNonNormalizedCpuPercentage,
               FirstEntryPoint.getAgentVersion());
     } else {
       quickPulse = null;
@@ -228,15 +230,34 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
     telemetryClient.setQuickPulse(quickPulse);
 
     autoConfiguration
+        .addPropertiesCustomizer(new AiConfigCustomizer())
+        .addSpanExporterCustomizer(
+            (spanExporter, otelConfig) -> {
+              if ("none".equals(otelConfig.getString("otel.traces.exporter"))) {
+                // in this case the spanExporter here is the noop spanExporter
+                return spanExporter;
+              } else {
+                return wrapSpanExporter(spanExporter, configuration);
+              }
+            })
         .addTracerProviderCustomizer(
-            (builder, configProperties) ->
-                configureTracing(builder, telemetryClient, quickPulse, configProperties, config))
+            (builder, otelConfig) ->
+                configureTracing(builder, telemetryClient, quickPulse, otelConfig, configuration))
+        .addLogExporterCustomizer(
+            (logExporter, otelConfig) -> {
+              if ("none".equals(otelConfig.getString("otel.logs.exporter"))) {
+                // in this case the logExporter here is the noop spanExporter
+                return logExporter;
+              } else {
+                return wrapLogExporter(logExporter, configuration);
+              }
+            })
         .addLogEmitterProviderCustomizer(
-            (builder, configProperties) ->
-                configureLogging(builder, telemetryClient, quickPulse, config))
+            (builder, otelConfig) ->
+                configureLogging(builder, telemetryClient, quickPulse, otelConfig, configuration))
         .addMeterProviderCustomizer(
-            (builder, configProperties) ->
-                configureMetrics(metricFilters, builder, telemetryClient, config));
+            (builder, otelConfig) ->
+                configureMetrics(metricFilters, builder, telemetryClient, configuration));
 
     Runtime.getRuntime()
         .addShutdownHook(new Thread(() -> flushAll(telemetryClient).join(10, TimeUnit.SECONDS)));
@@ -278,7 +299,7 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
       SdkTracerProviderBuilder tracerProvider,
       TelemetryClient telemetryClient,
       @Nullable QuickPulse quickPulse,
-      ConfigProperties config,
+      ConfigProperties otelConfig,
       Configuration configuration) {
 
     if (configuration.connectionString != null) {
@@ -301,35 +322,33 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
       tracerProvider.addSpanProcessor(
           new InheritedAttributesSpanProcessor(configuration.preview.inheritedAttributes));
     }
+    // adding this even if there are no instrumentationKeyOverrides, in order to support
+    // "ai.preview.instrumentation_key" being set programmatically on CONSUMER spans
+    tracerProvider.addSpanProcessor(
+        new InheritedInstrumentationKeySpanProcessor(
+            configuration.preview.instrumentationKeyOverrides));
+    // adding this even if there are no roleNameOverrides, in order to support
+    // "ai.preview.service_name" being set programmatically on CONSUMER spans
+    tracerProvider.addSpanProcessor(
+        new InheritedRoleNameSpanProcessor(configuration.preview.roleNameOverrides));
+    if (configuration.preview.profiler.enabled
+        && configuration.preview.profiler.enableRequestTriggering) {
+      tracerProvider.addSpanProcessor(new AlertTriggerSpanProcessor());
+    }
     // legacy span processor is used to pass legacy attributes from the context (extracted by the
     // AiLegacyPropagator) to the span attributes (since there is no way to update attributes on
     // span directly from propagator)
     if (configuration.preview.legacyRequestIdPropagation.enabled) {
       tracerProvider.addSpanProcessor(new AiLegacyHeaderSpanProcessor());
     }
-    if (!configuration.preview.instrumentationKeyOverrides.isEmpty()) {
-      tracerProvider.addSpanProcessor(
-          new InheritedInstrumentationKeySpanProcessor(
-              configuration.preview.instrumentationKeyOverrides));
-    }
-    if (!configuration.preview.roleNameOverrides.isEmpty()) {
-      tracerProvider.addSpanProcessor(
-          new InheritedRoleNameSpanProcessor(configuration.preview.roleNameOverrides));
-    }
 
-    if (configuration.preview.profiler.enabled
-        && configuration.preview.profiler.enableRequestTriggering) {
-      tracerProvider.addSpanProcessor(new AlertTriggerSpanProcessor());
-    }
-
-    String tracesExporter = config.getString("otel.traces.exporter");
-    if ("none".equals(tracesExporter)) { // "none" is the default set in AiConfigPropertySource
+    String tracesExporter = otelConfig.getString("otel.traces.exporter");
+    if ("none".equals(tracesExporter)) { // "none" is the default set in AiConfigCustomizer
       SpanExporter spanExporter =
           createSpanExporter(
-              telemetryClient,
-              quickPulse,
-              configuration,
-              configuration.preview.captureHttpServer4xxAsError);
+              telemetryClient, quickPulse, configuration.preview.captureHttpServer4xxAsError);
+
+      spanExporter = wrapSpanExporter(spanExporter, configuration);
 
       // using BatchSpanProcessor in order to get off of the application thread as soon as possible
       batchSpanProcessor =
@@ -346,7 +365,6 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
   private static SpanExporter createSpanExporter(
       TelemetryClient telemetryClient,
       @Nullable QuickPulse quickPulse,
-      Configuration configuration,
       boolean captureHttpServer4xxAsError) {
 
     SpanDataMapper mapper =
@@ -373,10 +391,13 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
 
     BatchItemProcessor batchItemProcessor = telemetryClient.getGeneralBatchItemProcessor();
 
-    SpanExporter spanExporter =
-        new StatsbeatSpanExporter(
-            new AgentSpanExporter(mapper, quickPulse, batchItemProcessor),
-            telemetryClient.getStatsbeatModule());
+    return new StatsbeatSpanExporter(
+        new AgentSpanExporter(mapper, quickPulse, batchItemProcessor),
+        telemetryClient.getStatsbeatModule());
+  }
+
+  private static SpanExporter wrapSpanExporter(
+      SpanExporter spanExporter, Configuration configuration) {
 
     List<ProcessorConfig> processorConfigs = getSpanProcessorConfigs(configuration);
     // NOTE if changing the span processor to something async, flush it in the shutdown hook before
@@ -422,18 +443,35 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
       SdkLogEmitterProviderBuilder builder,
       TelemetryClient telemetryClient,
       @Nullable QuickPulse quickPulse,
+      ConfigProperties otelConfig,
       Configuration configuration) {
 
-    LogExporter logExporter = createLogExporter(telemetryClient, quickPulse, configuration);
+    builder.addLogProcessor(new AzureMonitorLogProcessor());
+    if (!configuration.preview.inheritedAttributes.isEmpty()) {
+      builder.addLogProcessor(
+          new InheritedAttributesLogProcessor(configuration.preview.inheritedAttributes));
+    }
+    // adding this even if there are no instrumentationKeyOverrides, in order to support
+    // "ai.preview.instrumentation_key" being set programmatically on CONSUMER spans
+    builder.addLogProcessor(new InheritedInstrumentationKeyLogProcessor());
+    // adding this even if there are no roleNameOverrides, in order to support
+    // "ai.preview.service_name" being set programmatically on CONSUMER spans
+    builder.addLogProcessor(new InheritedRoleNameLogProcessor());
 
-    // using BatchLogProcessor in order to get off of the application thread as soon as possible
-    batchLogProcessor =
-        BatchLogProcessor.builder(logExporter).setScheduleDelay(getBatchProcessorDelay()).build();
+    String logsExporter = otelConfig.getString("otel.logs.exporter");
+    if ("none".equals(logsExporter)) { // "none" is the default set in AiConfigCustomizer
+      LogExporter logExporter = createLogExporter(telemetryClient, quickPulse, configuration);
 
-    return builder.addLogProcessor(
-        new AzureMonitorLogProcessor(
-            new InheritedAttributesLogProcessor(
-                configuration.preview.inheritedAttributes, batchLogProcessor)));
+      logExporter = wrapLogExporter(logExporter, configuration);
+
+      // using BatchLogProcessor in order to get off of the application thread as soon as possible
+      batchLogProcessor =
+          BatchLogProcessor.builder(logExporter).setScheduleDelay(getBatchProcessorDelay()).build();
+
+      builder.addLogProcessor(batchLogProcessor);
+    }
+
+    return builder;
   }
 
   private static LogExporter createLogExporter(
@@ -453,7 +491,10 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
             quickPulse,
             telemetryClient.getGeneralBatchItemProcessor());
 
-    LogExporter logExporter = agentLogExporter;
+    return agentLogExporter;
+  }
+
+  private static LogExporter wrapLogExporter(LogExporter logExporter, Configuration configuration) {
 
     List<ProcessorConfig> processorConfigs = getLogProcessorConfigs(configuration);
     if (!processorConfigs.isEmpty()) {

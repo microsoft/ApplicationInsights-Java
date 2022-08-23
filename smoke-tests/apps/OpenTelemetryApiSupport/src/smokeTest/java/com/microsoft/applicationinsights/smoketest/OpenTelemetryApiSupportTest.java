@@ -103,13 +103,23 @@ abstract class OpenTelemetryApiSupportTest {
   }
 
   @Test
-  @TargetUri("/test-annotations")
-  void testAnnotations() throws Exception {
+  @TargetUri("/test-extension-annotations")
+  void testExtensionAnnotations() throws Exception {
+    testAnnotations("test-extension-annotations", "underExtensionAnnotation");
+  }
+
+  @Test
+  @TargetUri("/test-instrumentation-annotations")
+  void testInstrumentationAnnotations() throws Exception {
+    testAnnotations("test-instrumentation-annotations", "underInstrumentationAnnotation");
+  }
+
+  private static void testAnnotations(String path, String methodName) throws Exception {
     Telemetry telemetry = testing.getTelemetry(1);
 
-    assertThat(telemetry.rd.getName()).isEqualTo("GET /OpenTelemetryApiSupport/test-annotations");
+    assertThat(telemetry.rd.getName()).isEqualTo("GET /OpenTelemetryApiSupport/" + path);
     assertThat(telemetry.rd.getUrl())
-        .matches("http://localhost:[0-9]+/OpenTelemetryApiSupport/test-annotations");
+        .matches("http://localhost:[0-9]+/OpenTelemetryApiSupport/" + path);
     assertThat(telemetry.rd.getResponseCode()).isEqualTo("200");
     assertThat(telemetry.rd.getSuccess()).isTrue();
     assertThat(telemetry.rd.getSource()).isNull();
@@ -117,7 +127,7 @@ abstract class OpenTelemetryApiSupportTest {
         .isEqualTo("True");
     assertThat(telemetry.rd.getMeasurements()).isEmpty();
 
-    assertThat(telemetry.rdd1.getName()).isEqualTo("TestController.underAnnotation");
+    assertThat(telemetry.rdd1.getName()).isEqualTo("TestController." + methodName);
     assertThat(telemetry.rdd1.getData()).isNull();
     assertThat(telemetry.rdd1.getType()).isEqualTo("InProc");
     assertThat(telemetry.rdd1.getTarget()).isNull();
@@ -129,7 +139,7 @@ abstract class OpenTelemetryApiSupportTest {
         telemetry.rd,
         telemetry.rdEnvelope,
         telemetry.rddEnvelope1,
-        "GET /OpenTelemetryApiSupport/test-annotations");
+        "GET /OpenTelemetryApiSupport/" + path);
   }
 
   @Environment(TOMCAT_8_JAVA_8)

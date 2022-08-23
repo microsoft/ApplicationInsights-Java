@@ -125,11 +125,26 @@ class OpenTelemetryApiSupportControllerSpansEnabledTest {
   }
 
   @Test
-  @TargetUri("/test-annotations")
-  void testAnnotations() throws Exception {
+  @TargetUri("/test-extension-annotations")
+  void testExtensionAnnotations() throws Exception {
+    testAnnotations(
+        "test-extension-annotations", "testExtensionAnnotations", "underExtensionAnnotation");
+  }
+
+  @Test
+  @TargetUri("/test-instrumentation-annotations")
+  void testInstrumentationAnnotations() throws Exception {
+    testAnnotations(
+        "test-instrumentation-annotations",
+        "testInstrumentationAnnotations",
+        "underInstrumentationAnnotation");
+  }
+
+  private static void testAnnotations(
+      String path, String controllerMethodName, String annotatedMethodName) throws Exception {
     Telemetry telemetry = testing.getTelemetry(2);
 
-    if (!telemetry.rdd1.getName().equals("TestController.testAnnotations")) {
+    if (!telemetry.rdd1.getName().equals("TestController." + controllerMethodName)) {
       RemoteDependencyData rddTemp = telemetry.rdd1;
       telemetry.rdd1 = telemetry.rdd2;
       telemetry.rdd2 = rddTemp;
@@ -139,9 +154,9 @@ class OpenTelemetryApiSupportControllerSpansEnabledTest {
       telemetry.rddEnvelope2 = rddEnvelopeTemp;
     }
 
-    assertThat(telemetry.rd.getName()).isEqualTo("GET /OpenTelemetryApiSupport/test-annotations");
+    assertThat(telemetry.rd.getName()).isEqualTo("GET /OpenTelemetryApiSupport/" + path);
     assertThat(telemetry.rd.getUrl())
-        .matches("http://localhost:[0-9]+/OpenTelemetryApiSupport/test-annotations");
+        .matches("http://localhost:[0-9]+/OpenTelemetryApiSupport/" + path);
     assertThat(telemetry.rd.getResponseCode()).isEqualTo("200");
     assertThat(telemetry.rd.getSuccess()).isTrue();
     assertThat(telemetry.rd.getSource()).isNull();
@@ -149,14 +164,14 @@ class OpenTelemetryApiSupportControllerSpansEnabledTest {
         .isEqualTo("True");
     assertThat(telemetry.rd.getMeasurements()).isEmpty();
 
-    assertThat(telemetry.rdd1.getName()).isEqualTo("TestController.testAnnotations");
+    assertThat(telemetry.rdd1.getName()).isEqualTo("TestController." + controllerMethodName);
     assertThat(telemetry.rdd1.getData()).isNull();
     assertThat(telemetry.rdd1.getType()).isEqualTo("InProc");
     assertThat(telemetry.rdd1.getTarget()).isNull();
     assertThat(telemetry.rdd1.getProperties()).isEmpty();
     assertThat(telemetry.rdd1.getSuccess()).isTrue();
 
-    assertThat(telemetry.rdd2.getName()).isEqualTo("TestController.underAnnotation");
+    assertThat(telemetry.rdd2.getName()).isEqualTo("TestController." + annotatedMethodName);
     assertThat(telemetry.rdd2.getData()).isNull();
     assertThat(telemetry.rdd2.getType()).isEqualTo("InProc");
     assertThat(telemetry.rdd2.getTarget()).isNull();
@@ -168,11 +183,11 @@ class OpenTelemetryApiSupportControllerSpansEnabledTest {
         telemetry.rd,
         telemetry.rdEnvelope,
         telemetry.rddEnvelope1,
-        "GET /OpenTelemetryApiSupport/test-annotations");
+        "GET /OpenTelemetryApiSupport/" + path);
     SmokeTestExtension.assertParentChild(
         telemetry.rdd1,
         telemetry.rddEnvelope1,
         telemetry.rddEnvelope2,
-        "GET /OpenTelemetryApiSupport/test-annotations");
+        "GET /OpenTelemetryApiSupport/" + path);
   }
 }

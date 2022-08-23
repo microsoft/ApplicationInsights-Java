@@ -29,6 +29,7 @@ import io.opentelemetry.api.trace.TraceState
 import io.opentelemetry.context.Context
 import io.opentelemetry.context.Scope
 import io.opentelemetry.instrumentation.test.AgentInstrumentationSpecification
+import io.opentelemetry.semconv.trace.attributes.SemanticAttributes
 
 import static io.opentelemetry.api.trace.SpanKind.INTERNAL
 import static io.opentelemetry.api.trace.SpanKind.SERVER
@@ -47,6 +48,8 @@ class ApplicationInsightsWebTest extends AgentInstrumentationSpecification {
           kind SERVER
           hasNoParent()
           attributes {
+            "$SemanticAttributes.CODE_NAMESPACE" "Code"
+            "$SemanticAttributes.CODE_FUNCTION" "setProperty"
             "akey" "avalue"
           }
         }
@@ -71,7 +74,9 @@ class ApplicationInsightsWebTest extends AgentInstrumentationSpecification {
           kind SERVER
           hasNoParent()
           attributes {
-            "enduser.id" "myuser"
+            "$SemanticAttributes.CODE_NAMESPACE" "Code"
+            "$SemanticAttributes.CODE_FUNCTION" "setUser"
+            "$SemanticAttributes.ENDUSER_ID" "myuser"
           }
         }
         span(1) {
@@ -94,6 +99,10 @@ class ApplicationInsightsWebTest extends AgentInstrumentationSpecification {
           name "new name"
           kind SERVER
           hasNoParent()
+          attributes {
+            "$SemanticAttributes.CODE_NAMESPACE" "Code"
+            "$SemanticAttributes.CODE_FUNCTION" "setName"
+          }
         }
         span(1) {
           name "Code.internalSetName"
@@ -116,6 +125,10 @@ class ApplicationInsightsWebTest extends AgentInstrumentationSpecification {
           kind SERVER
           hasNoParent()
           status StatusCode.ERROR
+          attributes {
+            "$SemanticAttributes.CODE_NAMESPACE" "Code"
+            "$SemanticAttributes.CODE_FUNCTION" "setSuccess"
+          }
         }
         span(1) {
           name "Code.internalSetSuccess"
@@ -138,6 +151,8 @@ class ApplicationInsightsWebTest extends AgentInstrumentationSpecification {
           kind SERVER
           hasNoParent()
           attributes {
+            "$SemanticAttributes.CODE_NAMESPACE" "Code"
+            "$SemanticAttributes.CODE_FUNCTION" "setSource"
             "applicationinsights.internal.source" "the source"
           }
         }
@@ -161,6 +176,10 @@ class ApplicationInsightsWebTest extends AgentInstrumentationSpecification {
           name "Code.getId"
           kind SERVER
           hasNoParent()
+          attributes {
+            "$SemanticAttributes.CODE_NAMESPACE" "Code"
+            "$SemanticAttributes.CODE_FUNCTION" "getId"
+          }
         }
         span(1) {
           name "Code.internalGetId"
@@ -184,6 +203,10 @@ class ApplicationInsightsWebTest extends AgentInstrumentationSpecification {
           name "Code.getOperationId"
           kind SERVER
           hasNoParent()
+          attributes {
+            "$SemanticAttributes.CODE_NAMESPACE" "Code"
+            "$SemanticAttributes.CODE_FUNCTION" "getOperationId"
+          }
         }
         span(1) {
           name "Code.internalGetOperationId"
@@ -208,6 +231,8 @@ class ApplicationInsightsWebTest extends AgentInstrumentationSpecification {
           kind SERVER
           hasNoParent()
           attributes {
+            "$SemanticAttributes.CODE_NAMESPACE" "Code"
+            "$SemanticAttributes.CODE_FUNCTION" "setSessionId"
             "applicationinsights.internal.session_id" "the session id"
           }
         }
@@ -232,6 +257,8 @@ class ApplicationInsightsWebTest extends AgentInstrumentationSpecification {
           kind SERVER
           hasNoParent()
           attributes {
+            "$SemanticAttributes.CODE_NAMESPACE" "Code"
+            "$SemanticAttributes.CODE_FUNCTION" "setOperatingSystem"
             "applicationinsights.internal.operating_system" "the operating system"
           }
         }
@@ -256,6 +283,8 @@ class ApplicationInsightsWebTest extends AgentInstrumentationSpecification {
           kind SERVER
           hasNoParent()
           attributes {
+            "$SemanticAttributes.CODE_NAMESPACE" "Code"
+            "$SemanticAttributes.CODE_FUNCTION" "setOperatingSystemVersion"
             "applicationinsights.internal.operating_system_version" "the operating system version"
           }
         }
