@@ -19,35 +19,29 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.azure.monitor.opentelemetry.exporter.implementation;
+package com.microsoft.applicationinsights.agent.internal.init;
 
-import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.sdk.logs.data.Body;
-import io.opentelemetry.sdk.logs.data.LogData;
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.sdk.logs.LogProcessor;
+import io.opentelemetry.sdk.logs.ReadWriteLogRecord;
+import io.opentelemetry.sdk.trace.ReadableSpan;
 
-// TODO (trask) delete after updating to 1.17.0
-public class MyLogData extends DelegatingLogData {
+public class InheritedRoleNameLogProcessor implements LogProcessor {
 
-  private final Attributes attributes;
-  private final Body body;
-
-  public MyLogData(LogData delegate, Attributes attributes) {
-    this(delegate, attributes, delegate.getBody());
-  }
-
-  public MyLogData(LogData delegate, Attributes attributes, Body body) {
-    super(delegate);
-    this.attributes = attributes;
-    this.body = body;
-  }
+  private static final AttributeKey<String> ROLE_NAME_KEY =
+      AttributeKey.stringKey("ai.preview.service_name");
 
   @Override
-  public Body getBody() {
-    return body;
-  }
-
-  @Override
-  public Attributes getAttributes() {
-    return attributes;
+  public void onEmit(ReadWriteLogRecord logRecord) {
+    Span currentSpan = Span.current();
+    if (!(currentSpan instanceof ReadableSpan)) {
+      return;
+    }
+    ReadableSpan currentReadableSpan = (ReadableSpan) currentSpan;
+    String roleName = currentReadableSpan.getAttribute(ROLE_NAME_KEY);
+    if (roleName != null) {
+      logRecord.setAttribute(ROLE_NAME_KEY, roleName);
+    }
   }
 }

@@ -19,31 +19,19 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.azure.monitor.opentelemetry.exporter;
+package com.microsoft.applicationinsights.agent.internal.init;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.AiSemanticAttributes;
-import com.azure.monitor.opentelemetry.exporter.implementation.OperationNames;
-import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.sdk.logs.LogProcessor;
-import io.opentelemetry.sdk.logs.ReadWriteLogRecord;
-import io.opentelemetry.sdk.trace.ReadableSpan;
+import com.google.auto.service.AutoService;
+import io.opentelemetry.javaagent.extension.config.ConfigPropertySource;
+import java.util.Collections;
+import java.util.Map;
 
-public class AzureMonitorLogProcessor implements LogProcessor {
-
+@AutoService(ConfigPropertySource.class)
+public class AiConfigPropertySource implements ConfigPropertySource {
   @Override
-  public void onEmit(ReadWriteLogRecord logRecord) {
-    Span currentSpan = Span.current();
-    if (!(currentSpan instanceof ReadableSpan)) {
-      return;
-    }
-
-    ReadableSpan readableSpan = (ReadableSpan) currentSpan;
-
-    logRecord.setAttribute(
-        AiSemanticAttributes.OPERATION_NAME, OperationNames.getOperationName(readableSpan));
-    Long itemCount = readableSpan.getAttribute(AiSemanticAttributes.ITEM_COUNT);
-    if (itemCount != null) {
-      logRecord.setAttribute(AiSemanticAttributes.ITEM_COUNT, itemCount);
-    }
+  public Map<String, String> getProperties() {
+    // TODO (trask) this is temporary until 1.18.0, see
+    // https://github.com/open-telemetry/opentelemetry-java-instrumentation/pull/6491
+    return Collections.singletonMap("otel.instrumentation.common.default-enabled", "false");
   }
 }

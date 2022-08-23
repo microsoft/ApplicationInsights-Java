@@ -47,9 +47,6 @@ public class InheritedAttributesSpanProcessor implements SpanProcessor {
   @SuppressWarnings("unchecked")
   public void onStart(Context parentContext, ReadWriteSpan span) {
     Span parentSpan = Span.fromContextOrNull(parentContext);
-    if (parentSpan == null) {
-      return;
-    }
     if (!(parentSpan instanceof ReadableSpan)) {
       return;
     }

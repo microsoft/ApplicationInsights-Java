@@ -192,7 +192,7 @@ public class Configuration {
 
     public EnabledByDefaultInstrumentation azureSdk = new EnabledByDefaultInstrumentation();
     public EnabledByDefaultInstrumentation cassandra = new EnabledByDefaultInstrumentation();
-    public EnabledByDefaultInstrumentation jdbc = new EnabledByDefaultInstrumentation();
+    public JdbcInstrumentation jdbc = new JdbcInstrumentation();
     public EnabledByDefaultInstrumentation jms = new EnabledByDefaultInstrumentation();
     public EnabledByDefaultInstrumentation kafka = new EnabledByDefaultInstrumentation();
     public LoggingInstrumentation logging = new LoggingInstrumentation();
@@ -202,6 +202,15 @@ public class Configuration {
     public EnabledByDefaultInstrumentation rabbitmq = new EnabledByDefaultInstrumentation();
     public EnabledByDefaultInstrumentation redis = new EnabledByDefaultInstrumentation();
     public EnabledByDefaultInstrumentation springScheduling = new EnabledByDefaultInstrumentation();
+  }
+
+  public static class JdbcInstrumentation {
+    public boolean enabled = true;
+    public JdbcMasking masking = new JdbcMasking();
+  }
+
+  public static class JdbcMasking {
+    public boolean enabled = true;
   }
 
   public static class LoggingInstrumentation {
