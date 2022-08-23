@@ -31,6 +31,7 @@ import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JA
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_8;
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_8_OPENJ9;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.data.MapEntry.entry;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.DataPoint;
@@ -81,10 +82,12 @@ abstract class GrpcTest {
 
     assertThat(rdd.getTarget()).isEqualTo("localhost:10203");
 
-    assertThat(rd1.getProperties().get("_MS.ProcessedByMetricExtractors")).isEqualTo("True");
+    assertThat(rd1.getProperties())
+        .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
     assertThat(rd1.getSuccess()).isTrue();
 
-    assertThat(rdd.getProperties().get("_MS.ProcessedByMetricExtractors")).isEqualTo("True");
+    assertThat(rdd.getProperties())
+        .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
     assertThat(rdd.getSuccess()).isTrue();
 
     // TODO (trask): verify rd2
@@ -123,10 +126,12 @@ abstract class GrpcTest {
 
     assertThat(rdd.getTarget()).isEqualTo("localhost:10203");
 
-    assertThat(rd1.getProperties().get("_MS.ProcessedByMetricExtractors")).isEqualTo("True");
+    assertThat(rd1.getProperties())
+        .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
     assertThat(rd1.getSuccess()).isTrue();
 
-    assertThat(rdd.getProperties().get("_MS.ProcessedByMetricExtractors")).isEqualTo("True");
+    assertThat(rdd.getProperties())
+        .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
     assertThat(rdd.getSuccess()).isTrue();
 
     // TODO (trask): verify rd2

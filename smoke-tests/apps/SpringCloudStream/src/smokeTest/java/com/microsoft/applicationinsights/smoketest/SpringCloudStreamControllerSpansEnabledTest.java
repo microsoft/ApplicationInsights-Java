@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights.smoketest;
 
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_8;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.data.MapEntry.entry;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
@@ -92,7 +93,8 @@ class SpringCloudStreamControllerSpansEnabledTest {
     }
 
     assertThat(rd1.getName()).isEqualTo("GET /sendMessage");
-    assertThat(rd1.getProperties().get("_MS.ProcessedByMetricExtractors")).isEqualTo("True");
+    assertThat(rd1.getProperties())
+        .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
     assertThat(rd1.getSuccess()).isTrue();
 
     assertThat(rdd1.getName()).isEqualTo("GreetingsController.sendMessage");

@@ -31,6 +31,7 @@ import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JA
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_8;
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_8_OPENJ9;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.data.MapEntry.entry;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -50,8 +51,8 @@ abstract class WebFluxTest {
     assertThat(telemetry.rd.getResponseCode()).isEqualTo("200");
     assertThat(telemetry.rd.getSuccess()).isTrue();
     assertThat(telemetry.rd.getSource()).isNull();
-    assertThat(telemetry.rd.getProperties().get("_MS.ProcessedByMetricExtractors"))
-        .isEqualTo("True");
+    assertThat(telemetry.rd.getProperties())
+        .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
     assertThat(telemetry.rd.getMeasurements()).isEmpty();
   }
 
@@ -65,8 +66,8 @@ abstract class WebFluxTest {
     assertThat(telemetry.rd.getResponseCode()).isEqualTo("500");
     assertThat(telemetry.rd.getSuccess()).isFalse();
     assertThat(telemetry.rd.getSource()).isNull();
-    assertThat(telemetry.rd.getProperties().get("_MS.ProcessedByMetricExtractors"))
-        .isEqualTo("True");
+    assertThat(telemetry.rd.getProperties())
+        .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
     assertThat(telemetry.rd.getMeasurements()).isEmpty();
   }
 
@@ -80,8 +81,8 @@ abstract class WebFluxTest {
     assertThat(telemetry.rd.getResponseCode()).isEqualTo("500");
     assertThat(telemetry.rd.getSuccess()).isFalse();
     assertThat(telemetry.rd.getSource()).isNull();
-    assertThat(telemetry.rd.getProperties().get("_MS.ProcessedByMetricExtractors"))
-        .isEqualTo("True");
+    assertThat(telemetry.rd.getProperties())
+        .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
     assertThat(telemetry.rd.getMeasurements()).isEmpty();
   }
 

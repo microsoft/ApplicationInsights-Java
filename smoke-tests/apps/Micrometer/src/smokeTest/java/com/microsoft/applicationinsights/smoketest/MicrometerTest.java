@@ -56,8 +56,8 @@ abstract class MicrometerTest {
     assertThat(telemetry.rd.getResponseCode()).isEqualTo("200");
     assertThat(telemetry.rd.getSuccess()).isTrue();
     assertThat(telemetry.rd.getSource()).isNull();
-    assertThat(telemetry.rd.getProperties().get("_MS.ProcessedByMetricExtractors"))
-        .isEqualTo("True");
+    assertThat(telemetry.rd.getProperties())
+        .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
     assertThat(telemetry.rd.getMeasurements()).isEmpty();
 
     List<Envelope> metricItems =

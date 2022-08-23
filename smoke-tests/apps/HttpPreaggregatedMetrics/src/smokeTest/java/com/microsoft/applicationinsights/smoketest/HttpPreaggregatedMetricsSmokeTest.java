@@ -31,6 +31,7 @@ import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TO
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8;
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8_OPENJ9;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.data.MapEntry.entry;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.DataPoint;
@@ -76,8 +77,8 @@ abstract class HttpPreaggregatedMetricsSmokeTest {
       throws Exception {
     Telemetry telemetry = testing.getTelemetry(3);
 
-    assertThat(telemetry.rd.getProperties().get("_MS.ProcessedByMetricExtractors"))
-        .isEqualTo("True");
+    assertThat(telemetry.rd.getProperties())
+        .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
     assertThat(telemetry.rdd1.getData()).isEqualTo(successUrlWithQueryString);
     assertThat(telemetry.rd.getSuccess()).isTrue();
     assertThat(telemetry.rdEnvelope.getSampleRate()).isNull();
@@ -85,8 +86,8 @@ abstract class HttpPreaggregatedMetricsSmokeTest {
     assertThat(telemetry.rdd1.getType()).isEqualTo("Http");
     assertThat(telemetry.rdd1.getTarget()).isEqualTo("mock.codes");
     assertThat(telemetry.rdd1.getResultCode()).isEqualTo("200");
-    assertThat(telemetry.rdd1.getProperties().get("_MS.ProcessedByMetricExtractors"))
-        .isEqualTo("True");
+    assertThat(telemetry.rdd1.getProperties())
+        .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
     assertThat(telemetry.rdd1.getSuccess()).isTrue();
     assertThat(telemetry.rddEnvelope1.getSampleRate()).isNull();
 
@@ -95,8 +96,8 @@ abstract class HttpPreaggregatedMetricsSmokeTest {
     assertThat(telemetry.rdd2.getType()).isEqualTo("Http");
     assertThat(telemetry.rdd2.getTarget()).isEqualTo("mock.codes");
     assertThat(telemetry.rdd2.getResultCode()).isEqualTo("404");
-    assertThat(telemetry.rdd1.getProperties().get("_MS.ProcessedByMetricExtractors"))
-        .isEqualTo("True");
+    assertThat(telemetry.rdd2.getProperties())
+        .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
     assertThat(telemetry.rdd2.getSuccess()).isFalse();
     assertThat(telemetry.rddEnvelope2.getSampleRate()).isNull();
 
@@ -105,8 +106,8 @@ abstract class HttpPreaggregatedMetricsSmokeTest {
     assertThat(telemetry.rdd3.getType()).isEqualTo("Http");
     assertThat(telemetry.rdd3.getTarget()).isEqualTo("mock.codes");
     assertThat(telemetry.rdd3.getResultCode()).isEqualTo("500");
-    assertThat(telemetry.rdd1.getProperties().get("_MS.ProcessedByMetricExtractors"))
-        .isEqualTo("True");
+    assertThat(telemetry.rdd3.getProperties())
+        .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
     assertThat(telemetry.rdd3.getSuccess()).isFalse();
     assertThat(telemetry.rddEnvelope3.getSampleRate()).isNull();
 

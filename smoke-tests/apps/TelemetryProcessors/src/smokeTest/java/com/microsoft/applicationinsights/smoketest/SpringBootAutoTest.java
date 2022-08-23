@@ -31,6 +31,7 @@ import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TO
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8;
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8_OPENJ9;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.data.MapEntry.entry;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.MessageData;
 import java.util.List;
@@ -53,8 +54,8 @@ abstract class SpringBootAutoTest {
     assertThat(telemetry.rd.getProperties().get("httpPath"))
         .isEqualTo("*/TelemetryProcessors/test*");
     assertThat(telemetry.rd.getProperties()).hasSize(5);
-    assertThat(telemetry.rd.getProperties().get("_MS.ProcessedByMetricExtractors"))
-        .isEqualTo("True");
+    assertThat(telemetry.rd.getProperties())
+        .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
     assertThat(telemetry.rd.getSuccess()).isTrue();
     // Log processor test
     List<MessageData> logs = testing.mockedIngestion.getMessageDataInRequest();

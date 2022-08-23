@@ -31,6 +31,7 @@ import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JA
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_8;
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_8_OPENJ9;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.data.MapEntry.entry;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
@@ -69,7 +70,8 @@ public abstract class CustomInstrumentationTest {
 
     assertThat(rd1.getName()).isEqualTo("GET /test");
     assertThat(rd1.getResponseCode()).isEqualTo("200");
-    assertThat(rd1.getProperties().get("_MS.ProcessedByMetricExtractors")).isEqualTo("True");
+    assertThat(rd1.getProperties())
+        .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
     assertThat(rd1.getSuccess()).isTrue();
 
     assertThat(rd2.getName()).isEqualTo("TestController.run");

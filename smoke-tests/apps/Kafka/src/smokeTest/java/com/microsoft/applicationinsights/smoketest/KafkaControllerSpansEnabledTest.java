@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights.smoketest;
 
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_8;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.data.MapEntry.entry;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
@@ -87,7 +88,8 @@ class KafkaControllerSpansEnabledTest {
         (RemoteDependencyData) ((Data<?>) rddEnvelope3.getData()).getBaseData();
 
     assertThat(rd1.getName()).isEqualTo("GET /sendMessage");
-    assertThat(rd1.getProperties().get("_MS.ProcessedByMetricExtractors")).isEqualTo("True");
+    assertThat(rd1.getProperties())
+        .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
     assertThat(rd1.getSuccess()).isTrue();
 
     assertThat(rdd1.getName()).isEqualTo("HelloController.sendMessage");
@@ -114,7 +116,8 @@ class KafkaControllerSpansEnabledTest {
     assertThat(rdd3.getData()).isEqualTo("https://www.bing.com");
     assertThat(rdd3.getType()).isEqualTo("Http");
     assertThat(rdd3.getTarget()).isEqualTo("www.bing.com");
-    assertThat(rdd3.getProperties().get("_MS.ProcessedByMetricExtractors")).isEqualTo("True");
+    assertThat(rdd3.getProperties())
+        .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
     assertThat(rdd3.getSuccess()).isTrue();
 
     SmokeTestExtension.assertParentChild(rd1, rdEnvelope1, rddEnvelope1, "GET /sendMessage");
