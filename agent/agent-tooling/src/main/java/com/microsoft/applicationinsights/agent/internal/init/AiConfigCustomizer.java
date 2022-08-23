@@ -35,7 +35,7 @@ import java.util.function.Function;
 public class AiConfigCustomizer implements Function<ConfigProperties, Map<String, String>> {
 
   @Override
-  public Map<String, String> apply(ConfigProperties config) {
+  public Map<String, String> apply(ConfigProperties otelConfig) {
 
     Configuration configuration = FirstEntryPoint.getConfiguration();
 
@@ -111,7 +111,7 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
 
     properties.put("otel.traces.sampler", DelegatingSamplerProvider.NAME);
 
-    String tracesExporter = config.getString("otel.traces.exporter");
+    String tracesExporter = otelConfig.getString("otel.traces.exporter");
     if (tracesExporter == null) {
       // this overrides the default "otlp" so the exporter can be configured later
       properties.put("otel.traces.exporter", "none");
@@ -127,13 +127,13 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
           httpClientResponseHeaders);
     }
 
-    String metricsExporter = config.getString("otel.metrics.exporter");
+    String metricsExporter = otelConfig.getString("otel.metrics.exporter");
     if (metricsExporter == null) {
       // this overrides the default "otlp" so the exporter can be configured later
       properties.put("otel.metrics.exporter", "none");
     }
 
-    String logsExporter = config.getString("otel.logs.exporter");
+    String logsExporter = otelConfig.getString("otel.logs.exporter");
     if (logsExporter == null) {
       // this overrides the default "otlp" so the exporter can be configured later
       properties.put("otel.logs.exporter", "none");

@@ -232,8 +232,8 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
     autoConfiguration
         .addPropertiesCustomizer(new AiConfigCustomizer())
         .addSpanExporterCustomizer(
-            (spanExporter, config) -> {
-              if ("none".equals(config.getString("otel.traces.exporter"))) {
+            (spanExporter, otelConfig) -> {
+              if ("none".equals(otelConfig.getString("otel.traces.exporter"))) {
                 // in this case the spanExporter here is the noop spanExporter
                 return spanExporter;
               } else {
@@ -241,11 +241,11 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
               }
             })
         .addTracerProviderCustomizer(
-            (builder, config) ->
-                configureTracing(builder, telemetryClient, quickPulse, config, configuration))
+            (builder, otelConfig) ->
+                configureTracing(builder, telemetryClient, quickPulse, otelConfig, configuration))
         .addLogExporterCustomizer(
-            (logExporter, config) -> {
-              if ("none".equals(config.getString("otel.logs.exporter"))) {
+            (logExporter, otelConfig) -> {
+              if ("none".equals(otelConfig.getString("otel.logs.exporter"))) {
                 // in this case the logExporter here is the noop spanExporter
                 return logExporter;
               } else {
@@ -253,10 +253,10 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
               }
             })
         .addLogEmitterProviderCustomizer(
-            (builder, config) ->
-                configureLogging(builder, telemetryClient, quickPulse, config, configuration))
+            (builder, otelConfig) ->
+                configureLogging(builder, telemetryClient, quickPulse, otelConfig, configuration))
         .addMeterProviderCustomizer(
-            (builder, configProperties) ->
+            (builder, otelConfig) ->
                 configureMetrics(metricFilters, builder, telemetryClient, configuration));
 
     Runtime.getRuntime()
@@ -299,7 +299,7 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
       SdkTracerProviderBuilder tracerProvider,
       TelemetryClient telemetryClient,
       @Nullable QuickPulse quickPulse,
-      ConfigProperties config,
+      ConfigProperties otelConfig,
       Configuration configuration) {
 
     if (configuration.connectionString != null) {
@@ -342,7 +342,7 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
       tracerProvider.addSpanProcessor(new AiLegacyHeaderSpanProcessor());
     }
 
-    String tracesExporter = config.getString("otel.traces.exporter");
+    String tracesExporter = otelConfig.getString("otel.traces.exporter");
     if ("none".equals(tracesExporter)) { // "none" is the default set in AiConfigCustomizer
       SpanExporter spanExporter =
           createSpanExporter(
@@ -443,7 +443,7 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
       SdkLogEmitterProviderBuilder builder,
       TelemetryClient telemetryClient,
       @Nullable QuickPulse quickPulse,
-      ConfigProperties config,
+      ConfigProperties otelConfig,
       Configuration configuration) {
 
     builder.addLogProcessor(new AzureMonitorLogProcessor());
@@ -454,7 +454,7 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
     builder.addLogProcessor(new InheritedInstrumentationKeyLogProcessor());
     builder.addLogProcessor(new InheritedRoleNameLogProcessor());
 
-    String logsExporter = config.getString("otel.logs.exporter");
+    String logsExporter = otelConfig.getString("otel.logs.exporter");
     if ("none".equals(logsExporter)) { // "none" is the default set in AiConfigCustomizer
       LogExporter logExporter = createLogExporter(telemetryClient, quickPulse, configuration);
 
