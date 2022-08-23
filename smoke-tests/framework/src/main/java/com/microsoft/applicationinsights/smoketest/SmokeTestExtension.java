@@ -102,16 +102,33 @@ public class SmokeTestExtension
 
   @Nullable private Network network;
 
+  private final GenericContainer<?> dependencyContainer;
+  private final String dependencyContainerEnvVarName;
   private final boolean skipHealthCheck;
   private final boolean readOnly;
 
-  public SmokeTestExtension() {
-    this(false, false);
+  public static SmokeTestExtension create() {
+    return new SmokeTestExtension(false, false, null, null);
   }
 
-  public SmokeTestExtension(boolean skipHealthCheck, boolean readOnly) {
+  public static SmokeTestExtension create(boolean skipHealthCheck, boolean readOnly) {
+    return new SmokeTestExtension(skipHealthCheck, readOnly, null, null);
+  }
+
+  public static SmokeTestExtension create(
+      GenericContainer<?> dependencyContainer, String dependencyContainerEnvVarName) {
+    return new SmokeTestExtension(false, false, dependencyContainer, dependencyContainerEnvVarName);
+  }
+
+  private SmokeTestExtension(
+      boolean skipHealthCheck,
+      boolean readOnly,
+      @Nullable GenericContainer<?> dependencyContainer,
+      @Nullable String dependencyContainerEnvVarName) {
     this.skipHealthCheck = skipHealthCheck;
     this.readOnly = readOnly;
+    this.dependencyContainer = dependencyContainer;
+    this.dependencyContainerEnvVarName = dependencyContainerEnvVarName;
   }
 
   @Override
@@ -246,11 +263,32 @@ public class SmokeTestExtension
   }
 
   private void startDependencyContainers() {
+    if (dependencyContainer != null) {
+      System.out.println("Starting container: " + dependencyContainer.getDockerImageName());
+      String containerName = "dependency" + ThreadLocalRandom.current().nextInt(Integer.MAX_VALUE);
+      dependencyContainer
+          .withNetwork(network)
+          .withNetworkAliases(containerName)
+          .withStartupTimeout(Duration.ofSeconds(90));
+
+      Stopwatch stopwatch = Stopwatch.createStarted();
+      dependencyContainer.start();
+      System.out.printf(
+          "Dependency container %s (%s) started after %.3f seconds%n",
+          dependencyContainer.getDockerImageName(),
+          dependencyContainer.getContainerId(),
+          stopwatch.elapsed(TimeUnit.MILLISECONDS) / 1000.0);
+
+      if (dependencyContainerEnvVarName != null) {
+        hostnameEnvVars.put(dependencyContainerEnvVarName, containerName);
+      }
+      allContainers.add(dependencyContainer);
+    }
     for (DependencyContainer dc : dependencyImages) {
       String imageName = dc.imageName().isEmpty() ? dc.value() : dc.imageName();
       System.out.println("Starting container: " + imageName);
       String containerName = "dependency" + ThreadLocalRandom.current().nextInt(Integer.MAX_VALUE);
-      String[] envVars = substitue(dc.environmentVariables(), containerName);
+      String[] envVars = substitue(dc.environmentVariables());
       Map<String, String> envVarMap = new HashMap<>();
       for (String envVar : envVars) {
         String[] parts = envVar.split("=");
@@ -276,20 +314,19 @@ public class SmokeTestExtension
     }
   }
 
-  private String[] substitue(String[] environmentVariables, String containerName) {
+  private String[] substitue(String[] environmentVariables) {
     String[] envVars = new String[environmentVariables.length];
     for (int i = 0; i < environmentVariables.length; i++) {
-      envVars[i] = substitute(environmentVariables[i], containerName);
+      envVars[i] = substitute(environmentVariables[i]);
     }
     return envVars;
   }
 
-  private String substitute(String environmentVariable, String containerName) {
+  private String substitute(String environmentVariable) {
     String envVar = environmentVariable;
     for (Map.Entry<String, String> entry : hostnameEnvVars.entrySet()) {
       envVar = envVar.replace("${" + entry.getKey() + "}", entry.getValue());
     }
-    envVar = envVar.replace("${CONTAINERNAME}", containerName);
     return envVar;
   }
 

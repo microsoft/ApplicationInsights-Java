@@ -43,7 +43,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
         hostnameEnvironmentVariable = "MONGO"))
 abstract class MongoTest {
 
-  @RegisterExtension static final SmokeTestExtension testing = new SmokeTestExtension();
+  @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.create();
 
   @Test
   @TargetUri("/mongo")

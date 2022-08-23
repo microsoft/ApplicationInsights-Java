@@ -40,7 +40,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 @UseAgent("controller_spans_enabled_applicationinsights.json")
 class SpringBootControllerSpansEnabledTest {
 
-  @RegisterExtension static final SmokeTestExtension testing = new SmokeTestExtension();
+  @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.create();
 
   @Test
   @TargetUri("/basic/trackEvent")

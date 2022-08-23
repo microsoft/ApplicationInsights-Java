@@ -43,7 +43,8 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 @UseAgent
 abstract class ReadOnlyTest {
 
-  @RegisterExtension static final SmokeTestExtension testing = new SmokeTestExtension(true, true);
+  @RegisterExtension
+  static final SmokeTestExtension testing = SmokeTestExtension.create(true, true);
 
   @Test
   void test() throws Exception {

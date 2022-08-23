@@ -52,7 +52,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 })
 class SpringCloudStreamControllerSpansEnabledTest {
 
-  @RegisterExtension static final SmokeTestExtension testing = new SmokeTestExtension();
+  @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.create();
 
   @Test
   @TargetUri("/sendMessage")

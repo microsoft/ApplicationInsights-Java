@@ -49,7 +49,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 @UseAgent
 abstract class TraceLog4j12Test {
 
-  @RegisterExtension static final SmokeTestExtension testing = new SmokeTestExtension();
+  @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.create();
 
   private static final Logger logger = LogManager.getLogger(TraceLog4j12Test.class);
 
