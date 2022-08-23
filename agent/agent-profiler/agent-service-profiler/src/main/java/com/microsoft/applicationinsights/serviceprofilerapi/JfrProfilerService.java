@@ -30,13 +30,12 @@ import com.microsoft.applicationinsights.serviceprofilerapi.client.ServiceProfil
 import com.microsoft.applicationinsights.serviceprofilerapi.config.ServiceProfilerConfigMonitorService;
 import com.microsoft.applicationinsights.serviceprofilerapi.profiler.JfrUploadService;
 import com.microsoft.applicationinsights.serviceprofilerapi.upload.ServiceProfilerUploader;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
-import javax.management.InstanceNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,7 +68,7 @@ public class JfrProfilerService implements ProfilerService {
   private final ScheduledExecutorService serviceProfilerExecutorService;
   private final ProfilerConfigurationHandler profilerConfigurationHandler;
 
-  private boolean initialised = false;
+  private final AtomicBoolean initialised = new AtomicBoolean();
 
   private ProfileHandler profileHandler;
 
@@ -92,26 +91,20 @@ public class JfrProfilerService implements ProfilerService {
 
   public Future<ProfilerService> initialize() {
     CompletableFuture<ProfilerService> result = new CompletableFuture<>();
-    if (initialised) {
+    if (initialised.getAndSet(true)) {
       result.complete(this);
       return result;
     }
 
     LOGGER.warn("INITIALISING JFR PROFILING SUBSYSTEM THIS FEATURE IS IN BETA");
 
-    initialised = true;
-
     profileHandler = new JfrUploadService(serviceProfilerUploader, appIdSupplier);
 
     serviceProfilerExecutorService.submit(
         () -> {
           try {
-            if (!initialiseProfiler()) {
-              result.completeExceptionally(
-                  new RuntimeException(
-                      "Unable to obtain JFR connection, this may indicate that your JVM does not have JFR enabled. JFR profiling system will shutdown"));
-              return;
-            }
+            // Daemon remains alive permanently due to scheduling an update
+            profiler.initialize(profileHandler, serviceProfilerExecutorService);
 
             // Monitor service remains alive permanently due to scheduling an periodic config pull
             ServiceProfilerConfigMonitorService.createServiceProfilerConfigService(
@@ -121,30 +114,16 @@ public class JfrProfilerService implements ProfilerService {
                 config);
 
             result.complete(this);
-          } catch (RuntimeException e) {
-            LOGGER.error("Failed to initialise alert service", e);
-          } catch (Error e) {
-            LOGGER.error("Failed to initialise alert service", e);
-            throw e;
+          } catch (Throwable t) {
+            LOGGER.error(
+                "Failed to initialise profiler service",
+                new RuntimeException(
+                    "Unable to obtain JFR connection, this may indicate that your JVM does not"
+                        + " have JFR enabled. JFR profiling system will shutdown"));
+            result.completeExceptionally(t);
           }
         });
     return result;
-  }
-
-  private boolean initialiseProfiler() {
-    boolean initSucceded = false;
-    try {
-      // Daemon remains alive permanently due to scheduling an update
-      initSucceded = profiler.initialize(profileHandler, serviceProfilerExecutorService);
-    } catch (IOException | InstanceNotFoundException e) {
-      LOGGER.error("Could not initialize JFRDaemon", e);
-    }
-
-    if (!initSucceded) {
-      LOGGER.error(
-          "Unable to obtain JFR connection, this may indicate that your JVM does not have JFR enabled. JFR profiling system will shutdown");
-    }
-    return initSucceded;
   }
 
   private static Supplier<String> getAppId(Supplier<String> supplier) {
