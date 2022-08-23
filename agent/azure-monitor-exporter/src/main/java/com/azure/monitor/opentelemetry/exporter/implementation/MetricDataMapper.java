@@ -163,8 +163,6 @@ public class MetricDataMapper {
       boolean success = getSuccess(statusCode, captureHttpServer4xxAsError);
       String isSyntheticString =
           pointData.getAttributes().get(AttributeKey.stringKey("isSynthetic"));
-      // TODO to be removed
-      logger.debug("####### isSyntheticString: {}", isSyntheticString);
       boolean isSynthetic = false;
       if (isSyntheticString != null) {
         isSynthetic = Boolean.valueOf(isSyntheticString);

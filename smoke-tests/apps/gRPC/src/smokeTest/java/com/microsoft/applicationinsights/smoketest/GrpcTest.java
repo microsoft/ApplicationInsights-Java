@@ -211,11 +211,11 @@ abstract class GrpcTest {
     Map<String, String> properties = metricData.getProperties();
     if ("client".equals(type)) {
       assertThat(properties.get("dependency/resultCode")).isNull();
-      assertThat(properties.get("_MS.metricId")).isEqualTo("dependencies/duration");
+      assertThat(properties.get("_MS.MetricId")).isEqualTo("dependencies/duration");
       assertThat(properties.get("dependency/target")).isNotNull();
       assertThat(properties.get("dependency/type")).isEqualTo("grpc");
     } else {
-      assertThat(properties.get("_MS.metricId")).isEqualTo("requests/duration");
+      assertThat(properties.get("_MS.MetricId")).isEqualTo("requests/duration");
       assertThat(properties.get("request/resultCode")).isNull();
       assertThat(properties.get("request/success")).isEqualTo("True");
     }
