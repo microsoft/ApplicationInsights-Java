@@ -39,27 +39,16 @@ import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.testcontainers.containers.KafkaContainer;
+import org.testcontainers.utility.DockerImageName;
 
 @UseAgent
-@WithDependencyContainers({
-  @DependencyContainer(
-      value = "confluentinc/cp-zookeeper",
-      exposedPort = 2181,
-      environmentVariables = {"ZOOKEEPER_CLIENT_PORT=2181"},
-      hostnameEnvironmentVariable = "ZOOKEEPER"),
-  @DependencyContainer(
-      value = "confluentinc/cp-kafka",
-      exposedPort = 9092,
-      environmentVariables = {
-        "KAFKA_ZOOKEEPER_CONNECT=${ZOOKEEPER}:2181",
-        "KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://${CONTAINERNAME}:9092",
-        "KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1"
-      },
-      hostnameEnvironmentVariable = "KAFKA")
-})
 abstract class SpringCloudStreamTest {
 
-  @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.create();
+  @RegisterExtension
+  static final SmokeTestExtension testing =
+      SmokeTestExtension.create(
+          new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:6.2.1")), "KAFKA");
 
   @Test
   @TargetUri("/sendMessage")
