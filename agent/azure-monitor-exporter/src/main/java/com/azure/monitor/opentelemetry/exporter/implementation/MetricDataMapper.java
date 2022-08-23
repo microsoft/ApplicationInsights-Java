@@ -105,7 +105,6 @@ public class MetricDataMapper {
 
     for (PointData pointData : metricData.getData().getPoints()) {
       MetricTelemetryBuilder builder = MetricTelemetryBuilder.create();
-      // TODO (heya) do not apply custom dimensions to pre-aggregated metrics
       telemetryInitializer.accept(builder, metricData.getResource());
 
       builder.setTime(FormattedTime.offSetDateTimeFromEpochNanos(pointData.getEpochNanos()));
