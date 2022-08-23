@@ -170,7 +170,7 @@ class SpringBootControllerSpansEnabledTest {
     assertThat(rdd2.getName()).isEqualTo("GET /");
     assertThat(rdd2.getData()).isEqualTo("https://www.bing.com");
     assertThat(rdd2.getTarget()).isEqualTo("www.bing.com");
-    assertThat(rdd2.getProperties()).isEmpty();
+    assertThat(rdd2.getProperties().get("_MS.ProcessedByMetricExtractors")).isEqualTo("True");
     assertThat(rdd2.getSuccess()).isTrue();
 
     // TODO (trask): why is spring-webmvc instrumentation capturing this twice?

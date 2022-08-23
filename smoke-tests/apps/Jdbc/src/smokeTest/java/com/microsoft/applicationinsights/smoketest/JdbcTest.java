@@ -102,7 +102,8 @@ abstract class JdbcTest {
   void hsqldbLargeStatement() throws Exception {
     Telemetry telemetry = testing.getTelemetry(1);
 
-    assertThat(telemetry.rd.getProperties()).isEmpty();
+    assertThat(telemetry.rd.getProperties().get("_MS.ProcessedByMetricExtractors"))
+        .isEqualTo("True");
     assertThat(telemetry.rd.getSuccess()).isTrue();
 
     StringBuilder a2000 = new StringBuilder();
@@ -129,7 +130,8 @@ abstract class JdbcTest {
   void hsqldbBatchPreparedStatement() throws Exception {
     Telemetry telemetry = testing.getTelemetry(1);
 
-    assertThat(telemetry.rd.getProperties()).isEmpty();
+    assertThat(telemetry.rd.getProperties().get("_MS.ProcessedByMetricExtractors"))
+        .isEqualTo("True");
     assertThat(telemetry.rd.getSuccess()).isTrue();
 
     assertThat(telemetry.rdd1.getName()).isEqualTo("INSERT testdb.abc");
@@ -150,7 +152,8 @@ abstract class JdbcTest {
   void hsqldbBatchStatement() throws Exception {
     Telemetry telemetry = testing.getTelemetry(1);
 
-    assertThat(telemetry.rd.getProperties()).isEmpty();
+    assertThat(telemetry.rd.getProperties().get("_MS.ProcessedByMetricExtractors"))
+        .isEqualTo("True");
     assertThat(telemetry.rd.getSuccess()).isTrue();
 
     assertThat(telemetry.rdd1.getName()).isEqualTo("insert testdb.abc");
@@ -198,7 +201,8 @@ abstract class JdbcTest {
     Telemetry telemetry =
         testing.getTelemetry(1, rdd -> !rdd.getData().startsWith("/* mysql-connector-java? "));
 
-    assertThat(telemetry.rd.getProperties()).isEmpty();
+    assertThat(telemetry.rd.getProperties().get("_MS.ProcessedByMetricExtractors"))
+        .isEqualTo("True");
     assertThat(telemetry.rd.getSuccess()).isTrue();
 
     assertThat(telemetry.rdd1.getName()).isEqualTo("SELECT mysql.abc");
@@ -218,7 +222,8 @@ abstract class JdbcTest {
   void postgresPreparedStatement() throws Exception {
     Telemetry telemetry = testing.getTelemetry(1);
 
-    assertThat(telemetry.rd.getProperties()).isEmpty();
+    assertThat(telemetry.rd.getProperties().get("_MS.ProcessedByMetricExtractors"))
+        .isEqualTo("True");
     assertThat(telemetry.rd.getSuccess()).isTrue();
 
     assertThat(telemetry.rdd1.getName()).isEqualTo("SELECT postgres.abc");
@@ -300,7 +305,8 @@ abstract class JdbcTest {
   void oraclePreparedStatement() throws Exception {
     Telemetry telemetry = testing.getTelemetry(1);
 
-    assertThat(telemetry.rd.getProperties()).isEmpty();
+    assertThat(telemetry.rd.getProperties().get("_MS.ProcessedByMetricExtractors"))
+        .isEqualTo("True");
     assertThat(telemetry.rd.getSuccess()).isTrue();
 
     assertThat(telemetry.rdd1.getName()).isEqualTo("SELECT abc");
@@ -320,7 +326,8 @@ abstract class JdbcTest {
   void oracleStatement() throws Exception {
     Telemetry telemetry = testing.getTelemetry(1);
 
-    assertThat(telemetry.rd.getProperties()).isEmpty();
+    assertThat(telemetry.rd.getProperties().get("_MS.ProcessedByMetricExtractors"))
+        .isEqualTo("True");
     assertThat(telemetry.rd.getSuccess()).isTrue();
 
     assertThat(telemetry.rdd1.getName()).isEqualTo("SELECT abc");

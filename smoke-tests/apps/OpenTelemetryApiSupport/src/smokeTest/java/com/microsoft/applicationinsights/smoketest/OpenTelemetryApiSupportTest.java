@@ -84,6 +84,8 @@ abstract class OpenTelemetryApiSupportTest {
     assertThat(telemetry.rd.getResponseCode()).isEqualTo("200");
     assertThat(telemetry.rd.getSuccess()).isTrue();
     assertThat(telemetry.rd.getSource()).isNull();
+    assertThat(telemetry.rd.getProperties().get("_MS.ProcessedByMetricExtractors"))
+        .isEqualTo("True");
     assertThat(telemetry.rd.getProperties()).isEmpty();
     assertThat(telemetry.rd.getMeasurements()).isEmpty();
 
