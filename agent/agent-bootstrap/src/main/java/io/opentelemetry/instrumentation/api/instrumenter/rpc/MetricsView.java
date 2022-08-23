@@ -50,9 +50,12 @@ final class MetricsView {
     view.add(SemanticAttributes.RPC_SYSTEM);
     view.add(SemanticAttributes.RPC_SERVICE);
     view.add(SemanticAttributes.RPC_METHOD);
+
+    // START APPLICATION INSIGHTS CODE
     view.add(TARGET);
     view.add(IS_SYNTHETIC);
     return view;
+    // END APPLICATION INSIGHTS CODE
   }
 
   private static Set<AttributeKey> buildClientView() {
