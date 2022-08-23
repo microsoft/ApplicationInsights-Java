@@ -29,7 +29,7 @@ import java.util.Map;
 public abstract class BaseExtractor {
 
   // visible for testing
-  public static final String MS_METRIC_ID = "_MS.metricId";
+  public static final String MS_METRIC_ID = "_MS.MetricId";
   public static final String MS_IS_AUTOCOLLECTED = "_MS.IsAutocollected";
   public static final String TRUE = "True";
   public static final String FALSE = "False";
