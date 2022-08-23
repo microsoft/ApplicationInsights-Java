@@ -49,6 +49,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import jdk.internal.jline.internal.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -100,7 +101,7 @@ public class MetricDataMapper {
   }
 
   private List<TelemetryItem> convertOtelMetricToAzureMonitorMetric(
-      MetricData metricData, boolean isPreAggregated) {
+      MetricData metricData, @Nullable Boolean isPreAggregated) {
     List<TelemetryItem> telemetryItems = new ArrayList<>();
 
     for (PointData pointData : metricData.getData().getPoints()) {
@@ -160,12 +161,7 @@ public class MetricDataMapper {
     if (isPreAggregated) {
       Long statusCode = pointData.getAttributes().get(SemanticAttributes.HTTP_STATUS_CODE);
       boolean success = getSuccess(statusCode, captureHttpServer4xxAsError);
-      String isSyntheticString =
-          pointData.getAttributes().get(AttributeKey.stringKey("isSynthetic"));
-      boolean isSynthetic = false;
-      if (isSyntheticString != null) {
-        isSynthetic = Boolean.valueOf(isSyntheticString);
-      }
+      Boolean isSynthetic = pointData.getAttributes().get(AttributeKey.booleanKey("isSynthetic"));
       if (metricData.getName().contains(".server.")) {
         RequestExtractor requestExtractor =
             new RequestExtractor(metricTelemetryBuilder, statusCode, success, isSynthetic);

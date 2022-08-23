@@ -21,8 +21,8 @@
 
 package io.opentelemetry.instrumentation.api.instrumenter.rpc;
 
-import static io.opentelemetry.instrumentation.api.instrumenter.UserAgents.IS_PRE_AGGREGATED;
-import static io.opentelemetry.instrumentation.api.instrumenter.UserAgents.IS_SYNTHETIC;
+import static io.opentelemetry.instrumentation.api.instrumenter.BootstrapSemanticAttributes.IS_PRE_AGGREGATED;
+import static io.opentelemetry.instrumentation.api.instrumenter.BootstrapSemanticAttributes.IS_SYNTHETIC;
 import static io.opentelemetry.instrumentation.api.instrumenter.UserAgents.isUserAgentBot;
 import static io.opentelemetry.instrumentation.api.instrumenter.rpc.MetricsView.applyServerView;
 import static java.util.logging.Level.FINE;
@@ -95,7 +95,7 @@ public final class RpcServerMetrics implements OperationListener {
 
     // this is needed for detecting telemetry signals that will trigger pre-aggregated metrics via
     // auto instrumentations
-    Span.fromContext(context).setAttribute(IS_PRE_AGGREGATED, "True");
+    Span.fromContext(context).setAttribute(IS_PRE_AGGREGATED, true);
 
     endAttributes =
         endAttributes.toBuilder()

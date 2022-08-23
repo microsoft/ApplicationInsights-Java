@@ -36,7 +36,7 @@ public final class RequestExtractor extends BaseExtractor {
       MetricTelemetryBuilder telemetryBuilder,
       Long statusCode,
       boolean success,
-      boolean isSynthetic) {
+      Boolean isSynthetic) {
     super(telemetryBuilder, isSynthetic);
     this.statusCode = statusCode;
     this.success = success;

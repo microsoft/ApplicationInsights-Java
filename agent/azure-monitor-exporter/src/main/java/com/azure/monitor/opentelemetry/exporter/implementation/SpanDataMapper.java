@@ -180,12 +180,10 @@ public final class SpanDataMapper {
   }
 
   public TelemetryItem map(SpanData span, long itemCount) {
-    boolean isPreAggregated = checkIsPreAggregated(span);
     if (isRequest(span)) {
-      return exportRequest(span, itemCount, isPreAggregated);
+      return exportRequest(span, itemCount);
     } else {
-      return exportRemoteDependency(
-          span, span.getKind() == SpanKind.INTERNAL, itemCount, isPreAggregated);
+      return exportRemoteDependency(span, span.getKind() == SpanKind.INTERNAL, itemCount);
     }
   }
 
@@ -230,12 +228,13 @@ public final class SpanDataMapper {
   }
 
   private static boolean checkIsPreAggregated(SpanData span) {
-    String isPreAggregated = span.getAttributes().get(AttributeKey.stringKey("isPreAggregated"));
-    return isPreAggregated != null && Boolean.valueOf(isPreAggregated);
+    Boolean isPreAggregated =
+        span.getAttributes()
+            .get(AttributeKey.booleanKey("applicationinsights.internal.is_pre_aggregated"));
+    return isPreAggregated != null && isPreAggregated;
   }
 
-  private TelemetryItem exportRemoteDependency(
-      SpanData span, boolean inProc, long itemCount, boolean isPreAggregated) {
+  private TelemetryItem exportRemoteDependency(SpanData span, boolean inProc, long itemCount) {
     RemoteDependencyTelemetryBuilder telemetryBuilder = RemoteDependencyTelemetryBuilder.create();
     telemetryInitializer.accept(telemetryBuilder, span.getResource());
 
@@ -262,7 +261,7 @@ public final class SpanDataMapper {
       applySemanticConventions(telemetryBuilder, span);
     }
 
-    if (isPreAggregated) {
+    if (checkIsPreAggregated(span)) {
       telemetryBuilder.addProperty(MS_PROCESSED_BY_METRIC_EXTRACTORS, "True");
     }
 
@@ -527,8 +526,6 @@ public final class SpanDataMapper {
       target = rpcSystem;
     }
     telemetryBuilder.setTarget(target);
-    // RPC client/server metrics only has duration
-    telemetryBuilder.addProperty(MS_PROCESSED_BY_METRIC_EXTRACTORS, "True");
   }
 
   private static void applyDatabaseClientSpan(
@@ -608,7 +605,7 @@ public final class SpanDataMapper {
     }
   }
 
-  private TelemetryItem exportRequest(SpanData span, long itemCount, boolean isPreAggregated) {
+  private TelemetryItem exportRequest(SpanData span, long itemCount) {
     RequestTelemetryBuilder telemetryBuilder = RequestTelemetryBuilder.create();
     telemetryInitializer.accept(telemetryBuilder, span.getResource());
 
@@ -695,7 +692,7 @@ public final class SpanDataMapper {
       telemetryBuilder.addTag(ContextTagKeys.AI_DEVICE_OS_VERSION.toString(), deviceOsVersion);
     }
 
-    if (isPreAggregated) {
+    if (checkIsPreAggregated(span)) {
       telemetryBuilder.addProperty(MS_PROCESSED_BY_METRIC_EXTRACTORS, "True");
     }
 
@@ -971,9 +968,6 @@ public final class SpanDataMapper {
           if (STANDARD_ATTRIBUTE_PREFIX_TRIE.getOrDefault(stringKey, false)
               && !stringKey.startsWith("http.request.header.")
               && !stringKey.startsWith("http.response.header.")) {
-            return;
-          }
-          if (stringKey.equals("isPreAggregated")) {
             return;
           }
           String val = convertToString(value, key.getType());

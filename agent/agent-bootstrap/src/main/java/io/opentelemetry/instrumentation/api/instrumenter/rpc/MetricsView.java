@@ -21,8 +21,8 @@
 
 package io.opentelemetry.instrumentation.api.instrumenter.rpc;
 
-import static io.opentelemetry.instrumentation.api.instrumenter.UserAgents.IS_SYNTHETIC;
-import static io.opentelemetry.instrumentation.api.instrumenter.UserAgents.TARGET;
+import static io.opentelemetry.instrumentation.api.instrumenter.BootstrapSemanticAttributes.IS_SYNTHETIC;
+import static io.opentelemetry.instrumentation.api.instrumenter.BootstrapSemanticAttributes.TARGET;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
@@ -50,8 +50,8 @@ final class MetricsView {
     view.add(SemanticAttributes.RPC_SYSTEM);
     view.add(SemanticAttributes.RPC_SERVICE);
     view.add(SemanticAttributes.RPC_METHOD);
-    view.add(AttributeKey.stringKey(TARGET));
-    view.add(AttributeKey.stringKey(IS_SYNTHETIC));
+    view.add(TARGET);
+    view.add(IS_SYNTHETIC);
     return view;
   }
 

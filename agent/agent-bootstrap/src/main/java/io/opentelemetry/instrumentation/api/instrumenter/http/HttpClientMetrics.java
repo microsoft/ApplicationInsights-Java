@@ -21,9 +21,9 @@
 
 package io.opentelemetry.instrumentation.api.instrumenter.http;
 
-import static io.opentelemetry.instrumentation.api.instrumenter.UserAgents.IS_PRE_AGGREGATED;
-import static io.opentelemetry.instrumentation.api.instrumenter.UserAgents.IS_SYNTHETIC;
-import static io.opentelemetry.instrumentation.api.instrumenter.UserAgents.TARGET;
+import static io.opentelemetry.instrumentation.api.instrumenter.BootstrapSemanticAttributes.IS_PRE_AGGREGATED;
+import static io.opentelemetry.instrumentation.api.instrumenter.BootstrapSemanticAttributes.IS_SYNTHETIC;
+import static io.opentelemetry.instrumentation.api.instrumenter.BootstrapSemanticAttributes.TARGET;
 import static io.opentelemetry.instrumentation.api.instrumenter.UserAgents.isUserAgentBot;
 import static io.opentelemetry.instrumentation.api.instrumenter.http.TemporaryMetricsView.applyClientDurationAndSizeView;
 import static java.util.logging.Level.FINE;
@@ -118,13 +118,11 @@ public final class HttpClientMetrics implements OperationListener {
 
     // this is needed for detecting telemetry signals that will trigger pre-aggregated metrics via
     // auto instrumentations
-    Span.fromContext(context).setAttribute(IS_PRE_AGGREGATED, "True");
+    Span.fromContext(context).setAttribute(IS_PRE_AGGREGATED, true);
 
     Attributes durationAttributes =
         durationAndSizeAttributes.toBuilder()
-            .put(
-                IS_SYNTHETIC,
-                String.valueOf(isUserAgentBot(endAttributes, state.startAttributes())))
+            .put(IS_SYNTHETIC, isUserAgentBot(endAttributes, state.startAttributes()))
             .put(TARGET, getTargetForHttpClientSpan(durationAndSizeAttributes))
             .build();
     // END APPLICATION INSIGHTS CODE

@@ -43,7 +43,7 @@ public class DependencyExtractor extends BaseExtractor {
       boolean success,
       String type,
       String target,
-      boolean isSynthetic) {
+      Boolean isSynthetic) {
     super(telemetryBuilder, isSynthetic);
     this.statusCode = statusCode;
     this.success = success;

@@ -19,20 +19,19 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.azure.monitor.opentelemetry.exporter.implementation;
+package io.opentelemetry.instrumentation.api.instrumenter;
 
-import static io.opentelemetry.api.common.AttributeKey.longKey;
+import static io.opentelemetry.api.common.AttributeKey.booleanKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
 import io.opentelemetry.api.common.AttributeKey;
 
-public final class AiSemanticAttributes {
+public final class BootstrapSemanticAttributes {
 
-  public static final AttributeKey<String> OPERATION_NAME =
-      stringKey("applicationinsights.internal.operation_name");
+  public static final AttributeKey<Boolean> IS_SYNTHETIC = booleanKey("isSynthetic");
+  public static final AttributeKey<String> TARGET = stringKey("target");
+  public static final AttributeKey<Boolean> IS_PRE_AGGREGATED =
+      booleanKey("applicationinsights.internal.is_pre_aggregated");
 
-  public static final AttributeKey<Long> ITEM_COUNT =
-      longKey("applicationinsights.internal.item_count");
-
-  private AiSemanticAttributes() {}
+  private BootstrapSemanticAttributes() {}
 }

@@ -39,12 +39,12 @@ public abstract class BaseExtractor {
 
   protected final AbstractTelemetryBuilder telemetryBuilder;
 
-  public BaseExtractor(MetricTelemetryBuilder telemetryBuilder, boolean isSynthetic) {
+  public BaseExtractor(MetricTelemetryBuilder telemetryBuilder, Boolean isSynthetic) {
     this.telemetryBuilder = telemetryBuilder;
     extractCommon(isSynthetic);
   }
 
-  private void extractCommon(boolean isSynthetic) {
+  private void extractCommon(Boolean isSynthetic) {
     telemetryBuilder.addProperty(MS_IS_AUTOCOLLECTED, TRUE);
     Map<String, String> tags = telemetryBuilder.build().getTags();
     if (tags != null) {
@@ -59,7 +59,8 @@ public abstract class BaseExtractor {
       }
     }
 
-    telemetryBuilder.addProperty(OPERATION_SYNTHETIC, isSynthetic ? TRUE : FALSE);
+    telemetryBuilder.addProperty(
+        OPERATION_SYNTHETIC, isSynthetic != null && isSynthetic ? TRUE : FALSE);
   }
 
   public abstract void extract();

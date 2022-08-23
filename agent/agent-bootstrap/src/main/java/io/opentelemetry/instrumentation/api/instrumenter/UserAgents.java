@@ -28,14 +28,10 @@ import javax.annotation.Nullable;
 
 public final class UserAgents {
 
-  public static final String IS_SYNTHETIC = "isSynthetic";
-  public static final String TARGET = "target";
-  public static final String IS_PRE_AGGREGATED = "isPreAggregated";
-
   public static boolean isUserAgentBot(Attributes endAttributes, Attributes startAttributes) {
     String aiUserAgent =
         getAttribute(SemanticAttributes.HTTP_USER_AGENT, endAttributes, startAttributes);
-    return aiUserAgent != null && aiUserAgent.indexOf("AlwaysOn") >= 0;
+    return aiUserAgent != null && aiUserAgent.contains("AlwaysOn");
   }
 
   @Nullable
