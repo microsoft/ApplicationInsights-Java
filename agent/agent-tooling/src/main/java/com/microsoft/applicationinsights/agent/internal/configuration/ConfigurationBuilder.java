@@ -242,11 +242,11 @@ public class ConfigurationBuilder {
     }
   }
 
-  private static void overlayProfilerEnvVars(Configuration config) {
+  private static void overlayProfilerConfig(Configuration config) {
     if (isOpenJ9Jvm()) {
       configurationLogger.warn(
           "Profiler is not supported for an OpenJ9 JVM. Instead, please use an OpenJDK JVM.");
-      return;
+      config.preview.profiler.enabled = false;
     }
     config.preview.profiler.enabled =
         Boolean.parseBoolean(
@@ -498,7 +498,7 @@ public class ConfigurationBuilder {
     loadJmxMetricsEnvVar(config);
 
     addDefaultJmxMetricsIfNotPresent(config);
-    overlayProfilerEnvVars(config);
+    overlayProfilerConfig(config);
     overlayAadEnvVars(config);
     overlayInstrumentationEnabledEnvVars(config);
   }
