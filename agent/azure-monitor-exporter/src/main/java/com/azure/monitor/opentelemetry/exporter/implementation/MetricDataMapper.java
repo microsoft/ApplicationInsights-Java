@@ -54,7 +54,7 @@ import org.slf4j.LoggerFactory;
 
 public class MetricDataMapper {
 
-  private static final Set<String> OTEL_PRE_AGGREGATED_METRIC_NAMES = new HashSet<>(4);
+  private static final Set<String> OTEL_STANDARD_METRIC_NAMES = new HashSet<>(4);
   private static final List<String> EXCLUDED_METRIC_NAMES = new ArrayList<>();
 
   private static final Logger logger = LoggerFactory.getLogger(MetricDataMapper.class);
@@ -64,10 +64,10 @@ public class MetricDataMapper {
   static {
     EXCLUDED_METRIC_NAMES.add("http.server.active_requests"); // Servlet
 
-    OTEL_PRE_AGGREGATED_METRIC_NAMES.add("http.server.duration"); // Servlet
-    OTEL_PRE_AGGREGATED_METRIC_NAMES.add("http.client.duration"); // HttpClient
-    OTEL_PRE_AGGREGATED_METRIC_NAMES.add("rpc.client.duration"); // gRPC
-    OTEL_PRE_AGGREGATED_METRIC_NAMES.add("rpc.server.duration"); // gRPC
+    OTEL_STANDARD_METRIC_NAMES.add("http.server.duration"); // Servlet
+    OTEL_STANDARD_METRIC_NAMES.add("http.client.duration"); // HttpClient
+    OTEL_STANDARD_METRIC_NAMES.add("rpc.client.duration"); // gRPC
+    OTEL_STANDARD_METRIC_NAMES.add("rpc.server.duration"); // gRPC
   }
 
   public MetricDataMapper(
@@ -88,7 +88,7 @@ public class MetricDataMapper {
         || type == LONG_SUM
         || type == LONG_GAUGE
         || type == HISTOGRAM) {
-      boolean isPreAggregated = OTEL_PRE_AGGREGATED_METRIC_NAMES.contains(metricData.getName());
+      boolean isPreAggregated = OTEL_STANDARD_METRIC_NAMES.contains(metricData.getName());
       List<TelemetryItem> telemetryItemList =
           convertOtelMetricToAzureMonitorMetric(metricData, isPreAggregated);
       for (TelemetryItem telemetryItem : telemetryItemList) {
@@ -160,7 +160,10 @@ public class MetricDataMapper {
     if (isPreAggregated) {
       Long statusCode = pointData.getAttributes().get(SemanticAttributes.HTTP_STATUS_CODE);
       boolean success = getSuccess(statusCode, captureHttpServer4xxAsError);
-      Boolean isSynthetic = pointData.getAttributes().get(AttributeKey.booleanKey("isSynthetic"));
+      Boolean isSynthetic =
+          pointData
+              .getAttributes()
+              .get(AttributeKey.booleanKey("applicationinsights.internal.is_synthetic"));
       if (metricData.getName().contains(".server.")) {
         RequestExtractor requestExtractor =
             new RequestExtractor(metricTelemetryBuilder, statusCode, success, isSynthetic);
@@ -170,8 +173,10 @@ public class MetricDataMapper {
             metricData.getName().startsWith("http")
                 ? "http"
                 : pointData.getAttributes().get(SemanticAttributes.RPC_SYSTEM);
-        String target = pointData.getAttributes().get(AttributeKey.stringKey("target"));
-
+        String target =
+            pointData
+                .getAttributes()
+                .get(AttributeKey.stringKey("applicationinsights.internal.target"));
         DependencyExtractor dependencyExtractor =
             new DependencyExtractor(
                 metricTelemetryBuilder, statusCode, success, dependencyType, target, isSynthetic);

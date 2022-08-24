@@ -135,6 +135,7 @@ public final class HttpServerMetrics implements OperationListener {
         durationAndSizeAttributes.toBuilder()
             .put(IS_SYNTHETIC, isUserAgentBot(endAttributes, state.startAttributes()))
             .build();
+
     // END APPLICATION INSIGHTS CODE
 
     this.duration.record(

@@ -29,9 +29,9 @@ import javax.annotation.Nullable;
 public final class UserAgents {
 
   public static boolean isUserAgentBot(Attributes endAttributes, Attributes startAttributes) {
-    String aiUserAgent =
+    String userAgent =
         getAttribute(SemanticAttributes.HTTP_USER_AGENT, endAttributes, startAttributes);
-    return aiUserAgent != null && aiUserAgent.contains("AlwaysOn");
+    return userAgent != null && userAgent.contains("AlwaysOn");
   }
 
   @Nullable

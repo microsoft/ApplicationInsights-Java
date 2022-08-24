@@ -124,6 +124,7 @@ public final class HttpClientMetrics implements OperationListener {
             .put(IS_SYNTHETIC, isUserAgentBot(endAttributes, state.startAttributes()))
             .put(TARGET, getTargetForHttpClientSpan(durationAndSizeAttributes))
             .build();
+
     // END APPLICATION INSIGHTS CODE
 
     this.duration.record(

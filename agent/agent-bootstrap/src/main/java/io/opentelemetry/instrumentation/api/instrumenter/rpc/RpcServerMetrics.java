@@ -101,6 +101,7 @@ public final class RpcServerMetrics implements OperationListener {
         endAttributes.toBuilder()
             .put(IS_SYNTHETIC, isUserAgentBot(endAttributes, state.startAttributes()))
             .build();
+
     // END APPLICATION INSIGHTS CODE
 
     serverDurationHistogram.record(

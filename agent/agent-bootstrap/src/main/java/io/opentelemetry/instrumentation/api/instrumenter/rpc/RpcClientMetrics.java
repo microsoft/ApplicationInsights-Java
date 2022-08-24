@@ -109,6 +109,7 @@ public final class RpcClientMetrics implements OperationListener {
             .put(IS_SYNTHETIC, isUserAgentBot(endAttributes, state.startAttributes()))
             .put(TARGET, target)
             .build();
+
     // END APPLICATION INSIGHTS CODE
 
     clientDurationHistogram.record(
