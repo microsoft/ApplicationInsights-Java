@@ -55,9 +55,11 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -112,11 +114,15 @@ public class PreAggregatedMetricsTest {
     listener.onEnd(context1, responseAttributes, nanos(250));
 
     Collection<MetricData> metricDataCollection = metricReader.collectAllMetrics();
+    metricDataCollection =
+        metricDataCollection.stream()
+            .sorted(Comparator.comparing(o -> o.getName()))
+            .collect(Collectors.toList());
     for (MetricData metricData : metricDataCollection) {
       System.out.println("metric: " + metricData);
     }
 
-    assertThat(metricDataCollection.size()).isEqualTo(1);
+    assertThat(metricDataCollection.size()).isEqualTo(3);
 
     assertThat(metricDataCollection)
         .satisfiesExactly(
@@ -140,7 +146,9 @@ public class PreAggregatedMetricsTest {
                                             exemplar ->
                                                 exemplar
                                                     .hasTraceId("ff01020304050600ff0a0b0c0d0e0f00")
-                                                    .hasSpanId("090a0b0c0d0e0f00")))));
+                                                    .hasSpanId("090a0b0c0d0e0f00")))),
+            metric -> assertThat(metric).hasName("http.client.request.size"),
+            metric -> assertThat(metric).hasName("http.client.response.size"));
 
     MetricTelemetryBuilder builder = MetricTelemetryBuilder.create();
     MetricData metricData = metricDataCollection.iterator().next();
