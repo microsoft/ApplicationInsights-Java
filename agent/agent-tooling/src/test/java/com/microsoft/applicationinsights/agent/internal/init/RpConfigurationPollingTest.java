@@ -23,24 +23,15 @@ package com.microsoft.applicationinsights.agent.internal.init;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.AiSemanticAttributes;
+import com.microsoft.applicationinsights.agent.internal.SamplingTestUtil;
 import com.microsoft.applicationinsights.agent.internal.classicsdk.BytecodeUtilImpl;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.configuration.RpConfiguration;
 import com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampler;
 import com.microsoft.applicationinsights.agent.internal.sampling.Samplers;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
-import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.SpanContext;
-import io.opentelemetry.api.trace.SpanKind;
-import io.opentelemetry.api.trace.TraceFlags;
-import io.opentelemetry.api.trace.TraceState;
-import io.opentelemetry.context.Context;
-import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
-import java.util.Collections;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -57,14 +48,18 @@ class RpConfigurationPollingTest {
   @BeforeEach
   void beforeEach() {
     // default sampler at startup is "Sampler.alwaysOff()", and this test relies on real sampler
-    DelegatingSampler.getInstance().setDelegate(Samplers.getSampler(100, new Configuration()));
+    Configuration config = new Configuration();
+    config.sampling.percentage = 100.0;
+    DelegatingSampler.getInstance().setDelegate(Samplers.getSampler(config));
   }
 
   @AfterEach
   void afterEach() {
     // need to reset trace config back to default (with default sampler)
     // otherwise tests run after this can fail
-    DelegatingSampler.getInstance().setDelegate(Samplers.getSampler(100, new Configuration()));
+    Configuration config = new Configuration();
+    config.sampling.percentage = 100.0;
+    DelegatingSampler.getInstance().setDelegate(Samplers.getSampler(config));
   }
 
   @Test
@@ -72,7 +67,7 @@ class RpConfigurationPollingTest {
     // given
     RpConfiguration rpConfiguration = new RpConfiguration();
     rpConfiguration.connectionString = "InstrumentationKey=11111111-1111-1111-1111-111111111111";
-    rpConfiguration.sampling.percentage = 90;
+    rpConfiguration.sampling.percentage = 90.0;
     rpConfiguration.configPath =
         Paths.get(
             RpConfigurationPollingTest.class.getResource("/applicationinsights-rp.json").toURI());
@@ -107,7 +102,7 @@ class RpConfigurationPollingTest {
     // given
     RpConfiguration rpConfiguration = new RpConfiguration();
     rpConfiguration.connectionString = "InstrumentationKey=11111111-1111-1111-1111-111111111111";
-    rpConfiguration.sampling.percentage = 90;
+    rpConfiguration.sampling.percentage = 90.0;
     rpConfiguration.configPath =
         Paths.get(
             RpConfigurationPollingTest.class.getResource("/applicationinsights-rp.json").toURI());
@@ -143,25 +138,6 @@ class RpConfigurationPollingTest {
   }
 
   private static double getCurrentSamplingPercentage() {
-    SpanContext spanContext =
-        SpanContext.createFromRemoteParent(
-            "12341234123412341234123412341234",
-            "1234123412341234",
-            TraceFlags.getSampled(),
-            TraceState.getDefault());
-    Context parentContext = Context.root().with(Span.wrap(spanContext));
-    SamplingResult samplingResult =
-        DelegatingSampler.getInstance()
-            .shouldSample(
-                parentContext,
-                // traceId=27272727272727272727272727272727 is known to produce a score of 0.66 (out
-                // of 100) so will be sampled as long as samplingPercentage > 1%
-                "27272727272727272727272727272727",
-                "my span name",
-                SpanKind.SERVER,
-                Attributes.empty(),
-                Collections.emptyList());
-    Long itemCount = samplingResult.getAttributes().get(AiSemanticAttributes.ITEM_COUNT);
-    return 100.0 / itemCount;
+    return SamplingTestUtil.getCurrentSamplingPercentage(DelegatingSampler.getInstance());
   }
 }

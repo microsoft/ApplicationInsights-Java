@@ -129,7 +129,7 @@ class ConfigurationBuilderTest {
   @Test
   void testRpConfigurationOverlayWithEnvVarAndSysPropUnchanged() {
     String testConnectionString = "test-connection-string";
-    float testSamplingPercentage = 10.0f;
+    double testSamplingPercentage = 10.0;
     RpConfiguration config = new RpConfiguration();
 
     config.connectionString = testConnectionString;
@@ -144,7 +144,7 @@ class ConfigurationBuilderTest {
   @Test
   void testRpConfigurationOverlayWithEnvVarAndSysPropPopulated() throws Exception {
     String testConnectionString = "test-connection-string";
-    float testSamplingPercentage = 10.0f;
+    double testSamplingPercentage = 10.0;
 
     withEnvironmentVariable("APPLICATIONINSIGHTS_CONNECTION_STRING", testConnectionString)
         .and("APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE", String.valueOf(testSamplingPercentage))
@@ -153,7 +153,7 @@ class ConfigurationBuilderTest {
               RpConfiguration config = new RpConfiguration();
 
               config.connectionString = String.format("original-%s", testConnectionString);
-              config.sampling.percentage = testSamplingPercentage + 1.0f;
+              config.sampling.percentage = testSamplingPercentage + 1.0;
 
               ConfigurationBuilder.overlayFromEnv(config);
 

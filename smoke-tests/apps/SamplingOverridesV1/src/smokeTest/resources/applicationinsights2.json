@@ -1,0 +1,26 @@
+{
+  "role": {
+    "name": "testrolename",
+    "instance": "testroleinstance"
+  },
+  "sampling": {
+    "percentage": 50
+  },
+  "preview": {
+    "sampling": {
+      "overrides": [
+        {
+          "attributes": [
+            {
+              "key": "http.url",
+              "value": ".*/login",
+              "matchType": "regexp"
+            }
+          ],
+          "percentage": 100,
+          "id": "capture all login telemetry"
+        }
+      ]
+    }
+  }
+}

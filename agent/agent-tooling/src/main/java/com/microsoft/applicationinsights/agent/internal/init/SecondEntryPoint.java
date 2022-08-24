@@ -41,6 +41,7 @@ import com.microsoft.applicationinsights.agent.internal.classicsdk.BytecodeUtilI
 import com.microsoft.applicationinsights.agent.internal.common.FriendlyException;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.ProcessorConfig;
+import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.TelemetryKind;
 import com.microsoft.applicationinsights.agent.internal.configuration.RpConfiguration;
 import com.microsoft.applicationinsights.agent.internal.exporter.AgentLogExporter;
 import com.microsoft.applicationinsights.agent.internal.exporter.AgentMetricExporter;
@@ -172,7 +173,11 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
 
     TelemetryClient.setActive(telemetryClient);
 
-    BytecodeUtilImpl.samplingPercentage = configuration.sampling.percentage;
+    if (configuration.sampling.percentage != null) {
+      BytecodeUtilImpl.samplingPercentage = configuration.sampling.percentage.floatValue();
+    } else {
+      BytecodeUtilImpl.samplingPercentage = 100;
+    }
     BytecodeUtilImpl.featureStatsbeat = statsbeatModule.getFeatureStatsbeat();
 
     AppIdSupplier appIdSupplier = new AppIdSupplier(telemetryClient);
@@ -309,8 +314,7 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
                 configuration.preview.additionalPropagators,
                 configuration.preview.legacyRequestIdPropagation.enabled);
       }
-      DelegatingSampler.getInstance()
-          .setDelegate(Samplers.getSampler(configuration.sampling.percentage, configuration));
+      DelegatingSampler.getInstance().setDelegate(Samplers.getSampler(configuration));
     } else {
       // in Azure Functions, we configure later on, once we know user has opted in to tracing
       // (note: the default for DelegatingPropagator is to not propagate anything
@@ -484,9 +488,20 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
             configuration.preview.captureLoggingLevelAsCustomDimension,
             telemetryClient::populateDefaults);
 
+    List<Configuration.SamplingOverride> logSamplingOverrides =
+        configuration.preview.sampling.overrides.stream()
+            .filter(override -> override.telemetryKind == TelemetryKind.TRACE)
+            .collect(Collectors.toList());
+    List<Configuration.SamplingOverride> exceptionSamplingOverrides =
+        configuration.preview.sampling.overrides.stream()
+            .filter(override -> override.telemetryKind == TelemetryKind.EXCEPTION)
+            .collect(Collectors.toList());
+
     agentLogExporter =
         new AgentLogExporter(
             configuration.instrumentation.logging.getSeverity(),
+            logSamplingOverrides,
+            exceptionSamplingOverrides,
             mapper,
             quickPulse,
             telemetryClient.getGeneralBatchItemProcessor());

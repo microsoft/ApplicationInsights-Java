@@ -36,6 +36,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
+import java.util.Objects;
 import java.util.concurrent.Executors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -100,24 +101,28 @@ public class RpConfigurationPolling implements Runnable {
         if (!newRpConfiguration.connectionString.equals(rpConfiguration.connectionString)) {
           logger.debug(
               "Connection string from the JSON config file is overriding the previously configured connection string.");
+          configuration.connectionString = newRpConfiguration.connectionString;
           telemetryClient.updateConnectionStrings(
-              newRpConfiguration.connectionString,
+              configuration.connectionString,
               configuration.internal.statsbeat.instrumentationKey,
               configuration.internal.statsbeat.endpoint);
           appIdSupplier.updateAppId();
         }
 
-        if (newRpConfiguration.sampling.percentage != rpConfiguration.sampling.percentage) {
-          logger.debug(
-              "Updating sampling percentage from {} to {}",
-              rpConfiguration.sampling.percentage,
-              newRpConfiguration.sampling.percentage);
-          float roundedSamplingPercentage =
-              ConfigurationBuilder.roundToNearest(newRpConfiguration.sampling.percentage);
-          DelegatingSampler.getInstance()
-              .setDelegate(Samplers.getSampler(roundedSamplingPercentage, configuration));
-          BytecodeUtilImpl.samplingPercentage = roundedSamplingPercentage;
-          rpConfiguration.sampling.percentage = newRpConfiguration.sampling.percentage;
+        if (!Objects.equals(
+                newRpConfiguration.sampling.percentage, rpConfiguration.sampling.percentage)
+            || !Objects.equals(
+                newRpConfiguration.sampling.limitPerSecond,
+                rpConfiguration.sampling.limitPerSecond)) {
+          logger.debug("Updating sampling percentage");
+          configuration.sampling.percentage = newRpConfiguration.sampling.percentage;
+          configuration.sampling.limitPerSecond = newRpConfiguration.sampling.limitPerSecond;
+          DelegatingSampler.getInstance().setDelegate(Samplers.getSampler(configuration));
+          if (configuration.sampling.percentage != null) {
+            BytecodeUtilImpl.samplingPercentage = configuration.sampling.percentage.floatValue();
+          } else {
+            BytecodeUtilImpl.samplingPercentage = 100;
+          }
         }
         rpConfiguration = newRpConfiguration;
       }

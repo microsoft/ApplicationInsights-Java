@@ -364,8 +364,6 @@ public class SmokeTestExtension
                 "APPLICATIONINSIGHTS_CONNECTION_STRING",
                 "InstrumentationKey=00000000-0000-0000-0000-0FEEDDADBEEF;"
                     + "IngestionEndpoint=http://host.testcontainers.internal:6060/")
-            .withEnv("APPLICATIONINSIGHTS_ROLE_NAME", "testrolename")
-            .withEnv("APPLICATIONINSIGHTS_ROLE_INSTANCE", "testroleinstance")
             .withNetwork(network)
             .withExposedPorts(8080)
             .withFileSystemBind(
@@ -390,16 +388,20 @@ public class SmokeTestExtension
               "/applicationinsights-agent.jar",
               BindMode.READ_ONLY);
       URL resource = SmokeTestExtension.class.getClassLoader().getResource(agentConfigurationPath);
-      if (resource != null) {
-        File json = File.createTempFile("applicationinsights", ".json");
-        Path jsonPath = json.toPath();
-        try (InputStream in = resource.openStream()) {
-          Files.copy(in, jsonPath, StandardCopyOption.REPLACE_EXISTING);
-        }
-        container =
-            container.withFileSystemBind(
-                json.getAbsolutePath(), "/applicationinsights.json", BindMode.READ_ONLY);
+      if (resource == null) {
+        resource =
+            SmokeTestExtension.class
+                .getClassLoader()
+                .getResource("default_applicationinsights.json");
       }
+      File json = File.createTempFile("applicationinsights", ".json");
+      Path jsonPath = json.toPath();
+      try (InputStream in = resource.openStream()) {
+        Files.copy(in, jsonPath, StandardCopyOption.REPLACE_EXISTING);
+      }
+      container =
+          container.withFileSystemBind(
+              json.getAbsolutePath(), "/applicationinsights.json", BindMode.READ_ONLY);
     }
 
     if (appFile.getName().endsWith(".jar")) {

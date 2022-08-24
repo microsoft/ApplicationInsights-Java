@@ -21,21 +21,43 @@
 
 package com.microsoft.applicationinsights.agent.internal.sampling;
 
-import com.azure.monitor.opentelemetry.exporter.AzureMonitorSampler;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
+import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.SamplingOverride;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class Samplers {
 
-  public static Sampler getSampler(float samplingPercentage, Configuration config) {
-    Sampler sampler = new AzureMonitorSampler(samplingPercentage);
-
-    if (!config.preview.sampling.overrides.isEmpty()) {
-      sampler =
-          new AiOverrideSampler(new SamplingOverrides(config.preview.sampling.overrides), sampler);
+  public static Sampler getSampler(Configuration config) {
+    SamplingPercentage samplingPercentage;
+    if (config.sampling.limitPerSecond != null) {
+      samplingPercentage = SamplingPercentage.rateLimited(config.sampling.limitPerSecond);
+    } else if (config.sampling.percentage != null) {
+      samplingPercentage = SamplingPercentage.fixed(config.sampling.percentage);
+    } else {
+      throw new AssertionError("ConfigurationBuilder should have set the default sampling");
     }
 
-    if (!config.preview.sampling.parentBased) {
+    Sampler sampler = new AiSampler(samplingPercentage);
+
+    Configuration.SamplingPreview sampling = config.preview.sampling;
+
+    List<SamplingOverride> requestSamplingOverrides =
+        config.preview.sampling.overrides.stream()
+            .filter(SamplingOverride::isForRequestTelemetry)
+            .collect(Collectors.toList());
+    List<SamplingOverride> dependencySamplingOverrides =
+        config.preview.sampling.overrides.stream()
+            .filter(SamplingOverride::isForDependencyTelemetry)
+            .collect(Collectors.toList());
+
+    if (!requestSamplingOverrides.isEmpty() || !dependencySamplingOverrides.isEmpty()) {
+      sampler =
+          new AiOverrideSampler(requestSamplingOverrides, dependencySamplingOverrides, sampler);
+    }
+
+    if (!sampling.parentBased) {
       return sampler;
     }
 

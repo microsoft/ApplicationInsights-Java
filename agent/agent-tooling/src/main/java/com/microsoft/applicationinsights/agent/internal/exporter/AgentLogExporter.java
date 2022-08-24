@@ -28,15 +28,22 @@ import com.azure.monitor.opentelemetry.exporter.implementation.LogDataMapper;
 import com.azure.monitor.opentelemetry.exporter.implementation.logging.OperationLogger;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.QuickPulse;
+import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.SamplingOverride;
+import com.microsoft.applicationinsights.agent.internal.sampling.AiSampler;
+import com.microsoft.applicationinsights.agent.internal.sampling.SamplingOverrides;
 import com.microsoft.applicationinsights.agent.internal.telemetry.BatchItemProcessor;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryObservers;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.data.LogData;
 import io.opentelemetry.sdk.logs.data.Severity;
 import io.opentelemetry.sdk.logs.export.LogExporter;
+import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.util.Collection;
+import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import org.slf4j.Logger;
@@ -52,15 +59,21 @@ public class AgentLogExporter implements LogExporter {
   // TODO (trask) could implement this in a filtering LogExporter instead
   private volatile Severity threshold;
 
+  private final SamplingOverrides logSamplingOverrides;
+  private final SamplingOverrides exceptionSamplingOverrides;
   private final LogDataMapper mapper;
   private final Consumer<TelemetryItem> telemetryItemConsumer;
 
   public AgentLogExporter(
       Severity threshold,
+      List<SamplingOverride> logSamplingOverrides,
+      List<SamplingOverride> exceptionSamplingOverrides,
       LogDataMapper mapper,
       @Nullable QuickPulse quickPulse,
       BatchItemProcessor batchItemProcessor) {
     this.threshold = threshold;
+    this.logSamplingOverrides = new SamplingOverrides(logSamplingOverrides);
+    this.exceptionSamplingOverrides = new SamplingOverrides(exceptionSamplingOverrides);
     this.mapper = mapper;
     telemetryItemConsumer =
         telemetryItem -> {
@@ -86,10 +99,6 @@ public class AgentLogExporter implements LogExporter {
       return CompletableResultCode.ofFailure();
     }
     for (LogData log : logs) {
-      SpanContext spanContext = log.getSpanContext();
-      if (spanContext.isValid() && !spanContext.getTraceFlags().isSampled()) {
-        continue;
-      }
       logger.debug("exporting log: {}", log);
       try {
         int severity = log.getSeverity().getSeverityNumber();
@@ -97,7 +106,39 @@ public class AgentLogExporter implements LogExporter {
         if (severity < threshold) {
           continue;
         }
-        mapper.map(log, telemetryItemConsumer);
+
+        String stack = log.getAttributes().get(SemanticAttributes.EXCEPTION_STACKTRACE);
+
+        SamplingOverrides samplingOverrides =
+            stack != null ? exceptionSamplingOverrides : logSamplingOverrides;
+
+        SpanContext spanContext = log.getSpanContext();
+
+        boolean inRequest = spanContext.isValid();
+        Double samplingPercentage =
+            samplingOverrides.getOverridePercentage(inRequest, log.getAttributes());
+
+        if (samplingPercentage != null && !shouldSample(spanContext, samplingPercentage)) {
+          continue;
+        }
+
+        if (samplingPercentage == null
+            && spanContext.isValid()
+            && !spanContext.getTraceFlags().isSampled()) {
+          // if there is no sampling override, and the log is part of an unsampled trace, then don't
+          // capture it
+          continue;
+        }
+
+        Long itemCount = null;
+        if (samplingPercentage != null) {
+          // samplingPercentage cannot be 0 here
+          itemCount = Math.round(100.0 / samplingPercentage);
+        }
+
+        TelemetryItem telemetryItem = mapper.map(log, stack, itemCount);
+        telemetryItemConsumer.accept(telemetryItem);
+
         exportingLogLogger.recordSuccess();
       } catch (Throwable t) {
         exportingLogLogger.recordFailure(t.getMessage(), t, EXPORTER_MAPPING_ERROR);
@@ -115,5 +156,23 @@ public class AgentLogExporter implements LogExporter {
   @Override
   public CompletableResultCode shutdown() {
     return CompletableResultCode.ofSuccess();
+  }
+
+  @SuppressFBWarnings(
+      value = "SECPR", // Predictable pseudorandom number generator
+      justification = "Predictable random is ok for sampling decision")
+  private static boolean shouldSample(SpanContext spanContext, double percentage) {
+    if (percentage == 100) {
+      // optimization, no need to calculate score
+      return true;
+    }
+    if (percentage == 0) {
+      // optimization, no need to calculate score
+      return false;
+    }
+    if (spanContext.isValid()) {
+      return AiSampler.shouldRecordAndSample(spanContext.getTraceId(), percentage);
+    }
+    return ThreadLocalRandom.current().nextDouble() < percentage / 100;
   }
 }

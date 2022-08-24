@@ -1,0 +1,9 @@
+{
+  "role": {
+    "name": "testrolename",
+    "instance": "testroleinstance"
+  },
+  "sampling" : {
+    "limitPerSecond": 0.5
+  }
+}

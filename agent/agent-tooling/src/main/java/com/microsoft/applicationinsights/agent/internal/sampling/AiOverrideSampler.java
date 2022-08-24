@@ -21,7 +21,11 @@
 
 package com.microsoft.applicationinsights.agent.internal.sampling;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.SpanDataMapper;
+import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.SamplingOverride;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.data.LinkData;
@@ -31,11 +35,16 @@ import java.util.List;
 
 class AiOverrideSampler implements Sampler {
 
-  private final SamplingOverrides samplingOverrides;
+  private final SamplingOverrides requestSamplingOverrides;
+  private final SamplingOverrides dependencySamplingOverrides;
   private final Sampler delegate;
 
-  AiOverrideSampler(SamplingOverrides samplingOverrides, Sampler delegate) {
-    this.samplingOverrides = samplingOverrides;
+  AiOverrideSampler(
+      List<SamplingOverride> requestSamplingOverrides,
+      List<SamplingOverride> dependencySamplingOverrides,
+      Sampler delegate) {
+    this.requestSamplingOverrides = new SamplingOverrides(requestSamplingOverrides);
+    this.dependencySamplingOverrides = new SamplingOverrides(dependencySamplingOverrides);
     this.delegate = delegate;
   }
 
@@ -48,7 +57,18 @@ class AiOverrideSampler implements Sampler {
       Attributes attributes,
       List<LinkData> parentLinks) {
 
-    Sampler override = samplingOverrides.getOverride(spanKind, attributes);
+    SpanContext parentSpanContext = Span.fromContext(parentContext).getSpanContext();
+
+    // TODO isRequest won't be correct for spring-scheduling, quartz and customInstrumentation
+    //  since we don't have scope available in the sampler (yet)
+    boolean isRequest =
+        SpanDataMapper.isRequest(spanKind, parentSpanContext, null, attributes::get);
+
+    SamplingOverrides samplingOverrides =
+        isRequest ? requestSamplingOverrides : dependencySamplingOverrides;
+
+    boolean inRequest = isRequest || parentSpanContext.isValid();
+    Sampler override = samplingOverrides.getOverride(inRequest, attributes);
     if (override != null) {
       return override.shouldSample(parentContext, traceId, name, spanKind, attributes, parentLinks);
     }
