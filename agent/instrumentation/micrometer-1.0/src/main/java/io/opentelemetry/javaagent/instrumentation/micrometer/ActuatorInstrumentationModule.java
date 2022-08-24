@@ -22,11 +22,12 @@
 package io.opentelemetry.javaagent.instrumentation.micrometer;
 
 import static io.opentelemetry.javaagent.extension.matcher.AgentElementMatchers.hasClassesNamed;
+import static java.util.Collections.singletonList;
 
 import com.google.auto.service.AutoService;
+import io.opentelemetry.javaagent.extension.instrumentation.HelperResourceBuilder;
 import io.opentelemetry.javaagent.extension.instrumentation.InstrumentationModule;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
-import java.util.Arrays;
 import java.util.List;
 import net.bytebuddy.matcher.ElementMatcher;
 
@@ -45,7 +46,16 @@ public class ActuatorInstrumentationModule extends InstrumentationModule {
   }
 
   @Override
+  public void registerHelperResources(HelperResourceBuilder helperResourceBuilder) {
+    // autoconfigure classes are loaded as resources using ClassPathResource
+    // this line will make AzureMonitorAutoConfiguration available to all classloaders,
+    // so that the bean class loader (different than the instrumented class loader) can load it
+    helperResourceBuilder.registerForAllClassLoaders(
+        "io/opentelemetry/javaagent/instrumentation/micrometer/AzureMonitorAutoConfiguration.class");
+  }
+
+  @Override
   public List<TypeInstrumentation> typeInstrumentations() {
-    return Arrays.asList(new ActuatorInstrumentation(), new ClassPathResourceInstrumentation());
+    return singletonList(new ActuatorInstrumentation());
   }
 }

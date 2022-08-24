@@ -38,7 +38,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 abstract class SpringBootAttachInMainTest {
 
-  @RegisterExtension static final SmokeTestExtension testing = new SmokeTestExtension();
+  @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.create();
 
   @Test
   @TargetUri("/test")

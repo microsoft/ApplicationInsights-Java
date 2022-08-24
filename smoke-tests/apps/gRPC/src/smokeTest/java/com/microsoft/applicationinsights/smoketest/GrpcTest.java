@@ -48,7 +48,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 @UseAgent
 abstract class GrpcTest {
 
-  @RegisterExtension static final SmokeTestExtension testing = new SmokeTestExtension();
+  @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.create();
 
   @Test
   @TargetUri("/simple")
