@@ -49,7 +49,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 @UseAgent
 abstract class CoreAndFilterTests {
 
-  @RegisterExtension static final SmokeTestExtension testing = new SmokeTestExtension();
+  @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.create();
 
   @Test
   @TargetUri("/trackDependency")
