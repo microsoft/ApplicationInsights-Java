@@ -49,7 +49,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -101,7 +100,7 @@ public class MetricDataMapper {
   }
 
   private List<TelemetryItem> convertOtelMetricToAzureMonitorMetric(
-      MetricData metricData, @Nullable Boolean isPreAggregated) {
+      MetricData metricData, boolean isPreAggregated) {
     List<TelemetryItem> telemetryItems = new ArrayList<>();
 
     for (PointData pointData : metricData.getData().getPoints()) {
