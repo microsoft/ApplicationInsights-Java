@@ -601,7 +601,7 @@ public class ConfigurationBuilder {
   private static String getWebsiteSiteNameEnvVar() {
     String value = getEnvVar(WEBSITE_SITE_NAME);
     // TODO we can update this check after the new functions model is deployed.
-    if (value != null && "java".equals(getSystemProperty("FUNCTIONS_WORKER_RUNTIME"))) {
+    if (value != null && "java".equals(getEnvVar("FUNCTIONS_WORKER_RUNTIME"))) {
       // special case for Azure Functions
       return value.toLowerCase(Locale.ENGLISH);
     }
