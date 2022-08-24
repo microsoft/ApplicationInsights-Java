@@ -134,11 +134,6 @@ public class JfrProfiler implements ProfilerConfigurationHandler, Profiler {
 
   @Nullable
   private static FlightRecorderConnection createFlightRecorderConnection() {
-    if (isOpenJ9Jvm()) {
-      LOGGER.error(
-          "Unable to initialize the profiler. OpenJ9 JVM is not supported. Instead, please use an OpenJDK JVM");
-      return null;
-    }
     try {
       // connect to mbeans
       MBeanServerConnection mbeanServer = ManagementFactory.getPlatformMBeanServer();
@@ -150,13 +145,8 @@ public class JfrProfiler implements ProfilerConfigurationHandler, Profiler {
       }
     } catch (Exception e) {
       LOGGER.error("Failed to connect to mbean", e);
+      return null;
     }
-    return null;
-  }
-
-  private static boolean isOpenJ9Jvm() {
-    String jvmName = System.getProperty("java.vm.name");
-    return jvmName != null && jvmName.contains("OpenJ9");
   }
 
   /** Apply new configuration settings obtained from Service Profiler. */

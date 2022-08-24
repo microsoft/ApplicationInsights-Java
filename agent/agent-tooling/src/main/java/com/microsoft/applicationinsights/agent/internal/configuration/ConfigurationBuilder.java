@@ -243,11 +243,18 @@ public class ConfigurationBuilder {
   }
 
   private static void overlayProfilerEnvVars(Configuration config) {
-    config.preview.profiler.enabled =
-        Boolean.parseBoolean(
-            overlayWithEnvVar(
-                APPLICATIONINSIGHTS_PREVIEW_PROFILER_ENABLED,
-                Boolean.toString(config.preview.profiler.enabled)));
+    if (!isOpenJ9Jvm()) {
+      config.preview.profiler.enabled =
+          Boolean.parseBoolean(
+              overlayWithEnvVar(
+                  APPLICATIONINSIGHTS_PREVIEW_PROFILER_ENABLED,
+                  Boolean.toString(config.preview.profiler.enabled)));
+    }
+  }
+
+  private static boolean isOpenJ9Jvm() {
+    String jvmName = System.getProperty("java.vm.name");
+    return jvmName != null && jvmName.contains("OpenJ9");
   }
 
   private static void overlayAadEnvVars(Configuration config) {
