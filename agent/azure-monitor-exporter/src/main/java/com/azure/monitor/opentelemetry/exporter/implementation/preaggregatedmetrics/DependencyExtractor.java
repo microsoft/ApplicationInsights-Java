@@ -21,9 +21,14 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics;
 
+import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.ExtractorHelper.FALSE;
+import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.ExtractorHelper.MS_METRIC_ID;
+import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.ExtractorHelper.TRUE;
+import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.ExtractorHelper.extractCommon;
+
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.MetricTelemetryBuilder;
 
-public class DependencyExtractor extends BaseExtractor {
+public class DependencyExtractor {
 
   // visible for testing
   public static final String DEPENDENCIES_DURATION = "dependencies/duration";
@@ -32,34 +37,38 @@ public class DependencyExtractor extends BaseExtractor {
   public static final String DEPENDENCY_TARGET = "dependency/target";
   public static final String DEPENDENCY_RESULT_CODE = "dependency/resultCode";
 
+  private final MetricTelemetryBuilder metricBuilder;
   private final Long statusCode;
   private final boolean success;
   private final String type;
   private final String target;
+  private final Boolean isSynthetic;
 
   public DependencyExtractor(
-      MetricTelemetryBuilder telemetryBuilder,
+      MetricTelemetryBuilder metricBuilder,
       Long statusCode,
       boolean success,
       String type,
       String target,
       Boolean isSynthetic) {
-    super(telemetryBuilder, isSynthetic);
+    this.metricBuilder = metricBuilder;
     this.statusCode = statusCode;
     this.success = success;
     this.type = type;
     this.target = target;
+    this.isSynthetic = isSynthetic;
   }
 
-  @Override
   public void extract() {
-    telemetryBuilder.addProperty(MS_METRIC_ID, DEPENDENCIES_DURATION);
+    extractCommon(metricBuilder, isSynthetic);
+
+    metricBuilder.addProperty(MS_METRIC_ID, DEPENDENCIES_DURATION);
     // TODO OTEL will provide rpc.grpc.status_code & rpc.success, http.success
     if (statusCode != null) {
-      telemetryBuilder.addProperty(DEPENDENCY_RESULT_CODE, String.valueOf(statusCode));
+      metricBuilder.addProperty(DEPENDENCY_RESULT_CODE, String.valueOf(statusCode));
     }
-    telemetryBuilder.addProperty(DEPENDENCY_SUCCESS, success ? TRUE : FALSE);
-    telemetryBuilder.addProperty(DEPENDENCY_TYPE, type);
-    telemetryBuilder.addProperty(DEPENDENCY_TARGET, target);
+    metricBuilder.addProperty(DEPENDENCY_SUCCESS, success ? TRUE : FALSE);
+    metricBuilder.addProperty(DEPENDENCY_TYPE, type);
+    metricBuilder.addProperty(DEPENDENCY_TARGET, target);
   }
 }

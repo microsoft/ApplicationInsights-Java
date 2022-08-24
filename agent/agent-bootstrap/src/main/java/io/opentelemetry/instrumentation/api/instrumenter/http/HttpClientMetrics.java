@@ -25,7 +25,6 @@ import static io.opentelemetry.instrumentation.api.instrumenter.BootstrapSemanti
 import static io.opentelemetry.instrumentation.api.instrumenter.BootstrapSemanticAttributes.IS_SYNTHETIC;
 import static io.opentelemetry.instrumentation.api.instrumenter.BootstrapSemanticAttributes.TARGET;
 import static io.opentelemetry.instrumentation.api.instrumenter.UserAgents.isUserAgentBot;
-import static io.opentelemetry.instrumentation.api.instrumenter.http.TemporaryMetricsView.applyClientDurationAndSizeView;
 import static java.util.logging.Level.FINE;
 
 import com.google.auto.value.AutoValue;
@@ -112,7 +111,7 @@ public final class HttpClientMetrics implements OperationListener {
       return;
     }
     Attributes durationAndSizeAttributes =
-        applyClientDurationAndSizeView(state.startAttributes(), endAttributes);
+        TemporaryMetricsView.applyClientDurationAndSizeView(state.startAttributes(), endAttributes);
 
     // START APPLICATION INSIGHTS CODE
 

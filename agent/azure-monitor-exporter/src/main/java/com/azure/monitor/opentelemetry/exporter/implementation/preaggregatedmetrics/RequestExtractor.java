@@ -21,33 +21,40 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics;
 
+import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.ExtractorHelper.FALSE;
+import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.ExtractorHelper.MS_METRIC_ID;
+import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.ExtractorHelper.TRUE;
+import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.ExtractorHelper.extractCommon;
+
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.MetricTelemetryBuilder;
 
-public final class RequestExtractor extends BaseExtractor {
+public final class RequestExtractor {
 
+  // visible for testing
   public static final String REQUESTS_DURATION = "requests/duration";
   public static final String REQUEST_RESULT_CODE = "request/resultCode";
   public static final String REQUEST_SUCCESS = "request/success";
 
+  private final MetricTelemetryBuilder metricBuilder;
+  private final Boolean isSynthetic;
   private final Long statusCode;
   private final boolean success;
 
   public RequestExtractor(
-      MetricTelemetryBuilder telemetryBuilder,
-      Long statusCode,
-      boolean success,
-      Boolean isSynthetic) {
-    super(telemetryBuilder, isSynthetic);
+      MetricTelemetryBuilder metricBuilder, Long statusCode, boolean success, Boolean isSynthetic) {
+    this.metricBuilder = metricBuilder;
+    this.isSynthetic = isSynthetic;
     this.statusCode = statusCode;
     this.success = success;
   }
 
-  @Override
   public void extract() {
-    telemetryBuilder.addProperty(MS_METRIC_ID, REQUESTS_DURATION);
+    extractCommon(metricBuilder, isSynthetic);
+
+    metricBuilder.addProperty(MS_METRIC_ID, REQUESTS_DURATION);
     if (statusCode != null) {
-      telemetryBuilder.addProperty(REQUEST_RESULT_CODE, String.valueOf(statusCode));
+      metricBuilder.addProperty(REQUEST_RESULT_CODE, String.valueOf(statusCode));
     }
-    telemetryBuilder.addProperty(REQUEST_SUCCESS, success ? TRUE : FALSE);
+    metricBuilder.addProperty(REQUEST_SUCCESS, success ? TRUE : FALSE);
   }
 }

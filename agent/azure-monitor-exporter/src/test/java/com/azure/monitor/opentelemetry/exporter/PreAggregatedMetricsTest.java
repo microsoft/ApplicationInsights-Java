@@ -21,15 +21,15 @@
 
 package com.azure.monitor.opentelemetry.exporter;
 
-import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.BaseExtractor.FALSE;
-import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.BaseExtractor.MS_IS_AUTOCOLLECTED;
-import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.BaseExtractor.MS_METRIC_ID;
-import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.BaseExtractor.OPERATION_SYNTHETIC;
-import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.BaseExtractor.TRUE;
 import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.DependencyExtractor.DEPENDENCIES_DURATION;
 import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.DependencyExtractor.DEPENDENCY_RESULT_CODE;
 import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.DependencyExtractor.DEPENDENCY_SUCCESS;
 import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.DependencyExtractor.DEPENDENCY_TYPE;
+import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.ExtractorHelper.FALSE;
+import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.ExtractorHelper.MS_IS_AUTOCOLLECTED;
+import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.ExtractorHelper.MS_METRIC_ID;
+import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.ExtractorHelper.OPERATION_SYNTHETIC;
+import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.ExtractorHelper.TRUE;
 import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.RequestExtractor.REQUESTS_DURATION;
 import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.RequestExtractor.REQUEST_RESULT_CODE;
 import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.RequestExtractor.REQUEST_SUCCESS;

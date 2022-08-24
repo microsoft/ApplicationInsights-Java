@@ -21,12 +21,11 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.builders.AbstractTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.MetricTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
 import java.util.Map;
 
-public abstract class BaseExtractor {
+public final class ExtractorHelper {
 
   // visible for testing
   public static final String MS_METRIC_ID = "_MS.MetricId";
@@ -37,31 +36,24 @@ public abstract class BaseExtractor {
   public static final String CLOUD_ROLE_NAME = "cloud/roleName";
   public static final String CLOUD_ROLE_INSTANCE = "cloud/roleInstance";
 
-  protected final AbstractTelemetryBuilder telemetryBuilder;
-
-  public BaseExtractor(MetricTelemetryBuilder telemetryBuilder, Boolean isSynthetic) {
-    this.telemetryBuilder = telemetryBuilder;
-    extractCommon(isSynthetic);
-  }
-
-  private void extractCommon(Boolean isSynthetic) {
-    telemetryBuilder.addProperty(MS_IS_AUTOCOLLECTED, TRUE);
-    Map<String, String> tags = telemetryBuilder.build().getTags();
+  static void extractCommon(MetricTelemetryBuilder metricBuilder, Boolean isSynthetic) {
+    metricBuilder.addProperty(MS_IS_AUTOCOLLECTED, TRUE);
+    Map<String, String> tags = metricBuilder.build().getTags();
     if (tags != null) {
       String cloudName = tags.get(ContextTagKeys.AI_CLOUD_ROLE.toString());
       if (cloudName != null && !cloudName.isEmpty()) {
-        telemetryBuilder.addProperty(CLOUD_ROLE_NAME, cloudName);
+        metricBuilder.addProperty(CLOUD_ROLE_NAME, cloudName);
       }
 
       String cloudRoleInstance = tags.get(ContextTagKeys.AI_CLOUD_ROLE_INSTANCE.toString());
       if (cloudRoleInstance != null && !cloudRoleInstance.isEmpty()) {
-        telemetryBuilder.addProperty(CLOUD_ROLE_INSTANCE, cloudRoleInstance);
+        metricBuilder.addProperty(CLOUD_ROLE_INSTANCE, cloudRoleInstance);
       }
     }
 
-    telemetryBuilder.addProperty(
+    metricBuilder.addProperty(
         OPERATION_SYNTHETIC, isSynthetic != null && isSynthetic ? TRUE : FALSE);
   }
 
-  public abstract void extract();
+  private ExtractorHelper() {}
 }
