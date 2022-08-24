@@ -31,7 +31,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 @UseAgent("unmasked_applicationinsights.json")
 class JdbcUnmaskedTest {
 
-  @RegisterExtension static final SmokeTestExtension testing = new SmokeTestExtension();
+  @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.create();
 
   @Test
   @TargetUri("/hsqldbStatement")

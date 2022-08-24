@@ -37,7 +37,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 @UseAgent("telemetryfiltering2_applicationinsights.json")
 abstract class TelemetryFiltering2SmokeTest {
 
-  @RegisterExtension static final SmokeTestExtension testing = new SmokeTestExtension();
+  @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.create();
 
   @Test
   @TargetUri(value = "/login", callCount = 100)

@@ -46,7 +46,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 @UseAgent
 abstract class NonDaemonThreadsTest {
 
-  @RegisterExtension static final SmokeTestExtension testing = new SmokeTestExtension();
+  @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.create();
 
   @Test
   @TargetUri("/spawn-another-java-process")
