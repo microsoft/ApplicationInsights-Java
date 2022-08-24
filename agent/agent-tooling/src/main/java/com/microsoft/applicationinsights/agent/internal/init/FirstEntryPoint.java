@@ -45,6 +45,8 @@ import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.lang.instrument.Instrumentation;
+import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import javax.annotation.Nullable;
@@ -114,9 +116,10 @@ public class FirstEntryPoint implements LoggingCustomizer {
   @Override
   public void onStartupSuccess() {
     startupLogger.info(
-        "Application Insights Java Agent {} started successfully (PID {})",
+        "Application Insights Java Agent {} started successfully (PID {}, JVM running for {} s)",
         agentVersion,
-        new PidFinder().getValue());
+        new PidFinder().getValue(),
+        findJvmUptimeInSeconds());
 
     String javaVersion = System.getProperty("java.version");
     String javaVendor = System.getProperty("java.vendor");
@@ -136,6 +139,11 @@ public class FirstEntryPoint implements LoggingCustomizer {
     }
 
     updateStatusFile(true);
+  }
+
+  private double findJvmUptimeInSeconds() {
+    RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
+    return runtimeMXBean.getUptime() / 1000.0;
   }
 
   @Override
