@@ -67,6 +67,7 @@ abstract class SpringBootAutoTest {
     assertThat(rd.getResponseCode()).isEqualTo("200");
     assertThat(rd.getProperties()).containsEntry("tenant", "z");
     assertThat(rd.getProperties()).hasSize(2);
+    assertThat(rd.getProperties()).containsEntry("_MS.ProcessedByMetricExtractors", "True");
     assertThat(rd.getSuccess()).isTrue();
 
     assertThat(md.getMessage()).isEqualTo("hello");
