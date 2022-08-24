@@ -21,6 +21,8 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation;
 
+import static com.azure.monitor.opentelemetry.exporter.implementation.AiSemanticAttributes.IS_SYNTHETIC;
+import static com.azure.monitor.opentelemetry.exporter.implementation.AiSemanticAttributes.TARGET;
 import static io.opentelemetry.api.internal.Utils.checkArgument;
 import static io.opentelemetry.sdk.metrics.data.MetricDataType.DOUBLE_GAUGE;
 import static io.opentelemetry.sdk.metrics.data.MetricDataType.DOUBLE_SUM;
@@ -35,7 +37,6 @@ import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryI
 import com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.DependencyExtractor;
 import com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.RequestExtractor;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedTime;
-import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.HistogramPointData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
@@ -165,10 +166,7 @@ public class MetricDataMapper {
     if (isPreAggregatedStandardMetric) {
       Long statusCode = pointData.getAttributes().get(SemanticAttributes.HTTP_STATUS_CODE);
       boolean success = isSuccess(statusCode, captureHttpServer4xxAsError);
-      Boolean isSynthetic =
-          pointData
-              .getAttributes()
-              .get(AttributeKey.booleanKey("applicationinsights.internal.is_synthetic"));
+      Boolean isSynthetic = pointData.getAttributes().get(IS_SYNTHETIC);
       if (metricData.getName().contains(".server.")) {
         RequestExtractor requestExtractor =
             new RequestExtractor(metricTelemetryBuilder, statusCode, success, isSynthetic);
@@ -178,10 +176,7 @@ public class MetricDataMapper {
             metricData.getName().startsWith("http")
                 ? "http"
                 : pointData.getAttributes().get(SemanticAttributes.RPC_SYSTEM);
-        String target =
-            pointData
-                .getAttributes()
-                .get(AttributeKey.stringKey("applicationinsights.internal.target"));
+        String target = pointData.getAttributes().get(TARGET);
         DependencyExtractor dependencyExtractor =
             new DependencyExtractor(
                 metricTelemetryBuilder, statusCode, success, dependencyType, target, isSynthetic);

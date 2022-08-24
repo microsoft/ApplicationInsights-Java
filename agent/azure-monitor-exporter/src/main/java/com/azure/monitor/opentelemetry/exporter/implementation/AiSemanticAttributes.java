@@ -21,6 +21,7 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation;
 
+import static io.opentelemetry.api.common.AttributeKey.booleanKey;
 import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
@@ -33,6 +34,12 @@ public final class AiSemanticAttributes {
 
   public static final AttributeKey<Long> ITEM_COUNT =
       longKey("applicationinsights.internal.item_count");
+
+  public static final AttributeKey<Boolean> IS_SYNTHETIC =
+      booleanKey("applicationinsights.internal.is_synthetic");
+
+  public static final AttributeKey<String> TARGET =
+      stringKey("applicationinsights.internal.target");
 
   private AiSemanticAttributes() {}
 }
