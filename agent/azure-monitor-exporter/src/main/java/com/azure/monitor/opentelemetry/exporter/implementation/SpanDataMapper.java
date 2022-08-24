@@ -227,11 +227,11 @@ public final class SpanDataMapper {
     }
   }
 
-  private static boolean checkIsPreAggregated(SpanData span) {
-    Boolean isPreAggregated =
+  private static boolean checkIsPreAggregatedStandardMetric(SpanData span) {
+    Boolean isPreAggregatedStandardMetric =
         span.getAttributes()
             .get(AttributeKey.booleanKey("applicationinsights.internal.is_pre_aggregated"));
-    return isPreAggregated != null && isPreAggregated;
+    return isPreAggregatedStandardMetric != null && isPreAggregatedStandardMetric;
   }
 
   private TelemetryItem exportRemoteDependency(SpanData span, boolean inProc, long itemCount) {
@@ -261,7 +261,7 @@ public final class SpanDataMapper {
       applySemanticConventions(telemetryBuilder, span);
     }
 
-    if (checkIsPreAggregated(span)) {
+    if (checkIsPreAggregatedStandardMetric(span)) {
       telemetryBuilder.addProperty(MS_PROCESSED_BY_METRIC_EXTRACTORS, "True");
     }
 
@@ -692,7 +692,7 @@ public final class SpanDataMapper {
       telemetryBuilder.addTag(ContextTagKeys.AI_DEVICE_OS_VERSION.toString(), deviceOsVersion);
     }
 
-    if (checkIsPreAggregated(span)) {
+    if (checkIsPreAggregatedStandardMetric(span)) {
       telemetryBuilder.addProperty(MS_PROCESSED_BY_METRIC_EXTRACTORS, "True");
     }
 

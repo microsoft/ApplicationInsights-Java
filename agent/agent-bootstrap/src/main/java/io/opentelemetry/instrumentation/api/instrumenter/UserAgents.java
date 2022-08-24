@@ -21,28 +21,17 @@
 
 package io.opentelemetry.instrumentation.api.instrumenter;
 
-import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
-import javax.annotation.Nullable;
 
 public final class UserAgents {
 
-  public static boolean isUserAgentBot(Attributes endAttributes, Attributes startAttributes) {
-    String userAgent =
-        getAttribute(SemanticAttributes.HTTP_USER_AGENT, endAttributes, startAttributes);
-    return userAgent != null && userAgent.contains("AlwaysOn");
-  }
-
-  @Nullable
-  private static <T> T getAttribute(AttributeKey<T> key, Attributes... attributesList) {
-    for (Attributes attributes : attributesList) {
-      T value = attributes.get(key);
-      if (value != null) {
-        return value;
-      }
+  public static boolean isBot(Attributes endAttributes, Attributes startAttributes) {
+    String userAgent = endAttributes.get(SemanticAttributes.HTTP_USER_AGENT);
+    if (userAgent == null) {
+      userAgent = startAttributes.get(SemanticAttributes.HTTP_USER_AGENT);
     }
-    return null;
+    return userAgent != null && userAgent.contains("AlwaysOn");
   }
 
   private UserAgents() {}

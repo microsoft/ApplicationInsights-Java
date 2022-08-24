@@ -23,7 +23,6 @@ package io.opentelemetry.instrumentation.api.instrumenter.rpc;
 
 import static io.opentelemetry.instrumentation.api.instrumenter.BootstrapSemanticAttributes.IS_PRE_AGGREGATED;
 import static io.opentelemetry.instrumentation.api.instrumenter.BootstrapSemanticAttributes.IS_SYNTHETIC;
-import static io.opentelemetry.instrumentation.api.instrumenter.UserAgents.isUserAgentBot;
 import static io.opentelemetry.instrumentation.api.instrumenter.rpc.MetricsView.applyServerView;
 import static java.util.logging.Level.FINE;
 
@@ -36,6 +35,7 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.context.ContextKey;
 import io.opentelemetry.instrumentation.api.instrumenter.OperationListener;
 import io.opentelemetry.instrumentation.api.instrumenter.OperationMetrics;
+import io.opentelemetry.instrumentation.api.instrumenter.UserAgents;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
@@ -99,7 +99,7 @@ public final class RpcServerMetrics implements OperationListener {
 
     endAttributes =
         endAttributes.toBuilder()
-            .put(IS_SYNTHETIC, isUserAgentBot(endAttributes, state.startAttributes()))
+            .put(IS_SYNTHETIC, UserAgents.isBot(endAttributes, state.startAttributes()))
             .build();
 
     // END APPLICATION INSIGHTS CODE

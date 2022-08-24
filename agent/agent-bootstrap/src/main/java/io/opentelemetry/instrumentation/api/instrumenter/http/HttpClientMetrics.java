@@ -24,7 +24,6 @@ package io.opentelemetry.instrumentation.api.instrumenter.http;
 import static io.opentelemetry.instrumentation.api.instrumenter.BootstrapSemanticAttributes.IS_PRE_AGGREGATED;
 import static io.opentelemetry.instrumentation.api.instrumenter.BootstrapSemanticAttributes.IS_SYNTHETIC;
 import static io.opentelemetry.instrumentation.api.instrumenter.BootstrapSemanticAttributes.TARGET;
-import static io.opentelemetry.instrumentation.api.instrumenter.UserAgents.isUserAgentBot;
 import static java.util.logging.Level.FINE;
 
 import com.google.auto.value.AutoValue;
@@ -38,6 +37,7 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.context.ContextKey;
 import io.opentelemetry.instrumentation.api.instrumenter.OperationListener;
 import io.opentelemetry.instrumentation.api.instrumenter.OperationMetrics;
+import io.opentelemetry.instrumentation.api.instrumenter.UserAgents;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
@@ -121,7 +121,7 @@ public final class HttpClientMetrics implements OperationListener {
 
     Attributes durationAttributes =
         durationAndSizeAttributes.toBuilder()
-            .put(IS_SYNTHETIC, isUserAgentBot(endAttributes, state.startAttributes()))
+            .put(IS_SYNTHETIC, UserAgents.isBot(endAttributes, state.startAttributes()))
             .put(TARGET, getTargetForHttpClientSpan(durationAndSizeAttributes))
             .build();
 
@@ -146,6 +146,7 @@ public final class HttpClientMetrics implements OperationListener {
     }
   }
 
+  // this is copied from SpanDataMapper
   private static String getTargetForHttpClientSpan(Attributes attributes) {
     // from the spec, at least one of the following sets of attributes is required:
     // * http.url
@@ -195,12 +196,14 @@ public final class HttpClientMetrics implements OperationListener {
     return "Http";
   }
 
+  // this is copied from SpanDataMapper
   @Nullable
   private static String getTargetFromPeerService(Attributes attributes) {
     // do not append port to peer.service
     return attributes.get(SemanticAttributes.PEER_SERVICE);
   }
 
+  // this is copied from SpanDataMapper
   @Nullable
   private static String getTargetFromNetAttributes(Attributes attributes, int defaultPort) {
     String target = getHostFromNetAttributes(attributes);
@@ -215,6 +218,7 @@ public final class HttpClientMetrics implements OperationListener {
     return target;
   }
 
+  // this is copied from SpanDataMapper
   @Nullable
   private static String getHostFromNetAttributes(Attributes attributes) {
     String host = attributes.get(SemanticAttributes.NET_PEER_NAME);
@@ -224,6 +228,7 @@ public final class HttpClientMetrics implements OperationListener {
     return attributes.get(SemanticAttributes.NET_PEER_IP);
   }
 
+  // this is copied from SpanDataMapper
   @Nullable
   private static String getTargetFromUrl(String url) {
     int schemeEndIndex = url.indexOf(':');

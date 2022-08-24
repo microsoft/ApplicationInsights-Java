@@ -24,7 +24,6 @@ package io.opentelemetry.instrumentation.api.instrumenter.rpc;
 import static io.opentelemetry.instrumentation.api.instrumenter.BootstrapSemanticAttributes.IS_PRE_AGGREGATED;
 import static io.opentelemetry.instrumentation.api.instrumenter.BootstrapSemanticAttributes.IS_SYNTHETIC;
 import static io.opentelemetry.instrumentation.api.instrumenter.BootstrapSemanticAttributes.TARGET;
-import static io.opentelemetry.instrumentation.api.instrumenter.UserAgents.isUserAgentBot;
 import static io.opentelemetry.instrumentation.api.instrumenter.rpc.MetricsView.applyClientView;
 import static java.util.logging.Level.FINE;
 
@@ -37,6 +36,7 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.context.ContextKey;
 import io.opentelemetry.instrumentation.api.instrumenter.OperationListener;
 import io.opentelemetry.instrumentation.api.instrumenter.OperationMetrics;
+import io.opentelemetry.instrumentation.api.instrumenter.UserAgents;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
@@ -106,7 +106,7 @@ public final class RpcClientMetrics implements OperationListener {
     }
     endAttributes =
         endAttributes.toBuilder()
-            .put(IS_SYNTHETIC, isUserAgentBot(endAttributes, state.startAttributes()))
+            .put(IS_SYNTHETIC, UserAgents.isBot(endAttributes, state.startAttributes()))
             .put(TARGET, target)
             .build();
 
@@ -118,6 +118,7 @@ public final class RpcClientMetrics implements OperationListener {
         context);
   }
 
+  // this is copied from SpanDataMapper
   @Nullable
   private static String getTargetFromPeerAttributes(Attributes attributes, int defaultPort) {
     String target = getTargetFromPeerService(attributes);
@@ -127,12 +128,14 @@ public final class RpcClientMetrics implements OperationListener {
     return getTargetFromNetAttributes(attributes, defaultPort);
   }
 
+  // this is copied from SpanDataMapper
   @Nullable
   private static String getTargetFromPeerService(Attributes attributes) {
     // do not append port to peer.service
     return attributes.get(SemanticAttributes.PEER_SERVICE);
   }
 
+  // this is copied from SpanDataMapper
   @Nullable
   private static String getTargetFromNetAttributes(Attributes attributes, int defaultPort) {
     String target = getHostFromNetAttributes(attributes);
@@ -147,6 +150,7 @@ public final class RpcClientMetrics implements OperationListener {
     return target;
   }
 
+  // this is copied from SpanDataMapper
   @Nullable
   private static String getHostFromNetAttributes(Attributes attributes) {
     String host = attributes.get(SemanticAttributes.NET_PEER_NAME);

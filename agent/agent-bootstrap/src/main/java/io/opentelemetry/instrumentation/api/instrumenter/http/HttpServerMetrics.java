@@ -23,7 +23,6 @@ package io.opentelemetry.instrumentation.api.instrumenter.http;
 
 import static io.opentelemetry.instrumentation.api.instrumenter.BootstrapSemanticAttributes.IS_PRE_AGGREGATED;
 import static io.opentelemetry.instrumentation.api.instrumenter.BootstrapSemanticAttributes.IS_SYNTHETIC;
-import static io.opentelemetry.instrumentation.api.instrumenter.UserAgents.isUserAgentBot;
 import static java.util.logging.Level.FINE;
 
 import com.google.auto.value.AutoValue;
@@ -38,6 +37,7 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.context.ContextKey;
 import io.opentelemetry.instrumentation.api.instrumenter.OperationListener;
 import io.opentelemetry.instrumentation.api.instrumenter.OperationMetrics;
+import io.opentelemetry.instrumentation.api.instrumenter.UserAgents;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
@@ -133,7 +133,7 @@ public final class HttpServerMetrics implements OperationListener {
 
     Attributes durationAttributes =
         durationAndSizeAttributes.toBuilder()
-            .put(IS_SYNTHETIC, isUserAgentBot(endAttributes, state.startAttributes()))
+            .put(IS_SYNTHETIC, UserAgents.isBot(endAttributes, state.startAttributes()))
             .build();
 
     // END APPLICATION INSIGHTS CODE

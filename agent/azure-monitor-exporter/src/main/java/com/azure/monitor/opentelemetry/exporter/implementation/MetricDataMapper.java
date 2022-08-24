@@ -88,9 +88,10 @@ public class MetricDataMapper {
         || type == LONG_SUM
         || type == LONG_GAUGE
         || type == HISTOGRAM) {
-      boolean isPreAggregated = OTEL_STANDARD_METRIC_NAMES.contains(metricData.getName());
+      boolean isPreAggregatedStandardMetric =
+          OTEL_STANDARD_METRIC_NAMES.contains(metricData.getName());
       List<TelemetryItem> telemetryItemList =
-          convertOtelMetricToAzureMonitorMetric(metricData, isPreAggregated);
+          convertOtelMetricToAzureMonitorMetric(metricData, isPreAggregatedStandardMetric);
       for (TelemetryItem telemetryItem : telemetryItemList) {
         consumer.accept(telemetryItem);
       }
@@ -100,7 +101,7 @@ public class MetricDataMapper {
   }
 
   private List<TelemetryItem> convertOtelMetricToAzureMonitorMetric(
-      MetricData metricData, boolean isPreAggregated) {
+      MetricData metricData, boolean isPreAggregatedStandardMetric) {
     List<TelemetryItem> telemetryItems = new ArrayList<>();
 
     for (PointData pointData : metricData.getData().getPoints()) {
@@ -109,7 +110,11 @@ public class MetricDataMapper {
 
       builder.setTime(FormattedTime.offSetDateTimeFromEpochNanos(pointData.getEpochNanos()));
       updateMetricPointBuilder(
-          builder, metricData, pointData, captureHttpServer4xxAsError, isPreAggregated);
+          builder,
+          metricData,
+          pointData,
+          captureHttpServer4xxAsError,
+          isPreAggregatedStandardMetric);
 
       telemetryItems.add(builder.build());
     }
@@ -122,7 +127,7 @@ public class MetricDataMapper {
       MetricData metricData,
       PointData pointData,
       boolean captureHttpServer4xxAsError,
-      boolean isPreAggregated) {
+      boolean isPreAggregatedStandardMetric) {
     checkArgument(metricData != null, "MetricData cannot be null.");
 
     MetricPointBuilder pointBuilder = new MetricPointBuilder();
@@ -157,9 +162,9 @@ public class MetricDataMapper {
     pointBuilder.setName(metricData.getName());
     metricTelemetryBuilder.setMetricPoint(pointBuilder);
 
-    if (isPreAggregated) {
+    if (isPreAggregatedStandardMetric) {
       Long statusCode = pointData.getAttributes().get(SemanticAttributes.HTTP_STATUS_CODE);
-      boolean success = getSuccess(statusCode, captureHttpServer4xxAsError);
+      boolean success = isSuccess(statusCode, captureHttpServer4xxAsError);
       Boolean isSynthetic =
           pointData
               .getAttributes()
@@ -190,7 +195,7 @@ public class MetricDataMapper {
     }
   }
 
-  private static boolean getSuccess(Long statusCode, boolean captureHttpServer4xxAsError) {
+  private static boolean isSuccess(Long statusCode, boolean captureHttpServer4xxAsError) {
     if (captureHttpServer4xxAsError) {
       return statusCode == null || statusCode < 400;
     }
