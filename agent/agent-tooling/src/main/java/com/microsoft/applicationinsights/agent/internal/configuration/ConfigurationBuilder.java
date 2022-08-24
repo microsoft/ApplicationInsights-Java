@@ -126,6 +126,12 @@ public class ConfigurationBuilder {
   public static Configuration create(Path agentJarPath, @Nullable RpConfiguration rpConfiguration)
       throws IOException {
     Configuration config = loadConfigurationFile(agentJarPath);
+    logConfigurationWarnings(config);
+    overlayConfiguration(agentJarPath, rpConfiguration, config);
+    return config;
+  }
+
+  private static void logConfigurationWarnings(Configuration config) {
     if (config.instrumentation.micrometer.reportingIntervalSeconds != 60) {
       configurationLogger.warn(
           "micrometer \"reportingIntervalSeconds\" setting leaked out previously"
@@ -182,7 +188,10 @@ public class ConfigurationBuilder {
               + " so no need to enable it under preview configuration");
     }
     logWarningIfUsingInternalAttributes(config);
+  }
 
+  private static void overlayConfiguration(
+      Path agentJarPath, RpConfiguration rpConfiguration, Configuration config) throws IOException {
     overlayFromEnv(config, agentJarPath.getParent());
     config.sampling.percentage = roundToNearest(config.sampling.percentage, true);
     for (SamplingOverride override : config.preview.sampling.overrides) {
@@ -199,7 +208,6 @@ public class ConfigurationBuilder {
       String hostname = HostName.get();
       config.role.instance = hostname == null ? "unknown" : hostname;
     }
-    return config;
   }
 
   private static void logWarningIfUsingInternalAttributes(Configuration config) {
