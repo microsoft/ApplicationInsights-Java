@@ -141,7 +141,7 @@ public class FirstEntryPoint implements LoggingCustomizer {
     updateStatusFile(true);
   }
 
-  private double findJvmUptimeInSeconds() {
+  private static double findJvmUptimeInSeconds() {
     RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
     return runtimeMXBean.getUptime() / 1000.0;
   }
