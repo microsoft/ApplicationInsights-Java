@@ -173,6 +173,7 @@ public class AgentLogExporter implements LogExporter {
     if (spanContext.isValid()) {
       return AiSampler.shouldRecordAndSample(spanContext.getTraceId(), percentage);
     }
+    // this is a standalone log (not part of a trace), so randomly sample at the given percentage
     return ThreadLocalRandom.current().nextDouble() < percentage / 100;
   }
 }
