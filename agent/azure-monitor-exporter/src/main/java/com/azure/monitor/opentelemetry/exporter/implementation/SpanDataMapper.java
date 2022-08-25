@@ -333,8 +333,8 @@ public final class SpanDataMapper {
 
     // passing max value because we don't know what the default port would be in this case,
     // so we always want the port included
-    String target = getTargetFromPeerAttributes(attributes, Integer.MAX_VALUE);
-    if (target != null) {
+    String target = getTargetOrNull(attributes, Integer.MAX_VALUE);
+    if (!target.isEmpty()) {
       telemetryBuilder.setTarget(target);
       return;
     }
@@ -391,7 +391,8 @@ public final class SpanDataMapper {
   private void applyHttpClientSpan(
       RemoteDependencyTelemetryBuilder telemetryBuilder, Attributes attributes) {
 
-    String target = getTargetForHttpClientSpan(attributes);
+    int defaultPort = getDefaultPortForHttpUrl(attributes.get(SemanticAttributes.HTTP_URL));
+    String target = getTargetOrDefault(attributes, defaultPort, "Http");
 
     String targetAppId = getTargetAppId(attributes);
 
@@ -430,102 +431,49 @@ public final class SpanDataMapper {
     return requestContext.substring(index + 1);
   }
 
-  private static String getTargetForHttpClientSpan(Attributes attributes) {
-    // from the spec, at least one of the following sets of attributes is required:
-    // * http.url
-    // * http.scheme, http.host, http.target
-    // * http.scheme, net.peer.name, net.peer.port, http.target
-    // * http.scheme, net.peer.ip, net.peer.port, http.target
-    String target = getTargetFromPeerService(attributes);
-    if (target != null) {
-      return target;
-    }
-    // note http.host includes the port (at least when non-default)
-    target = attributes.get(SemanticAttributes.HTTP_HOST);
-    if (target != null) {
-      String scheme = attributes.get(SemanticAttributes.HTTP_SCHEME);
-      if ("http".equals(scheme)) {
-        if (target.endsWith(":80")) {
-          target = target.substring(0, target.length() - 3);
-        }
-      } else if ("https".equals(scheme)) {
-        if (target.endsWith(":443")) {
-          target = target.substring(0, target.length() - 4);
-        }
-      }
-      return target;
-    }
-    String url = attributes.get(SemanticAttributes.HTTP_URL);
-    if (url != null) {
-      target = UrlParser.getTargetFromUrl(url);
-      if (target != null) {
-        return target;
-      }
-    }
-    String scheme = attributes.get(SemanticAttributes.HTTP_SCHEME);
-    int defaultPort;
-    if ("http".equals(scheme)) {
-      defaultPort = 80;
-    } else if ("https".equals(scheme)) {
-      defaultPort = 443;
-    } else {
-      defaultPort = 0;
-    }
-    target = getTargetFromNetClientAttributes(attributes, defaultPort);
-    if (target != null) {
-      return target;
-    }
-    // this should not happen, just a failsafe
-    return "Http";
-  }
-
-  @Nullable
-  private static String getTargetFromPeerAttributes(Attributes attributes, int defaultPort) {
-    String target = getTargetFromPeerService(attributes);
-    if (target != null) {
-      return target;
-    }
-    return getTargetFromNetClientAttributes(attributes, defaultPort);
-  }
-
-  @Nullable
-  private static String getTargetFromPeerService(Attributes attributes) {
-    // do not append port to peer.service
-    return attributes.get(SemanticAttributes.PEER_SERVICE);
-  }
-
-  @Nullable
-  private static String getTargetFromNetClientAttributes(Attributes attributes, int defaultPort) {
-    String target = getHostFromNetClientAttributes(attributes);
-    if (target == null) {
-      return null;
-    }
-    // append net.peer.port to target
-    Long port = attributes.get(SemanticAttributes.NET_PEER_PORT);
-    if (port != null && port != defaultPort) {
-      return target + ":" + port;
-    }
-    return target;
-  }
-
-  @Nullable
-  private static String getHostFromNetClientAttributes(Attributes attributes) {
-    String host = attributes.get(SemanticAttributes.NET_PEER_NAME);
-    if (host != null) {
-      return host;
-    }
-    return attributes.get(SemanticAttributes.NET_PEER_IP);
-  }
-
   private static void applyRpcClientSpan(
       RemoteDependencyTelemetryBuilder telemetryBuilder, String rpcSystem, Attributes attributes) {
     telemetryBuilder.setType(rpcSystem);
-    String target = getTargetFromPeerAttributes(attributes, 0);
+    String target = getTargetOrDefault(attributes, Integer.MAX_VALUE, rpcSystem);
     // not appending /rpc.service for now since that seems too fine-grained
-    if (target == null) {
-      target = rpcSystem;
-    }
     telemetryBuilder.setTarget(target);
+  }
+
+  private static int getDefaultPortForHttpUrl(@Nullable String httpUrl) {
+    if (httpUrl == null) {
+      return Integer.MAX_VALUE;
+    }
+    if (httpUrl.startsWith("https://")) {
+      return 443;
+    }
+    if (httpUrl.startsWith("http://")) {
+      return 80;
+    }
+    return Integer.MAX_VALUE;
+  }
+
+  public static String getTargetOrDefault(
+      Attributes attributes, int defaultPort, String defaultTarget) {
+    String target = getTargetOrNull(attributes, defaultPort);
+    return target != null ? target : defaultTarget;
+  }
+
+  @Nullable
+  private static String getTargetOrNull(Attributes attributes, int defaultPort) {
+    String peerService = attributes.get(SemanticAttributes.PEER_SERVICE);
+    if (peerService != null) {
+      return peerService;
+    }
+    String netPeerName = attributes.get(SemanticAttributes.NET_PEER_NAME);
+    if (netPeerName == null) {
+      return null;
+    }
+    Long netPeerPort = attributes.get(SemanticAttributes.NET_PEER_PORT);
+    if (netPeerPort != null && netPeerPort != defaultPort) {
+      return netPeerName + ":" + netPeerPort;
+    } else {
+      return netPeerName;
+    }
   }
 
   private static void applyDatabaseClientSpan(
@@ -550,7 +498,7 @@ public final class SpanDataMapper {
     telemetryBuilder.setData(dbStatement);
     String target =
         nullAwareConcat(
-            getTargetFromPeerAttributes(attributes, getDefaultPortForDbSystem(dbSystem)),
+            getTargetOrDefault(attributes, getDefaultPortForDbSystem(dbSystem), dbSystem),
             attributes.get(SemanticAttributes.DB_NAME),
             " | ");
     if (target == null) {
@@ -601,7 +549,7 @@ public final class SpanDataMapper {
       case SemanticAttributes.DbSystemValues.POSTGRESQL:
         return 5432;
       default:
-        return 0;
+        return Integer.MAX_VALUE;
     }
   }
 
@@ -783,7 +731,7 @@ public final class SpanDataMapper {
     // TODO (trask) AI mapping: should this pass default port for messaging.system?
     String source =
         nullAwareConcat(
-            getTargetFromPeerAttributes(attributes, 0),
+            getTargetOrNull(attributes, 0),
             attributes.get(SemanticAttributes.MESSAGING_DESTINATION),
             "/");
     if (source != null) {
