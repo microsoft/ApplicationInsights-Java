@@ -385,7 +385,7 @@ public class ConfigurationBuilder {
         getSystemProperty(APPLICATIONINSIGHTS_RUNTIME_ATTACHED_CONFIGURATION_CONTENT);
     if (runtimeAttachedConfigurationContent != null) {
       return getConfiguration(
-          runtimeAttachedConfigurationContent, true, ConfigurationOrigin.RUNTIME_ATTACHED);
+          runtimeAttachedConfigurationContent, true, JsonOrigin.RUNTIME_ATTACHED);
     }
 
     String configPathStr = getConfigPath();
@@ -681,20 +681,20 @@ public class ConfigurationBuilder {
     }
   }
 
-  private static class ConfigurationOrigin {
+  private static class JsonOrigin {
 
-    private static final ConfigurationOrigin ENV_VAR =
-        new ConfigurationOrigin("env var " + APPLICATIONINSIGHTS_CONFIGURATION_CONTENT);
-    private static final ConfigurationOrigin RUNTIME_ATTACHED =
-        new ConfigurationOrigin("JSON file coming from runtime attachment");
+    private static final JsonOrigin ENV_VAR =
+        new JsonOrigin("env var " + APPLICATIONINSIGHTS_CONFIGURATION_CONTENT);
+    private static final JsonOrigin RUNTIME_ATTACHED =
+        new JsonOrigin("JSON file coming from runtime attachment");
 
     private final String description;
 
-    private static ConfigurationOrigin fromPath(Path configPath) {
-      return new ConfigurationOrigin("file " + configPath.toAbsolutePath());
+    private static JsonOrigin fromPath(Path configPath) {
+      return new JsonOrigin("file " + configPath.toAbsolutePath());
     }
 
-    private ConfigurationOrigin(String description) {
+    private JsonOrigin(String description) {
       this.description = description;
     }
 
@@ -706,7 +706,7 @@ public class ConfigurationBuilder {
 
   static Configuration getConfigurationFromEnvVar(String json) {
 
-    Configuration configuration = getConfiguration(json, true, ConfigurationOrigin.ENV_VAR);
+    Configuration configuration = getConfiguration(json, true, JsonOrigin.ENV_VAR);
 
     if (configuration.connectionString != null) {
       throw new ConfigurationException(
@@ -743,11 +743,11 @@ public class ConfigurationBuilder {
           "Error reading configuration file: " + configPath.toAbsolutePath(), e);
     }
     String json = new String(bytes, StandardCharsets.UTF_8);
-    return getConfiguration(json, strict, ConfigurationOrigin.fromPath(configPath));
+    return getConfiguration(json, strict, JsonOrigin.fromPath(configPath));
   }
 
   private static Configuration getConfiguration(
-      String json, boolean strict, ConfigurationOrigin configurationOrigin) {
+      String json, boolean strict, JsonOrigin jsonOrigin) {
     configurationLogger.debug("configuration: {}", json);
     ObjectMapper mapper = new ObjectMapper();
     if (!strict) {
@@ -759,7 +759,7 @@ public class ConfigurationBuilder {
     } catch (JsonProcessingException e) {
       throw new FriendlyException(
           "The configuration "
-              + configurationOrigin
+              + jsonOrigin
               + " contains malformed JSON."
               + System.lineSeparator()
               + System.lineSeparator()
@@ -771,19 +771,18 @@ public class ConfigurationBuilder {
       return mapper.treeToValue(jsonNode, Configuration.class);
     } catch (UnrecognizedPropertyException e) {
       if (strict) {
-        Configuration configuration = getConfiguration(json, false, configurationOrigin);
-        configurationLogger.warn(
-            getJsonEncodingExceptionMessage(e.getMessage(), configurationOrigin), e);
+        Configuration configuration = getConfiguration(json, false, jsonOrigin);
+        configurationLogger.warn(getJsonEncodingExceptionMessage(e.getMessage(), jsonOrigin), e);
         return configuration;
       } else {
         throw new FriendlyException(
-            getJsonEncodingExceptionMessage(e.getMessage(), configurationOrigin),
+            getJsonEncodingExceptionMessage(e.getMessage(), jsonOrigin),
             "Learn more about configuration options here: " + CONFIGURATION_OPTIONS_LINK);
       }
     } catch (JsonParseException | JsonMappingException e) {
       throw new FriendlyException(
           "Error parsing configuration from "
-              + configurationOrigin
+              + jsonOrigin
               + "."
               + System.lineSeparator()
               + System.lineSeparator()
@@ -791,8 +790,7 @@ public class ConfigurationBuilder {
           "Learn more about configuration options here: " + CONFIGURATION_OPTIONS_LINK,
           e);
     } catch (Exception e) {
-      throw new ConfigurationException(
-          "Error parsing configuration from " + configurationOrigin, e);
+      throw new ConfigurationException("Error parsing configuration from " + jsonOrigin, e);
     }
   }
 
@@ -803,12 +801,11 @@ public class ConfigurationBuilder {
     return "The configuration " + location + " contains malformed JSON\n";
   }
 
-  static String getJsonEncodingExceptionMessage(
-      String message, ConfigurationOrigin configurationOrigin) {
+  static String getJsonEncodingExceptionMessage(String message, JsonOrigin jsonOrigin) {
     if (message != null && !message.isEmpty()) {
       return message;
     }
-    return "The configuration " + configurationOrigin + " contains malformed JSON\n";
+    return "The configuration " + jsonOrigin + " contains malformed JSON\n";
   }
 
   // this is for external callers, where logging is ok
