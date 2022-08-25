@@ -55,7 +55,7 @@ import org.slf4j.LoggerFactory;
 
 public class MetricDataMapper {
 
-  private static final Set<String> OTEL_STANDARD_METRIC_NAMES = new HashSet<>(4);
+  private static final Set<String> OTEL_PRE_AGGREGATED_STANDARD_METRIC_NAMES = new HashSet<>(4);
   private static final List<String> EXCLUDED_METRIC_NAMES = new ArrayList<>();
 
   private static final Logger logger = LoggerFactory.getLogger(MetricDataMapper.class);
@@ -65,10 +65,10 @@ public class MetricDataMapper {
   static {
     EXCLUDED_METRIC_NAMES.add("http.server.active_requests"); // Servlet
 
-    OTEL_STANDARD_METRIC_NAMES.add("http.server.duration"); // Servlet
-    OTEL_STANDARD_METRIC_NAMES.add("http.client.duration"); // HttpClient
-    OTEL_STANDARD_METRIC_NAMES.add("rpc.client.duration"); // gRPC
-    OTEL_STANDARD_METRIC_NAMES.add("rpc.server.duration"); // gRPC
+    OTEL_PRE_AGGREGATED_STANDARD_METRIC_NAMES.add("http.server.duration"); // Servlet
+    OTEL_PRE_AGGREGATED_STANDARD_METRIC_NAMES.add("http.client.duration"); // HttpClient
+    OTEL_PRE_AGGREGATED_STANDARD_METRIC_NAMES.add("rpc.client.duration"); // gRPC
+    OTEL_PRE_AGGREGATED_STANDARD_METRIC_NAMES.add("rpc.server.duration"); // gRPC
   }
 
   public MetricDataMapper(
@@ -90,7 +90,7 @@ public class MetricDataMapper {
         || type == LONG_GAUGE
         || type == HISTOGRAM) {
       boolean isPreAggregatedStandardMetric =
-          OTEL_STANDARD_METRIC_NAMES.contains(metricData.getName());
+          OTEL_PRE_AGGREGATED_STANDARD_METRIC_NAMES.contains(metricData.getName());
       List<TelemetryItem> telemetryItemList =
           convertOtelMetricToAzureMonitorMetric(metricData, isPreAggregatedStandardMetric);
       for (TelemetryItem telemetryItem : telemetryItemList) {
