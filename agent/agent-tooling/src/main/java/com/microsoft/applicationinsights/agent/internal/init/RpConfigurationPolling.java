@@ -109,12 +109,24 @@ public class RpConfigurationPolling implements Runnable {
           appIdSupplier.updateAppId();
         }
 
+        boolean changed = false;
         if (!Objects.equals(
-                newRpConfiguration.sampling.percentage, rpConfiguration.sampling.percentage)
-            || !Objects.equals(
-                newRpConfiguration.sampling.limitPerSecond,
-                rpConfiguration.sampling.limitPerSecond)) {
-          logger.debug("Updating sampling percentage");
+            rpConfiguration.sampling.percentage, newRpConfiguration.sampling.percentage)) {
+          logger.debug(
+              "Updating sampling percentage from {} to {}",
+              rpConfiguration.sampling.percentage,
+              newRpConfiguration.sampling.percentage);
+          changed = true;
+        }
+        if (!Objects.equals(
+            rpConfiguration.sampling.limitPerSecond, newRpConfiguration.sampling.limitPerSecond)) {
+          logger.debug(
+              "Updating limit per second from {} to {}",
+              rpConfiguration.sampling.limitPerSecond,
+              newRpConfiguration.sampling.limitPerSecond);
+          changed = true;
+        }
+        if (changed) {
           configuration.sampling.percentage = newRpConfiguration.sampling.percentage;
           configuration.sampling.limitPerSecond = newRpConfiguration.sampling.limitPerSecond;
           DelegatingSampler.getInstance().setDelegate(Samplers.getSampler(configuration));
