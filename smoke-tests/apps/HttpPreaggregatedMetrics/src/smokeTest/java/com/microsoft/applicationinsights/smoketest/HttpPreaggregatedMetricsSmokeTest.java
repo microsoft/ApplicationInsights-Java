@@ -192,12 +192,14 @@ abstract class HttpPreaggregatedMetricsSmokeTest {
     Map<String, String> properties = metricData.getProperties();
     String expectedSuccess = "200".equals(resultCode) ? "True" : "False";
     if ("client".equals(type)) {
+      assertThat(properties).hasSize(9);
       assertThat(properties.get("_MS.MetricId")).isEqualTo("dependencies/duration");
       assertThat(properties.get("dependency/resultCode")).isEqualTo(resultCode);
       assertThat(properties.get("dependency/success")).isEqualTo(expectedSuccess);
-      assertThat(properties.get("dependency/target")).isNotNull();
+      assertThat(properties.get("dependency/target")).isEqualTo("mock.codes");
       assertThat(properties.get("dependency/type")).isEqualTo("http");
     } else {
+      assertThat(properties).hasSize(7);
       assertThat(properties.get("_MS.MetricId")).isEqualTo("requests/duration");
       assertThat(properties.get("request/resultCode")).isEqualTo(resultCode);
       assertThat(properties.get("request/success")).isEqualTo(expectedSuccess);

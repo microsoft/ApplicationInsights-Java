@@ -27,6 +27,7 @@ import static com.azure.monitor.opentelemetry.exporter.implementation.preaggrega
 import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.ExtractorHelper.extractCommon;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.MetricTelemetryBuilder;
+import javax.annotation.Nullable;
 
 public final class DependencyExtractor {
 
@@ -39,11 +40,11 @@ public final class DependencyExtractor {
 
   public static void extract(
       MetricTelemetryBuilder metricBuilder,
-      Long statusCode,
+      @Nullable Long statusCode,
       boolean success,
       String type,
       String target,
-      Boolean isSynthetic) {
+      @Nullable Boolean isSynthetic) {
     extractCommon(metricBuilder, isSynthetic);
 
     metricBuilder.addProperty(MS_METRIC_ID, DEPENDENCIES_DURATION);

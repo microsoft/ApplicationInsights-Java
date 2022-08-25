@@ -24,6 +24,7 @@ package com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmet
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.MetricTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
 import java.util.Map;
+import javax.annotation.Nullable;
 
 public final class ExtractorHelper {
 
@@ -36,7 +37,7 @@ public final class ExtractorHelper {
   public static final String CLOUD_ROLE_NAME = "cloud/roleName";
   public static final String CLOUD_ROLE_INSTANCE = "cloud/roleInstance";
 
-  static void extractCommon(MetricTelemetryBuilder metricBuilder, Boolean isSynthetic) {
+  static void extractCommon(MetricTelemetryBuilder metricBuilder, @Nullable Boolean isSynthetic) {
     metricBuilder.addProperty(MS_IS_AUTOCOLLECTED, TRUE);
     Map<String, String> tags = metricBuilder.build().getTags();
     if (tags != null) {

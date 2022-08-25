@@ -215,13 +215,13 @@ abstract class GrpcTest {
     assertThat(dataPoint.getMin()).isGreaterThan(0d).isLessThan(5 * 60 * 1000d); // (0 - 5) min
     Map<String, String> properties = metricData.getProperties();
     if ("client".equals(type)) {
-      assertThat(properties.get("dependency/resultCode")).isNull();
+      assertThat(properties).hasSize(8);
       assertThat(properties.get("_MS.MetricId")).isEqualTo("dependencies/duration");
-      assertThat(properties.get("dependency/target")).isNotNull();
+      assertThat(properties.get("dependency/target")).isEqualTo("localhost:10203");
       assertThat(properties.get("dependency/type")).isEqualTo("grpc");
     } else {
+      assertThat(properties).hasSize(6);
       assertThat(properties.get("_MS.MetricId")).isEqualTo("requests/duration");
-      assertThat(properties.get("request/resultCode")).isNull();
       assertThat(properties.get("request/success")).isEqualTo("True");
     }
     assertThat(properties.get("operation/synthetic")).isEqualTo("False");
