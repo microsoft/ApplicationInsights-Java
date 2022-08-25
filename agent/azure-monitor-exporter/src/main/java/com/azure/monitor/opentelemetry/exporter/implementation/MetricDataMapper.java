@@ -168,19 +168,15 @@ public class MetricDataMapper {
       boolean success = isSuccess(statusCode, captureHttpServer4xxAsError);
       Boolean isSynthetic = pointData.getAttributes().get(IS_SYNTHETIC);
       if (metricData.getName().contains(".server.")) {
-        RequestExtractor requestExtractor =
-            new RequestExtractor(metricTelemetryBuilder, statusCode, success, isSynthetic);
-        requestExtractor.extract();
+        RequestExtractor.extract(metricTelemetryBuilder, statusCode, success, isSynthetic);
       } else if (metricData.getName().contains(".client.")) {
         String dependencyType =
             metricData.getName().startsWith("http")
                 ? "http"
                 : pointData.getAttributes().get(SemanticAttributes.RPC_SYSTEM);
         String target = pointData.getAttributes().get(TARGET);
-        DependencyExtractor dependencyExtractor =
-            new DependencyExtractor(
-                metricTelemetryBuilder, statusCode, success, dependencyType, target, isSynthetic);
-        dependencyExtractor.extract();
+        DependencyExtractor.extract(
+            metricTelemetryBuilder, statusCode, success, dependencyType, target, isSynthetic);
       }
     } else {
       pointData

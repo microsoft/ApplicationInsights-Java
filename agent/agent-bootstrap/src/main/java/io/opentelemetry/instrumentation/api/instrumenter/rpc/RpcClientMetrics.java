@@ -24,7 +24,6 @@ package io.opentelemetry.instrumentation.api.instrumenter.rpc;
 import static io.opentelemetry.instrumentation.api.instrumenter.BootstrapSemanticAttributes.IS_PRE_AGGREGATED;
 import static io.opentelemetry.instrumentation.api.instrumenter.BootstrapSemanticAttributes.IS_SYNTHETIC;
 import static io.opentelemetry.instrumentation.api.instrumenter.BootstrapSemanticAttributes.TARGET;
-import static io.opentelemetry.instrumentation.api.instrumenter.rpc.MetricsView.applyClientView;
 import static java.util.logging.Level.FINE;
 
 import com.google.auto.value.AutoValue;
@@ -96,6 +95,8 @@ public final class RpcClientMetrics implements OperationListener {
 
     // START APPLICATION INSIGHTS CODE
 
+    Attributes attributes = MetricsView.applyClientView(state.startAttributes(), endAttributes);
+
     // this is needed for detecting telemetry signals that will trigger pre-aggregated metrics via
     // auto instrumentations
     Span.fromContext(context).setAttribute(IS_PRE_AGGREGATED, true);
@@ -104,8 +105,8 @@ public final class RpcClientMetrics implements OperationListener {
     if (target == null) {
       target = endAttributes.get(SemanticAttributes.RPC_SYSTEM);
     }
-    endAttributes =
-        endAttributes.toBuilder()
+    attributes =
+        attributes.toBuilder()
             .put(IS_SYNTHETIC, UserAgents.isBot(endAttributes, state.startAttributes()))
             .put(TARGET, target)
             .build();
@@ -113,9 +114,7 @@ public final class RpcClientMetrics implements OperationListener {
     // END APPLICATION INSIGHTS CODE
 
     clientDurationHistogram.record(
-        (endNanos - state.startTimeNanos()) / NANOS_PER_MS,
-        applyClientView(state.startAttributes(), endAttributes),
-        context);
+        (endNanos - state.startTimeNanos()) / NANOS_PER_MS, attributes, context);
   }
 
   // this is copied from SpanDataMapper

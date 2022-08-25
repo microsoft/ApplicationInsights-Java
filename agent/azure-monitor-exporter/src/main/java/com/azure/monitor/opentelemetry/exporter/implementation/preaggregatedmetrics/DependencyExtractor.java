@@ -28,7 +28,7 @@ import static com.azure.monitor.opentelemetry.exporter.implementation.preaggrega
 
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.MetricTelemetryBuilder;
 
-public class DependencyExtractor {
+public final class DependencyExtractor {
 
   // visible for testing
   public static final String DEPENDENCIES_DURATION = "dependencies/duration";
@@ -37,29 +37,13 @@ public class DependencyExtractor {
   public static final String DEPENDENCY_TARGET = "dependency/target";
   public static final String DEPENDENCY_RESULT_CODE = "dependency/resultCode";
 
-  private final MetricTelemetryBuilder metricBuilder;
-  private final Long statusCode;
-  private final boolean success;
-  private final String type;
-  private final String target;
-  private final Boolean isSynthetic;
-
-  public DependencyExtractor(
+  public static void extract(
       MetricTelemetryBuilder metricBuilder,
       Long statusCode,
       boolean success,
       String type,
       String target,
       Boolean isSynthetic) {
-    this.metricBuilder = metricBuilder;
-    this.statusCode = statusCode;
-    this.success = success;
-    this.type = type;
-    this.target = target;
-    this.isSynthetic = isSynthetic;
-  }
-
-  public void extract() {
     extractCommon(metricBuilder, isSynthetic);
 
     metricBuilder.addProperty(MS_METRIC_ID, DEPENDENCIES_DURATION);
@@ -71,4 +55,6 @@ public class DependencyExtractor {
     metricBuilder.addProperty(DEPENDENCY_TYPE, type);
     metricBuilder.addProperty(DEPENDENCY_TARGET, target);
   }
+
+  private DependencyExtractor() {}
 }

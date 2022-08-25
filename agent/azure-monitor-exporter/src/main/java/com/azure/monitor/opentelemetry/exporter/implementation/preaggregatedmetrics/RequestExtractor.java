@@ -35,20 +35,8 @@ public final class RequestExtractor {
   public static final String REQUEST_RESULT_CODE = "request/resultCode";
   public static final String REQUEST_SUCCESS = "request/success";
 
-  private final MetricTelemetryBuilder metricBuilder;
-  private final Boolean isSynthetic;
-  private final Long statusCode;
-  private final boolean success;
-
-  public RequestExtractor(
+  public static void extract(
       MetricTelemetryBuilder metricBuilder, Long statusCode, boolean success, Boolean isSynthetic) {
-    this.metricBuilder = metricBuilder;
-    this.isSynthetic = isSynthetic;
-    this.statusCode = statusCode;
-    this.success = success;
-  }
-
-  public void extract() {
     extractCommon(metricBuilder, isSynthetic);
 
     metricBuilder.addProperty(MS_METRIC_ID, REQUESTS_DURATION);
@@ -57,4 +45,6 @@ public final class RequestExtractor {
     }
     metricBuilder.addProperty(REQUEST_SUCCESS, success ? TRUE : FALSE);
   }
+
+  private RequestExtractor() {}
 }
