@@ -591,9 +591,9 @@ public class ConfigurationBuilder {
   }
 
   private static String getConfigPath() {
-    String value = getEnvVar(APPLICATIONINSIGHTS_CONFIGURATION_FILE);
-    if (value != null) {
-      return value;
+    String configPath = getEnvVar(APPLICATIONINSIGHTS_CONFIGURATION_FILE);
+    if (configPath != null) {
+      return configPath;
     }
     // intentionally not checking system properties for other system properties
     // with the intention to keep configuration paths minimal to help with supportability
@@ -601,13 +601,13 @@ public class ConfigurationBuilder {
   }
 
   private static String getWebsiteSiteNameEnvVar() {
-    String value = getEnvVar(WEBSITE_SITE_NAME);
+    String websiteSiteName = getEnvVar(WEBSITE_SITE_NAME);
     // TODO we can update this check after the new functions model is deployed.
-    if (value != null && "java".equals(getEnvVar("FUNCTIONS_WORKER_RUNTIME"))) {
+    if (websiteSiteName != null && "java".equals(getEnvVar("FUNCTIONS_WORKER_RUNTIME"))) {
       // special case for Azure Functions
-      return value.toLowerCase(Locale.ENGLISH);
+      return websiteSiteName.toLowerCase(Locale.ENGLISH);
     }
-    return value;
+    return websiteSiteName;
   }
 
   public static String overlayWithSysPropEnvVar(
