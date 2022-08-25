@@ -188,19 +188,19 @@ abstract class HttpPreaggregatedMetricsSmokeTest {
     assertThat(dataPoint.getCount()).isEqualTo(1);
     assertThat(dataPoint.getValue()).isGreaterThan(0d).isLessThan(5 * 60 * 1000d); // (0 - 5) min
     assertThat(dataPoint.getMin()).isGreaterThan(0d).isLessThan(5 * 60 * 1000d); // (0 - 5) min
-    assertThat(dataPoint.getMin()).isGreaterThan(0d).isLessThan(5 * 60 * 1000d); // (0 - 5) min
+    assertThat(dataPoint.getMax()).isGreaterThan(0d).isLessThan(5 * 60 * 1000d); // (0 - 5) min
     Map<String, String> properties = metricData.getProperties();
-    String expectedResultCode = "200".equals(resultCode) ? "True" : "False";
+    String expectedSuccess = "200".equals(resultCode) ? "True" : "False";
     if ("client".equals(type)) {
       assertThat(properties.get("_MS.MetricId")).isEqualTo("dependencies/duration");
       assertThat(properties.get("dependency/resultCode")).isEqualTo(resultCode);
-      assertThat(properties.get("dependency/success")).isEqualTo(expectedResultCode);
+      assertThat(properties.get("dependency/success")).isEqualTo(expectedSuccess);
       assertThat(properties.get("dependency/target")).isNotNull();
-      assertThat(properties.get("dependency/type")).isNotNull();
+      assertThat(properties.get("dependency/type")).isEqualTo("http");
     } else {
       assertThat(properties.get("_MS.MetricId")).isEqualTo("requests/duration");
       assertThat(properties.get("request/resultCode")).isEqualTo(resultCode);
-      assertThat(properties.get("request/success")).isEqualTo(expectedResultCode);
+      assertThat(properties.get("request/success")).isEqualTo(expectedSuccess);
     }
     assertThat(properties.get("operation/synthetic")).isEqualTo("False");
     assertThat(properties.get("cloud/roleInstance")).isEqualTo("testroleinstance");
