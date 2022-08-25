@@ -197,7 +197,7 @@ abstract class HttpPreaggregatedMetricsSmokeTest {
       assertThat(properties.get("dependency/resultCode")).isEqualTo(resultCode);
       assertThat(properties.get("dependency/success")).isEqualTo(expectedSuccess);
       assertThat(properties.get("dependency/target")).isEqualTo("mock.codes");
-      assertThat(properties.get("dependency/type")).isEqualTo("http");
+      assertThat(properties.get("dependency/type")).isEqualTo("Http");
     } else {
       assertThat(properties).hasSize(7);
       assertThat(properties.get("_MS.MetricId")).isEqualTo("requests/duration");

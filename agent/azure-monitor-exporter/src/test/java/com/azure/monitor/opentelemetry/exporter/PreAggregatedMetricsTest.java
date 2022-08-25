@@ -333,7 +333,7 @@ public class PreAggregatedMetricsTest {
     expectedMap.put(OPERATION_SYNTHETIC, FALSE);
     expectedMap.put(DEPENDENCY_SUCCESS, TRUE);
     if ("http".equals(type)) {
-      expectedMap.put(DEPENDENCY_TYPE, "http");
+      expectedMap.put(DEPENDENCY_TYPE, "Http");
       expectedMap.put(DEPENDENCY_RESULT_CODE, "200");
     } else {
       expectedMap.put(DEPENDENCY_TYPE, "grpc");

@@ -172,7 +172,7 @@ public class MetricDataMapper {
       } else if (metricData.getName().contains(".client.")) {
         String dependencyType =
             metricData.getName().startsWith("http")
-                ? "http"
+                ? "Http"
                 : pointData.getAttributes().get(SemanticAttributes.RPC_SYSTEM);
         String target = pointData.getAttributes().get(TARGET);
         DependencyExtractor.extract(
