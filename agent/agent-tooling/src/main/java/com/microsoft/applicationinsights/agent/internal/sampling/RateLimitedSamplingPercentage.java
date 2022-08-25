@@ -33,6 +33,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.LongSupplier;
 
 // uses adaptive algorithm from OpenTelemetry Java Contrib's ConsistentRateLimitingSampler
+// (https://github.com/open-telemetry/opentelemetry-java-contrib/blob/main/consistent-sampling/src/main/java/io/opentelemetry/contrib/samplers/ConsistentRateLimitingSampler.java)
 class RateLimitedSamplingPercentage implements SamplingPercentage {
 
   private static final class State {
