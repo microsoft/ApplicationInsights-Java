@@ -469,9 +469,10 @@ public class ConfigurationBuilder {
             APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_FILE_PATH, config.selfDiagnostics.file.path);
 
     config.preview.metricIntervalSeconds =
-        overlayWithEnvVar(
-            APPLICATIONINSIGHTS_PREVIEW_METRIC_INTERVAL_SECONDS,
-            config.preview.metricIntervalSeconds);
+        (int)
+            overlayWithEnvVar(
+                APPLICATIONINSIGHTS_PREVIEW_METRIC_INTERVAL_SECONDS,
+                config.preview.metricIntervalSeconds);
 
     config.preview.instrumentation.springIntegration.enabled =
         overlayWithEnvVar(
