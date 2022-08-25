@@ -616,11 +616,13 @@ public class Configuration {
 
     public boolean isForRequestTelemetry() {
       return telemetryKind == TelemetryKind.REQUEST
+          // this part is for backwards compatibility:
           || (telemetryKind == null && spanKind != SpanKind.CLIENT);
     }
 
     public boolean isForDependencyTelemetry() {
       return telemetryKind == TelemetryKind.DEPENDENCY
+          // this part is for backwards compatibility:
           || (telemetryKind == null && spanKind != SpanKind.SERVER);
     }
 
