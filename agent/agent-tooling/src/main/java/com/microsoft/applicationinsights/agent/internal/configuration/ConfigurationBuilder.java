@@ -24,9 +24,11 @@ package com.microsoft.applicationinsights.agent.internal.configuration;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.HostName;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
 import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
@@ -34,7 +36,6 @@ import com.microsoft.applicationinsights.agent.internal.common.FriendlyException
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.JmxMetric;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.SamplingOverride;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -120,6 +121,8 @@ public class ConfigurationBuilder {
   // cannot use logger before loading configuration, so need to store warning messages locally until
   // logger is initialized
   private static final ConfigurationLogger configurationLogger = new ConfigurationLogger();
+  public static final String CONFIGURATION_OPTIONS_LINK =
+      "https://go.microsoft.com/fwlink/?linkid=2153358";
 
   // using deprecated fields to give warning message to user if they are still using them
   @SuppressWarnings("deprecation")
@@ -257,7 +260,7 @@ public class ConfigurationBuilder {
       try {
         keyValueMap = Strings.splitToMap(aadAuthString);
       } catch (IllegalArgumentException e) {
-        throw new IllegalStateException(
+        throw new ConfigurationException(
             "Unable to parse APPLICATIONINSIGHTS_AUTHENTICATION_STRING environment variable: "
                 + aadAuthString,
             e);
@@ -372,17 +375,17 @@ public class ConfigurationBuilder {
             config.instrumentation.springScheduling.enabled);
   }
 
-  private static Configuration loadConfigurationFile(Path agentJarPath) throws IOException {
+  private static Configuration loadConfigurationFile(Path agentJarPath) {
     String configurationContent = getEnvVar(APPLICATIONINSIGHTS_CONFIGURATION_CONTENT);
     if (configurationContent != null) {
       return getConfigurationFromEnvVar(configurationContent);
     }
 
     String runtimeAttachedConfigurationContent =
-        System.getProperty(APPLICATIONINSIGHTS_RUNTIME_ATTACHED_CONFIGURATION_CONTENT);
+        getSystemProperty(APPLICATIONINSIGHTS_RUNTIME_ATTACHED_CONFIGURATION_CONTENT);
     if (runtimeAttachedConfigurationContent != null) {
       return getConfiguration(
-          runtimeAttachedConfigurationContent, true, ConfigurationOrigin.RUNTIME_ATTACHED);
+          runtimeAttachedConfigurationContent, true, JsonOrigin.RUNTIME_ATTACHED);
     }
 
     String configPathStr = getConfigPath();
@@ -392,7 +395,7 @@ public class ConfigurationBuilder {
         return loadJsonConfigFile(configPath);
       } else {
         // fail fast any time configuration is invalid
-        throw new IllegalStateException(
+        throw new ConfigurationException(
             "could not find requested configuration file: " + configPathStr);
       }
     }
@@ -411,7 +414,7 @@ public class ConfigurationBuilder {
     }
 
     if (Files.exists(agentJarPath.resolveSibling("ApplicationInsights.json"))) {
-      throw new IllegalStateException(
+      throw new ConfigurationException(
           "found ApplicationInsights.json, but it should be lowercase: applicationinsights.json");
     }
 
@@ -561,7 +564,7 @@ public class ConfigurationBuilder {
     } catch (IOException e) {
       throw new FriendlyException(
           "Error parsing environment variable APPLICATIONINSIGHTS_PROXY",
-          "Learn more about configuration options here: https://go.microsoft.com/fwlink/?linkid=2153358",
+          "Learn more about configuration options here: " + CONFIGURATION_OPTIONS_LINK,
           e);
     }
 
@@ -588,23 +591,23 @@ public class ConfigurationBuilder {
   }
 
   private static String getConfigPath() {
-    String value = getEnvVar(APPLICATIONINSIGHTS_CONFIGURATION_FILE);
-    if (value != null) {
-      return value;
+    String configPath = getEnvVar(APPLICATIONINSIGHTS_CONFIGURATION_FILE);
+    if (configPath != null) {
+      return configPath;
     }
     // intentionally not checking system properties for other system properties
     // with the intention to keep configuration paths minimal to help with supportability
-    return Strings.trimAndEmptyToNull(System.getProperty("applicationinsights.configuration.file"));
+    return getSystemProperty("applicationinsights.configuration.file");
   }
 
   private static String getWebsiteSiteNameEnvVar() {
-    String value = getEnvVar(WEBSITE_SITE_NAME);
+    String websiteSiteName = getEnvVar(WEBSITE_SITE_NAME);
     // TODO we can update this check after the new functions model is deployed.
-    if (value != null && "java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME"))) {
+    if (websiteSiteName != null && "java".equals(getEnvVar("FUNCTIONS_WORKER_RUNTIME"))) {
       // special case for Azure Functions
-      return value.toLowerCase(Locale.ENGLISH);
+      return websiteSiteName.toLowerCase(Locale.ENGLISH);
     }
-    return value;
+    return websiteSiteName;
   }
 
   public static String overlayWithSysPropEnvVar(
@@ -620,7 +623,6 @@ public class ConfigurationBuilder {
   public static String overlayWithEnvVar(String name, String defaultValue) {
     String value = getEnvVar(name);
     if (value != null) {
-      configurationLogger.debug("using environment variable: {}", name);
       return value;
     }
     return defaultValue;
@@ -629,7 +631,7 @@ public class ConfigurationBuilder {
   static float overlayWithEnvVar(String name, float defaultValue) {
     String value = getEnvVar(name);
     if (value != null) {
-      configurationLogger.debug("using environment variable: {}", name);
+      configurationLogger.debug("applying environment variable: {}={}", name, value);
       // intentionally allowing NumberFormatException to bubble up as invalid configuration and
       // prevent agent from starting
       return Float.parseFloat(value);
@@ -640,7 +642,7 @@ public class ConfigurationBuilder {
   static boolean overlayWithEnvVar(String name, boolean defaultValue) {
     String value = getEnvVar(name);
     if (value != null) {
-      configurationLogger.debug("using environment variable: {}", name);
+      configurationLogger.debug("applying environment variable: {}={}", name, value);
       return Boolean.parseBoolean(value);
     }
     return defaultValue;
@@ -648,12 +650,20 @@ public class ConfigurationBuilder {
 
   // never returns empty string (empty string is normalized to null)
   protected static String getSystemProperty(String name) {
-    return Strings.trimAndEmptyToNull(System.getProperty(name));
+    String value = Strings.trimAndEmptyToNull(System.getProperty(name));
+    if (value != null) {
+      configurationLogger.debug("read system property: {}={}", name, value);
+    }
+    return value;
   }
 
   // never returns empty string (empty string is normalized to null)
   protected static String getEnvVar(String name) {
-    return Strings.trimAndEmptyToNull(System.getenv(name));
+    String value = Strings.trimAndEmptyToNull(System.getenv(name));
+    if (value != null) {
+      configurationLogger.debug("read environment variable: {}={}", name, value);
+    }
+    return value;
   }
 
   private static boolean isTrimEmpty(@Nullable String value) {
@@ -671,48 +681,32 @@ public class ConfigurationBuilder {
     }
   }
 
-  static Configuration getConfigurationFromConfigFile(Path configPath, boolean strict)
-      throws IOException {
-    ObjectMapper mapper = new ObjectMapper();
-    try (InputStream in = Files.newInputStream(configPath)) {
-      if (!strict) {
-        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-      }
-      return mapper.readValue(in, Configuration.class);
-    } catch (UnrecognizedPropertyException ex) {
-      if (strict) {
-        Configuration configuration = getConfigurationFromConfigFile(configPath, false);
-        configurationLogger.warn(
-            getJsonEncodingExceptionMessageForFile(configPath, ex.getMessage()));
-        return configuration;
-      } else {
-        throw new FriendlyException(
-            getJsonEncodingExceptionMessageForFile(configPath, ex.getMessage()),
-            "Learn more about configuration options here: https://go.microsoft.com/fwlink/?linkid=2153358");
-      }
-    } catch (JsonMappingException | JsonParseException ex) {
-      throw new FriendlyException(
-          "Error parsing configuration from file: "
-              + configPath.toAbsolutePath()
-              + System.lineSeparator()
-              + System.lineSeparator()
-              + ex.getMessage(),
-          "Learn more about configuration options here: https://go.microsoft.com/fwlink/?linkid=2153358",
-          ex);
-    } catch (Exception e) {
-      throw new ConfigurationException(
-          "Error parsing configuration from file: " + configPath.toAbsolutePath(), e);
+  private static class JsonOrigin {
+
+    private static final JsonOrigin ENV_VAR =
+        new JsonOrigin("env var " + APPLICATIONINSIGHTS_CONFIGURATION_CONTENT);
+    private static final JsonOrigin RUNTIME_ATTACHED =
+        new JsonOrigin("JSON file coming from runtime attachment");
+
+    private final String description;
+
+    private static JsonOrigin fromPath(Path configPath) {
+      return new JsonOrigin("file " + configPath.toAbsolutePath());
+    }
+
+    private JsonOrigin(String description) {
+      this.description = description;
+    }
+
+    @Override
+    public String toString() {
+      return description;
     }
   }
 
-  enum ConfigurationOrigin {
-    ENV_VAR,
-    RUNTIME_ATTACHED
-  }
+  static Configuration getConfigurationFromEnvVar(String json) {
 
-  static Configuration getConfigurationFromEnvVar(String content) {
-
-    Configuration configuration = getConfiguration(content, true, ConfigurationOrigin.ENV_VAR);
+    Configuration configuration = getConfiguration(json, true, JsonOrigin.ENV_VAR);
 
     if (configuration.connectionString != null) {
       throw new ConfigurationException(
@@ -725,55 +719,79 @@ public class ConfigurationBuilder {
     return configuration;
   }
 
-  private static Configuration getConfiguration(
-      String content, boolean strict, ConfigurationOrigin configurationOrigin) {
-    Configuration configuration;
-    ObjectMapper mapper = new ObjectMapper();
-    if (!strict) {
-      mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+  private static Configuration loadJsonConfigFile(Path configPath) {
+    if (!Files.exists(configPath)) {
+      throw new ConfigurationException("config file does not exist: " + configPath);
     }
-    try {
-      configuration = mapper.readValue(content, Configuration.class);
-    } catch (UnrecognizedPropertyException ex) {
-      if (strict) {
-        // Try extracting the configuration without failOnUnknown
-        configuration = getConfiguration(content, false, configurationOrigin);
-        // cannot use logger before loading configuration, so need to store warning messages locally
-        // until logger is initialized
-        configurationLogger.warn(
-            getJsonEncodingExceptionMessage(ex.getMessage(), configurationOrigin));
-      } else {
-        throw new FriendlyException(
-            getJsonEncodingExceptionMessage(ex.getMessage(), configurationOrigin),
-            "Learn more about configuration options here: https://go.microsoft.com/fwlink/?linkid=2153358");
-      }
-    } catch (JsonMappingException | JsonParseException ex) {
-      throw new FriendlyException(
-          getJsonEncodingExceptionMessage(ex.getMessage(), configurationOrigin),
-          "Learn more about configuration options here: https://go.microsoft.com/fwlink/?linkid=2153358");
-    } catch (Exception e) {
-      if (ConfigurationOrigin.ENV_VAR.equals(configurationOrigin)) {
-        throw new ConfigurationException(
-            "Error parsing configuration from env var: "
-                + APPLICATIONINSIGHTS_CONFIGURATION_CONTENT,
-            e);
-      }
-      throw new ConfigurationException("Error parsing configuration with runtime attachment", e);
+    Configuration configuration = getConfigurationFromConfigFile(configPath, true);
+    if (configuration.instrumentationSettings != null) {
+      throw new ConfigurationException(
+          "It looks like you are using an old applicationinsights.json file"
+              + " which still has \"instrumentationSettings\", please see the docs for the new format:"
+              + " https://docs.microsoft.com/en-us/azure/azure-monitor/app/java-standalone-config");
     }
     return configuration;
   }
 
-  static String getJsonEncodingExceptionMessageForFile(Path configPath, String message) {
-    return getJsonEncodingExceptionMessage(message, "file " + configPath.toAbsolutePath());
+  // visible for testing
+  static Configuration getConfigurationFromConfigFile(Path configPath, boolean strict) {
+    byte[] bytes;
+    try {
+      bytes = Files.readAllBytes(configPath);
+    } catch (IOException e) {
+      throw new ConfigurationException(
+          "Error reading configuration file: " + configPath.toAbsolutePath(), e);
+    }
+    String json = new String(bytes, StandardCharsets.UTF_8);
+    return getConfiguration(json, strict, JsonOrigin.fromPath(configPath));
   }
 
-  static String getJsonEncodingExceptionMessage(
-      String message, ConfigurationOrigin configurationOrigin) {
-    if (ConfigurationOrigin.ENV_VAR.equals(configurationOrigin)) {
-      return getJsonEncodingExceptionMessage(
-          message, "env var " + APPLICATIONINSIGHTS_CONFIGURATION_CONTENT);
+  private static Configuration getConfiguration(
+      String json, boolean strict, JsonOrigin jsonOrigin) {
+    configurationLogger.debug("configuration: {}", json);
+    ObjectMapper mapper = new ObjectMapper();
+    if (!strict) {
+      mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
-    return getJsonEncodingExceptionMessage(message, "JSON file coming from runtime attachment");
+    JsonNode jsonNode;
+    try {
+      jsonNode = mapper.readTree(json);
+    } catch (JsonProcessingException e) {
+      throw new FriendlyException(
+          "The configuration "
+              + jsonOrigin
+              + " contains malformed JSON."
+              + System.lineSeparator()
+              + System.lineSeparator()
+              + e.getMessage(),
+          "Learn more about configuration options here: " + CONFIGURATION_OPTIONS_LINK,
+          e);
+    }
+    try {
+      return mapper.treeToValue(jsonNode, Configuration.class);
+    } catch (UnrecognizedPropertyException e) {
+      if (strict) {
+        Configuration configuration = getConfiguration(json, false, jsonOrigin);
+        configurationLogger.warn(getJsonEncodingExceptionMessage(e.getMessage(), jsonOrigin), e);
+        return configuration;
+      } else {
+        throw new FriendlyException(
+            getJsonEncodingExceptionMessage(e.getMessage(), jsonOrigin),
+            "Learn more about configuration options here: " + CONFIGURATION_OPTIONS_LINK);
+      }
+    } catch (JsonParseException | JsonMappingException e) {
+      throw new FriendlyException(
+          "Error parsing configuration from "
+              + jsonOrigin
+              + "."
+              + System.lineSeparator()
+              + System.lineSeparator()
+              + e.getMessage(),
+          "Learn more about configuration options here: " + CONFIGURATION_OPTIONS_LINK,
+          e);
+    } catch (Exception e) {
+      throw new ConfigurationException("Error parsing configuration from " + jsonOrigin, e);
+    }
   }
 
   static String getJsonEncodingExceptionMessage(@Nullable String message, String location) {
@@ -783,18 +801,11 @@ public class ConfigurationBuilder {
     return "The configuration " + location + " contains malformed JSON\n";
   }
 
-  public static Configuration loadJsonConfigFile(Path configPath) throws IOException {
-    if (!Files.exists(configPath)) {
-      throw new IllegalStateException("config file does not exist: " + configPath);
+  static String getJsonEncodingExceptionMessage(String message, JsonOrigin jsonOrigin) {
+    if (message != null && !message.isEmpty()) {
+      return message;
     }
-    Configuration configuration = getConfigurationFromConfigFile(configPath, true);
-    if (configuration.instrumentationSettings != null) {
-      throw new IllegalStateException(
-          "It looks like you are using an old applicationinsights.json file"
-              + " which still has \"instrumentationSettings\", please see the docs for the new format:"
-              + " https://docs.microsoft.com/en-us/azure/azure-monitor/app/java-standalone-config");
-    }
-    return configuration;
+    return "The configuration " + jsonOrigin + " contains malformed JSON\n";
   }
 
   // this is for external callers, where logging is ok
