@@ -23,7 +23,6 @@ package io.opentelemetry.instrumentation.api.instrumenter.rpc;
 
 import static io.opentelemetry.instrumentation.api.instrumenter.BootstrapSemanticAttributes.IS_PRE_AGGREGATED;
 import static io.opentelemetry.instrumentation.api.instrumenter.BootstrapSemanticAttributes.IS_SYNTHETIC;
-import static io.opentelemetry.instrumentation.api.instrumenter.rpc.MetricsView.applyServerView;
 import static java.util.logging.Level.FINE;
 
 import com.google.auto.value.AutoValue;
@@ -93,21 +92,21 @@ public final class RpcServerMetrics implements OperationListener {
 
     // START APPLICATION INSIGHTS CODE
 
+    Attributes attributes = MetricsView.applyServerView(state.startAttributes(), endAttributes);
+
     // this is needed for detecting telemetry signals that will trigger pre-aggregated metrics via
     // auto instrumentations
     Span.fromContext(context).setAttribute(IS_PRE_AGGREGATED, true);
 
-    endAttributes =
-        endAttributes.toBuilder()
+    attributes =
+        attributes.toBuilder()
             .put(IS_SYNTHETIC, UserAgents.isBot(endAttributes, state.startAttributes()))
             .build();
 
     // END APPLICATION INSIGHTS CODE
 
     serverDurationHistogram.record(
-        (endNanos - state.startTimeNanos()) / NANOS_PER_MS,
-        applyServerView(state.startAttributes(), endAttributes),
-        context);
+        (endNanos - state.startTimeNanos()) / NANOS_PER_MS, attributes, context);
   }
 
   @AutoValue
