@@ -31,6 +31,7 @@ import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TO
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8;
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8_OPENJ9;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.data.MapEntry.entry;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -55,7 +56,8 @@ abstract class CassandraTest {
     assertThat(telemetry.rd.getResponseCode()).isEqualTo("200");
     assertThat(telemetry.rd.getSuccess()).isTrue();
     assertThat(telemetry.rd.getSource()).isNull();
-    assertThat(telemetry.rd.getProperties()).isEmpty();
+    assertThat(telemetry.rd.getProperties())
+        .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
     assertThat(telemetry.rd.getMeasurements()).isEmpty();
 
     assertThat(telemetry.rdd1.getName()).isEqualTo("SELECT test.test");
