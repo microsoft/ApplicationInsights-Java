@@ -22,7 +22,6 @@
 package com.azure.monitor.opentelemetry.exporter.implementation;
 
 import static com.azure.monitor.opentelemetry.exporter.implementation.AiSemanticAttributes.IS_SYNTHETIC;
-import static com.azure.monitor.opentelemetry.exporter.implementation.AiSemanticAttributes.TARGET;
 import static io.opentelemetry.api.internal.Utils.checkArgument;
 import static io.opentelemetry.sdk.metrics.data.MetricDataType.DOUBLE_GAUGE;
 import static io.opentelemetry.sdk.metrics.data.MetricDataType.DOUBLE_SUM;
@@ -37,6 +36,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryI
 import com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.DependencyExtractor;
 import com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.RequestExtractor;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedTime;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.HistogramPointData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
@@ -50,6 +50,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -163,27 +164,48 @@ public class MetricDataMapper {
     pointBuilder.setName(metricData.getName());
     metricTelemetryBuilder.setMetricPoint(pointBuilder);
 
+    Attributes attributes = pointData.getAttributes();
     if (isPreAggregatedStandardMetric) {
-      Long statusCode = pointData.getAttributes().get(SemanticAttributes.HTTP_STATUS_CODE);
+      Long statusCode = attributes.get(SemanticAttributes.HTTP_STATUS_CODE);
       boolean success = isSuccess(statusCode, captureHttpServer4xxAsError);
-      Boolean isSynthetic = pointData.getAttributes().get(IS_SYNTHETIC);
+      Boolean isSynthetic = attributes.get(IS_SYNTHETIC);
       if (metricData.getName().contains(".server.")) {
         RequestExtractor.extract(metricTelemetryBuilder, statusCode, success, isSynthetic);
       } else if (metricData.getName().contains(".client.")) {
-        String dependencyType =
-            metricData.getName().startsWith("http")
-                ? "Http"
-                : pointData.getAttributes().get(SemanticAttributes.RPC_SYSTEM);
-        String target = pointData.getAttributes().get(TARGET);
+        String dependencyType;
+        int defaultPort;
+        if (metricData.getName().startsWith("http")) {
+          dependencyType = "Http";
+          defaultPort = getDefaultPortForHttpScheme(attributes.get(SemanticAttributes.HTTP_SCHEME));
+        } else {
+          dependencyType = attributes.get(SemanticAttributes.RPC_SYSTEM);
+          if (dependencyType == null) {
+            // rpc.system is required by the semantic conventions
+            dependencyType = "Unknown";
+          }
+          defaultPort = Integer.MAX_VALUE; // no default port for rpc
+        }
+        String target = SpanDataMapper.getTargetOrDefault(attributes, defaultPort, dependencyType);
         DependencyExtractor.extract(
             metricTelemetryBuilder, statusCode, success, dependencyType, target, isSynthetic);
       }
     } else {
-      pointData
-          .getAttributes()
-          .forEach(
-              (key, value) -> metricTelemetryBuilder.addProperty(key.getKey(), value.toString()));
+      attributes.forEach(
+          (key, value) -> metricTelemetryBuilder.addProperty(key.getKey(), value.toString()));
     }
+  }
+
+  private static int getDefaultPortForHttpScheme(@Nullable String httpScheme) {
+    if (httpScheme == null) {
+      return Integer.MAX_VALUE;
+    }
+    if (httpScheme.equals("https")) {
+      return 443;
+    }
+    if (httpScheme.equals("http")) {
+      return 80;
+    }
+    return Integer.MAX_VALUE;
   }
 
   private static boolean isSuccess(Long statusCode, boolean captureHttpServer4xxAsError) {

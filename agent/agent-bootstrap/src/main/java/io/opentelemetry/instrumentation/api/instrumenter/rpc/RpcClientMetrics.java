@@ -23,7 +23,6 @@ package io.opentelemetry.instrumentation.api.instrumenter.rpc;
 
 import static io.opentelemetry.instrumentation.api.instrumenter.BootstrapSemanticAttributes.IS_PRE_AGGREGATED;
 import static io.opentelemetry.instrumentation.api.instrumenter.BootstrapSemanticAttributes.IS_SYNTHETIC;
-import static io.opentelemetry.instrumentation.api.instrumenter.BootstrapSemanticAttributes.TARGET;
 import static java.util.logging.Level.FINE;
 
 import com.google.auto.value.AutoValue;
@@ -36,10 +35,8 @@ import io.opentelemetry.context.ContextKey;
 import io.opentelemetry.instrumentation.api.instrumenter.OperationListener;
 import io.opentelemetry.instrumentation.api.instrumenter.OperationMetrics;
 import io.opentelemetry.instrumentation.api.instrumenter.UserAgents;
-import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
-import javax.annotation.Nullable;
 
 /**
  * {@link OperationListener} which keeps track of <a
@@ -101,62 +98,15 @@ public final class RpcClientMetrics implements OperationListener {
     // auto instrumentations
     Span.fromContext(context).setAttribute(IS_PRE_AGGREGATED, true);
 
-    String target = getTargetFromPeerAttributes(endAttributes, 0);
-    if (target == null) {
-      target = endAttributes.get(SemanticAttributes.RPC_SYSTEM);
-    }
     attributes =
         attributes.toBuilder()
             .put(IS_SYNTHETIC, UserAgents.isBot(endAttributes, state.startAttributes()))
-            .put(TARGET, target)
             .build();
 
     // END APPLICATION INSIGHTS CODE
 
     clientDurationHistogram.record(
         (endNanos - state.startTimeNanos()) / NANOS_PER_MS, attributes, context);
-  }
-
-  // this is copied from SpanDataMapper
-  @Nullable
-  private static String getTargetFromPeerAttributes(Attributes attributes, int defaultPort) {
-    String target = getTargetFromPeerService(attributes);
-    if (target != null) {
-      return target;
-    }
-    return getTargetFromNetAttributes(attributes, defaultPort);
-  }
-
-  // this is copied from SpanDataMapper
-  @Nullable
-  private static String getTargetFromPeerService(Attributes attributes) {
-    // do not append port to peer.service
-    return attributes.get(SemanticAttributes.PEER_SERVICE);
-  }
-
-  // this is copied from SpanDataMapper
-  @Nullable
-  private static String getTargetFromNetAttributes(Attributes attributes, int defaultPort) {
-    String target = getHostFromNetAttributes(attributes);
-    if (target == null) {
-      return null;
-    }
-    // append net.peer.port to target
-    Long port = attributes.get(SemanticAttributes.NET_PEER_PORT);
-    if (port != null && port != defaultPort) {
-      return target + ":" + port;
-    }
-    return target;
-  }
-
-  // this is copied from SpanDataMapper
-  @Nullable
-  private static String getHostFromNetAttributes(Attributes attributes) {
-    String host = attributes.get(SemanticAttributes.NET_PEER_NAME);
-    if (host != null) {
-      return host;
-    }
-    return attributes.get(SemanticAttributes.NET_PEER_IP);
   }
 
   @AutoValue

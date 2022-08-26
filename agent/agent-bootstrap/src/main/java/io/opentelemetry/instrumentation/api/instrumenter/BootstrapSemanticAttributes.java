@@ -22,7 +22,6 @@
 package io.opentelemetry.instrumentation.api.instrumenter;
 
 import static io.opentelemetry.api.common.AttributeKey.booleanKey;
-import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
 import io.opentelemetry.api.common.AttributeKey;
 
@@ -30,8 +29,6 @@ public final class BootstrapSemanticAttributes {
 
   public static final AttributeKey<Boolean> IS_SYNTHETIC =
       booleanKey("applicationinsights.internal.is_synthetic");
-  public static final AttributeKey<String> TARGET =
-      stringKey("applicationinsights.internal.target");
   public static final AttributeKey<Boolean> IS_PRE_AGGREGATED =
       booleanKey("applicationinsights.internal.is_pre_aggregated");
 
