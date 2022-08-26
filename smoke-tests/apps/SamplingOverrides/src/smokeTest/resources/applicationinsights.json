@@ -1,0 +1,63 @@
+{
+  "role": {
+    "name": "testrolename",
+    "instance": "testroleinstance"
+  },
+  "sampling": {
+    "percentage": 100
+  },
+  "preview": {
+    "sampling": {
+      "overrides": [
+        {
+          "telemetryKind": "request",
+          "attributes": [
+            {
+              "key": "http.url",
+              "value": ".*/health-check",
+              "matchType": "regexp"
+            }
+          ],
+          "percentage": 50,
+          "id": "filter out health check"
+        },
+        {
+          "telemetryKind": "dependency",
+          "attributes": [
+            {
+              "key": "db.statement",
+              "value": "select count(*) from abc",
+              "matchType": "strict"
+            }
+          ],
+          "percentage": 0,
+          "id": "filter out noisy jdbc"
+        },
+        {
+          "telemetryKind": "trace",
+          "percentage": 100
+        }
+      ]
+    },
+    "instrumentationKeyOverrides": [
+      {
+        "httpPathPrefix": "/SamplingOverrides/login",
+        "instrumentationKey": "12345678-0000-0000-0000-0FEEDDADBEEF"
+      },
+      {
+        "httpPathPrefix": "/SamplingOverrides/regular-jdbc",
+        "instrumentationKey": "87654321-0000-0000-0000-0FEEDDADBEEF"
+      }
+    ],
+    "roleNameOverrides": [
+      {
+        "httpPathPrefix": "/SamplingOverrides/login",
+        "roleName": "app2"
+      },
+      {
+        "httpPathPrefix": "/SamplingOverrides/regular-jdbc",
+        "roleName": "app3"
+      }
+    ]
+  }
+}

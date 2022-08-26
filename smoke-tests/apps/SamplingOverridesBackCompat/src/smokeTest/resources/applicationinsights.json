@@ -1,0 +1,59 @@
+{
+  "role": {
+    "name": "testrolename",
+    "instance": "testroleinstance"
+  },
+  "sampling": {
+    "percentage": 100
+  },
+  "preview": {
+    "sampling": {
+      "overrides": [
+        {
+          "spanKind": "server",
+          "attributes": [
+            {
+              "key": "http.url",
+              "value": ".*/health-check",
+              "matchType": "regexp"
+            }
+          ],
+          "percentage": 50,
+          "id": "filter out health check"
+        },
+        {
+          "spanKind": "client",
+          "attributes": [
+            {
+              "key": "db.statement",
+              "value": "select count(*) from abc",
+              "matchType": "strict"
+            }
+          ],
+          "percentage": 0,
+          "id": "filter out noisy jdbc"
+        }
+      ]
+    },
+    "instrumentationKeyOverrides": [
+      {
+        "httpPathPrefix": "/SamplingOverridesBackCompat/login",
+        "instrumentationKey": "12345678-0000-0000-0000-0FEEDDADBEEF"
+      },
+      {
+        "httpPathPrefix": "/SamplingOverridesBackCompat/regular-jdbc",
+        "instrumentationKey": "87654321-0000-0000-0000-0FEEDDADBEEF"
+      }
+    ],
+    "roleNameOverrides": [
+      {
+        "httpPathPrefix": "/SamplingOverridesBackCompat/login",
+        "roleName": "app2"
+      },
+      {
+        "httpPathPrefix": "/SamplingOverridesBackCompat/regular-jdbc",
+        "roleName": "app3"
+      }
+    ]
+  }
+}
