@@ -21,6 +21,9 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
+import static com.microsoft.applicationinsights.smoketest.HttpServer4xxTestHelper.sortMetricsByRequestStatusCode;
+import static com.microsoft.applicationinsights.smoketest.HttpServer4xxTestHelper.validateMetricData;
+import static com.microsoft.applicationinsights.smoketest.HttpServer4xxTestHelper.validateTags;
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_11;
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_11_OPENJ9;
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_17;
@@ -33,7 +36,9 @@ import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WI
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.data.MapEntry.entry;
 
+import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
+import com.microsoft.applicationinsights.smoketest.schemav2.MetricData;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
@@ -63,6 +68,22 @@ abstract class HttpServer4xxDefaultTest {
             SmokeTestExtension.getMetricPredicate("http.server.duration"), 2, 40, TimeUnit.SECONDS);
 
     assertThat(serverMetrics).hasSize(2);
+
+    // sort metrics based on result code
+    sortMetricsByRequestStatusCode(serverMetrics);
+    assertThat(serverMetrics).hasSize(2);
+
+    // 1st pre-aggregated metric
+    Envelope envelope1 = serverMetrics.get(0);
+    validateTags(envelope1);
+    MetricData md1 = (MetricData) ((Data<?>) envelope1.getData()).getBaseData();
+    validateMetricData(md1, "200", true);
+
+    // 2nd pre-aggregated metric
+    Envelope envelope2 = serverMetrics.get(1);
+    validateTags(envelope2);
+    MetricData md2 = (MetricData) ((Data<?>) envelope2.getData()).getBaseData();
+    validateMetricData(md2, "400", false);
   }
 
   @Environment(TOMCAT_8_JAVA_8)

@@ -81,7 +81,7 @@ abstract class HttpServer4xxTest {
     Envelope envelope2 = serverMetrics.get(1);
     validateTags(envelope2);
     MetricData md2 = (MetricData) ((Data<?>) envelope2.getData()).getBaseData();
-    validateMetricData(md2, "400", false);
+    validateMetricData(md2, "400", true);
   }
 
   @Environment(TOMCAT_8_JAVA_8)
