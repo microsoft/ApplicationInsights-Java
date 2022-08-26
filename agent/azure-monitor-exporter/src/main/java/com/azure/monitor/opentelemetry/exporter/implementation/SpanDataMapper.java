@@ -938,6 +938,17 @@ public final class SpanDataMapper {
       telemetryBuilder.setInstrumentationKey((String) value);
       return true;
     }
+    if (stringKey.equals("ai.preview.connection_string") && value instanceof String) {
+      // TODO set connection string somehow
+      // telemetryBuilder.setInstrumentationKey((String) value);
+
+      // TODO split out 3 new smoke tests from TelemetryFiltering:
+      // * RoleNameOverrides
+      // * InstrumentationKeyOverrides
+      // * ConnectionStringOverrides
+
+      return true;
+    }
     if (stringKey.equals("ai.preview.service_name") && value instanceof String) {
       telemetryBuilder.addTag(ContextTagKeys.AI_CLOUD_ROLE.toString(), (String) value);
       return true;

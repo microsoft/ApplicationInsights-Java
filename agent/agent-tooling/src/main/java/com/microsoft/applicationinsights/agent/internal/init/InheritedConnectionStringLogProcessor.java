@@ -21,51 +21,27 @@
 
 package com.microsoft.applicationinsights.agent.internal.init;
 
-import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.sdk.logs.LogProcessor;
 import io.opentelemetry.sdk.logs.ReadWriteLogRecord;
 import io.opentelemetry.sdk.trace.ReadableSpan;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
 
-public class InheritedAttributesLogProcessor implements LogProcessor {
+public class InheritedConnectionStringLogProcessor implements LogProcessor {
 
-  private final List<AttributeKey<?>> inheritedAttributes;
-
-  public InheritedAttributesLogProcessor(
-      List<Configuration.InheritedAttribute> inheritedAttributes) {
-    this.inheritedAttributes =
-        inheritedAttributes.stream()
-            .map(Configuration.InheritedAttribute::getAttributeKey)
-            .collect(Collectors.toList());
-  }
-
-  private static List<AttributeKey<?>> buildInheritedAttributesList(
-      List<Configuration.InheritedAttribute> inheritedAttributes) {
-    List<AttributeKey<?>> list = new ArrayList<>();
-    for (Configuration.InheritedAttribute inheritedAttribute : inheritedAttributes) {
-      list.add(inheritedAttribute.getAttributeKey());
-    }
-    return list;
-  }
+  private static final AttributeKey<String> CONNECTION_STRING =
+      AttributeKey.stringKey("ai.preview.connection_string");
 
   @Override
-  @SuppressWarnings("unchecked")
   public void onEmit(ReadWriteLogRecord logRecord) {
     Span currentSpan = Span.current();
     if (!(currentSpan instanceof ReadableSpan)) {
       return;
     }
-
-    ReadableSpan readableSpan = (ReadableSpan) currentSpan;
-    for (AttributeKey<?> inheritedAttributeKey : inheritedAttributes) {
-      Object value = readableSpan.getAttribute(inheritedAttributeKey);
-      if (value != null) {
-        logRecord.setAttribute((AttributeKey<Object>) inheritedAttributeKey, value);
-      }
+    ReadableSpan currentReadableSpan = (ReadableSpan) currentSpan;
+    String instrumentationKey = currentReadableSpan.getAttribute(CONNECTION_STRING);
+    if (instrumentationKey != null) {
+      logRecord.setAttribute(CONNECTION_STRING, instrumentationKey);
     }
   }
 }

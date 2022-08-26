@@ -24,39 +24,53 @@ package com.microsoft.applicationinsights.agent.internal.init;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
+import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.util.List;
-import java.util.stream.Collectors;
 
-public class InheritedAttributesSpanProcessor implements SpanProcessor {
+public class InheritedConnectionStringSpanProcessor implements SpanProcessor {
 
-  private final List<AttributeKey<?>> inheritAttributes;
+  private static final AttributeKey<String> CONNECTION_STRING =
+      AttributeKey.stringKey("ai.preview.connection_string");
 
-  public InheritedAttributesSpanProcessor(
-      List<Configuration.InheritedAttribute> inheritedAttributes) {
-    this.inheritAttributes =
-        inheritedAttributes.stream()
-            .map(Configuration.InheritedAttribute::getAttributeKey)
-            .collect(Collectors.toList());
+  private final List<Configuration.ConnectionStringOverride> overrides;
+
+  public InheritedConnectionStringSpanProcessor(
+      List<Configuration.ConnectionStringOverride> overrides) {
+
+    this.overrides = overrides;
   }
 
   @Override
-  @SuppressWarnings("unchecked")
   public void onStart(Context parentContext, ReadWriteSpan span) {
-    Span parentSpan = Span.fromContextOrNull(parentContext);
+    Span parentSpan = Span.fromContext(parentContext);
+    SpanContext parentSpanContext = parentSpan.getSpanContext();
+    if (!parentSpanContext.isValid() || parentSpanContext.isRemote()) {
+      // this part (setting the attribute on the local root span) could be moved to Sampler
+      String target = span.getAttribute(SemanticAttributes.HTTP_TARGET);
+      if (target == null) {
+        return;
+      }
+      for (Configuration.ConnectionStringOverride override : overrides) {
+        if (target.startsWith(override.httpPathPrefix)) {
+          span.setAttribute(CONNECTION_STRING, override.connectionString);
+          break;
+        }
+      }
+      return;
+    }
     if (!(parentSpan instanceof ReadableSpan)) {
       return;
     }
     ReadableSpan parentReadableSpan = (ReadableSpan) parentSpan;
 
-    for (AttributeKey<?> inheritAttributeKey : inheritAttributes) {
-      Object value = parentReadableSpan.getAttribute(inheritAttributeKey);
-      if (value != null) {
-        span.setAttribute((AttributeKey<Object>) inheritAttributeKey, value);
-      }
+    String instrumentationKey = parentReadableSpan.getAttribute(CONNECTION_STRING);
+    if (instrumentationKey != null) {
+      span.setAttribute(CONNECTION_STRING, instrumentationKey);
     }
   }
 

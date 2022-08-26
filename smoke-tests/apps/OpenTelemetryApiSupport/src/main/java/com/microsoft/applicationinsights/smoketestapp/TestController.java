@@ -42,13 +42,22 @@ public class TestController {
     return "OK!";
   }
 
+  @GetMapping("/test-overriding-connection-string-etc")
+  public String testOverridingConnectionStringEtc() {
+    Span.current()
+        .setAttribute(
+            "ai.preview.connection_string",
+            "InstrumentationKey=12341234-1234-1234-1234-123412341234");
+    Span.current().setAttribute("ai.preview.service_name", "role-name-here");
+    Span.current().setAttribute("ai.preview.service_instance_id", "role-instance-here");
+    Span.current().setAttribute("ai.preview.service_version", "application-version-here");
+    return "OK!";
+  }
+
   @GetMapping("/test-overriding-ikey-etc")
   public String testOverridingIkeyEtc() {
     Span.current()
         .setAttribute("ai.preview.instrumentation_key", "12341234-1234-1234-1234-123412341234");
-    Span.current().setAttribute("ai.preview.service_name", "role-name-here");
-    Span.current().setAttribute("ai.preview.service_instance_id", "role-instance-here");
-    Span.current().setAttribute("ai.preview.service_version", "application-version-here");
     return "OK!";
   }
 

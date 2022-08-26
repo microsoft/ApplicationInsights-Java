@@ -345,8 +345,11 @@ public class Configuration {
     public AadAuthentication authentication = new AadAuthentication();
     public PreviewStatsbeat statsbeat = new PreviewStatsbeat();
 
-    public List<InstrumentationKeyOverride> instrumentationKeyOverrides = new ArrayList<>();
+    public List<ConnectionStringOverride> connectionStringOverrides = new ArrayList<>();
     public List<RoleNameOverride> roleNameOverrides = new ArrayList<>();
+
+    @Deprecated
+    public List<InstrumentationKeyOverride> instrumentationKeyOverrides = new ArrayList<>();
 
     public int generalExportQueueCapacity = 2048;
     // metrics get flooded every 60 seconds by default, so need larger queue size to avoid dropping
@@ -374,12 +377,16 @@ public class Configuration {
       for (SamplingOverride samplingOverride : sampling.overrides) {
         samplingOverride.validate();
       }
-      for (Configuration.InstrumentationKeyOverride instrumentationKeyOverride :
-          instrumentationKeyOverrides) {
-        instrumentationKeyOverride.validate();
+      for (Configuration.ConnectionStringOverride connectionStringOverride :
+          connectionStringOverrides) {
+        connectionStringOverride.validate();
       }
       for (Configuration.RoleNameOverride roleNameOverride : roleNameOverrides) {
         roleNameOverride.validate();
+      }
+      for (Configuration.InstrumentationKeyOverride instrumentationKeyOverride :
+          instrumentationKeyOverrides) {
+        instrumentationKeyOverride.validate();
       }
       for (ProcessorConfig processorConfig : processors) {
         processorConfig.validate();
@@ -503,22 +510,22 @@ public class Configuration {
     public boolean disabled = false;
   }
 
-  public static class InstrumentationKeyOverride {
+  public static class ConnectionStringOverride {
     public String httpPathPrefix;
-    public String instrumentationKey;
+    public String connectionString;
 
     public void validate() {
       if (httpPathPrefix == null) {
         // TODO add doc and go link, similar to telemetry processors
         throw new FriendlyException(
-            "A instrumentation key override configuration is missing an \"httpPathPrefix\".",
-            "Please provide an \"httpPathPrefix\" for the instrumentation key override configuration.");
+            "A connection string override configuration is missing an \"httpPathPrefix\".",
+            "Please provide an \"httpPathPrefix\" for the connection string override configuration.");
       }
-      if (instrumentationKey == null) {
+      if (connectionString == null) {
         // TODO add doc and go link, similar to telemetry processors
         throw new FriendlyException(
-            "An instrumentation key override configuration is missing an \"instrumentationKey\".",
-            "Please provide an \"instrumentationKey\" for the instrumentation key override configuration.");
+            "A connection string override configuration is missing an \"connectionString\".",
+            "Please provide an \"instrumentationKey\" for the connection string override configuration.");
       }
     }
   }
@@ -539,6 +546,27 @@ public class Configuration {
         throw new FriendlyException(
             "An role name override configuration is missing a \"roleName\".",
             "Please provide a \"roleName\" for the role name override configuration.");
+      }
+    }
+  }
+
+  @Deprecated
+  public static class InstrumentationKeyOverride {
+    public String httpPathPrefix;
+    public String instrumentationKey;
+
+    public void validate() {
+      if (httpPathPrefix == null) {
+        // TODO add doc and go link, similar to telemetry processors
+        throw new FriendlyException(
+            "An instrumentation key override configuration is missing an \"httpPathPrefix\".",
+            "Please provide an \"httpPathPrefix\" for the instrumentation key override configuration.");
+      }
+      if (instrumentationKey == null) {
+        // TODO add doc and go link, similar to telemetry processors
+        throw new FriendlyException(
+            "An instrumentation key override configuration is missing an \"instrumentationKey\".",
+            "Please provide an \"instrumentationKey\" for the instrumentation key override configuration.");
       }
     }
   }
