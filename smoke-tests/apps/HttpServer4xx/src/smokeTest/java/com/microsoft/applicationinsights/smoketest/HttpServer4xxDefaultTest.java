@@ -65,9 +65,7 @@ abstract class HttpServer4xxDefaultTest {
 
     List<Envelope> serverMetrics =
         testing.mockedIngestion.waitForItems(
-            SmokeTestExtension.getMetricPredicate("http.server.duration"), 2, 40, TimeUnit.SECONDS);
-
-    assertThat(serverMetrics).hasSize(2);
+            SmokeTestExtension.getMetricPredicate("http.server.duration"), 2, 60, TimeUnit.SECONDS);
 
     // sort metrics based on result code
     sortMetricsByRequestStatusCode(serverMetrics);
