@@ -24,6 +24,7 @@ package com.azure.monitor.opentelemetry.exporter;
 import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.DependencyExtractor.DEPENDENCIES_DURATION;
 import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.DependencyExtractor.DEPENDENCY_RESULT_CODE;
 import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.DependencyExtractor.DEPENDENCY_SUCCESS;
+import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.DependencyExtractor.DEPENDENCY_TARGET;
 import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.DependencyExtractor.DEPENDENCY_TYPE;
 import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.ExtractorHelper.FALSE;
 import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.ExtractorHelper.MS_IS_AUTOCOLLECTED;
@@ -158,7 +159,8 @@ public class PreAggregatedMetricsTest {
     MetricsData metricsData = (MetricsData) telemetryItem.getData().getBaseData();
 
     assertThat(metricsData.getProperties())
-        .containsExactlyInAnyOrderEntriesOf(generateExpectedDependencyCustomDimensions("http"));
+        .containsExactlyInAnyOrderEntriesOf(
+            generateExpectedDependencyCustomDimensions("http", "localhost:1234"));
   }
 
   @SuppressWarnings("SystemOut")
@@ -240,7 +242,8 @@ public class PreAggregatedMetricsTest {
     MetricsData metricsData = (MetricsData) telemetryItem.getData().getBaseData();
 
     assertThat(metricsData.getProperties())
-        .containsExactlyInAnyOrderEntriesOf(generateExpectedDependencyCustomDimensions("grpc"));
+        .containsExactlyInAnyOrderEntriesOf(
+            generateExpectedDependencyCustomDimensions("grpc", "example.com:8080"));
   }
 
   @SuppressWarnings("SystemOut")
@@ -326,7 +329,8 @@ public class PreAggregatedMetricsTest {
     return TimeUnit.MILLISECONDS.toNanos(millis);
   }
 
-  private static Map<String, String> generateExpectedDependencyCustomDimensions(String type) {
+  private static Map<String, String> generateExpectedDependencyCustomDimensions(
+      String type, String target) {
     Map<String, String> expectedMap = new HashMap<>();
     expectedMap.put(MS_METRIC_ID, DEPENDENCIES_DURATION);
     expectedMap.put(MS_IS_AUTOCOLLECTED, TRUE);
@@ -338,6 +342,7 @@ public class PreAggregatedMetricsTest {
     } else {
       expectedMap.put(DEPENDENCY_TYPE, "grpc");
     }
+    expectedMap.put(DEPENDENCY_TARGET, target);
     // TODO test cloud_role_name and cloud_role_instance
     //    expectedMap.put(
     //        CLOUD_ROLE_NAME,

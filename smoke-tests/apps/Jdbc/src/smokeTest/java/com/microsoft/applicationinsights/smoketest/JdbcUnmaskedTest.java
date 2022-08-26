@@ -46,7 +46,7 @@ class JdbcUnmaskedTest {
     assertThat(telemetry.rdd1.getName()).isEqualTo("SELECT testdb.abc");
     assertThat(telemetry.rdd1.getData()).isEqualTo("select * from abc where xyz = 'y'");
     assertThat(telemetry.rdd1.getType()).isEqualTo("SQL");
-    assertThat(telemetry.rdd1.getTarget()).isEqualTo("testdb");
+    assertThat(telemetry.rdd1.getTarget()).isEqualTo("hsqldb | testdb");
     assertThat(telemetry.rdd1.getProperties()).isEmpty();
     assertThat(telemetry.rdd1.getSuccess()).isTrue();
 

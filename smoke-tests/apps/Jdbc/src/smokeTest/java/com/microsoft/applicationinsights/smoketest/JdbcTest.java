@@ -70,7 +70,7 @@ abstract class JdbcTest {
     assertThat(telemetry.rdd1.getName()).isEqualTo("SELECT testdb.abc");
     assertThat(telemetry.rdd1.getData()).isEqualTo("select * from abc where xyz = ?");
     assertThat(telemetry.rdd1.getType()).isEqualTo("SQL");
-    assertThat(telemetry.rdd1.getTarget()).isEqualTo("testdb");
+    assertThat(telemetry.rdd1.getTarget()).isEqualTo("hsqldb | testdb");
     assertThat(telemetry.rdd1.getProperties()).isEmpty();
     assertThat(telemetry.rdd1.getSuccess()).isTrue();
 
@@ -90,7 +90,7 @@ abstract class JdbcTest {
     assertThat(telemetry.rdd1.getName()).isEqualTo("SELECT testdb.abc");
     assertThat(telemetry.rdd1.getData()).isEqualTo("select * from abc where xyz = ?");
     assertThat(telemetry.rdd1.getType()).isEqualTo("SQL");
-    assertThat(telemetry.rdd1.getTarget()).isEqualTo("testdb");
+    assertThat(telemetry.rdd1.getTarget()).isEqualTo("hsqldb | testdb");
     assertThat(telemetry.rdd1.getProperties()).isEmpty();
     assertThat(telemetry.rdd1.getSuccess()).isTrue();
 
@@ -118,7 +118,7 @@ abstract class JdbcTest {
     assertThat(telemetry.rdd1.getName()).isEqualTo("SELECT testdb.abc");
     assertThat(telemetry.rdd1.getData()).isEqualTo(query);
     assertThat(telemetry.rdd1.getType()).isEqualTo("SQL");
-    assertThat(telemetry.rdd1.getTarget()).isEqualTo("testdb");
+    assertThat(telemetry.rdd1.getTarget()).isEqualTo("hsqldb | testdb");
     assertThat(telemetry.rdd1.getProperties()).isEmpty();
     assertThat(telemetry.rdd1.getSuccess()).isTrue();
 
@@ -138,7 +138,7 @@ abstract class JdbcTest {
     assertThat(telemetry.rdd1.getName()).isEqualTo("INSERT testdb.abc");
     assertThat(telemetry.rdd1.getData()).isEqualTo("insert into abc (xyz) values (?)");
     assertThat(telemetry.rdd1.getType()).isEqualTo("SQL");
-    assertThat(telemetry.rdd1.getTarget()).isEqualTo("testdb");
+    assertThat(telemetry.rdd1.getTarget()).isEqualTo("hsqldb | testdb");
     // assertThat(telemetry.rdd1.getProperties()).containsEntry("Args", " [Batch of 3]");
     assertThat(telemetry.rdd1.getProperties()).isEmpty();
     assertThat(telemetry.rdd1.getSuccess()).isTrue();
