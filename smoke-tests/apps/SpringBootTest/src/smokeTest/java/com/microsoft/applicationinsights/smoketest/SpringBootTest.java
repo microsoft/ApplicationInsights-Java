@@ -31,6 +31,7 @@ import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TO
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8;
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8_OPENJ9;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.data.MapEntry.entry;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
@@ -105,7 +106,8 @@ abstract class SpringBootTest {
 
     assertThat(rd.getName()).isEqualTo("GET /SpringBootTest/throwsException");
     assertThat(rd.getResponseCode()).isEqualTo("500");
-    assertThat(rd.getProperties()).isEmpty();
+    assertThat(rd.getProperties())
+        .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
     assertThat(rd.getSuccess()).isFalse();
 
     SmokeTestExtension.assertParentChild(
@@ -134,13 +136,15 @@ abstract class SpringBootTest {
 
     assertThat(rd.getName()).isEqualTo("GET /SpringBootTest/asyncDependencyCall");
     assertThat(rd.getResponseCode()).isEqualTo("200");
-    assertThat(rd.getProperties()).isEmpty();
+    assertThat(rd.getProperties())
+        .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
     assertThat(rd.getSuccess()).isTrue();
 
     assertThat(rdd1.getName()).isEqualTo("GET /");
     assertThat(rdd1.getData()).isEqualTo("https://www.bing.com");
     assertThat(rdd1.getTarget()).isEqualTo("www.bing.com");
-    assertThat(rdd1.getProperties()).isEmpty();
+    assertThat(rd.getProperties())
+        .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
     assertThat(rdd1.getSuccess()).isTrue();
 
     SmokeTestExtension.assertParentChild(

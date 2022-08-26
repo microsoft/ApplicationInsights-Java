@@ -52,7 +52,9 @@ abstract class SpringBootAutoTest {
     assertThat(telemetry.rd.getProperties()).containsEntry("sensitiveAttribute1", "sensitiveData1");
     assertThat(telemetry.rd.getProperties().get("httpPath"))
         .isEqualTo("*/TelemetryProcessors/test*");
-    assertThat(telemetry.rd.getProperties()).hasSize(4);
+    assertThat(telemetry.rd.getProperties()).hasSize(5);
+    assertThat(telemetry.rd.getProperties())
+        .containsEntry("_MS.ProcessedByMetricExtractors", "True");
     assertThat(telemetry.rd.getSuccess()).isTrue();
     // Log processor test
     List<MessageData> logs = testing.mockedIngestion.getMessageDataInRequest();
@@ -71,7 +73,9 @@ abstract class SpringBootAutoTest {
     assertThat(telemetry.rd.getProperties()).containsEntry("sensitiveAttribute1", "redacted");
     assertThat(telemetry.rd.getProperties().get("httpPath"))
         .isEqualTo("*/TelemetryProcessors/sensitivedata*");
-    assertThat(telemetry.rd.getProperties()).hasSize(4);
+    assertThat(telemetry.rd.getProperties()).hasSize(5);
+    assertThat(telemetry.rd.getProperties())
+        .containsEntry("_MS.ProcessedByMetricExtractors", "True");
     assertThat(telemetry.rd.getSuccess()).isTrue();
   }
 

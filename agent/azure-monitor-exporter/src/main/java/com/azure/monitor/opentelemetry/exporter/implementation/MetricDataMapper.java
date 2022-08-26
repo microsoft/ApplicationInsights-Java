@@ -21,6 +21,8 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation;
 
+import static com.azure.monitor.opentelemetry.exporter.implementation.AiSemanticAttributes.IS_SYNTHETIC;
+import static com.azure.monitor.opentelemetry.exporter.implementation.AiSemanticAttributes.TARGET;
 import static io.opentelemetry.api.internal.Utils.checkArgument;
 import static io.opentelemetry.sdk.metrics.data.MetricDataType.DOUBLE_GAUGE;
 import static io.opentelemetry.sdk.metrics.data.MetricDataType.DOUBLE_SUM;
@@ -32,6 +34,8 @@ import com.azure.monitor.opentelemetry.exporter.implementation.builders.Abstract
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.MetricPointBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.MetricTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
+import com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.DependencyExtractor;
+import com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.RequestExtractor;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedTime;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.HistogramPointData;
@@ -41,7 +45,9 @@ import io.opentelemetry.sdk.metrics.data.MetricDataType;
 import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import org.slf4j.Logger;
@@ -49,21 +55,27 @@ import org.slf4j.LoggerFactory;
 
 public class MetricDataMapper {
 
+  private static final Set<String> OTEL_PRE_AGGREGATED_STANDARD_METRIC_NAMES = new HashSet<>(4);
   private static final List<String> EXCLUDED_METRIC_NAMES = new ArrayList<>();
 
   private static final Logger logger = LoggerFactory.getLogger(MetricDataMapper.class);
   private final BiConsumer<AbstractTelemetryBuilder, Resource> telemetryInitializer;
+  private final boolean captureHttpServer4xxAsError;
 
   static {
     EXCLUDED_METRIC_NAMES.add("http.server.active_requests"); // Servlet
-    EXCLUDED_METRIC_NAMES.add("http.server.duration"); // Servlet
-    EXCLUDED_METRIC_NAMES.add("http.client.duration"); // HttpClient
-    EXCLUDED_METRIC_NAMES.add("rpc.client.duration"); // gRPC
-    EXCLUDED_METRIC_NAMES.add("rpc.server.duration"); // gRPC
+
+    OTEL_PRE_AGGREGATED_STANDARD_METRIC_NAMES.add("http.server.duration"); // Servlet
+    OTEL_PRE_AGGREGATED_STANDARD_METRIC_NAMES.add("http.client.duration"); // HttpClient
+    OTEL_PRE_AGGREGATED_STANDARD_METRIC_NAMES.add("rpc.client.duration"); // gRPC
+    OTEL_PRE_AGGREGATED_STANDARD_METRIC_NAMES.add("rpc.server.duration"); // gRPC
   }
 
-  public MetricDataMapper(BiConsumer<AbstractTelemetryBuilder, Resource> telemetryInitializer) {
+  public MetricDataMapper(
+      BiConsumer<AbstractTelemetryBuilder, Resource> telemetryInitializer,
+      boolean captureHttpServer4xxAsError) {
     this.telemetryInitializer = telemetryInitializer;
+    this.captureHttpServer4xxAsError = captureHttpServer4xxAsError;
   }
 
   public void map(MetricData metricData, Consumer<TelemetryItem> consumer) {
@@ -77,7 +89,10 @@ public class MetricDataMapper {
         || type == LONG_SUM
         || type == LONG_GAUGE
         || type == HISTOGRAM) {
-      List<TelemetryItem> telemetryItemList = convertOtelMetricToAzureMonitorMetric(metricData);
+      boolean isPreAggregatedStandardMetric =
+          OTEL_PRE_AGGREGATED_STANDARD_METRIC_NAMES.contains(metricData.getName());
+      List<TelemetryItem> telemetryItemList =
+          convertOtelMetricToAzureMonitorMetric(metricData, isPreAggregatedStandardMetric);
       for (TelemetryItem telemetryItem : telemetryItemList) {
         consumer.accept(telemetryItem);
       }
@@ -86,7 +101,8 @@ public class MetricDataMapper {
     }
   }
 
-  private List<TelemetryItem> convertOtelMetricToAzureMonitorMetric(MetricData metricData) {
+  private List<TelemetryItem> convertOtelMetricToAzureMonitorMetric(
+      MetricData metricData, boolean isPreAggregatedStandardMetric) {
     List<TelemetryItem> telemetryItems = new ArrayList<>();
 
     for (PointData pointData : metricData.getData().getPoints()) {
@@ -94,7 +110,12 @@ public class MetricDataMapper {
       telemetryInitializer.accept(builder, metricData.getResource());
 
       builder.setTime(FormattedTime.offSetDateTimeFromEpochNanos(pointData.getEpochNanos()));
-      updateMetricPointBuilder(builder, metricData, pointData);
+      updateMetricPointBuilder(
+          builder,
+          metricData,
+          pointData,
+          captureHttpServer4xxAsError,
+          isPreAggregatedStandardMetric);
 
       telemetryItems.add(builder.build());
     }
@@ -103,23 +124,24 @@ public class MetricDataMapper {
 
   // visible for testing
   public static void updateMetricPointBuilder(
-      MetricTelemetryBuilder metricTelemetryBuilder, MetricData metricData, PointData pointData) {
+      MetricTelemetryBuilder metricTelemetryBuilder,
+      MetricData metricData,
+      PointData pointData,
+      boolean captureHttpServer4xxAsError,
+      boolean isPreAggregatedStandardMetric) {
     checkArgument(metricData != null, "MetricData cannot be null.");
 
     MetricPointBuilder pointBuilder = new MetricPointBuilder();
     MetricDataType type = metricData.getType();
+    double pointDataValue;
     switch (type) {
       case LONG_SUM:
-        pointBuilder.setValue((double) ((LongPointData) pointData).getValue());
-        break;
       case LONG_GAUGE:
-        pointBuilder.setValue((double) ((LongPointData) pointData).getValue());
+        pointDataValue = (double) ((LongPointData) pointData).getValue();
         break;
       case DOUBLE_SUM:
-        pointBuilder.setValue(((DoublePointData) pointData).getValue());
-        break;
       case DOUBLE_GAUGE:
-        pointBuilder.setValue(((DoublePointData) pointData).getValue());
+        pointDataValue = ((DoublePointData) pointData).getValue();
         break;
       case HISTOGRAM:
         long histogramCount = ((HistogramPointData) pointData).getCount();
@@ -127,7 +149,7 @@ public class MetricDataMapper {
           pointBuilder.setCount((int) histogramCount);
         }
         HistogramPointData histogramPointData = (HistogramPointData) pointData;
-        pointBuilder.setValue(histogramPointData.getSum());
+        pointDataValue = histogramPointData.getSum();
         pointBuilder.setMin(histogramPointData.getMin());
         pointBuilder.setMax(histogramPointData.getMax());
         break;
@@ -137,13 +159,37 @@ public class MetricDataMapper {
         throw new IllegalArgumentException("metric data type '" + type + "' is not supported yet");
     }
 
+    pointBuilder.setValue(pointDataValue);
     pointBuilder.setName(metricData.getName());
-
     metricTelemetryBuilder.setMetricPoint(pointBuilder);
 
-    pointData
-        .getAttributes()
-        .forEach(
-            (key, value) -> metricTelemetryBuilder.addProperty(key.getKey(), value.toString()));
+    if (isPreAggregatedStandardMetric) {
+      Long statusCode = pointData.getAttributes().get(SemanticAttributes.HTTP_STATUS_CODE);
+      boolean success = isSuccess(statusCode, captureHttpServer4xxAsError);
+      Boolean isSynthetic = pointData.getAttributes().get(IS_SYNTHETIC);
+      if (metricData.getName().contains(".server.")) {
+        RequestExtractor.extract(metricTelemetryBuilder, statusCode, success, isSynthetic);
+      } else if (metricData.getName().contains(".client.")) {
+        String dependencyType =
+            metricData.getName().startsWith("http")
+                ? "Http"
+                : pointData.getAttributes().get(SemanticAttributes.RPC_SYSTEM);
+        String target = pointData.getAttributes().get(TARGET);
+        DependencyExtractor.extract(
+            metricTelemetryBuilder, statusCode, success, dependencyType, target, isSynthetic);
+      }
+    } else {
+      pointData
+          .getAttributes()
+          .forEach(
+              (key, value) -> metricTelemetryBuilder.addProperty(key.getKey(), value.toString()));
+    }
+  }
+
+  private static boolean isSuccess(Long statusCode, boolean captureHttpServer4xxAsError) {
+    if (captureHttpServer4xxAsError) {
+      return statusCode == null || statusCode < 400;
+    }
+    return statusCode == null || statusCode < 500;
   }
 }

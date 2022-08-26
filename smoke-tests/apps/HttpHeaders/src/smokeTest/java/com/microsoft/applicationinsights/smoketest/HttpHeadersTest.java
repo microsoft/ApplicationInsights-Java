@@ -48,7 +48,9 @@ abstract class HttpHeadersTest {
     assertThat(telemetry.rd.getProperties().get("http.response.header.abc"))
         .isEqualTo("testing123");
     assertThat(telemetry.rd.getProperties()).containsKey("http.request.header.host");
-    assertThat(telemetry.rd.getProperties()).hasSize(2);
+    assertThat(telemetry.rd.getProperties()).hasSize(3);
+    assertThat(telemetry.rd.getProperties())
+        .containsEntry("_MS.ProcessedByMetricExtractors", "True");
     assertThat(telemetry.rd.getSuccess()).isTrue();
   }
 
@@ -58,13 +60,16 @@ abstract class HttpHeadersTest {
     Telemetry telemetry = testing.getTelemetry(1);
 
     assertThat(telemetry.rd.getProperties()).containsKey("http.request.header.host");
-    assertThat(telemetry.rd.getProperties()).hasSize(1);
+    assertThat(telemetry.rd.getProperties()).hasSize(2);
+    assertThat(telemetry.rd.getProperties())
+        .containsEntry("_MS.ProcessedByMetricExtractors", "True");
     assertThat(telemetry.rd.getSuccess()).isTrue();
-
     assertThat(telemetry.rdd1.getProperties().get("http.request.header.abc"))
         .isEqualTo("testing123");
     assertThat(telemetry.rdd1.getProperties()).containsKey("http.response.header.date");
-    assertThat(telemetry.rdd1.getProperties()).hasSize(2);
+    assertThat(telemetry.rdd1.getProperties()).hasSize(3);
+    assertThat(telemetry.rdd1.getProperties())
+        .containsEntry("_MS.ProcessedByMetricExtractors", "True");
     assertThat(telemetry.rdd1.getSuccess()).isTrue();
   }
 

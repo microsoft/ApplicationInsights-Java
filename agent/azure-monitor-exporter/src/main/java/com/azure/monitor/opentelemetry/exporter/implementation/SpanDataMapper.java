@@ -64,6 +64,9 @@ import javax.annotation.Nullable;
 // TODO (trask) move this class into internal package
 public final class SpanDataMapper {
 
+  // visible for testing
+  public static final String MS_PROCESSED_BY_METRIC_EXTRACTORS = "_MS.ProcessedByMetricExtractors";
+
   private static final ClientLogger LOGGER = new ClientLogger(SpanDataMapper.class);
 
   private static final Set<String> SQL_DB_SYSTEMS;
@@ -224,6 +227,13 @@ public final class SpanDataMapper {
     }
   }
 
+  private static boolean checkIsPreAggregatedStandardMetric(SpanData span) {
+    Boolean isPreAggregatedStandardMetric =
+        span.getAttributes()
+            .get(AttributeKey.booleanKey("applicationinsights.internal.is_pre_aggregated"));
+    return isPreAggregatedStandardMetric != null && isPreAggregatedStandardMetric;
+  }
+
   private TelemetryItem exportRemoteDependency(SpanData span, boolean inProc, long itemCount) {
     RemoteDependencyTelemetryBuilder telemetryBuilder = RemoteDependencyTelemetryBuilder.create();
     telemetryInitializer.accept(telemetryBuilder, span.getResource());
@@ -249,6 +259,10 @@ public final class SpanDataMapper {
       telemetryBuilder.setType("InProc");
     } else {
       applySemanticConventions(telemetryBuilder, span);
+    }
+
+    if (checkIsPreAggregatedStandardMetric(span)) {
+      telemetryBuilder.addProperty(MS_PROCESSED_BY_METRIC_EXTRACTORS, "True");
     }
 
     return telemetryBuilder.build();
@@ -676,6 +690,10 @@ public final class SpanDataMapper {
       // this is only used by the 2.x web interop bridge for
       // ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry().getContext().getDevice().setOperatingSystemVersion()
       telemetryBuilder.addTag(ContextTagKeys.AI_DEVICE_OS_VERSION.toString(), deviceOsVersion);
+    }
+
+    if (checkIsPreAggregatedStandardMetric(span)) {
+      telemetryBuilder.addProperty(MS_PROCESSED_BY_METRIC_EXTRACTORS, "True");
     }
 
     // TODO(trask)? for batch consumer, enqueuedTime should be the average of this attribute
