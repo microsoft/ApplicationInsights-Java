@@ -30,7 +30,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 @UseAgent
-abstract class SpringBootAutoTest {
+abstract class SpringBootAuto13Test {
 
   @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.create();
 
@@ -43,14 +43,14 @@ abstract class SpringBootAutoTest {
   // Spring Boot 1.3 does not support Java 11+
 
   @Environment(TOMCAT_8_JAVA_8)
-  static class Tomcat8Java8Test extends SpringBootAutoTest {}
+  static class Tomcat8Java8Test extends SpringBootAuto13Test {}
 
   @Environment(TOMCAT_8_JAVA_8_OPENJ9)
-  static class Tomcat8Java8OpenJ9Test extends SpringBootAutoTest {}
+  static class Tomcat8Java8OpenJ9Test extends SpringBootAuto13Test {}
 
   @Environment(WILDFLY_13_JAVA_8)
-  static class Wildfly13Java8Test extends SpringBootAutoTest {}
+  static class Wildfly13Java8Test extends SpringBootAuto13Test {}
 
   @Environment(WILDFLY_13_JAVA_8_OPENJ9)
-  static class Wildfly13Java8OpenJ9Test extends SpringBootAutoTest {}
+  static class Wildfly13Java8OpenJ9Test extends SpringBootAuto13Test {}
 }

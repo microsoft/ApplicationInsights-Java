@@ -21,18 +21,12 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
-import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_11;
-import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_11_OPENJ9;
-import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_17;
-import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_18;
-import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_19;
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_8;
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_8_OPENJ9;
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8;
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8_OPENJ9;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.microsoft.applicationinsights.smoketest.schemav2.AvailabilityData;
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.DataPoint;
 import com.microsoft.applicationinsights.smoketest.schemav2.Duration;
@@ -53,7 +47,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 @UseAgent
-abstract class CoreAndFilterTests {
+abstract class CoreAndFilter2xTest {
 
   @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.create();
 
@@ -77,7 +71,7 @@ abstract class CoreAndFilterTests {
         telemetry.rd,
         telemetry.rdEnvelope,
         telemetry.rddEnvelope1,
-        "GET /CoreAndFilter3x/trackDependency");
+        "GET /CoreAndFilter2x/trackDependency");
   }
 
   @Test
@@ -112,9 +106,9 @@ abstract class CoreAndFilterTests {
     assertThat(ed2.getName()).isEqualTo("EventDataTest");
 
     SmokeTestExtension.assertParentChild(
-        rd, rdEnvelope, edEnvelope1, "GET /CoreAndFilter3x/trackEvent");
+        rd, rdEnvelope, edEnvelope1, "GET /CoreAndFilter2x/trackEvent");
     SmokeTestExtension.assertParentChild(
-        rd, rdEnvelope, edEnvelope2, "GET /CoreAndFilter3x/trackEvent");
+        rd, rdEnvelope, edEnvelope2, "GET /CoreAndFilter2x/trackEvent");
   }
 
   @Test
@@ -170,11 +164,11 @@ abstract class CoreAndFilterTests {
             });
 
     SmokeTestExtension.assertParentChild(
-        rd, rdEnvelope, edEnvelope1, "GET /CoreAndFilter3x/trackException");
+        rd, rdEnvelope, edEnvelope1, "GET /CoreAndFilter2x/trackException");
     SmokeTestExtension.assertParentChild(
-        rd, rdEnvelope, edEnvelope2, "GET /CoreAndFilter3x/trackException");
+        rd, rdEnvelope, edEnvelope2, "GET /CoreAndFilter2x/trackException");
     SmokeTestExtension.assertParentChild(
-        rd, rdEnvelope, edEnvelope3, "GET /CoreAndFilter3x/trackException");
+        rd, rdEnvelope, edEnvelope3, "GET /CoreAndFilter2x/trackException");
   }
 
   @Test
@@ -254,40 +248,7 @@ abstract class CoreAndFilterTests {
     assertThat(dp.getStdDev()).isNull();
 
     SmokeTestExtension.assertParentChild(
-        rd, rdEnvelope, mdEnvelope, "GET /CoreAndFilter3x/trackMetric");
-  }
-
-  @Test
-  @TargetUri("/trackMetricWithNamespace")
-  void trackMetricWithNamespace() throws Exception {
-    List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
-    List<Envelope> mdList = testing.mockedIngestion.waitForItems("MetricData", 1);
-
-    Envelope rdEnvelope = rdList.get(0);
-    Envelope mdEnvelope = mdList.get(0);
-
-    assertThat(rdEnvelope.getSampleRate()).isNull();
-    assertThat(mdEnvelope.getSampleRate()).isNull();
-
-    RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
-    MetricData md = (MetricData) ((Data<?>) mdEnvelope.getData()).getBaseData();
-
-    List<DataPoint> metrics = md.getMetrics();
-    assertThat(metrics).hasSize(1);
-    DataPoint dp = metrics.get(0);
-
-    final double expectedValue = 111222333.0;
-    assertThat(dp.getValue()).isEqualTo(expectedValue);
-    assertThat(dp.getName()).isEqualTo("TimeToRespond");
-    assertThat(dp.getMetricNamespace()).isEqualTo("test");
-
-    assertThat(dp.getCount()).isNull();
-    assertThat(dp.getMin()).isNull();
-    assertThat(dp.getMax()).isNull();
-    assertThat(dp.getStdDev()).isNull();
-
-    SmokeTestExtension.assertParentChild(
-        rd, rdEnvelope, mdEnvelope, "GET /CoreAndFilter3x/trackMetricWithNamespace");
+        rd, rdEnvelope, mdEnvelope, "GET /CoreAndFilter2x/trackMetric");
   }
 
   @Test
@@ -331,11 +292,11 @@ abstract class CoreAndFilterTests {
             });
 
     SmokeTestExtension.assertParentChild(
-        rd, rdEnvelope, mdEnvelope1, "GET /CoreAndFilter3x/trackTrace");
+        rd, rdEnvelope, mdEnvelope1, "GET /CoreAndFilter2x/trackTrace");
     SmokeTestExtension.assertParentChild(
-        rd, rdEnvelope, mdEnvelope2, "GET /CoreAndFilter3x/trackTrace");
+        rd, rdEnvelope, mdEnvelope2, "GET /CoreAndFilter2x/trackTrace");
     SmokeTestExtension.assertParentChild(
-        rd, rdEnvelope, mdEnvelope3, "GET /CoreAndFilter3x/trackTrace");
+        rd, rdEnvelope, mdEnvelope3, "GET /CoreAndFilter2x/trackTrace");
   }
 
   @Test
@@ -429,7 +390,7 @@ abstract class CoreAndFilterTests {
         .hasEntrySatisfying("ai.internal.sdkVersion", v -> assertThat(v).startsWith("java:3."));
 
     SmokeTestExtension.assertParentChild(
-        rd, rdEnvelope, pvdEnvelope1, "GET /CoreAndFilter3x/trackPageView");
+        rd, rdEnvelope, pvdEnvelope1, "GET /CoreAndFilter2x/trackPageView");
 
     assertThat(pvdEnvelope2.getTags()).containsEntry("ai.operation.id", "operation-id-goes-here");
     assertThat(pvdEnvelope2.getTags())
@@ -467,36 +428,7 @@ abstract class CoreAndFilterTests {
     assertThat(pv.getDuration()).isEqualTo(new Duration(0));
 
     SmokeTestExtension.assertParentChild(
-        rd, rdEnvelope, pvdEnvelope, "GET /CoreAndFilter3x/doPageView.jsp");
-  }
-
-  @Test
-  @TargetUri("/trackAvailability")
-  void trackAvailability() throws Exception {
-    List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
-
-    Envelope rdEnvelope = rdList.get(0);
-    String operationId = rdEnvelope.getTags().get("ai.operation.id");
-    List<Envelope> adList =
-        testing.mockedIngestion.waitForItemsInOperation("AvailabilityData", 1, operationId);
-
-    Envelope adEnvelope = adList.get(0);
-
-    assertThat(rdEnvelope.getSampleRate()).isNull();
-    assertThat(adEnvelope.getSampleRate()).isNull();
-
-    RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
-
-    AvailabilityData pv = (AvailabilityData) ((Data<?>) adEnvelope.getData()).getBaseData();
-    assertThat(pv.getId()).isEqualTo("an-id");
-    assertThat(pv.getName()).isEqualTo("a-name");
-    assertThat(pv.getDuration()).isEqualTo(new Duration(1234));
-    assertThat(pv.getSuccess()).isTrue();
-    assertThat(pv.getRunLocation()).isEqualTo("a-run-location");
-    assertThat(pv.getMessage()).isEqualTo("a-message");
-
-    SmokeTestExtension.assertParentChild(
-        rd, rdEnvelope, adEnvelope, "GET /CoreAndFilter3x/trackAvailability");
+        rd, rdEnvelope, pvdEnvelope, "GET /CoreAndFilter2x/doPageView.jsp");
   }
 
   @Test
@@ -513,19 +445,19 @@ abstract class CoreAndFilterTests {
     assertThat(rd.getSuccess()).isFalse();
     assertThat(rd.getResponseCode()).isEqualTo("404");
 
-    assertThat(rdEnvelope.getTags()).containsEntry("ai.operation.name", "GET /CoreAndFilter3x/*");
+    assertThat(rdEnvelope.getTags()).containsEntry("ai.operation.name", "GET /CoreAndFilter2x/*");
   }
 
   @Test
   @TargetUri("/requestSlow?sleeptime=20")
   void testRequestSlowWithResponseTime() throws Exception {
-    validateSlowTest(20, "GET /CoreAndFilter3x/requestSlow");
+    validateSlowTest(20, "GET /CoreAndFilter2x/requestSlow");
   }
 
   @Test
   @TargetUri("/slowLoop?responseTime=20")
   void testSlowRequestUsingCpuBoundLoop() throws Exception {
-    validateSlowTest(20, "GET /CoreAndFilter3x/slowLoop");
+    validateSlowTest(20, "GET /CoreAndFilter2x/slowLoop");
   }
 
   @Test
@@ -604,30 +536,17 @@ abstract class CoreAndFilterTests {
     assertThat(rdEnvelope.getTags()).containsEntry("ai.operation.name", operationName);
   }
 
+  // old Application Insights version that do not support Java 11+
+
   @Environment(TOMCAT_8_JAVA_8)
-  static class Tomcat8Java8Test extends CoreAndFilterTests {}
+  static class Tomcat8Java8Test extends CoreAndFilter2xTest {}
 
   @Environment(TOMCAT_8_JAVA_8_OPENJ9)
-  static class Tomcat8Java8OpenJ9Test extends CoreAndFilterTests {}
-
-  @Environment(TOMCAT_8_JAVA_11)
-  static class Tomcat8Java11Test extends CoreAndFilterTests {}
-
-  @Environment(TOMCAT_8_JAVA_11_OPENJ9)
-  static class Tomcat8Java11OpenJ9Test extends CoreAndFilterTests {}
-
-  @Environment(TOMCAT_8_JAVA_17)
-  static class Tomcat8Java17Test extends CoreAndFilterTests {}
-
-  @Environment(TOMCAT_8_JAVA_18)
-  static class Tomcat8Java18Test extends CoreAndFilterTests {}
-
-  @Environment(TOMCAT_8_JAVA_19)
-  static class Tomcat8Java19Test extends CoreAndFilterTests {}
+  static class Tomcat8Java8OpenJ9Test extends CoreAndFilter2xTest {}
 
   @Environment(WILDFLY_13_JAVA_8)
-  static class Wildfly13Java8Test extends CoreAndFilterTests {}
+  static class Wildfly13Java8Test extends CoreAndFilter2xTest {}
 
   @Environment(WILDFLY_13_JAVA_8_OPENJ9)
-  static class Wildfly13Java8OpenJ9Test extends CoreAndFilterTests {}
+  static class Wildfly13Java8OpenJ9Test extends CoreAndFilter2xTest {}
 }

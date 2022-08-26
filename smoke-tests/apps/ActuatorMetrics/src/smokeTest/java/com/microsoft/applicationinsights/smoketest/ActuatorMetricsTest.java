@@ -42,7 +42,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 @UseAgent
-abstract class MicrometerTest {
+abstract class ActuatorMetricsTest {
 
   @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.create();
 
@@ -53,7 +53,7 @@ abstract class MicrometerTest {
 
     List<Envelope> metricItems =
         testing.mockedIngestion.waitForItems(
-            MicrometerTest::isMicrometerMetric, 1, 10, TimeUnit.SECONDS);
+            ActuatorMetricsTest::isMicrometerMetric, 1, 10, TimeUnit.SECONDS);
 
     MetricData data = (MetricData) ((Data<?>) metricItems.get(0).getData()).getBaseData();
     List<DataPoint> points = data.getMetrics();
@@ -89,29 +89,29 @@ abstract class MicrometerTest {
   }
 
   @Environment(JAVA_8)
-  static class Java8Test extends MicrometerTest {}
+  static class Java8Test extends ActuatorMetricsTest {}
 
   @Environment(JAVA_8_OPENJ9)
-  static class Java8OpenJ9Test extends MicrometerTest {}
+  static class Java8OpenJ9Test extends ActuatorMetricsTest {}
 
   @Environment(JAVA_11)
-  static class Java11Test extends MicrometerTest {}
+  static class Java11Test extends ActuatorMetricsTest {}
 
   @Environment(JAVA_11_OPENJ9)
-  static class Java11OpenJ9Test extends MicrometerTest {}
+  static class Java11OpenJ9Test extends ActuatorMetricsTest {}
 
   @Environment(JAVA_17)
-  static class Java17Test extends MicrometerTest {}
+  static class Java17Test extends ActuatorMetricsTest {}
 
   @Environment(JAVA_17_OPENJ9)
-  static class Java17OpenJ9Test extends MicrometerTest {}
+  static class Java17OpenJ9Test extends ActuatorMetricsTest {}
 
   @Environment(JAVA_18)
-  static class Java18Test extends MicrometerTest {}
+  static class Java18Test extends ActuatorMetricsTest {}
 
   @Environment(JAVA_18_OPENJ9)
-  static class Java18OpenJ9Test extends MicrometerTest {}
+  static class Java18OpenJ9Test extends ActuatorMetricsTest {}
 
   @Environment(JAVA_19)
-  static class Java19Test extends MicrometerTest {}
+  static class Java19Test extends ActuatorMetricsTest {}
 }

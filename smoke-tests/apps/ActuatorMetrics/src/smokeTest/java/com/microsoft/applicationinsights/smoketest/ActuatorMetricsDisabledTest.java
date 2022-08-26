@@ -29,7 +29,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 @Environment(JAVA_8)
 @UseAgent("disabled_applicationinsights.json")
-class MicrometerDisabledTest {
+class ActuatorMetricsDisabledTest {
 
   @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.create();
 
@@ -41,6 +41,6 @@ class MicrometerDisabledTest {
     // sleep a bit and make sure no micrometer metrics are reported
     Thread.sleep(10000);
     assertThat(testing.mockedIngestion.getItemsEnvelopeDataType("MetricData"))
-        .noneMatch(MicrometerTest::isMicrometerMetric);
+        .noneMatch(ActuatorMetricsTest::isMicrometerMetric);
   }
 }

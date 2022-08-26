@@ -38,7 +38,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 @UseAgent
-abstract class SpringBootAutoTest {
+abstract class TelemetryProcessorsTest {
 
   @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.create();
 
@@ -80,29 +80,29 @@ abstract class SpringBootAutoTest {
   }
 
   @Environment(TOMCAT_8_JAVA_8)
-  static class Tomcat8Java8Test extends SpringBootAutoTest {}
+  static class Tomcat8Java8Test extends TelemetryProcessorsTest {}
 
   @Environment(TOMCAT_8_JAVA_8_OPENJ9)
-  static class Tomcat8Java8OpenJ9Test extends SpringBootAutoTest {}
+  static class Tomcat8Java8OpenJ9Test extends TelemetryProcessorsTest {}
 
   @Environment(TOMCAT_8_JAVA_11)
-  static class Tomcat8Java11Test extends SpringBootAutoTest {}
+  static class Tomcat8Java11Test extends TelemetryProcessorsTest {}
 
   @Environment(TOMCAT_8_JAVA_11_OPENJ9)
-  static class Tomcat8Java11OpenJ9Test extends SpringBootAutoTest {}
+  static class Tomcat8Java11OpenJ9Test extends TelemetryProcessorsTest {}
 
   @Environment(TOMCAT_8_JAVA_17)
-  static class Tomcat8Java17Test extends SpringBootAutoTest {}
+  static class Tomcat8Java17Test extends TelemetryProcessorsTest {}
 
   @Environment(TOMCAT_8_JAVA_18)
-  static class Tomcat8Java18Test extends SpringBootAutoTest {}
+  static class Tomcat8Java18Test extends TelemetryProcessorsTest {}
 
   @Environment(TOMCAT_8_JAVA_19)
-  static class Tomcat8Java19Test extends SpringBootAutoTest {}
+  static class Tomcat8Java19Test extends TelemetryProcessorsTest {}
 
   @Environment(WILDFLY_13_JAVA_8)
-  static class Wildfly13Java8Test extends SpringBootAutoTest {}
+  static class Wildfly13Java8Test extends TelemetryProcessorsTest {}
 
   @Environment(WILDFLY_13_JAVA_8_OPENJ9)
-  static class Wildfly13Java8OpenJ9Test extends SpringBootAutoTest {}
+  static class Wildfly13Java8OpenJ9Test extends TelemetryProcessorsTest {}
 }

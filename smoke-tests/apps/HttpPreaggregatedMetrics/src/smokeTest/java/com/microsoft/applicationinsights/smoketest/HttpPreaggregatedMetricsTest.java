@@ -45,7 +45,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 @UseAgent
-abstract class HttpPreaggregatedMetricsSmokeTest {
+abstract class HttpPreaggregatedMetricsTest {
 
   @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.create();
 
@@ -211,29 +211,29 @@ abstract class HttpPreaggregatedMetricsSmokeTest {
   }
 
   @Environment(TOMCAT_8_JAVA_8)
-  static class Tomcat8Java8Test extends HttpPreaggregatedMetricsSmokeTest {}
+  static class Tomcat8Java8Test extends HttpPreaggregatedMetricsTest {}
 
   @Environment(TOMCAT_8_JAVA_8_OPENJ9)
-  static class Tomcat8Java8OpenJ9Test extends HttpPreaggregatedMetricsSmokeTest {}
+  static class Tomcat8Java8OpenJ9Test extends HttpPreaggregatedMetricsTest {}
 
   @Environment(TOMCAT_8_JAVA_11)
-  static class Tomcat8Java11Test extends HttpPreaggregatedMetricsSmokeTest {}
+  static class Tomcat8Java11Test extends HttpPreaggregatedMetricsTest {}
 
   @Environment(TOMCAT_8_JAVA_11_OPENJ9)
-  static class Tomcat8Java11OpenJ9Test extends HttpPreaggregatedMetricsSmokeTest {}
+  static class Tomcat8Java11OpenJ9Test extends HttpPreaggregatedMetricsTest {}
 
   @Environment(TOMCAT_8_JAVA_17)
-  static class Tomcat8Java17Test extends HttpPreaggregatedMetricsSmokeTest {}
+  static class Tomcat8Java17Test extends HttpPreaggregatedMetricsTest {}
 
   @Environment(TOMCAT_8_JAVA_18)
-  static class Tomcat8Java18Test extends HttpPreaggregatedMetricsSmokeTest {}
+  static class Tomcat8Java18Test extends HttpPreaggregatedMetricsTest {}
 
   @Environment(TOMCAT_8_JAVA_19)
-  static class Tomcat8Java19Test extends HttpPreaggregatedMetricsSmokeTest {}
+  static class Tomcat8Java19Test extends HttpPreaggregatedMetricsTest {}
 
   @Environment(WILDFLY_13_JAVA_8)
-  static class Wildfly13Java8Test extends HttpPreaggregatedMetricsSmokeTest {}
+  static class Wildfly13Java8Test extends HttpPreaggregatedMetricsTest {}
 
   @Environment(WILDFLY_13_JAVA_8_OPENJ9)
-  static class Wildfly13Java8OpenJ9Test extends HttpPreaggregatedMetricsSmokeTest {}
+  static class Wildfly13Java8OpenJ9Test extends HttpPreaggregatedMetricsTest {}
 }

@@ -43,7 +43,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 @UseAgent
-abstract class PerfCountersDataTest {
+abstract class AutoPerfCountersTest {
 
   @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.create();
 
@@ -151,29 +151,29 @@ abstract class PerfCountersDataTest {
   }
 
   @Environment(TOMCAT_8_JAVA_8)
-  static class Tomcat8Java8Test extends PerfCountersDataTest {}
+  static class Tomcat8Java8Test extends AutoPerfCountersTest {}
 
   @Environment(TOMCAT_8_JAVA_8_OPENJ9)
-  static class Tomcat8Java8OpenJ9Test extends PerfCountersDataTest {}
+  static class Tomcat8Java8OpenJ9Test extends AutoPerfCountersTest {}
 
   @Environment(TOMCAT_8_JAVA_11)
-  static class Tomcat8Java11Test extends PerfCountersDataTest {}
+  static class Tomcat8Java11Test extends AutoPerfCountersTest {}
 
   @Environment(TOMCAT_8_JAVA_11_OPENJ9)
-  static class Tomcat8Java11OpenJ9Test extends PerfCountersDataTest {}
+  static class Tomcat8Java11OpenJ9Test extends AutoPerfCountersTest {}
 
   @Environment(TOMCAT_8_JAVA_17)
-  static class Tomcat8Java17Test extends PerfCountersDataTest {}
+  static class Tomcat8Java17Test extends AutoPerfCountersTest {}
 
   @Environment(TOMCAT_8_JAVA_18)
-  static class Tomcat8Java18Test extends PerfCountersDataTest {}
+  static class Tomcat8Java18Test extends AutoPerfCountersTest {}
 
   @Environment(TOMCAT_8_JAVA_19)
-  static class Tomcat8Java19Test extends PerfCountersDataTest {}
+  static class Tomcat8Java19Test extends AutoPerfCountersTest {}
 
   @Environment(WILDFLY_13_JAVA_8)
-  static class Wildfly13Java8Test extends PerfCountersDataTest {}
+  static class Wildfly13Java8Test extends AutoPerfCountersTest {}
 
   @Environment(WILDFLY_13_JAVA_8_OPENJ9)
-  static class Wildfly13Java8OpenJ9Test extends PerfCountersDataTest {}
+  static class Wildfly13Java8OpenJ9Test extends AutoPerfCountersTest {}
 }

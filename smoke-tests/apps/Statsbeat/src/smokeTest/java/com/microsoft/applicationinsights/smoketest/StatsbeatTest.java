@@ -41,7 +41,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 @UseAgent
-abstract class StatsbeatSmokeTest {
+abstract class StatsbeatTest {
 
   @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.create();
 
@@ -113,29 +113,29 @@ abstract class StatsbeatSmokeTest {
   }
 
   @Environment(TOMCAT_8_JAVA_8)
-  static class Tomcat8Java8Test extends StatsbeatSmokeTest {}
+  static class Tomcat8Java8Test extends StatsbeatTest {}
 
   @Environment(TOMCAT_8_JAVA_8_OPENJ9)
-  static class Tomcat8Java8OpenJ9Test extends StatsbeatSmokeTest {}
+  static class Tomcat8Java8OpenJ9Test extends StatsbeatTest {}
 
   @Environment(TOMCAT_8_JAVA_11)
-  static class Tomcat8Java11Test extends StatsbeatSmokeTest {}
+  static class Tomcat8Java11Test extends StatsbeatTest {}
 
   @Environment(TOMCAT_8_JAVA_11_OPENJ9)
-  static class Tomcat8Java11OpenJ9Test extends StatsbeatSmokeTest {}
+  static class Tomcat8Java11OpenJ9Test extends StatsbeatTest {}
 
   @Environment(TOMCAT_8_JAVA_17)
-  static class Tomcat8Java17Test extends StatsbeatSmokeTest {}
+  static class Tomcat8Java17Test extends StatsbeatTest {}
 
   @Environment(TOMCAT_8_JAVA_18)
-  static class Tomcat8Java18Test extends StatsbeatSmokeTest {}
+  static class Tomcat8Java18Test extends StatsbeatTest {}
 
   @Environment(TOMCAT_8_JAVA_19)
-  static class Tomcat8Java19Test extends StatsbeatSmokeTest {}
+  static class Tomcat8Java19Test extends StatsbeatTest {}
 
   @Environment(WILDFLY_13_JAVA_8)
-  static class Wildfly13Java8Test extends StatsbeatSmokeTest {}
+  static class Wildfly13Java8Test extends StatsbeatTest {}
 
   @Environment(WILDFLY_13_JAVA_8_OPENJ9)
-  static class Wildfly13Java8OpenJ9Test extends StatsbeatSmokeTest {}
+  static class Wildfly13Java8OpenJ9Test extends StatsbeatTest {}
 }
