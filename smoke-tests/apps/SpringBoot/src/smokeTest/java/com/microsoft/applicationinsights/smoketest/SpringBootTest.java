@@ -104,14 +104,14 @@ abstract class SpringBootTest {
 
     RequestData rd = testing.getTelemetryDataForType(0, "RequestData");
 
-    assertThat(rd.getName()).isEqualTo("GET /SpringBootTest/throwsException");
+    assertThat(rd.getName()).isEqualTo("GET /SpringBoot/throwsException");
     assertThat(rd.getResponseCode()).isEqualTo("500");
     assertThat(rd.getProperties())
         .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
     assertThat(rd.getSuccess()).isFalse();
 
     SmokeTestExtension.assertParentChild(
-        rd, rdEnvelope, edEnvelope1, "GET /SpringBootTest/throwsException");
+        rd, rdEnvelope, edEnvelope1, "GET /SpringBoot/throwsException");
   }
 
   @Test
@@ -134,7 +134,7 @@ abstract class SpringBootTest {
     RemoteDependencyData rdd1 =
         (RemoteDependencyData) ((Data<?>) rddEnvelope1.getData()).getBaseData();
 
-    assertThat(rd.getName()).isEqualTo("GET /SpringBootTest/asyncDependencyCall");
+    assertThat(rd.getName()).isEqualTo("GET /SpringBoot/asyncDependencyCall");
     assertThat(rd.getResponseCode()).isEqualTo("200");
     assertThat(rd.getProperties())
         .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
@@ -148,7 +148,7 @@ abstract class SpringBootTest {
     assertThat(rdd1.getSuccess()).isTrue();
 
     SmokeTestExtension.assertParentChild(
-        rd, rdEnvelope, rddEnvelope1, "GET /SpringBootTest/asyncDependencyCall");
+        rd, rdEnvelope, rddEnvelope1, "GET /SpringBoot/asyncDependencyCall");
   }
 
   @Environment(TOMCAT_8_JAVA_8)

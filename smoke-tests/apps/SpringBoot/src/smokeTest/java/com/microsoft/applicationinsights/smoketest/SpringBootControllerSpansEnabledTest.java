@@ -110,7 +110,7 @@ class SpringBootControllerSpansEnabledTest {
     RemoteDependencyData rdd1 =
         (RemoteDependencyData) ((Data<?>) rddEnvelope1.getData()).getBaseData();
 
-    assertThat(rd.getName()).isEqualTo("GET /SpringBootTest/throwsException");
+    assertThat(rd.getName()).isEqualTo("GET /SpringBoot/throwsException");
     assertThat(rd.getResponseCode()).isEqualTo("500");
     assertThat(rd.getProperties())
         .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
@@ -124,9 +124,9 @@ class SpringBootControllerSpansEnabledTest {
     assertThat(rdd1.getSuccess()).isFalse();
 
     SmokeTestExtension.assertParentChild(
-        rd, rdEnvelope, edEnvelope1, "GET /SpringBootTest/throwsException");
+        rd, rdEnvelope, edEnvelope1, "GET /SpringBoot/throwsException");
     SmokeTestExtension.assertParentChild(
-        rd, rdEnvelope, rddEnvelope1, "GET /SpringBootTest/throwsException");
+        rd, rdEnvelope, rddEnvelope1, "GET /SpringBoot/throwsException");
   }
 
   @Test
@@ -157,7 +157,7 @@ class SpringBootControllerSpansEnabledTest {
     RemoteDependencyData rdd3 =
         (RemoteDependencyData) ((Data<?>) rddEnvelope3.getData()).getBaseData();
 
-    assertThat(rd.getName()).isEqualTo("GET /SpringBootTest/asyncDependencyCall");
+    assertThat(rd.getName()).isEqualTo("GET /SpringBoot/asyncDependencyCall");
     assertThat(rd.getResponseCode()).isEqualTo("200");
     assertThat(rd.getProperties())
         .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
@@ -183,16 +183,16 @@ class SpringBootControllerSpansEnabledTest {
     assertThat(rdd3.getSuccess()).isTrue();
 
     SmokeTestExtension.assertParentChild(
-        rd, rdEnvelope, rddEnvelope1, "GET /SpringBootTest/asyncDependencyCall");
+        rd, rdEnvelope, rddEnvelope1, "GET /SpringBoot/asyncDependencyCall");
     SmokeTestExtension.assertParentChild(
-        rdd1, rddEnvelope1, rddEnvelope2, "GET /SpringBootTest/asyncDependencyCall");
+        rdd1, rddEnvelope1, rddEnvelope2, "GET /SpringBoot/asyncDependencyCall");
     try {
       SmokeTestExtension.assertParentChild(
-          rdd1, rddEnvelope1, rddEnvelope3, "GET /SpringBootTest/asyncDependencyCall");
+          rdd1, rddEnvelope1, rddEnvelope3, "GET /SpringBoot/asyncDependencyCall");
     } catch (AssertionError e) {
       // on wildfly the duplicate controller spans is nested under the request span for some reason
       SmokeTestExtension.assertParentChild(
-          rd, rdEnvelope, rddEnvelope3, "GET /SpringBootTest/asyncDependencyCall");
+          rd, rdEnvelope, rddEnvelope3, "GET /SpringBoot/asyncDependencyCall");
     }
   }
 }

@@ -27,7 +27,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 // this is used by the test infra in order to know when it's ok to start running the tests
-@WebServlet("/")
+@WebServlet("")
 public class HealthCheckServlet extends HttpServlet {
 
   @Override
