@@ -7,7 +7,6 @@
     "percentage": 100
   },
   "preview": {
-    "captureHttpServer4xxAsError": false,
     "metricIntervalSeconds": 10
   }
 }

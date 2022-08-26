@@ -33,10 +33,13 @@ import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WI
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.data.MapEntry.entry;
 
+import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-@UseAgent
+@UseAgent("httpserver4xxdefault_applicationinsights")
 abstract class HttpServer4xxDefaultTest {
 
   @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.create();
@@ -54,6 +57,12 @@ abstract class HttpServer4xxDefaultTest {
     assertThat(telemetry.rd.getProperties())
         .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
     assertThat(telemetry.rd.getMeasurements()).isEmpty();
+
+    List<Envelope> serverMetrics =
+        testing.mockedIngestion.waitForItems(
+            SmokeTestExtension.getMetricPredicate("http.server.duration"), 2, 40, TimeUnit.SECONDS);
+
+    assertThat(serverMetrics).hasSize(2);
   }
 
   @Environment(TOMCAT_8_JAVA_8)
