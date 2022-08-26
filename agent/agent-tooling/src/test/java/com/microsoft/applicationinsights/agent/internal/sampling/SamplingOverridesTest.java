@@ -46,7 +46,7 @@ class SamplingOverridesTest {
     Attributes attributes = Attributes.empty();
 
     // when
-    Sampler sampler = samplingOverrides.getOverride(true, attributes);
+    Sampler sampler = samplingOverrides.getOverride(false, attributes);
 
     // expect
     assertThat(sampler).isNull();
@@ -60,7 +60,7 @@ class SamplingOverridesTest {
     Attributes attributes = Attributes.empty();
 
     // when
-    Sampler sampler = samplingOverrides.getOverride(true, attributes);
+    Sampler sampler = samplingOverrides.getOverride(false, attributes);
 
     // expect
     assertThat(sampler).isNotNull();
@@ -68,14 +68,14 @@ class SamplingOverridesTest {
   }
 
   @Test
-  void shouldNotFilterInRequest() {
+  void shouldNotFilterStandaloneTelemetry() {
     // given
     List<SamplingOverride> overrides = singletonList(newOverride(25));
     SamplingOverrides samplingOverrides = new SamplingOverrides(overrides);
     Attributes attributes = Attributes.empty();
 
     // when
-    Sampler sampler = samplingOverrides.getOverride(false, attributes);
+    Sampler sampler = samplingOverrides.getOverride(true, attributes);
 
     // expect
     assertThat(sampler).isNull();
@@ -90,7 +90,7 @@ class SamplingOverridesTest {
     Attributes attributes = Attributes.of(AttributeKey.stringKey("one"), "1");
 
     // when
-    Sampler sampler = samplingOverrides.getOverride(true, attributes);
+    Sampler sampler = samplingOverrides.getOverride(false, attributes);
 
     // expect
     assertThat(sampler).isNotNull();
@@ -106,7 +106,7 @@ class SamplingOverridesTest {
     Attributes attributes = Attributes.of(AttributeKey.stringKey("one"), "2");
 
     // when
-    Sampler sampler = samplingOverrides.getOverride(true, attributes);
+    Sampler sampler = samplingOverrides.getOverride(false, attributes);
 
     // expect
     assertThat(sampler).isNull();
@@ -121,7 +121,7 @@ class SamplingOverridesTest {
     Attributes attributes = Attributes.of(AttributeKey.stringKey("two"), "1");
 
     // when
-    Sampler sampler = samplingOverrides.getOverride(true, attributes);
+    Sampler sampler = samplingOverrides.getOverride(false, attributes);
 
     // expect
     assertThat(sampler).isNull();
@@ -136,7 +136,7 @@ class SamplingOverridesTest {
     Attributes attributes = Attributes.of(AttributeKey.stringKey("one"), "11");
 
     // when
-    Sampler sampler = samplingOverrides.getOverride(true, attributes);
+    Sampler sampler = samplingOverrides.getOverride(false, attributes);
 
     // expect
     assertThat(sampler).isNotNull();
@@ -152,7 +152,7 @@ class SamplingOverridesTest {
     Attributes attributes = Attributes.of(AttributeKey.stringKey("one"), "22");
 
     // when
-    Sampler sampler = samplingOverrides.getOverride(true, attributes);
+    Sampler sampler = samplingOverrides.getOverride(false, attributes);
 
     // expect
     assertThat(sampler).isNull();
@@ -167,7 +167,7 @@ class SamplingOverridesTest {
     Attributes attributes = Attributes.of(AttributeKey.stringKey("two"), "11");
 
     // when
-    Sampler sampler = samplingOverrides.getOverride(true, attributes);
+    Sampler sampler = samplingOverrides.getOverride(false, attributes);
 
     // expect
     assertThat(sampler).isNull();
@@ -181,7 +181,7 @@ class SamplingOverridesTest {
     Attributes attributes = Attributes.of(AttributeKey.stringKey("one"), "11");
 
     // when
-    Sampler sampler = samplingOverrides.getOverride(true, attributes);
+    Sampler sampler = samplingOverrides.getOverride(false, attributes);
 
     // expect
     assertThat(sampler).isNotNull();
@@ -196,7 +196,7 @@ class SamplingOverridesTest {
     Attributes attributes = Attributes.of(AttributeKey.stringKey("two"), "22");
 
     // when
-    Sampler sampler = samplingOverrides.getOverride(true, attributes);
+    Sampler sampler = samplingOverrides.getOverride(false, attributes);
 
     // expect
     assertThat(sampler).isNull();
@@ -213,7 +213,7 @@ class SamplingOverridesTest {
         Attributes.of(AttributeKey.stringKey("one"), "1", AttributeKey.stringKey("two"), "22");
 
     // when
-    Sampler sampler = samplerOverride.getOverride(true, attributes);
+    Sampler sampler = samplerOverride.getOverride(false, attributes);
 
     // expect
     assertThat(sampler).isNotNull();
@@ -231,7 +231,7 @@ class SamplingOverridesTest {
         Attributes.of(AttributeKey.stringKey("one"), "2", AttributeKey.stringKey("two"), "22");
 
     // when
-    Sampler sampler = samplingOverrides.getOverride(true, attributes);
+    Sampler sampler = samplingOverrides.getOverride(false, attributes);
 
     // expect
     assertThat(sampler).isNull();
@@ -249,7 +249,7 @@ class SamplingOverridesTest {
         Attributes.of(AttributeKey.stringKey("one"), "1", AttributeKey.stringKey("two"), "22");
 
     // when
-    Sampler sampler = samplingOverrides.getOverride(true, attributes);
+    Sampler sampler = samplingOverrides.getOverride(false, attributes);
 
     // expect
     assertThat(sampler).isNotNull();
@@ -268,7 +268,7 @@ class SamplingOverridesTest {
         Attributes.of(AttributeKey.stringKey("one"), "2", AttributeKey.stringKey("two"), "22");
 
     // when
-    Sampler sampler = samplingOverrides.getOverride(true, attributes);
+    Sampler sampler = samplingOverrides.getOverride(false, attributes);
 
     // expect
     assertThat(sampler).isNotNull();
@@ -287,7 +287,7 @@ class SamplingOverridesTest {
         Attributes.of(AttributeKey.stringKey("one"), "2", AttributeKey.stringKey("two"), "33");
 
     // when
-    Sampler sampler = samplingOverrides.getOverride(true, attributes);
+    Sampler sampler = samplingOverrides.getOverride(false, attributes);
 
     // expect
     assertThat(sampler).isNull();
