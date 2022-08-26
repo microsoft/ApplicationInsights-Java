@@ -129,6 +129,12 @@ public class ConfigurationBuilder {
   public static Configuration create(Path agentJarPath, @Nullable RpConfiguration rpConfiguration)
       throws IOException {
     Configuration config = loadConfigurationFile(agentJarPath);
+    logConfigurationWarnings(config);
+    overlayConfiguration(agentJarPath, rpConfiguration, config);
+    return config;
+  }
+
+  private static void logConfigurationWarnings(Configuration config) {
     if (config.instrumentation.micrometer.reportingIntervalSeconds != 60) {
       configurationLogger.warn(
           "micrometer \"reportingIntervalSeconds\" setting leaked out previously"
@@ -185,7 +191,10 @@ public class ConfigurationBuilder {
               + " so no need to enable it under preview configuration");
     }
     logWarningIfUsingInternalAttributes(config);
+  }
 
+  private static void overlayConfiguration(
+      Path agentJarPath, RpConfiguration rpConfiguration, Configuration config) throws IOException {
     overlayFromEnv(config, agentJarPath.getParent());
     config.sampling.percentage = roundToNearest(config.sampling.percentage, true);
     for (SamplingOverride override : config.preview.sampling.overrides) {
@@ -202,7 +211,6 @@ public class ConfigurationBuilder {
       String hostname = HostName.get();
       config.role.instance = hostname == null ? "unknown" : hostname;
     }
-    return config;
   }
 
   private static void logWarningIfUsingInternalAttributes(Configuration config) {
@@ -246,11 +254,21 @@ public class ConfigurationBuilder {
   }
 
   private static void overlayProfilerEnvVars(Configuration config) {
+    if (isOpenJ9Jvm()) {
+      configurationLogger.warn(
+          "Profiler is not supported for an OpenJ9 JVM. Instead, please use an OpenJDK JVM.");
+      config.preview.profiler.enabled = false;
+    }
     config.preview.profiler.enabled =
         Boolean.parseBoolean(
             overlayWithEnvVar(
                 APPLICATIONINSIGHTS_PREVIEW_PROFILER_ENABLED,
                 Boolean.toString(config.preview.profiler.enabled)));
+  }
+
+  private static boolean isOpenJ9Jvm() {
+    String jvmName = System.getProperty("java.vm.name");
+    return jvmName != null && jvmName.contains("OpenJ9");
   }
 
   private static void overlayAadEnvVars(Configuration config) {
