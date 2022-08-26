@@ -23,24 +23,17 @@ package com.microsoft.applicationinsights.smoketestapp;
 
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.telemetry.Duration;
-import java.io.IOException;
-import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-@WebServlet(
-    description = "Performs given calculation",
-    urlPatterns = {"/trackDependency"})
+@WebServlet("/trackDependency")
 public class SimpleTrackDependencyServlet extends HttpServlet {
 
   private final TelemetryClient client = new TelemetryClient();
 
-  protected void doGet(HttpServletRequest request, HttpServletResponse response)
-      throws ServletException, IOException {
-    ServletFuncs.geRrenderHtml(request, response);
-
+  protected void doGet(HttpServletRequest request, HttpServletResponse response) {
     client.trackDependency("DependencyTest", "commandName", new Duration(0, 0, 1, 1, 1), true);
   }
 }

@@ -21,26 +21,23 @@
 
 package com.microsoft.applicationinsights.smoketestapp;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.concurrent.ThreadLocalRandom;
-import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-@WebServlet(description = "calls request slow w/o Thread.sleep", urlPatterns = "/slowLoop")
+@WebServlet("/slowLoop")
 public class SlowRequestCpuBoundServlet extends HttpServlet {
 
   private static final BigDecimal MAX_VALUE = BigDecimal.valueOf(1_000);
   private static final ThreadLocalRandom rand = ThreadLocalRandom.current();
 
-  protected void doGet(HttpServletRequest request, HttpServletResponse response)
-      throws ServletException, IOException {
+  protected void doGet(HttpServletRequest request, HttpServletResponse response) {
+
     long startTime = System.currentTimeMillis();
 
-    ServletFuncs.geRrenderHtml(request, response);
     int responseTime = 25;
     String customResponseTime = request.getParameter("responseTime");
     if (customResponseTime != null) {

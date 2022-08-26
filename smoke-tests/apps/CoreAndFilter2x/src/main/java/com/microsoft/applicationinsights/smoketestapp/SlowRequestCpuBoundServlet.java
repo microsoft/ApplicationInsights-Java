@@ -30,7 +30,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-@WebServlet(description = "calls request slow w/o Thread.sleep", urlPatterns = "/slowLoop")
+@WebServlet("/slowLoop")
 public class SlowRequestCpuBoundServlet extends HttpServlet {
 
   private static final BigDecimal MAX_VALUE = BigDecimal.valueOf(1_000);
@@ -40,7 +40,6 @@ public class SlowRequestCpuBoundServlet extends HttpServlet {
       throws ServletException, IOException {
     long startTime = System.currentTimeMillis();
 
-    ServletFuncs.geRrenderHtml(request, response);
     int responseTime = 25;
     String customResponseTime = request.getParameter("responseTime");
     if (customResponseTime != null) {
