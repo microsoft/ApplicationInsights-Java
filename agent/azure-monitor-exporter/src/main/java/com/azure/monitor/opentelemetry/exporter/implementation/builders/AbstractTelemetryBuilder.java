@@ -67,6 +67,10 @@ public abstract class AbstractTelemetryBuilder {
     telemetryItem.setInstrumentationKey(instrumentationKey);
   }
 
+  public void setConnectionString(String connectionString) {
+    telemetryItem.setConnectionString(connectionString);
+  }
+
   public void addTag(String key, String value) {
     Map<String, String> tags = telemetryItem.getTags();
     if (tags == null) {

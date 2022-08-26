@@ -22,6 +22,7 @@
 package com.azure.monitor.opentelemetry.exporter.implementation.models;
 
 import com.azure.core.annotation.Fluent;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.OffsetDateTime;
 import java.util.Map;
@@ -75,6 +76,8 @@ public final class TelemetryItem {
    */
   @JsonProperty(value = "iKey")
   private String instrumentationKey;
+
+  @JsonIgnore private String connectionString;
 
   /*
    * Key/value collection of context properties. See ContextTagKeys for
@@ -225,6 +228,14 @@ public final class TelemetryItem {
   public TelemetryItem setInstrumentationKey(String instrumentationKey) {
     this.instrumentationKey = instrumentationKey;
     return this;
+  }
+
+  public String getConnectionString() {
+    return connectionString;
+  }
+
+  public void setConnectionString(String connectionString) {
+    this.connectionString = connectionString;
   }
 
   /**

@@ -93,10 +93,9 @@ public class TelemetryItemExporter {
     Map<String, List<TelemetryItem>> instrumentationKeyMap = new HashMap<>();
     for (TelemetryItem telemetryItem : telemetryItems) {
       String instrumentationKey = telemetryItem.getInstrumentationKey();
-      if (!instrumentationKeyMap.containsKey(instrumentationKey)) {
-        instrumentationKeyMap.put(instrumentationKey, new ArrayList<>());
-      }
-      instrumentationKeyMap.get(instrumentationKey).add(telemetryItem);
+      instrumentationKeyMap
+          .computeIfAbsent(instrumentationKey, k -> new ArrayList<>())
+          .add(telemetryItem);
     }
     List<CompletableResultCode> resultCodeList = new ArrayList<>();
     for (Map.Entry<String, List<TelemetryItem>> entry : instrumentationKeyMap.entrySet()) {

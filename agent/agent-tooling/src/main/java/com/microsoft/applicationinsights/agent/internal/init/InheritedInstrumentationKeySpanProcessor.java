@@ -21,8 +21,8 @@
 
 package com.microsoft.applicationinsights.agent.internal.init;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.AiSemanticAttributes;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
-import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.context.Context;
@@ -33,9 +33,6 @@ import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.util.List;
 
 public class InheritedInstrumentationKeySpanProcessor implements SpanProcessor {
-
-  private static final AttributeKey<String> INSTRUMENTATION_KEY_KEY =
-      AttributeKey.stringKey("ai.preview.instrumentation_key");
 
   private final List<Configuration.InstrumentationKeyOverride> overrides;
 
@@ -57,7 +54,7 @@ public class InheritedInstrumentationKeySpanProcessor implements SpanProcessor {
       }
       for (Configuration.InstrumentationKeyOverride override : overrides) {
         if (target.startsWith(override.httpPathPrefix)) {
-          span.setAttribute(INSTRUMENTATION_KEY_KEY, override.instrumentationKey);
+          span.setAttribute(AiSemanticAttributes.INSTRUMENTATION_KEY, override.instrumentationKey);
           break;
         }
       }
@@ -68,9 +65,10 @@ public class InheritedInstrumentationKeySpanProcessor implements SpanProcessor {
     }
     ReadableSpan parentReadableSpan = (ReadableSpan) parentSpan;
 
-    String instrumentationKey = parentReadableSpan.getAttribute(INSTRUMENTATION_KEY_KEY);
+    String instrumentationKey =
+        parentReadableSpan.getAttribute(AiSemanticAttributes.INSTRUMENTATION_KEY);
     if (instrumentationKey != null) {
-      span.setAttribute(INSTRUMENTATION_KEY_KEY, instrumentationKey);
+      span.setAttribute(AiSemanticAttributes.INSTRUMENTATION_KEY, instrumentationKey);
     }
   }
 
