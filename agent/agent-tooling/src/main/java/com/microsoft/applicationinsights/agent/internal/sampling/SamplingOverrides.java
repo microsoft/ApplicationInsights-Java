@@ -47,10 +47,10 @@ public class SamplingOverrides {
   }
 
   @Nullable
-  public Sampler getOverride(boolean inRequest, Attributes attributes) {
+  public Sampler getOverride(boolean standaloneTelemetry, Attributes attributes) {
     LazyHttpUrl lazyHttpUrl = new LazyHttpUrl(attributes);
     for (MatcherGroup matcherGroups : matcherGroups) {
-      if (matcherGroups.matches(inRequest, attributes, lazyHttpUrl)) {
+      if (matcherGroups.matches(standaloneTelemetry, attributes, lazyHttpUrl)) {
         return matcherGroups.getSampler();
       }
     }
@@ -59,9 +59,9 @@ public class SamplingOverrides {
 
   // used to do sampling inside the log exporter
   @Nullable
-  public Double getOverridePercentage(boolean inRequest, Attributes attributes) {
+  public Double getOverridePercentage(boolean standaloneTelemetry, Attributes attributes) {
     for (MatcherGroup matcherGroups : matcherGroups) {
-      if (matcherGroups.matches(inRequest, attributes, null)) {
+      if (matcherGroups.matches(standaloneTelemetry, attributes, null)) {
         return matcherGroups.getPercentage();
       }
     }
@@ -69,13 +69,13 @@ public class SamplingOverrides {
   }
 
   private static class MatcherGroup {
-    private final boolean inRequest;
+    private final boolean includeStandaloneTelemetry;
     private final List<TempPredicate> predicates;
     private final Sampler sampler;
     private final SamplingPercentage samplingPercentage;
 
     private MatcherGroup(SamplingOverride override) {
-      inRequest = override.inRequest;
+      includeStandaloneTelemetry = override.includeStandaloneTelemetry;
       predicates = new ArrayList<>();
       for (SamplingOverrideAttribute attribute : override.attributes) {
         predicates.add(toPredicate(attribute));
@@ -93,8 +93,8 @@ public class SamplingOverrides {
     }
 
     private boolean matches(
-        boolean inRequest, Attributes attributes, @Nullable LazyHttpUrl lazyHttpUrl) {
-      if (this.inRequest != inRequest) {
+        boolean standaloneTelemetry, Attributes attributes, @Nullable LazyHttpUrl lazyHttpUrl) {
+      if (standaloneTelemetry && !this.includeStandaloneTelemetry) {
         return false;
       }
       for (TempPredicate predicate : predicates) {

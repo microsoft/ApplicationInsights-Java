@@ -41,7 +41,7 @@ import com.microsoft.applicationinsights.agent.internal.classicsdk.BytecodeUtilI
 import com.microsoft.applicationinsights.agent.internal.common.FriendlyException;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.ProcessorConfig;
-import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.TelemetryKind;
+import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.SamplingTelemetryKind;
 import com.microsoft.applicationinsights.agent.internal.configuration.RpConfiguration;
 import com.microsoft.applicationinsights.agent.internal.exporter.AgentLogExporter;
 import com.microsoft.applicationinsights.agent.internal.exporter.AgentMetricExporter;
@@ -490,11 +490,11 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
 
     List<Configuration.SamplingOverride> logSamplingOverrides =
         configuration.preview.sampling.overrides.stream()
-            .filter(override -> override.telemetryKind == TelemetryKind.TRACE)
+            .filter(override -> override.telemetryKind == SamplingTelemetryKind.TRACE)
             .collect(Collectors.toList());
     List<Configuration.SamplingOverride> exceptionSamplingOverrides =
         configuration.preview.sampling.overrides.stream()
-            .filter(override -> override.telemetryKind == TelemetryKind.EXCEPTION)
+            .filter(override -> override.telemetryKind == SamplingTelemetryKind.EXCEPTION)
             .collect(Collectors.toList());
 
     agentLogExporter =

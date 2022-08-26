@@ -114,9 +114,8 @@ public class AgentLogExporter implements LogExporter {
 
         SpanContext spanContext = log.getSpanContext();
 
-        boolean inRequest = spanContext.isValid();
         Double samplingPercentage =
-            samplingOverrides.getOverridePercentage(inRequest, log.getAttributes());
+            samplingOverrides.getOverridePercentage(spanContext.isValid(), log.getAttributes());
 
         if (samplingPercentage != null && !shouldSample(spanContext, samplingPercentage)) {
           continue;

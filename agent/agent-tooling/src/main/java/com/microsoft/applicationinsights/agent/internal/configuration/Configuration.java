@@ -94,7 +94,8 @@ public class Configuration {
     }
   }
 
-  public enum TelemetryKind {
+  public enum SamplingTelemetryKind {
+    // restricted to telemetry kinds that are supported by SamplingOverrides
     @JsonProperty("request")
     REQUEST,
     @JsonProperty("dependency")
@@ -600,12 +601,11 @@ public class Configuration {
 
     // TODO (trask) make this required when moving out of preview
     //   for now the default is both "request" and "dependency" for backwards compatibility
-    @Nullable public TelemetryKind telemetryKind;
+    @Nullable public SamplingTelemetryKind telemetryKind;
 
-    // TODO (trask) should this be named "standalone" (and meaning flipped)
-    //  especially if we aren't going to change meaning of "request" to include unparented INTERNAL
-    //  spans
-    public boolean inRequest = true;
+    // TODO (trask) add test for this
+    // this is primarily useful for batch jobs
+    public boolean includeStandaloneTelemetry;
 
     // not using include/exclude, because you can still get exclude with this by adding a second
     // (exclude) override above it
@@ -615,13 +615,13 @@ public class Configuration {
     public String id; // optional, used for debugging purposes only
 
     public boolean isForRequestTelemetry() {
-      return telemetryKind == TelemetryKind.REQUEST
+      return telemetryKind == SamplingTelemetryKind.REQUEST
           // this part is for backwards compatibility:
           || (telemetryKind == null && spanKind != SpanKind.CLIENT);
     }
 
     public boolean isForDependencyTelemetry() {
-      return telemetryKind == TelemetryKind.DEPENDENCY
+      return telemetryKind == SamplingTelemetryKind.DEPENDENCY
           // this part is for backwards compatibility:
           || (telemetryKind == null && spanKind != SpanKind.SERVER);
     }
