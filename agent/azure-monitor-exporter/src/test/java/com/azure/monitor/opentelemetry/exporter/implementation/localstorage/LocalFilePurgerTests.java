@@ -36,7 +36,7 @@ public class LocalFilePurgerTests {
   @TempDir File tempFolder;
 
   @Test
-  public void testPurgedExpiredFiles() throws InterruptedException {
+  public void testPurgedExpiredFiles() throws Exception {
     String text = "hello world";
     LocalFileCache cache = new LocalFileCache(tempFolder);
     LocalFileWriter writer = new LocalFileWriter(50, cache, tempFolder, null, false);
@@ -48,6 +48,7 @@ public class LocalFilePurgerTests {
     for (int i = 0; i < 100; i++) {
       writer.writeToDisk(
           "00000000-0000-0000-0000-0FEEDDADBEE",
+          "http://foo.bar/",
           singletonList(ByteBuffer.wrap(text.getBytes(UTF_8))));
     }
 

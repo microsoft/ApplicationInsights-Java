@@ -143,12 +143,12 @@ public class QuickPulseIntegrationTests extends QuickPulseTestBase {
     // Request Telemetry
     TelemetryItem requestTelemetry =
         createRequestTelemetry("request-test", currDate, duration, "200", true);
-    requestTelemetry.setInstrumentationKey(instrumentationKey);
+    requestTelemetry.setConnectionString(connectionString);
     collector.add(requestTelemetry);
     // Dependency Telemetry
     TelemetryItem dependencyTelemetry =
         createRemoteDependencyTelemetry("dep-test", "dep-test-cmd", duration, true);
-    dependencyTelemetry.setInstrumentationKey(instrumentationKey);
+    dependencyTelemetry.setConnectionString(connectionString);
     collector.add(dependencyTelemetry);
     // Exception Telemetry
     ExceptionTelemetryBuilder builder = ExceptionTelemetryBuilder.create();
@@ -157,7 +157,7 @@ public class QuickPulseIntegrationTests extends QuickPulseTestBase {
     detailBuilder.setTypeName(Exception.class.getName());
     builder.setExceptions(singletonList(detailBuilder));
     TelemetryItem exceptionTelemetry = builder.build();
-    exceptionTelemetry.setInstrumentationKey(instrumentationKey);
+    exceptionTelemetry.setConnectionString(connectionString);
     collector.add(exceptionTelemetry);
 
     QuickPulseCoordinatorInitData initData =

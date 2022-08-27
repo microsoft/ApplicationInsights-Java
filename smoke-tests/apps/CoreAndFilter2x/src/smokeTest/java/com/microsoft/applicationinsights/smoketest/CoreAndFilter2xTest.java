@@ -49,7 +49,10 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 @UseAgent
 abstract class CoreAndFilter2xTest {
 
-  @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.create();
+  @RegisterExtension
+  static final SmokeTestExtension testing =
+      // standalone instrumentation keys are sent to the global ingestion endpoint
+      SmokeTestExtension.builder().usesGlobalIngestionEndpoint().build();
 
   @Test
   @TargetUri("/trackDependency")

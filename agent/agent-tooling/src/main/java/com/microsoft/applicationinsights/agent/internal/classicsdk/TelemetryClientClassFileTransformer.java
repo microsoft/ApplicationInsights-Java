@@ -505,23 +505,38 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
       mv.visitMethodInsn(
           INVOKEVIRTUAL,
           unshadedPrefix + "/telemetry/TelemetryContext",
+          "getConnectionString",
+          "()Ljava/lang/String;",
+          false);
+      mv.visitVarInsn(ALOAD, 0);
+      Label label7 = new Label();
+      mv.visitLabel(label7);
+      mv.visitMethodInsn(
+          INVOKEVIRTUAL,
+          unshadedPrefix + "/telemetry/EventTelemetry",
+          "getContext",
+          "()L" + unshadedPrefix + "/telemetry/TelemetryContext;",
+          false);
+      mv.visitMethodInsn(
+          INVOKEVIRTUAL,
+          unshadedPrefix + "/telemetry/TelemetryContext",
           "getInstrumentationKey",
           "()Ljava/lang/String;",
           false);
-      Label label7 = new Label();
-      mv.visitLabel(label7);
+      Label label8 = new Label();
+      mv.visitLabel(label8);
       mv.visitMethodInsn(
           INVOKESTATIC,
           BYTECODE_UTIL_INTERNAL_NAME,
           "trackEvent",
-          "(Ljava/util/Date;Ljava/lang/String;Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;Ljava/lang/String;)V",
+          "(Ljava/util/Date;Ljava/lang/String;Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;Ljava/lang/String;Ljava/lang/String;)V",
           false);
-      Label label8 = new Label();
-      mv.visitLabel(label8);
-      mv.visitInsn(RETURN);
       Label label9 = new Label();
       mv.visitLabel(label9);
-      mv.visitMaxs(6, 1);
+      mv.visitInsn(RETURN);
+      Label label10 = new Label();
+      mv.visitLabel(label10);
+      mv.visitMaxs(7, 1);
       mv.visitEnd();
     }
 
@@ -640,23 +655,38 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
       mv.visitMethodInsn(
           INVOKEVIRTUAL,
           unshadedPrefix + "/telemetry/TelemetryContext",
+          "getConnectionString",
+          "()Ljava/lang/String;",
+          false);
+      mv.visitVarInsn(ALOAD, 0);
+      Label label12 = new Label();
+      mv.visitLabel(label12);
+      mv.visitMethodInsn(
+          INVOKEVIRTUAL,
+          unshadedPrefix + "/telemetry/MetricTelemetry",
+          "getContext",
+          "()L" + unshadedPrefix + "/telemetry/TelemetryContext;",
+          false);
+      mv.visitMethodInsn(
+          INVOKEVIRTUAL,
+          unshadedPrefix + "/telemetry/TelemetryContext",
           "getInstrumentationKey",
           "()Ljava/lang/String;",
           false);
-      Label label12 = new Label();
-      mv.visitLabel(label12);
+      Label label13 = new Label();
+      mv.visitLabel(label13);
       mv.visitMethodInsn(
           INVOKESTATIC,
           BYTECODE_UTIL_INTERNAL_NAME,
           "trackMetric",
-          "(Ljava/util/Date;Ljava/lang/String;Ljava/lang/String;DLjava/lang/Integer;Ljava/lang/Double;Ljava/lang/Double;Ljava/lang/Double;Ljava/util/Map;Ljava/util/Map;Ljava/lang/String;)V",
+          "(Ljava/util/Date;Ljava/lang/String;Ljava/lang/String;DLjava/lang/Integer;Ljava/lang/Double;Ljava/lang/Double;Ljava/lang/Double;Ljava/util/Map;Ljava/util/Map;Ljava/lang/String;Ljava/lang/String;)V",
           false);
-      Label label13 = new Label();
-      mv.visitLabel(label13);
-      mv.visitInsn(RETURN);
       Label label14 = new Label();
       mv.visitLabel(label14);
-      mv.visitMaxs(12, 1);
+      mv.visitInsn(RETURN);
+      Label label15 = new Label();
+      mv.visitLabel(label15);
+      mv.visitMaxs(13, 1);
       mv.visitEnd();
     }
 
@@ -803,23 +833,38 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
       mv.visitMethodInsn(
           INVOKEVIRTUAL,
           unshadedPrefix + "/telemetry/TelemetryContext",
+          "getConnectionString",
+          "()Ljava/lang/String;",
+          false);
+      mv.visitVarInsn(ALOAD, 0);
+      Label label14 = new Label();
+      mv.visitLabel(label14);
+      mv.visitMethodInsn(
+          INVOKEVIRTUAL,
+          unshadedPrefix + "/telemetry/RemoteDependencyTelemetry",
+          "getContext",
+          "()L" + unshadedPrefix + "/telemetry/TelemetryContext;",
+          false);
+      mv.visitMethodInsn(
+          INVOKEVIRTUAL,
+          unshadedPrefix + "/telemetry/TelemetryContext",
           "getInstrumentationKey",
           "()Ljava/lang/String;",
           false);
-      Label label14 = new Label();
-      mv.visitLabel(label14);
+      Label label15 = new Label();
+      mv.visitLabel(label15);
       mv.visitMethodInsn(
           INVOKESTATIC,
           BYTECODE_UTIL_INTERNAL_NAME,
           "trackDependency",
-          "(Ljava/util/Date;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Long;ZLjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;Ljava/lang/String;)V",
+          "(Ljava/util/Date;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Long;ZLjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;Ljava/lang/String;Ljava/lang/String;)V",
           false);
-      Label label15 = new Label();
-      mv.visitLabel(label15);
-      mv.visitInsn(RETURN);
       Label label16 = new Label();
       mv.visitLabel(label16);
-      mv.visitMaxs(13, 1);
+      mv.visitInsn(RETURN);
+      Label label17 = new Label();
+      mv.visitLabel(label17);
+      mv.visitMaxs(14, 1);
       mv.visitEnd();
     }
 
@@ -915,23 +960,38 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
       mv.visitMethodInsn(
           INVOKEVIRTUAL,
           unshadedPrefix + "/telemetry/TelemetryContext",
+          "getConnectionString",
+          "()Ljava/lang/String;",
+          false);
+      mv.visitVarInsn(ALOAD, 0);
+      Label label9 = new Label();
+      mv.visitLabel(label9);
+      mv.visitMethodInsn(
+          INVOKEVIRTUAL,
+          unshadedPrefix + "/telemetry/PageViewTelemetry",
+          "getContext",
+          "()L" + unshadedPrefix + "/telemetry/TelemetryContext;",
+          false);
+      mv.visitMethodInsn(
+          INVOKEVIRTUAL,
+          unshadedPrefix + "/telemetry/TelemetryContext",
           "getInstrumentationKey",
           "()Ljava/lang/String;",
           false);
-      Label label9 = new Label();
-      mv.visitLabel(label9);
+      Label label10 = new Label();
+      mv.visitLabel(label10);
       mv.visitMethodInsn(
           INVOKESTATIC,
           BYTECODE_UTIL_INTERNAL_NAME,
           "trackPageView",
-          "(Ljava/util/Date;Ljava/lang/String;Ljava/net/URI;JLjava/util/Map;Ljava/util/Map;Ljava/util/Map;Ljava/lang/String;)V",
+          "(Ljava/util/Date;Ljava/lang/String;Ljava/net/URI;JLjava/util/Map;Ljava/util/Map;Ljava/util/Map;Ljava/lang/String;Ljava/lang/String;)V",
           false);
-      Label label10 = new Label();
-      mv.visitLabel(label10);
-      mv.visitInsn(RETURN);
       Label label11 = new Label();
       mv.visitLabel(label11);
-      mv.visitMaxs(9, 1);
+      mv.visitInsn(RETURN);
+      Label label12 = new Label();
+      mv.visitLabel(label12);
+      mv.visitMaxs(10, 1);
       mv.visitEnd();
     }
 
@@ -1028,23 +1088,38 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
       mv.visitMethodInsn(
           INVOKEVIRTUAL,
           unshadedPrefix + "/telemetry/TelemetryContext",
+          "getConnectionString",
+          "()Ljava/lang/String;",
+          false);
+      mv.visitVarInsn(ALOAD, 0);
+      Label label10 = new Label();
+      mv.visitLabel(label10);
+      mv.visitMethodInsn(
+          INVOKEVIRTUAL,
+          unshadedPrefix + "/telemetry/TraceTelemetry",
+          "getContext",
+          "()L" + unshadedPrefix + "/telemetry/TelemetryContext;",
+          false);
+      mv.visitMethodInsn(
+          INVOKEVIRTUAL,
+          unshadedPrefix + "/telemetry/TelemetryContext",
           "getInstrumentationKey",
           "()Ljava/lang/String;",
           false);
-      Label label10 = new Label();
-      mv.visitLabel(label10);
+      Label label11 = new Label();
+      mv.visitLabel(label11);
       mv.visitMethodInsn(
           INVOKESTATIC,
           BYTECODE_UTIL_INTERNAL_NAME,
           "trackTrace",
-          "(Ljava/util/Date;Ljava/lang/String;ILjava/util/Map;Ljava/util/Map;Ljava/lang/String;)V",
+          "(Ljava/util/Date;Ljava/lang/String;ILjava/util/Map;Ljava/util/Map;Ljava/lang/String;Ljava/lang/String;)V",
           false);
-      Label label11 = new Label();
-      mv.visitLabel(label11);
-      mv.visitInsn(RETURN);
       Label label12 = new Label();
       mv.visitLabel(label12);
-      mv.visitMaxs(6, 3);
+      mv.visitInsn(RETURN);
+      Label label13 = new Label();
+      mv.visitLabel(label13);
+      mv.visitMaxs(7, 3);
       mv.visitEnd();
     }
 
@@ -1181,25 +1256,40 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
       mv.visitMethodInsn(
           INVOKEVIRTUAL,
           unshadedPrefix + "/telemetry/TelemetryContext",
+          "getConnectionString",
+          "()Ljava/lang/String;",
+          false);
+      mv.visitVarInsn(ALOAD, 0);
+      Label label15 = new Label();
+      mv.visitLabel(label15);
+      mv.visitMethodInsn(
+          INVOKEVIRTUAL,
+          unshadedPrefix + "/telemetry/RequestTelemetry",
+          "getContext",
+          "()L" + unshadedPrefix + "/telemetry/TelemetryContext;",
+          false);
+      mv.visitMethodInsn(
+          INVOKEVIRTUAL,
+          unshadedPrefix + "/telemetry/TelemetryContext",
           "getInstrumentationKey",
           "()Ljava/lang/String;",
           false);
-      Label label15 = new Label();
-      mv.visitLabel(label15);
+      Label label16 = new Label();
+      mv.visitLabel(label16);
       mv.visitMethodInsn(
           INVOKESTATIC,
           BYTECODE_UTIL_INTERNAL_NAME,
           "trackRequest",
-          "(Ljava/lang/String;Ljava/lang/String;Ljava/net/URL;Ljava/util/Date;Ljava/lang/Long;Ljava/lang/String;ZLjava/lang/String;Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;Ljava/lang/String;)V",
+          "(Ljava/lang/String;Ljava/lang/String;Ljava/net/URL;Ljava/util/Date;Ljava/lang/Long;Ljava/lang/String;ZLjava/lang/String;Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;Ljava/lang/String;Ljava/lang/String;)V",
           false);
       mv.visitLabel(label1);
-      Label label16 = new Label();
-      mv.visitJumpInsn(GOTO, label16);
+      Label label17 = new Label();
+      mv.visitJumpInsn(GOTO, label17);
       mv.visitLabel(label2);
       mv.visitFrame(Opcodes.F_SAME1, 0, null, 1, new Object[] {"java/net/MalformedURLException"});
       mv.visitVarInsn(ASTORE, 1);
-      Label label17 = new Label();
-      mv.visitLabel(label17);
+      Label label18 = new Label();
+      mv.visitLabel(label18);
       mv.visitVarInsn(ALOAD, 1);
       mv.visitMethodInsn(
           INVOKESTATIC,
@@ -1207,12 +1297,12 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
           "logErrorOnce",
           "(Ljava/lang/Throwable;)V",
           false);
-      mv.visitLabel(label16);
+      mv.visitLabel(label17);
       mv.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
       mv.visitInsn(RETURN);
-      Label label18 = new Label();
-      mv.visitLabel(label18);
-      mv.visitMaxs(12, 2);
+      Label label19 = new Label();
+      mv.visitLabel(label19);
+      mv.visitMaxs(13, 2);
       mv.visitEnd();
     }
 
@@ -1318,23 +1408,38 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
       mv.visitMethodInsn(
           INVOKEVIRTUAL,
           unshadedPrefix + "/telemetry/TelemetryContext",
+          "getConnectionString",
+          "()Ljava/lang/String;",
+          false);
+      mv.visitVarInsn(ALOAD, 0);
+      Label label11 = new Label();
+      mv.visitLabel(label11);
+      mv.visitMethodInsn(
+          INVOKEVIRTUAL,
+          unshadedPrefix + "/telemetry/ExceptionTelemetry",
+          "getContext",
+          "()L" + unshadedPrefix + "/telemetry/TelemetryContext;",
+          false);
+      mv.visitMethodInsn(
+          INVOKEVIRTUAL,
+          unshadedPrefix + "/telemetry/TelemetryContext",
           "getInstrumentationKey",
           "()Ljava/lang/String;",
           false);
-      Label label11 = new Label();
-      mv.visitLabel(label11);
+      Label label12 = new Label();
+      mv.visitLabel(label12);
       mv.visitMethodInsn(
           INVOKESTATIC,
           BYTECODE_UTIL_INTERNAL_NAME,
           "trackException",
-          "(Ljava/util/Date;Ljava/lang/Throwable;ILjava/util/Map;Ljava/util/Map;Ljava/util/Map;Ljava/lang/String;)V",
+          "(Ljava/util/Date;Ljava/lang/Throwable;ILjava/util/Map;Ljava/util/Map;Ljava/util/Map;Ljava/lang/String;Ljava/lang/String;)V",
           false);
-      Label label12 = new Label();
-      mv.visitLabel(label12);
-      mv.visitInsn(RETURN);
       Label label13 = new Label();
       mv.visitLabel(label13);
-      mv.visitMaxs(7, 3);
+      mv.visitInsn(RETURN);
+      Label label14 = new Label();
+      mv.visitLabel(label14);
+      mv.visitMaxs(8, 3);
       mv.visitEnd();
     }
 
@@ -1456,23 +1561,38 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
       mv.visitMethodInsn(
           INVOKEVIRTUAL,
           unshadedPrefix + "/telemetry/TelemetryContext",
+          "getConnectionString",
+          "()Ljava/lang/String;",
+          false);
+      mv.visitVarInsn(ALOAD, 1);
+      Label label12 = new Label();
+      mv.visitLabel(label12);
+      mv.visitMethodInsn(
+          INVOKEVIRTUAL,
+          unshadedPrefix + "/telemetry/AvailabilityTelemetry",
+          "getContext",
+          "()L" + unshadedPrefix + "/telemetry/TelemetryContext;",
+          false);
+      mv.visitMethodInsn(
+          INVOKEVIRTUAL,
+          unshadedPrefix + "/telemetry/TelemetryContext",
           "getInstrumentationKey",
           "()Ljava/lang/String;",
           false);
-      Label label12 = new Label();
-      mv.visitLabel(label12);
+      Label label13 = new Label();
+      mv.visitLabel(label13);
       mv.visitMethodInsn(
           INVOKESTATIC,
           BYTECODE_UTIL_INTERNAL_NAME,
           "trackAvailability",
-          "(Ljava/util/Date;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Long;ZLjava/lang/String;Ljava/lang/String;Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;Ljava/lang/String;)V",
+          "(Ljava/util/Date;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Long;ZLjava/lang/String;Ljava/lang/String;Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;Ljava/lang/String;Ljava/lang/String;)V",
           false);
-      Label label13 = new Label();
-      mv.visitLabel(label13);
-      mv.visitInsn(RETURN);
       Label label14 = new Label();
       mv.visitLabel(label14);
-      mv.visitMaxs(11, 2);
+      mv.visitInsn(RETURN);
+      Label label15 = new Label();
+      mv.visitLabel(label15);
+      mv.visitMaxs(12, 2);
       mv.visitEnd();
     }
 
@@ -1611,6 +1731,7 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
           t.getProperties(),
           t.getContext().getTags(),
           t.getMetrics(),
+          t.getContext().getConnectionString(),
           t.getContext().getInstrumentationKey());
     }
 
@@ -1678,6 +1799,7 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
           t.getProperties(),
           t.getContext().getTags(),
           t.getMetrics(),
+          t.getContext().getConnectionString(),
           t.getContext().getInstrumentationKey());
     }
 
@@ -1694,6 +1816,7 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
           t.getStandardDeviation(),
           t.getProperties(),
           t.getContext().getTags(),
+          t.getContext().getConnectionString(),
           t.getContext().getInstrumentationKey());
     }
 
@@ -1712,6 +1835,7 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
           t.getProperties(),
           t.getContext().getTags(),
           t.getMetrics(),
+          t.getContext().getConnectionString(),
           t.getContext().getInstrumentationKey());
     }
 
@@ -1725,6 +1849,7 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
           t.getProperties(),
           t.getContext().getTags(),
           t.getMetrics(),
+          t.getContext().getConnectionString(),
           t.getContext().getInstrumentationKey());
     }
 
@@ -1738,6 +1863,7 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
           severityLevel,
           t.getProperties(),
           t.getContext().getTags(),
+          t.getContext().getConnectionString(),
           t.getContext().getInstrumentationKey());
     }
 
@@ -1756,6 +1882,7 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
             t.getProperties(),
             t.getContext().getTags(),
             t.getMetrics(),
+            t.getContext().getConnectionString(),
             t.getContext().getInstrumentationKey());
       } catch (java.net.MalformedURLException e) {
         com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil.logErrorOnce(e);
@@ -1773,6 +1900,7 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
           t.getProperties(),
           t.getContext().getTags(),
           t.getMetrics(),
+          t.getContext().getConnectionString(),
           t.getContext().getInstrumentationKey());
     }
 

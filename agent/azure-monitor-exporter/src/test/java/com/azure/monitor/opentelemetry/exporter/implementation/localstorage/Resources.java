@@ -19,42 +19,31 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.azure.monitor.opentelemetry.exporter.implementation.configuration;
+package com.azure.monitor.opentelemetry.exporter.implementation.localstorage;
 
-import java.net.URL;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 
-public final class ConnectionString {
+class Resources {
 
-  private final String instrumentationKey;
-  private final String ingestionEndpoint;
-  private final URL liveEndpoint;
-  private final URL profilerEndpoint;
-
-  ConnectionString(
-      String instrumentationKey, URL ingestionEndpoint, URL liveEndpoint, URL profilerEndpoint) {
-    this.instrumentationKey = instrumentationKey;
-    this.ingestionEndpoint = ingestionEndpoint.toExternalForm();
-    this.liveEndpoint = liveEndpoint;
-    this.profilerEndpoint = profilerEndpoint;
+  static String readString(String resourceName) throws IOException {
+    return new String(readBytes(resourceName), StandardCharsets.UTF_8);
   }
 
-  public static ConnectionString parse(String connectionString) {
-    return new ConnectionStringBuilder().setConnectionString(connectionString).build();
+  static byte[] readBytes(String resourceName) throws IOException {
+    try (InputStream in =
+        IntegrationTests.class.getClassLoader().getResourceAsStream(resourceName)) {
+      ByteArrayOutputStream result = new ByteArrayOutputStream();
+      byte[] buffer = new byte[1024];
+      int length;
+      while ((length = in.read(buffer)) != -1) {
+        result.write(buffer, 0, length);
+      }
+      return result.toByteArray();
+    }
   }
 
-  public String getInstrumentationKey() {
-    return instrumentationKey;
-  }
-
-  public String getIngestionEndpoint() {
-    return ingestionEndpoint;
-  }
-
-  public URL getLiveEndpoint() {
-    return liveEndpoint;
-  }
-
-  public URL getProfilerEndpoint() {
-    return profilerEndpoint;
-  }
+  private Resources() {}
 }

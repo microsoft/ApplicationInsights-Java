@@ -28,10 +28,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.ByteBuffer;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -43,62 +40,46 @@ import org.junit.jupiter.api.io.TempDir;
 
 public class LocalFileWriterTests {
 
-  private LocalFileCache localFileCache;
+  private static final String INSTRUMENTATION_KEY = "00000000-0000-0000-0000-0FEEDDADBEEF";
+  private static final String INGESTION_ENDPOINT = "http://foo.bar/";
 
-  private ByteBuffer buffer;
+  private LocalFileCache localFileCache;
 
   @TempDir File tempFolder;
 
   @BeforeEach
   public void setup() {
     localFileCache = new LocalFileCache(tempFolder);
-
-    Path path =
-        new File(getClass().getClassLoader().getResource("write-transmission.txt").getPath())
-            .toPath();
-    try (InputStream in = Files.newInputStream(path)) {
-      ByteArrayOutputStream baos = new ByteArrayOutputStream();
-      byte[] data = new byte[1024];
-      int read;
-      while ((read = in.read(data, 0, data.length)) != -1) {
-        baos.write(data, 0, read);
-      }
-      buffer = ByteBuffer.wrap(baos.toByteArray());
-    } catch (IOException ignored) {
-    }
   }
 
   @Test
   public void testWriteByteBuffersList() throws IOException {
-    byte[] bytes = new byte[buffer.remaining()];
-    buffer.get(bytes);
-    String bytesToString = new String(bytes, UTF_8);
+    String content = Resources.readString("write-transmission.txt");
 
     List<ByteBuffer> byteBuffers = new ArrayList<>();
-    String[] telemetries = bytesToString.split("\n");
-    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    String[] telemetries = content.split("\n");
     for (int i = 0; i < telemetries.length; i++) {
+      ByteArrayOutputStream baos = new ByteArrayOutputStream();
       baos.write(telemetries[i].getBytes(UTF_8));
       if (i < telemetries.length - 1) {
         baos.write('\r');
       }
-
       byteBuffers.add(ByteBuffer.wrap(baos.toByteArray()));
-      baos.reset();
     }
-    baos.close();
 
     assertThat(byteBuffers.size()).isEqualTo(10);
 
     LocalFileWriter writer = new LocalFileWriter(50, localFileCache, tempFolder, null, false);
-    writer.writeToDisk("00000000-0000-0000-0000-0FEEDDADBEEF", byteBuffers);
+    writer.writeToDisk(INSTRUMENTATION_KEY, INGESTION_ENDPOINT, byteBuffers);
     assertThat(localFileCache.getPersistedFilesCache().size()).isEqualTo(1);
   }
 
   @Test
-  public void testWriteRawByteArray() {
+  public void testWriteRawByteArray() throws IOException {
     LocalFileWriter writer = new LocalFileWriter(50, localFileCache, tempFolder, null, false);
-    writer.writeToDisk("00000000-0000-0000-0000-0FEEDDADBEEF", singletonList(buffer));
+    byte[] content = Resources.readBytes("write-transmission.txt");
+    writer.writeToDisk(
+        INSTRUMENTATION_KEY, INGESTION_ENDPOINT, singletonList(ByteBuffer.wrap(content)));
     assertThat(localFileCache.getPersistedFilesCache().size()).isEqualTo(1);
   }
 
@@ -115,7 +96,8 @@ public class LocalFileWriterTests {
               LocalFileWriter writer =
                   new LocalFileWriter(50, localFileCache, tempFolder, null, false);
               writer.writeToDisk(
-                  "00000000-0000-0000-0000-0FEEDDADBEEF",
+                  INSTRUMENTATION_KEY,
+                  INGESTION_ENDPOINT,
                   singletonList(ByteBuffer.wrap(telemetry.getBytes(UTF_8))));
             }
           });

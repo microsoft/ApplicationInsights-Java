@@ -22,10 +22,10 @@
 package com.azure.monitor.opentelemetry.exporter.implementation.localstorage;
 
 import static com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMsgId.DISK_PERSISTENCE_WRITER_ERROR;
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.logging.OperationLogger;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -68,7 +68,7 @@ final class LocalFileWriter {
       value = "SECPTI", // Potential Path Traversal
       justification =
           "The constructed file path cannot be controlled by an end user of the instrumented application")
-  void writeToDisk(String instrumentationKey, List<ByteBuffer> buffers) {
+  void writeToDisk(String instrumentationKey, String ingestionEndpoint, List<ByteBuffer> buffers) {
     long size = getTotalSizeOfPersistedFiles(telemetryFolder);
     if (size >= diskPersistenceMaxSizeBytes) {
       operationLogger.recordFailure(
@@ -93,7 +93,7 @@ final class LocalFileWriter {
     }
 
     try {
-      write(tempFile, buffers, instrumentationKey);
+      write(tempFile, instrumentationKey, ingestionEndpoint, buffers);
     } catch (IOException e) {
       operationLogger.recordFailure(
           "Error writing file: " + tempFile.getAbsolutePath(), e, DISK_PERSISTENCE_WRITER_ERROR);
@@ -118,12 +118,22 @@ final class LocalFileWriter {
     operationLogger.recordSuccess();
   }
 
-  private static void write(File file, List<ByteBuffer> buffers, String instrumentationKey)
+  private static void write(
+      File file, String instrumentationKey, String ingestionEndpoint, List<ByteBuffer> buffers)
       throws IOException {
-    try (FileChannel channel = new FileOutputStream(file).getChannel()) {
-      channel.write(ByteBuffer.wrap(instrumentationKey.getBytes(UTF_8)));
+
+    try (FileOutputStream fileOut = new FileOutputStream(file);
+        DataOutputStream dataOut = new DataOutputStream(fileOut)) {
+      dataOut.writeInt(1); // version
+      dataOut.writeUTF(instrumentationKey);
+      dataOut.writeUTF(ingestionEndpoint);
+
+      int numBytes = buffers.stream().mapToInt(ByteBuffer::remaining).sum();
+      dataOut.writeInt(numBytes);
+
+      FileChannel fileChannel = fileOut.getChannel();
       for (ByteBuffer byteBuffer : buffers) {
-        channel.write(byteBuffer);
+        fileChannel.write(byteBuffer);
       }
     }
   }

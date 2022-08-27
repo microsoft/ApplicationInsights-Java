@@ -19,42 +19,46 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.azure.monitor.opentelemetry.exporter.implementation.configuration;
+package com.microsoft.applicationinsights.smoketest;
 
-import java.net.URL;
+import org.testcontainers.containers.GenericContainer;
 
-public final class ConnectionString {
+public class SmokeTestExtensionBuilder {
 
-  private final String instrumentationKey;
-  private final String ingestionEndpoint;
-  private final URL liveEndpoint;
-  private final URL profilerEndpoint;
+  private GenericContainer<?> dependencyContainer;
+  private String dependencyContainerEnvVarName;
+  private boolean usesGlobalIngestionEndpoint;
+  private boolean skipHealthCheck;
+  private boolean readOnly;
 
-  ConnectionString(
-      String instrumentationKey, URL ingestionEndpoint, URL liveEndpoint, URL profilerEndpoint) {
-    this.instrumentationKey = instrumentationKey;
-    this.ingestionEndpoint = ingestionEndpoint.toExternalForm();
-    this.liveEndpoint = liveEndpoint;
-    this.profilerEndpoint = profilerEndpoint;
+  public SmokeTestExtensionBuilder setDependencyContainer(
+      String envVarName, GenericContainer<?> container) {
+    this.dependencyContainer = container;
+    this.dependencyContainerEnvVarName = envVarName;
+    return this;
   }
 
-  public static ConnectionString parse(String connectionString) {
-    return new ConnectionStringBuilder().setConnectionString(connectionString).build();
+  public SmokeTestExtensionBuilder usesGlobalIngestionEndpoint() {
+    this.usesGlobalIngestionEndpoint = true;
+    return this;
   }
 
-  public String getInstrumentationKey() {
-    return instrumentationKey;
+  public SmokeTestExtensionBuilder setSkipHealthCheck(boolean skipHealthCheck) {
+    this.skipHealthCheck = skipHealthCheck;
+    return this;
   }
 
-  public String getIngestionEndpoint() {
-    return ingestionEndpoint;
+  public SmokeTestExtensionBuilder setReadOnly(boolean readOnly) {
+    this.readOnly = readOnly;
+    return this;
   }
 
-  public URL getLiveEndpoint() {
-    return liveEndpoint;
-  }
-
-  public URL getProfilerEndpoint() {
-    return profilerEndpoint;
+  public SmokeTestExtension build() {
+    return new SmokeTestExtension(
+        dependencyContainer,
+        dependencyContainerEnvVarName,
+        usesGlobalIngestionEndpoint,
+        skipHealthCheck,
+        readOnly);
   }
 }

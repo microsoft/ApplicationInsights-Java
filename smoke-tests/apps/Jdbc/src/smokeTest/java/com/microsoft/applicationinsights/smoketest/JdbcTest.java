@@ -33,6 +33,7 @@ import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WI
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.data.MapEntry.entry;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -300,8 +301,8 @@ abstract class JdbcTest {
         telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /Jdbc/*");
   }
 
-  // FIXME: need custom container with oracle db
-  // @Test
+  @Disabled("need custom container with oracle db")
+  @Test
   @TargetUri("/oraclePreparedStatement")
   void oraclePreparedStatement() throws Exception {
     Telemetry telemetry = testing.getTelemetry(1);
@@ -321,8 +322,8 @@ abstract class JdbcTest {
         telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /Jdbc/*");
   }
 
-  // FIXME: need custom container with oracle db
-  // @Test
+  @Disabled("need custom container with oracle db")
+  @Test
   @TargetUri("/oracleStatement")
   void oracleStatement() throws Exception {
     Telemetry telemetry = testing.getTelemetry(1);

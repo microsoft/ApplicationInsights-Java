@@ -25,6 +25,7 @@ import com.azure.core.http.policy.HttpPipelinePolicy;
 import com.azure.monitor.opentelemetry.exporter.AzureMonitorExporterBuilder;
 import com.azure.monitor.opentelemetry.exporter.AzureMonitorMetricExporter;
 import com.azure.monitor.opentelemetry.exporter.AzureMonitorTraceExporter;
+import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricDataPoint;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricsData;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MonitorBase;
@@ -46,11 +47,11 @@ import java.util.Map;
 public final class TestUtils {
 
   public static TelemetryItem createMetricTelemetry(
-      String name, int value, String instrumentationKey) {
+      String name, int value, ConnectionString connectionString) {
     TelemetryItem telemetry = new TelemetryItem();
     telemetry.setVersion(1);
     telemetry.setName("Metric");
-    telemetry.setInstrumentationKey(instrumentationKey);
+    telemetry.setConnectionString(connectionString);
     Map<String, String> tags = new HashMap<>();
     tags.put("ai.internal.sdkVersion", "test_version");
     tags.put("ai.internal.nodeName", "test_role_name");

@@ -31,7 +31,6 @@ import com.microsoft.applicationinsights.smoketest.schemav2.RemoteDependencyData
 import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
 import com.microsoft.applicationinsights.smoketest.schemav2.SeverityLevel;
 import java.util.List;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -39,20 +38,17 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 @Environment(TOMCAT_8_JAVA_8)
 class InstrumentationKeyOverridesTest {
 
-  @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.create();
+  @RegisterExtension
+  static final SmokeTestExtension testing =
+      // standalone instrumentation keys are sent to the global ingestion endpoint
+      SmokeTestExtension.builder().usesGlobalIngestionEndpoint().build();
 
-  // unfortunately, these tests don't pass, because instrumentation keys without ingestion endpoints
-  // (correctly) send to the default ingestion endpoint (https://dc.services.visualstudio.com/)
-  @Disabled
   @Test
   @TargetUri("/app2")
   void testApp2() throws Exception {
     testApp("12345678-0000-0000-0000-0FEEDDADBEEF");
   }
 
-  // unfortunately, these tests don't pass, because instrumentation keys without ingestion endpoints
-  // (correctly) send to the default ingestion endpoint (https://dc.services.visualstudio.com/)
-  @Disabled
   @Test
   @TargetUri("/app3")
   void testApp3() throws Exception {
@@ -100,8 +96,8 @@ class InstrumentationKeyOverridesTest {
     assertThat(md.getProperties()).hasSize(3);
 
     SmokeTestExtension.assertParentChild(
-        rd, rdEnvelope, rddEnvelope, "GET /ConnectionStringOverrides/*");
+        rd, rdEnvelope, rddEnvelope, "GET /InstrumentationKeyOverrides/*");
     SmokeTestExtension.assertParentChild(
-        rd, rdEnvelope, mdEnvelope, "GET /ConnectionStringOverrides/*");
+        rd, rdEnvelope, mdEnvelope, "GET /InstrumentationKeyOverrides/*");
   }
 }

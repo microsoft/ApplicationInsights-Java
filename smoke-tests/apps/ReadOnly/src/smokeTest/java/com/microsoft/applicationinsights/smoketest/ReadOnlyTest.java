@@ -44,7 +44,8 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 abstract class ReadOnlyTest {
 
   @RegisterExtension
-  static final SmokeTestExtension testing = SmokeTestExtension.create(true, true);
+  static final SmokeTestExtension testing =
+      SmokeTestExtension.builder().setReadOnly(true).setSkipHealthCheck(true).build();
 
   @Test
   void test() throws Exception {

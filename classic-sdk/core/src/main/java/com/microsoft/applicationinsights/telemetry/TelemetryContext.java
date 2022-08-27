@@ -44,6 +44,7 @@ public final class TelemetryContext {
   private final ContextTagsMap tags;
 
   private String instrumentationKey;
+  private String connectionString;
   private ComponentContext component;
   private DeviceContext device;
   private SessionContext session;
@@ -136,9 +137,16 @@ public final class TelemetryContext {
    * com.microsoft.applicationinsights.telemetry.Telemetry}
    *
    * @return The instrumentation key
+   * @deprecated Use {@link #setConnectionString(String)} and {@link #getConnectionString()}
+   *     instead.
    */
+  @Deprecated
   public String getInstrumentationKey() {
     return instrumentationKey;
+  }
+
+  public String getConnectionString() {
+    return connectionString;
   }
 
   /**
@@ -151,9 +159,15 @@ public final class TelemetryContext {
    * com.microsoft.applicationinsights.telemetry.Telemetry}
    *
    * @param instrumentationKey The instrumentation key
+   * @deprecated Use {@link #setConnectionString(String)} instead.
    */
+  @Deprecated
   public void setInstrumentationKey(String instrumentationKey) {
     this.instrumentationKey = instrumentationKey;
+  }
+
+  public void setConnectionString(String connectionString) {
+    this.connectionString = connectionString;
   }
 
   /** Gets a dictionary of application-defined property values. */

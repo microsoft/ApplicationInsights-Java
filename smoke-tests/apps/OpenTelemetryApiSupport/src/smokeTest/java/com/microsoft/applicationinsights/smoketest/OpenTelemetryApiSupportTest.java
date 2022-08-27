@@ -103,34 +103,6 @@ abstract class OpenTelemetryApiSupportTest {
   }
 
   @Test
-  @TargetUri("/test-overriding-ikey")
-  void testOverridingIkey() throws Exception {
-    Telemetry telemetry = testing.getTelemetry(0);
-
-    assertThat(telemetry.rd.getName())
-        .isEqualTo("GET /OpenTelemetryApiSupport/test-overriding-ikey");
-    assertThat(telemetry.rd.getUrl())
-        .matches("http://localhost:[0-9]+/OpenTelemetryApiSupport/test-overriding-ikey-etc");
-    assertThat(telemetry.rd.getResponseCode()).isEqualTo("200");
-    assertThat(telemetry.rd.getSuccess()).isTrue();
-    assertThat(telemetry.rd.getSource()).isNull();
-    assertThat(telemetry.rd.getProperties())
-        .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
-    assertThat(telemetry.rd.getMeasurements()).isEmpty();
-
-    // checking that instrumentation key, cloud role name, cloud role instance, and sdk version are
-    // from the agent
-    assertThat(telemetry.rdEnvelope.getIKey()).isEqualTo("12341234-1234-1234-1234-123412341234");
-    assertThat(telemetry.rdEnvelope.getTags()).containsEntry("ai.cloud.role", "role-name-here");
-    assertThat(telemetry.rdEnvelope.getTags().get("ai.cloud.roleInstance"))
-        .isEqualTo("role-instance-here");
-    assertThat(telemetry.rdEnvelope.getTags())
-        .containsEntry("ai.application.ver", "application-version-here");
-    assertThat(telemetry.rdEnvelope.getTags())
-        .hasEntrySatisfying("ai.internal.sdkVersion", v -> assertThat(v).startsWith("java:3."));
-  }
-
-  @Test
   @TargetUri("/test-extension-annotations")
   void testExtensionAnnotations() throws Exception {
     testAnnotations("test-extension-annotations", "underExtensionAnnotation");

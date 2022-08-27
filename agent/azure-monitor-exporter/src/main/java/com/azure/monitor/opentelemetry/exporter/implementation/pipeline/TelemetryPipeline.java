@@ -61,14 +61,14 @@ public class TelemetryPipeline {
   public CompletableResultCode send(
       List<ByteBuffer> telemetry,
       String instrumentationKey,
-      URL ingestionEndpoint,
+      String ingestionEndpoint,
       TelemetryPipelineListener listener) {
 
     URL url =
         redirectCache.computeIfAbsent(
             instrumentationKey, ikey -> getFullIngestionUrl(ingestionEndpoint));
     TelemetryPipelineRequest request =
-        new TelemetryPipelineRequest(url, instrumentationKey, telemetry);
+        new TelemetryPipelineRequest(url, instrumentationKey, ingestionEndpoint, telemetry);
 
     try {
       CompletableResultCode result = new CompletableResultCode();
@@ -80,11 +80,11 @@ public class TelemetryPipeline {
     }
   }
 
-  private static URL getFullIngestionUrl(URL endpoint) {
+  private static URL getFullIngestionUrl(String ingestionEndpoint) {
     try {
-      return new URL(endpoint, "v2.1/track");
+      return new URL(new URL(ingestionEndpoint), "v2.1/track");
     } catch (MalformedURLException e) {
-      throw new IllegalArgumentException("Invalid endpoint: " + endpoint, e);
+      throw new IllegalArgumentException("Invalid endpoint: " + ingestionEndpoint, e);
     }
   }
 

@@ -66,13 +66,11 @@ public abstract class AbstractTelemetryBuilder {
   }
 
   public void setConnectionString(ConnectionString connectionString) {
-    telemetryItem.setInstrumentationKey(connectionString.getInstrumentationKey());
-    telemetryItem.setIngestionEndpoint(connectionString.getIngestionEndpoint());
+    telemetryItem.setConnectionString(connectionString);
   }
 
   public void setConnectionString(StatsbeatConnectionString connectionString) {
-    telemetryItem.setInstrumentationKey(connectionString.getInstrumentationKey());
-    telemetryItem.setIngestionEndpoint(connectionString.getEndpoint());
+    telemetryItem.setConnectionString(connectionString);
   }
 
   public void addTag(String key, String value) {

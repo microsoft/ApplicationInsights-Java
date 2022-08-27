@@ -33,7 +33,6 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.io.IOException;
 import java.io.StringWriter;
-import java.net.URL;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -91,19 +90,24 @@ public class TelemetryItemExporter {
   }
 
   public CompletableResultCode send(List<TelemetryItem> telemetryItems) {
-    Map<String, List<TelemetryItem>> instrumentationKeyMap = new HashMap<>();
+    // second level (ingestion endpoint) is just to protect against scenario where some telemetry
+    // is stamped with same ikey but bad ingestion endpoint, so only the bad telemetry will fail
+    Map<String, Map<String, List<TelemetryItem>>> groupings = new HashMap<>();
     for (TelemetryItem telemetryItem : telemetryItems) {
-      String instrumentationKey = telemetryItem.getInstrumentationKey();
-      instrumentationKeyMap
-          .computeIfAbsent(instrumentationKey, k -> new ArrayList<>())
+      groupings
+          .computeIfAbsent(telemetryItem.getInstrumentationKey(), k -> new HashMap<>())
+          .computeIfAbsent(telemetryItem.getIngestionEndpoint(), k -> new ArrayList<>())
           .add(telemetryItem);
     }
     List<CompletableResultCode> resultCodeList = new ArrayList<>();
-    for (Map.Entry<String, List<TelemetryItem>> entry : instrumentationKeyMap.entrySet()) {
-      resultCodeList.add(
-          internalSendByInstrumentationKey(
-              // FIXME INGESTION ENDPOINT
-              entry.getValue(), entry.getKey(), telemetryItems.get(0).getIngestionEndpoint()));
+    for (Map.Entry<String, Map<String, List<TelemetryItem>>> outerEntry : groupings.entrySet()) {
+      for (Map.Entry<String, List<TelemetryItem>> innerEntry : outerEntry.getValue().entrySet()) {
+        String instrumentationKey = outerEntry.getKey();
+        String ingestionEndpoint = innerEntry.getKey();
+        resultCodeList.add(
+            internalSendByInstrumentationKey(
+                innerEntry.getValue(), instrumentationKey, ingestionEndpoint));
+      }
     }
     return maybeAddToActiveExportResults(resultCodeList);
   }
@@ -137,7 +141,7 @@ public class TelemetryItemExporter {
   }
 
   CompletableResultCode internalSendByInstrumentationKey(
-      List<TelemetryItem> telemetryItems, String instrumentationKey, URL ingestionEndpoint) {
+      List<TelemetryItem> telemetryItems, String instrumentationKey, String ingestionEndpoint) {
     List<ByteBuffer> byteBuffers;
     try {
       byteBuffers = encode(telemetryItems);

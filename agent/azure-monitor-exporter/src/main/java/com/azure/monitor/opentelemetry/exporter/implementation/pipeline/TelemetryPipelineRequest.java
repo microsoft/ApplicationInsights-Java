@@ -32,12 +32,15 @@ public class TelemetryPipelineRequest {
 
   private volatile URL url;
   private final String instrumentationKey;
+  private final String ingestionEndpoint;
   private final List<ByteBuffer> telemetry;
   private final int contentLength;
 
-  TelemetryPipelineRequest(URL url, String instrumentationKey, List<ByteBuffer> telemetry) {
+  TelemetryPipelineRequest(
+      URL url, String instrumentationKey, String ingestionEndpoint, List<ByteBuffer> telemetry) {
     this.url = url;
     this.instrumentationKey = instrumentationKey;
+    this.ingestionEndpoint = ingestionEndpoint;
     this.telemetry = telemetry;
     contentLength = telemetry.stream().mapToInt(ByteBuffer::limit).sum();
   }
@@ -50,12 +53,16 @@ public class TelemetryPipelineRequest {
     this.url = url;
   }
 
+  public List<ByteBuffer> getTelemetry() {
+    return telemetry;
+  }
+
   public String getInstrumentationKey() {
     return instrumentationKey;
   }
 
-  public List<ByteBuffer> getTelemetry() {
-    return telemetry;
+  public String getIngestionEndpoint() {
+    return ingestionEndpoint;
   }
 
   HttpRequest createHttpRequest() {

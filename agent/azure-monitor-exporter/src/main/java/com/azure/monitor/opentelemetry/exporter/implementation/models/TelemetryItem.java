@@ -22,9 +22,10 @@
 package com.azure.monitor.opentelemetry.exporter.implementation.models;
 
 import com.azure.core.annotation.Fluent;
+import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
+import com.azure.monitor.opentelemetry.exporter.implementation.configuration.StatsbeatConnectionString;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.net.URL;
 import java.time.OffsetDateTime;
 import java.util.Map;
 
@@ -78,7 +79,7 @@ public final class TelemetryItem {
   @JsonProperty(value = "iKey")
   private String instrumentationKey;
 
-  @JsonIgnore private URL ingestionEndpoint;
+  @JsonIgnore private String ingestionEndpoint;
 
   /*
    * Key/value collection of context properties. See ContextTagKeys for
@@ -219,24 +220,23 @@ public final class TelemetryItem {
     return this.instrumentationKey;
   }
 
-  /**
-   * Set the instrumentationKey property: The instrumentation key of the Application Insights
-   * resource.
-   *
-   * @param instrumentationKey the instrumentationKey value to set.
-   * @return the TelemetryItem object itself.
-   */
-  public TelemetryItem setInstrumentationKey(String instrumentationKey) {
-    this.instrumentationKey = instrumentationKey;
-    return this;
-  }
-
-  public URL getIngestionEndpoint() {
+  @JsonIgnore
+  public String getIngestionEndpoint() {
     return ingestionEndpoint;
   }
 
-  public void setIngestionEndpoint(URL ingestionEndpoint) {
-    this.ingestionEndpoint = ingestionEndpoint;
+  @JsonIgnore
+  public TelemetryItem setConnectionString(ConnectionString connectionString) {
+    instrumentationKey = connectionString.getInstrumentationKey();
+    ingestionEndpoint = connectionString.getIngestionEndpoint();
+    return this;
+  }
+
+  @JsonIgnore
+  public TelemetryItem setConnectionString(StatsbeatConnectionString connectionString) {
+    instrumentationKey = connectionString.getInstrumentationKey();
+    ingestionEndpoint = connectionString.getIngestionEndpoint();
+    return this;
   }
 
   /**

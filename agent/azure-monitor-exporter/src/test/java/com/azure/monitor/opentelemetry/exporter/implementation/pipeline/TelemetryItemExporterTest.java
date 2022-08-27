@@ -30,6 +30,7 @@ import com.azure.core.http.HttpRequest;
 import com.azure.core.http.HttpResponse;
 import com.azure.core.util.FluxUtil;
 import com.azure.monitor.opentelemetry.exporter.implementation.MockHttpResponse;
+import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
 import com.azure.monitor.opentelemetry.exporter.implementation.localstorage.LocalStorageTelemetryPipelineListener;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.TestUtils;
@@ -38,8 +39,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -56,17 +55,23 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 public class TelemetryItemExporterTest {
-  RecordingHttpClient recordingHttpClient;
+
+  private static final ConnectionString CONNECTION_STRING =
+      ConnectionString.parse(
+          "InstrumentationKey=00000000-0000-0000-0000-0FEEDDADBEEF;IngestionEndpoint=http://foo.bar");
+  private static final ConnectionString REDIRECT_CONNECTION_STRING =
+      ConnectionString.parse(
+          "InstrumentationKey=11111111-0000-0000-0000-0FEEDDADBEEF;IngestionEndpoint=http://foo.bar");
+
   private static final String INSTRUMENTATION_KEY = "00000000-0000-0000-0000-0FEEDDADBEEF";
-  private static final String REDIRECT_INSTRUMENTATION_KEY = "00000000-0000-0000-0000-0FEEDDADBEEE";
-  private static final String END_POINT_URL = "http://foo.bar";
   private static final String REDIRECT_URL = "http://foo.bar.redirect";
+
+  RecordingHttpClient recordingHttpClient;
 
   @TempDir File tempFolder;
 
-  private TelemetryItemExporter getExporter() throws MalformedURLException {
+  private TelemetryItemExporter getExporter() {
     HttpPipelineBuilder pipelineBuilder = new HttpPipelineBuilder().httpClient(recordingHttpClient);
-    URL url = new URL(END_POINT_URL);
     TelemetryPipeline telemetryPipeline = new TelemetryPipeline(pipelineBuilder.build());
 
     return new TelemetryItemExporter(
@@ -120,10 +125,10 @@ public class TelemetryItemExporterTest {
   }
 
   @Test
-  public void singleIkeyTest() throws MalformedURLException {
+  public void singleIkeyTest() {
     // given
     List<TelemetryItem> telemetryItems = new ArrayList<>();
-    telemetryItems.add(TestUtils.createMetricTelemetry("metric" + 1, 1, INSTRUMENTATION_KEY));
+    telemetryItems.add(TestUtils.createMetricTelemetry("metric" + 1, 1, CONNECTION_STRING));
     TelemetryItemExporter exporter = getExporter();
 
     // when
@@ -135,12 +140,12 @@ public class TelemetryItemExporterTest {
   }
 
   @Test
-  public void dualIkeyTest() throws MalformedURLException {
+  public void dualIkeyTest() {
     // given
     List<TelemetryItem> telemetryItems = new ArrayList<>();
-    telemetryItems.add(TestUtils.createMetricTelemetry("metric" + 1, 1, INSTRUMENTATION_KEY));
+    telemetryItems.add(TestUtils.createMetricTelemetry("metric" + 1, 1, CONNECTION_STRING));
     telemetryItems.add(
-        TestUtils.createMetricTelemetry("metric" + 2, 2, REDIRECT_INSTRUMENTATION_KEY));
+        TestUtils.createMetricTelemetry("metric" + 2, 2, REDIRECT_CONNECTION_STRING));
     TelemetryItemExporter exporter = getExporter();
 
     // when
@@ -152,11 +157,11 @@ public class TelemetryItemExporterTest {
   }
 
   @Test
-  public void singleIkeyBatchTest() throws MalformedURLException {
+  public void singleIkeyBatchTest() {
     // given
     List<TelemetryItem> telemetryItems = new ArrayList<>();
-    telemetryItems.add(TestUtils.createMetricTelemetry("metric" + 1, 1, INSTRUMENTATION_KEY));
-    telemetryItems.add(TestUtils.createMetricTelemetry("metric" + 2, 2, INSTRUMENTATION_KEY));
+    telemetryItems.add(TestUtils.createMetricTelemetry("metric" + 1, 1, CONNECTION_STRING));
+    telemetryItems.add(TestUtils.createMetricTelemetry("metric" + 2, 2, CONNECTION_STRING));
     TelemetryItemExporter exporter = getExporter();
 
     // when
@@ -168,15 +173,15 @@ public class TelemetryItemExporterTest {
   }
 
   @Test
-  public void dualIkeyBatchTest() throws MalformedURLException {
+  public void dualIkeyBatchTest() {
     // given
     List<TelemetryItem> telemetryItems = new ArrayList<>();
-    telemetryItems.add(TestUtils.createMetricTelemetry("metric" + 1, 1, INSTRUMENTATION_KEY));
-    telemetryItems.add(TestUtils.createMetricTelemetry("metric" + 2, 2, INSTRUMENTATION_KEY));
+    telemetryItems.add(TestUtils.createMetricTelemetry("metric" + 1, 1, CONNECTION_STRING));
+    telemetryItems.add(TestUtils.createMetricTelemetry("metric" + 2, 2, CONNECTION_STRING));
     telemetryItems.add(
-        TestUtils.createMetricTelemetry("metric" + 3, 3, REDIRECT_INSTRUMENTATION_KEY));
+        TestUtils.createMetricTelemetry("metric" + 3, 3, REDIRECT_CONNECTION_STRING));
     telemetryItems.add(
-        TestUtils.createMetricTelemetry("metric" + 4, 4, REDIRECT_INSTRUMENTATION_KEY));
+        TestUtils.createMetricTelemetry("metric" + 4, 4, REDIRECT_CONNECTION_STRING));
     TelemetryItemExporter exporter = getExporter();
 
     // when
@@ -188,15 +193,15 @@ public class TelemetryItemExporterTest {
   }
 
   @Test
-  public void dualIkeyBatchWithDelayTest() throws MalformedURLException {
+  public void dualIkeyBatchWithDelayTest() {
     // given
     List<TelemetryItem> telemetryItems = new ArrayList<>();
-    telemetryItems.add(TestUtils.createMetricTelemetry("metric" + 1, 1, INSTRUMENTATION_KEY));
-    telemetryItems.add(TestUtils.createMetricTelemetry("metric" + 2, 2, INSTRUMENTATION_KEY));
+    telemetryItems.add(TestUtils.createMetricTelemetry("metric" + 1, 1, CONNECTION_STRING));
+    telemetryItems.add(TestUtils.createMetricTelemetry("metric" + 2, 2, CONNECTION_STRING));
     telemetryItems.add(
-        TestUtils.createMetricTelemetry("metric" + 3, 3, REDIRECT_INSTRUMENTATION_KEY));
+        TestUtils.createMetricTelemetry("metric" + 3, 3, REDIRECT_CONNECTION_STRING));
     telemetryItems.add(
-        TestUtils.createMetricTelemetry("metric" + 4, 4, REDIRECT_INSTRUMENTATION_KEY));
+        TestUtils.createMetricTelemetry("metric" + 4, 4, REDIRECT_CONNECTION_STRING));
     TelemetryItemExporter exporter = getExporter();
 
     // when
@@ -215,15 +220,15 @@ public class TelemetryItemExporterTest {
   }
 
   @Test
-  public void dualIkeyBatchWithDelayAndRedirectFlagFalseTest() throws MalformedURLException {
+  public void dualIkeyBatchWithDelayAndRedirectFlagFalseTest() {
     // given
     List<TelemetryItem> telemetryItems = new ArrayList<>();
-    telemetryItems.add(TestUtils.createMetricTelemetry("metric" + 1, 1, INSTRUMENTATION_KEY));
-    telemetryItems.add(TestUtils.createMetricTelemetry("metric" + 2, 2, INSTRUMENTATION_KEY));
+    telemetryItems.add(TestUtils.createMetricTelemetry("metric" + 1, 1, CONNECTION_STRING));
+    telemetryItems.add(TestUtils.createMetricTelemetry("metric" + 2, 2, CONNECTION_STRING));
     telemetryItems.add(
-        TestUtils.createMetricTelemetry("metric" + 3, 3, REDIRECT_INSTRUMENTATION_KEY));
+        TestUtils.createMetricTelemetry("metric" + 3, 3, REDIRECT_CONNECTION_STRING));
     telemetryItems.add(
-        TestUtils.createMetricTelemetry("metric" + 4, 4, REDIRECT_INSTRUMENTATION_KEY));
+        TestUtils.createMetricTelemetry("metric" + 4, 4, REDIRECT_CONNECTION_STRING));
     TelemetryItemExporter exporter = getExporter();
 
     // when

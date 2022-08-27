@@ -88,7 +88,8 @@ public class StatsbeatConnectionStringTest {
     StatsbeatConnectionString statsbeatConnectionString =
         StatsbeatConnectionString.create(connectionString, ikeyConfig, endpointConfig);
     assertThat(statsbeatConnectionString.getInstrumentationKey()).isEqualTo(ikeyConfig);
-    assertThat(statsbeatConnectionString.getEndpoint().toString()).isEqualTo(endpointConfig + "/");
+    assertThat(statsbeatConnectionString.getIngestionEndpoint().toString())
+        .isEqualTo(endpointConfig + "/");
 
     // case 2
     // customer ikey is in non-eu
@@ -102,7 +103,8 @@ public class StatsbeatConnectionStringTest {
     statsbeatConnectionString =
         StatsbeatConnectionString.create(connectionString, ikeyConfig, endpointConfig);
     assertThat(statsbeatConnectionString.getInstrumentationKey()).isEqualTo(ikeyConfig);
-    assertThat(statsbeatConnectionString.getEndpoint().toString()).isEqualTo(endpointConfig + "/");
+    assertThat(statsbeatConnectionString.getIngestionEndpoint().toString())
+        .isEqualTo(endpointConfig + "/");
 
     // case 3
     // customer ikey is in non-eu
@@ -114,7 +116,7 @@ public class StatsbeatConnectionStringTest {
     statsbeatConnectionString = StatsbeatConnectionString.create(connectionString, null, null);
     assertThat(statsbeatConnectionString.getInstrumentationKey())
         .isEqualTo(StatsbeatConnectionString.NON_EU_REGION_STATSBEAT_IKEY);
-    assertThat(statsbeatConnectionString.getEndpoint().toString())
+    assertThat(statsbeatConnectionString.getIngestionEndpoint().toString())
         .isEqualTo(StatsbeatConnectionString.NON_EU_REGION_STATSBEAT_ENDPOINT);
 
     // case 4
@@ -129,7 +131,8 @@ public class StatsbeatConnectionStringTest {
     statsbeatConnectionString =
         StatsbeatConnectionString.create(connectionString, ikeyConfig, endpointConfig);
     assertThat(statsbeatConnectionString.getInstrumentationKey()).isEqualTo(ikeyConfig);
-    assertThat(statsbeatConnectionString.getEndpoint().toString()).isEqualTo(endpointConfig + "/");
+    assertThat(statsbeatConnectionString.getIngestionEndpoint().toString())
+        .isEqualTo(endpointConfig + "/");
 
     // case 5
     // customer is in eu
@@ -143,7 +146,8 @@ public class StatsbeatConnectionStringTest {
     statsbeatConnectionString =
         StatsbeatConnectionString.create(connectionString, ikeyConfig, endpointConfig);
     assertThat(statsbeatConnectionString.getInstrumentationKey()).isEqualTo(ikeyConfig);
-    assertThat(statsbeatConnectionString.getEndpoint().toString()).isEqualTo(endpointConfig + "/");
+    assertThat(statsbeatConnectionString.getIngestionEndpoint().toString())
+        .isEqualTo(endpointConfig + "/");
 
     // case 6
     // customer is in eu
@@ -155,7 +159,7 @@ public class StatsbeatConnectionStringTest {
     statsbeatConnectionString = StatsbeatConnectionString.create(connectionString, null, null);
     assertThat(statsbeatConnectionString.getInstrumentationKey())
         .isEqualTo(StatsbeatConnectionString.EU_REGION_STATSBEAT_IKEY);
-    assertThat(statsbeatConnectionString.getEndpoint().toString())
+    assertThat(statsbeatConnectionString.getIngestionEndpoint().toString())
         .isEqualTo(StatsbeatConnectionString.EU_REGION_STATSBEAT_ENDPOINT);
   }
 

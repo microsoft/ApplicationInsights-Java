@@ -80,6 +80,8 @@ public class SmokeTestExtension
 
   private static final int TELEMETRY_RECEIVE_TIMEOUT_SECONDS = 60;
 
+  private static final String FAKE_INGESTION_ENDPOINT = "http://host.testcontainers.internal:6060/";
+
   private static final File appFile = new File(System.getProperty("ai.smoke-test.test-app-file"));
   private static final File javaagentFile =
       new File(System.getProperty("ai.smoke-test.javaagent-file"));
@@ -106,29 +108,27 @@ public class SmokeTestExtension
   private final String dependencyContainerEnvVarName;
   private final boolean skipHealthCheck;
   private final boolean readOnly;
+  private final boolean usesGlobalIngestionEndpoint;
 
   public static SmokeTestExtension create() {
-    return new SmokeTestExtension(false, false, null, null);
+    return new SmokeTestExtension(null, null, false, false, false);
   }
 
-  public static SmokeTestExtension create(boolean skipHealthCheck, boolean readOnly) {
-    return new SmokeTestExtension(skipHealthCheck, readOnly, null, null);
+  public static SmokeTestExtensionBuilder builder() {
+    return new SmokeTestExtensionBuilder();
   }
 
-  public static SmokeTestExtension create(
-      GenericContainer<?> dependencyContainer, String dependencyContainerEnvVarName) {
-    return new SmokeTestExtension(false, false, dependencyContainer, dependencyContainerEnvVarName);
-  }
-
-  private SmokeTestExtension(
-      boolean skipHealthCheck,
-      boolean readOnly,
+  SmokeTestExtension(
       @Nullable GenericContainer<?> dependencyContainer,
-      @Nullable String dependencyContainerEnvVarName) {
+      @Nullable String dependencyContainerEnvVarName,
+      boolean usesGlobalIngestionEndpoint,
+      boolean skipHealthCheck,
+      boolean readOnly) {
     this.skipHealthCheck = skipHealthCheck;
     this.readOnly = readOnly;
     this.dependencyContainer = dependencyContainer;
     this.dependencyContainerEnvVarName = dependencyContainerEnvVarName;
+    this.usesGlobalIngestionEndpoint = usesGlobalIngestionEndpoint;
   }
 
   @Override
@@ -363,7 +363,8 @@ public class SmokeTestExtension
             .withEnv(
                 "APPLICATIONINSIGHTS_CONNECTION_STRING",
                 "InstrumentationKey=00000000-0000-0000-0000-0FEEDDADBEEF;"
-                    + "IngestionEndpoint=http://host.testcontainers.internal:6060/")
+                    + "IngestionEndpoint="
+                    + FAKE_INGESTION_ENDPOINT)
             .withNetwork(network)
             .withExposedPorts(8080)
             .withFileSystemBind(
@@ -373,6 +374,10 @@ public class SmokeTestExtension
 
     List<String> javaToolOptions = new ArrayList<>();
     javaToolOptions.add("-Dapplicationinsights.testing.batch-schedule-delay-millis=500");
+    if (usesGlobalIngestionEndpoint) {
+      javaToolOptions.add(
+          "-Dapplicationinsights.testing.global-ingestion-endpoint=" + FAKE_INGESTION_ENDPOINT);
+    }
     if (REMOTE_DEBUG) {
       javaToolOptions.add("-agentlib:jdwp=transport=dt_socket,address=5005,server=y,suspend=y");
     }

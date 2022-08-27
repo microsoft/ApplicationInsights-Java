@@ -44,7 +44,9 @@ public class SimpleTrackPageViewServlet extends HttpServlet {
 
     PageViewTelemetry pvt2 = new PageViewTelemetry("test-page-2");
     // instrumentation key set on the Telemetry is used by interop
-    pvt2.getContext().setInstrumentationKey("12341234-1234-1234-1234-123412341234");
+    pvt2.getContext()
+        .setConnectionString(
+            "InstrumentationKey=12341234-1234-1234-1234-123412341234;IngestionEndpoint=http://host.testcontainers.internal:6060/");
     // role name and instance set on the Telemetry is used by interop
     pvt2.getContext().getCloud().setRole("role-goes-here");
     pvt2.getContext().getCloud().setRoleInstance("role-instance-goes-here");
@@ -71,8 +73,11 @@ public class SimpleTrackPageViewServlet extends HttpServlet {
     client.trackPageView(pvt2);
 
     TelemetryClient otherClient = new TelemetryClient();
-    // instrumentation key set on the TelemetryClient is intentionally ignored by interop
-    otherClient.getContext().setInstrumentationKey("12341234-1234-1234-1234-123412341234");
+    // connection string set on the TelemetryClient is intentionally ignored by interop
+    otherClient
+        .getContext()
+        .setConnectionString(
+            "InstrumentationKey=12341234-1234-1234-1234-123412341234;IngestionEndpoint=http://host.testcontainers.internal:6060/");
     // role name and instance set on the TelemetryClient are intentionally ignored by interop
     otherClient.getContext().getCloud().setRole("role-goes-here");
     otherClient.getContext().getCloud().setRoleInstance("role-instance-goes-here");
