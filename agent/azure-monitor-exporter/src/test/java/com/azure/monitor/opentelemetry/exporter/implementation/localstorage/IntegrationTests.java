@@ -89,7 +89,7 @@ public class IntegrationTests {
     HttpPipelineBuilder pipelineBuilder = new HttpPipelineBuilder().httpClient(mockedClient);
 
     URL url = new URL("http://foo.bar");
-    TelemetryPipeline telemetryPipeline = new TelemetryPipeline(pipelineBuilder.build(), () -> url);
+    TelemetryPipeline telemetryPipeline = new TelemetryPipeline(pipelineBuilder.build());
     telemetryItemExporter =
         new TelemetryItemExporter(
             telemetryPipeline,

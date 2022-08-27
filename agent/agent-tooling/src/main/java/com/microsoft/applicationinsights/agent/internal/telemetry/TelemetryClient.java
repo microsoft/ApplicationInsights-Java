@@ -247,8 +247,7 @@ public class TelemetryClient {
         LazyHttpClient.newHttpPipeLine(
             aadAuthentication,
             new NetworkStatsbeatHttpPipelinePolicy(statsbeatModule.getNetworkStatsbeat()));
-    TelemetryPipeline telemetryPipeline =
-        new TelemetryPipeline(httpPipeline, () -> connectionString.getIngestionEndpoint());
+    TelemetryPipeline telemetryPipeline = new TelemetryPipeline(httpPipeline);
 
     TelemetryPipelineListener telemetryPipelineListener;
     if (tempDir == null) {
@@ -286,8 +285,7 @@ public class TelemetryClient {
       synchronized (batchItemProcessorInitLock) {
         if (statsbeatBatchItemProcessor == null) {
           HttpPipeline httpPipeline = LazyHttpClient.newHttpPipeLine(null);
-          TelemetryPipeline telemetryPipeline =
-              new TelemetryPipeline(httpPipeline, () -> statsbeatConnectionString.getEndpoint());
+          TelemetryPipeline telemetryPipeline = new TelemetryPipeline(httpPipeline);
 
           TelemetryPipelineListener telemetryPipelineListener;
           if (tempDir == null) {
@@ -329,9 +327,8 @@ public class TelemetryClient {
   }
 
   @Nullable
-  public String getStatsbeatInstrumentationKey() {
-    StatsbeatConnectionString val = this.statsbeatConnectionString;
-    return val != null ? val.getInstrumentationKey() : null;
+  public StatsbeatConnectionString getStatsbeatConnectionString() {
+    return statsbeatConnectionString;
   }
 
   // convenience
@@ -389,7 +386,10 @@ public class TelemetryClient {
   }
 
   private void populateDefaults(AbstractTelemetryBuilder telemetryBuilder) {
-    telemetryBuilder.setInstrumentationKey(getInstrumentationKey());
+    if (connectionString != null) {
+      // not sure if connectionString can be null in Azure Functions
+      telemetryBuilder.setConnectionString(connectionString);
+    }
     for (Map.Entry<String, String> entry : globalTags.entrySet()) {
       telemetryBuilder.addTag(entry.getKey(), entry.getValue());
     }

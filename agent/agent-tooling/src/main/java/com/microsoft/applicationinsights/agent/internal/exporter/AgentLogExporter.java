@@ -23,7 +23,6 @@ package com.microsoft.applicationinsights.agent.internal.exporter;
 
 import static com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMsgId.EXPORTER_MAPPING_ERROR;
 
-import com.azure.core.util.CoreUtils;
 import com.azure.monitor.opentelemetry.exporter.implementation.LogDataMapper;
 import com.azure.monitor.opentelemetry.exporter.implementation.logging.OperationLogger;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
@@ -93,7 +92,7 @@ public class AgentLogExporter implements LogExporter {
 
   @Override
   public CompletableResultCode export(Collection<LogData> logs) {
-    if (CoreUtils.isNullOrEmpty(TelemetryClient.getActive().getInstrumentationKey())) {
+    if (TelemetryClient.getActive().getConnectionString() == null) {
       // Azure Functions consumption plan
       logger.debug("Instrumentation key is null or empty. Fail to export logs.");
       return CompletableResultCode.ofFailure();

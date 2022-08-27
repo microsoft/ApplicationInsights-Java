@@ -335,12 +335,6 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
     // "ai.preview.service_name" being set programmatically on CONSUMER spans
     tracerProvider.addSpanProcessor(
         new InheritedRoleNameSpanProcessor(configuration.preview.roleNameOverrides));
-
-    if (!configuration.preview.instrumentationKeyOverrides.isEmpty()) {
-      tracerProvider.addSpanProcessor(
-          new InheritedInstrumentationKeySpanProcessor(
-              configuration.preview.instrumentationKeyOverrides));
-    }
     if (configuration.preview.profiler.enabled
         && configuration.preview.profiler.enableRequestTriggering) {
       tracerProvider.addSpanProcessor(new AlertTriggerSpanProcessor());
@@ -467,12 +461,6 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
     // adding this even if there are no roleNameOverrides, in order to support
     // "ai.preview.service_name" being set programmatically on CONSUMER spans
     builder.addLogProcessor(new InheritedRoleNameLogProcessor());
-
-    if (!configuration.preview.instrumentationKeyOverrides.isEmpty()) {
-      // adding this even if there are no instrumentationKeyOverrides, in order to support
-      // "ai.preview.instrumentation_key" being set programmatically on CONSUMER spans
-      builder.addLogProcessor(new InheritedInstrumentationKeyLogProcessor());
-    }
 
     String logsExporter = otelConfig.getString("otel.logs.exporter");
     if ("none".equals(logsExporter)) { // "none" is the default set in AiConfigCustomizer

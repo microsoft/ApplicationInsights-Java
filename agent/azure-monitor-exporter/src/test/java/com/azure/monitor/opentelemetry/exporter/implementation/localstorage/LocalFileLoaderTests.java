@@ -247,7 +247,7 @@ public class LocalFileLoaderTests {
     LocalFileLoader localFileLoader = new LocalFileLoader(localFileCache, tempFolder, null, false);
 
     URL url = new URL("http://foo.bar");
-    TelemetryPipeline telemetryPipeline = new TelemetryPipeline(pipelineBuilder.build(), () -> url);
+    TelemetryPipeline telemetryPipeline = new TelemetryPipeline(pipelineBuilder.build());
 
     // persist 10 files to disk
     for (int i = 0; i < 10; i++) {
@@ -269,6 +269,7 @@ public class LocalFileLoaderTests {
           telemetryPipeline.send(
               singletonList(persistedFile.rawBytes),
               persistedFile.instrumentationKey,
+              persistedFile.ingestionEndpoint,
               new LocalFileSenderTelemetryPipelineListener(localFileLoader, persistedFile.file));
       completableResultCode.join(10, SECONDS);
       assertThat(completableResultCode.isSuccess()).isEqualTo(true);
@@ -298,8 +299,7 @@ public class LocalFileLoaderTests {
     LocalFileWriter localFileWriter =
         new LocalFileWriter(50, localFileCache, tempFolder, null, false);
 
-    URL url = new URL("http://foo.bar");
-    TelemetryPipeline telemetryPipeline = new TelemetryPipeline(pipelineBuilder.build(), () -> url);
+    TelemetryPipeline telemetryPipeline = new TelemetryPipeline(pipelineBuilder.build());
 
     // persist 10 files to disk
     for (int i = 0; i < 10; i++) {
@@ -321,6 +321,7 @@ public class LocalFileLoaderTests {
           telemetryPipeline.send(
               singletonList(persistedFile.rawBytes),
               persistedFile.instrumentationKey,
+              persistedFile.ingestionEndpoint,
               new LocalFileSenderTelemetryPipelineListener(localFileLoader, persistedFile.file));
       completableResultCode.join(10, SECONDS);
       assertThat(completableResultCode.isSuccess()).isEqualTo(false);

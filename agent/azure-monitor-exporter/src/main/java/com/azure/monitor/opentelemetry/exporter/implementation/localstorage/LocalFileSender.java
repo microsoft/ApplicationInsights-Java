@@ -84,6 +84,7 @@ class LocalFileSender implements Runnable {
             telemetryPipeline.send(
                 singletonList(persistedFile.rawBytes),
                 persistedFile.instrumentationKey,
+                persistedFile.ingestionEndpoint,
                 TelemetryPipelineListener.composite(
                     diagnosticListener,
                     new LocalFileSenderTelemetryPipelineListener(

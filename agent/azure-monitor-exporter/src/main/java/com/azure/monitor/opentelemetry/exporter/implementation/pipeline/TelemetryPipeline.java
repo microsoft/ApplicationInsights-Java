@@ -35,7 +35,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Supplier;
 import reactor.core.publisher.Mono;
 
 public class TelemetryPipeline {
@@ -44,7 +43,6 @@ public class TelemetryPipeline {
   private static final int MAX_REDIRECTS = 10;
 
   private final HttpPipeline pipeline;
-  private final Supplier<URL> endpoint;
 
   // key is instrumentationKey, value is redirectUrl
   private final Map<String, URL> redirectCache =
@@ -56,15 +54,19 @@ public class TelemetryPipeline {
             }
           });
 
-  public TelemetryPipeline(HttpPipeline pipeline, Supplier<URL> endpoint) {
+  public TelemetryPipeline(HttpPipeline pipeline) {
     this.pipeline = pipeline;
-    this.endpoint = endpoint;
   }
 
   public CompletableResultCode send(
-      List<ByteBuffer> telemetry, String instrumentationKey, TelemetryPipelineListener listener) {
+      List<ByteBuffer> telemetry,
+      String instrumentationKey,
+      URL ingestionEndpoint,
+      TelemetryPipelineListener listener) {
 
-    URL url = redirectCache.computeIfAbsent(instrumentationKey, k -> defaultUrl());
+    URL url =
+        redirectCache.computeIfAbsent(
+            instrumentationKey, ikey -> getFullIngestionUrl(ingestionEndpoint));
     TelemetryPipelineRequest request =
         new TelemetryPipelineRequest(url, instrumentationKey, telemetry);
 
@@ -78,9 +80,9 @@ public class TelemetryPipeline {
     }
   }
 
-  private URL defaultUrl() {
+  private static URL getFullIngestionUrl(URL endpoint) {
     try {
-      return new URL(endpoint.get(), "v2.1/track");
+      return new URL(endpoint, "v2.1/track");
     } catch (MalformedURLException e) {
       throw new IllegalArgumentException("Invalid endpoint: " + endpoint, e);
     }

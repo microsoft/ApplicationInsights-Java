@@ -31,6 +31,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.builders.Exceptio
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.MessageTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.RemoteDependencyTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.RequestTelemetryBuilder;
+import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedDuration;
@@ -43,6 +44,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.instrumentation.api.internal.cache.Cache;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.ReadableSpan;
@@ -74,6 +76,8 @@ public final class SpanDataMapper {
 
   // TODO (trask) add to generated ContextTagKeys class
   private static final ContextTagKeys AI_DEVICE_OS = ContextTagKeys.fromString("ai.device.os");
+
+  private static final Cache<String, ConnectionString> connectionStringCache = Cache.bounded(100);
 
   static {
     Set<String> dbSystems = new HashSet<>();
@@ -897,12 +901,17 @@ public final class SpanDataMapper {
     }
     if (stringKey.equals(AiSemanticAttributes.CONNECTION_STRING.getKey())
         && value instanceof String) {
-      telemetryBuilder.setConnectionString((String) value);
+      // intentionally letting exceptions from parse bubble up
+      telemetryBuilder.setConnectionString(
+          connectionStringCache.computeIfAbsent((String) value, ConnectionString::parse));
       return true;
     }
     if (stringKey.equals(AiSemanticAttributes.INSTRUMENTATION_KEY.getKey())
         && value instanceof String) {
-      telemetryBuilder.setInstrumentationKey((String) value);
+      // intentionally letting exceptions from parse bubble up
+      telemetryBuilder.setConnectionString(
+          connectionStringCache.computeIfAbsent(
+              "InstrumentationKey=" + value, ConnectionString::parse));
       return true;
     }
     if (stringKey.equals(AiSemanticAttributes.ROLE_NAME.getKey()) && value instanceof String) {

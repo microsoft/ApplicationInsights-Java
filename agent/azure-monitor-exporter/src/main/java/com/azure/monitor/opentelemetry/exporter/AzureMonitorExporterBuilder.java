@@ -57,7 +57,6 @@ import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.io.File;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -80,7 +79,6 @@ public final class AzureMonitorExporterBuilder {
 
   private String instrumentationKey;
   private String connectionString;
-  private URL endpoint;
   private TokenCredential credential;
 
   // suppress warnings is needed in ApplicationInsights-Java repo, can be removed when upstreaming
@@ -100,22 +98,8 @@ public final class AzureMonitorExporterBuilder {
   public AzureMonitorExporterBuilder() {}
 
   /**
-   * Sets the service endpoint for the Azure Monitor Exporter.
-   *
-   * @param endpoint The URL of the Azure Monitor Exporter endpoint.
-   * @return The updated {@link AzureMonitorExporterBuilder} object.
-   * @throws NullPointerException if {@code endpoint} is null.
-   * @throws IllegalArgumentException if {@code endpoint} cannot be parsed into a valid URL.
-   */
-  AzureMonitorExporterBuilder endpoint(URL endpoint) {
-    Objects.requireNonNull(endpoint, "'endpoint' cannot be null.");
-    this.endpoint = endpoint;
-    return this;
-  }
-
-  /**
    * Sets the HTTP pipeline to use for the service client. If {@code httpPipeline} is set, all other
-   * settings are ignored, apart from {@link #endpoint(URL) endpoint}.
+   * settings are ignored.
    *
    * @param httpPipeline The HTTP pipeline to use for sending service requests and receiving
    *     responses.
@@ -217,7 +201,6 @@ public final class AzureMonitorExporterBuilder {
     this.connectionString = connectionString;
     ConnectionString connectionStringObj = ConnectionString.parse(connectionString);
     this.instrumentationKey = connectionStringObj.getInstrumentationKey();
-    this.endpoint(connectionStringObj.getIngestionEndpoint());
     return this;
   }
 
@@ -315,7 +298,7 @@ public final class AzureMonitorExporterBuilder {
       httpPipeline = createHttpPipeline();
     }
 
-    TelemetryPipeline pipeline = new TelemetryPipeline(httpPipeline, () -> endpoint);
+    TelemetryPipeline pipeline = new TelemetryPipeline(httpPipeline);
 
     File tempDir =
         TempDirs.getApplicationInsightsTempDir(
@@ -368,7 +351,7 @@ public final class AzureMonitorExporterBuilder {
   }
 
   void populateDefaults(AbstractTelemetryBuilder builder, Resource resource) {
-    builder.setInstrumentationKey(instrumentationKey);
+    builder.setConnectionString(ConnectionString.parse("InstrumentationKey=" + instrumentationKey));
     builder.addTag(
         ContextTagKeys.AI_INTERNAL_SDK_VERSION.toString(), VersionGenerator.getSdkVersion());
     ResourceParser.updateRoleNameAndInstance(builder, resource);

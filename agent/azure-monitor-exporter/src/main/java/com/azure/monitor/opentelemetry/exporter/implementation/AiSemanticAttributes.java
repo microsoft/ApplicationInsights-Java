@@ -30,6 +30,8 @@ import java.util.List;
 
 public final class AiSemanticAttributes {
 
+  // replaced by ai.preview.connection_string
+  @Deprecated
   public static final AttributeKey<String> INSTRUMENTATION_KEY =
       AttributeKey.stringKey("ai.preview.instrumentation_key");
 

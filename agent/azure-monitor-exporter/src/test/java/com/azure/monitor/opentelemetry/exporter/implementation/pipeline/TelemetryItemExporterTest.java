@@ -67,7 +67,7 @@ public class TelemetryItemExporterTest {
   private TelemetryItemExporter getExporter() throws MalformedURLException {
     HttpPipelineBuilder pipelineBuilder = new HttpPipelineBuilder().httpClient(recordingHttpClient);
     URL url = new URL(END_POINT_URL);
-    TelemetryPipeline telemetryPipeline = new TelemetryPipeline(pipelineBuilder.build(), () -> url);
+    TelemetryPipeline telemetryPipeline = new TelemetryPipeline(pipelineBuilder.build());
 
     return new TelemetryItemExporter(
         telemetryPipeline,

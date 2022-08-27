@@ -37,6 +37,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.builders.MetricTe
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.PageViewTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.RemoteDependencyTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.RequestTelemetryBuilder;
+import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.SeverityLevel;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedDuration;
@@ -48,6 +49,7 @@ import com.microsoft.applicationinsights.agent.internal.statsbeat.FeatureStatsbe
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.instrumentation.api.internal.cache.Cache;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import java.net.URI;
 import java.net.URL;
@@ -68,6 +70,9 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
   public static volatile float samplingPercentage = 100;
 
   public static volatile FeatureStatsbeat featureStatsbeat;
+
+  // the key is just the instrumentation key, not the full connection string
+  private static final Cache<String, ConnectionString> connectionStringCache = Cache.bounded(100);
 
   @Override
   public void trackEvent(
@@ -98,7 +103,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
     }
     selectivelySetTags(telemetryBuilder, tags);
     if (instrumentationKey != null) {
-      telemetryBuilder.setInstrumentationKey(instrumentationKey);
+      setConnectionString(telemetryBuilder, instrumentationKey);
     }
 
     track(telemetryBuilder, tags, true);
@@ -146,7 +151,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
     }
     selectivelySetTags(telemetryBuilder, tags);
     if (instrumentationKey != null) {
-      telemetryBuilder.setInstrumentationKey(instrumentationKey);
+      setConnectionString(telemetryBuilder, instrumentationKey);
     }
 
     track(telemetryBuilder, tags, false);
@@ -202,7 +207,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
     }
     selectivelySetTags(telemetryBuilder, tags);
     if (instrumentationKey != null) {
-      telemetryBuilder.setInstrumentationKey(instrumentationKey);
+      setConnectionString(telemetryBuilder, instrumentationKey);
     }
 
     track(telemetryBuilder, tags, true);
@@ -244,7 +249,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
     }
     selectivelySetTags(telemetryBuilder, tags);
     if (instrumentationKey != null) {
-      telemetryBuilder.setInstrumentationKey(instrumentationKey);
+      setConnectionString(telemetryBuilder, instrumentationKey);
     }
 
     track(telemetryBuilder, tags, true);
@@ -280,7 +285,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
     }
     selectivelySetTags(telemetryBuilder, tags);
     if (instrumentationKey != null) {
-      telemetryBuilder.setInstrumentationKey(instrumentationKey);
+      setConnectionString(telemetryBuilder, instrumentationKey);
     }
 
     track(telemetryBuilder, tags, true);
@@ -335,7 +340,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
     }
     selectivelySetTags(telemetryBuilder, tags);
     if (instrumentationKey != null) {
-      telemetryBuilder.setInstrumentationKey(instrumentationKey);
+      setConnectionString(telemetryBuilder, instrumentationKey);
     }
 
     track(telemetryBuilder, tags, true);
@@ -376,7 +381,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
     }
     selectivelySetTags(telemetryBuilder, tags);
     if (instrumentationKey != null) {
-      telemetryBuilder.setInstrumentationKey(instrumentationKey);
+      setConnectionString(telemetryBuilder, instrumentationKey);
     }
 
     track(telemetryBuilder, tags, true);
@@ -428,7 +433,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
     }
     selectivelySetTags(telemetryBuilder, tags);
     if (instrumentationKey != null) {
-      telemetryBuilder.setInstrumentationKey(instrumentationKey);
+      setConnectionString(telemetryBuilder, instrumentationKey);
     }
 
     track(telemetryBuilder, tags, false);
@@ -542,6 +547,13 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
           ContextTagKeys.AI_OPERATION_NAME.toString(),
           OperationNames.getOperationName((ReadableSpan) span));
     }
+  }
+
+  private static void setConnectionString(
+      AbstractTelemetryBuilder telemetryBuilder, String instrumentationKey) {
+    telemetryBuilder.setConnectionString(
+        connectionStringCache.computeIfAbsent(
+            instrumentationKey, ikey -> ConnectionString.parse("InstrumentationKey=" + ikey)));
   }
 
   private static boolean sample(String operationId, double samplingPercentage) {

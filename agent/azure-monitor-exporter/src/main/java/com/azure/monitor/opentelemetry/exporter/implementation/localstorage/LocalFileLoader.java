@@ -30,6 +30,7 @@ import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.net.URL;
 import java.nio.ByteBuffer;
 import java.util.regex.Pattern;
 import javax.annotation.Nullable;
@@ -118,7 +119,12 @@ class LocalFileLoader {
     int rawByteLength = (int) tempFile.length() - 36;
     byte[] telemetryBytes = new byte[rawByteLength];
     String instrumentationKey;
+    URL ingestionEndpoint;
     try (FileInputStream fileInputStream = new FileInputStream(tempFile)) {
+      int version = fileInputStream.read();
+      if (version == 1) {
+        // FIXME INGESTION ENDPOINT
+      }
       readFully(fileInputStream, ikeyBytes, 36);
       instrumentationKey = new String(ikeyBytes, UTF_8);
       if (!isInstrumentationKeyValid(instrumentationKey)) {
@@ -130,6 +136,8 @@ class LocalFileLoader {
         }
         return null;
       }
+      // FIXME INGESTION ENDPOINT
+      ingestionEndpoint = null;
 
       readFully(fileInputStream, telemetryBytes, rawByteLength);
     } catch (IOException e) {
@@ -140,7 +148,8 @@ class LocalFileLoader {
     }
 
     operationLogger.recordSuccess();
-    return new PersistedFile(tempFile, instrumentationKey, ByteBuffer.wrap(telemetryBytes));
+    return new PersistedFile(
+        tempFile, instrumentationKey, ingestionEndpoint, ByteBuffer.wrap(telemetryBytes));
   }
 
   static boolean isInstrumentationKeyValid(String instrumentationKey) {
@@ -206,15 +215,18 @@ class LocalFileLoader {
   static class PersistedFile {
     final File file;
     final String instrumentationKey;
+    final URL ingestionEndpoint;
     final ByteBuffer rawBytes;
 
-    PersistedFile(File file, String instrumentationKey, ByteBuffer byteBuffer) {
+    PersistedFile(
+        File file, String instrumentationKey, URL ingestionEndpoint, ByteBuffer byteBuffer) {
       if (instrumentationKey == null) {
         throw new IllegalArgumentException("instrumentation key can not be null.");
       }
 
       this.file = file;
       this.instrumentationKey = instrumentationKey;
+      this.ingestionEndpoint = ingestionEndpoint;
       this.rawBytes = byteBuffer;
     }
   }

@@ -33,6 +33,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.net.URL;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -99,7 +100,10 @@ public class TelemetryItemExporter {
     }
     List<CompletableResultCode> resultCodeList = new ArrayList<>();
     for (Map.Entry<String, List<TelemetryItem>> entry : instrumentationKeyMap.entrySet()) {
-      resultCodeList.add(internalSendByInstrumentationKey(entry.getValue(), entry.getKey()));
+      resultCodeList.add(
+          internalSendByInstrumentationKey(
+              // FIXME INGESTION ENDPOINT
+              entry.getValue(), entry.getKey(), telemetryItems.get(0).getIngestionEndpoint()));
     }
     return maybeAddToActiveExportResults(resultCodeList);
   }
@@ -133,7 +137,7 @@ public class TelemetryItemExporter {
   }
 
   CompletableResultCode internalSendByInstrumentationKey(
-      List<TelemetryItem> telemetryItems, String instrumentationKey) {
+      List<TelemetryItem> telemetryItems, String instrumentationKey, URL ingestionEndpoint) {
     List<ByteBuffer> byteBuffers;
     try {
       byteBuffers = encode(telemetryItems);
@@ -142,7 +146,7 @@ public class TelemetryItemExporter {
       encodeBatchOperationLogger.recordFailure(t.getMessage(), t);
       return CompletableResultCode.ofFailure();
     }
-    return telemetryPipeline.send(byteBuffers, instrumentationKey, listener);
+    return telemetryPipeline.send(byteBuffers, instrumentationKey, ingestionEndpoint, listener);
   }
 
   List<ByteBuffer> encode(List<TelemetryItem> telemetryItems) throws IOException {
