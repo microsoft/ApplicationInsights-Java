@@ -110,7 +110,7 @@ abstract class SamplingOverridesBackCompatTest {
     assertThat(rd.getSuccess()).isTrue();
 
     assertThat(rdd.getType()).isEqualTo("SQL");
-    assertThat(rdd.getTarget()).isEqualTo("testdb");
+    assertThat(rdd.getTarget()).isEqualTo("hsqldb | testdb");
     assertThat(rdd.getName()).isEqualTo("SELECT testdb.abc");
     assertThat(rdd.getData()).isEqualTo("select * from abc");
     assertThat(rddEnvelope.getIKey()).isEqualTo("87654321-0000-0000-0000-0FEEDDADBEEF");
