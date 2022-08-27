@@ -1,0 +1,21 @@
+{
+  "role": {
+    "name": "testrolename",
+    "instance": "testroleinstance"
+  },
+  "sampling": {
+    "percentage": 100
+  },
+  "preview": {
+    "connectionStringOverrides": [
+      {
+        "httpPathPrefix": "/ConnectionStringOverrides/app2",
+        "connectionString": "InstrumentationKey=12345678-0000-0000-0000-0FEEDDADBEEF;IngestionEndpoint=http://host.testcontainers.internal:6060/"
+      },
+      {
+        "httpPathPrefix": "/ConnectionStringOverrides/app3",
+        "connectionString": "InstrumentationKey=87654321-0000-0000-0000-0FEEDDADBEEF;IngestionEndpoint=http://host.testcontainers.internal:6060/"
+      }
+    ]
+  }
+}

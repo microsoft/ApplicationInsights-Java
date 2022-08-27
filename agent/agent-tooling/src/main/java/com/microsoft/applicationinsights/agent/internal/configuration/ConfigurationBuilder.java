@@ -204,7 +204,7 @@ public class ConfigurationBuilder {
     }
     if (!config.preview.instrumentationKeyOverrides.isEmpty()) {
       configurationLogger.warn(
-          "Instrumentation key overrides hav been deprecated,"
+          "Instrumentation key overrides have been deprecated,"
               + " and support for it will be removed in a future release, please transition from"
               + " \"instrumentationKeyOverrides\" to \"connectionStringOverrides\".");
       for (InstrumentationKeyOverride override : config.preview.instrumentationKeyOverrides) {

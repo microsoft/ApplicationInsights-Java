@@ -42,7 +42,7 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-@UseAgent("applicationinsights.json")
+@UseAgent
 abstract class SamplingOverridesBackCompatTest {
 
   @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.create();

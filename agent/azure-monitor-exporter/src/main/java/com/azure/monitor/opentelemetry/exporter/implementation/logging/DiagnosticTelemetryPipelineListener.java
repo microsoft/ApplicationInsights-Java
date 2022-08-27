@@ -33,7 +33,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,7 +67,9 @@ public class DiagnosticTelemetryPipelineListener implements TelemetryPipelineLis
       case 206: // PARTIAL CONTENT, Breeze-specific: PARTIAL SUCCESS
       case 400: // breeze returns if json content is bad (e.g. missing required field)
         operationLogger.recordFailure(
-            getErrorMessageFromPartialSuccessResponse(response.getBody(), responseCode),
+            "Received response code 400 ("
+                + getErrorMessageFromPartialSuccessResponse(response.getBody())
+                + ")",
             INGESTION_ERROR);
         break;
       case 307:
@@ -120,23 +124,21 @@ public class DiagnosticTelemetryPipelineListener implements TelemetryPipelineLis
     return CompletableResultCode.ofSuccess();
   }
 
-  private static String getErrorMessageFromPartialSuccessResponse(String body, int responseCode) {
+  private static String getErrorMessageFromPartialSuccessResponse(String body) {
     JsonNode jsonNode;
     try {
       jsonNode = new ObjectMapper().readTree(body);
     } catch (JsonProcessingException e) {
       // fallback to generic message
-      return "received response code: " + responseCode;
+      return "Could not parse response";
     }
-    List<JsonNode> errors = new ArrayList<>();
-    jsonNode.get("errors").forEach(errors::add);
-    StringBuilder message = new StringBuilder();
-    message.append(errors.get(0).get("message").asText());
-    int moreErrors = errors.size() - 1;
-    if (moreErrors > 0) {
-      message.append(" (and ").append(moreErrors).append(" more)");
-    }
-    return message.toString();
+    List<JsonNode> errorNodes = new ArrayList<>();
+    jsonNode.get("errors").forEach(errorNodes::add);
+    Set<String> errors =
+        errorNodes.stream()
+            .map(errorNode -> errorNode.get("message").asText())
+            .collect(Collectors.toSet());
+    return String.join(", ", errors);
   }
 
   private static String getErrorMessageFromCredentialRelatedResponse(
