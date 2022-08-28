@@ -27,17 +27,16 @@
 
 package com.microsoft.applicationinsights.agent.internal.sampling;
 
-import org.assertj.core.data.Percentage;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.function.LongSupplier;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.assertj.core.data.Percentage;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 // uses tests from OpenTelemetry Java Contrib's ConsistentRateLimitingSampler
 // (https://github.com/open-telemetry/opentelemetry-java-contrib/blob/main/consistent-sampling/src/test/java/io/opentelemetry/contrib/samplers/ConsistentRateLimitingSamplerTest.java)
