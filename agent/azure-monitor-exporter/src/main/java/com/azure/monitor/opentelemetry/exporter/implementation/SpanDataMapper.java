@@ -898,6 +898,22 @@ public final class SpanDataMapper {
       telemetryBuilder.addTag(ContextTagKeys.AI_USER_ID.toString(), (String) value);
       return true;
     }
+    if (applyConnectionStringAndRoleNameOverrides(telemetryBuilder, value, key)) {
+      return true;
+    }
+    if (key.equals(AiSemanticAttributes.ROLE_INSTANCE_ID.getKey()) && value instanceof String) {
+      telemetryBuilder.addTag(ContextTagKeys.AI_CLOUD_ROLE_INSTANCE.toString(), (String) value);
+      return true;
+    }
+    if (key.equals(AiSemanticAttributes.APPLICATION_VERSION.getKey()) && value instanceof String) {
+      telemetryBuilder.addTag(ContextTagKeys.AI_APPLICATION_VER.toString(), (String) value);
+      return true;
+    }
+    return false;
+  }
+
+  static boolean applyConnectionStringAndRoleNameOverrides(
+      AbstractTelemetryBuilder telemetryBuilder, Object value, String key) {
     if (key.equals(AiSemanticAttributes.CONNECTION_STRING.getKey()) && value instanceof String) {
       // intentionally letting exceptions from parse bubble up
       telemetryBuilder.setConnectionString(
@@ -913,14 +929,6 @@ public final class SpanDataMapper {
     }
     if (key.equals(AiSemanticAttributes.ROLE_NAME.getKey()) && value instanceof String) {
       telemetryBuilder.addTag(ContextTagKeys.AI_CLOUD_ROLE.toString(), (String) value);
-      return true;
-    }
-    if (key.equals(AiSemanticAttributes.ROLE_INSTANCE_ID.getKey()) && value instanceof String) {
-      telemetryBuilder.addTag(ContextTagKeys.AI_CLOUD_ROLE_INSTANCE.toString(), (String) value);
-      return true;
-    }
-    if (key.equals(AiSemanticAttributes.APPLICATION_VERSION.getKey()) && value instanceof String) {
-      telemetryBuilder.addTag(ContextTagKeys.AI_APPLICATION_VER.toString(), (String) value);
       return true;
     }
     return false;

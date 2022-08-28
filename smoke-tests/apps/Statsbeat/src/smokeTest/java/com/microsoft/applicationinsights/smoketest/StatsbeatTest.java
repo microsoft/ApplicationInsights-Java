@@ -49,8 +49,7 @@ abstract class StatsbeatTest {
   @TargetUri(value = "/index.jsp")
   void testStatsbeat() throws Exception {
     List<Envelope> metrics =
-        testing.mockedIngestion.waitForItems(
-            SmokeTestExtension.getMetricPredicate("Feature"), 2, 70, TimeUnit.SECONDS);
+        testing.mockedIngestion.waitForMetricItems("Feature", 2, 70, TimeUnit.SECONDS);
 
     MetricData data = (MetricData) ((Data<?>) metrics.get(0).getData()).getBaseData();
     assertCommon(data);
@@ -68,8 +67,7 @@ abstract class StatsbeatTest {
     assertThat(instrumentationData.getProperties()).hasSize(9);
 
     List<Envelope> attachMetrics =
-        testing.mockedIngestion.waitForItems(
-            SmokeTestExtension.getMetricPredicate("Attach"), 1, 70, TimeUnit.SECONDS);
+        testing.mockedIngestion.waitForMetricItems("Attach", 1, 70, TimeUnit.SECONDS);
 
     MetricData attachData = (MetricData) ((Data<?>) attachMetrics.get(0).getData()).getBaseData();
     assertCommon(attachData);
@@ -77,11 +75,8 @@ abstract class StatsbeatTest {
     assertThat(attachData.getProperties()).hasSize(8);
 
     List<Envelope> requestSuccessCountMetrics =
-        testing.mockedIngestion.waitForItems(
-            SmokeTestExtension.getMetricPredicate("Request Success Count"),
-            1,
-            70,
-            TimeUnit.SECONDS);
+        testing.mockedIngestion.waitForMetricItems(
+            "Request Success Count", 1, 70, TimeUnit.SECONDS);
 
     MetricData requestSuccessCountData =
         (MetricData) ((Data<?>) requestSuccessCountMetrics.get(0).getData()).getBaseData();
@@ -91,8 +86,7 @@ abstract class StatsbeatTest {
     assertThat(requestSuccessCountData.getProperties()).hasSize(9);
 
     List<Envelope> requestDurationMetrics =
-        testing.mockedIngestion.waitForItems(
-            SmokeTestExtension.getMetricPredicate("Request Duration"), 1, 70, TimeUnit.SECONDS);
+        testing.mockedIngestion.waitForMetricItems("Request Duration", 1, 70, TimeUnit.SECONDS);
 
     MetricData requestDurationData =
         (MetricData) ((Data<?>) requestDurationMetrics.get(0).getData()).getBaseData();

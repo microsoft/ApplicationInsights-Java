@@ -21,6 +21,7 @@
 
 package com.microsoft.applicationinsights.smoketest.fakeingestion;
 
+import com.microsoft.applicationinsights.smoketest.SmokeTestExtension;
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.Domain;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
@@ -207,6 +208,18 @@ public class MockedAppInsightsIngestionServer {
       Predicate<Envelope> condition, int numItems, int timeout, TimeUnit timeUnit)
       throws InterruptedException, ExecutionException, TimeoutException {
     return servlet.waitForItems(condition, numItems, timeout, timeUnit);
+  }
+
+  public List<Envelope> waitForMetricItems(String metricName, int numItems)
+      throws InterruptedException, TimeoutException {
+    return waitForMetricItems(metricName, numItems, 10, TimeUnit.SECONDS);
+  }
+
+  public List<Envelope> waitForMetricItems(
+      String metricName, int numItems, int timeout, TimeUnit timeUnit)
+      throws InterruptedException, TimeoutException {
+    return servlet.waitForItems(
+        SmokeTestExtension.getMetricPredicate(metricName), numItems, timeout, timeUnit);
   }
 
   // this is important for Message and Exception types which can also be captured outside of
