@@ -16,7 +16,6 @@
         "httpPathPrefix": "/ConnectionStringOverrides/app3",
         "connectionString": "InstrumentationKey=87654321-0000-0000-0000-0FEEDDADBEEF;IngestionEndpoint=http://host.testcontainers.internal:6060/"
       }
-    ],
-    "metricIntervalSeconds": 10
+    ]
   }
 }
