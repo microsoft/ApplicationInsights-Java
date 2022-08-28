@@ -5,6 +5,6 @@
     "instance": "testroleinstance"
   },
   "preview": {
-    "metricIntervalSeconds": 10
+    "metricIntervalSeconds": 1
   }
 }

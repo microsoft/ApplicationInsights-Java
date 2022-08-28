@@ -251,6 +251,17 @@ public class SmokeTestExtension
           },
           TELEMETRY_RECEIVE_TIMEOUT_SECONDS,
           TimeUnit.SECONDS);
+      mockedIngestion.waitForItem(
+          input -> {
+            if (!"MetricData".equals(input.getData().getBaseType())) {
+              return false;
+            }
+            MetricData data = (MetricData) ((Data<?>) input.getData()).getBaseData();
+            String metricId = data.getProperties().get("_MS.MetricId");
+            return metricId != null && metricId.equals("requests/duration");
+          },
+          10, // metrics should come in pretty quickly after spans
+          TimeUnit.SECONDS);
       System.out.printf(
           "Received request telemetry after %.3f seconds...%n",
           receivedTelemetryTimer.elapsed(TimeUnit.MILLISECONDS) / 1000.0);
