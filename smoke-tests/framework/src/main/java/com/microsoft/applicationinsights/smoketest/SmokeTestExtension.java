@@ -111,7 +111,7 @@ public class SmokeTestExtension
   private final boolean usesGlobalIngestionEndpoint;
 
   public static SmokeTestExtension create() {
-    return new SmokeTestExtension(null, null, false, false, false);
+    return builder().build();
   }
 
   public static SmokeTestExtensionBuilder builder() {

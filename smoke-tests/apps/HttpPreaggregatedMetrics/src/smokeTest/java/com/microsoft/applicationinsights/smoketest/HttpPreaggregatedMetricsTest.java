@@ -52,22 +52,14 @@ abstract class HttpPreaggregatedMetricsTest {
   @Test
   @TargetUri("/httpUrlConnection")
   void testHttpUrlConnection() throws Exception {
-    verify();
-  }
-
-  private static void verify() throws Exception {
-    verify("https://mock.codes/200?q=spaces%20test");
-  }
-
-  private static void verify(String successUrlWithQueryString) throws Exception {
-    verifyHttpclientRequestsAndDependencies(successUrlWithQueryString);
+    verifyHttpclientRequestsAndDependencies("https://mock.codes/200?q=spaces%20test");
 
     List<Envelope> clientMetrics =
         testing.mockedIngestion.waitForItems(
             SmokeTestExtension.getMetricPredicate("http.client.duration"), 3, 40, TimeUnit.SECONDS);
     List<Envelope> serverMetrics =
         testing.mockedIngestion.waitForItems(
-            SmokeTestExtension.getMetricPredicate("http.server.duration"), 2, 40, TimeUnit.SECONDS);
+            SmokeTestExtension.getMetricPredicate("http.server.duration"), 1, 40, TimeUnit.SECONDS);
 
     verifyHttpClientPreAggregatedMetrics(clientMetrics);
     verifyHttpServerPreAggregatedMetrics(serverMetrics);
@@ -160,18 +152,12 @@ abstract class HttpPreaggregatedMetricsTest {
 
   private static void verifyHttpServerPreAggregatedMetrics(List<Envelope> metrics)
       throws Exception {
-    assertThat(metrics.size()).isEqualTo(2);
+    assertThat(metrics.size()).isEqualTo(1);
     // 1st pre-aggregated metric
     Envelope envelope1 = metrics.get(0);
     validateTags(envelope1);
     MetricData md1 = (MetricData) ((Data<?>) envelope1.getData()).getBaseData();
     validateMetricData("server", md1, "200");
-
-    // 2nd pre-aggregated metric
-    Envelope envelope2 = metrics.get(1);
-    validateTags(envelope2);
-    MetricData md2 = (MetricData) ((Data<?>) envelope2.getData()).getBaseData();
-    validateMetricData("server", md2, "200");
   }
 
   private static void validateTags(Envelope envelope) {

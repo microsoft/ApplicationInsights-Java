@@ -28,7 +28,7 @@ public class SmokeTestExtensionBuilder {
   private GenericContainer<?> dependencyContainer;
   private String dependencyContainerEnvVarName;
   private boolean usesGlobalIngestionEndpoint;
-  private boolean skipHealthCheck;
+  private boolean skipHealthCheck = true;
   private boolean readOnly;
 
   public SmokeTestExtensionBuilder setDependencyContainer(
