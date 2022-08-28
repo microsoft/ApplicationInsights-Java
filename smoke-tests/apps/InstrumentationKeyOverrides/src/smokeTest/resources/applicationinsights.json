@@ -16,6 +16,7 @@
         "httpPathPrefix": "/InstrumentationKeyOverrides/app3",
         "instrumentationKey": "87654321-0000-0000-0000-0FEEDDADBEEF"
       }
-    ]
+    ],
+    "metricIntervalSeconds": 10
   }
 }

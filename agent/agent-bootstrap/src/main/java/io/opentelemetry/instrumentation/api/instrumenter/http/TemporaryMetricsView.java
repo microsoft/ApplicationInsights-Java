@@ -110,7 +110,8 @@ final class TemporaryMetricsView {
     return filtered.build();
   }
 
-  static Attributes applyServerDurationAndSizeView(
+  // had to add "2" to this method name because sometimes compilation picks up the upstream version
+  static Attributes applyServerDurationAndSizeView2(
       Context context, Attributes startAttributes, Attributes endAttributes) {
     AttributesBuilder filtered = Attributes.builder();
     applyView(filtered, startAttributes, durationServerView);

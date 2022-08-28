@@ -25,12 +25,16 @@ import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TO
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
+import com.microsoft.applicationinsights.smoketest.schemav2.DataPoint;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
 import com.microsoft.applicationinsights.smoketest.schemav2.MessageData;
+import com.microsoft.applicationinsights.smoketest.schemav2.MetricData;
 import com.microsoft.applicationinsights.smoketest.schemav2.RemoteDependencyData;
 import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
 import com.microsoft.applicationinsights.smoketest.schemav2.SeverityLevel;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -81,10 +85,11 @@ class InstrumentationKeyOverridesTest {
 
     assertThat(rd.getSuccess()).isTrue();
 
-    assertThat(rdd.getType()).isEqualTo("SQL");
-    assertThat(rdd.getTarget()).isEqualTo("hsqldb | testdb");
-    assertThat(rdd.getName()).isEqualTo("SELECT testdb.abc");
-    assertThat(rdd.getData()).isEqualTo("select * from abc");
+    assertThat(rdd.getType()).isEqualTo("Http");
+    assertThat(rdd.getTarget()).isEqualTo("mock.codes");
+    assertThat(rdd.getName()).isEqualTo("GET /200");
+    assertThat(rdd.getData()).isEqualTo("https://mock.codes/200");
+    assertThat(rdd.getResultCode()).isEqualTo("200");
     assertThat(rddEnvelope.getIKey()).isEqualTo(iKey);
     assertThat(rdd.getSuccess()).isTrue();
 

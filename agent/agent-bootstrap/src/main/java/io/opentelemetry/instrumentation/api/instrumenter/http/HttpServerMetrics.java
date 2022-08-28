@@ -28,7 +28,7 @@
 package io.opentelemetry.instrumentation.api.instrumenter.http;
 
 import static io.opentelemetry.instrumentation.api.instrumenter.http.TemporaryMetricsView.applyActiveRequestsView;
-import static io.opentelemetry.instrumentation.api.instrumenter.http.TemporaryMetricsView.applyServerDurationAndSizeView;
+import static io.opentelemetry.instrumentation.api.instrumenter.http.TemporaryMetricsView.applyServerDurationAndSizeView2;
 import static java.util.logging.Level.FINE;
 
 import com.google.auto.value.AutoValue;
@@ -129,7 +129,7 @@ public final class HttpServerMetrics implements OperationListener {
     // START APPLICATION INSIGHTS MODIFICATIONS: passing context
 
     Attributes durationAndSizeAttributes =
-        applyServerDurationAndSizeView(context, state.startAttributes(), endAttributes);
+        applyServerDurationAndSizeView2(context, state.startAttributes(), endAttributes);
 
     // END APPLICATION INSIGHTS CODE
 
