@@ -21,16 +21,13 @@
 
 package com.microsoft.applicationinsights.agent.internal.init;
 
-import io.opentelemetry.api.common.AttributeKey;
+import com.azure.monitor.opentelemetry.exporter.implementation.AiSemanticAttributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.sdk.logs.LogProcessor;
 import io.opentelemetry.sdk.logs.ReadWriteLogRecord;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 
 public class InheritedConnectionStringLogProcessor implements LogProcessor {
-
-  private static final AttributeKey<String> CONNECTION_STRING =
-      AttributeKey.stringKey("ai.preview.connection_string");
 
   @Override
   public void onEmit(ReadWriteLogRecord logRecord) {
@@ -39,9 +36,17 @@ public class InheritedConnectionStringLogProcessor implements LogProcessor {
       return;
     }
     ReadableSpan currentReadableSpan = (ReadableSpan) currentSpan;
-    String instrumentationKey = currentReadableSpan.getAttribute(CONNECTION_STRING);
-    if (instrumentationKey != null) {
-      logRecord.setAttribute(CONNECTION_STRING, instrumentationKey);
+    String connectionString =
+        currentReadableSpan.getAttribute(AiSemanticAttributes.CONNECTION_STRING);
+    if (connectionString != null) {
+      logRecord.setAttribute(AiSemanticAttributes.CONNECTION_STRING, connectionString);
+    } else {
+      // back compat support
+      String instrumentationKey =
+          currentReadableSpan.getAttribute(AiSemanticAttributes.INSTRUMENTATION_KEY);
+      if (instrumentationKey != null) {
+        logRecord.setAttribute(AiSemanticAttributes.INSTRUMENTATION_KEY, instrumentationKey);
+      }
     }
   }
 }

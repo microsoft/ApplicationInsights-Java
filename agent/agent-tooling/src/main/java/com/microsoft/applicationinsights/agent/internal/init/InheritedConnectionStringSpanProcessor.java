@@ -21,8 +21,8 @@
 
 package com.microsoft.applicationinsights.agent.internal.init;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.AiSemanticAttributes;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
-import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.context.Context;
@@ -33,9 +33,6 @@ import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.util.List;
 
 public class InheritedConnectionStringSpanProcessor implements SpanProcessor {
-
-  private static final AttributeKey<String> CONNECTION_STRING =
-      AttributeKey.stringKey("ai.preview.connection_string");
 
   private final List<Configuration.ConnectionStringOverride> overrides;
 
@@ -57,7 +54,7 @@ public class InheritedConnectionStringSpanProcessor implements SpanProcessor {
       }
       for (Configuration.ConnectionStringOverride override : overrides) {
         if (target.startsWith(override.httpPathPrefix)) {
-          span.setAttribute(CONNECTION_STRING, override.connectionString);
+          span.setAttribute(AiSemanticAttributes.CONNECTION_STRING, override.connectionString);
           break;
         }
       }
@@ -68,9 +65,17 @@ public class InheritedConnectionStringSpanProcessor implements SpanProcessor {
     }
     ReadableSpan parentReadableSpan = (ReadableSpan) parentSpan;
 
-    String instrumentationKey = parentReadableSpan.getAttribute(CONNECTION_STRING);
-    if (instrumentationKey != null) {
-      span.setAttribute(CONNECTION_STRING, instrumentationKey);
+    String connectionString =
+        parentReadableSpan.getAttribute(AiSemanticAttributes.CONNECTION_STRING);
+    if (connectionString != null) {
+      span.setAttribute(AiSemanticAttributes.CONNECTION_STRING, connectionString);
+    } else {
+      // back compat support
+      String instrumentationKey =
+          parentReadableSpan.getAttribute(AiSemanticAttributes.INSTRUMENTATION_KEY);
+      if (instrumentationKey != null) {
+        span.setAttribute(AiSemanticAttributes.INSTRUMENTATION_KEY, instrumentationKey);
+      }
     }
   }
 

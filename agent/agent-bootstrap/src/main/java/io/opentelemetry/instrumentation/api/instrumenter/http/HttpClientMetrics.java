@@ -19,10 +19,15 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
+// Includes work from:
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.instrumentation.api.instrumenter.http;
 
-import static io.opentelemetry.instrumentation.api.instrumenter.BootstrapSemanticAttributes.IS_PRE_AGGREGATED;
-import static io.opentelemetry.instrumentation.api.instrumenter.BootstrapSemanticAttributes.IS_SYNTHETIC;
+import static io.opentelemetry.instrumentation.api.instrumenter.http.TemporaryMetricsView.applyClientDurationAndSizeView;
 import static java.util.logging.Level.FINE;
 
 import com.google.auto.value.AutoValue;
@@ -31,12 +36,10 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.DoubleHistogram;
 import io.opentelemetry.api.metrics.LongHistogram;
 import io.opentelemetry.api.metrics.Meter;
-import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.ContextKey;
 import io.opentelemetry.instrumentation.api.instrumenter.OperationListener;
 import io.opentelemetry.instrumentation.api.instrumenter.OperationMetrics;
-import io.opentelemetry.instrumentation.api.instrumenter.UserAgents;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
@@ -109,25 +112,16 @@ public final class HttpClientMetrics implements OperationListener {
           context);
       return;
     }
+
+    // START APPLICATION INSIGHTS MODIFICATIONS: passing context
+
     Attributes durationAndSizeAttributes =
-        TemporaryMetricsView.applyClientDurationAndSizeView(state.startAttributes(), endAttributes);
+        applyClientDurationAndSizeView(context, state.startAttributes(), endAttributes);
 
-    // START APPLICATION INSIGHTS CODE
+    // END APPLICATION MODIFICATIONS CODE
 
-    // this is needed for detecting telemetry signals that will trigger pre-aggregated metrics via
-    // auto instrumentations
-    Span.fromContext(context).setAttribute(IS_PRE_AGGREGATED, true);
-
-    Attributes durationAttributes =
-        durationAndSizeAttributes.toBuilder()
-            .put(IS_SYNTHETIC, UserAgents.isBot(endAttributes, state.startAttributes()))
-            .build();
-
-    // END APPLICATION INSIGHTS CODE
-
-    this.duration.record(
-        (endNanos - state.startTimeNanos()) / NANOS_PER_MS, durationAttributes, context);
-
+    duration.record(
+        (endNanos - state.startTimeNanos()) / NANOS_PER_MS, durationAndSizeAttributes, context);
     Long requestLength =
         getAttribute(
             SemanticAttributes.HTTP_REQUEST_CONTENT_LENGTH, endAttributes, state.startAttributes());
