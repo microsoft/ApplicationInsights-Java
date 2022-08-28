@@ -51,9 +51,11 @@ final class TemporaryMetricsView {
     // the list of included metrics is from
     // https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/semantic_conventions/http-metrics.md#attributes
     Set<AttributeKey> view = new HashSet<>();
-    view.add(SemanticAttributes.HTTP_METHOD);
+    // START APPLICATION INSIGHTS MODIFICATIONS
+    // view.add(SemanticAttributes.HTTP_METHOD);
     view.add(SemanticAttributes.HTTP_STATUS_CODE); // Optional
-    view.add(SemanticAttributes.HTTP_FLAVOR); // Optional
+    // view.add(SemanticAttributes.HTTP_FLAVOR); // Optional
+    // END APPLICATION INSIGHTS MODIFICATIONS
     return view;
   }
 
@@ -74,9 +76,11 @@ final class TemporaryMetricsView {
     // - we always rely on http.route + http.host in this repository.
     // - we prefer http.route (which is scrubbed) over http.target (which is not scrubbed).
     Set<AttributeKey> view = new HashSet<>(durationAlwaysInclude);
-    view.add(SemanticAttributes.HTTP_SCHEME);
-    view.add(SemanticAttributes.HTTP_HOST);
-    view.add(SemanticAttributes.HTTP_ROUTE);
+    // START APPLICATION INSIGHTS MODIFICATIONS
+    // view.add(SemanticAttributes.HTTP_SCHEME);
+    // view.add(SemanticAttributes.HTTP_HOST);
+    // view.add(SemanticAttributes.HTTP_ROUTE);
+    // END APPLICATION INSIGHTS MODIFICATIONS
     return view;
   }
 

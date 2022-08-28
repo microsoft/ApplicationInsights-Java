@@ -35,62 +35,36 @@ import javax.servlet.http.HttpServletResponse;
 public class HttpPreaggregatedMetricsServlet extends HttpServlet {
 
   @Override
-  protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException {
-    try {
-      doGetInternal(req);
-      resp.getWriter().println("hi!");
-    } catch (ServletException e) {
-      throw e;
-    } catch (Exception e) {
-      throw new ServletException(e);
-    }
-  }
+  protected void doGet(HttpServletRequest req, HttpServletResponse resp)
+      throws ServletException, IOException {
 
-  // "/httpUrlConnection"
-  private void doGetInternal(HttpServletRequest req) throws Exception {
     String pathInfo = req.getPathInfo();
-    final ExecuteGetUrl executeGetUrl;
-    switch (pathInfo) {
-      case "/":
-        executeGetUrl = null;
-        break;
-      case "/httpUrlConnection":
-        executeGetUrl = this::httpUrlConnection;
-        break;
-      default:
-        throw new ServletException("Unexpected url: " + pathInfo);
+    if (pathInfo.equals("/")) {
+      return;
     }
-
-    if (executeGetUrl != null) {
-      executeGetUrl.execute("https://mock.codes/200?q=spaces%20test");
-      try {
-        executeGetUrl.execute("https://mock.codes/404");
-      } catch (Exception e) {
-        // HttpURLConnection throws exception on 404 and 500
-      }
-      try {
-        executeGetUrl.execute("https://mock.codes/500");
-      } catch (Exception e) {
-        // HttpURLConnection throws exception on 404 and 500
-      }
+    if (!pathInfo.equals("/httpUrlConnection")) {
+      throw new ServletException("Unexpected url: " + pathInfo);
+    }
+    httpUrlConnection("https://mock.codes/200?q=spaces%20test");
+    try {
+      httpUrlConnection("https://mock.codes/404");
+    } catch (Exception e) {
+      // HttpURLConnection throws exception on 404 and 500
+    }
+    try {
+      httpUrlConnection("https://mock.codes/500");
+    } catch (Exception e) {
+      // HttpURLConnection throws exception on 404 and 500
     }
   }
 
   private void httpUrlConnection(String url) throws IOException {
     URL obj = new URL(url);
     HttpURLConnection connection = (HttpURLConnection) obj.openConnection();
-    // calling getContentType() first, since this triggered a bug previously in the instrumentation
-    // previously
-    connection.getContentType();
     InputStream content = connection.getInputStream();
     // drain the content
     byte[] buffer = new byte[1024];
     while (content.read(buffer) != -1) {}
     content.close();
-  }
-
-  @FunctionalInterface
-  interface ExecuteGetUrl {
-    void execute(String url) throws Exception;
   }
 }

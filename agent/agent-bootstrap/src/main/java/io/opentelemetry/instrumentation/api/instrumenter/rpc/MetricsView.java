@@ -52,8 +52,10 @@ final class MetricsView {
     // https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/semantic_conventions/rpc.md#attributes
     Set<AttributeKey> view = new HashSet<>();
     view.add(SemanticAttributes.RPC_SYSTEM);
-    view.add(SemanticAttributes.RPC_SERVICE);
-    view.add(SemanticAttributes.RPC_METHOD);
+    // START APPLICATION INSIGHTS MODIFICATIONS
+    // view.add(SemanticAttributes.RPC_SERVICE);
+    // view.add(SemanticAttributes.RPC_METHOD);
+    // END APPLICATION INSIGHTS MODIFICATIONS
     return view;
   }
 
@@ -63,7 +65,9 @@ final class MetricsView {
     Set<AttributeKey> view = new HashSet<>(alwaysInclude);
     view.add(SemanticAttributes.NET_PEER_NAME);
     view.add(SemanticAttributes.NET_PEER_PORT);
-    view.add(SemanticAttributes.NET_TRANSPORT);
+    // START APPLICATION INSIGHTS MODIFICATIONS
+    // view.add(SemanticAttributes.NET_TRANSPORT);
+    // END APPLICATION INSIGHTS MODIFICATIONS
     return view;
   }
 
@@ -71,8 +75,10 @@ final class MetricsView {
     // the list of rpc server metrics attributes is from
     // https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/semantic_conventions/rpc.md#attributes
     Set<AttributeKey> view = new HashSet<>(alwaysInclude);
-    view.add(SemanticAttributes.NET_HOST_NAME);
-    view.add(SemanticAttributes.NET_TRANSPORT);
+    // START APPLICATION INSIGHTS MODIFICATIONS
+    // view.add(SemanticAttributes.NET_HOST_NAME);
+    // view.add(SemanticAttributes.NET_TRANSPORT);
+    // END APPLICATION INSIGHTS MODIFICATIONS
     return view;
   }
 
@@ -80,8 +86,10 @@ final class MetricsView {
     // the list of rpc server metrics attributes is from
     // https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/semantic_conventions/rpc.md#attributes
     Set<AttributeKey> view = new HashSet<>(alwaysInclude);
-    view.add(SemanticAttributes.NET_HOST_IP);
-    view.add(SemanticAttributes.NET_TRANSPORT);
+    // START APPLICATION INSIGHTS MODIFICATIONS
+    // view.add(SemanticAttributes.NET_HOST_IP);
+    // view.add(SemanticAttributes.NET_TRANSPORT);
+    // END APPLICATION INSIGHTS MODIFICATIONS
     return view;
   }
 
