@@ -89,7 +89,6 @@ class InstrumentationKeyOverridesTest {
     assertThat(rdd.getName()).isEqualTo("GET /200");
     assertThat(rdd.getData()).isEqualTo("https://mock.codes/200");
     assertThat(rdd.getResultCode()).isEqualTo("200");
-    assertThat(rddEnvelope.getIKey()).isEqualTo(iKey);
     assertThat(rdd.getSuccess()).isTrue();
 
     assertThat(md.getMessage()).isEqualTo("hello");
