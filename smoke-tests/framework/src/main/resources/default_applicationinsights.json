@@ -5,8 +5,5 @@
   },
   "sampling": {
     "percentage": 100
-  },
-  "preview": {
-    "metricIntervalSeconds": 1
   }
 }

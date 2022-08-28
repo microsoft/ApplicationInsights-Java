@@ -78,6 +78,7 @@ import io.opentelemetry.sdk.logs.export.LogExporter;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
+import io.opentelemetry.sdk.metrics.export.PeriodicMetricReaderBuilder;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -570,12 +571,15 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
     MetricDataMapper mapper =
         new MetricDataMapper(
             telemetryClient::populateDefaults, configuration.preview.captureHttpServer4xxAsError);
-    metricReader =
+    PeriodicMetricReaderBuilder readerBuilder =
         PeriodicMetricReader.builder(
-                new AgentMetricExporter(
-                    metricFilters, mapper, telemetryClient.getMetricsBatchItemProcessor()))
-            .setInterval(Duration.ofSeconds(configuration.preview.metricIntervalSeconds))
-            .build();
+            new AgentMetricExporter(
+                metricFilters, mapper, telemetryClient.getMetricsBatchItemProcessor()));
+    int intervalMillis =
+        Integer.getInteger(
+            "applicationinsights.testing.metric-reader-interval-millis",
+            configuration.preview.metricIntervalSeconds * 1000);
+    metricReader = readerBuilder.setInterval(Duration.ofMillis(intervalMillis)).build();
 
     return builder.registerMetricReader(metricReader);
   }

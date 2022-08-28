@@ -385,6 +385,7 @@ public class SmokeTestExtension
 
     List<String> javaToolOptions = new ArrayList<>();
     javaToolOptions.add("-Dapplicationinsights.testing.batch-schedule-delay-millis=500");
+    javaToolOptions.add("-Dapplicationinsights.testing.metric-reader-interval-millis=500");
     if (usesGlobalIngestionEndpoint) {
       javaToolOptions.add(
           "-Dapplicationinsights.testing.global-ingestion-endpoint=" + FAKE_INGESTION_ENDPOINT);
