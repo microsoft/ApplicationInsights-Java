@@ -34,8 +34,6 @@ import java.util.function.LongSupplier;
 
 // uses adaptive algorithm from OpenTelemetry Java Contrib's ConsistentRateLimitingSampler
 // (https://github.com/open-telemetry/opentelemetry-java-contrib/blob/main/consistent-sampling/src/main/java/io/opentelemetry/contrib/samplers/ConsistentRateLimitingSampler.java)
-//
-// TODO see if we can port test over also
 class RateLimitedSamplingPercentage implements SamplingPercentage {
 
   private static final class State {
@@ -54,15 +52,18 @@ class RateLimitedSamplingPercentage implements SamplingPercentage {
   private final double inverseAdaptationTimeNanos;
   private final double targetSpansPerNanosecondLimit;
   private final AtomicReference<State> state;
+  private final boolean roundToNearest;
 
   RateLimitedSamplingPercentage(double targetSpansPerSecondLimit, double adaptationTimeSeconds) {
-    this(targetSpansPerSecondLimit, adaptationTimeSeconds, System::nanoTime);
+    this(targetSpansPerSecondLimit, adaptationTimeSeconds, System::nanoTime, true);
   }
 
-  private RateLimitedSamplingPercentage(
+  // visible for testing
+  RateLimitedSamplingPercentage(
       double targetSpansPerSecondLimit,
       double adaptationTimeSeconds,
-      LongSupplier nanoTimeSupplier) {
+      LongSupplier nanoTimeSupplier,
+      boolean roundToNearest) {
 
     if (targetSpansPerSecondLimit < 0.0) {
       throw new IllegalArgumentException("Limit for sampled spans per second must be nonnegative!");
@@ -76,6 +77,8 @@ class RateLimitedSamplingPercentage implements SamplingPercentage {
     this.targetSpansPerNanosecondLimit = 1e-9 * targetSpansPerSecondLimit;
 
     this.state = new AtomicReference<>(new State(0, 0, nanoTimeSupplier.getAsLong()));
+
+    this.roundToNearest = roundToNearest;
   }
 
   private State updateState(State oldState, long currentNanoTime) {
@@ -102,7 +105,10 @@ class RateLimitedSamplingPercentage implements SamplingPercentage {
 
     double samplingPercentage = 100 * Math.min(samplingProbability, 1);
 
-    return roundDownToNearest(samplingPercentage);
+    if (roundToNearest) {
+      samplingPercentage = roundDownToNearest(samplingPercentage);
+    }
+    return samplingPercentage;
   }
 
   private static double roundDownToNearest(double samplingPercentage) {
