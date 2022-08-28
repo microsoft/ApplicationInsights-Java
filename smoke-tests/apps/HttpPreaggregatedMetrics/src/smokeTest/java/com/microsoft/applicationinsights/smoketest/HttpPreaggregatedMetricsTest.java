@@ -150,8 +150,7 @@ abstract class HttpPreaggregatedMetricsTest {
     validateMetricData("client", md3, "500");
   }
 
-  private static void verifyHttpServerPreAggregatedMetrics(List<Envelope> metrics)
-      throws Exception {
+  private static void verifyHttpServerPreAggregatedMetrics(List<Envelope> metrics) {
     assertThat(metrics.size()).isEqualTo(1);
     // 1st pre-aggregated metric
     Envelope envelope1 = metrics.get(0);
