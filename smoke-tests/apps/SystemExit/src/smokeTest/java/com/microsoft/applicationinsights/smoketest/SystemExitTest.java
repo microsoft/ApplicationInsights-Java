@@ -57,8 +57,7 @@ abstract class SystemExitTest {
         },
         10,
         TimeUnit.SECONDS);
-    testing.mockedIngestion.waitForItem(
-        SmokeTestExtension.getMetricPredicate("counter"), 10, TimeUnit.SECONDS);
+    testing.mockedIngestion.waitForMetricItems("counter", 1);
   }
 
   @Environment(JAVA_8)

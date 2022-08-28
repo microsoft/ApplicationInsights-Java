@@ -41,7 +41,6 @@ import com.microsoft.applicationinsights.smoketest.schemav2.RemoteDependencyData
 import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -55,11 +54,9 @@ abstract class GrpcTest {
   void doSimpleTest() throws Exception {
     List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 2);
     List<Envelope> rpcClientDurationMetrics =
-        testing.mockedIngestion.waitForItems(
-            SmokeTestExtension.getMetricPredicate("rpc.client.duration"), 2, 40, TimeUnit.SECONDS);
+        testing.mockedIngestion.waitForMetricItems("rpc.client.duration", 2);
     List<Envelope> rpcServerMetrics =
-        testing.mockedIngestion.waitForItems(
-            SmokeTestExtension.getMetricPredicate("rpc.server.duration"), 2, 40, TimeUnit.SECONDS);
+        testing.mockedIngestion.waitForMetricItems("rpc.server.duration", 2);
 
     Envelope rdEnvelope1 = getRequestEnvelope(rdList, "GET /simple");
     Envelope rdEnvelope2 = getRequestEnvelope(rdList, "example.Greeter/SayHello");

@@ -49,8 +49,7 @@ abstract class HeartBeatTest {
   @TargetUri("/index.jsp")
   void testHeartBeat() throws Exception {
     List<Envelope> metrics =
-        testing.mockedIngestion.waitForItems(
-            testing.getMetricPredicate("HeartbeatState"), 2, 30, TimeUnit.SECONDS);
+        testing.mockedIngestion.waitForMetricItems("HeartbeatState", 2, 30, TimeUnit.SECONDS);
     assertThat(metrics).hasSize(2);
 
     MetricData data = (MetricData) ((Data<?>) metrics.get(0).getData()).getBaseData();

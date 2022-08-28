@@ -191,10 +191,29 @@ public class MetricDataMapper {
         DependencyExtractor.extract(
             metricTelemetryBuilder, statusCode, success, dependencyType, target, isSynthetic);
       }
-    } else {
       attributes.forEach(
-          (key, value) -> metricTelemetryBuilder.addProperty(key.getKey(), value.toString()));
+          (key, value) ->
+              SpanDataMapper.applyConnectionStringAndRoleNameOverrides(
+                  metricTelemetryBuilder, value, key.getKey()));
+    } else {
+      setExtraAttributes(metricTelemetryBuilder, attributes);
     }
+  }
+
+  private static void setExtraAttributes(
+      AbstractTelemetryBuilder telemetryBuilder, Attributes attributes) {
+    attributes.forEach(
+        (key, value) -> {
+          String stringKey = key.getKey();
+          if (SpanDataMapper.applyConnectionStringAndRoleNameOverrides(
+              telemetryBuilder, value, stringKey)) {
+            return;
+          }
+          String val = SpanDataMapper.convertToString(value, key.getType());
+          if (value != null) {
+            telemetryBuilder.addProperty(key.getKey(), val);
+          }
+        });
   }
 
   private static int getDefaultPortForHttpScheme(@Nullable String httpScheme) {

@@ -40,7 +40,6 @@ import com.microsoft.applicationinsights.smoketest.schemav2.MetricData;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -55,11 +54,9 @@ abstract class HttpPreaggregatedMetricsTest {
     verifyHttpclientRequestsAndDependencies("https://mock.codes/200?q=spaces%20test");
 
     List<Envelope> clientMetrics =
-        testing.mockedIngestion.waitForItems(
-            SmokeTestExtension.getMetricPredicate("http.client.duration"), 3, 40, TimeUnit.SECONDS);
+        testing.mockedIngestion.waitForMetricItems("http.client.duration", 3);
     List<Envelope> serverMetrics =
-        testing.mockedIngestion.waitForItems(
-            SmokeTestExtension.getMetricPredicate("http.server.duration"), 1, 40, TimeUnit.SECONDS);
+        testing.mockedIngestion.waitForMetricItems("http.server.duration", 1);
 
     verifyHttpClientPreAggregatedMetrics(clientMetrics);
     verifyHttpServerPreAggregatedMetrics(serverMetrics);
@@ -120,8 +117,7 @@ abstract class HttpPreaggregatedMetricsTest {
         "GET /HttpPreaggregatedMetrics/*");
   }
 
-  private static void verifyHttpClientPreAggregatedMetrics(List<Envelope> metrics)
-      throws Exception {
+  private static void verifyHttpClientPreAggregatedMetrics(List<Envelope> metrics) {
     assertThat(metrics.size()).isEqualTo(3);
     // sort metrics based on result code
     metrics.sort(

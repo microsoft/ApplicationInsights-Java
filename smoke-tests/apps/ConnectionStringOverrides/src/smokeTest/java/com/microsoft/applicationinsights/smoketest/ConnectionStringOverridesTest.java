@@ -33,12 +33,15 @@ import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WI
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
+import com.microsoft.applicationinsights.smoketest.schemav2.DataPoint;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
 import com.microsoft.applicationinsights.smoketest.schemav2.MessageData;
+import com.microsoft.applicationinsights.smoketest.schemav2.MetricData;
 import com.microsoft.applicationinsights.smoketest.schemav2.RemoteDependencyData;
 import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
 import com.microsoft.applicationinsights.smoketest.schemav2.SeverityLevel;
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -102,6 +105,72 @@ abstract class ConnectionStringOverridesTest {
         rd, rdEnvelope, rddEnvelope, "GET /ConnectionStringOverrides/*");
     SmokeTestExtension.assertParentChild(
         rd, rdEnvelope, mdEnvelope, "GET /ConnectionStringOverrides/*");
+
+    // and metrics too
+
+    List<Envelope> clientMetrics =
+        testing.mockedIngestion.waitForMetricItems("http.client.duration", 1);
+    List<Envelope> serverMetrics =
+        testing.mockedIngestion.waitForMetricItems("http.server.duration", 1);
+
+    verifyHttpClientPreAggregatedMetrics(clientMetrics, iKey);
+    verifyHttpServerPreAggregatedMetrics(serverMetrics, iKey);
+  }
+
+  private static void verifyHttpClientPreAggregatedMetrics(List<Envelope> metrics, String iKey) {
+    assertThat(metrics.size()).isEqualTo(1);
+
+    Envelope envelope1 = metrics.get(0);
+    assertThat(envelope1.getIKey()).isEqualTo(iKey);
+    validateTags(envelope1);
+    MetricData md1 = (MetricData) ((Data<?>) envelope1.getData()).getBaseData();
+    validateMetricData("client", md1, "200");
+  }
+
+  private static void verifyHttpServerPreAggregatedMetrics(List<Envelope> metrics, String iKey) {
+    assertThat(metrics.size()).isEqualTo(1);
+
+    Envelope envelope1 = metrics.get(0);
+    assertThat(envelope1.getIKey()).isEqualTo(iKey);
+    validateTags(envelope1);
+    MetricData md1 = (MetricData) ((Data<?>) envelope1.getData()).getBaseData();
+    validateMetricData("server", md1, "200");
+  }
+
+  private static void validateTags(Envelope envelope) {
+    Map<String, String> tags = envelope.getTags();
+    assertThat(tags.get("ai.internal.sdkVersion")).isNotNull();
+    assertThat(tags).containsEntry("ai.cloud.roleInstance", "testroleinstance");
+    assertThat(tags).containsEntry("ai.cloud.role", "testrolename");
+  }
+
+  private static void validateMetricData(String type, MetricData metricData, String resultCode) {
+    List<DataPoint> dataPoints = metricData.getMetrics();
+    assertThat(dataPoints).hasSize(1);
+    DataPoint dataPoint = dataPoints.get(0);
+    assertThat(dataPoint.getCount()).isEqualTo(1);
+    assertThat(dataPoint.getValue()).isGreaterThan(0d).isLessThan(5 * 60 * 1000d); // (0 - 5) min
+    assertThat(dataPoint.getMin()).isGreaterThan(0d).isLessThan(5 * 60 * 1000d); // (0 - 5) min
+    assertThat(dataPoint.getMax()).isGreaterThan(0d).isLessThan(5 * 60 * 1000d); // (0 - 5) min
+    Map<String, String> properties = metricData.getProperties();
+    String expectedSuccess = "200".equals(resultCode) ? "True" : "False";
+    if ("client".equals(type)) {
+      assertThat(properties).hasSize(9);
+      assertThat(properties.get("_MS.MetricId")).isEqualTo("dependencies/duration");
+      assertThat(properties.get("dependency/resultCode")).isEqualTo(resultCode);
+      assertThat(properties.get("dependency/success")).isEqualTo(expectedSuccess);
+      assertThat(properties.get("dependency/target")).isEqualTo("mock.codes");
+      assertThat(properties.get("dependency/type")).isEqualTo("Http");
+    } else {
+      assertThat(properties).hasSize(7);
+      assertThat(properties.get("_MS.MetricId")).isEqualTo("requests/duration");
+      assertThat(properties.get("request/resultCode")).isEqualTo(resultCode);
+      assertThat(properties.get("request/success")).isEqualTo(expectedSuccess);
+    }
+    assertThat(properties.get("operation/synthetic")).isEqualTo("False");
+    assertThat(properties.get("cloud/roleInstance")).isEqualTo("testroleinstance");
+    assertThat(properties.get("cloud/roleName")).isEqualTo("testrolename");
+    assertThat(properties.get("_MS.IsAutocollected")).isEqualTo("True");
   }
 
   @Environment(TOMCAT_8_JAVA_8)

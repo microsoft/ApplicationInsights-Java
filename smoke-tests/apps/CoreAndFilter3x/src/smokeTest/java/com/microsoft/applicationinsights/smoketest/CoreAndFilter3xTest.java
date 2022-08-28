@@ -182,9 +182,6 @@ abstract class CoreAndFilter3xTest {
   void testHttpRequest() throws Exception {
     testing.mockedIngestion.waitForItems("RequestData", 5);
 
-    int totalItems = testing.mockedIngestion.getItemCount();
-    assertThat(totalItems).isEqualTo(5);
-
     // TODO get HttpRequest data envelope and verify value
     List<RequestData> requests = testing.mockedIngestion.getTelemetryDataByType("RequestData");
 
@@ -228,7 +225,7 @@ abstract class CoreAndFilter3xTest {
   @TargetUri("/trackMetric")
   void trackMetric() throws Exception {
     List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
-    List<Envelope> mdList = testing.mockedIngestion.waitForItems("MetricData", 1);
+    List<Envelope> mdList = testing.mockedIngestion.waitForMetricItems("TimeToRespond", 1);
 
     Envelope rdEnvelope = rdList.get(0);
     Envelope mdEnvelope = mdList.get(0);
