@@ -37,8 +37,6 @@ import org.slf4j.LoggerFactory;
 /** This class manages loading a list of {@link ByteBuffer} from the disk. */
 class LocalFileLoader {
 
-  private static final Logger logger = LoggerFactory.getLogger(LocalFileLoader.class);
-
   private static final String TEMPORARY_FILE_EXTENSION = ".tmp";
 
   private final LocalFileCache localFileCache;
