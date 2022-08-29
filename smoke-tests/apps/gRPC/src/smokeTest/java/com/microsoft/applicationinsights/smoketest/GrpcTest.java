@@ -54,9 +54,9 @@ abstract class GrpcTest {
   void doSimpleTest() throws Exception {
     List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 2);
     List<Envelope> rpcClientDurationMetrics =
-        testing.mockedIngestion.waitForMetricItems("rpc.client.duration", 2);
+        testing.mockedIngestion.waitForMetricItems("rpc.client.duration", 1);
     List<Envelope> rpcServerMetrics =
-        testing.mockedIngestion.waitForMetricItems("rpc.server.duration", 2);
+        testing.mockedIngestion.waitForMetricItems("rpc.server.duration", 1);
 
     Envelope rdEnvelope1 = getRequestEnvelope(rdList, "GET /simple");
     Envelope rdEnvelope2 = getRequestEnvelope(rdList, "example.Greeter/SayHello");
@@ -101,6 +101,10 @@ abstract class GrpcTest {
   @TargetUri("/conversation")
   void doConversationTest() throws Exception {
     List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 2);
+    List<Envelope> rpcClientDurationMetrics =
+        testing.mockedIngestion.waitForMetricItems("rpc.client.duration", 1);
+    List<Envelope> rpcServerMetrics =
+        testing.mockedIngestion.waitForMetricItems("rpc.server.duration", 1);
 
     Envelope rdEnvelope1 = getRequestEnvelope(rdList, "GET /conversation");
     Envelope rdEnvelope2 = getRequestEnvelope(rdList, "example.Greeter/Conversation");
@@ -141,6 +145,9 @@ abstract class GrpcTest {
         "GET /conversation",
         "example.Greeter/Conversation",
         false);
+
+    verifyRpcClientDurationPreAggregatedMetrics(rpcClientDurationMetrics);
+    verifyRpcServerDurationPreAggregatedMetrics(rpcServerMetrics);
   }
 
   private static Envelope getRequestEnvelope(List<Envelope> envelopes, String name) {
@@ -165,34 +172,21 @@ abstract class GrpcTest {
   }
 
   private static void verifyRpcClientDurationPreAggregatedMetrics(List<Envelope> metrics) {
-    assertThat(metrics.size()).isEqualTo(2);
+    assertThat(metrics.size()).isEqualTo(1);
 
-    // 1st pre-aggregated metric
     Envelope envelope1 = metrics.get(0);
     validateTags(envelope1);
     MetricData md1 = (MetricData) ((Data<?>) envelope1.getData()).getBaseData();
     validateMetricData("client", md1);
-
-    // 2nd pre-aggregated metric
-    Envelope envelope2 = metrics.get(1);
-    validateTags(envelope2);
-    MetricData md2 = (MetricData) ((Data<?>) envelope2.getData()).getBaseData();
-    validateMetricData("client", md2);
   }
 
   private static void verifyRpcServerDurationPreAggregatedMetrics(List<Envelope> metrics) {
-    assertThat(metrics.size()).isEqualTo(2);
-    // 1st pre-aggregated metric
+    assertThat(metrics.size()).isEqualTo(1);
+
     Envelope envelope1 = metrics.get(0);
     validateTags(envelope1);
     MetricData md1 = (MetricData) ((Data<?>) envelope1.getData()).getBaseData();
     validateMetricData("server", md1);
-
-    // 2nd pre-aggregated metric
-    Envelope envelope2 = metrics.get(1);
-    validateTags(envelope2);
-    MetricData md2 = (MetricData) ((Data<?>) envelope2.getData()).getBaseData();
-    validateMetricData("server", md2);
   }
 
   private static void validateTags(Envelope envelope) {
