@@ -37,7 +37,6 @@ import com.azure.monitor.opentelemetry.exporter.implementation.builders.MetricTe
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.PageViewTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.RemoteDependencyTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.RequestTelemetryBuilder;
-import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.SeverityLevel;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedDuration;
@@ -49,7 +48,6 @@ import com.microsoft.applicationinsights.agent.internal.statsbeat.FeatureStatsbe
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
-import io.opentelemetry.instrumentation.api.internal.cache.Cache;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import java.net.URI;
 import java.net.URL;
@@ -70,8 +68,6 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
   public static volatile float samplingPercentage = 100;
 
   public static volatile FeatureStatsbeat featureStatsbeat;
-
-  private static final Cache<String, ConnectionString> connectionStringCache = Cache.bounded(100);
 
   @Override
   public void trackEvent(
@@ -548,8 +544,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
       connectionString = "InstrumentationKey=" + instrumentationKey;
     }
     if (connectionString != null) {
-      telemetryBuilder.setConnectionString(
-          connectionStringCache.computeIfAbsent(connectionString, ConnectionString::parse));
+      telemetryBuilder.setConnectionString(connectionString);
     }
   }
 

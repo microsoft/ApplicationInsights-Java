@@ -31,7 +31,6 @@ import com.azure.core.http.HttpPipelineBuilder;
 import com.azure.core.http.HttpRequest;
 import com.azure.core.test.http.MockHttpResponse;
 import com.azure.core.util.Context;
-import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryItemExporter;
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipeline;
@@ -54,11 +53,8 @@ import reactor.core.publisher.Mono;
 
 public class IntegrationTests {
 
-  private static final ConnectionString CONNECTION_STRING =
-      ConnectionString.parse(
-          "InstrumentationKey=00000000-0000-0000-0000-0FEEDDADBEEF;IngestionEndpoint=http://foo.bar/");
-  private static final String INSTRUMENTATION_KEY = "00000000-0000-0000-0000-0FEEDDADBEEF";
-  private static final String INGESTION_ENDPOINT = "http://foo.bar/";
+  private static final String CONNECTION_STRING =
+      "InstrumentationKey=00000000-0000-0000-0000-0FEEDDADBEEF;IngestionEndpoint=http://foo.bar/";
 
   private TelemetryItemExporter telemetryItemExporter;
 
@@ -131,8 +127,7 @@ public class IntegrationTests {
 
     for (int i = 100; i > 0; i--) {
       LocalFileLoader.PersistedFile file = localFileLoader.loadTelemetriesFromDisk();
-      assertThat(file.instrumentationKey).isEqualTo(INSTRUMENTATION_KEY);
-      assertThat(file.ingestionEndpoint).isEqualTo(INGESTION_ENDPOINT);
+      assertThat(file.connectionString).isEqualTo(CONNECTION_STRING);
       assertThat(ungzip(file.rawBytes.array())).isEqualTo(expected);
       assertThat(localFileCache.getPersistedFilesCache().size()).isEqualTo(i - 1);
     }

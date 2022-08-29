@@ -90,24 +90,15 @@ public class TelemetryItemExporter {
   }
 
   public CompletableResultCode send(List<TelemetryItem> telemetryItems) {
-    // second level (ingestion endpoint) is just to protect against scenario where some telemetry
-    // is stamped with same ikey but bad ingestion endpoint, so only the bad telemetry will fail
-    Map<String, Map<String, List<TelemetryItem>>> groupings = new HashMap<>();
+    Map<String, List<TelemetryItem>> groupings = new HashMap<>();
     for (TelemetryItem telemetryItem : telemetryItems) {
       groupings
-          .computeIfAbsent(telemetryItem.getInstrumentationKey(), k -> new HashMap<>())
-          .computeIfAbsent(telemetryItem.getIngestionEndpoint(), k -> new ArrayList<>())
+          .computeIfAbsent(telemetryItem.getConnectionString(), k -> new ArrayList<>())
           .add(telemetryItem);
     }
     List<CompletableResultCode> resultCodeList = new ArrayList<>();
-    for (Map.Entry<String, Map<String, List<TelemetryItem>>> outerEntry : groupings.entrySet()) {
-      for (Map.Entry<String, List<TelemetryItem>> innerEntry : outerEntry.getValue().entrySet()) {
-        String instrumentationKey = outerEntry.getKey();
-        String ingestionEndpoint = innerEntry.getKey();
-        resultCodeList.add(
-            internalSendByInstrumentationKey(
-                innerEntry.getValue(), instrumentationKey, ingestionEndpoint));
-      }
+    for (Map.Entry<String, List<TelemetryItem>> entry : groupings.entrySet()) {
+      resultCodeList.add(internalSendByConnectionString(entry.getValue(), entry.getKey()));
     }
     return maybeAddToActiveExportResults(resultCodeList);
   }
@@ -140,8 +131,8 @@ public class TelemetryItemExporter {
     return listener.shutdown();
   }
 
-  CompletableResultCode internalSendByInstrumentationKey(
-      List<TelemetryItem> telemetryItems, String instrumentationKey, String ingestionEndpoint) {
+  CompletableResultCode internalSendByConnectionString(
+      List<TelemetryItem> telemetryItems, String connectionString) {
     List<ByteBuffer> byteBuffers;
     try {
       byteBuffers = encode(telemetryItems);
@@ -150,7 +141,7 @@ public class TelemetryItemExporter {
       encodeBatchOperationLogger.recordFailure(t.getMessage(), t);
       return CompletableResultCode.ofFailure();
     }
-    return telemetryPipeline.send(byteBuffers, instrumentationKey, ingestionEndpoint, listener);
+    return telemetryPipeline.send(byteBuffers, connectionString, listener);
   }
 
   List<ByteBuffer> encode(List<TelemetryItem> telemetryItems) throws IOException {

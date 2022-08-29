@@ -30,7 +30,6 @@ import com.azure.core.http.HttpRequest;
 import com.azure.core.http.HttpResponse;
 import com.azure.core.util.FluxUtil;
 import com.azure.monitor.opentelemetry.exporter.implementation.MockHttpResponse;
-import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
 import com.azure.monitor.opentelemetry.exporter.implementation.localstorage.LocalStorageTelemetryPipelineListener;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.TestUtils;
@@ -56,12 +55,10 @@ import reactor.core.publisher.Mono;
 
 public class TelemetryItemExporterTest {
 
-  private static final ConnectionString CONNECTION_STRING =
-      ConnectionString.parse(
-          "InstrumentationKey=00000000-0000-0000-0000-0FEEDDADBEEF;IngestionEndpoint=http://foo.bar");
-  private static final ConnectionString REDIRECT_CONNECTION_STRING =
-      ConnectionString.parse(
-          "InstrumentationKey=11111111-0000-0000-0000-0FEEDDADBEEF;IngestionEndpoint=http://foo.bar");
+  private static final String CONNECTION_STRING =
+      "InstrumentationKey=00000000-0000-0000-0000-0FEEDDADBEEF;IngestionEndpoint=http://foo.bar";
+  private static final String REDIRECT_CONNECTION_STRING =
+      "InstrumentationKey=11111111-0000-0000-0000-0FEEDDADBEEF;IngestionEndpoint=http://foo.bar";
 
   private static final String INSTRUMENTATION_KEY = "00000000-0000-0000-0000-0FEEDDADBEEF";
   private static final String REDIRECT_URL = "http://foo.bar.redirect";

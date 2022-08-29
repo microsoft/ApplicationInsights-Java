@@ -40,8 +40,8 @@ import org.junit.jupiter.api.io.TempDir;
 
 public class LocalFileWriterTests {
 
-  private static final String INSTRUMENTATION_KEY = "00000000-0000-0000-0000-0FEEDDADBEEF";
-  private static final String INGESTION_ENDPOINT = "http://foo.bar/";
+  private static final String CONNECTION_STRING =
+      "InstrumentationKey=00000000-0000-0000-0000-0FEEDDADBEEF;IngestionEndpoint=http://foo.bar/";
 
   private LocalFileCache localFileCache;
 
@@ -70,7 +70,7 @@ public class LocalFileWriterTests {
     assertThat(byteBuffers.size()).isEqualTo(10);
 
     LocalFileWriter writer = new LocalFileWriter(50, localFileCache, tempFolder, null, false);
-    writer.writeToDisk(INSTRUMENTATION_KEY, INGESTION_ENDPOINT, byteBuffers);
+    writer.writeToDisk(CONNECTION_STRING, byteBuffers);
     assertThat(localFileCache.getPersistedFilesCache().size()).isEqualTo(1);
   }
 
@@ -78,8 +78,7 @@ public class LocalFileWriterTests {
   public void testWriteRawByteArray() throws IOException {
     LocalFileWriter writer = new LocalFileWriter(50, localFileCache, tempFolder, null, false);
     byte[] content = Resources.readBytes("write-transmission.txt");
-    writer.writeToDisk(
-        INSTRUMENTATION_KEY, INGESTION_ENDPOINT, singletonList(ByteBuffer.wrap(content)));
+    writer.writeToDisk(CONNECTION_STRING, singletonList(ByteBuffer.wrap(content)));
     assertThat(localFileCache.getPersistedFilesCache().size()).isEqualTo(1);
   }
 
@@ -96,9 +95,7 @@ public class LocalFileWriterTests {
               LocalFileWriter writer =
                   new LocalFileWriter(50, localFileCache, tempFolder, null, false);
               writer.writeToDisk(
-                  INSTRUMENTATION_KEY,
-                  INGESTION_ENDPOINT,
-                  singletonList(ByteBuffer.wrap(telemetry.getBytes(UTF_8))));
+                  CONNECTION_STRING, singletonList(ByteBuffer.wrap(telemetry.getBytes(UTF_8))));
             }
           });
     }

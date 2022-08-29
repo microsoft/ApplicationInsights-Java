@@ -65,6 +65,10 @@ public abstract class AbstractTelemetryBuilder {
     telemetryItem.setSampleRate(sampleRate);
   }
 
+  public void setConnectionString(String connectionString) {
+    telemetryItem.setConnectionString(connectionString);
+  }
+
   public void setConnectionString(ConnectionString connectionString) {
     telemetryItem.setConnectionString(connectionString);
   }

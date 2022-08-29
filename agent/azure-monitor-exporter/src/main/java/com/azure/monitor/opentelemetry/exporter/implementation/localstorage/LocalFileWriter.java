@@ -68,7 +68,7 @@ final class LocalFileWriter {
       value = "SECPTI", // Potential Path Traversal
       justification =
           "The constructed file path cannot be controlled by an end user of the instrumented application")
-  void writeToDisk(String instrumentationKey, String ingestionEndpoint, List<ByteBuffer> buffers) {
+  void writeToDisk(String connectionString, List<ByteBuffer> buffers) {
     long size = getTotalSizeOfPersistedFiles(telemetryFolder);
     if (size >= diskPersistenceMaxSizeBytes) {
       operationLogger.recordFailure(
@@ -93,7 +93,7 @@ final class LocalFileWriter {
     }
 
     try {
-      write(tempFile, instrumentationKey, ingestionEndpoint, buffers);
+      write(tempFile, connectionString, buffers);
     } catch (IOException e) {
       operationLogger.recordFailure(
           "Error writing file: " + tempFile.getAbsolutePath(), e, DISK_PERSISTENCE_WRITER_ERROR);
@@ -118,15 +118,13 @@ final class LocalFileWriter {
     operationLogger.recordSuccess();
   }
 
-  private static void write(
-      File file, String instrumentationKey, String ingestionEndpoint, List<ByteBuffer> buffers)
+  private static void write(File file, String connectionString, List<ByteBuffer> buffers)
       throws IOException {
 
     try (FileOutputStream fileOut = new FileOutputStream(file);
         DataOutputStream dataOut = new DataOutputStream(fileOut)) {
       dataOut.writeInt(1); // version
-      dataOut.writeUTF(instrumentationKey);
-      dataOut.writeUTF(ingestionEndpoint);
+      dataOut.writeUTF(connectionString);
 
       int numBytes = buffers.stream().mapToInt(ByteBuffer::remaining).sum();
       dataOut.writeInt(numBytes);

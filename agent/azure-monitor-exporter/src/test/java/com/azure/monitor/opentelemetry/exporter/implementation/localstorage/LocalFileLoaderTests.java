@@ -52,21 +52,10 @@ public class LocalFileLoaderTests {
   private static final String GZIPPED_RAW_BYTES_WITHOUT_IKEY = "gzipped-raw-bytes-without-ikey.trn";
   private static final String GZIPPED_RAW_BYTES_WITHOUT_INGESTION_ENDPOINT =
       "gzipped-raw-bytes-without-ingestion-endpoint.trn";
-  private static final String INSTRUMENTATION_KEY = "00000000-0000-0000-0000-0FEEDDADBEEF";
-  private static final String INGESTION_ENDPOINT = "http://foo.bar/";
+  private static final String CONNECTION_STRING =
+      "InstrumentationKey=00000000-0000-0000-0000-0FEEDDADBEEF;IngestionEndpoint=http://foo.bar/";
 
   @TempDir File tempFolder;
-
-  @Test
-  public void testInstrumentationKeyRegex() {
-    assertThat(LocalFileLoader.isInstrumentationKeyValid(INSTRUMENTATION_KEY)).isTrue();
-    assertThat(LocalFileLoader.isInstrumentationKeyValid("fake-instrumentation-key")).isFalse();
-    assertThat(LocalFileLoader.isInstrumentationKeyValid("5ED1AE38-41AF-11EC-81D3")).isFalse();
-    assertThat(LocalFileLoader.isInstrumentationKeyValid("5ED1AE38-41AF-11EC-81D3-0242AC130003"))
-        .isTrue();
-    assertThat(LocalFileLoader.isInstrumentationKeyValid("C6864988-6BF8-45EF-8590-1FD3D84E5A4D"))
-        .isTrue();
-  }
 
   @Test
   public void testPersistedFileWithoutInstrumentationKey() throws IOException {
@@ -117,9 +106,7 @@ public class LocalFileLoaderTests {
     // persist 10 files to disk
     for (int i = 0; i < 10; i++) {
       localFileWriter.writeToDisk(
-          INSTRUMENTATION_KEY,
-          INGESTION_ENDPOINT,
-          singletonList(ByteBuffer.wrap("hello world".getBytes(UTF_8))));
+          CONNECTION_STRING, singletonList(ByteBuffer.wrap("hello world".getBytes(UTF_8))));
     }
 
     assertThat(localFileCache.getPersistedFilesCache().size()).isEqualTo(10);
@@ -135,8 +122,7 @@ public class LocalFileLoaderTests {
       CompletableResultCode completableResultCode =
           telemetryPipeline.send(
               singletonList(persistedFile.rawBytes),
-              persistedFile.instrumentationKey,
-              persistedFile.ingestionEndpoint,
+              persistedFile.connectionString,
               new LocalFileSenderTelemetryPipelineListener(localFileLoader, persistedFile.file));
       completableResultCode.join(10, SECONDS);
       assertThat(completableResultCode.isSuccess()).isEqualTo(true);
@@ -171,9 +157,7 @@ public class LocalFileLoaderTests {
     // persist 10 files to disk
     for (int i = 0; i < 10; i++) {
       localFileWriter.writeToDisk(
-          INSTRUMENTATION_KEY,
-          INGESTION_ENDPOINT,
-          singletonList(ByteBuffer.wrap("hello world".getBytes(UTF_8))));
+          CONNECTION_STRING, singletonList(ByteBuffer.wrap("hello world".getBytes(UTF_8))));
     }
 
     assertThat(localFileCache.getPersistedFilesCache().size()).isEqualTo(10);
@@ -184,13 +168,12 @@ public class LocalFileLoaderTests {
     // fail to send persisted files and expect them to be kept on disk
     for (int i = 0; i < 10; i++) {
       LocalFileLoader.PersistedFile persistedFile = localFileLoader.loadTelemetriesFromDisk();
-      assertThat(persistedFile.instrumentationKey).isEqualTo(INSTRUMENTATION_KEY);
+      assertThat(persistedFile.connectionString).isEqualTo(CONNECTION_STRING);
 
       CompletableResultCode completableResultCode =
           telemetryPipeline.send(
               singletonList(persistedFile.rawBytes),
-              persistedFile.instrumentationKey,
-              persistedFile.ingestionEndpoint,
+              persistedFile.connectionString,
               new LocalFileSenderTelemetryPipelineListener(localFileLoader, persistedFile.file));
       completableResultCode.join(10, SECONDS);
       assertThat(completableResultCode.isSuccess()).isEqualTo(false);

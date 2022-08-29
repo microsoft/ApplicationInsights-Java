@@ -25,6 +25,7 @@ import com.azure.core.http.HttpPipeline;
 import com.azure.core.http.HttpResponse;
 import com.azure.core.util.Context;
 import com.azure.core.util.tracing.Tracer;
+import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.StatusCode;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.net.MalformedURLException;
@@ -44,7 +45,7 @@ public class TelemetryPipeline {
 
   private final HttpPipeline pipeline;
 
-  // key is instrumentationKey, value is redirectUrl
+  // key is connectionString, value is redirectUrl
   private final Map<String, URL> redirectCache =
       Collections.synchronizedMap(
           new LinkedHashMap<String, URL>() {
@@ -59,16 +60,17 @@ public class TelemetryPipeline {
   }
 
   public CompletableResultCode send(
-      List<ByteBuffer> telemetry,
-      String instrumentationKey,
-      String ingestionEndpoint,
-      TelemetryPipelineListener listener) {
+      List<ByteBuffer> telemetry, String connectionString, TelemetryPipelineListener listener) {
+
+    ConnectionString connectionStringObj = ConnectionString.parse(connectionString);
 
     URL url =
         redirectCache.computeIfAbsent(
-            instrumentationKey, ikey -> getFullIngestionUrl(ingestionEndpoint));
+            connectionString, k -> getFullIngestionUrl(connectionStringObj.getIngestionEndpoint()));
+
     TelemetryPipelineRequest request =
-        new TelemetryPipelineRequest(url, instrumentationKey, ingestionEndpoint, telemetry);
+        new TelemetryPipelineRequest(
+            url, connectionString, connectionStringObj.getInstrumentationKey(), telemetry);
 
     try {
       CompletableResultCode result = new CompletableResultCode();
@@ -148,7 +150,7 @@ public class TelemetryPipeline {
         listener.onException(request, "Invalid redirect: " + location, e);
         return;
       }
-      redirectCache.put(request.getInstrumentationKey(), locationUrl);
+      redirectCache.put(request.getConnectionString(), locationUrl);
       request.setUrl(locationUrl);
       sendInternal(request, listener, result, remainingRedirects - 1);
       return;

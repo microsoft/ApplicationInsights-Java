@@ -47,8 +47,7 @@ public class LocalFilePurgerTests {
     // persist 100 files to disk
     for (int i = 0; i < 100; i++) {
       writer.writeToDisk(
-          "00000000-0000-0000-0000-0FEEDDADBEE",
-          "http://foo.bar/",
+          "InstrumentationKey=00000000-0000-0000-0000-0FEEDDADBEE;IngestionEndpoint=http://foo.bar/",
           singletonList(ByteBuffer.wrap(text.getBytes(UTF_8))));
     }
 

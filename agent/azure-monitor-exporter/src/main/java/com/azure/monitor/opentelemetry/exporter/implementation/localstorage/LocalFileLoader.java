@@ -23,6 +23,7 @@ package com.azure.monitor.opentelemetry.exporter.implementation.localstorage;
 
 import static com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMsgId.DISK_PERSISTENCE_LOADER_ERROR;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
 import com.azure.monitor.opentelemetry.exporter.implementation.logging.OperationLogger;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.DataInputStream;
@@ -30,16 +31,15 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
-import java.util.regex.Pattern;
 import javax.annotation.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /** This class manages loading a list of {@link ByteBuffer} from the disk. */
 class LocalFileLoader {
 
-  // A regex to validate that an instrumentation key is well-formed. It's copied straight from the
-  // Breeze repo.
-  private static final String INSTRUMENTATION_KEY_REGEX =
-      "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$";
+  private static final Logger logger = LoggerFactory.getLogger(LocalFileLoader.class);
+
   private static final String TEMPORARY_FILE_EXTENSION = ".tmp";
 
   private final LocalFileCache localFileCache;
@@ -110,8 +110,7 @@ class LocalFileLoader {
       return null;
     }
 
-    String instrumentationKey;
-    String ingestionEndpoint;
+    String connectionString;
     byte[] telemetryBytes;
 
     try (DataInputStream dataInputStream =
@@ -128,8 +127,8 @@ class LocalFileLoader {
         return null;
       }
 
-      instrumentationKey = dataInputStream.readUTF();
-      if (!isInstrumentationKeyValid(instrumentationKey)) {
+      connectionString = dataInputStream.readUTF();
+      if (!isConnectionStringKeyValid(connectionString)) {
         // probably really old format where content was written directly with no ikey
 
         // need to close FileInputStream before delete
@@ -137,8 +136,6 @@ class LocalFileLoader {
         deleteFile(tempFile);
         return null;
       }
-
-      ingestionEndpoint = dataInputStream.readUTF();
 
       int numBytes = dataInputStream.readInt();
       telemetryBytes = new byte[numBytes];
@@ -152,8 +149,7 @@ class LocalFileLoader {
     }
 
     operationLogger.recordSuccess();
-    return new PersistedFile(
-        tempFile, instrumentationKey, ingestionEndpoint, ByteBuffer.wrap(telemetryBytes));
+    return new PersistedFile(tempFile, connectionString, ByteBuffer.wrap(telemetryBytes));
   }
 
   private void deleteFile(File tempFile) {
@@ -163,8 +159,14 @@ class LocalFileLoader {
     }
   }
 
-  static boolean isInstrumentationKeyValid(String instrumentationKey) {
-    return Pattern.matches(INSTRUMENTATION_KEY_REGEX, instrumentationKey.toLowerCase());
+  static boolean isConnectionStringKeyValid(String connectionString) {
+    try {
+      ConnectionString.parse(connectionString);
+      return true;
+    } catch (RuntimeException e) {
+      logger.debug(e.getMessage(), e);
+      return false;
+    }
   }
 
   // either delete it permanently on success or add it back to cache to be processed again later on
@@ -207,19 +209,16 @@ class LocalFileLoader {
 
   static class PersistedFile {
     final File file;
-    final String instrumentationKey;
-    final String ingestionEndpoint;
+    final String connectionString;
     final ByteBuffer rawBytes;
 
-    PersistedFile(
-        File file, String instrumentationKey, String ingestionEndpoint, ByteBuffer byteBuffer) {
-      if (instrumentationKey == null) {
+    PersistedFile(File file, String connectionString, ByteBuffer byteBuffer) {
+      if (connectionString == null) {
         throw new IllegalArgumentException("instrumentation key can not be null.");
       }
 
       this.file = file;
-      this.instrumentationKey = instrumentationKey;
-      this.ingestionEndpoint = ingestionEndpoint;
+      this.connectionString = connectionString;
       this.rawBytes = byteBuffer;
     }
   }

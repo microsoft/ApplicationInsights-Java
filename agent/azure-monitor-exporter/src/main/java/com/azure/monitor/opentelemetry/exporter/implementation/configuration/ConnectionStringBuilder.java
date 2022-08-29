@@ -34,6 +34,8 @@ class ConnectionStringBuilder {
   // visible for testing
   static final int CONNECTION_STRING_MAX_LENGTH = 4096;
 
+  private String parsedFrom;
+
   private String instrumentationKey;
 
   private URL ingestionEndpoint;
@@ -51,13 +53,14 @@ class ConnectionStringBuilder {
   }
 
   ConnectionStringBuilder setConnectionString(String connectionString) {
+    parsedFrom = connectionString;
     mapToConnectionConfiguration(getKeyValuePairs(connectionString));
     return this;
   }
 
   ConnectionString build() {
     return new ConnectionString(
-        instrumentationKey, ingestionEndpoint, liveEndpoint, profilerEndpoint);
+        instrumentationKey, ingestionEndpoint, liveEndpoint, profilerEndpoint, parsedFrom);
   }
 
   private static Map<String, String> getKeyValuePairs(String connectionString) {

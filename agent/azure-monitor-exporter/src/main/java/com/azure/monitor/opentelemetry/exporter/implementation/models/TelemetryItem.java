@@ -79,7 +79,7 @@ public final class TelemetryItem {
   @JsonProperty(value = "iKey")
   private String instrumentationKey;
 
-  @JsonIgnore private String ingestionEndpoint;
+  @JsonIgnore private String connectionString;
 
   /*
    * Key/value collection of context properties. See ContextTagKeys for
@@ -221,21 +221,33 @@ public final class TelemetryItem {
   }
 
   @JsonIgnore
-  public String getIngestionEndpoint() {
-    return ingestionEndpoint;
+  public String getConnectionString() {
+    return connectionString;
+  }
+
+  @JsonIgnore
+  public TelemetryItem setConnectionString(String connectionString) {
+    this.connectionString = connectionString;
+    this.instrumentationKey = ConnectionString.parse(connectionString).getInstrumentationKey();
+    return this;
   }
 
   @JsonIgnore
   public TelemetryItem setConnectionString(ConnectionString connectionString) {
-    instrumentationKey = connectionString.getInstrumentationKey();
-    ingestionEndpoint = connectionString.getIngestionEndpoint();
+    this.connectionString = connectionString.getParsedFrom();
+    this.instrumentationKey = connectionString.getInstrumentationKey();
     return this;
   }
 
   @JsonIgnore
   public TelemetryItem setConnectionString(StatsbeatConnectionString connectionString) {
     instrumentationKey = connectionString.getInstrumentationKey();
-    ingestionEndpoint = connectionString.getIngestionEndpoint();
+    // TODO (trask) turn StatsbeatConnectionString into a real connection string?
+    this.connectionString =
+        "InstrumentationKey="
+            + connectionString.getInstrumentationKey()
+            + ";IngestionEndpoint="
+            + connectionString.getIngestionEndpoint();
     return this;
   }
 
