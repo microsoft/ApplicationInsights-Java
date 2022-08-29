@@ -21,20 +21,16 @@
 
 package com.microsoft.applicationinsights.smoketestapp;
 
-import java.io.IOException;
 import java.util.concurrent.TimeUnit;
-import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-@WebServlet(description = "calls request slow", urlPatterns = "/requestSlow")
+@WebServlet("/requestSlow")
 public class SimpleTestRequestSlowWithResponseTime extends HttpServlet {
 
-  protected void doGet(HttpServletRequest request, HttpServletResponse response)
-      throws ServletException, IOException {
-    ServletFuncs.geRrenderHtml(request, response);
+  protected void doGet(HttpServletRequest request, HttpServletResponse response) {
 
     int sleepTime = 25;
     String customSleepTime = request.getParameter("sleeptime");

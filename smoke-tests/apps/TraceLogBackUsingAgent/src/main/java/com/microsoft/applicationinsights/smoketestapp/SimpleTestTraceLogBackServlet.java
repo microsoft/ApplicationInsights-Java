@@ -21,7 +21,6 @@
 
 package com.microsoft.applicationinsights.smoketestapp;
 
-import java.io.IOException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -35,10 +34,7 @@ public class SimpleTestTraceLogBackServlet extends HttpServlet {
 
   private static final Logger logger = LoggerFactory.getLogger("smoketestapp");
 
-  protected void doGet(HttpServletRequest request, HttpServletResponse response)
-      throws IOException {
-    ServletFuncs.geRrenderHtml(request, response);
-
+  protected void doGet(HttpServletRequest request, HttpServletResponse response) {
     logger.trace("This is logback trace.");
     logger.debug("This is logback debug.");
     logger.info("This is logback info.");

@@ -23,24 +23,20 @@ package com.microsoft.applicationinsights.smoketestapp;
 
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.telemetry.PageViewTelemetry;
-import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-@WebServlet(
-    description = "calls trackPageView twice; once vanilla, once with properties",
-    urlPatterns = {"/trackPageView"})
+@WebServlet("/trackPageView")
 public class SimpleTrackPageViewServlet extends HttpServlet {
 
   private final TelemetryClient client = new TelemetryClient();
 
-  protected void doGet(HttpServletRequest request, HttpServletResponse response)
-      throws ServletException, IOException {
+  protected void doGet(HttpServletRequest request, HttpServletResponse response) {
+
     client.trackPageView("test-page");
 
     // just making sure flush() doesn't throw exception
@@ -102,7 +98,5 @@ public class SimpleTrackPageViewServlet extends HttpServlet {
     }
     pvt3.setDuration(123456);
     otherClient.trackPageView(pvt3);
-
-    ServletFuncs.geRrenderHtml(request, response);
   }
 }

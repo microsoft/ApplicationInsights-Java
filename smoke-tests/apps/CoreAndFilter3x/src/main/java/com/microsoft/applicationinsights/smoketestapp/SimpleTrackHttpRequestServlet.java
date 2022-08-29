@@ -23,24 +23,20 @@ package com.microsoft.applicationinsights.smoketestapp;
 
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.applicationinsights.telemetry.RequestTelemetry;
-import java.io.IOException;
+import java.net.MalformedURLException;
 import java.util.Date;
-import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-@WebServlet(
-    description = "Performs given calculation",
-    urlPatterns = {"/trackHttpRequest"})
+@WebServlet("/trackHttpRequest")
 public class SimpleTrackHttpRequestServlet extends HttpServlet {
 
   private final TelemetryClient client = new TelemetryClient();
 
   protected void doGet(HttpServletRequest request, HttpServletResponse response)
-      throws ServletException, IOException {
-    ServletFuncs.geRrenderHtml(request, response);
+      throws MalformedURLException {
 
     // true
     client.trackHttpRequest("HttpRequestDataTest", new Date(), 4711, "200", true);
