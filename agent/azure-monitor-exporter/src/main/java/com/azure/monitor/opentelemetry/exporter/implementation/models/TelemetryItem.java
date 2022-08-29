@@ -242,7 +242,7 @@ public final class TelemetryItem {
   @JsonIgnore
   public TelemetryItem setConnectionString(StatsbeatConnectionString connectionString) {
     instrumentationKey = connectionString.getInstrumentationKey();
-    // TODO (trask) turn StatsbeatConnectionString into a real connection string?
+    // TODO (heya) turn StatsbeatConnectionString into a real connection string?
     this.connectionString =
         "InstrumentationKey="
             + connectionString.getInstrumentationKey()
