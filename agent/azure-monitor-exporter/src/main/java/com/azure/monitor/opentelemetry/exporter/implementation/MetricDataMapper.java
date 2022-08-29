@@ -172,6 +172,10 @@ public class MetricDataMapper {
       boolean success = isSuccess(statusCode, captureHttpServer4xxAsError);
       Boolean isSynthetic = attributes.get(IS_SYNTHETIC);
       if (metricData.getName().contains(".server.")) {
+        attributes.forEach(
+            (key, value) ->
+                SpanDataMapper.applyConnectionStringAndRoleNameOverrides(
+                    metricTelemetryBuilder, value, key.getKey()));
         RequestExtractor.extract(metricTelemetryBuilder, statusCode, success, isSynthetic);
       } else if (metricData.getName().contains(".client.")) {
         String dependencyType;
@@ -187,14 +191,14 @@ public class MetricDataMapper {
           }
           defaultPort = Integer.MAX_VALUE; // no default port for rpc
         }
+        attributes.forEach(
+            (key, value) ->
+                SpanDataMapper.applyConnectionStringAndRoleNameOverrides(
+                    metricTelemetryBuilder, value, key.getKey()));
         String target = SpanDataMapper.getTargetOrDefault(attributes, defaultPort, dependencyType);
         DependencyExtractor.extract(
             metricTelemetryBuilder, statusCode, success, dependencyType, target, isSynthetic);
       }
-      attributes.forEach(
-          (key, value) ->
-              SpanDataMapper.applyConnectionStringAndRoleNameOverrides(
-                  metricTelemetryBuilder, value, key.getKey()));
     } else {
       setExtraAttributes(metricTelemetryBuilder, attributes);
     }

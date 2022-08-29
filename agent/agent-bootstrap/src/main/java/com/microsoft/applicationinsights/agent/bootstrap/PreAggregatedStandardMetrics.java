@@ -95,13 +95,17 @@ public class PreAggregatedStandardMetrics {
         attributeGetter.get(span, BootstrapSemanticAttributes.CONNECTION_STRING);
     if (connectionString != null) {
       builder.put(BootstrapSemanticAttributes.CONNECTION_STRING, connectionString);
-      return;
+    } else {
+      // back compat support
+      String instrumentationKey =
+          attributeGetter.get(span, BootstrapSemanticAttributes.INSTRUMENTATION_KEY);
+      if (instrumentationKey != null) {
+        builder.put(BootstrapSemanticAttributes.INSTRUMENTATION_KEY, instrumentationKey);
+      }
     }
-    // back compat support
-    String instrumentationKey =
-        attributeGetter.get(span, BootstrapSemanticAttributes.INSTRUMENTATION_KEY);
-    if (instrumentationKey != null) {
-      builder.put(BootstrapSemanticAttributes.INSTRUMENTATION_KEY, instrumentationKey);
+    String roleName = attributeGetter.get(span, BootstrapSemanticAttributes.ROLE_NAME);
+    if (roleName != null) {
+      builder.put(BootstrapSemanticAttributes.ROLE_NAME, roleName);
     }
   }
 
