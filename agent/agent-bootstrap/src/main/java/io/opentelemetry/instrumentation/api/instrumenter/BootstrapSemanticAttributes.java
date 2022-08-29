@@ -35,6 +35,9 @@ public final class BootstrapSemanticAttributes {
   public static final AttributeKey<String> CONNECTION_STRING =
       AttributeKey.stringKey("ai.preview.connection_string");
 
+  public static final AttributeKey<String> ROLE_NAME =
+      AttributeKey.stringKey("ai.preview.service_name");
+
   public static final AttributeKey<Boolean> IS_SYNTHETIC =
       booleanKey("applicationinsights.internal.is_synthetic");
   public static final AttributeKey<Boolean> IS_PRE_AGGREGATED =

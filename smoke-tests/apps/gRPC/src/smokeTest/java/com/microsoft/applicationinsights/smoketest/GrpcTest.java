@@ -207,9 +207,9 @@ abstract class GrpcTest {
     assertThat(dataPoints).hasSize(1);
     DataPoint dataPoint = dataPoints.get(0);
     assertThat(dataPoint.getCount()).isEqualTo(1);
-    assertThat(dataPoint.getValue()).isGreaterThan(0d).isLessThan(5 * 60 * 1000d); // (0 - 5) min
-    assertThat(dataPoint.getMin()).isGreaterThan(0d).isLessThan(5 * 60 * 1000d); // (0 - 5) min
-    assertThat(dataPoint.getMin()).isGreaterThan(0d).isLessThan(5 * 60 * 1000d); // (0 - 5) min
+    assertThat(dataPoint.getValue()).isGreaterThan(0d).isLessThan(60 * 1000.0);
+    assertThat(dataPoint.getMin()).isGreaterThan(0d).isLessThan(60 * 1000.0);
+    assertThat(dataPoint.getMin()).isGreaterThan(0d).isLessThan(60 * 1000.0);
     Map<String, String> properties = metricData.getProperties();
     if ("client".equals(type)) {
       assertThat(properties).hasSize(8);

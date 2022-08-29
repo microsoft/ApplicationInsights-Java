@@ -33,12 +33,15 @@ import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WI
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
+import com.microsoft.applicationinsights.smoketest.schemav2.DataPoint;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
 import com.microsoft.applicationinsights.smoketest.schemav2.MessageData;
+import com.microsoft.applicationinsights.smoketest.schemav2.MetricData;
 import com.microsoft.applicationinsights.smoketest.schemav2.RemoteDependencyData;
 import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
 import com.microsoft.applicationinsights.smoketest.schemav2.SeverityLevel;
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -85,10 +88,11 @@ abstract class RoleNameOverridesTest {
 
     assertThat(rd.getSuccess()).isTrue();
 
-    assertThat(rdd.getType()).isEqualTo("SQL");
-    assertThat(rdd.getTarget()).isEqualTo("hsqldb | testdb");
-    assertThat(rdd.getName()).isEqualTo("SELECT testdb.abc");
-    assertThat(rdd.getData()).isEqualTo("select * from abc");
+    assertThat(rdd.getType()).isEqualTo("Http");
+    assertThat(rdd.getTarget()).isEqualTo("mock.codes");
+    assertThat(rdd.getName()).isEqualTo("GET /200");
+    assertThat(rdd.getData()).isEqualTo("https://mock.codes/200");
+    assertThat(rdd.getResultCode()).isEqualTo("200");
     assertThat(rdd.getSuccess()).isTrue();
 
     assertThat(md.getMessage()).isEqualTo("hello");
@@ -100,6 +104,73 @@ abstract class RoleNameOverridesTest {
 
     SmokeTestExtension.assertParentChild(rd, rdEnvelope, rddEnvelope, "GET /RoleNameOverrides/*");
     SmokeTestExtension.assertParentChild(rd, rdEnvelope, mdEnvelope, "GET /RoleNameOverrides/*");
+
+    // and metrics too
+
+    List<Envelope> clientMetrics =
+        testing.mockedIngestion.waitForMetricItems("http.client.duration", 1);
+    List<Envelope> serverMetrics =
+        testing.mockedIngestion.waitForMetricItems("http.server.duration", 1);
+
+    verifyHttpClientPreAggregatedMetrics(clientMetrics, roleName);
+    verifyHttpServerPreAggregatedMetrics(serverMetrics, roleName);
+  }
+
+  private static void verifyHttpClientPreAggregatedMetrics(
+      List<Envelope> metrics, String roleName) {
+    assertThat(metrics.size()).isEqualTo(1);
+
+    Envelope envelope1 = metrics.get(0);
+    validateTags(envelope1, roleName);
+    MetricData md1 = (MetricData) ((Data<?>) envelope1.getData()).getBaseData();
+    validateMetricData("client", md1, "200", roleName);
+  }
+
+  private static void verifyHttpServerPreAggregatedMetrics(
+      List<Envelope> metrics, String roleName) {
+    assertThat(metrics.size()).isEqualTo(1);
+
+    Envelope envelope1 = metrics.get(0);
+    validateTags(envelope1, roleName);
+    MetricData md1 = (MetricData) ((Data<?>) envelope1.getData()).getBaseData();
+    validateMetricData("server", md1, "200", roleName);
+  }
+
+  private static void validateTags(Envelope envelope, String roleName) {
+    Map<String, String> tags = envelope.getTags();
+    assertThat(tags.get("ai.internal.sdkVersion")).isNotNull();
+    assertThat(tags).containsEntry("ai.cloud.roleInstance", "testroleinstance");
+    assertThat(tags).containsEntry("ai.cloud.role", roleName);
+  }
+
+  private static void validateMetricData(
+      String type, MetricData metricData, String resultCode, String roleName) {
+    List<DataPoint> dataPoints = metricData.getMetrics();
+    assertThat(dataPoints).hasSize(1);
+    DataPoint dataPoint = dataPoints.get(0);
+    assertThat(dataPoint.getCount()).isEqualTo(1);
+    assertThat(dataPoint.getValue()).isGreaterThan(0d).isLessThan(60 * 1000.0);
+    assertThat(dataPoint.getMin()).isGreaterThan(0d).isLessThan(60 * 1000.0);
+    assertThat(dataPoint.getMax()).isGreaterThan(0d).isLessThan(60 * 1000.0);
+    Map<String, String> properties = metricData.getProperties();
+    String expectedSuccess = "200".equals(resultCode) ? "True" : "False";
+    if ("client".equals(type)) {
+      assertThat(properties).hasSize(9);
+      assertThat(properties.get("_MS.MetricId")).isEqualTo("dependencies/duration");
+      assertThat(properties.get("dependency/resultCode")).isEqualTo(resultCode);
+      assertThat(properties.get("dependency/success")).isEqualTo(expectedSuccess);
+      assertThat(properties.get("dependency/target")).isEqualTo("mock.codes");
+      assertThat(properties.get("dependency/type")).isEqualTo("Http");
+    } else {
+      assertThat(properties).hasSize(7);
+      assertThat(properties.get("_MS.MetricId")).isEqualTo("requests/duration");
+      assertThat(properties.get("request/resultCode")).isEqualTo(resultCode);
+      assertThat(properties.get("request/success")).isEqualTo(expectedSuccess);
+    }
+    assertThat(properties.get("operation/synthetic")).isEqualTo("False");
+    assertThat(properties.get("cloud/roleInstance")).isEqualTo("testroleinstance");
+    assertThat(properties.get("cloud/roleName")).isEqualTo(roleName);
+    assertThat(properties.get("_MS.IsAutocollected")).isEqualTo("True");
   }
 
   @Environment(TOMCAT_8_JAVA_8)
