@@ -33,19 +33,19 @@ public final class ConnectionString {
   private final URL liveEndpoint;
   private final URL profilerEndpoint;
 
-  private final String parsedFrom;
+  private final String originalString;
 
   ConnectionString(
       String instrumentationKey,
       URL ingestionEndpoint,
       URL liveEndpoint,
       URL profilerEndpoint,
-      String parsedFrom) {
+      String originalString) {
     this.instrumentationKey = instrumentationKey;
     this.ingestionEndpoint = ingestionEndpoint.toExternalForm();
     this.liveEndpoint = liveEndpoint;
     this.profilerEndpoint = profilerEndpoint;
-    this.parsedFrom = parsedFrom;
+    this.originalString = originalString;
   }
 
   public static ConnectionString parse(String connectionString) {
@@ -69,24 +69,7 @@ public final class ConnectionString {
     return profilerEndpoint;
   }
 
-  public String getParsedFrom() {
-    return parsedFrom;
-  }
-
-  @Override
-  public int hashCode() {
-    return parsedFrom.hashCode();
-  }
-
-  @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
-      return true;
-    }
-    if (obj == null || getClass() != obj.getClass()) {
-      return false;
-    }
-    ConnectionString that = (ConnectionString) obj;
-    return parsedFrom.equals(that.parsedFrom);
+  public String getOriginalString() {
+    return originalString;
   }
 }

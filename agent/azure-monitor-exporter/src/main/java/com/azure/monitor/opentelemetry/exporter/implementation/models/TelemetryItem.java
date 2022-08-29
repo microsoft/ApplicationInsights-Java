@@ -234,7 +234,7 @@ public final class TelemetryItem {
 
   @JsonIgnore
   public TelemetryItem setConnectionString(ConnectionString connectionString) {
-    this.connectionString = connectionString.getParsedFrom();
+    this.connectionString = connectionString.getOriginalString();
     this.instrumentationKey = connectionString.getInstrumentationKey();
     return this;
   }

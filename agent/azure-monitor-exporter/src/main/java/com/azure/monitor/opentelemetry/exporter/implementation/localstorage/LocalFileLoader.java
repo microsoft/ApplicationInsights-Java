@@ -23,7 +23,6 @@ package com.azure.monitor.opentelemetry.exporter.implementation.localstorage;
 
 import static com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMsgId.DISK_PERSISTENCE_LOADER_ERROR;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
 import com.azure.monitor.opentelemetry.exporter.implementation.logging.OperationLogger;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.DataInputStream;
@@ -128,14 +127,6 @@ class LocalFileLoader {
       }
 
       connectionString = dataInputStream.readUTF();
-      if (!isConnectionStringKeyValid(connectionString)) {
-        // probably really old format where content was written directly with no ikey
-
-        // need to close FileInputStream before delete
-        dataInputStream.close();
-        deleteFile(tempFile);
-        return null;
-      }
 
       int numBytes = dataInputStream.readInt();
       telemetryBytes = new byte[numBytes];
@@ -156,16 +147,6 @@ class LocalFileLoader {
     if (!FileUtil.deleteFileWithRetries(tempFile)) {
       operationLogger.recordFailure(
           "Unable to delete file: " + tempFile.getAbsolutePath(), DISK_PERSISTENCE_LOADER_ERROR);
-    }
-  }
-
-  static boolean isConnectionStringKeyValid(String connectionString) {
-    try {
-      ConnectionString.parse(connectionString);
-      return true;
-    } catch (RuntimeException e) {
-      logger.debug(e.getMessage(), e);
-      return false;
     }
   }
 
