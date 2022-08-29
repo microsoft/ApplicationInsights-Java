@@ -1,5 +1,135 @@
 # CHANGELOG
 
+# Version 3.4.0-BETA
+
+Migration notes:
+
+* Rate-limited sampling is the new default. If you have not configured a sampling percentage
+  and are using the prior default behavior of 100%, you will get the new default which limits
+  the total requests captured to (approximately) 5 requests per second. If you wish to continue with
+  the previous behavior, you can explicitly specify a sampling percentage of 100, e.g.
+  ```
+  {
+    "sampling": {
+      "percentage": 100
+    }
+  }
+  ```
+* Both percentage-based and rate-limited sampling now only apply to requests, and to telemetry that
+  is captured in the context of a request.
+  If you do want to sample "standalone" telemetry (e.g. startup logs), you can use sampling
+  overrides, e.g.
+  ```
+  {
+    "preview": {
+      "sampling": {
+        "overrides": [
+          {
+            "telemetryType": "dependency",
+            "includeStandaloneTelemetry": true,
+            "percentage": 10
+          }
+        ]
+      }
+    }
+  }
+  ```
+
+Enhancements:
+
+* Standard metrics for HTTP requests and HTTP dependencies are now pre-aggregated inside of the Java
+  agent, and so they are no longer affected by sampling
+  ([#2439](https://github.com/microsoft/ApplicationInsights-Java/pull/2439)).
+* Rate-limited sampling has been introduced which can be used to tune ingestion costs
+  ([#2456](https://github.com/microsoft/ApplicationInsights-Java/pull/2456)), e.g.
+  ```
+  {
+    "sampling": {
+      "limitPerSecond": 5
+    }
+  }
+  ```
+  Note: the `limitPerSecond` can be a decimal value, including values less than 1.
+* Exceptions are no longer captured directly on dependency records, in order to reduce ingestion
+  cost and because exceptions which are logged or bubble up to the request are already captured
+  ([#2423](https://github.com/microsoft/ApplicationInsights-Java/pull/2423)).
+* New versions of the `applicationinsights-core` and `applicationinsights-web` 2.x SDK artifacts
+  have been released, with a reduced API surface area to makes it clear which APIs interop with the
+  3.x Java agent ([#2418](https://github.com/microsoft/ApplicationInsights-Java/pull/2418)).
+  These new versions are no-ops when run without the Java agent. To update your dependencies:
+  | 2.x dependency | Action | Remarks |
+  |----------------|--------|---------|
+  | `applicationinsights-core` | Update the version to `3.4.0` or later | |
+  | `applicationinsights-web` | Update the version to `3.4.0` or later, and remove the Application Insights web filter your `web.xml` file. | |
+  | `applicationinsights-web-auto` | Replace with `3.4.0` or later of `applicationinsights-web` | |
+  | `applicationinsights-logging-log4j1_2` | Remove the dependency and remove the Application Insights appender from your log4j configuration. | This is no longer needed since Log4j 1.2 is auto-instrumented in the 3.x Javaagent. |
+  | `applicationinsights-logging-log4j2` | Remove the dependency and remove the Application Insights appender from your log4j configuration. | This is no longer needed since Log4j 2 is auto-instrumented in the 3.x Javaagent. |
+  | `applicationinsights-logging-log4j1_2` | Remove the dependency and remove the Application Insights appender from your logback configuration. | This is no longer needed since Logback is auto-instrumented in the 3.x Javaagent. |
+  | `applicationinsights-spring-boot-starter` | Replace with `3.4.0` or later of `applicationinsights-web` | The cloud role name will no longer default to `spring.application.name`, see the [3.x configuration docs](./java-standalone-config.md#cloud-role-name) for configuring the cloud role name. |
+* ConnectionString overrides were introduced, and InstrumentationKey overrides were deprecated
+  ([#2471](https://github.com/microsoft/ApplicationInsights-Java/pull/2471)):
+  ```
+  {
+    "preview": {
+      "connectionStringOverrides": [
+        {
+          "httpPathPrefix": "/myapp1",
+          "connectionString": "InstrumentationKey=12345678-0000-0000-0000-0FEEDDADBEEF;IngestionEndpoint=...;..."
+        },
+        {
+          "httpPathPrefix": "/myapp2",
+          "connectionString": "InstrumentationKey=87654321-0000-0000-0000-0FEEDDADBEEF;IngestionEndpoint=...;..."
+        }
+      ]
+    }
+  }
+  ```
+* Configuration to disable jdbc masking was introduced
+  ([#2453](https://github.com/microsoft/ApplicationInsights-Java/pull/2453)):
+  ```
+  {
+    "instrumentation": {
+      "jdbc": {
+        "masking": {
+          "enabled": false
+        }
+      }
+    }
+  }
+  ```
+* Sampling overrides can (and should) now be targeted to requests, dependencies, traces (logs)
+  or exceptions ([#2456](https://github.com/microsoft/ApplicationInsights-Java/pull/2456)), e.g.
+  ```
+  {
+    "preview": {
+      "sampling": {
+        "overrides": [
+          {
+            "telemetryKind": "dependency",
+            ...
+            "percentage": 0
+          }
+        ]
+      }
+    }
+  }
+  ```
+* Ingestion response codes 502 and 504 now trigger storing telemetry to disk and retrying
+  ([#2438](https://github.com/microsoft/ApplicationInsights-Java/pull/2438)).
+* Metric namespaces are now supported via the new 3.x `applicationinsights-core` artifact
+  ([#2447](https://github.com/microsoft/ApplicationInsights-Java/pull/2447)).
+* OpenTelemetry baseline has been updated to Java 1.17.0
+  ([#2453](https://github.com/microsoft/ApplicationInsights-Java/pull/2453)).
+* Ingestion sampling warnings are now suppressed since those are expected
+  ([#2473](https://github.com/microsoft/ApplicationInsights-Java/pull/2473)).
+
+Bug Fixes:
+
+* Fix `operation_Id` and `operation_parentID` being captured as `00000000000000000000000000000000`
+  for "standalone" log records (which occur outside of a request). These fields are now empty for
+  "standalone" log records, to reflect that they are not part of an "operation" (i.e. request)
+  [#2432](https://github.com/microsoft/ApplicationInsights-Java/pull/2432).
+
 # Version 3.3.1 GA
 * Suppress nested client dependencies (regression in 3.3.0) [#2357](https://github.com/microsoft/ApplicationInsights-Java/pull/2357).
 * Add support for custom instrumentation [#2380](https://github.com/microsoft/ApplicationInsights-Java/pull/2380).
