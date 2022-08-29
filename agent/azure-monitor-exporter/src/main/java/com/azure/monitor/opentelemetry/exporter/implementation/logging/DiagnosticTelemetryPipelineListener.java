@@ -22,6 +22,7 @@
 package com.azure.monitor.opentelemetry.exporter.implementation.logging;
 
 import static com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMsgId.INGESTION_ERROR;
+import static java.util.Collections.singleton;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipeline;
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipelineListener;
@@ -66,13 +67,12 @@ public class DiagnosticTelemetryPipelineListener implements TelemetryPipelineLis
         break;
       case 206: // PARTIAL CONTENT, Breeze-specific: PARTIAL SUCCESS
       case 400: // breeze returns if json content is bad (e.g. missing required field)
-        operationLogger.recordFailure(
-            "Received response code "
-                + responseCode
-                + " ("
-                + getErrorMessageFromPartialSuccessResponse(response.getBody())
-                + ")",
-            INGESTION_ERROR);
+        Set<String> errors = getErrors(response.getBody());
+        if (!errors.isEmpty()) {
+          operationLogger.recordFailure(
+              "Received response code " + responseCode + " (" + String.join(", ", errors) + ")",
+              INGESTION_ERROR);
+        }
         break;
       case 307:
       case 308:
@@ -126,21 +126,20 @@ public class DiagnosticTelemetryPipelineListener implements TelemetryPipelineLis
     return CompletableResultCode.ofSuccess();
   }
 
-  private static String getErrorMessageFromPartialSuccessResponse(String body) {
+  private static Set<String> getErrors(String body) {
     JsonNode jsonNode;
     try {
       jsonNode = new ObjectMapper().readTree(body);
     } catch (JsonProcessingException e) {
       // fallback to generic message
-      return "Could not parse response";
+      return singleton("Could not parse response");
     }
     List<JsonNode> errorNodes = new ArrayList<>();
     jsonNode.get("errors").forEach(errorNodes::add);
-    Set<String> errors =
-        errorNodes.stream()
-            .map(errorNode -> errorNode.get("message").asText())
-            .collect(Collectors.toSet());
-    return String.join(", ", errors);
+    return errorNodes.stream()
+        .map(errorNode -> errorNode.get("message").asText())
+        .filter(s -> !s.equals("Telemetry sampled out."))
+        .collect(Collectors.toSet());
   }
 
   private static String getErrorMessageFromCredentialRelatedResponse(
