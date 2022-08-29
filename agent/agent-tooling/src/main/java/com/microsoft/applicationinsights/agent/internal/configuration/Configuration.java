@@ -74,7 +74,7 @@ public class Configuration {
     preview.validate();
   }
 
-  // TODO (trask) investigate options for mapping lowercase values to otel enum directly
+  @Deprecated
   public enum SpanKind {
     @JsonProperty("server")
     SERVER(io.opentelemetry.api.trace.SpanKind.SERVER),
@@ -92,6 +92,18 @@ public class Configuration {
     SpanKind(io.opentelemetry.api.trace.SpanKind otelSpanKind) {
       this.otelSpanKind = otelSpanKind;
     }
+  }
+
+  public enum SamplingTelemetryKind {
+    // restricted to telemetry kinds that are supported by SamplingOverrides
+    @JsonProperty("request")
+    REQUEST,
+    @JsonProperty("dependency")
+    DEPENDENCY,
+    @JsonProperty("trace")
+    TRACE,
+    @JsonProperty("exception")
+    EXCEPTION
   }
 
   public enum MatchType {
@@ -151,7 +163,12 @@ public class Configuration {
 
   public static class Sampling {
 
-    public float percentage = 100;
+    // fixed percentage of requests
+    @Nullable public Double percentage;
+
+    // default is 5 requests per second (set in ConfigurationBuilder if neither percentage nor
+    // limitPerSecond was configured)
+    @Nullable public Double limitPerSecond;
   }
 
   public static class SamplingPreview {
@@ -174,6 +191,8 @@ public class Configuration {
     //
     // Another (lesser) reason is because .NET SDK always propagates trace flags "00" (not
     // sampled)
+    //
+    // future goal: make parentBased sampling the default if item count is received via tracestate
     //
     // IMPORTANT if changing this default, we need to keep it at least on Azure Functions
     public boolean parentBased;
@@ -352,7 +371,7 @@ public class Configuration {
         new HashSet<>(asList("b3", "b3multi"));
 
     public void validate() {
-      for (Configuration.SamplingOverride samplingOverride : sampling.overrides) {
+      for (SamplingOverride samplingOverride : sampling.overrides) {
         samplingOverride.validate();
       }
       for (Configuration.InstrumentationKeyOverride instrumentationKeyOverride :
@@ -578,22 +597,36 @@ public class Configuration {
   }
 
   public static class SamplingOverride {
-    // TODO (trask) consider making this required when moving out of preview
-    @Nullable public SpanKind spanKind;
+    @Deprecated @Nullable public SpanKind spanKind;
+
+    // TODO (trask) make this required when moving out of preview
+    //   for now the default is both "request" and "dependency" for backwards compatibility
+    @Nullable public SamplingTelemetryKind telemetryKind;
+
+    // TODO (trask) add test for this
+    // this is primarily useful for batch jobs
+    public boolean includeStandaloneTelemetry;
+
     // not using include/exclude, because you can still get exclude with this by adding a second
     // (exclude) override above it
     // (since only the first matching override is used)
     public List<SamplingOverrideAttribute> attributes = new ArrayList<>();
-    public Float percentage;
+    public Double percentage;
     public String id; // optional, used for debugging purposes only
 
+    public boolean isForRequestTelemetry() {
+      return telemetryKind == SamplingTelemetryKind.REQUEST
+          // this part is for backwards compatibility:
+          || (telemetryKind == null && spanKind != SpanKind.CLIENT);
+    }
+
+    public boolean isForDependencyTelemetry() {
+      return telemetryKind == SamplingTelemetryKind.DEPENDENCY
+          // this part is for backwards compatibility:
+          || (telemetryKind == null && spanKind != SpanKind.SERVER);
+    }
+
     public void validate() {
-      if (spanKind == null && attributes.isEmpty()) {
-        // TODO add doc and go link, similar to telemetry processors
-        throw new FriendlyException(
-            "A sampling override configuration is missing \"spanKind\" and has no attributes.",
-            "Please provide at least one of \"spanKind\" or \"attributes\" for the sampling override configuration.");
-      }
       if (percentage == null) {
         // TODO add doc and go link, similar to telemetry processors
         throw new FriendlyException(

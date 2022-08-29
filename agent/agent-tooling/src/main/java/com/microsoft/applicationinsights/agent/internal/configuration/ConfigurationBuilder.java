@@ -84,6 +84,9 @@ public class ConfigurationBuilder {
   private static final String APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE =
       "APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE";
 
+  private static final String APPLICATIONINSIGHTS_SAMPLING_LIMIT_PER_SECOND =
+      "APPLICATIONINSIGHTS_SAMPLING_LIMIT_PER_SECOND";
+
   private static final String APPLICATIONINSIGHTS_INSTRUMENTATION_LOGGING_LEVEL =
       "APPLICATIONINSIGHTS_INSTRUMENTATION_LOGGING_LEVEL";
 
@@ -190,6 +193,15 @@ public class ConfigurationBuilder {
               + " and it is now enabled by default,"
               + " so no need to enable it under preview configuration");
     }
+    for (SamplingOverride override : config.preview.sampling.overrides) {
+      if (override.spanKind != null) {
+        configurationLogger.warn(
+            "Sampling overrides \"spanKind\" has been deprecated,"
+                + " and support for it will be removed in a future release, please transition from"
+                + " \"spanKind\" to \"telemetryKind\".");
+      }
+    }
+
     logWarningIfUsingInternalAttributes(config);
   }
 
@@ -205,6 +217,10 @@ public class ConfigurationBuilder {
     if (rpConfiguration != null) {
       overlayFromEnv(rpConfiguration);
       overlayRpConfiguration(config, rpConfiguration);
+    }
+    // only fall back to default sampling configuration after all overlays have been performed
+    if (config.sampling.limitPerSecond == null && config.sampling.percentage == null) {
+      config.sampling.limitPerSecond = 5.0;
     }
     // only set role instance to host name as a last resort
     if (config.role.instance == null) {
@@ -478,6 +494,10 @@ public class ConfigurationBuilder {
     config.sampling.percentage =
         overlayWithEnvVar(APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE, config.sampling.percentage);
 
+    config.sampling.limitPerSecond =
+        overlayWithEnvVar(
+            APPLICATIONINSIGHTS_SAMPLING_LIMIT_PER_SECOND, config.sampling.limitPerSecond);
+
     config.proxy = overlayProxyFromEnv(config.proxy);
 
     config.selfDiagnostics.level =
@@ -487,10 +507,9 @@ public class ConfigurationBuilder {
             APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_FILE_PATH, config.selfDiagnostics.file.path);
 
     config.preview.metricIntervalSeconds =
-        (int)
-            overlayWithEnvVar(
-                APPLICATIONINSIGHTS_PREVIEW_METRIC_INTERVAL_SECONDS,
-                config.preview.metricIntervalSeconds);
+        overlayWithEnvVar(
+            APPLICATIONINSIGHTS_PREVIEW_METRIC_INTERVAL_SECONDS,
+            config.preview.metricIntervalSeconds);
 
     config.preview.instrumentation.springIntegration.enabled =
         overlayWithEnvVar(
@@ -597,6 +616,7 @@ public class ConfigurationBuilder {
     }
     if (rpConfiguration.sampling != null) {
       config.sampling.percentage = rpConfiguration.sampling.percentage;
+      config.sampling.limitPerSecond = rpConfiguration.sampling.limitPerSecond;
     }
     if (isTrimEmpty(config.role.name)) {
       // only use rp configuration role name as a fallback, similar to WEBSITE_SITE_NAME
@@ -646,13 +666,25 @@ public class ConfigurationBuilder {
     return defaultValue;
   }
 
-  static float overlayWithEnvVar(String name, float defaultValue) {
+  @Nullable
+  static Double overlayWithEnvVar(String name, @Nullable Double defaultValue) {
     String value = getEnvVar(name);
     if (value != null) {
       configurationLogger.debug("applying environment variable: {}={}", name, value);
       // intentionally allowing NumberFormatException to bubble up as invalid configuration and
       // prevent agent from starting
-      return Float.parseFloat(value);
+      return Double.parseDouble(value);
+    }
+    return defaultValue;
+  }
+
+  static int overlayWithEnvVar(String name, int defaultValue) {
+    String value = getEnvVar(name);
+    if (value != null) {
+      configurationLogger.debug("using environment variable: {}", name);
+      // intentionally allowing NumberFormatException to bubble up as invalid configuration and
+      // prevent agent from starting
+      return Integer.parseInt(value);
     }
     return defaultValue;
   }
@@ -827,17 +859,21 @@ public class ConfigurationBuilder {
   }
 
   // this is for external callers, where logging is ok
-  public static float roundToNearest(float samplingPercentage) {
+  public static double roundToNearest(double samplingPercentage) {
     return roundToNearest(samplingPercentage, false);
   }
 
-  // visible for testing
-  private static float roundToNearest(float samplingPercentage, boolean doNotLogWarnMessages) {
+  @Nullable
+  private static Double roundToNearest(
+      @Nullable Double samplingPercentage, boolean doNotLogWarnMessages) {
+    if (samplingPercentage == null) {
+      return null;
+    }
     if (samplingPercentage == 0) {
-      return 0;
+      return 0.0;
     }
     double itemCount = 100 / samplingPercentage;
-    float rounded = 100.0f / Math.round(itemCount);
+    double rounded = 100.0 / Math.round(itemCount);
 
     if (Math.abs(samplingPercentage - rounded) >= 1) {
       // TODO include link to docs in this warning message

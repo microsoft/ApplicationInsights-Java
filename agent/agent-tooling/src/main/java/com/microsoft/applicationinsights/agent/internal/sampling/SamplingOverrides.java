@@ -21,14 +21,12 @@
 
 package com.microsoft.applicationinsights.agent.internal.sampling;
 
-import com.azure.monitor.opentelemetry.exporter.AzureMonitorSampler;
 import com.azure.monitor.opentelemetry.exporter.implementation.SpanDataMapper;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.MatchType;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.SamplingOverride;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.SamplingOverrideAttribute;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.util.ArrayList;
@@ -37,11 +35,11 @@ import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 
 // TODO find a better name for this class (and MatcherGroup too)
-class SamplingOverrides {
+public class SamplingOverrides {
 
   private final List<MatcherGroup> matcherGroups;
 
-  SamplingOverrides(List<SamplingOverride> overrides) {
+  public SamplingOverrides(List<SamplingOverride> overrides) {
     matcherGroups = new ArrayList<>();
     for (SamplingOverride override : overrides) {
       matcherGroups.add(new MatcherGroup(override));
@@ -49,36 +47,54 @@ class SamplingOverrides {
   }
 
   @Nullable
-  Sampler getOverride(SpanKind spanKind, Attributes attributes) {
+  public Sampler getOverride(boolean standaloneTelemetry, Attributes attributes) {
     LazyHttpUrl lazyHttpUrl = new LazyHttpUrl(attributes);
     for (MatcherGroup matcherGroups : matcherGroups) {
-      if (matcherGroups.matches(spanKind, attributes, lazyHttpUrl)) {
+      if (matcherGroups.matches(standaloneTelemetry, attributes, lazyHttpUrl)) {
         return matcherGroups.getSampler();
       }
     }
     return null;
   }
 
+  // used to do sampling inside the log exporter
+  @Nullable
+  public Double getOverridePercentage(boolean standaloneTelemetry, Attributes attributes) {
+    for (MatcherGroup matcherGroups : matcherGroups) {
+      if (matcherGroups.matches(standaloneTelemetry, attributes, null)) {
+        return matcherGroups.getPercentage();
+      }
+    }
+    return null;
+  }
+
   private static class MatcherGroup {
-    @Nullable private final SpanKind spanKind;
+    private final boolean includeStandaloneTelemetry;
     private final List<TempPredicate> predicates;
     private final Sampler sampler;
+    private final SamplingPercentage samplingPercentage;
 
     private MatcherGroup(SamplingOverride override) {
-      spanKind = override.spanKind != null ? override.spanKind.otelSpanKind : null;
+      includeStandaloneTelemetry = override.includeStandaloneTelemetry;
       predicates = new ArrayList<>();
       for (SamplingOverrideAttribute attribute : override.attributes) {
         predicates.add(toPredicate(attribute));
       }
-      sampler = new AzureMonitorSampler(override.percentage, false);
+      samplingPercentage = SamplingPercentage.fixed(override.percentage);
+      sampler = new AiSampler(samplingPercentage, false);
     }
 
     Sampler getSampler() {
       return sampler;
     }
 
-    private boolean matches(SpanKind spanKind, Attributes attributes, LazyHttpUrl lazyHttpUrl) {
-      if (this.spanKind != null && !this.spanKind.equals(spanKind)) {
+    double getPercentage() {
+      return samplingPercentage.get();
+    }
+
+    private boolean matches(
+        boolean standaloneTelemetry, Attributes attributes, @Nullable LazyHttpUrl lazyHttpUrl) {
+      if (standaloneTelemetry && !this.includeStandaloneTelemetry) {
         return false;
       }
       for (TempPredicate predicate : predicates) {
@@ -161,9 +177,11 @@ class SamplingOverrides {
     }
 
     @Override
-    public boolean test(Attributes attributes, LazyHttpUrl lazyHttpUrl) {
+    public boolean test(Attributes attributes, @Nullable LazyHttpUrl lazyHttpUrl) {
       String val = attributes.get(key);
-      if (val == null && key.getKey().equals(SemanticAttributes.HTTP_URL.getKey())) {
+      if (val == null
+          && key.getKey().equals(SemanticAttributes.HTTP_URL.getKey())
+          && lazyHttpUrl != null) {
         val = lazyHttpUrl.get();
       }
       return val != null && value.matcher(val).matches();
@@ -180,7 +198,7 @@ class SamplingOverrides {
     }
 
     @Override
-    public boolean test(Attributes attributes, LazyHttpUrl lazyHttpUrl) {
+    public boolean test(Attributes attributes, @Nullable LazyHttpUrl lazyHttpUrl) {
       List<String> val = attributes.get(key);
       if (val == null) {
         return false;
@@ -202,9 +220,11 @@ class SamplingOverrides {
     }
 
     @Override
-    public boolean test(Attributes attributes, LazyHttpUrl lazyHttpUrl) {
+    public boolean test(Attributes attributes, @Nullable LazyHttpUrl lazyHttpUrl) {
       String val = attributes.get(key);
-      if (val == null && key.getKey().equals(SemanticAttributes.HTTP_URL.getKey())) {
+      if (val == null
+          && key.getKey().equals(SemanticAttributes.HTTP_URL.getKey())
+          && lazyHttpUrl != null) {
         val = lazyHttpUrl.get();
       }
       return val != null;
@@ -233,6 +253,6 @@ class SamplingOverrides {
   // this is temporary until semantic attributes stabilize and we make breaking change
   // then can use java.util.functions.Predicate<Attributes>
   private interface TempPredicate {
-    boolean test(Attributes attributes, LazyHttpUrl lazyHttpUrl);
+    boolean test(Attributes attributes, @Nullable LazyHttpUrl lazyHttpUrl);
   }
 }
