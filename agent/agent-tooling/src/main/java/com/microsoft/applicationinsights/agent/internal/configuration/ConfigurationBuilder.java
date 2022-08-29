@@ -254,16 +254,16 @@ public class ConfigurationBuilder {
   }
 
   private static void overlayProfilerEnvVars(Configuration config) {
-    if (isOpenJ9Jvm()) {
-      configurationLogger.warn(
-          "Profiler is not supported for an OpenJ9 JVM. Instead, please use an OpenJDK JVM.");
-      config.preview.profiler.enabled = false;
-    }
     config.preview.profiler.enabled =
         Boolean.parseBoolean(
             overlayWithEnvVar(
                 APPLICATIONINSIGHTS_PREVIEW_PROFILER_ENABLED,
                 Boolean.toString(config.preview.profiler.enabled)));
+    if (config.preview.profiler.enabled && isOpenJ9Jvm()) {
+      configurationLogger.warn(
+          "Profiler is not supported for an OpenJ9 JVM. Instead, please use an OpenJDK JVM.");
+      config.preview.profiler.enabled = false;
+    }
   }
 
   private static boolean isOpenJ9Jvm() {
