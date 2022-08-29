@@ -853,78 +853,73 @@ public final class SpanDataMapper {
   private static void setExtraAttributes(
       AbstractTelemetryBuilder telemetryBuilder, Attributes attributes) {
     attributes.forEach(
-        (key, value) -> {
-          String stringKey = key.getKey();
-          if (stringKey.startsWith("applicationinsights.internal.")) {
+        (attributeKey, value) -> {
+          String key = attributeKey.getKey();
+          if (key.startsWith("applicationinsights.internal.")) {
             return;
           }
-          if (stringKey.equals(AiSemanticAttributes.AZURE_SDK_NAMESPACE.getKey())
-              || stringKey.equals(AiSemanticAttributes.AZURE_SDK_MESSAGE_BUS_DESTINATION.getKey())
-              || stringKey.equals(AiSemanticAttributes.AZURE_SDK_ENQUEUED_TIME.getKey())) {
+          if (key.equals(AiSemanticAttributes.AZURE_SDK_NAMESPACE.getKey())
+              || key.equals(AiSemanticAttributes.AZURE_SDK_MESSAGE_BUS_DESTINATION.getKey())
+              || key.equals(AiSemanticAttributes.AZURE_SDK_ENQUEUED_TIME.getKey())) {
             // these are from azure SDK (AZURE_SDK_PEER_ADDRESS gets filtered out automatically
             // since it uses the otel "peer." prefix)
             return;
           }
-          if (stringKey.equals(AiSemanticAttributes.KAFKA_RECORD_QUEUE_TIME_MS.getKey())
-              || stringKey.equals(AiSemanticAttributes.KAFKA_OFFSET.getKey())) {
+          if (key.equals(AiSemanticAttributes.KAFKA_RECORD_QUEUE_TIME_MS.getKey())
+              || key.equals(AiSemanticAttributes.KAFKA_OFFSET.getKey())) {
             return;
           }
-          if (stringKey.equals(AiSemanticAttributes.REQUEST_CONTEXT.getKey())) {
+          if (key.equals(AiSemanticAttributes.REQUEST_CONTEXT.getKey())) {
             return;
           }
-          if (stringKey.equals(SemanticAttributes.HTTP_USER_AGENT.getKey())
-              && value instanceof String) {
+          if (key.equals(SemanticAttributes.HTTP_USER_AGENT.getKey()) && value instanceof String) {
             telemetryBuilder.addTag("ai.user.userAgent", (String) value);
             return;
           }
-          if (applyCommonTags(telemetryBuilder, value, stringKey)) {
+          if (applyCommonTags(telemetryBuilder, key, value)) {
             return;
           }
-          if (STANDARD_ATTRIBUTE_PREFIX_TRIE.getOrDefault(stringKey, false)
-              && !stringKey.startsWith("http.request.header.")
-              && !stringKey.startsWith("http.response.header.")) {
+          if (STANDARD_ATTRIBUTE_PREFIX_TRIE.getOrDefault(key, false)
+              && !key.startsWith("http.request.header.")
+              && !key.startsWith("http.response.header.")) {
             return;
           }
-          String val = convertToString(value, key.getType());
+          String val = convertToString(value, attributeKey.getType());
           if (value != null) {
-            telemetryBuilder.addProperty(key.getKey(), val);
+            telemetryBuilder.addProperty(attributeKey.getKey(), val);
           }
         });
   }
 
   static boolean applyCommonTags(
-      AbstractTelemetryBuilder telemetryBuilder, Object value, String stringKey) {
+      AbstractTelemetryBuilder telemetryBuilder, String key, Object value) {
 
-    if (stringKey.equals(SemanticAttributes.ENDUSER_ID.getKey()) && value instanceof String) {
+    if (key.equals(SemanticAttributes.ENDUSER_ID.getKey()) && value instanceof String) {
       telemetryBuilder.addTag(ContextTagKeys.AI_USER_ID.toString(), (String) value);
       return true;
     }
-    if (stringKey.equals(AiSemanticAttributes.CONNECTION_STRING.getKey())
-        && value instanceof String) {
+    if (key.equals(AiSemanticAttributes.CONNECTION_STRING.getKey()) && value instanceof String) {
       // intentionally letting exceptions from parse bubble up
       telemetryBuilder.setConnectionString(
           connectionStringCache.computeIfAbsent((String) value, ConnectionString::parse));
       return true;
     }
-    if (stringKey.equals(AiSemanticAttributes.INSTRUMENTATION_KEY.getKey())
-        && value instanceof String) {
+    if (key.equals(AiSemanticAttributes.INSTRUMENTATION_KEY.getKey()) && value instanceof String) {
       // intentionally letting exceptions from parse bubble up
       telemetryBuilder.setConnectionString(
           connectionStringCache.computeIfAbsent(
               "InstrumentationKey=" + value, ConnectionString::parse));
       return true;
     }
-    if (stringKey.equals(AiSemanticAttributes.ROLE_NAME.getKey()) && value instanceof String) {
+    if (key.equals(AiSemanticAttributes.ROLE_NAME.getKey()) && value instanceof String) {
       telemetryBuilder.addTag(ContextTagKeys.AI_CLOUD_ROLE.toString(), (String) value);
       return true;
     }
-    if (stringKey.equals(AiSemanticAttributes.ROLE_INSTANCE_ID.getKey())
-        && value instanceof String) {
+    if (key.equals(AiSemanticAttributes.ROLE_INSTANCE_ID.getKey()) && value instanceof String) {
       telemetryBuilder.addTag(ContextTagKeys.AI_CLOUD_ROLE_INSTANCE.toString(), (String) value);
       return true;
     }
-    if (stringKey.equals(AiSemanticAttributes.APPLICATION_VERSION.getKey())
-        && value instanceof String) {
+    if (key.equals(AiSemanticAttributes.APPLICATION_VERSION.getKey()) && value instanceof String) {
       telemetryBuilder.addTag(ContextTagKeys.AI_APPLICATION_VER.toString(), (String) value);
       return true;
     }
