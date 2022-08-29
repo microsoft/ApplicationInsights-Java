@@ -245,7 +245,7 @@ public final class TelemetryItem {
     // TODO (heya) turn StatsbeatConnectionString into a real connection string?
     this.connectionString =
         "InstrumentationKey="
-            + connectionString.getInstrumentationKey()
+            + instrumentationKey
             + ";IngestionEndpoint="
             + connectionString.getIngestionEndpoint();
     return this;
