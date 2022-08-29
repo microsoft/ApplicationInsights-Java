@@ -43,7 +43,6 @@ public final class TelemetryContext {
   private final ConcurrentMap<String, String> properties;
   private final ContextTagsMap tags;
 
-  private String instrumentationKey;
   private String connectionString;
   private ComponentContext component;
   private DeviceContext device;
@@ -127,43 +126,8 @@ public final class TelemetryContext {
     return cloud;
   }
 
-  /**
-   * Gets the default instrumentation key for all {@link
-   * com.microsoft.applicationinsights.telemetry.Telemetry} objects logged in this {@link
-   * com.microsoft.applicationinsights.telemetry.TelemetryContext}.
-   *
-   * <p>You can specify it for all telemetry tracked via a particular {@link
-   * com.microsoft.applicationinsights.TelemetryClient} or for a specific {@link
-   * com.microsoft.applicationinsights.telemetry.Telemetry}
-   *
-   * @return The instrumentation key
-   * @deprecated Use {@link #setConnectionString(String)} and {@link #getConnectionString()}
-   *     instead.
-   */
-  @Deprecated
-  public String getInstrumentationKey() {
-    return instrumentationKey;
-  }
-
   public String getConnectionString() {
     return connectionString;
-  }
-
-  /**
-   * Sets the default instrumentation key for all {@link
-   * com.microsoft.applicationinsights.telemetry.Telemetry} objects logged in this {@link
-   * com.microsoft.applicationinsights.telemetry.TelemetryContext}.
-   *
-   * <p>You can specify it for all telemetry tracked via a particular {@link
-   * com.microsoft.applicationinsights.TelemetryClient} or for a specific {@link
-   * com.microsoft.applicationinsights.telemetry.Telemetry}
-   *
-   * @param instrumentationKey The instrumentation key
-   * @deprecated Use {@link #setConnectionString(String)} instead.
-   */
-  @Deprecated
-  public void setInstrumentationKey(String instrumentationKey) {
-    this.instrumentationKey = instrumentationKey;
   }
 
   public void setConnectionString(String connectionString) {

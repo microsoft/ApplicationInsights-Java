@@ -75,6 +75,7 @@ public class TelemetryContextClassFileTransformer implements ClassFileTransforme
     private final ClassWriter cw;
 
     private boolean foundGetConnectionStringMethod;
+    private boolean foundGetInstrumentationKeyMethod;
 
     private TelemetryContextClassVisitor(ClassWriter cw) {
       super(ASM9, cw);
@@ -91,6 +92,9 @@ public class TelemetryContextClassFileTransformer implements ClassFileTransforme
       if (name.equals("getConnectionString") && descriptor.equals("()Ljava/lang/String;")) {
         foundGetConnectionStringMethod = true;
       }
+      if (name.equals("getInstrumentationKey") && descriptor.equals("()Ljava/lang/String;")) {
+        foundGetInstrumentationKeyMethod = true;
+      }
       return super.visitMethod(access, name, descriptor, signature, exceptions);
     }
 
@@ -99,11 +103,24 @@ public class TelemetryContextClassFileTransformer implements ClassFileTransforme
       if (!foundGetConnectionStringMethod) {
         writeGetConnectionStringMethod();
       }
+      if (!foundGetInstrumentationKeyMethod) {
+        writeGetInstrumentationKeyMethod();
+      }
     }
 
     private void writeGetConnectionStringMethod() {
       MethodVisitor mv =
           cw.visitMethod(ACC_PUBLIC, "getConnectionString", "()Ljava/lang/String;", null, null);
+      mv.visitCode();
+      mv.visitInsn(ACONST_NULL);
+      mv.visitInsn(ARETURN);
+      mv.visitMaxs(1, 1);
+      mv.visitEnd();
+    }
+
+    private void writeGetInstrumentationKeyMethod() {
+      MethodVisitor mv =
+          cw.visitMethod(ACC_PUBLIC, "getInstrumentationKey", "()Ljava/lang/String;", null, null);
       mv.visitCode();
       mv.visitInsn(ACONST_NULL);
       mv.visitInsn(ARETURN);
