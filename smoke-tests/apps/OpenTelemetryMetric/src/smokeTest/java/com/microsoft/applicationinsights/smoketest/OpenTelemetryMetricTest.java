@@ -87,7 +87,6 @@ abstract class OpenTelemetryMetricTest {
   private void validateHistogramMetric(String name) throws Exception {
     List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
     List<Envelope> metrics = testing.mockedIngestion.waitForMetricItems(name, 1);
-    assertThat(metrics).hasSize(1);
 
     Envelope rdEnvelope = rdList.get(0);
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
@@ -125,7 +124,6 @@ abstract class OpenTelemetryMetricTest {
   private void validateGaugeMetric(String name) throws Exception {
     List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
     List<Envelope> metrics = testing.mockedIngestion.waitForMetricItems(name, 1);
-    assertThat(metrics).hasSize(1);
 
     Envelope rdEnvelope = rdList.get(0);
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
@@ -161,7 +159,6 @@ abstract class OpenTelemetryMetricTest {
   private void validateCounterMetric(String name) throws Exception {
     List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
     List<Envelope> metrics = testing.mockedIngestion.waitForMetricItems(name, 3);
-    assertThat(metrics).hasSize(3);
 
     metrics.sort(
         Comparator.comparing(
