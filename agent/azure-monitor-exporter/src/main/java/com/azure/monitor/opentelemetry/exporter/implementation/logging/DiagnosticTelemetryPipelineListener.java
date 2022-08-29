@@ -67,7 +67,9 @@ public class DiagnosticTelemetryPipelineListener implements TelemetryPipelineLis
       case 206: // PARTIAL CONTENT, Breeze-specific: PARTIAL SUCCESS
       case 400: // breeze returns if json content is bad (e.g. missing required field)
         operationLogger.recordFailure(
-            "Received response code 400 ("
+            "Received response code "
+                + responseCode
+                + " ("
                 + getErrorMessageFromPartialSuccessResponse(response.getBody())
                 + ")",
             INGESTION_ERROR);
