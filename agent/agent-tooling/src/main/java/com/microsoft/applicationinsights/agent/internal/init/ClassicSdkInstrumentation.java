@@ -38,7 +38,7 @@ import com.microsoft.applicationinsights.agent.internal.classicsdk.WebRequestTra
 import io.opentelemetry.javaagent.bootstrap.InstrumentationHolder;
 import java.lang.instrument.Instrumentation;
 
-class LegacyInstrumentation {
+class ClassicSdkInstrumentation {
 
   static void registerTransformers() {
     Instrumentation instrumentation = InstrumentationHolder.getInstrumentation();
@@ -62,5 +62,5 @@ class LegacyInstrumentation {
     BytecodeUtil.setDelegate(new BytecodeUtilImpl());
   }
 
-  private LegacyInstrumentation() {}
+  private ClassicSdkInstrumentation() {}
 }
