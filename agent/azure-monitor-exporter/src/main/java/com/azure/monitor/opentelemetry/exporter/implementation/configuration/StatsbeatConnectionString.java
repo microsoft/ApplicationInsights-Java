@@ -58,13 +58,13 @@ public final class StatsbeatConnectionString {
     EU_REGION_GEO_SET.add("switzerlandwest");
   }
 
-  private final URL endpoint;
+  private final String ingestionEndpoint;
   private final String instrumentationKey;
 
   public static StatsbeatConnectionString create(
       ConnectionString connectionString,
       @Nullable String instrumentationKey,
-      @Nullable String endpoint) {
+      @Nullable String ingestionEndpoint) {
 
     // if customer is in EU region and their statsbeat config is not in EU region, customer is
     // responsible for breaking the EU data boundary violation.
@@ -74,15 +74,15 @@ public final class StatsbeatConnectionString {
           StatsbeatConnectionString.getInstrumentationKeyAndEndpointPair(
               connectionString.getIngestionEndpoint().toString());
       instrumentationKey = pair.instrumentationKey;
-      endpoint = pair.endpoint;
+      ingestionEndpoint = pair.endpoint;
     }
 
     URL endpointUrl;
-    if (!endpoint.endsWith("/")) {
-      endpoint += "/";
+    if (!ingestionEndpoint.endsWith("/")) {
+      ingestionEndpoint += "/";
     }
     try {
-      endpointUrl = new URL(endpoint);
+      endpointUrl = new URL(ingestionEndpoint);
     } catch (MalformedURLException e) {
       throw new IllegalArgumentException("could not construct statsbeat endpoint uri", e);
     }
@@ -90,13 +90,13 @@ public final class StatsbeatConnectionString {
     return new StatsbeatConnectionString(endpointUrl, instrumentationKey);
   }
 
-  private StatsbeatConnectionString(URL endpoint, String instrumentationKey) {
-    this.endpoint = endpoint;
+  private StatsbeatConnectionString(URL ingestionEndpoint, String instrumentationKey) {
+    this.ingestionEndpoint = ingestionEndpoint.toExternalForm();
     this.instrumentationKey = instrumentationKey;
   }
 
-  public URL getEndpoint() {
-    return endpoint;
+  public String getIngestionEndpoint() {
+    return ingestionEndpoint;
   }
 
   public String getInstrumentationKey() {

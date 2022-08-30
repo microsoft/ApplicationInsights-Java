@@ -30,6 +30,7 @@ import com.azure.core.test.TestContextManager;
 import com.azure.core.test.TestMode;
 import com.azure.core.test.utils.TestResourceNamer;
 import com.azure.core.util.Configuration;
+import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MonitorBase;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MonitorDomain;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.RequestData;
@@ -42,8 +43,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.TestInfo;
@@ -127,29 +126,12 @@ public class MonitorExporterClientTestBase extends TestBase {
     String connectionString =
         Configuration.getGlobalConfiguration().get("APPLICATIONINSIGHTS_CONNECTION_STRING", "");
 
-    Map<String, String> keyValues = parseConnectionString(connectionString);
-    String instrumentationKey =
-        keyValues.getOrDefault("InstrumentationKey", "{instrumentation-key}");
-
     return new TelemetryItem()
         .setVersion(1)
-        .setInstrumentationKey(instrumentationKey)
+        .setConnectionString(ConnectionString.parse(connectionString))
         .setName("test-event-name")
         .setSampleRate(100.0f)
         .setTime(time.atOffset(ZoneOffset.UTC))
         .setData(monitorBase);
-  }
-
-  private static Map<String, String> parseConnectionString(String connectionString) {
-    Objects.requireNonNull(connectionString);
-    Map<String, String> keyValues = new HashMap<>();
-    String[] splits = connectionString.split(";");
-    for (String split : splits) {
-      String[] keyValPair = split.split("=");
-      if (keyValPair.length == 2) {
-        keyValues.put(keyValPair[0], keyValPair[1]);
-      }
-    }
-    return keyValues;
   }
 }

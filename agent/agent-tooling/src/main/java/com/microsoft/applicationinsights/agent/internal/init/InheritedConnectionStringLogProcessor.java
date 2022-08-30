@@ -27,10 +27,10 @@ import io.opentelemetry.sdk.logs.LogProcessor;
 import io.opentelemetry.sdk.logs.ReadWriteLogRecord;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 
-public class InheritedInstrumentationKeyLogProcessor implements LogProcessor {
+public class InheritedConnectionStringLogProcessor implements LogProcessor {
 
-  private static final AttributeKey<String> INSTRUMENTATION_KEY_KEY =
-      AttributeKey.stringKey("ai.preview.instrumentation_key");
+  private static final AttributeKey<String> CONNECTION_STRING =
+      AttributeKey.stringKey("ai.preview.connection_string");
 
   @Override
   public void onEmit(ReadWriteLogRecord logRecord) {
@@ -39,9 +39,9 @@ public class InheritedInstrumentationKeyLogProcessor implements LogProcessor {
       return;
     }
     ReadableSpan currentReadableSpan = (ReadableSpan) currentSpan;
-    String instrumentationKey = currentReadableSpan.getAttribute(INSTRUMENTATION_KEY_KEY);
+    String instrumentationKey = currentReadableSpan.getAttribute(CONNECTION_STRING);
     if (instrumentationKey != null) {
-      logRecord.setAttribute(INSTRUMENTATION_KEY_KEY, instrumentationKey);
+      logRecord.setAttribute(CONNECTION_STRING, instrumentationKey);
     }
   }
 }

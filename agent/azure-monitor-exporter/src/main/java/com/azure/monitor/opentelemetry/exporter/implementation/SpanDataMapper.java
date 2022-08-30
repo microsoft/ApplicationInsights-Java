@@ -31,6 +31,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.builders.Exceptio
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.MessageTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.RemoteDependencyTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.RequestTelemetryBuilder;
+import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedDuration;
@@ -43,6 +44,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.instrumentation.api.internal.cache.Cache;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.ReadableSpan;
@@ -61,7 +63,6 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
-// TODO (trask) move this class into internal package
 public final class SpanDataMapper {
 
   // visible for testing
@@ -76,42 +77,7 @@ public final class SpanDataMapper {
   // TODO (trask) add to generated ContextTagKeys class
   private static final ContextTagKeys AI_DEVICE_OS = ContextTagKeys.fromString("ai.device.os");
 
-  // TODO (trask) remove once this makes it into SemanticAttributes
-  private static final AttributeKey<String> NET_SOCK_PEER_ADDR =
-      AttributeKey.stringKey("net.sock.peer.addr");
-
-  // TODO (trask) this can go away once new indexer is rolled out to gov clouds
-  private static final AttributeKey<List<String>> AI_REQUEST_CONTEXT_KEY =
-      AttributeKey.stringArrayKey("http.response.header.request_context");
-
-  public static final AttributeKey<String> AI_LEGACY_PARENT_ID_KEY =
-      AttributeKey.stringKey("applicationinsights.internal.legacy_parent_id");
-  public static final AttributeKey<String> AI_LEGACY_ROOT_ID_KEY =
-      AttributeKey.stringKey("applicationinsights.internal.legacy_root_id");
-
-  // this is only used by the 2.x web interop bridge
-  // for ThreadContext.getRequestTelemetryContext().getRequestTelemetry().setSource()
-  private static final AttributeKey<String> AI_SPAN_SOURCE_KEY =
-      AttributeKey.stringKey("applicationinsights.internal.source");
-  private static final AttributeKey<String> AI_SESSION_ID_KEY =
-      AttributeKey.stringKey("applicationinsights.internal.session_id");
-  private static final AttributeKey<String> AI_DEVICE_OS_KEY =
-      AttributeKey.stringKey("applicationinsights.internal.operating_system");
-  private static final AttributeKey<String> AI_DEVICE_OS_VERSION_KEY =
-      AttributeKey.stringKey("applicationinsights.internal.operating_system_version");
-
-  private static final AttributeKey<String> AZURE_NAMESPACE =
-      AttributeKey.stringKey("az.namespace");
-  private static final AttributeKey<String> AZURE_SDK_PEER_ADDRESS =
-      AttributeKey.stringKey("peer.address");
-  private static final AttributeKey<String> AZURE_SDK_MESSAGE_BUS_DESTINATION =
-      AttributeKey.stringKey("message_bus.destination");
-  private static final AttributeKey<Long> AZURE_SDK_ENQUEUED_TIME =
-      AttributeKey.longKey("x-opt-enqueued-time");
-
-  private static final AttributeKey<Long> KAFKA_RECORD_QUEUE_TIME_MS =
-      AttributeKey.longKey("kafka.record.queue_time_ms");
-  private static final AttributeKey<Long> KAFKA_OFFSET = AttributeKey.longKey("kafka.offset");
+  private static final Cache<String, ConnectionString> connectionStringCache = Cache.bounded(100);
 
   static {
     Set<String> dbSystems = new HashSet<>();
@@ -231,8 +197,7 @@ public final class SpanDataMapper {
 
   private static boolean checkIsPreAggregatedStandardMetric(SpanData span) {
     Boolean isPreAggregatedStandardMetric =
-        span.getAttributes()
-            .get(AttributeKey.booleanKey("applicationinsights.internal.is_pre_aggregated"));
+        span.getAttributes().get(AiSemanticAttributes.IS_PRE_AGGREGATED);
     return isPreAggregatedStandardMetric != null && isPreAggregatedStandardMetric;
   }
 
@@ -352,7 +317,7 @@ public final class SpanDataMapper {
 
   @Nullable
   private static String getMessagingSystem(Attributes attributes) {
-    String azureNamespace = attributes.get(AZURE_NAMESPACE);
+    String azureNamespace = attributes.get(AiSemanticAttributes.AZURE_SDK_NAMESPACE);
     if (isAzureSdkMessaging(azureNamespace)) {
       // special case needed until Azure SDK moves to OTel semantic conventions
       return azureNamespace;
@@ -421,7 +386,7 @@ public final class SpanDataMapper {
 
   @Nullable
   private static String getTargetAppId(Attributes attributes) {
-    List<String> requestContextList = attributes.get(AI_REQUEST_CONTEXT_KEY);
+    List<String> requestContextList = attributes.get(AiSemanticAttributes.REQUEST_CONTEXT);
     if (requestContextList == null || requestContextList.isEmpty()) {
       return null;
     }
@@ -577,7 +542,7 @@ public final class SpanDataMapper {
     telemetryBuilder.addTag(ContextTagKeys.AI_OPERATION_ID.toString(), span.getTraceId());
 
     // see behavior specified at https://github.com/microsoft/ApplicationInsights-Java/issues/1174
-    String aiLegacyParentId = span.getAttributes().get(AI_LEGACY_PARENT_ID_KEY);
+    String aiLegacyParentId = span.getAttributes().get(AiSemanticAttributes.LEGACY_PARENT_ID);
     if (aiLegacyParentId != null) {
       // this was the real (legacy) parent id, but it didn't fit span id format
       telemetryBuilder.addTag(ContextTagKeys.AI_OPERATION_PARENT_ID.toString(), aiLegacyParentId);
@@ -586,7 +551,7 @@ public final class SpanDataMapper {
           ContextTagKeys.AI_OPERATION_PARENT_ID.toString(),
           span.getParentSpanContext().getSpanId());
     }
-    String aiLegacyRootId = span.getAttributes().get(AI_LEGACY_ROOT_ID_KEY);
+    String aiLegacyRootId = span.getAttributes().get(AiSemanticAttributes.LEGACY_ROOT_ID);
     if (aiLegacyRootId != null) {
       telemetryBuilder.addTag("ai_legacyRootID", aiLegacyRootId);
     }
@@ -615,7 +580,7 @@ public final class SpanDataMapper {
     String locationIp = attributes.get(SemanticAttributes.HTTP_CLIENT_IP);
     if (locationIp == null) {
       // only use net.peer.ip if http.client_ip is not available
-      locationIp = attributes.get(NET_SOCK_PEER_ADDR);
+      locationIp = attributes.get(AiSemanticAttributes.NET_SOCK_PEER_ADDR);
     }
     if (locationIp != null) {
       telemetryBuilder.addTag(ContextTagKeys.AI_LOCATION_IP.toString(), locationIp);
@@ -623,19 +588,19 @@ public final class SpanDataMapper {
 
     telemetryBuilder.setSource(getSource(attributes, span.getSpanContext()));
 
-    String sessionId = attributes.get(AI_SESSION_ID_KEY);
+    String sessionId = attributes.get(AiSemanticAttributes.SESSION_ID);
     if (sessionId != null) {
       // this is only used by the 2.x web interop bridge for
       // ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry().getContext().getSession().setId()
       telemetryBuilder.addTag(ContextTagKeys.AI_SESSION_ID.toString(), sessionId);
     }
-    String deviceOs = attributes.get(AI_DEVICE_OS_KEY);
+    String deviceOs = attributes.get(AiSemanticAttributes.DEVICE_OS);
     if (deviceOs != null) {
       // this is only used by the 2.x web interop bridge for
       // ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry().getContext().getDevice().setOperatingSystem()
       telemetryBuilder.addTag(AI_DEVICE_OS.toString(), deviceOs);
     }
-    String deviceOsVersion = attributes.get(AI_DEVICE_OS_VERSION_KEY);
+    String deviceOsVersion = attributes.get(AiSemanticAttributes.DEVICE_OS_VERSION);
     if (deviceOsVersion != null) {
       // this is only used by the 2.x web interop bridge for
       // ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry().getContext().getDevice().setOperatingSystemVersion()
@@ -648,14 +613,14 @@ public final class SpanDataMapper {
 
     // TODO(trask)? for batch consumer, enqueuedTime should be the average of this attribute
     //  across all links
-    Long enqueuedTime = attributes.get(AZURE_SDK_ENQUEUED_TIME);
+    Long enqueuedTime = attributes.get(AiSemanticAttributes.AZURE_SDK_ENQUEUED_TIME);
     if (enqueuedTime != null) {
       long timeSinceEnqueuedMillis =
           Math.max(
               0L, NANOSECONDS.toMillis(span.getStartEpochNanos()) - SECONDS.toMillis(enqueuedTime));
       telemetryBuilder.addMeasurement("timeSinceEnqueued", (double) timeSinceEnqueuedMillis);
     }
-    Long timeSinceEnqueuedMillis = attributes.get(KAFKA_RECORD_QUEUE_TIME_MS);
+    Long timeSinceEnqueuedMillis = attributes.get(AiSemanticAttributes.KAFKA_RECORD_QUEUE_TIME_MS);
     if (timeSinceEnqueuedMillis != null) {
       telemetryBuilder.addMeasurement("timeSinceEnqueued", (double) timeSinceEnqueuedMillis);
     }
@@ -705,7 +670,7 @@ public final class SpanDataMapper {
   private String getSource(Attributes attributes, @Nullable SpanContext spanContext) {
     // this is only used by the 2.x web interop bridge
     // for ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry().setSource()
-    String source = attributes.get(AI_SPAN_SOURCE_KEY);
+    String source = attributes.get(AiSemanticAttributes.SPAN_SOURCE);
     if (source != null) {
       return source;
     }
@@ -720,10 +685,10 @@ public final class SpanDataMapper {
 
   @Nullable
   private static String getMessagingTargetSource(Attributes attributes) {
-    if (isAzureSdkMessaging(attributes.get(AZURE_NAMESPACE))) {
+    if (isAzureSdkMessaging(attributes.get(AiSemanticAttributes.AZURE_SDK_NAMESPACE))) {
       // special case needed until Azure SDK moves to OTel semantic conventions
-      String peerAddress = attributes.get(AZURE_SDK_PEER_ADDRESS);
-      String destination = attributes.get(AZURE_SDK_MESSAGE_BUS_DESTINATION);
+      String peerAddress = attributes.get(AiSemanticAttributes.AZURE_SDK_PEER_ADDRESS);
+      String destination = attributes.get(AiSemanticAttributes.AZURE_SDK_MESSAGE_BUS_DESTINATION);
       return peerAddress + "/" + destination;
     }
     String messagingSystem = attributes.get(SemanticAttributes.MESSAGING_SYSTEM);
@@ -888,65 +853,73 @@ public final class SpanDataMapper {
   private static void setExtraAttributes(
       AbstractTelemetryBuilder telemetryBuilder, Attributes attributes) {
     attributes.forEach(
-        (key, value) -> {
-          String stringKey = key.getKey();
-          if (stringKey.startsWith("applicationinsights.internal.")) {
+        (attributeKey, value) -> {
+          String key = attributeKey.getKey();
+          if (key.startsWith("applicationinsights.internal.")) {
             return;
           }
-          if (stringKey.equals(AZURE_NAMESPACE.getKey())
-              || stringKey.equals(AZURE_SDK_MESSAGE_BUS_DESTINATION.getKey())
-              || stringKey.equals(AZURE_SDK_ENQUEUED_TIME.getKey())) {
+          if (key.equals(AiSemanticAttributes.AZURE_SDK_NAMESPACE.getKey())
+              || key.equals(AiSemanticAttributes.AZURE_SDK_MESSAGE_BUS_DESTINATION.getKey())
+              || key.equals(AiSemanticAttributes.AZURE_SDK_ENQUEUED_TIME.getKey())) {
             // these are from azure SDK (AZURE_SDK_PEER_ADDRESS gets filtered out automatically
             // since it uses the otel "peer." prefix)
             return;
           }
-          if (stringKey.equals(KAFKA_RECORD_QUEUE_TIME_MS.getKey())
-              || stringKey.equals(KAFKA_OFFSET.getKey())) {
+          if (key.equals(AiSemanticAttributes.KAFKA_RECORD_QUEUE_TIME_MS.getKey())
+              || key.equals(AiSemanticAttributes.KAFKA_OFFSET.getKey())) {
             return;
           }
-          if (stringKey.equals(AI_REQUEST_CONTEXT_KEY.getKey())) {
+          if (key.equals(AiSemanticAttributes.REQUEST_CONTEXT.getKey())) {
             return;
           }
-          if (stringKey.equals(SemanticAttributes.HTTP_USER_AGENT.getKey())
-              && value instanceof String) {
+          if (key.equals(SemanticAttributes.HTTP_USER_AGENT.getKey()) && value instanceof String) {
             telemetryBuilder.addTag("ai.user.userAgent", (String) value);
             return;
           }
-          if (applyCommonTags(telemetryBuilder, value, stringKey)) {
+          if (applyCommonTags(telemetryBuilder, key, value)) {
             return;
           }
-          if (STANDARD_ATTRIBUTE_PREFIX_TRIE.getOrDefault(stringKey, false)
-              && !stringKey.startsWith("http.request.header.")
-              && !stringKey.startsWith("http.response.header.")) {
+          if (STANDARD_ATTRIBUTE_PREFIX_TRIE.getOrDefault(key, false)
+              && !key.startsWith("http.request.header.")
+              && !key.startsWith("http.response.header.")) {
             return;
           }
-          String val = convertToString(value, key.getType());
+          String val = convertToString(value, attributeKey.getType());
           if (value != null) {
-            telemetryBuilder.addProperty(key.getKey(), val);
+            telemetryBuilder.addProperty(attributeKey.getKey(), val);
           }
         });
   }
 
   static boolean applyCommonTags(
-      AbstractTelemetryBuilder telemetryBuilder, Object value, String stringKey) {
+      AbstractTelemetryBuilder telemetryBuilder, String key, Object value) {
 
-    if (stringKey.equals(SemanticAttributes.ENDUSER_ID.getKey()) && value instanceof String) {
+    if (key.equals(SemanticAttributes.ENDUSER_ID.getKey()) && value instanceof String) {
       telemetryBuilder.addTag(ContextTagKeys.AI_USER_ID.toString(), (String) value);
       return true;
     }
-    if (stringKey.equals("ai.preview.instrumentation_key") && value instanceof String) {
-      telemetryBuilder.setInstrumentationKey((String) value);
+    if (key.equals(AiSemanticAttributes.CONNECTION_STRING.getKey()) && value instanceof String) {
+      // intentionally letting exceptions from parse bubble up
+      telemetryBuilder.setConnectionString(
+          connectionStringCache.computeIfAbsent((String) value, ConnectionString::parse));
       return true;
     }
-    if (stringKey.equals("ai.preview.service_name") && value instanceof String) {
+    if (key.equals(AiSemanticAttributes.INSTRUMENTATION_KEY.getKey()) && value instanceof String) {
+      // intentionally letting exceptions from parse bubble up
+      telemetryBuilder.setConnectionString(
+          connectionStringCache.computeIfAbsent(
+              "InstrumentationKey=" + value, ConnectionString::parse));
+      return true;
+    }
+    if (key.equals(AiSemanticAttributes.ROLE_NAME.getKey()) && value instanceof String) {
       telemetryBuilder.addTag(ContextTagKeys.AI_CLOUD_ROLE.toString(), (String) value);
       return true;
     }
-    if (stringKey.equals("ai.preview.service_instance_id") && value instanceof String) {
+    if (key.equals(AiSemanticAttributes.ROLE_INSTANCE_ID.getKey()) && value instanceof String) {
       telemetryBuilder.addTag(ContextTagKeys.AI_CLOUD_ROLE_INSTANCE.toString(), (String) value);
       return true;
     }
-    if (stringKey.equals("ai.preview.service_version") && value instanceof String) {
+    if (key.equals(AiSemanticAttributes.APPLICATION_VERSION.getKey()) && value instanceof String) {
       telemetryBuilder.addTag(ContextTagKeys.AI_APPLICATION_VER.toString(), (String) value);
       return true;
     }

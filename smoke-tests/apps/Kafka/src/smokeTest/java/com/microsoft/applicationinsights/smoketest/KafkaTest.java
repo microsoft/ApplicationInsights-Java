@@ -48,8 +48,10 @@ abstract class KafkaTest {
 
   @RegisterExtension
   static final SmokeTestExtension testing =
-      SmokeTestExtension.create(
-          new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:6.2.1")), "KAFKA");
+      SmokeTestExtension.builder()
+          .setDependencyContainer(
+              "KAFKA", new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:6.2.1")))
+          .build();
 
   @Test
   @TargetUri("/sendMessage")

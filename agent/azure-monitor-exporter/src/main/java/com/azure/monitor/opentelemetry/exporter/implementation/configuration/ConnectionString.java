@@ -21,32 +21,43 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation.configuration;
 
+import io.opentelemetry.instrumentation.api.internal.cache.Cache;
 import java.net.URL;
 
 public final class ConnectionString {
 
+  private static final Cache<String, ConnectionString> cache = Cache.bounded(100);
+
   private final String instrumentationKey;
-  private final URL ingestionEndpoint;
+  private final String ingestionEndpoint;
   private final URL liveEndpoint;
   private final URL profilerEndpoint;
 
+  private final String originalString;
+
   ConnectionString(
-      String instrumentationKey, URL ingestionEndpoint, URL liveEndpoint, URL profilerEndpoint) {
+      String instrumentationKey,
+      URL ingestionEndpoint,
+      URL liveEndpoint,
+      URL profilerEndpoint,
+      String originalString) {
     this.instrumentationKey = instrumentationKey;
-    this.ingestionEndpoint = ingestionEndpoint;
+    this.ingestionEndpoint = ingestionEndpoint.toExternalForm();
     this.liveEndpoint = liveEndpoint;
     this.profilerEndpoint = profilerEndpoint;
+    this.originalString = originalString;
   }
 
   public static ConnectionString parse(String connectionString) {
-    return new ConnectionStringBuilder().setConnectionString(connectionString).build();
+    return cache.computeIfAbsent(
+        connectionString, key -> new ConnectionStringBuilder().setConnectionString(key).build());
   }
 
   public String getInstrumentationKey() {
     return instrumentationKey;
   }
 
-  public URL getIngestionEndpoint() {
+  public String getIngestionEndpoint() {
     return ingestionEndpoint;
   }
 
@@ -56,5 +67,9 @@ public final class ConnectionString {
 
   public URL getProfilerEndpoint() {
     return profilerEndpoint;
+  }
+
+  public String getOriginalString() {
+    return originalString;
   }
 }

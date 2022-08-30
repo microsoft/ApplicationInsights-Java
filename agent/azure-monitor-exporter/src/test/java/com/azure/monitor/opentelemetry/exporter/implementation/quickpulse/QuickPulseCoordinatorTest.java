@@ -119,8 +119,7 @@ class QuickPulseCoordinatorTest {
     assertThat(collector.getQuickPulseStatus()).isEqualTo(QuickPulseStatus.QP_IS_OFF);
   }
 
-  // FIXME (trask) sporadically failing on CI
-  @Disabled
+  @Disabled("sporadically failing on CI")
   @Test
   void testOnePingAndThenOnePostWithRedirectedLink() throws InterruptedException {
     QuickPulseDataFetcher mockFetcher = Mockito.mock(QuickPulseDataFetcher.class);

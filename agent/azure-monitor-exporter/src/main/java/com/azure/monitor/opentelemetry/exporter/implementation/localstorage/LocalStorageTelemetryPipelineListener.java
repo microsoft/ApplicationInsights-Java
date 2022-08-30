@@ -63,14 +63,14 @@ public class LocalStorageTelemetryPipelineListener implements TelemetryPipelineL
   @Override
   public void onResponse(TelemetryPipelineRequest request, TelemetryPipelineResponse response) {
     if (StatusCode.isRetryable(response.getStatusCode())) {
-      localFileWriter.writeToDisk(request.getInstrumentationKey(), request.getTelemetry());
+      localFileWriter.writeToDisk(request.getConnectionString(), request.getTelemetry());
     }
   }
 
   @Override
   public void onException(
       TelemetryPipelineRequest request, String errorMessage, Throwable throwable) {
-    localFileWriter.writeToDisk(request.getInstrumentationKey(), request.getTelemetry());
+    localFileWriter.writeToDisk(request.getConnectionString(), request.getTelemetry());
   }
 
   @Override

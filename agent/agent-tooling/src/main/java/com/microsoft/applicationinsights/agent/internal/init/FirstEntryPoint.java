@@ -107,7 +107,7 @@ public class FirstEntryPoint implements LoggingCustomizer {
       startupLogger = configureLogging(configuration.selfDiagnostics, agentPath);
       ConfigurationBuilder.logConfigurationWarnMessages();
 
-      LegacyInstrumentation.registerTransformers();
+      ClassicSdkInstrumentation.registerTransformers();
     } catch (Exception e) {
       throw new IllegalStateException(e);
     }

@@ -106,7 +106,7 @@ public class AppIdSupplier implements AiAppId.Supplier {
   // visible for testing
   static URL getAppIdUrl(ConnectionString connectionString) throws MalformedURLException {
     return new URL(
-        connectionString.getIngestionEndpoint(),
+        new URL(connectionString.getIngestionEndpoint()),
         "api/profiles/" + connectionString.getInstrumentationKey() + "/appId");
   }
 

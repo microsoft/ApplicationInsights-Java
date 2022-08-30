@@ -47,10 +47,10 @@ public class SamplingOverrides {
   }
 
   @Nullable
-  public Sampler getOverride(boolean standaloneTelemetry, Attributes attributes) {
+  public Sampler getOverride(boolean isStandaloneTelemetry, Attributes attributes) {
     LazyHttpUrl lazyHttpUrl = new LazyHttpUrl(attributes);
     for (MatcherGroup matcherGroups : matcherGroups) {
-      if (matcherGroups.matches(standaloneTelemetry, attributes, lazyHttpUrl)) {
+      if (matcherGroups.matches(isStandaloneTelemetry, attributes, lazyHttpUrl)) {
         return matcherGroups.getSampler();
       }
     }
@@ -59,9 +59,9 @@ public class SamplingOverrides {
 
   // used to do sampling inside the log exporter
   @Nullable
-  public Double getOverridePercentage(boolean standaloneTelemetry, Attributes attributes) {
+  public Double getOverridePercentage(boolean isStandaloneTelemetry, Attributes attributes) {
     for (MatcherGroup matcherGroups : matcherGroups) {
-      if (matcherGroups.matches(standaloneTelemetry, attributes, null)) {
+      if (matcherGroups.matches(isStandaloneTelemetry, attributes, null)) {
         return matcherGroups.getPercentage();
       }
     }
@@ -93,8 +93,8 @@ public class SamplingOverrides {
     }
 
     private boolean matches(
-        boolean standaloneTelemetry, Attributes attributes, @Nullable LazyHttpUrl lazyHttpUrl) {
-      if (standaloneTelemetry && !this.includeStandaloneTelemetry) {
+        boolean isStandaloneTelemetry, Attributes attributes, @Nullable LazyHttpUrl lazyHttpUrl) {
+      if (isStandaloneTelemetry && !this.includeStandaloneTelemetry) {
         return false;
       }
       for (TempPredicate predicate : predicates) {

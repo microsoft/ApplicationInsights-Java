@@ -21,6 +21,8 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation.builders;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
+import com.azure.monitor.opentelemetry.exporter.implementation.configuration.StatsbeatConnectionString;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MonitorBase;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MonitorDomain;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
@@ -63,8 +65,16 @@ public abstract class AbstractTelemetryBuilder {
     telemetryItem.setSampleRate(sampleRate);
   }
 
-  public void setInstrumentationKey(String instrumentationKey) {
-    telemetryItem.setInstrumentationKey(instrumentationKey);
+  public void setConnectionString(String connectionString) {
+    telemetryItem.setConnectionString(connectionString);
+  }
+
+  public void setConnectionString(ConnectionString connectionString) {
+    telemetryItem.setConnectionString(connectionString);
+  }
+
+  public void setConnectionString(StatsbeatConnectionString connectionString) {
+    telemetryItem.setConnectionString(connectionString);
   }
 
   public void addTag(String key, String value) {

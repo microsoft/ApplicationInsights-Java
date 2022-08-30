@@ -27,33 +27,19 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.sdk.logs.LogProcessor;
 import io.opentelemetry.sdk.logs.ReadWriteLogRecord;
 import io.opentelemetry.sdk.trace.ReadableSpan;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class InheritedAttributesLogProcessor implements LogProcessor {
-
-  private static final AttributeKey<String> INSTRUMENTATION_KEY_KEY =
-      AttributeKey.stringKey("ai.preview.instrumentation_key");
-
-  private static final AttributeKey<String> ROLE_NAME_KEY =
-      AttributeKey.stringKey("ai.preview.service_name");
 
   private final List<AttributeKey<?>> inheritedAttributes;
 
   public InheritedAttributesLogProcessor(
       List<Configuration.InheritedAttribute> inheritedAttributes) {
-    this.inheritedAttributes = buildInheritedAttributesList(inheritedAttributes);
-  }
-
-  private static List<AttributeKey<?>> buildInheritedAttributesList(
-      List<Configuration.InheritedAttribute> inheritedAttributes) {
-    List<AttributeKey<?>> list = new ArrayList<>();
-    for (Configuration.InheritedAttribute inheritedAttribute : inheritedAttributes) {
-      list.add(inheritedAttribute.getAttributeKey());
-    }
-    list.add(INSTRUMENTATION_KEY_KEY);
-    list.add(ROLE_NAME_KEY);
-    return list;
+    this.inheritedAttributes =
+        inheritedAttributes.stream()
+            .map(Configuration.InheritedAttribute::getAttributeKey)
+            .collect(Collectors.toList());
   }
 
   @Override

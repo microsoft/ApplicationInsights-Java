@@ -158,43 +158,43 @@ public class LogDataMapper {
 
   static void setExtraAttributes(AbstractTelemetryBuilder telemetryBuilder, Attributes attributes) {
     attributes.forEach(
-        (key, value) -> {
-          String stringKey = key.getKey();
-          if (stringKey.startsWith("applicationinsights.internal.")) {
+        (attributeKey, value) -> {
+          String key = attributeKey.getKey();
+          if (key.startsWith("applicationinsights.internal.")) {
             return;
           }
-          if (stringKey.startsWith(LOG4J2_CONTEXT_DATA_PREFIX)) {
+          if (key.startsWith(LOG4J2_CONTEXT_DATA_PREFIX)) {
             telemetryBuilder.addProperty(
-                stringKey.substring(LOG4J2_CONTEXT_DATA_PREFIX.length()), String.valueOf(value));
+                key.substring(LOG4J2_CONTEXT_DATA_PREFIX.length()), String.valueOf(value));
             return;
           }
-          if (stringKey.startsWith(LOGBACK_MDC_PREFIX)) {
+          if (key.startsWith(LOGBACK_MDC_PREFIX)) {
             telemetryBuilder.addProperty(
-                stringKey.substring(LOGBACK_MDC_PREFIX.length()), String.valueOf(value));
+                key.substring(LOGBACK_MDC_PREFIX.length()), String.valueOf(value));
             return;
           }
-          if (stringKey.startsWith(JBOSS_LOGGING_MDC_PREFIX)) {
+          if (key.startsWith(JBOSS_LOGGING_MDC_PREFIX)) {
             telemetryBuilder.addProperty(
-                stringKey.substring(JBOSS_LOGGING_MDC_PREFIX.length()), String.valueOf(value));
+                key.substring(JBOSS_LOGGING_MDC_PREFIX.length()), String.valueOf(value));
             return;
           }
-          if (stringKey.startsWith(LOG4J1_2_MDC_PREFIX)) {
+          if (key.startsWith(LOG4J1_2_MDC_PREFIX)) {
             telemetryBuilder.addProperty(
-                stringKey.substring(LOG4J1_2_MDC_PREFIX.length()), String.valueOf(value));
+                key.substring(LOG4J1_2_MDC_PREFIX.length()), String.valueOf(value));
             return;
           }
-          if (SpanDataMapper.applyCommonTags(telemetryBuilder, value, stringKey)) {
+          if (SpanDataMapper.applyCommonTags(telemetryBuilder, key, value)) {
             return;
           }
-          if (stringKey.startsWith("thread.")) {
+          if (key.startsWith("thread.")) {
             return;
           }
-          if (stringKey.startsWith("exception.")) {
+          if (key.startsWith("exception.")) {
             return;
           }
-          String val = SpanDataMapper.convertToString(value, key.getType());
+          String val = SpanDataMapper.convertToString(value, attributeKey.getType());
           if (val != null) {
-            telemetryBuilder.addProperty(key.getKey(), val);
+            telemetryBuilder.addProperty(attributeKey.getKey(), val);
           }
         });
   }

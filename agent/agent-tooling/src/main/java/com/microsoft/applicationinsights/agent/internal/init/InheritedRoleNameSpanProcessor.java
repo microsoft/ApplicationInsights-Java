@@ -21,8 +21,8 @@
 
 package com.microsoft.applicationinsights.agent.internal.init;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.AiSemanticAttributes;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
-import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.context.Context;
@@ -33,9 +33,6 @@ import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.util.List;
 
 public class InheritedRoleNameSpanProcessor implements SpanProcessor {
-
-  private static final AttributeKey<String> ROLE_NAME_KEY =
-      AttributeKey.stringKey("ai.preview.service_name");
 
   private final List<Configuration.RoleNameOverride> overrides;
 
@@ -55,7 +52,7 @@ public class InheritedRoleNameSpanProcessor implements SpanProcessor {
       }
       for (Configuration.RoleNameOverride override : overrides) {
         if (target.startsWith(override.httpPathPrefix)) {
-          span.setAttribute(ROLE_NAME_KEY, override.roleName);
+          span.setAttribute(AiSemanticAttributes.ROLE_NAME, override.roleName);
           break;
         }
       }
@@ -66,9 +63,9 @@ public class InheritedRoleNameSpanProcessor implements SpanProcessor {
     }
     ReadableSpan parentReadableSpan = (ReadableSpan) parentSpan;
 
-    String roleName = parentReadableSpan.getAttribute(ROLE_NAME_KEY);
+    String roleName = parentReadableSpan.getAttribute(AiSemanticAttributes.ROLE_NAME);
     if (roleName != null) {
-      span.setAttribute(ROLE_NAME_KEY, roleName);
+      span.setAttribute(AiSemanticAttributes.ROLE_NAME, roleName);
     }
   }
 

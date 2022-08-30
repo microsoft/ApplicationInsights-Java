@@ -65,6 +65,7 @@ public class BytecodeUtil {
                   null,
                   properties,
                   Collections.emptyMap(),
+                  null,
                   null);
             }
           });
@@ -77,9 +78,11 @@ public class BytecodeUtil {
       Map<String, String> properties,
       Map<String, String> tags,
       Map<String, Double> metrics,
+      @Nullable String connectionString,
       @Nullable String instrumentationKey) {
     if (delegate != null) {
-      delegate.trackEvent(timestamp, name, properties, tags, metrics, instrumentationKey);
+      delegate.trackEvent(
+          timestamp, name, properties, tags, metrics, connectionString, instrumentationKey);
     }
   }
 
@@ -94,6 +97,7 @@ public class BytecodeUtil {
       @Nullable Double stdDev,
       Map<String, String> properties,
       Map<String, String> tags,
+      @Nullable String connectionString,
       @Nullable String instrumentationKey) {
     if (delegate != null) {
       delegate.trackMetric(
@@ -107,6 +111,7 @@ public class BytecodeUtil {
           stdDev,
           properties,
           tags,
+          connectionString,
           instrumentationKey);
     }
   }
@@ -124,6 +129,7 @@ public class BytecodeUtil {
       Map<String, String> properties,
       Map<String, String> tags,
       Map<String, Double> metrics,
+      @Nullable String connectionString,
       @Nullable String instrumentationKey) {
     if (delegate != null) {
       delegate.trackDependency(
@@ -139,6 +145,7 @@ public class BytecodeUtil {
           properties,
           tags,
           metrics,
+          connectionString,
           instrumentationKey);
     }
   }
@@ -151,10 +158,19 @@ public class BytecodeUtil {
       Map<String, String> properties,
       Map<String, String> tags,
       Map<String, Double> metrics,
+      @Nullable String connectionString,
       @Nullable String instrumentationKey) {
     if (delegate != null) {
       delegate.trackPageView(
-          timestamp, name, uri, totalMillis, properties, tags, metrics, instrumentationKey);
+          timestamp,
+          name,
+          uri,
+          totalMillis,
+          properties,
+          tags,
+          metrics,
+          connectionString,
+          instrumentationKey);
     }
   }
 
@@ -164,9 +180,17 @@ public class BytecodeUtil {
       int severityLevel,
       Map<String, String> properties,
       Map<String, String> tags,
+      @Nullable String connectionString,
       @Nullable String instrumentationKey) {
     if (delegate != null) {
-      delegate.trackTrace(timestamp, message, severityLevel, properties, tags, instrumentationKey);
+      delegate.trackTrace(
+          timestamp,
+          message,
+          severityLevel,
+          properties,
+          tags,
+          connectionString,
+          instrumentationKey);
     }
   }
 
@@ -182,6 +206,7 @@ public class BytecodeUtil {
       Map<String, String> properties,
       Map<String, String> tags,
       Map<String, Double> metrics,
+      @Nullable String connectionString,
       @Nullable String instrumentationKey) {
     if (delegate != null) {
       delegate.trackRequest(
@@ -196,6 +221,7 @@ public class BytecodeUtil {
           properties,
           tags,
           metrics,
+          connectionString,
           instrumentationKey);
     }
   }
@@ -207,10 +233,18 @@ public class BytecodeUtil {
       Map<String, String> properties,
       Map<String, String> tags,
       Map<String, Double> metrics,
+      @Nullable String connectionString,
       @Nullable String instrumentationKey) {
     if (delegate != null) {
       delegate.trackException(
-          timestamp, throwable, severityLevel, properties, tags, metrics, instrumentationKey);
+          timestamp,
+          throwable,
+          severityLevel,
+          properties,
+          tags,
+          metrics,
+          connectionString,
+          instrumentationKey);
     }
   }
 
@@ -225,6 +259,7 @@ public class BytecodeUtil {
       Map<String, String> properties,
       Map<String, String> tags,
       Map<String, Double> metrics,
+      @Nullable String connectionString,
       @Nullable String instrumentationKey) {
     if (delegate != null) {
       delegate.trackAvailability(
@@ -238,6 +273,7 @@ public class BytecodeUtil {
           properties,
           tags,
           metrics,
+          connectionString,
           instrumentationKey);
     }
   }
@@ -322,6 +358,7 @@ public class BytecodeUtil {
         Map<String, String> properties,
         Map<String, String> tags,
         Map<String, Double> metrics,
+        @Nullable String connectionString,
         @Nullable String instrumentationKey);
 
     void trackMetric(
@@ -335,6 +372,7 @@ public class BytecodeUtil {
         @Nullable Double stdDev,
         Map<String, String> properties,
         Map<String, String> tags,
+        @Nullable String connectionString,
         @Nullable String instrumentationKey);
 
     void trackDependency(
@@ -350,6 +388,7 @@ public class BytecodeUtil {
         Map<String, String> properties,
         Map<String, String> tags,
         Map<String, Double> metrics,
+        @Nullable String connectionString,
         @Nullable String instrumentationKey);
 
     void trackPageView(
@@ -360,6 +399,7 @@ public class BytecodeUtil {
         Map<String, String> properties,
         Map<String, String> tags,
         Map<String, Double> metrics,
+        @Nullable String connectionString,
         @Nullable String instrumentationKey);
 
     void trackTrace(
@@ -368,6 +408,7 @@ public class BytecodeUtil {
         int severityLevel,
         Map<String, String> properties,
         Map<String, String> tags,
+        @Nullable String connectionString,
         @Nullable String instrumentationKey);
 
     void trackRequest(
@@ -382,6 +423,7 @@ public class BytecodeUtil {
         Map<String, String> properties,
         Map<String, String> tags,
         Map<String, Double> metrics,
+        @Nullable String connectionString,
         @Nullable String instrumentationKey);
 
     void trackException(
@@ -391,6 +433,7 @@ public class BytecodeUtil {
         Map<String, String> properties,
         Map<String, String> tags,
         Map<String, Double> metrics,
+        @Nullable String connectionString,
         @Nullable String instrumentationKey);
 
     void trackAvailability(
@@ -404,6 +447,7 @@ public class BytecodeUtil {
         Map<String, String> properties,
         Map<String, String> tags,
         Map<String, Double> metrics,
+        @Nullable String connectionString,
         @Nullable String instrumentationKey);
 
     void flush();

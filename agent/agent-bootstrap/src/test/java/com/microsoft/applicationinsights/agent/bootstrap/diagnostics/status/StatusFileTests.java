@@ -47,8 +47,7 @@ import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
 import uk.org.webcompere.systemstubs.jupiter.SystemStub;
 import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 
-// FIXME (trask) failing in CI on deleting the the @TempDir
-@Disabled
+@Disabled("failing on CI when deleted the @TempDir")
 @ExtendWith(SystemStubsExtension.class)
 class StatusFileTests {
 

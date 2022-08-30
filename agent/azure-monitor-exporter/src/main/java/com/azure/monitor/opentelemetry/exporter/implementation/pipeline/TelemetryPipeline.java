@@ -25,6 +25,7 @@ import com.azure.core.http.HttpPipeline;
 import com.azure.core.http.HttpResponse;
 import com.azure.core.util.Context;
 import com.azure.core.util.tracing.Tracer;
+import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.StatusCode;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.net.MalformedURLException;
@@ -35,7 +36,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Supplier;
 import reactor.core.publisher.Mono;
 
 public class TelemetryPipeline {
@@ -44,9 +44,8 @@ public class TelemetryPipeline {
   private static final int MAX_REDIRECTS = 10;
 
   private final HttpPipeline pipeline;
-  private final Supplier<URL> endpoint;
 
-  // key is instrumentationKey, value is redirectUrl
+  // key is connectionString, value is redirectUrl
   private final Map<String, URL> redirectCache =
       Collections.synchronizedMap(
           new LinkedHashMap<String, URL>() {
@@ -56,17 +55,22 @@ public class TelemetryPipeline {
             }
           });
 
-  public TelemetryPipeline(HttpPipeline pipeline, Supplier<URL> endpoint) {
+  public TelemetryPipeline(HttpPipeline pipeline) {
     this.pipeline = pipeline;
-    this.endpoint = endpoint;
   }
 
   public CompletableResultCode send(
-      List<ByteBuffer> telemetry, String instrumentationKey, TelemetryPipelineListener listener) {
+      List<ByteBuffer> telemetry, String connectionString, TelemetryPipelineListener listener) {
 
-    URL url = redirectCache.computeIfAbsent(instrumentationKey, k -> defaultUrl());
+    ConnectionString connectionStringObj = ConnectionString.parse(connectionString);
+
+    URL url =
+        redirectCache.computeIfAbsent(
+            connectionString, k -> getFullIngestionUrl(connectionStringObj.getIngestionEndpoint()));
+
     TelemetryPipelineRequest request =
-        new TelemetryPipelineRequest(url, instrumentationKey, telemetry);
+        new TelemetryPipelineRequest(
+            url, connectionString, connectionStringObj.getInstrumentationKey(), telemetry);
 
     try {
       CompletableResultCode result = new CompletableResultCode();
@@ -78,11 +82,11 @@ public class TelemetryPipeline {
     }
   }
 
-  private URL defaultUrl() {
+  private static URL getFullIngestionUrl(String ingestionEndpoint) {
     try {
-      return new URL(endpoint.get(), "v2.1/track");
+      return new URL(new URL(ingestionEndpoint), "v2.1/track");
     } catch (MalformedURLException e) {
-      throw new IllegalArgumentException("Invalid endpoint: " + endpoint, e);
+      throw new IllegalArgumentException("Invalid endpoint: " + ingestionEndpoint, e);
     }
   }
 
@@ -146,7 +150,7 @@ public class TelemetryPipeline {
         listener.onException(request, "Invalid redirect: " + location, e);
         return;
       }
-      redirectCache.put(request.getInstrumentationKey(), locationUrl);
+      redirectCache.put(request.getConnectionString(), locationUrl);
       request.setUrl(locationUrl);
       sendInternal(request, listener, result, remainingRedirects - 1);
       return;

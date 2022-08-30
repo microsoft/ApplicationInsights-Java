@@ -74,14 +74,15 @@ abstract class OpenTelemetryApiSupportTest {
   }
 
   @Test
-  @TargetUri("/test-overriding-ikey-etc")
-  void testOverridingIkeyEtc() throws Exception {
+  @TargetUri("/test-overriding-connection-string-etc")
+  void testOverridingConnectionStringEtc() throws Exception {
     Telemetry telemetry = testing.getTelemetry(0);
 
     assertThat(telemetry.rd.getName())
-        .isEqualTo("GET /OpenTelemetryApiSupport/test-overriding-ikey-etc");
+        .isEqualTo("GET /OpenTelemetryApiSupport/test-overriding-connection-string-etc");
     assertThat(telemetry.rd.getUrl())
-        .matches("http://localhost:[0-9]+/OpenTelemetryApiSupport/test-overriding-ikey-etc");
+        .matches(
+            "http://localhost:[0-9]+/OpenTelemetryApiSupport/test-overriding-connection-string-etc");
     assertThat(telemetry.rd.getResponseCode()).isEqualTo("200");
     assertThat(telemetry.rd.getSuccess()).isTrue();
     assertThat(telemetry.rd.getSource()).isNull();

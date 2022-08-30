@@ -142,7 +142,7 @@ public class AzureMonitorExportersEndToEndTest extends MonitorExporterClientTest
         getClientBuilder().connectionString(TRACE_CONNECTION_STRING).buildLogExporter();
     CompletableResultCode export =
         azureMonitorLogExporter.export(Collections.singleton(new MockLogData()));
-    export.join(30, TimeUnit.SECONDS);
+    export.join(10, TimeUnit.SECONDS);
     Assertions.assertTrue(export.isDone());
     Assertions.assertTrue(export.isSuccess());
   }
@@ -159,7 +159,7 @@ public class AzureMonitorExportersEndToEndTest extends MonitorExporterClientTest
     } finally {
       span.end();
     }
-    traceExporterCountDown.await(60, TimeUnit.SECONDS);
+    traceExporterCountDown.await(10, TimeUnit.SECONDS);
     return customValidationPolicy.actualTelemetryItems;
   }
 
@@ -173,7 +173,7 @@ public class AzureMonitorExportersEndToEndTest extends MonitorExporterClientTest
         1L,
         Attributes.of(
             AttributeKey.stringKey("name"), "apple", AttributeKey.stringKey("color"), "red"));
-    metricExporterCountDown.await(60, TimeUnit.SECONDS);
+    metricExporterCountDown.await(10, TimeUnit.SECONDS);
     return customValidationPolicy.actualTelemetryItems;
   }
 
@@ -191,10 +191,7 @@ public class AzureMonitorExportersEndToEndTest extends MonitorExporterClientTest
         HttpPipelineCallContext context, HttpPipelineNextPolicy next) {
       Mono<String> asyncBytes =
           FluxUtil.collectBytesInByteBufferStream(context.getHttpRequest().getBody())
-              .map(
-                  bytes -> {
-                    return ungzip(bytes);
-                  });
+              .map(CustomValidationPolicy::ungzip);
       asyncBytes.subscribe(
           value -> {
             ObjectMapper objectMapper = createObjectMapper();
@@ -205,7 +202,7 @@ public class AzureMonitorExportersEndToEndTest extends MonitorExporterClientTest
               }
               countDown.countDown();
             } catch (Exception e) {
-              // e.printStackTrace();
+              throw new RuntimeException(e);
             }
           });
       return next.process();

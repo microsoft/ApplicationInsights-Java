@@ -22,6 +22,9 @@
 package com.azure.monitor.opentelemetry.exporter.implementation.models;
 
 import com.azure.core.annotation.Fluent;
+import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
+import com.azure.monitor.opentelemetry.exporter.implementation.configuration.StatsbeatConnectionString;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.OffsetDateTime;
 import java.util.Map;
@@ -75,6 +78,8 @@ public final class TelemetryItem {
    */
   @JsonProperty(value = "iKey")
   private String instrumentationKey;
+
+  @JsonIgnore private String connectionString;
 
   /*
    * Key/value collection of context properties. See ContextTagKeys for
@@ -215,15 +220,34 @@ public final class TelemetryItem {
     return this.instrumentationKey;
   }
 
-  /**
-   * Set the instrumentationKey property: The instrumentation key of the Application Insights
-   * resource.
-   *
-   * @param instrumentationKey the instrumentationKey value to set.
-   * @return the TelemetryItem object itself.
-   */
-  public TelemetryItem setInstrumentationKey(String instrumentationKey) {
-    this.instrumentationKey = instrumentationKey;
+  @JsonIgnore
+  public String getConnectionString() {
+    return connectionString;
+  }
+
+  @JsonIgnore
+  public TelemetryItem setConnectionString(String connectionString) {
+    this.connectionString = connectionString;
+    this.instrumentationKey = ConnectionString.parse(connectionString).getInstrumentationKey();
+    return this;
+  }
+
+  @JsonIgnore
+  public TelemetryItem setConnectionString(ConnectionString connectionString) {
+    this.connectionString = connectionString.getOriginalString();
+    this.instrumentationKey = connectionString.getInstrumentationKey();
+    return this;
+  }
+
+  @JsonIgnore
+  public TelemetryItem setConnectionString(StatsbeatConnectionString connectionString) {
+    instrumentationKey = connectionString.getInstrumentationKey();
+    // TODO (heya) turn StatsbeatConnectionString into a real connection string?
+    this.connectionString =
+        "InstrumentationKey="
+            + instrumentationKey
+            + ";IngestionEndpoint="
+            + connectionString.getIngestionEndpoint();
     return this;
   }
 

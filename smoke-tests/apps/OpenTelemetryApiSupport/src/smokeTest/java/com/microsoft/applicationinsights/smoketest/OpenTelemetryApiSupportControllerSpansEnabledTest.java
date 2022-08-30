@@ -82,50 +82,6 @@ class OpenTelemetryApiSupportControllerSpansEnabledTest {
   }
 
   @Test
-  @TargetUri("/test-overriding-ikey-etc")
-  void testOverridingIkeyEtc() throws Exception {
-    Telemetry telemetry = testing.getTelemetry(1);
-
-    assertThat(telemetry.rd.getName())
-        .isEqualTo("GET /OpenTelemetryApiSupport/test-overriding-ikey-etc");
-    assertThat(telemetry.rd.getUrl())
-        .matches("http://localhost:[0-9]+/OpenTelemetryApiSupport/test-overriding-ikey-etc");
-    assertThat(telemetry.rd.getResponseCode()).isEqualTo("200");
-    assertThat(telemetry.rd.getSuccess()).isTrue();
-    assertThat(telemetry.rd.getSource()).isNull();
-    assertThat(telemetry.rd.getProperties())
-        .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
-    assertThat(telemetry.rd.getMeasurements()).isEmpty();
-
-    assertThat(telemetry.rdd1.getName()).isEqualTo("TestController.testOverridingIkeyEtc");
-    assertThat(telemetry.rdd1.getData()).isNull();
-    assertThat(telemetry.rdd1.getType()).isEqualTo("InProc");
-    assertThat(telemetry.rdd1.getTarget()).isNull();
-    assertThat(telemetry.rdd1.getProperties()).isEmpty();
-    assertThat(telemetry.rdd1.getSuccess()).isTrue();
-
-    // ideally want the properties below on rd, but can't get SERVER span yet, see
-    // https://github.com/open-telemetry/opentelemetry-java-instrumentation/issues/1726#issuecomment-731890267
-
-    // checking that instrumentation key, cloud role name, cloud role instance, and sdk version are
-    // from the agent
-    assertThat(telemetry.rddEnvelope1.getIKey()).isEqualTo("12341234-1234-1234-1234-123412341234");
-    assertThat(telemetry.rddEnvelope1.getTags()).containsEntry("ai.cloud.role", "role-name-here");
-    assertThat(telemetry.rddEnvelope1.getTags())
-        .containsEntry("ai.cloud.roleInstance", "role-instance-here");
-    assertThat(telemetry.rddEnvelope1.getTags())
-        .containsEntry("ai.application.ver", "application-version-here");
-    assertThat(telemetry.rddEnvelope1.getTags())
-        .hasEntrySatisfying("ai.internal.sdkVersion", v -> assertThat(v).startsWith("java:3."));
-
-    SmokeTestExtension.assertParentChild(
-        telemetry.rd,
-        telemetry.rdEnvelope,
-        telemetry.rddEnvelope1,
-        "GET /OpenTelemetryApiSupport/test-overriding-ikey-etc");
-  }
-
-  @Test
   @TargetUri("/test-extension-annotations")
   void testExtensionAnnotations() throws Exception {
     testAnnotations(

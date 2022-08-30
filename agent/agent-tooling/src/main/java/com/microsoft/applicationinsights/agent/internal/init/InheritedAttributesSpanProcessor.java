@@ -33,11 +33,11 @@ import java.util.stream.Collectors;
 
 public class InheritedAttributesSpanProcessor implements SpanProcessor {
 
-  private final List<AttributeKey<?>> inheritAttributeKeys;
+  private final List<AttributeKey<?>> inheritAttributes;
 
   public InheritedAttributesSpanProcessor(
       List<Configuration.InheritedAttribute> inheritedAttributes) {
-    this.inheritAttributeKeys =
+    this.inheritAttributes =
         inheritedAttributes.stream()
             .map(Configuration.InheritedAttribute::getAttributeKey)
             .collect(Collectors.toList());
@@ -52,7 +52,7 @@ public class InheritedAttributesSpanProcessor implements SpanProcessor {
     }
     ReadableSpan parentReadableSpan = (ReadableSpan) parentSpan;
 
-    for (AttributeKey<?> inheritAttributeKey : inheritAttributeKeys) {
+    for (AttributeKey<?> inheritAttributeKey : inheritAttributes) {
       Object value = parentReadableSpan.getAttribute(inheritAttributeKey);
       if (value != null) {
         span.setAttribute((AttributeKey<Object>) inheritAttributeKey, value);

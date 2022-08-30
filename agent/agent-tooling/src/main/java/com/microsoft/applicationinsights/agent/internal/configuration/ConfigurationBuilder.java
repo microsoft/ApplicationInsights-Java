@@ -33,6 +33,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.internal.common.FriendlyException;
+import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.ConnectionStringOverride;
+import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.InstrumentationKeyOverride;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.JmxMetric;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.SamplingOverride;
 import java.io.IOException;
@@ -128,7 +130,6 @@ public class ConfigurationBuilder {
       "https://go.microsoft.com/fwlink/?linkid=2153358";
 
   // using deprecated fields to give warning message to user if they are still using them
-  @SuppressWarnings("deprecation")
   public static Configuration create(Path agentJarPath, @Nullable RpConfiguration rpConfiguration)
       throws IOException {
     Configuration config = loadConfigurationFile(agentJarPath);
@@ -199,6 +200,18 @@ public class ConfigurationBuilder {
             "Sampling overrides \"spanKind\" has been deprecated,"
                 + " and support for it will be removed in a future release, please transition from"
                 + " \"spanKind\" to \"telemetryKind\".");
+      }
+    }
+    if (!config.preview.instrumentationKeyOverrides.isEmpty()) {
+      configurationLogger.warn(
+          "Instrumentation key overrides have been deprecated,"
+              + " and support for it will be removed in a future release, please transition from"
+              + " \"instrumentationKeyOverrides\" to \"connectionStringOverrides\".");
+      for (InstrumentationKeyOverride override : config.preview.instrumentationKeyOverrides) {
+        ConnectionStringOverride newOverride = new ConnectionStringOverride();
+        newOverride.httpPathPrefix = override.httpPathPrefix;
+        newOverride.connectionString = "InstrumentationKey=" + override.instrumentationKey;
+        config.preview.connectionStringOverrides.add(newOverride);
       }
     }
 

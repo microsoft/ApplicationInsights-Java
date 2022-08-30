@@ -83,7 +83,7 @@ class LocalFileSender implements Runnable {
         CompletableResultCode resultCode =
             telemetryPipeline.send(
                 singletonList(persistedFile.rawBytes),
-                persistedFile.instrumentationKey,
+                persistedFile.connectionString,
                 TelemetryPipelineListener.composite(
                     diagnosticListener,
                     new LocalFileSenderTelemetryPipelineListener(

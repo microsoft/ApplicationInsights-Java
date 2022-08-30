@@ -21,16 +21,13 @@
 
 package com.microsoft.applicationinsights.agent.internal.init;
 
-import io.opentelemetry.api.common.AttributeKey;
+import com.azure.monitor.opentelemetry.exporter.implementation.AiSemanticAttributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.sdk.logs.LogProcessor;
 import io.opentelemetry.sdk.logs.ReadWriteLogRecord;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 
 public class InheritedRoleNameLogProcessor implements LogProcessor {
-
-  private static final AttributeKey<String> ROLE_NAME_KEY =
-      AttributeKey.stringKey("ai.preview.service_name");
 
   @Override
   public void onEmit(ReadWriteLogRecord logRecord) {
@@ -39,9 +36,9 @@ public class InheritedRoleNameLogProcessor implements LogProcessor {
       return;
     }
     ReadableSpan currentReadableSpan = (ReadableSpan) currentSpan;
-    String roleName = currentReadableSpan.getAttribute(ROLE_NAME_KEY);
+    String roleName = currentReadableSpan.getAttribute(AiSemanticAttributes.ROLE_NAME);
     if (roleName != null) {
-      logRecord.setAttribute(ROLE_NAME_KEY, roleName);
+      logRecord.setAttribute(AiSemanticAttributes.ROLE_NAME, roleName);
     }
   }
 }

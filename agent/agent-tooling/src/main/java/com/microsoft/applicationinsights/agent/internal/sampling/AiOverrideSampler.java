@@ -67,8 +67,8 @@ class AiOverrideSampler implements Sampler {
     SamplingOverrides samplingOverrides =
         isRequest ? requestSamplingOverrides : dependencySamplingOverrides;
 
-    boolean standaloneTelemetry = !isRequest && !parentSpanContext.isValid();
-    Sampler override = samplingOverrides.getOverride(standaloneTelemetry, attributes);
+    boolean isStandaloneTelemetry = !isRequest && !parentSpanContext.isValid();
+    Sampler override = samplingOverrides.getOverride(isStandaloneTelemetry, attributes);
     if (override != null) {
       return override.shouldSample(parentContext, traceId, name, spanKind, attributes, parentLinks);
     }

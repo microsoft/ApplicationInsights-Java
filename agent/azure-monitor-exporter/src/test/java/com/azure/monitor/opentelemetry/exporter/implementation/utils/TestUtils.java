@@ -46,11 +46,11 @@ import java.util.Map;
 public final class TestUtils {
 
   public static TelemetryItem createMetricTelemetry(
-      String name, int value, String instrumentationKey) {
+      String name, int value, String connectionString) {
     TelemetryItem telemetry = new TelemetryItem();
     telemetry.setVersion(1);
     telemetry.setName("Metric");
-    telemetry.setInstrumentationKey(instrumentationKey);
+    telemetry.setConnectionString(connectionString);
     Map<String, String> tags = new HashMap<>();
     tags.put("ai.internal.sdkVersion", "test_version");
     tags.put("ai.internal.nodeName", "test_role_name");

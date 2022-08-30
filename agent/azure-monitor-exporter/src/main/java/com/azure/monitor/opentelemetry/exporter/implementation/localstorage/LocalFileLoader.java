@@ -22,25 +22,19 @@
 package com.azure.monitor.opentelemetry.exporter.implementation.localstorage;
 
 import static com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMsgId.DISK_PERSISTENCE_LOADER_ERROR;
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.logging.OperationLogger;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import java.io.EOFException;
+import java.io.DataInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.regex.Pattern;
+import java.nio.file.Files;
 import javax.annotation.Nullable;
 
 /** This class manages loading a list of {@link ByteBuffer} from the disk. */
 class LocalFileLoader {
 
-  // A regex to validate that an instrumentation key is well-formed. It's copied straight from the
-  // Breeze repo.
-  private static final String INSTRUMENTATION_KEY_REGEX =
-      "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$";
   private static final String TEMPORARY_FILE_EXTENSION = ".tmp";
 
   private final LocalFileCache localFileCache;
@@ -107,31 +101,33 @@ class LocalFileLoader {
     }
 
     if (tempFile.length() <= 36) {
-      if (!FileUtil.deleteFileWithRetries(tempFile)) {
-        operationLogger.recordFailure(
-            "Unable to delete file: " + tempFile.getAbsolutePath(), DISK_PERSISTENCE_LOADER_ERROR);
-      }
+      deleteFile(tempFile);
       return null;
     }
 
-    byte[] ikeyBytes = new byte[36];
-    int rawByteLength = (int) tempFile.length() - 36;
-    byte[] telemetryBytes = new byte[rawByteLength];
-    String instrumentationKey;
-    try (FileInputStream fileInputStream = new FileInputStream(tempFile)) {
-      readFully(fileInputStream, ikeyBytes, 36);
-      instrumentationKey = new String(ikeyBytes, UTF_8);
-      if (!isInstrumentationKeyValid(instrumentationKey)) {
-        fileInputStream.close(); // need to close FileInputStream before delete
-        if (!FileUtil.deleteFileWithRetries(tempFile)) {
-          operationLogger.recordFailure(
-              "Unable to delete file: " + tempFile.getAbsolutePath(),
-              DISK_PERSISTENCE_LOADER_ERROR);
-        }
+    String connectionString;
+    byte[] telemetryBytes;
+
+    try (DataInputStream dataInputStream =
+        new DataInputStream(Files.newInputStream(tempFile.toPath()))) {
+
+      int version = dataInputStream.readInt();
+      if (version != 1) {
+        // probably old format where ikey chars were written first
+        // note: ikey character int values would be minimum 48 (ascii value for '0')
+
+        // need to close FileInputStream before delete
+        dataInputStream.close();
+        deleteFile(tempFile);
         return null;
       }
 
-      readFully(fileInputStream, telemetryBytes, rawByteLength);
+      connectionString = dataInputStream.readUTF();
+
+      int numBytes = dataInputStream.readInt();
+      telemetryBytes = new byte[numBytes];
+      dataInputStream.readFully(telemetryBytes);
+
     } catch (IOException e) {
       operationLogger.recordFailure(
           "Error reading file: " + tempFile.getAbsolutePath(), e, DISK_PERSISTENCE_LOADER_ERROR);
@@ -140,28 +136,13 @@ class LocalFileLoader {
     }
 
     operationLogger.recordSuccess();
-    return new PersistedFile(tempFile, instrumentationKey, ByteBuffer.wrap(telemetryBytes));
+    return new PersistedFile(tempFile, connectionString, ByteBuffer.wrap(telemetryBytes));
   }
 
-  static boolean isInstrumentationKeyValid(String instrumentationKey) {
-    return Pattern.matches(INSTRUMENTATION_KEY_REGEX, instrumentationKey.toLowerCase());
-  }
-
-  // reads bytes from a FileInputStream and allocates those into the buffer array byteArray.
-  private static void readFully(FileInputStream fileInputStream, byte[] byteArray, int length)
-      throws IOException {
-    if (length < 0) {
-      throw new IndexOutOfBoundsException();
-    }
-
-    int totalRead = 0;
-    while (totalRead < length) {
-      int numRead = fileInputStream.read(byteArray, totalRead, length - totalRead);
-      if (numRead < 0) {
-        throw new EOFException();
-      }
-
-      totalRead += numRead;
+  private void deleteFile(File tempFile) {
+    if (!FileUtil.deleteFileWithRetries(tempFile)) {
+      operationLogger.recordFailure(
+          "Unable to delete file: " + tempFile.getAbsolutePath(), DISK_PERSISTENCE_LOADER_ERROR);
     }
   }
 
@@ -205,16 +186,16 @@ class LocalFileLoader {
 
   static class PersistedFile {
     final File file;
-    final String instrumentationKey;
+    final String connectionString;
     final ByteBuffer rawBytes;
 
-    PersistedFile(File file, String instrumentationKey, ByteBuffer byteBuffer) {
-      if (instrumentationKey == null) {
+    PersistedFile(File file, String connectionString, ByteBuffer byteBuffer) {
+      if (connectionString == null) {
         throw new IllegalArgumentException("instrumentation key can not be null.");
       }
 
       this.file = file;
-      this.instrumentationKey = instrumentationKey;
+      this.connectionString = connectionString;
       this.rawBytes = byteBuffer;
     }
   }

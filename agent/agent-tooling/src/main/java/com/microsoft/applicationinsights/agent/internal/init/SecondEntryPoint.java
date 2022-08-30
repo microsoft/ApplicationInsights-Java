@@ -326,11 +326,11 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
       tracerProvider.addSpanProcessor(
           new InheritedAttributesSpanProcessor(configuration.preview.inheritedAttributes));
     }
-    // adding this even if there are no instrumentationKeyOverrides, in order to support
-    // "ai.preview.instrumentation_key" being set programmatically on CONSUMER spans
+    // adding this even if there are no connectionStringOverrides, in order to support
+    // "ai.preview.connection_string" being set programmatically on CONSUMER spans
     tracerProvider.addSpanProcessor(
-        new InheritedInstrumentationKeySpanProcessor(
-            configuration.preview.instrumentationKeyOverrides));
+        new InheritedConnectionStringSpanProcessor(
+            configuration.preview.connectionStringOverrides));
     // adding this even if there are no roleNameOverrides, in order to support
     // "ai.preview.service_name" being set programmatically on CONSUMER spans
     tracerProvider.addSpanProcessor(
@@ -455,9 +455,9 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
       builder.addLogProcessor(
           new InheritedAttributesLogProcessor(configuration.preview.inheritedAttributes));
     }
-    // adding this even if there are no instrumentationKeyOverrides, in order to support
-    // "ai.preview.instrumentation_key" being set programmatically on CONSUMER spans
-    builder.addLogProcessor(new InheritedInstrumentationKeyLogProcessor());
+    // adding this even if there are no connectionStringOverrides, in order to support
+    // "ai.preview.connection_string" being set programmatically on CONSUMER spans
+    builder.addLogProcessor(new InheritedConnectionStringLogProcessor());
     // adding this even if there are no roleNameOverrides, in order to support
     // "ai.preview.service_name" being set programmatically on CONSUMER spans
     builder.addLogProcessor(new InheritedRoleNameLogProcessor());

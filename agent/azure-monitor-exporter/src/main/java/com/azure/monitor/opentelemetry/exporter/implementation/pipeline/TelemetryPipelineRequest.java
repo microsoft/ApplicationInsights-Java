@@ -31,12 +31,15 @@ import reactor.core.publisher.Flux;
 public class TelemetryPipelineRequest {
 
   private volatile URL url;
+  private final String connectionString;
   private final String instrumentationKey;
   private final List<ByteBuffer> telemetry;
   private final int contentLength;
 
-  TelemetryPipelineRequest(URL url, String instrumentationKey, List<ByteBuffer> telemetry) {
+  TelemetryPipelineRequest(
+      URL url, String connectionString, String instrumentationKey, List<ByteBuffer> telemetry) {
     this.url = url;
+    this.connectionString = connectionString;
     this.instrumentationKey = instrumentationKey;
     this.telemetry = telemetry;
     contentLength = telemetry.stream().mapToInt(ByteBuffer::limit).sum();
@@ -50,12 +53,17 @@ public class TelemetryPipelineRequest {
     this.url = url;
   }
 
-  public String getInstrumentationKey() {
-    return instrumentationKey;
-  }
-
   public List<ByteBuffer> getTelemetry() {
     return telemetry;
+  }
+
+  public String getConnectionString() {
+    return connectionString;
+  }
+
+  // used by statsbeat
+  public String getInstrumentationKey() {
+    return instrumentationKey;
   }
 
   HttpRequest createHttpRequest() {

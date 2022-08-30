@@ -90,17 +90,15 @@ public class TelemetryItemExporter {
   }
 
   public CompletableResultCode send(List<TelemetryItem> telemetryItems) {
-    Map<String, List<TelemetryItem>> instrumentationKeyMap = new HashMap<>();
+    Map<String, List<TelemetryItem>> groupings = new HashMap<>();
     for (TelemetryItem telemetryItem : telemetryItems) {
-      String instrumentationKey = telemetryItem.getInstrumentationKey();
-      if (!instrumentationKeyMap.containsKey(instrumentationKey)) {
-        instrumentationKeyMap.put(instrumentationKey, new ArrayList<>());
-      }
-      instrumentationKeyMap.get(instrumentationKey).add(telemetryItem);
+      groupings
+          .computeIfAbsent(telemetryItem.getConnectionString(), k -> new ArrayList<>())
+          .add(telemetryItem);
     }
     List<CompletableResultCode> resultCodeList = new ArrayList<>();
-    for (Map.Entry<String, List<TelemetryItem>> entry : instrumentationKeyMap.entrySet()) {
-      resultCodeList.add(internalSendByInstrumentationKey(entry.getValue(), entry.getKey()));
+    for (Map.Entry<String, List<TelemetryItem>> entry : groupings.entrySet()) {
+      resultCodeList.add(internalSendByConnectionString(entry.getValue(), entry.getKey()));
     }
     return maybeAddToActiveExportResults(resultCodeList);
   }
@@ -133,8 +131,8 @@ public class TelemetryItemExporter {
     return listener.shutdown();
   }
 
-  CompletableResultCode internalSendByInstrumentationKey(
-      List<TelemetryItem> telemetryItems, String instrumentationKey) {
+  CompletableResultCode internalSendByConnectionString(
+      List<TelemetryItem> telemetryItems, String connectionString) {
     List<ByteBuffer> byteBuffers;
     try {
       byteBuffers = encode(telemetryItems);
@@ -143,7 +141,7 @@ public class TelemetryItemExporter {
       encodeBatchOperationLogger.recordFailure(t.getMessage(), t);
       return CompletableResultCode.ofFailure();
     }
-    return telemetryPipeline.send(byteBuffers, instrumentationKey, listener);
+    return telemetryPipeline.send(byteBuffers, connectionString, listener);
   }
 
   List<ByteBuffer> encode(List<TelemetryItem> telemetryItems) throws IOException {

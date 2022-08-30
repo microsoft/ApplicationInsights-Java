@@ -22,6 +22,7 @@
 package com.microsoft.applicationinsights.agent.internal.statsbeat;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.StatsbeatTelemetryBuilder;
+import com.azure.monitor.opentelemetry.exporter.implementation.configuration.StatsbeatConnectionString;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 
 abstract class BaseStatsbeat {
@@ -39,7 +40,11 @@ abstract class BaseStatsbeat {
 
     StatsbeatTelemetryBuilder telemetryBuilder = StatsbeatTelemetryBuilder.create(name, value);
 
-    telemetryBuilder.setInstrumentationKey(telemetryClient.getStatsbeatInstrumentationKey());
+    StatsbeatConnectionString connectionString = telemetryClient.getStatsbeatConnectionString();
+    if (connectionString != null) {
+      // not sure if connectionString can be null in Azure Functions
+      telemetryBuilder.setConnectionString(connectionString);
+    }
 
     customDimensions.populateProperties(telemetryBuilder, telemetryClient.getInstrumentationKey());
 

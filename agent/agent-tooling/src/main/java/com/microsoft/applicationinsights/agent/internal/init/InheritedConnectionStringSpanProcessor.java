@@ -32,15 +32,15 @@ import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.util.List;
 
-public class InheritedInstrumentationKeySpanProcessor implements SpanProcessor {
+public class InheritedConnectionStringSpanProcessor implements SpanProcessor {
 
-  private static final AttributeKey<String> INSTRUMENTATION_KEY_KEY =
-      AttributeKey.stringKey("ai.preview.instrumentation_key");
+  private static final AttributeKey<String> CONNECTION_STRING =
+      AttributeKey.stringKey("ai.preview.connection_string");
 
-  private final List<Configuration.InstrumentationKeyOverride> overrides;
+  private final List<Configuration.ConnectionStringOverride> overrides;
 
-  public InheritedInstrumentationKeySpanProcessor(
-      List<Configuration.InstrumentationKeyOverride> overrides) {
+  public InheritedConnectionStringSpanProcessor(
+      List<Configuration.ConnectionStringOverride> overrides) {
 
     this.overrides = overrides;
   }
@@ -55,9 +55,9 @@ public class InheritedInstrumentationKeySpanProcessor implements SpanProcessor {
       if (target == null) {
         return;
       }
-      for (Configuration.InstrumentationKeyOverride override : overrides) {
+      for (Configuration.ConnectionStringOverride override : overrides) {
         if (target.startsWith(override.httpPathPrefix)) {
-          span.setAttribute(INSTRUMENTATION_KEY_KEY, override.instrumentationKey);
+          span.setAttribute(CONNECTION_STRING, override.connectionString);
           break;
         }
       }
@@ -68,9 +68,9 @@ public class InheritedInstrumentationKeySpanProcessor implements SpanProcessor {
     }
     ReadableSpan parentReadableSpan = (ReadableSpan) parentSpan;
 
-    String instrumentationKey = parentReadableSpan.getAttribute(INSTRUMENTATION_KEY_KEY);
+    String instrumentationKey = parentReadableSpan.getAttribute(CONNECTION_STRING);
     if (instrumentationKey != null) {
-      span.setAttribute(INSTRUMENTATION_KEY_KEY, instrumentationKey);
+      span.setAttribute(CONNECTION_STRING, instrumentationKey);
     }
   }
 

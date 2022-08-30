@@ -76,6 +76,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
       Map<String, String> properties,
       Map<String, String> tags,
       Map<String, Double> measurements,
+      @Nullable String connectionString,
       @Nullable String instrumentationKey) {
 
     if (Strings.isNullOrEmpty(name)) {
@@ -97,9 +98,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
       telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromNow());
     }
     selectivelySetTags(telemetryBuilder, tags);
-    if (instrumentationKey != null) {
-      telemetryBuilder.setInstrumentationKey(instrumentationKey);
-    }
+    setConnectionString(telemetryBuilder, connectionString, instrumentationKey);
 
     track(telemetryBuilder, tags, true);
   }
@@ -117,6 +116,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
       @Nullable Double stdDev,
       Map<String, String> properties,
       Map<String, String> tags,
+      @Nullable String connectionString,
       @Nullable String instrumentationKey) {
 
     if (Strings.isNullOrEmpty(name)) {
@@ -145,9 +145,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
       telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromNow());
     }
     selectivelySetTags(telemetryBuilder, tags);
-    if (instrumentationKey != null) {
-      telemetryBuilder.setInstrumentationKey(instrumentationKey);
-    }
+    setConnectionString(telemetryBuilder, connectionString, instrumentationKey);
 
     track(telemetryBuilder, tags, false);
   }
@@ -166,6 +164,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
       Map<String, String> properties,
       Map<String, String> tags,
       Map<String, Double> measurements,
+      @Nullable String connectionString,
       @Nullable String instrumentationKey) {
 
     if (Strings.isNullOrEmpty(name)) {
@@ -201,9 +200,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
       telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromNow());
     }
     selectivelySetTags(telemetryBuilder, tags);
-    if (instrumentationKey != null) {
-      telemetryBuilder.setInstrumentationKey(instrumentationKey);
-    }
+    setConnectionString(telemetryBuilder, connectionString, instrumentationKey);
 
     track(telemetryBuilder, tags, true);
   }
@@ -217,6 +214,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
       Map<String, String> properties,
       Map<String, String> tags,
       Map<String, Double> measurements,
+      @Nullable String connectionString,
       @Nullable String instrumentationKey) {
 
     if (Strings.isNullOrEmpty(name)) {
@@ -243,9 +241,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
       telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromNow());
     }
     selectivelySetTags(telemetryBuilder, tags);
-    if (instrumentationKey != null) {
-      telemetryBuilder.setInstrumentationKey(instrumentationKey);
-    }
+    setConnectionString(telemetryBuilder, connectionString, instrumentationKey);
 
     track(telemetryBuilder, tags, true);
   }
@@ -257,6 +253,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
       int severityLevel,
       Map<String, String> properties,
       Map<String, String> tags,
+      @Nullable String connectionString,
       @Nullable String instrumentationKey) {
     if (message == null) {
       return;
@@ -279,9 +276,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
       telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromNow());
     }
     selectivelySetTags(telemetryBuilder, tags);
-    if (instrumentationKey != null) {
-      telemetryBuilder.setInstrumentationKey(instrumentationKey);
-    }
+    setConnectionString(telemetryBuilder, connectionString, instrumentationKey);
 
     track(telemetryBuilder, tags, true);
   }
@@ -299,6 +294,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
       Map<String, String> properties,
       Map<String, String> tags,
       Map<String, Double> measurements,
+      @Nullable String connectionString,
       @Nullable String instrumentationKey) {
     if (Strings.isNullOrEmpty(name)) {
       return;
@@ -334,9 +330,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
       telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromNow());
     }
     selectivelySetTags(telemetryBuilder, tags);
-    if (instrumentationKey != null) {
-      telemetryBuilder.setInstrumentationKey(instrumentationKey);
-    }
+    setConnectionString(telemetryBuilder, connectionString, instrumentationKey);
 
     track(telemetryBuilder, tags, true);
   }
@@ -349,6 +343,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
       Map<String, String> properties,
       Map<String, String> tags,
       Map<String, Double> measurements,
+      @Nullable String connectionString,
       @Nullable String instrumentationKey) {
     if (throwable == null) {
       return;
@@ -375,9 +370,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
       telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromNow());
     }
     selectivelySetTags(telemetryBuilder, tags);
-    if (instrumentationKey != null) {
-      telemetryBuilder.setInstrumentationKey(instrumentationKey);
-    }
+    setConnectionString(telemetryBuilder, connectionString, instrumentationKey);
 
     track(telemetryBuilder, tags, true);
   }
@@ -394,6 +387,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
       Map<String, String> properties,
       Map<String, String> tags,
       Map<String, Double> measurements,
+      @Nullable String connectionString,
       @Nullable String instrumentationKey) {
 
     if (Strings.isNullOrEmpty(name)) {
@@ -427,9 +421,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
       telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromNow());
     }
     selectivelySetTags(telemetryBuilder, tags);
-    if (instrumentationKey != null) {
-      telemetryBuilder.setInstrumentationKey(instrumentationKey);
-    }
+    setConnectionString(telemetryBuilder, connectionString, instrumentationKey);
 
     track(telemetryBuilder, tags, false);
   }
@@ -541,6 +533,18 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
       telemetryBuilder.addTag(
           ContextTagKeys.AI_OPERATION_NAME.toString(),
           OperationNames.getOperationName((ReadableSpan) span));
+    }
+  }
+
+  private static void setConnectionString(
+      AbstractTelemetryBuilder telemetryBuilder,
+      @Nullable String connectionString,
+      @Nullable String instrumentationKey) {
+    if (connectionString == null && instrumentationKey != null) {
+      connectionString = "InstrumentationKey=" + instrumentationKey;
+    }
+    if (connectionString != null) {
+      telemetryBuilder.setConnectionString(connectionString);
     }
   }
 

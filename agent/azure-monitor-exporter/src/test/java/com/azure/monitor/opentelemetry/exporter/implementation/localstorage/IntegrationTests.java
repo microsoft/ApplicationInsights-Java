@@ -21,7 +21,6 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation.localstorage;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -39,11 +38,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.utils.TestUtils;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.net.URL;
-import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -58,8 +53,8 @@ import reactor.core.publisher.Mono;
 
 public class IntegrationTests {
 
-  private static final String INSTRUMENTATION_KEY = "00000000-0000-0000-0000-0FEEDDADBEEF";
-  private static final String PERSISTED_FILENAME = "gzipped-raw-bytes.trn";
+  private static final String CONNECTION_STRING =
+      "InstrumentationKey=00000000-0000-0000-0000-0FEEDDADBEEF;IngestionEndpoint=http://foo.bar/";
 
   private TelemetryItemExporter telemetryItemExporter;
 
@@ -69,7 +64,7 @@ public class IntegrationTests {
   private static final boolean testWithException = false;
 
   @BeforeEach
-  public void setup() throws Exception {
+  public void setup() {
     HttpClient mockedClient = mock(HttpClient.class);
     if (testWithException) {
       when(mockedClient.send(any(HttpRequest.class), any(Context.class)))
@@ -88,8 +83,7 @@ public class IntegrationTests {
     }
     HttpPipelineBuilder pipelineBuilder = new HttpPipelineBuilder().httpClient(mockedClient);
 
-    URL url = new URL("http://foo.bar");
-    TelemetryPipeline telemetryPipeline = new TelemetryPipeline(pipelineBuilder.build(), () -> url);
+    TelemetryPipeline telemetryPipeline = new TelemetryPipeline(pipelineBuilder.build());
     telemetryItemExporter =
         new TelemetryItemExporter(
             telemetryPipeline,
@@ -101,7 +95,7 @@ public class IntegrationTests {
   public void integrationTest() throws Exception {
     List<TelemetryItem> telemetryItems = new ArrayList<>();
     for (int i = 0; i < 10; i++) {
-      TelemetryItem item = TestUtils.createMetricTelemetry("metric" + i, i, INSTRUMENTATION_KEY);
+      TelemetryItem item = TestUtils.createMetricTelemetry("metric" + i, i, CONNECTION_STRING);
       item.setTime(OffsetDateTime.parse("2021-11-09T03:12:19.06Z"));
       telemetryItems.add(item);
     }
@@ -129,46 +123,16 @@ public class IntegrationTests {
 
     assertThat(localFileCache.getPersistedFilesCache().size()).isEqualTo(100);
 
+    String expected = Resources.readString("ungzip-source.txt");
+
     for (int i = 100; i > 0; i--) {
       LocalFileLoader.PersistedFile file = localFileLoader.loadTelemetriesFromDisk();
-      assertThat(ungzip(file.rawBytes.array()))
-          .isEqualTo(new String(getByteBufferFromFile("ungzip-source.txt").array(), UTF_8));
-      assertThat(file.instrumentationKey).isEqualTo(INSTRUMENTATION_KEY);
+      assertThat(file.connectionString).isEqualTo(CONNECTION_STRING);
+      assertThat(ungzip(file.rawBytes.array())).isEqualTo(expected);
       assertThat(localFileCache.getPersistedFilesCache().size()).isEqualTo(i - 1);
     }
 
     assertThat(localFileCache.getPersistedFilesCache().size()).isEqualTo(0);
-  }
-
-  @Test
-  public void verifyGzipRawBytesTest() throws Exception {
-    File sourceFile =
-        new File(getClass().getClassLoader().getResource(PERSISTED_FILENAME).getPath());
-    File persistedFile = new File(tempFolder, PERSISTED_FILENAME);
-    Files.copy(sourceFile.toPath(), persistedFile.toPath());
-
-    assertThat(persistedFile.exists()).isTrue();
-
-    LocalFileCache localFileCache = new LocalFileCache(tempFolder);
-    localFileCache.addPersistedFile(persistedFile);
-
-    LocalFileLoader localFileLoader = new LocalFileLoader(localFileCache, tempFolder, null, false);
-    LocalFileLoader.PersistedFile loadedPersistedFile = localFileLoader.loadTelemetriesFromDisk();
-
-    ByteBuffer expectedGzipByteBuffer = getByteBufferFromFile(PERSISTED_FILENAME);
-    byte[] ikeyBytes = new byte[36];
-    expectedGzipByteBuffer.get(ikeyBytes, 0, 36);
-    assertThat(new String(ikeyBytes, UTF_8)).isEqualTo(INSTRUMENTATION_KEY);
-    int length = expectedGzipByteBuffer.remaining();
-    byte[] telemetryBytes = new byte[length];
-
-    expectedGzipByteBuffer.get(telemetryBytes, 0, length);
-    assertThat(loadedPersistedFile.rawBytes).isEqualTo(ByteBuffer.wrap(telemetryBytes));
-  }
-
-  private ByteBuffer getByteBufferFromFile(String filename) throws Exception {
-    Path path = new File(getClass().getClassLoader().getResource(filename).getPath()).toPath();
-    return ByteBuffer.wrap(Files.readAllBytes(path));
   }
 
   private static String ungzip(byte[] rawBytes) throws Exception {

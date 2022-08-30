@@ -42,7 +42,7 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-@UseAgent("applicationinsights.json")
+@UseAgent
 abstract class SamplingOverridesTest {
 
   @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.create();
@@ -81,8 +81,6 @@ abstract class SamplingOverridesTest {
 
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
 
-    assertThat(rdEnvelope.getIKey()).isEqualTo("00000000-0000-0000-0000-0FEEDDADBEEF");
-    assertThat(rdEnvelope.getTags()).containsEntry("ai.cloud.role", "testrolename");
     assertThat(rd.getSuccess()).isTrue();
   }
 
@@ -107,16 +105,12 @@ abstract class SamplingOverridesTest {
     RemoteDependencyData rdd =
         (RemoteDependencyData) ((Data<?>) rddEnvelope.getData()).getBaseData();
 
-    assertThat(rdEnvelope.getIKey()).isEqualTo("87654321-0000-0000-0000-0FEEDDADBEEF");
-    assertThat(rdEnvelope.getTags()).containsEntry("ai.cloud.role", "app3");
     assertThat(rd.getSuccess()).isTrue();
 
     assertThat(rdd.getType()).isEqualTo("SQL");
     assertThat(rdd.getTarget()).isEqualTo("hsqldb | testdb");
     assertThat(rdd.getName()).isEqualTo("SELECT testdb.abc");
     assertThat(rdd.getData()).isEqualTo("select * from abc");
-    assertThat(rddEnvelope.getIKey()).isEqualTo("87654321-0000-0000-0000-0FEEDDADBEEF");
-    assertThat(rddEnvelope.getTags()).containsEntry("ai.cloud.role", "app3");
     assertThat(rdd.getSuccess()).isTrue();
 
     SmokeTestExtension.assertParentChild(rd, rdEnvelope, rddEnvelope, "GET /SamplingOverrides/*");

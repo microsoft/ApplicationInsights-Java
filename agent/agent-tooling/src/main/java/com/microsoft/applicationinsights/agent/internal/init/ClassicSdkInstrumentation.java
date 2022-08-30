@@ -33,11 +33,12 @@ import com.microsoft.applicationinsights.agent.internal.classicsdk.QuickPulseCla
 import com.microsoft.applicationinsights.agent.internal.classicsdk.RequestNameHandlerClassFileTransformer;
 import com.microsoft.applicationinsights.agent.internal.classicsdk.RequestTelemetryClassFileTransformer;
 import com.microsoft.applicationinsights.agent.internal.classicsdk.TelemetryClientClassFileTransformer;
+import com.microsoft.applicationinsights.agent.internal.classicsdk.TelemetryContextClassFileTransformer;
 import com.microsoft.applicationinsights.agent.internal.classicsdk.WebRequestTrackingFilterClassFileTransformer;
 import io.opentelemetry.javaagent.bootstrap.InstrumentationHolder;
 import java.lang.instrument.Instrumentation;
 
-class LegacyInstrumentation {
+class ClassicSdkInstrumentation {
 
   static void registerTransformers() {
     Instrumentation instrumentation = InstrumentationHolder.getInstrumentation();
@@ -48,6 +49,7 @@ class LegacyInstrumentation {
     instrumentation.addTransformer(new RequestTelemetryClassFileTransformer());
     instrumentation.addTransformer(new ExceptionTelemetryClassFileTransformer());
     instrumentation.addTransformer(new MetricTelemetryClassFileTransformer());
+    instrumentation.addTransformer(new TelemetryContextClassFileTransformer());
     instrumentation.addTransformer(new PerformanceCounterModuleClassFileTransformer());
     instrumentation.addTransformer(new QuickPulseClassFileTransformer());
     instrumentation.addTransformer(new HeartBeatModuleClassFileTransformer());
@@ -60,5 +62,5 @@ class LegacyInstrumentation {
     BytecodeUtil.setDelegate(new BytecodeUtilImpl());
   }
 
-  private LegacyInstrumentation() {}
+  private ClassicSdkInstrumentation() {}
 }
