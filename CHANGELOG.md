@@ -50,8 +50,12 @@ Enhancements:
   }
   ```
   Note: the `limitPerSecond` can be a decimal value, including values less than 1.
-* Exceptions are no longer captured directly on dependency records, in order to reduce ingestion
-  cost and because exceptions which are logged or bubble up to the request are already captured
+* Exceptions are no longer captured directly on dependency records for these reasons:
+  * in order to reduce ingestion cost
+  * dependency exceptions which are uncaught, bubble up to the request-level where they are
+    already captured
+  * dependency exceptions which are caught, tend to be logged if they are important, where they
+    are also already captured
   ([#2423](https://github.com/microsoft/ApplicationInsights-Java/pull/2423)).
 * New versions of the `applicationinsights-core` and `applicationinsights-web` 2.x SDK artifacts
   have been released, with a reduced API surface area to makes it clear which APIs interop with the
