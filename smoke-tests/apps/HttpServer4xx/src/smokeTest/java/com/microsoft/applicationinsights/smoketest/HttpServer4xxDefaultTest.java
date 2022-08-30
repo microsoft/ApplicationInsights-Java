@@ -21,7 +21,6 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
-import static com.microsoft.applicationinsights.smoketest.HttpServer4xxTestHelper.sortMetricsByRequestStatusCode;
 import static com.microsoft.applicationinsights.smoketest.HttpServer4xxTestHelper.validateMetricData;
 import static com.microsoft.applicationinsights.smoketest.HttpServer4xxTestHelper.validateTags;
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_11;
@@ -40,11 +39,10 @@ import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
 import com.microsoft.applicationinsights.smoketest.schemav2.MetricData;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-@UseAgent("httpserver4xxdefault_applicationinsights")
+@UseAgent
 abstract class HttpServer4xxDefaultTest {
 
   @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.create();
@@ -64,24 +62,12 @@ abstract class HttpServer4xxDefaultTest {
     assertThat(telemetry.rd.getMeasurements()).isEmpty();
 
     List<Envelope> serverMetrics =
-        testing.mockedIngestion.waitForItems(
-            SmokeTestExtension.getMetricPredicate("http.server.duration"), 2, 60, TimeUnit.SECONDS);
+        testing.mockedIngestion.waitForMetricItems("http.server.duration", 1);
 
-    // sort metrics based on result code
-    sortMetricsByRequestStatusCode(serverMetrics);
-    assertThat(serverMetrics).hasSize(2);
-
-    // 1st pre-aggregated metric
-    Envelope envelope1 = serverMetrics.get(0);
-    validateTags(envelope1);
-    MetricData md1 = (MetricData) ((Data<?>) envelope1.getData()).getBaseData();
-    validateMetricData(md1, "200", true);
-
-    // 2nd pre-aggregated metric
-    Envelope envelope2 = serverMetrics.get(1);
-    validateTags(envelope2);
-    MetricData md2 = (MetricData) ((Data<?>) envelope2.getData()).getBaseData();
-    validateMetricData(md2, "400", false);
+    Envelope envelope = serverMetrics.get(0);
+    validateTags(envelope);
+    MetricData md = (MetricData) ((Data<?>) envelope.getData()).getBaseData();
+    validateMetricData(md, "400", false);
   }
 
   @Environment(TOMCAT_8_JAVA_8)

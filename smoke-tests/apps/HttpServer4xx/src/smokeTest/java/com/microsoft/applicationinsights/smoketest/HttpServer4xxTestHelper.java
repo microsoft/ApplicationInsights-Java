@@ -23,11 +23,9 @@ package com.microsoft.applicationinsights.smoketest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.DataPoint;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
 import com.microsoft.applicationinsights.smoketest.schemav2.MetricData;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
@@ -40,24 +38,14 @@ final class HttpServer4xxTestHelper {
     assertThat(tags).containsEntry("ai.cloud.role", "testrolename");
   }
 
-  static void sortMetricsByRequestStatusCode(List<Envelope> metrics) {
-    // sort metrics based on result code
-    metrics.sort(
-        Comparator.comparing(
-            obj -> {
-              MetricData metricData = (MetricData) ((Data<?>) obj.getData()).getBaseData();
-              return metricData.getProperties().get("request/resultCode");
-            }));
-  }
-
   static void validateMetricData(MetricData metricData, String resultCode, boolean success) {
     List<DataPoint> dataPoints = metricData.getMetrics();
     assertThat(dataPoints).hasSize(1);
     DataPoint dataPoint = dataPoints.get(0);
     assertThat(dataPoint.getCount()).isEqualTo(1);
-    assertThat(dataPoint.getValue()).isGreaterThan(0d).isLessThan(5 * 60 * 1000d); // (0 - 5) min
-    assertThat(dataPoint.getMin()).isGreaterThan(0d).isLessThan(5 * 60 * 1000d); // (0 - 5) min
-    assertThat(dataPoint.getMax()).isGreaterThan(0d).isLessThan(5 * 60 * 1000d); // (0 - 5) min
+    assertThat(dataPoint.getValue()).isGreaterThan(0d).isLessThan(60 * 1000.0);
+    assertThat(dataPoint.getMin()).isGreaterThan(0d).isLessThan(60 * 1000.0);
+    assertThat(dataPoint.getMax()).isGreaterThan(0d).isLessThan(60 * 1000.0);
     Map<String, String> properties = metricData.getProperties();
     assertThat(properties).hasSize(7);
     assertThat(properties.get("_MS.MetricId")).isEqualTo("requests/duration");
