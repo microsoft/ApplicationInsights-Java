@@ -111,7 +111,7 @@ public class SmokeTestExtension
   private final boolean usesGlobalIngestionEndpoint;
 
   public static SmokeTestExtension create() {
-    return new SmokeTestExtension(null, null, false, false, false);
+    return builder().build();
   }
 
   public static SmokeTestExtensionBuilder builder() {
@@ -251,6 +251,17 @@ public class SmokeTestExtension
           },
           TELEMETRY_RECEIVE_TIMEOUT_SECONDS,
           TimeUnit.SECONDS);
+      mockedIngestion.waitForItem(
+          input -> {
+            if (!"MetricData".equals(input.getData().getBaseType())) {
+              return false;
+            }
+            MetricData data = (MetricData) ((Data<?>) input.getData()).getBaseData();
+            String metricId = data.getProperties().get("_MS.MetricId");
+            return metricId != null && metricId.equals("requests/duration");
+          },
+          10, // metrics should come in pretty quickly after spans
+          TimeUnit.SECONDS);
       System.out.printf(
           "Received request telemetry after %.3f seconds...%n",
           receivedTelemetryTimer.elapsed(TimeUnit.MILLISECONDS) / 1000.0);
@@ -374,6 +385,7 @@ public class SmokeTestExtension
 
     List<String> javaToolOptions = new ArrayList<>();
     javaToolOptions.add("-Dapplicationinsights.testing.batch-schedule-delay-millis=500");
+    javaToolOptions.add("-Dapplicationinsights.testing.metric-reader-interval-millis=500");
     if (usesGlobalIngestionEndpoint) {
       javaToolOptions.add(
           "-Dapplicationinsights.testing.global-ingestion-endpoint=" + FAKE_INGESTION_ENDPOINT);

@@ -40,7 +40,6 @@ import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -87,10 +86,7 @@ abstract class OpenTelemetryMetricTest {
 
   private void validateHistogramMetric(String name) throws Exception {
     List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
-    List<Envelope> metrics =
-        testing.mockedIngestion.waitForItems(
-            SmokeTestExtension.getMetricPredicate(name), 1, 40, TimeUnit.SECONDS);
-    assertThat(metrics).hasSize(1);
+    List<Envelope> metrics = testing.mockedIngestion.waitForMetricItems(name, 1);
 
     Envelope rdEnvelope = rdList.get(0);
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
@@ -127,10 +123,7 @@ abstract class OpenTelemetryMetricTest {
 
   private void validateGaugeMetric(String name) throws Exception {
     List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
-    List<Envelope> metrics =
-        testing.mockedIngestion.waitForItems(
-            SmokeTestExtension.getMetricPredicate(name), 1, 40, TimeUnit.SECONDS);
-    assertThat(metrics).hasSize(1);
+    List<Envelope> metrics = testing.mockedIngestion.waitForMetricItems(name, 1);
 
     Envelope rdEnvelope = rdList.get(0);
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
@@ -165,10 +158,7 @@ abstract class OpenTelemetryMetricTest {
 
   private void validateCounterMetric(String name) throws Exception {
     List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
-    List<Envelope> metrics =
-        testing.mockedIngestion.waitForItems(
-            SmokeTestExtension.getMetricPredicate(name), 3, 40, TimeUnit.SECONDS);
-    assertThat(metrics).hasSize(3);
+    List<Envelope> metrics = testing.mockedIngestion.waitForMetricItems(name, 3);
 
     metrics.sort(
         Comparator.comparing(

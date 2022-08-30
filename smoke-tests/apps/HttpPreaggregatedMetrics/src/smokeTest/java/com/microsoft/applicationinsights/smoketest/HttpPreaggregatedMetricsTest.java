@@ -40,7 +40,6 @@ import com.microsoft.applicationinsights.smoketest.schemav2.MetricData;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -52,22 +51,12 @@ abstract class HttpPreaggregatedMetricsTest {
   @Test
   @TargetUri("/httpUrlConnection")
   void testHttpUrlConnection() throws Exception {
-    verify();
-  }
-
-  private static void verify() throws Exception {
-    verify("https://mock.codes/200?q=spaces%20test");
-  }
-
-  private static void verify(String successUrlWithQueryString) throws Exception {
-    verifyHttpclientRequestsAndDependencies(successUrlWithQueryString);
+    verifyHttpclientRequestsAndDependencies("https://mock.codes/200?q=spaces%20test");
 
     List<Envelope> clientMetrics =
-        testing.mockedIngestion.waitForItems(
-            SmokeTestExtension.getMetricPredicate("http.client.duration"), 3, 40, TimeUnit.SECONDS);
+        testing.mockedIngestion.waitForMetricItems("http.client.duration", 3);
     List<Envelope> serverMetrics =
-        testing.mockedIngestion.waitForItems(
-            SmokeTestExtension.getMetricPredicate("http.server.duration"), 2, 40, TimeUnit.SECONDS);
+        testing.mockedIngestion.waitForMetricItems("http.server.duration", 1);
 
     verifyHttpClientPreAggregatedMetrics(clientMetrics);
     verifyHttpServerPreAggregatedMetrics(serverMetrics);
@@ -128,8 +117,7 @@ abstract class HttpPreaggregatedMetricsTest {
         "GET /HttpPreaggregatedMetrics/*");
   }
 
-  private static void verifyHttpClientPreAggregatedMetrics(List<Envelope> metrics)
-      throws Exception {
+  private static void verifyHttpClientPreAggregatedMetrics(List<Envelope> metrics) {
     assertThat(metrics.size()).isEqualTo(3);
     // sort metrics based on result code
     metrics.sort(
@@ -158,20 +146,13 @@ abstract class HttpPreaggregatedMetricsTest {
     validateMetricData("client", md3, "500");
   }
 
-  private static void verifyHttpServerPreAggregatedMetrics(List<Envelope> metrics)
-      throws Exception {
-    assertThat(metrics.size()).isEqualTo(2);
+  private static void verifyHttpServerPreAggregatedMetrics(List<Envelope> metrics) {
+    assertThat(metrics.size()).isEqualTo(1);
     // 1st pre-aggregated metric
     Envelope envelope1 = metrics.get(0);
     validateTags(envelope1);
     MetricData md1 = (MetricData) ((Data<?>) envelope1.getData()).getBaseData();
     validateMetricData("server", md1, "200");
-
-    // 2nd pre-aggregated metric
-    Envelope envelope2 = metrics.get(1);
-    validateTags(envelope2);
-    MetricData md2 = (MetricData) ((Data<?>) envelope2.getData()).getBaseData();
-    validateMetricData("server", md2, "200");
   }
 
   private static void validateTags(Envelope envelope) {
@@ -186,9 +167,9 @@ abstract class HttpPreaggregatedMetricsTest {
     assertThat(dataPoints).hasSize(1);
     DataPoint dataPoint = dataPoints.get(0);
     assertThat(dataPoint.getCount()).isEqualTo(1);
-    assertThat(dataPoint.getValue()).isGreaterThan(0d).isLessThan(5 * 60 * 1000d); // (0 - 5) min
-    assertThat(dataPoint.getMin()).isGreaterThan(0d).isLessThan(5 * 60 * 1000d); // (0 - 5) min
-    assertThat(dataPoint.getMax()).isGreaterThan(0d).isLessThan(5 * 60 * 1000d); // (0 - 5) min
+    assertThat(dataPoint.getValue()).isGreaterThan(0d).isLessThan(60 * 1000.0);
+    assertThat(dataPoint.getMin()).isGreaterThan(0d).isLessThan(60 * 1000.0);
+    assertThat(dataPoint.getMax()).isGreaterThan(0d).isLessThan(60 * 1000.0);
     Map<String, String> properties = metricData.getProperties();
     String expectedSuccess = "200".equals(resultCode) ? "True" : "False";
     if ("client".equals(type)) {

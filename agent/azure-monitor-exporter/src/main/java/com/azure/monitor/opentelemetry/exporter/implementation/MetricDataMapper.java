@@ -161,6 +161,8 @@ public class MetricDataMapper {
     }
 
     pointBuilder.setValue(pointDataValue);
+    // TODO (heya) why give it the same name as otel metric?
+    //  it seems this field doesn't matter and only _MS.MetricId property matters?
     pointBuilder.setName(metricData.getName());
     metricTelemetryBuilder.setMetricPoint(pointBuilder);
 
@@ -169,6 +171,12 @@ public class MetricDataMapper {
       Long statusCode = attributes.get(SemanticAttributes.HTTP_STATUS_CODE);
       boolean success = isSuccess(statusCode, captureHttpServer4xxAsError);
       Boolean isSynthetic = attributes.get(IS_SYNTHETIC);
+
+      attributes.forEach(
+          (key, value) ->
+              SpanDataMapper.applyConnectionStringAndRoleNameOverrides(
+                  metricTelemetryBuilder, value, key.getKey()));
+
       if (metricData.getName().contains(".server.")) {
         RequestExtractor.extract(metricTelemetryBuilder, statusCode, success, isSynthetic);
       } else if (metricData.getName().contains(".client.")) {
@@ -190,9 +198,24 @@ public class MetricDataMapper {
             metricTelemetryBuilder, statusCode, success, dependencyType, target, isSynthetic);
       }
     } else {
-      attributes.forEach(
-          (key, value) -> metricTelemetryBuilder.addProperty(key.getKey(), value.toString()));
+      setExtraAttributes(metricTelemetryBuilder, attributes);
     }
+  }
+
+  private static void setExtraAttributes(
+      AbstractTelemetryBuilder telemetryBuilder, Attributes attributes) {
+    attributes.forEach(
+        (key, value) -> {
+          String stringKey = key.getKey();
+          if (SpanDataMapper.applyConnectionStringAndRoleNameOverrides(
+              telemetryBuilder, value, stringKey)) {
+            return;
+          }
+          String val = SpanDataMapper.convertToString(value, key.getType());
+          if (value != null) {
+            telemetryBuilder.addProperty(key.getKey(), val);
+          }
+        });
   }
 
   private static int getDefaultPortForHttpScheme(@Nullable String httpScheme) {

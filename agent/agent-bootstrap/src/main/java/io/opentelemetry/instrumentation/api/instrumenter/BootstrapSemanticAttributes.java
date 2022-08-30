@@ -27,6 +27,17 @@ import io.opentelemetry.api.common.AttributeKey;
 
 public final class BootstrapSemanticAttributes {
 
+  // replaced by ai.preview.connection_string
+  @Deprecated
+  public static final AttributeKey<String> INSTRUMENTATION_KEY =
+      AttributeKey.stringKey("ai.preview.instrumentation_key");
+
+  public static final AttributeKey<String> CONNECTION_STRING =
+      AttributeKey.stringKey("ai.preview.connection_string");
+
+  public static final AttributeKey<String> ROLE_NAME =
+      AttributeKey.stringKey("ai.preview.service_name");
+
   public static final AttributeKey<Boolean> IS_SYNTHETIC =
       booleanKey("applicationinsights.internal.is_synthetic");
   public static final AttributeKey<Boolean> IS_PRE_AGGREGATED =

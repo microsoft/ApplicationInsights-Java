@@ -19,10 +19,16 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
+// Includes work from:
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.instrumentation.api.instrumenter.http;
 
-import static io.opentelemetry.instrumentation.api.instrumenter.BootstrapSemanticAttributes.IS_PRE_AGGREGATED;
-import static io.opentelemetry.instrumentation.api.instrumenter.BootstrapSemanticAttributes.IS_SYNTHETIC;
+import static io.opentelemetry.instrumentation.api.instrumenter.http.TemporaryMetricsView.applyActiveRequestsView;
+import static io.opentelemetry.instrumentation.api.instrumenter.http.TemporaryMetricsView.applyServerDurationAndSizeView2;
 import static java.util.logging.Level.FINE;
 
 import com.google.auto.value.AutoValue;
@@ -32,12 +38,10 @@ import io.opentelemetry.api.metrics.DoubleHistogram;
 import io.opentelemetry.api.metrics.LongHistogram;
 import io.opentelemetry.api.metrics.LongUpDownCounter;
 import io.opentelemetry.api.metrics.Meter;
-import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.ContextKey;
 import io.opentelemetry.instrumentation.api.instrumenter.OperationListener;
 import io.opentelemetry.instrumentation.api.instrumenter.OperationMetrics;
-import io.opentelemetry.instrumentation.api.instrumenter.UserAgents;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
@@ -103,7 +107,7 @@ public final class HttpServerMetrics implements OperationListener {
 
   @Override
   public Context onStart(Context context, Attributes startAttributes, long startNanos) {
-    activeRequests.add(1, TemporaryMetricsView.applyActiveRequestsView(startAttributes), context);
+    activeRequests.add(1, applyActiveRequestsView(startAttributes), context);
 
     return context.with(
         HTTP_SERVER_REQUEST_METRICS_STATE,
@@ -120,27 +124,17 @@ public final class HttpServerMetrics implements OperationListener {
           context);
       return;
     }
-    activeRequests.add(
-        -1, TemporaryMetricsView.applyActiveRequestsView(state.startAttributes()), context);
+    activeRequests.add(-1, applyActiveRequestsView(state.startAttributes()), context);
+
+    // START APPLICATION INSIGHTS MODIFICATIONS: passing context
+
     Attributes durationAndSizeAttributes =
-        TemporaryMetricsView.applyServerDurationAndSizeView(state.startAttributes(), endAttributes);
-
-    // START APPLICATION INSIGHTS CODE
-
-    // this is needed for detecting telemetry signals that will trigger pre-aggregated metrics via
-    // auto instrumentations
-    Span.fromContext(context).setAttribute(IS_PRE_AGGREGATED, true);
-
-    Attributes durationAttributes =
-        durationAndSizeAttributes.toBuilder()
-            .put(IS_SYNTHETIC, UserAgents.isBot(endAttributes, state.startAttributes()))
-            .build();
+        applyServerDurationAndSizeView2(context, state.startAttributes(), endAttributes);
 
     // END APPLICATION INSIGHTS CODE
 
-    this.duration.record(
-        (endNanos - state.startTimeNanos()) / NANOS_PER_MS, durationAttributes, context);
-
+    duration.record(
+        (endNanos - state.startTimeNanos()) / NANOS_PER_MS, durationAndSizeAttributes, context);
     Long requestLength =
         getAttribute(
             SemanticAttributes.HTTP_REQUEST_CONTENT_LENGTH, endAttributes, state.startAttributes());
