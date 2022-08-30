@@ -26,7 +26,7 @@ Migration notes:
         "overrides": [
           {
             "telemetryType": "dependency",
-            "includeStandaloneTelemetry": true,
+            "includingStandaloneTelemetry": true,
             "percentage": 10
           }
         ]
