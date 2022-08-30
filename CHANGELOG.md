@@ -37,8 +37,9 @@ Migration notes:
 
 Enhancements:
 
-* Standard metrics for HTTP requests and HTTP dependencies are now pre-aggregated inside of the Java
-  agent, and so they are no longer affected by sampling
+* [Standard metrics](https://docs.microsoft.com/en-us/azure/azure-monitor/app/standard-metrics)
+  for HTTP requests and HTTP dependencies are now pre-aggregated inside of the Java agent, and so
+  they are no longer affected by sampling
   ([#2439](https://github.com/microsoft/ApplicationInsights-Java/pull/2439)).
 * Rate-limited sampling has been introduced which can be used to tune ingestion costs
   ([#2456](https://github.com/microsoft/ApplicationInsights-Java/pull/2456)), e.g.
