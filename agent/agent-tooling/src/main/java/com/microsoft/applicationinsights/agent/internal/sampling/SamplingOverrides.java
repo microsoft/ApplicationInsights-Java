@@ -69,13 +69,13 @@ public class SamplingOverrides {
   }
 
   private static class MatcherGroup {
-    private final boolean includeStandaloneTelemetry;
+    private final boolean includingStandaloneTelemetry;
     private final List<TempPredicate> predicates;
     private final Sampler sampler;
     private final SamplingPercentage samplingPercentage;
 
     private MatcherGroup(SamplingOverride override) {
-      includeStandaloneTelemetry = override.includeStandaloneTelemetry;
+      includingStandaloneTelemetry = override.includingStandaloneTelemetry;
       predicates = new ArrayList<>();
       for (SamplingOverrideAttribute attribute : override.attributes) {
         predicates.add(toPredicate(attribute));
@@ -94,7 +94,7 @@ public class SamplingOverrides {
 
     private boolean matches(
         boolean isStandaloneTelemetry, Attributes attributes, @Nullable LazyHttpUrl lazyHttpUrl) {
-      if (isStandaloneTelemetry && !this.includeStandaloneTelemetry) {
+      if (isStandaloneTelemetry && !includingStandaloneTelemetry) {
         return false;
       }
       for (TempPredicate predicate : predicates) {

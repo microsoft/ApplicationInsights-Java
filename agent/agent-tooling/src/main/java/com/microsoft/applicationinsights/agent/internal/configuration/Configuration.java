@@ -633,7 +633,7 @@ public class Configuration {
 
     // TODO (trask) add test for this
     // this is primarily useful for batch jobs
-    public boolean includeStandaloneTelemetry;
+    public boolean includingStandaloneTelemetry;
 
     // not using include/exclude, because you can still get exclude with this by adding a second
     // (exclude) override above it
