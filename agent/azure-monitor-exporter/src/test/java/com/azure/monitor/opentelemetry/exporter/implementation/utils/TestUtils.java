@@ -23,8 +23,6 @@ package com.azure.monitor.opentelemetry.exporter.implementation.utils;
 
 import com.azure.core.http.policy.HttpPipelinePolicy;
 import com.azure.monitor.opentelemetry.exporter.AzureMonitorExporterBuilder;
-import com.azure.monitor.opentelemetry.exporter.AzureMonitorMetricExporter;
-import com.azure.monitor.opentelemetry.exporter.AzureMonitorTraceExporter;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricDataPoint;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricsData;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MonitorBase;
@@ -34,9 +32,11 @@ import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
+import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
+import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -81,7 +81,7 @@ public final class TestUtils {
   }
 
   public static Tracer configureAzureMonitorTraceExporter(HttpPipelinePolicy validator) {
-    AzureMonitorTraceExporter exporter =
+    SpanExporter exporter =
         new AzureMonitorExporterBuilder()
             .connectionString(System.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING"))
             .addHttpPipelinePolicy(validator)
@@ -96,7 +96,7 @@ public final class TestUtils {
   }
 
   public static Meter configureAzureMonitorMetricExporter(HttpPipelinePolicy policy) {
-    AzureMonitorMetricExporter exporter =
+    MetricExporter exporter =
         new AzureMonitorExporterBuilder()
             .connectionString(System.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING"))
             .addHttpPipelinePolicy(policy)

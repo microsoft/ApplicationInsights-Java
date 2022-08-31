@@ -19,7 +19,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.azure.monitor.opentelemetry.exporter;
+package com.microsoft.applicationinsights.agent.internal.init;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.AiSemanticAttributes;
 import com.azure.monitor.opentelemetry.exporter.implementation.OperationNames;
@@ -41,9 +41,5 @@ public class AzureMonitorLogProcessor implements LogProcessor {
 
     logRecord.setAttribute(
         AiSemanticAttributes.OPERATION_NAME, OperationNames.getOperationName(readableSpan));
-    Long itemCount = readableSpan.getAttribute(AiSemanticAttributes.ITEM_COUNT);
-    if (itemCount != null) {
-      logRecord.setAttribute(AiSemanticAttributes.ITEM_COUNT, itemCount);
-    }
   }
 }

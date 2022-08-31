@@ -41,7 +41,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * This class is an implementation of OpenTelemetry {@link LogExporter} that allows different
  * logging services to export recorded data for sampled logs in their own format.
  */
-public class AzureMonitorLogExporter implements LogExporter {
+class AzureMonitorLogExporter implements LogExporter {
 
   private static final ClientLogger LOGGER = new ClientLogger(AzureMonitorLogExporter.class);
   private static final OperationLogger exportingLogLogger =

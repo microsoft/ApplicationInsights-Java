@@ -19,7 +19,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.azure.monitor.opentelemetry.exporter;
+package com.microsoft.applicationinsights.agent.internal.init;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.AiSemanticAttributes;
 import com.azure.monitor.opentelemetry.exporter.implementation.OperationNames;
@@ -49,10 +49,6 @@ public class AzureMonitorSpanProcessor implements SpanProcessor {
 
     span.setAttribute(
         AiSemanticAttributes.OPERATION_NAME, OperationNames.getOperationName(parentReadableSpan));
-    Long itemCount = parentReadableSpan.getAttribute(AiSemanticAttributes.ITEM_COUNT);
-    if (itemCount != null) {
-      span.setAttribute(AiSemanticAttributes.ITEM_COUNT, itemCount);
-    }
   }
 
   @Override

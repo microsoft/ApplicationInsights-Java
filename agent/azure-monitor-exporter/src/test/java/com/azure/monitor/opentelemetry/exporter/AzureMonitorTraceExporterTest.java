@@ -39,6 +39,7 @@ import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
+import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -61,7 +62,7 @@ public class AzureMonitorTraceExporterTest extends MonitorExporterClientTestBase
     String connectionString =
         Configuration.getGlobalConfiguration()
             .get("APPLICATIONINSIGHTS_CONNECTION_STRING", connectionStringTemplate);
-    AzureMonitorTraceExporter azureMonitorTraceExporter =
+    SpanExporter azureMonitorTraceExporter =
         getClientBuilder().connectionString(connectionString).buildTraceExporter();
     CompletableResultCode export =
         azureMonitorTraceExporter.export(Collections.singleton(new RequestSpanData()));

@@ -23,8 +23,6 @@ package com.microsoft.applicationinsights.agent.internal.init;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
 
-import com.azure.monitor.opentelemetry.exporter.AzureMonitorLogProcessor;
-import com.azure.monitor.opentelemetry.exporter.AzureMonitorSpanProcessor;
 import com.azure.monitor.opentelemetry.exporter.implementation.LogDataMapper;
 import com.azure.monitor.opentelemetry.exporter.implementation.MetricDataMapper;
 import com.azure.monitor.opentelemetry.exporter.implementation.SpanDataMapper;

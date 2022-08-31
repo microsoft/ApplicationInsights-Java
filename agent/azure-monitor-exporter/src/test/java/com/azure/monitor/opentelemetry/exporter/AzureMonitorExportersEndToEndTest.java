@@ -45,6 +45,7 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.logs.export.LogExporter;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
@@ -138,7 +139,7 @@ public class AzureMonitorExportersEndToEndTest extends MonitorExporterClientTest
   }
 
   private void validateLogExporterEndToEnd() throws Exception {
-    AzureMonitorLogExporter azureMonitorLogExporter =
+    LogExporter azureMonitorLogExporter =
         getClientBuilder().connectionString(TRACE_CONNECTION_STRING).buildLogExporter();
     CompletableResultCode export =
         azureMonitorLogExporter.export(Collections.singleton(new MockLogData()));
