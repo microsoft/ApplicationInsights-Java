@@ -41,5 +41,9 @@ public class AzureMonitorLogProcessor implements LogProcessor {
 
     logRecord.setAttribute(
         AiSemanticAttributes.OPERATION_NAME, OperationNames.getOperationName(readableSpan));
+    Long itemCount = readableSpan.getAttribute(AiSemanticAttributes.ITEM_COUNT);
+    if (itemCount != null) {
+      logRecord.setAttribute(AiSemanticAttributes.ITEM_COUNT, itemCount);
+    }
   }
 }
