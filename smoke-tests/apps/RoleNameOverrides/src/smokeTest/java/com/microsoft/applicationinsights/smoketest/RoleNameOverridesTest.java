@@ -158,14 +158,14 @@ abstract class RoleNameOverridesTest {
       assertThat(properties).hasSize(9);
       assertThat(properties.get("_MS.MetricId")).isEqualTo("dependencies/duration");
       assertThat(properties.get("dependency/resultCode")).isEqualTo(resultCode);
-      assertThat(properties.get("dependency/success")).isEqualTo(expectedSuccess);
+      assertThat(properties.get("Dependency.Success")).isEqualTo(expectedSuccess);
       assertThat(properties.get("dependency/target")).isEqualTo("mock.codes");
-      assertThat(properties.get("dependency/type")).isEqualTo("Http");
+      assertThat(properties.get("Dependency.Type")).isEqualTo("Http");
     } else {
       assertThat(properties).hasSize(7);
       assertThat(properties.get("_MS.MetricId")).isEqualTo("requests/duration");
       assertThat(properties.get("request/resultCode")).isEqualTo(resultCode);
-      assertThat(properties.get("request/success")).isEqualTo(expectedSuccess);
+      assertThat(properties.get("Request.Success")).isEqualTo(expectedSuccess);
     }
     assertThat(properties.get("operation/synthetic")).isEqualTo("False");
     assertThat(properties.get("cloud/roleInstance")).isEqualTo("testroleinstance");

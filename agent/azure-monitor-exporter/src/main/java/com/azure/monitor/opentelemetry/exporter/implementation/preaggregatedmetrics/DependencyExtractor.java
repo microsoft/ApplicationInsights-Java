@@ -33,8 +33,8 @@ public final class DependencyExtractor {
 
   // visible for testing
   public static final String DEPENDENCIES_DURATION = "dependencies/duration";
-  public static final String DEPENDENCY_TYPE = "dependency/type";
-  public static final String DEPENDENCY_SUCCESS = "dependency/success";
+  public static final String DEPENDENCY_TYPE = "'Dependency.Type";
+  public static final String DEPENDENCY_SUCCESS = "Dependency.Success";
   public static final String DEPENDENCY_TARGET = "dependency/target";
   public static final String DEPENDENCY_RESULT_CODE = "dependency/resultCode";
 

@@ -34,7 +34,7 @@ public final class RequestExtractor {
   // visible for testing
   public static final String REQUESTS_DURATION = "requests/duration";
   public static final String REQUEST_RESULT_CODE = "request/resultCode";
-  public static final String REQUEST_SUCCESS = "request/success";
+  public static final String REQUEST_SUCCESS = "Request.Success";
 
   public static void extract(
       MetricTelemetryBuilder metricBuilder,

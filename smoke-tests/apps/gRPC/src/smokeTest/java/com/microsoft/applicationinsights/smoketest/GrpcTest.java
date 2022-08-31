@@ -209,11 +209,11 @@ abstract class GrpcTest {
       assertThat(properties).hasSize(8);
       assertThat(properties.get("_MS.MetricId")).isEqualTo("dependencies/duration");
       assertThat(properties.get("dependency/target")).isEqualTo("localhost:10203");
-      assertThat(properties.get("dependency/type")).isEqualTo("grpc");
+      assertThat(properties.get("Dependency.Type")).isEqualTo("grpc");
     } else {
       assertThat(properties).hasSize(6);
       assertThat(properties.get("_MS.MetricId")).isEqualTo("requests/duration");
-      assertThat(properties.get("request/success")).isEqualTo("True");
+      assertThat(properties.get("Request.Success")).isEqualTo("True");
     }
     assertThat(properties.get("operation/synthetic")).isEqualTo("False");
     assertThat(properties.get("cloud/roleInstance")).isEqualTo("testroleinstance");
