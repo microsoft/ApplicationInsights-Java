@@ -19,31 +19,42 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package com.azure.monitor.opentelemetry.exporter;
+package com.azure.monitor.opentelemetry.exporter.implementation;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.AiSemanticAttributes;
-import com.azure.monitor.opentelemetry.exporter.implementation.OperationNames;
-import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.sdk.logs.LogProcessor;
-import io.opentelemetry.sdk.logs.ReadWriteLogRecord;
+import com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.QuickPulse;
+import io.opentelemetry.context.Context;
+import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.sdk.trace.ReadableSpan;
+import io.opentelemetry.sdk.trace.SpanProcessor;
 
-public class AzureMonitorLogProcessor implements LogProcessor {
+public class LiveMetricsSpanProcessor implements SpanProcessor {
+
+  private final QuickPulse quickPulse;
+  private final SpanDataMapper mapper;
+
+  public LiveMetricsSpanProcessor(QuickPulse quickPulse, SpanDataMapper mapper) {
+    this.quickPulse = quickPulse;
+    this.mapper = mapper;
+  }
 
   @Override
-  public void onEmit(ReadWriteLogRecord logRecord) {
-    Span currentSpan = Span.current();
-    if (!(currentSpan instanceof ReadableSpan)) {
-      return;
-    }
+  public void onStart(Context context, ReadWriteSpan readWriteSpan) {}
 
-    ReadableSpan readableSpan = (ReadableSpan) currentSpan;
+  @Override
+  public boolean isStartRequired() {
+    return false;
+  }
 
-    logRecord.setAttribute(
-        AiSemanticAttributes.OPERATION_NAME, OperationNames.getOperationName(readableSpan));
-    Long itemCount = readableSpan.getAttribute(AiSemanticAttributes.ITEM_COUNT);
-    if (itemCount != null) {
-      logRecord.setAttribute(AiSemanticAttributes.ITEM_COUNT, itemCount);
+  @Override
+  public void onEnd(ReadableSpan readableSpan) {
+    if (quickPulse.isEnabled()) {
+      // TODO (trask) can we do anything better here in terms of double conversion?
+      quickPulse.add(mapper.map(readableSpan.toSpanData()));
     }
+  }
+
+  @Override
+  public boolean isEndRequired() {
+    return true;
   }
 }

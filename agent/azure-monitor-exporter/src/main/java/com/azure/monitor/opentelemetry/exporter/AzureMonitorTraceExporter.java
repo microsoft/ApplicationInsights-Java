@@ -40,7 +40,7 @@ import java.util.List;
  * tracing services to export recorded data for sampled spans in their own format.
  */
 // TODO (trask) move this class into internal package
-public final class AzureMonitorTraceExporter implements SpanExporter {
+final class AzureMonitorTraceExporter implements SpanExporter {
 
   private static final ClientLogger LOGGER = new ClientLogger(AzureMonitorTraceExporter.class);
 

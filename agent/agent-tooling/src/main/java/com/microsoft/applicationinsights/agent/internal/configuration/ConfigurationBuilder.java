@@ -201,6 +201,12 @@ public class ConfigurationBuilder {
                 + " and support for it will be removed in a future release, please transition from"
                 + " \"spanKind\" to \"telemetryKind\".");
       }
+      if (override.telemetryKind == null) {
+        configurationLogger.warn(
+            "Sampling overrides \"telemetryKind\" is missing,"
+                + " and will be required in a future release, please transition to add"
+                + " \"telemetryKind\" for sampling overrides.");
+      }
     }
     if (!config.preview.instrumentationKeyOverrides.isEmpty()) {
       configurationLogger.warn(
