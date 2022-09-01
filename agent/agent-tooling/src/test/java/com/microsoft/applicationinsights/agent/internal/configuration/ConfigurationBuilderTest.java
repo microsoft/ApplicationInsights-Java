@@ -75,9 +75,9 @@ class ConfigurationBuilderTest {
   }
 
   @Test
-  void testValidJson() throws IOException {
+  void testValidJson() {
     Path path = getConfigFilePath("applicationinsights.json");
-    Configuration configuration = ConfigurationBuilder.getConfigurationFromConfigFile(path, true);
+    Configuration configuration = ConfigurationBuilder.getConfigurationFromConfigFile(path);
     assertThat(configuration.connectionString)
         .isEqualTo("InstrumentationKey=00000000-0000-0000-0000-000000000000");
     assertThat(configuration.role.name).isEqualTo("Something Good");
@@ -85,9 +85,17 @@ class ConfigurationBuilderTest {
   }
 
   @Test
-  void testFaultyJson() throws IOException {
+  void testJsonWithUtf8ByteOrderMarker() {
+    Path path = getConfigFilePath("applicationinsights_with_utf8_bom.json");
+    Configuration configuration = ConfigurationBuilder.getConfigurationFromConfigFile(path);
+    assertThat(configuration.connectionString)
+        .isEqualTo("InstrumentationKey=00000000-0000-0000-0000-000000000000");
+  }
+
+  @Test
+  void testFaultyJson() {
     Path path = getConfigFilePath("applicationinsights_faulty.json");
-    Configuration configuration = ConfigurationBuilder.getConfigurationFromConfigFile(path, true);
+    Configuration configuration = ConfigurationBuilder.getConfigurationFromConfigFile(path);
     // Configuration object should still be created.
     assertThat(configuration.connectionString)
         .isEqualTo("InstrumentationKey=00000000-0000-0000-0000-000000000000");
@@ -97,21 +105,21 @@ class ConfigurationBuilderTest {
   @Test
   void testMalformedJson() {
     Path path = getConfigFilePath("applicationinsights_malformed.json");
-    assertThatThrownBy(() -> ConfigurationBuilder.getConfigurationFromConfigFile(path, true))
+    assertThatThrownBy(() -> ConfigurationBuilder.getConfigurationFromConfigFile(path))
         .isInstanceOf(FriendlyException.class);
   }
 
   @Test
   void testMalformedFaultyJson() {
     Path path = getConfigFilePath("applicationinsights_malformed_faulty.json");
-    assertThatThrownBy(() -> ConfigurationBuilder.getConfigurationFromConfigFile(path, true))
+    assertThatThrownBy(() -> ConfigurationBuilder.getConfigurationFromConfigFile(path))
         .isInstanceOf(FriendlyException.class);
   }
 
   @Test
   void testMalformedJsonWithUnicode() {
     Path path = getConfigFilePath("applicationinsights_malformed_unicode.json");
-    assertThatThrownBy(() -> ConfigurationBuilder.getConfigurationFromConfigFile(path, true))
+    assertThatThrownBy(() -> ConfigurationBuilder.getConfigurationFromConfigFile(path))
         .isInstanceOf(FriendlyException.class);
   }
 
