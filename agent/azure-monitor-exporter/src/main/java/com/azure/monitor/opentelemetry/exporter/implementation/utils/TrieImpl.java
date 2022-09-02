@@ -25,7 +25,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import javax.annotation.Nullable;
+import reactor.util.annotation.Nullable;
 
 // copied from io.opentelemetry.javaagent.instrumentation.api.util.TrieImpl
 public final class TrieImpl<V> implements Trie<V> {
@@ -109,6 +109,7 @@ public final class TrieImpl<V> implements Trie<V> {
     Node<V> build() {
       int size = children.size();
       char[] chars = new char[size];
+      @SuppressWarnings({"unchecked", "rawtypes"})
       Node<V>[] nodes = new Node[size];
 
       int i = 0;

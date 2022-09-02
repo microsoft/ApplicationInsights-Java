@@ -27,7 +27,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.models.MessageDat
 import com.azure.monitor.opentelemetry.exporter.implementation.models.SeverityLevel;
 import java.util.HashMap;
 import java.util.Map;
-import javax.annotation.Nullable;
+import reactor.util.annotation.Nullable;
 
 public final class MessageTelemetryBuilder extends AbstractTelemetryBuilder {
 

@@ -24,15 +24,14 @@ package com.azure.monitor.opentelemetry.exporter.implementation.quickpulse;
 import static com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMsgId.QUICK_PULSE_PING_ERROR;
 import static com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMsgId.QUICK_PULSE_SEND_ERROR;
 
+import com.azure.core.util.logging.ClientLogger;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
-import javax.annotation.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
+import reactor.util.annotation.Nullable;
 
 final class QuickPulseCoordinator implements Runnable {
 
-  private static final Logger logger = LoggerFactory.getLogger(QuickPulseCoordinator.class);
+  private static final ClientLogger logger = new ClientLogger(QuickPulseCoordinator.class);
 
   @Nullable private String qpsServiceRedirectedEndpoint;
   private long qpsServicePollingIntervalHintMillis;
@@ -57,7 +56,7 @@ final class QuickPulseCoordinator implements Runnable {
 
     waitBetweenPingsInMillis = initData.waitBetweenPingsInMillis;
     waitBetweenPostsInMillis = initData.waitBetweenPostsInMillis;
-    waitOnErrorInMillis = initData.waitBetweenPingsInMillis;
+    waitOnErrorInMillis = initData.waitOnErrorInMillis;
     qpsServiceRedirectedEndpoint = null;
     qpsServicePollingIntervalHintMillis = -1;
   }
@@ -83,6 +82,7 @@ final class QuickPulseCoordinator implements Runnable {
     }
   }
 
+  @SuppressWarnings("try")
   private long sendData() {
     dataFetcher.prepareQuickPulseDataForSend(qpsServiceRedirectedEndpoint);
     QuickPulseHeaderInfo currentQuickPulseHeaderInfo = dataSender.getQuickPulseHeaderInfo();
@@ -112,6 +112,7 @@ final class QuickPulseCoordinator implements Runnable {
     return 0;
   }
 
+  @SuppressWarnings("try")
   private long ping() {
     QuickPulseHeaderInfo pingResult = pingSender.ping(qpsServiceRedirectedEndpoint);
     this.handleReceivedHeaders(pingResult);

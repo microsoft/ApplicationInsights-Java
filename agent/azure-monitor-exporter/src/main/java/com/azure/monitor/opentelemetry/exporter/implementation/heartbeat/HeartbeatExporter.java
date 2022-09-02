@@ -21,6 +21,7 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation.heartbeat;
 
+import com.azure.core.util.logging.ClientLogger;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.AbstractTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.MetricTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
@@ -39,23 +40,17 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /** Concrete implementation of Heartbeat functionality. */
 public class HeartbeatExporter {
 
-  private static final Logger logger = LoggerFactory.getLogger(HeartbeatExporter.class);
+  private static final ClientLogger logger = new ClientLogger(HeartbeatExporter.class);
 
   /** The name of the heartbeat metric. */
   private static final String HEARTBEAT_SYNTHETIC_METRIC_NAME = "HeartbeatState";
 
-  /** The counter for heartbeat sent to portal. */
-  private long heartbeatsSent;
-
   /** Map to hold heartbeat properties. */
   private final ConcurrentMap<String, HeartBeatPropertyPayload> heartbeatProperties;
-
   /** Telemetry item exporter used to send heartbeat. */
   private final Consumer<List<TelemetryItem>> telemetryItemsConsumer;
 
@@ -80,7 +75,6 @@ public class HeartbeatExporter {
       BiConsumer<AbstractTelemetryBuilder, Resource> telemetryInitializer,
       Consumer<List<TelemetryItem>> telemetryItemsConsumer) {
     this.heartbeatProperties = new ConcurrentHashMap<>();
-    this.heartbeatsSent = 0;
     this.propertyUpdateService =
         Executors.newCachedThreadPool(
             ThreadPoolUtils.createDaemonThreadFactory(
@@ -95,7 +89,7 @@ public class HeartbeatExporter {
 
     // Submit task to set properties to dictionary using separate thread. we do not wait for the
     // results to come out as some I/O bound properties may take time.
-    propertyUpdateService.submit(HeartbeatDefaultPayload.populateDefaultPayload(this));
+    propertyUpdateService.execute(HeartbeatDefaultPayload.populateDefaultPayload(this));
 
     heartBeatSenderService.scheduleAtFixedRate(
         this::send, intervalSeconds, intervalSeconds, TimeUnit.SECONDS);
@@ -105,7 +99,7 @@ public class HeartbeatExporter {
       String propertyName, String propertyValue, boolean isHealthy) {
 
     if (heartbeatProperties.containsKey(propertyName)) {
-      logger.trace(
+      logger.verbose(
           "heartbeat property {} cannot be added twice. Please use setHeartBeatProperty instead to modify the value",
           propertyName);
       return false;
@@ -115,7 +109,6 @@ public class HeartbeatExporter {
     payload.setHealthy(isHealthy);
     payload.setPayloadValue(propertyValue);
     heartbeatProperties.put(propertyName, payload);
-    logger.trace("added heartbeat property {} - {}", propertyName, propertyValue);
     return true;
   }
 
@@ -123,9 +116,8 @@ public class HeartbeatExporter {
   private void send() {
     try {
       telemetryItemsConsumer.accept(Collections.singletonList(gatherData()));
-      logger.trace("No of heartbeats sent, {}", ++heartbeatsSent);
     } catch (RuntimeException e) {
-      logger.warn("Error occured while sending heartbeat");
+      logger.warning("Error occured while sending heartbeat");
     }
   }
 

@@ -23,7 +23,7 @@ package com.azure.monitor.opentelemetry.exporter.implementation;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.concurrent.ThreadLocalRandom;
-import javax.annotation.Nullable;
+import reactor.util.annotation.Nullable;
 
 /**
  * This class generates the sample using the random number generator. It also contains the logic to

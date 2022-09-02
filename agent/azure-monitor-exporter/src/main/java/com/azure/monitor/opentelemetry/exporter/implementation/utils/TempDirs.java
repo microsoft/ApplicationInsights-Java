@@ -22,13 +22,13 @@
 package com.azure.monitor.opentelemetry.exporter.implementation.utils;
 
 import com.azure.core.util.CoreUtils;
+import com.azure.core.util.logging.ClientLogger;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import javax.annotation.Nullable;
-import org.slf4j.Logger;
+import reactor.util.annotation.Nullable;
 
 public class TempDirs {
 
@@ -36,7 +36,7 @@ public class TempDirs {
       Collections.unmodifiableList(Arrays.asList("USER", "LOGNAME", "USERNAME"));
 
   @Nullable
-  public static File getApplicationInsightsTempDir(Logger logger, String message) {
+  public static File getApplicationInsightsTempDir(ClientLogger logger, String message) {
     File tempDir = new File(System.getProperty("java.io.tmpdir"));
     tempDir = maybeAddUserSubDir(tempDir);
     tempDir = new File(tempDir, "applicationinsights");

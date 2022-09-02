@@ -24,9 +24,11 @@ package com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.util;
 import com.fasterxml.jackson.core.SerializableString;
 import com.fasterxml.jackson.core.io.CharacterEscapes;
 import com.fasterxml.jackson.core.io.SerializedString;
-import javax.annotation.Nullable;
+import reactor.util.annotation.Nullable;
 
 public class CustomCharacterEscapes extends CharacterEscapes {
+
+  private static final long serialVersionUID = 1L;
 
   private final int[] asciiEscapes;
 
@@ -39,7 +41,7 @@ public class CustomCharacterEscapes extends CharacterEscapes {
 
   @Override
   public int[] getEscapeCodesForAscii() {
-    return asciiEscapes;
+    return asciiEscapes.clone();
   }
 
   @Override

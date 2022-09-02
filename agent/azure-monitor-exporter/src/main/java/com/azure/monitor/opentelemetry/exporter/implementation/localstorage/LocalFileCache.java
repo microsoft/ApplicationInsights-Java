@@ -21,6 +21,7 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation.localstorage;
 
+import com.azure.core.util.logging.ClientLogger;
 import java.io.File;
 import java.util.Comparator;
 import java.util.Date;
@@ -29,12 +30,10 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 class LocalFileCache {
 
-  private static final Logger logger = LoggerFactory.getLogger(LocalFileCache.class);
+  private static final ClientLogger logger = new ClientLogger(LocalFileCache.class);
 
   /**
    * Track a list of active filenames persisted on disk. FIFO (First-In-First-Out) read will avoid
@@ -78,14 +77,14 @@ class LocalFileCache {
     String name = file.getName();
     int index = name.indexOf('-');
     if (index == -1) {
-      logger.debug("unexpected .trn file name: {}", name);
+      logger.verbose("unexpected .trn file name: {}", name);
       return true;
     }
     long timestamp;
     try {
       timestamp = Long.parseLong(name.substring(0, index));
     } catch (NumberFormatException e) {
-      logger.debug("unexpected .trn file name: {}", name);
+      logger.verbose("unexpected .trn file name: {}", name);
       return true;
     }
     Date expirationDate = new Date(System.currentTimeMillis() - 1000 * expiredIntervalSeconds);

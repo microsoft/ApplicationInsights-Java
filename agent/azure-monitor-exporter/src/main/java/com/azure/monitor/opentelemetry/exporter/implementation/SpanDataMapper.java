@@ -44,7 +44,6 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.SpanKind;
-import io.opentelemetry.instrumentation.api.internal.cache.Cache;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.ReadableSpan;
@@ -61,7 +60,7 @@ import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
+import reactor.util.annotation.Nullable;
 
 public final class SpanDataMapper {
 
@@ -76,8 +75,6 @@ public final class SpanDataMapper {
 
   // TODO (trask) add to generated ContextTagKeys class
   private static final ContextTagKeys AI_DEVICE_OS = ContextTagKeys.fromString("ai.device.os");
-
-  private static final Cache<String, ConnectionString> connectionStringCache = Cache.bounded(100);
 
   static {
     Set<String> dbSystems = new HashSet<>();
@@ -301,7 +298,7 @@ public final class SpanDataMapper {
     // passing max value because we don't know what the default port would be in this case,
     // so we always want the port included
     String target = getTargetOrNull(attributes, Integer.MAX_VALUE);
-    if (!target.isEmpty()) {
+    if (target != null) {
       telemetryBuilder.setTarget(target);
       return;
     }
@@ -916,15 +913,12 @@ public final class SpanDataMapper {
       AbstractTelemetryBuilder telemetryBuilder, Object value, String key) {
     if (key.equals(AiSemanticAttributes.CONNECTION_STRING.getKey()) && value instanceof String) {
       // intentionally letting exceptions from parse bubble up
-      telemetryBuilder.setConnectionString(
-          connectionStringCache.computeIfAbsent((String) value, ConnectionString::parse));
+      telemetryBuilder.setConnectionString(ConnectionString.parse((String) value));
       return true;
     }
     if (key.equals(AiSemanticAttributes.INSTRUMENTATION_KEY.getKey()) && value instanceof String) {
       // intentionally letting exceptions from parse bubble up
-      telemetryBuilder.setConnectionString(
-          connectionStringCache.computeIfAbsent(
-              "InstrumentationKey=" + value, ConnectionString::parse));
+      telemetryBuilder.setConnectionString(ConnectionString.parse("InstrumentationKey=" + value));
       return true;
     }
     if (key.equals(AiSemanticAttributes.ROLE_NAME.getKey()) && value instanceof String) {

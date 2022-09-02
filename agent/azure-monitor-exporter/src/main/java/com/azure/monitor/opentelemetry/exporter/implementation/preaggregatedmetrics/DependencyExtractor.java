@@ -27,7 +27,7 @@ import static com.azure.monitor.opentelemetry.exporter.implementation.preaggrega
 import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.ExtractorHelper.extractCommon;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.MetricTelemetryBuilder;
-import javax.annotation.Nullable;
+import reactor.util.annotation.Nullable;
 
 public final class DependencyExtractor {
 

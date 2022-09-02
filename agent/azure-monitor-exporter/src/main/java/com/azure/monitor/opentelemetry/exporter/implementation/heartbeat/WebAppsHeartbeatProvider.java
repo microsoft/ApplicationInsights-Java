@@ -21,13 +21,11 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation.heartbeat;
 
+import com.azure.core.util.logging.ClientLogger;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Callable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -39,7 +37,7 @@ import org.slf4j.LoggerFactory;
  */
 public class WebAppsHeartbeatProvider implements HeartBeatPayloadProviderInterface {
 
-  private static final Logger logger = LoggerFactory.getLogger(WebAppsHeartbeatProvider.class);
+  private static final ClientLogger logger = new ClientLogger(WebAppsHeartbeatProvider.class);
 
   /** Collection holding default properties for this default provider. */
   private final Set<String> defaultFields;
@@ -67,15 +65,14 @@ public class WebAppsHeartbeatProvider implements HeartBeatPayloadProviderInterfa
   }
 
   @Override
-  public Callable<Boolean> setDefaultPayload(HeartbeatExporter provider) {
-    return new Callable<Boolean>() {
+  public Runnable setDefaultPayload(HeartbeatExporter provider) {
+    return new Runnable() {
 
       final Set<String> enabledProperties = defaultFields;
 
       @Override
-      public Boolean call() {
+      public void run() {
 
-        boolean hasSetValues = false;
         // update environment variable to account for
         updateEnvironmentVariableMap();
         for (String fieldName : enabledProperties) {
@@ -87,7 +84,6 @@ public class WebAppsHeartbeatProvider implements HeartBeatPayloadProviderInterfa
                   break;
                 }
                 provider.addHeartBeatProperty(fieldName, webSiteName, true);
-                hasSetValues = true;
                 break;
               case WEBSITE_HOSTNAME:
                 String webSiteHostName = getWebsiteHostName();
@@ -95,7 +91,6 @@ public class WebAppsHeartbeatProvider implements HeartBeatPayloadProviderInterfa
                   break;
                 }
                 provider.addHeartBeatProperty(fieldName, webSiteHostName, true);
-                hasSetValues = true;
                 break;
               case WEBSITE_HOME_STAMPNAME:
                 String websiteHomeStampName = getWebsiteHomeStampName();
@@ -103,7 +98,6 @@ public class WebAppsHeartbeatProvider implements HeartBeatPayloadProviderInterfa
                   break;
                 }
                 provider.addHeartBeatProperty(fieldName, websiteHomeStampName, true);
-                hasSetValues = true;
                 break;
               case WEBSITE_OWNER_NAME:
                 String websiteOwnerName = getWebsiteOwnerName();
@@ -111,7 +105,6 @@ public class WebAppsHeartbeatProvider implements HeartBeatPayloadProviderInterfa
                   break;
                 }
                 provider.addHeartBeatProperty(fieldName, websiteOwnerName, true);
-                hasSetValues = true;
                 break;
               case WEBSITE_RESOURCE_GROUP:
                 String websiteResourceGroup = getWebsiteResourceGroup();
@@ -119,7 +112,6 @@ public class WebAppsHeartbeatProvider implements HeartBeatPayloadProviderInterfa
                   break;
                 }
                 provider.addHeartBeatProperty(fieldName, websiteResourceGroup, true);
-                hasSetValues = true;
                 break;
               case WEBSITE_SLOT_NAME:
                 String websiteSlotName = getWebsiteSlotName();
@@ -127,19 +119,15 @@ public class WebAppsHeartbeatProvider implements HeartBeatPayloadProviderInterfa
                   break;
                 }
                 provider.addHeartBeatProperty(fieldName, websiteSlotName, true);
-                hasSetValues = true;
                 break;
               default:
-                logger.trace("Unknown web apps property encountered");
+                logger.verbose("Unknown web apps property encountered");
                 break;
             }
           } catch (RuntimeException e) {
-            if (logger.isWarnEnabled()) {
-              logger.warn("Failed to obtain heartbeat property", e);
-            }
+            logger.warning("Failed to obtain heartbeat property", e);
           }
         }
-        return hasSetValues;
       }
     };
   }

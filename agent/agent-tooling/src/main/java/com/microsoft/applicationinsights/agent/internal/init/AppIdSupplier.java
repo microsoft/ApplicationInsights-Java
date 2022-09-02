@@ -27,6 +27,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import com.azure.core.http.HttpMethod;
 import com.azure.core.http.HttpRequest;
 import com.azure.core.http.HttpResponse;
+import com.azure.core.util.logging.ClientLogger;
 import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
 import com.azure.monitor.opentelemetry.exporter.implementation.logging.NetworkFriendlyExceptions;
 import com.azure.monitor.opentelemetry.exporter.implementation.logging.OperationLogger;
@@ -40,14 +41,12 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.annotation.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 // note: app id is used by distributed trace headers and (soon) jfr profiling
 public class AppIdSupplier implements AiAppId.Supplier {
 
-  private static final Logger logger = LoggerFactory.getLogger(AppIdSupplier.class);
+  private static final ClientLogger logger = new ClientLogger(AppIdSupplier.class);
 
   private final ScheduledExecutorService scheduledExecutor =
       Executors.newSingleThreadScheduledExecutor(
@@ -88,7 +87,7 @@ public class AppIdSupplier implements AiAppId.Supplier {
       newTask = new GetAppIdTask(getAppIdUrl(connectionString));
     } catch (MalformedURLException e) {
       try (MDC.MDCCloseable ignored = APP_ID_ERROR.makeActive()) {
-        logger.warn(e.getMessage(), e);
+        logger.warning(e.getMessage(), e);
       }
       return;
     }
@@ -115,7 +114,7 @@ public class AppIdSupplier implements AiAppId.Supplier {
     // it's possible the appId returned is null (e.g. async task is still pending or has failed). In
     // this case, just return and let the next request resolve the ikey.
     if (appId == null) {
-      logger.debug("appId has not been retrieved yet (e.g. task may be pending or failed)");
+      logger.verbose("appId has not been retrieved yet (e.g. task may be pending or failed)");
       return "";
     }
     return appId;

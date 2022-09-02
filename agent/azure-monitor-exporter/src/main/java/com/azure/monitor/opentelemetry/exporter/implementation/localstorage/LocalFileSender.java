@@ -23,6 +23,7 @@ package com.azure.monitor.opentelemetry.exporter.implementation.localstorage;
 
 import static java.util.Collections.singletonList;
 
+import com.azure.core.util.logging.ClientLogger;
 import com.azure.monitor.opentelemetry.exporter.implementation.logging.DiagnosticTelemetryPipelineListener;
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipeline;
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipelineListener;
@@ -31,15 +32,13 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 class LocalFileSender implements Runnable {
 
+  private static final ClientLogger logger = new ClientLogger(LocalFileSender.class);
+
   private final LocalFileLoader localFileLoader;
   private final TelemetryPipeline telemetryPipeline;
-
-  private static final Logger logger = LoggerFactory.getLogger(LocalFileSender.class);
   private final ScheduledExecutorService scheduledExecutor =
       Executors.newSingleThreadScheduledExecutor(
           ThreadPoolUtils.createDaemonThreadFactory(LocalFileLoader.class));

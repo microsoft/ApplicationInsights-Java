@@ -23,6 +23,7 @@ package com.microsoft.applicationinsights.agent.internal.init;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
 
+import com.azure.core.util.logging.ClientLogger;
 import com.azure.monitor.opentelemetry.exporter.implementation.LogDataMapper;
 import com.azure.monitor.opentelemetry.exporter.implementation.MetricDataMapper;
 import com.azure.monitor.opentelemetry.exporter.implementation.SpanDataMapper;
@@ -93,14 +94,12 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @AutoService(AutoConfigurationCustomizerProvider.class)
 public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
 
-  private static final Logger startupLogger =
-      LoggerFactory.getLogger("com.microsoft.applicationinsights.agent");
+  private static final ClientLogger startupLogger =
+      new ClientLogger("com.microsoft.applicationinsights.agent");
 
   @Nullable public static AgentLogExporter agentLogExporter;
 
@@ -192,7 +191,7 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
       try {
         ProfilingInitializer.initialize(tempDir, appIdSupplier, configuration, telemetryClient);
       } catch (RuntimeException e) {
-        startupLogger.warn("Failed to initialize profiler", e);
+        startupLogger.warning("Failed to initialize profiler", e);
       }
     }
 

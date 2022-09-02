@@ -21,8 +21,6 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation.heartbeat;
 
-import java.util.concurrent.Callable;
-
 /**
  *
  *
@@ -42,5 +40,5 @@ public interface HeartBeatPayloadProviderInterface {
    * @param provider The current heartbeat provider
    * @return Callable which can be executed to add the payload
    */
-  Callable<Boolean> setDefaultPayload(HeartbeatExporter provider);
+  Runnable setDefaultPayload(HeartbeatExporter provider);
 }

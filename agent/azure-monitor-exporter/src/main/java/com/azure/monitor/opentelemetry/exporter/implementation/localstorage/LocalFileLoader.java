@@ -30,7 +30,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
-import javax.annotation.Nullable;
+import reactor.util.annotation.Nullable;
 
 /** This class manages loading a list of {@link ByteBuffer} from the disk. */
 class LocalFileLoader {
@@ -105,28 +105,26 @@ class LocalFileLoader {
       return null;
     }
 
-    String connectionString;
-    byte[] telemetryBytes;
-
     try (DataInputStream dataInputStream =
         new DataInputStream(Files.newInputStream(tempFile.toPath()))) {
 
       int version = dataInputStream.readInt();
-      if (version != 1) {
-        // probably old format where ikey chars were written first
-        // note: ikey character int values would be minimum 48 (ascii value for '0')
+      if (version == 1) {
+        String connectionString = dataInputStream.readUTF();
 
-        // need to close FileInputStream before delete
-        dataInputStream.close();
-        deleteFile(tempFile);
-        return null;
+        int numBytes = dataInputStream.readInt();
+        byte[] telemetryBytes = new byte[numBytes];
+        dataInputStream.readFully(telemetryBytes);
+
+        operationLogger.recordSuccess();
+        return new PersistedFile(tempFile, connectionString, ByteBuffer.wrap(telemetryBytes));
       }
 
-      connectionString = dataInputStream.readUTF();
+      // otherwise, probably old format where ikey chars were written first
+      // note: ikey character int values would be minimum 48 (ascii value for '0')
 
-      int numBytes = dataInputStream.readInt();
-      telemetryBytes = new byte[numBytes];
-      dataInputStream.readFully(telemetryBytes);
+      // need to close FileInputStream before delete, so wait until after try-with-resources closes
+      // it
 
     } catch (IOException e) {
       operationLogger.recordFailure(
@@ -135,8 +133,8 @@ class LocalFileLoader {
       return null;
     }
 
-    operationLogger.recordSuccess();
-    return new PersistedFile(tempFile, connectionString, ByteBuffer.wrap(telemetryBytes));
+    deleteFile(tempFile);
+    return null;
   }
 
   private void deleteFile(File tempFile) {
