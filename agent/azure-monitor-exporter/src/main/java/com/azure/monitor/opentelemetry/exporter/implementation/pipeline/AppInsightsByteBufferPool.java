@@ -21,6 +21,7 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation.pipeline;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Queue;
@@ -42,6 +43,12 @@ class AppInsightsByteBufferPool {
     return ByteBuffer.allocate(BYTE_BUFFER_SIZE);
   }
 
+  @SuppressFBWarnings(
+      value = "RV_RETURN_VALUE_IGNORED_BAD_PRACTICE",
+      justification =
+          "this is just best effort returning byte buffers to the pool,"
+              + " so it's ok if the offer doesn't succeed,"
+              + " so there's no need to check the return value")
   void offer(List<ByteBuffer> byteBuffers) {
     // TODO(trask) batch offer?
     for (ByteBuffer byteBuffer : byteBuffers) {

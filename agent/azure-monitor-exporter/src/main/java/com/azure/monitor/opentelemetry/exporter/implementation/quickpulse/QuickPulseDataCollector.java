@@ -47,7 +47,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
+import reactor.util.annotation.Nullable;
 
 final class QuickPulseDataCollector {
 
@@ -222,13 +222,13 @@ final class QuickPulseDataCollector {
   }
 
   private void addRequest(RequestData requestTelemetry, int itemCount, String operationName) {
-    QuickPulseDataCollector.Counters counters = this.counters.get();
+    Counters counters = this.counters.get();
     if (counters == null) {
       return;
     }
     long durationMillis = parseDurationToMillis(requestTelemetry.getDuration());
     counters.requestsAndDurations.addAndGet(
-        QuickPulseDataCollector.Counters.encodeCountAndDuration(itemCount, durationMillis));
+        Counters.encodeCountAndDuration(itemCount, durationMillis));
     if (!requestTelemetry.isSuccess()) {
       counters.unsuccessfulRequests.incrementAndGet();
     }

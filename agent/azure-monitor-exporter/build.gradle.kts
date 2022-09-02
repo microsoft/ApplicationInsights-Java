@@ -34,11 +34,9 @@ dependencies {
   testImplementation("io.opentelemetry:opentelemetry-sdk-testing")
 
   compileOnly("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api")
-  compileOnly("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-semconv")
   compileOnly("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations-support")
 
   testImplementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api")
-  testImplementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-semconv")
   testImplementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations-support")
 
   testImplementation("org.junit.jupiter:junit-jupiter")

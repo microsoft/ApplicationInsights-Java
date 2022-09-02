@@ -30,7 +30,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
-import javax.annotation.Nullable;
+import reactor.util.annotation.Nullable;
 
 /** This class manages loading a list of {@link ByteBuffer} from the disk. */
 class LocalFileLoader {
@@ -117,7 +117,6 @@ class LocalFileLoader {
         // note: ikey character int values would be minimum 48 (ascii value for '0')
 
         // need to close FileInputStream before delete
-        dataInputStream.close();
         deleteFile(tempFile);
         return null;
       }

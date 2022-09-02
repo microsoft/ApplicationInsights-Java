@@ -29,6 +29,7 @@ import static io.opentelemetry.sdk.metrics.data.MetricDataType.HISTOGRAM;
 import static io.opentelemetry.sdk.metrics.data.MetricDataType.LONG_GAUGE;
 import static io.opentelemetry.sdk.metrics.data.MetricDataType.LONG_SUM;
 
+import com.azure.core.util.logging.ClientLogger;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.AbstractTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.MetricPointBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.MetricTelemetryBuilder;
@@ -50,16 +51,15 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-import javax.annotation.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import reactor.util.annotation.Nullable;
 
 public class MetricDataMapper {
 
   private static final Set<String> OTEL_PRE_AGGREGATED_STANDARD_METRIC_NAMES = new HashSet<>(4);
   private static final List<String> EXCLUDED_METRIC_NAMES = new ArrayList<>();
 
-  private static final Logger logger = LoggerFactory.getLogger(MetricDataMapper.class);
+  private static final ClientLogger logger = new ClientLogger(MetricDataMapper.class);
+
   private final BiConsumer<AbstractTelemetryBuilder, Resource> telemetryInitializer;
   private final boolean captureHttpServer4xxAsError;
 
@@ -98,7 +98,7 @@ public class MetricDataMapper {
         consumer.accept(telemetryItem);
       }
     } else {
-      logger.warn("metric data type {} is not supported yet.", metricData.getType());
+      logger.warning("metric data type {} is not supported yet.", metricData.getType());
     }
   }
 

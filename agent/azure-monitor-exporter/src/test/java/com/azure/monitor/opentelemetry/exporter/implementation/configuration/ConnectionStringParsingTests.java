@@ -319,7 +319,8 @@ class ConnectionStringParsingTests {
         .isInstanceOf(IllegalArgumentException.class);
   }
 
-  @Test // when more Authorization values are available, create a copy of this test. For example,
+  @Test
+  // when more Authorization values are available, create a copy of this test. For example,
   // given "Authorization=Xyz", this would fail because the 'Xyz' key/value pair is missing.
   void missingInstrumentationKeyIsInvalid() {
     assertThatThrownBy(() -> ConnectionString.parse("LiveEndpoint=https://live.example.com"))

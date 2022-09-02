@@ -24,6 +24,7 @@ package com.azure.monitor.opentelemetry.exporter.implementation.quickpulse;
 import static com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMsgId.QUICK_PULSE_SEND_ERROR;
 
 import com.azure.core.http.HttpRequest;
+import com.azure.core.util.logging.ClientLogger;
 import com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.model.QuickPulseEnvelope;
 import com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.model.QuickPulseMetrics;
 import com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.util.CustomCharacterEscapes;
@@ -37,13 +38,11 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.function.Supplier;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 class QuickPulseDataFetcher {
 
-  private static final Logger logger = LoggerFactory.getLogger(QuickPulseDataFetcher.class);
+  private static final ClientLogger logger = new ClientLogger(QuickPulseDataFetcher.class);
 
   private static final ObjectMapper mapper;
 
@@ -86,12 +85,6 @@ class QuickPulseDataFetcher {
     this.quickPulseId = quickPulseId;
 
     sdkVersion = getCurrentSdkVersion();
-    if (logger.isTraceEnabled()) {
-      logger.trace(
-          "{} using endpoint {}",
-          QuickPulseDataFetcher.class.getSimpleName(),
-          getQuickPulseEndpoint());
-    }
   }
 
   /** Returns SDK Version from properties. */
@@ -113,7 +106,7 @@ class QuickPulseDataFetcher {
       request.setBody(buildPostEntity(counters));
 
       if (!sendQueue.offer(request)) {
-        logger.trace("Quick Pulse send queue is full");
+        logger.verbose("Quick Pulse send queue is full");
       }
     } catch (ThreadDeath td) {
       throw td;

@@ -23,16 +23,15 @@ package com.azure.monitor.opentelemetry.exporter.implementation.utils;
 
 import static com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMsgId.HOSTNAME_ERROR;
 
+import com.azure.core.util.logging.ClientLogger;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import javax.annotation.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
+import reactor.util.annotation.Nullable;
 
 public class HostName {
 
-  private static final Logger logger = LoggerFactory.getLogger(HostName.class);
+  private static final ClientLogger logger = new ClientLogger(HostName.class);
 
   /**
    * Returns the hostname using {@link InetAddress#getHostName()} on {@link
@@ -48,7 +47,7 @@ public class HostName {
       return addr.getHostName();
     } catch (UnknownHostException ex) {
       try (MDC.MDCCloseable ignored = HOSTNAME_ERROR.makeActive()) {
-        logger.warn("Error resolving hostname", ex);
+        logger.warning("Error resolving hostname", ex);
       }
       return null;
     }

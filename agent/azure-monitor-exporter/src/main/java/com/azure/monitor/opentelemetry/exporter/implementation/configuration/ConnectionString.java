@@ -21,12 +21,14 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation.configuration;
 
-import io.opentelemetry.instrumentation.api.internal.cache.Cache;
 import java.net.URL;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public final class ConnectionString {
 
-  private static final Cache<String, ConnectionString> cache = Cache.bounded(100);
+  // TODO (trask) should this be bounded?
+  private static final Map<String, ConnectionString> cache = new ConcurrentHashMap<>();
 
   private final String instrumentationKey;
   private final String ingestionEndpoint;

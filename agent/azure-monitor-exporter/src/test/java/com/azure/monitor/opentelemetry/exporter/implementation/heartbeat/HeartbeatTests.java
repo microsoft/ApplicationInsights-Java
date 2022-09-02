@@ -22,7 +22,6 @@
 package com.azure.monitor.opentelemetry.exporter.implementation.heartbeat;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricsData;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
@@ -33,12 +32,13 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Consumer;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
 
 class HeartbeatTests {
 
-  private final Consumer<List<TelemetryItem>> telemetryItemsConsumer = mock(Consumer.class);
+  @Mock private Consumer<List<TelemetryItem>> telemetryItemsConsumer;
 
   @Test
   void heartBeatPayloadContainsDataByDefault() throws InterruptedException {
@@ -108,9 +108,10 @@ class HeartbeatTests {
                 });
     DefaultHeartBeatPropertyProvider defaultProvider = new DefaultHeartBeatPropertyProvider();
 
-    HeartbeatDefaultPayload.populateDefaultPayload(mockProvider).call();
+    HeartbeatDefaultPayload.populateDefaultPayload(mockProvider).run();
     Field field = defaultProvider.getClass().getDeclaredField("defaultFields");
     field.setAccessible(true);
+    @SuppressWarnings("unchecked")
     Set<String> defaultFields = (Set<String>) field.get(defaultProvider);
     for (String fieldName : defaultFields) {
       assertThat(props.containsKey(fieldName)).isTrue();
@@ -135,12 +136,13 @@ class HeartbeatTests {
 
     Field field = base.getClass().getDeclaredField("defaultFields");
     field.setAccessible(true);
+    @SuppressWarnings("unchecked")
     Set<String> defaultFields = (Set<String>) field.get(base);
     defaultFields.add(testKey);
 
     HeartbeatExporter provider = new HeartbeatExporter(60, (b, r) -> {}, telemetryItemsConsumer);
 
-    base.setDefaultPayload(provider).call();
+    base.setDefaultPayload(provider).run();
     MetricsData data = (MetricsData) provider.gatherData().getData().getBaseData();
     assertThat(data.getProperties().containsKey("testKey")).isFalse();
   }

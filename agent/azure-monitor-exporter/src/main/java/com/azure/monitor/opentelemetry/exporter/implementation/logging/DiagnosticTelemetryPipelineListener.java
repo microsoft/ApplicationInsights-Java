@@ -24,6 +24,7 @@ package com.azure.monitor.opentelemetry.exporter.implementation.logging;
 import static com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMsgId.INGESTION_ERROR;
 import static java.util.Collections.singleton;
 
+import com.azure.core.util.logging.ClientLogger;
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipeline;
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipelineListener;
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipelineRequest;
@@ -37,13 +38,11 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class DiagnosticTelemetryPipelineListener implements TelemetryPipelineListener {
 
   private static final Class<?> FOR_CLASS = TelemetryPipeline.class;
-  private static final Logger logger = LoggerFactory.getLogger(FOR_CLASS);
+  private static final ClientLogger logger = new ClientLogger(FOR_CLASS);
 
   // share this across multiple pipelines
   private static final AtomicBoolean friendlyExceptionThrown = new AtomicBoolean();

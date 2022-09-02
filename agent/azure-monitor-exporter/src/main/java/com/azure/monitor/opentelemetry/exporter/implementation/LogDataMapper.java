@@ -21,6 +21,7 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation;
 
+import com.azure.core.util.logging.ClientLogger;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.AbstractTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.ExceptionTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.Exceptions;
@@ -34,15 +35,12 @@ import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.sdk.logs.data.LogData;
 import io.opentelemetry.sdk.logs.data.Severity;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.util.function.BiConsumer;
-import javax.annotation.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import reactor.util.annotation.Nullable;
 
 public class LogDataMapper {
 
-  private static final Logger logger = LoggerFactory.getLogger(LogDataMapper.class);
+  private static final ClientLogger logger = new ClientLogger(LogDataMapper.class);
 
   private final boolean captureLoggingLevelAsCustomDimension;
   private final BiConsumer<AbstractTelemetryBuilder, Resource> telemetryInitializer;

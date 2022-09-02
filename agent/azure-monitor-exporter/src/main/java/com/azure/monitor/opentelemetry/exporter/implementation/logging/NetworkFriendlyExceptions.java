@@ -24,6 +24,7 @@ package com.azure.monitor.opentelemetry.exporter.implementation.logging;
 import static com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMsgId.FRIENDLY_NETWORK_ERROR;
 
 import com.azure.core.util.CoreUtils;
+import com.azure.core.util.logging.ClientLogger;
 import io.netty.handler.ssl.SslHandshakeTimeoutException;
 import java.io.File;
 import java.io.IOException;
@@ -33,18 +34,16 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
-import javax.annotation.Nullable;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLHandshakeException;
 import javax.net.ssl.SSLSocketFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
+import reactor.util.annotation.Nullable;
 
 public class NetworkFriendlyExceptions {
 
   private static final List<FriendlyExceptionDetector> DETECTORS;
-  private static final Logger logger = LoggerFactory.getLogger(NetworkFriendlyExceptions.class);
+  private static final ClientLogger logger = new ClientLogger(NetworkFriendlyExceptions.class);
 
   static {
     DETECTORS = new ArrayList<>();
@@ -55,13 +54,13 @@ public class NetworkFriendlyExceptions {
     try {
       DETECTORS.add(CipherExceptionDetector.create());
     } catch (NoSuchAlgorithmException e) {
-      logger.debug(e.getMessage(), e);
+      logger.verbose(e.getMessage(), e);
     }
   }
 
   // returns true if the exception was "handled" and the caller should not log it
   public static boolean logSpecialOneTimeFriendlyException(
-      Throwable error, String url, AtomicBoolean alreadySeen, Logger logger) {
+      Throwable error, String url, AtomicBoolean alreadySeen, ClientLogger logger) {
     return logSpecialOneTimeFriendlyException(error, url, alreadySeen, logger, DETECTORS);
   }
 
@@ -69,7 +68,7 @@ public class NetworkFriendlyExceptions {
       Throwable error,
       String url,
       AtomicBoolean alreadySeen,
-      Logger logger,
+      ClientLogger logger,
       List<FriendlyExceptionDetector> detectors) {
 
     for (FriendlyExceptionDetector detector : detectors) {

@@ -32,7 +32,7 @@ import java.util.UUID;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.Executors;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
+import reactor.util.annotation.Nullable;
 
 public class QuickPulse {
 

@@ -38,6 +38,7 @@ import com.azure.core.http.policy.UserAgentPolicy;
 import com.azure.core.util.ClientOptions;
 import com.azure.core.util.Configuration;
 import com.azure.core.util.CoreUtils;
+import com.azure.core.util.logging.ClientLogger;
 import com.azure.monitor.opentelemetry.exporter.implementation.LogDataMapper;
 import com.azure.monitor.opentelemetry.exporter.implementation.MetricDataMapper;
 import com.azure.monitor.opentelemetry.exporter.implementation.SpanDataMapper;
@@ -61,7 +62,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import org.slf4j.LoggerFactory;
 
 /**
  * This class provides a fluent builder API to instantiate {@link AzureMonitorTraceExporter} that
@@ -69,12 +69,14 @@ import org.slf4j.LoggerFactory;
  */
 public final class AzureMonitorExporterBuilder {
 
+  private static final ClientLogger LOGGER = new ClientLogger(AzureMonitorExporterBuilder.class);
+
   private static final String APPLICATIONINSIGHTS_CONNECTION_STRING =
       "APPLICATIONINSIGHTS_CONNECTION_STRING";
   private static final String APPLICATIONINSIGHTS_AUTHENTICATION_SCOPE =
       "https://monitor.azure.com//.default";
 
-  private static final Map<String, String> properties =
+  private static final Map<String, String> PROPERTIES =
       CoreUtils.getProperties("azure-monitor-opentelemetry-exporter.properties");
 
   private String instrumentationKey;
@@ -302,7 +304,7 @@ public final class AzureMonitorExporterBuilder {
 
     File tempDir =
         TempDirs.getApplicationInsightsTempDir(
-            LoggerFactory.getLogger(AzureMonitorExporterBuilder.class),
+            LOGGER,
             "Telemetry will not be stored to disk and retried later"
                 + " on sporadic network failures");
 
@@ -334,8 +336,8 @@ public final class AzureMonitorExporterBuilder {
       clientOptions = new ClientOptions();
     }
     List<HttpPipelinePolicy> policies = new ArrayList<>();
-    String clientName = properties.getOrDefault("name", "UnknownName");
-    String clientVersion = properties.getOrDefault("version", "UnknownVersion");
+    String clientName = PROPERTIES.getOrDefault("name", "UnknownName");
+    String clientVersion = PROPERTIES.getOrDefault("version", "UnknownVersion");
 
     String applicationId = CoreUtils.getApplicationId(clientOptions, httpLogOptions);
 
