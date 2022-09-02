@@ -64,9 +64,10 @@ public class OshiPerformanceCounter implements PerformanceCounter {
         OperatingSystem osInfo = systemInfo.getOperatingSystem();
         processInfo = osInfo.getProcess(osInfo.getProcessId());
         processor = systemInfo.getHardware().getProcessor();
-      } catch (Error ex) {
+      } catch (Exception ex) {
         // e.g. icm 253155448: NoClassDefFoundError
         // e.g. icm 276640835: ExceptionInInitializerError
+        // e.g. icm 332200073: PdhUtil$PdhException
         hasError.set(true);
         logger.debug("Fail to initialize OSProcess and CentralProcessor", ex);
         return;
