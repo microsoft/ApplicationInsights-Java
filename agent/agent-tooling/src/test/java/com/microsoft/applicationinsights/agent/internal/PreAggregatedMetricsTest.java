@@ -41,6 +41,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.MetricDataMapper;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.MetricTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricsData;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
@@ -117,7 +118,7 @@ public class PreAggregatedMetricsTest {
     Collection<MetricData> metricDataCollection = metricReader.collectAllMetrics();
     metricDataCollection =
         metricDataCollection.stream()
-            .sorted(Comparator.comparing(o -> o.getName()))
+            .sorted(Comparator.comparing(MetricData::getName))
             .collect(Collectors.toList());
     for (MetricData metricData : metricDataCollection) {
       System.out.println("metric: " + metricData);
@@ -140,8 +141,6 @@ public class PreAggregatedMetricsTest {
                                         .hasAttributesSatisfying(
                                             equalTo(SemanticAttributes.NET_PEER_NAME, "localhost"),
                                             equalTo(SemanticAttributes.NET_PEER_PORT, 1234),
-                                            equalTo(SemanticAttributes.HTTP_METHOD, "GET"),
-                                            equalTo(SemanticAttributes.HTTP_FLAVOR, "2.0"),
                                             equalTo(SemanticAttributes.HTTP_STATUS_CODE, 200))
                                         .hasExemplarsSatisfying(
                                             exemplar ->
@@ -221,13 +220,8 @@ public class PreAggregatedMetricsTest {
                                         .hasAttributesSatisfying(
                                             equalTo(SemanticAttributes.RPC_SYSTEM, "grpc"),
                                             equalTo(
-                                                SemanticAttributes.RPC_SERVICE,
-                                                "myservice.EchoService"),
-                                            equalTo(SemanticAttributes.RPC_METHOD, "exampleMethod"),
-                                            equalTo(
                                                 SemanticAttributes.NET_PEER_NAME, "example.com"),
-                                            equalTo(SemanticAttributes.NET_PEER_PORT, 8080),
-                                            equalTo(SemanticAttributes.NET_TRANSPORT, "ip_tcp"))
+                                            equalTo(SemanticAttributes.NET_PEER_PORT, 8080))
                                         .hasExemplarsSatisfying(
                                             exemplar ->
                                                 exemplar
@@ -302,11 +296,11 @@ public class PreAggregatedMetricsTest {
                                     point
                                         .hasSum(150 /* millis */)
                                         .hasAttributesSatisfying(
-                                            equalTo(SemanticAttributes.HTTP_SCHEME, "https"),
-                                            equalTo(SemanticAttributes.HTTP_HOST, "host"),
-                                            equalTo(SemanticAttributes.HTTP_METHOD, "GET"),
                                             equalTo(SemanticAttributes.HTTP_STATUS_CODE, 200),
-                                            equalTo(SemanticAttributes.HTTP_FLAVOR, "2.0"))
+                                            equalTo(
+                                                AttributeKey.booleanKey(
+                                                    "applicationinsights.internal.is_synthetic"),
+                                                false))
                                         .hasExemplarsSatisfying(
                                             exemplar ->
                                                 exemplar
