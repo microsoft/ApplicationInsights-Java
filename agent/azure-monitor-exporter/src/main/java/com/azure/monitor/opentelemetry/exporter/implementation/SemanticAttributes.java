@@ -19,6 +19,12 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
+// Includes work from:
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package com.azure.monitor.opentelemetry.exporter.implementation;
 
 import static io.opentelemetry.api.common.AttributeKey.booleanKey;
