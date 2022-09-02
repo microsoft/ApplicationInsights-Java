@@ -46,6 +46,7 @@ public final class CpuPerformanceCounterCalculator {
 
   // this is not normalized by number of cores, so can be 800% with 8 cores
   @Nullable
+  @SuppressWarnings("try")
   public Double getCpuPercentage() {
     try {
       long upTime = runtimeMxBean.getUptime();

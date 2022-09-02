@@ -117,6 +117,7 @@ class LocalFileLoader {
         // note: ikey character int values would be minimum 48 (ascii value for '0')
 
         // need to close FileInputStream before delete
+        dataInputStream.close();
         deleteFile(tempFile);
         return null;
       }

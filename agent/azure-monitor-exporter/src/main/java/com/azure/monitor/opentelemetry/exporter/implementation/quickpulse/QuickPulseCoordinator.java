@@ -82,6 +82,7 @@ final class QuickPulseCoordinator implements Runnable {
     }
   }
 
+  @SuppressWarnings("try")
   private long sendData() {
     dataFetcher.prepareQuickPulseDataForSend(qpsServiceRedirectedEndpoint);
     QuickPulseHeaderInfo currentQuickPulseHeaderInfo = dataSender.getQuickPulseHeaderInfo();
@@ -111,6 +112,7 @@ final class QuickPulseCoordinator implements Runnable {
     return 0;
   }
 
+  @SuppressWarnings("try")
   private long ping() {
     QuickPulseHeaderInfo pingResult = pingSender.ping(qpsServiceRedirectedEndpoint);
     this.handleReceivedHeaders(pingResult);

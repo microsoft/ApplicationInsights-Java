@@ -64,6 +64,7 @@ public class NetworkFriendlyExceptions {
     return logSpecialOneTimeFriendlyException(error, url, alreadySeen, logger, DETECTORS);
   }
 
+  @SuppressWarnings("try")
   public static boolean logSpecialOneTimeFriendlyException(
       Throwable error,
       String url,

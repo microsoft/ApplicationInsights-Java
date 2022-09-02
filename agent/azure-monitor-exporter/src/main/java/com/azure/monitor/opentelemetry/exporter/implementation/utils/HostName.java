@@ -41,6 +41,7 @@ public class HostName {
    * @return the local hostname, or null
    */
   @Nullable
+  @SuppressWarnings("try")
   public static String get() {
     try {
       InetAddress addr = InetAddress.getLocalHost();

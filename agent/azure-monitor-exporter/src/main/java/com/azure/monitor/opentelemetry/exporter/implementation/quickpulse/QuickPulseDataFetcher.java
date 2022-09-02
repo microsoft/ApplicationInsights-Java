@@ -94,9 +94,14 @@ class QuickPulseDataFetcher {
     return "unknown";
   }
 
+  @SuppressWarnings("try")
   public void prepareQuickPulseDataForSend(String redirectedEndpoint) {
     try {
       QuickPulseDataCollector.FinalCounters counters = collector.getAndRestart();
+
+      if (counters == null) {
+        return;
+      }
 
       Date currentDate = new Date();
       String endpointPrefix =

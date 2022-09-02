@@ -49,7 +49,7 @@ public class DefaultHeartBeatPropertyProvider implements HeartBeatPayloadProvide
    * have a new GUID. If the application is unstable and goes through frequent restarts this will
    * help us identify instability in the analytics backend.
    */
-  private static UUID uniqueProcessId;
+  private static volatile UUID uniqueProcessId;
 
   private static final String JRE_VERSION = "jreVersion";
 

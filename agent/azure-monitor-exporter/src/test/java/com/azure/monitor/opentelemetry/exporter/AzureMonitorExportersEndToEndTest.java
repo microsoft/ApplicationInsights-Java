@@ -148,13 +148,14 @@ public class AzureMonitorExportersEndToEndTest extends MonitorExporterClientTest
     Assertions.assertTrue(export.isSuccess());
   }
 
+  @SuppressWarnings("try")
   private static List<TelemetryItem> generateTraces(String testName) throws Exception {
     CountDownLatch traceExporterCountDown = new CountDownLatch(1);
     CustomValidationPolicy customValidationPolicy =
         new CustomValidationPolicy(traceExporterCountDown);
     Tracer tracer = TestUtils.configureAzureMonitorTraceExporter(customValidationPolicy);
     Span span = tracer.spanBuilder(testName).startSpan();
-    try (Scope scope = span.makeCurrent()) {
+    try (Scope ignored = span.makeCurrent()) {
       span.setAttribute("name", "apple");
       span.setAttribute("color", "red");
     } finally {
