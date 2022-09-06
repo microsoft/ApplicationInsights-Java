@@ -153,11 +153,11 @@ class StartupDiagnostics {
     }
   }
 
-  private static Optional<File> createTempDirIfNotExists() {
+  private Optional<File> createTempDirIfNotExists() {
     String tempDirectory = System.getProperty("java.io.tmpdir");
     File folder = new File(tempDirectory, "applicationinsights");
     if (!folder.exists() && !folder.mkdirs()) {
-      System.out.println("Failed to create directory: " + tempDirectory);
+      startupLogger.error("Failed to create directory: " + tempDirectory);
       return Optional.empty();
     }
     return Optional.of(folder);

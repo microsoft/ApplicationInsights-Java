@@ -68,7 +68,8 @@ class CommandExecutor {
   private static IllegalStateException combineExceptionsIfNecessary(
       IllegalStateException exitValueException, Exception e, String[] command) {
     IllegalStateException exceptionWithMessage =
-        new IllegalStateException("Error related to the execution of " + Arrays.asList(command) + ".", e);
+        new IllegalStateException(
+            "Error related to the execution of " + Arrays.asList(command) + ".", e);
     if (exitValueException == null) {
       return exceptionWithMessage;
     }
