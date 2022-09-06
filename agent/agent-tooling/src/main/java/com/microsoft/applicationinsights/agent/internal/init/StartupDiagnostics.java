@@ -4,6 +4,7 @@
 package com.microsoft.applicationinsights.agent.internal.init;
 
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.PidFinder;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -69,16 +70,14 @@ class StartupDiagnostics {
 
   void execute() {
 
-    String pid = new PidFinder().getValue();
-
-    executeDiagsAndGenerateReport(pid);
+    executeDiagsAndGenerateReport();
 
     if (Boolean.getBoolean(APPPLICATIONINSIGHTS_DEBUG_JIT_C_2_DISABLING_ENABLED)) {
-      disableC2CompilerDirectives(pid);
+      disableC2CompilerDirectives();
     }
   }
 
-  private void executeDiagsAndGenerateReport(String pid) {
+  private void executeDiagsAndGenerateReport() {
     DiagnosticsReport diagnosticsReport = new DiagnosticsReport();
 
     if (Boolean.getBoolean("rss")) {
@@ -90,12 +89,12 @@ class StartupDiagnostics {
     }
 
     if (Boolean.getBoolean(APPPLICATIONINSIGHTS_DEBUG_JVM_FLAGS_ENABLED)) {
-      String jvmFlags = executeJvmFlagsDiag(pid);
+      String jvmFlags = executeJvmFlagsDiag();
       diagnosticsReport.addDiagnostic(jvmFlags);
     }
 
     if (Boolean.getBoolean(APPPLICATIONINSIGHTS_DEBUG_NATIVE_MEM_TRACKING_ENABLED)) {
-      String nativeSummary = executeNativeMemoryDiag(pid);
+      String nativeSummary = executeNativeMemoryDiag();
       diagnosticsReport.addDiagnostic(nativeSummary);
     }
 
@@ -123,16 +122,6 @@ class StartupDiagnostics {
       startupLogger.error("Error when retrieving rss", e);
       return e.getMessage();
     }
-  }
-
-  private String executeJvmFlagsDiag(String pid) {
-    String[] command = {"jcmd", pid, "VM.flags"};
-    return CommandExecutor.executeWithoutException(command, startupLogger);
-  }
-
-  private String executeNativeMemoryDiag(String pid) {
-    String[] command = {"jcmd", pid, "VM.native_memory", "summary"};
-    return CommandExecutor.executeWithoutException(command, startupLogger);
   }
 
   private void saveIntoFile(DiagnosticsReport diagnosticsReport) {
@@ -163,8 +152,31 @@ class StartupDiagnostics {
     return Optional.of(folder);
   }
 
-  private static void disableC2CompilerDirectives(String pid) {
-    String[] command = {"jcmd", pid, "Compiler.directives_clear"};
-    CommandExecutor.execute(command);
+  @SuppressFBWarnings(
+      value = "SECCI", // Command Injection
+      justification = "No user data is used to construct the command below")
+  private String executeJvmFlagsDiag() {
+    ProcessBuilder processBuilder = new ProcessBuilder("jcmd", pid(), "VM.flags");
+    return CommandExecutor.executeWithoutException(processBuilder, startupLogger);
+  }
+
+  @SuppressFBWarnings(
+      value = "SECCI", // Command Injection
+      justification = "No user data is used to construct the command below")
+  private String executeNativeMemoryDiag() {
+    ProcessBuilder processBuilder =
+        new ProcessBuilder("jcmd", pid(), "VM.native_memory", "summary");
+    return CommandExecutor.executeWithoutException(processBuilder, startupLogger);
+  }
+
+  @SuppressFBWarnings(
+      value = "SECCI", // Command Injection
+      justification = "No user data is used to construct the command below")
+  private static void disableC2CompilerDirectives() {
+    CommandExecutor.execute(new ProcessBuilder("jcmd", pid(), "Compiler.directives_clear"));
+  }
+
+  private static String pid() {
+    return new PidFinder().getValue();
   }
 }
