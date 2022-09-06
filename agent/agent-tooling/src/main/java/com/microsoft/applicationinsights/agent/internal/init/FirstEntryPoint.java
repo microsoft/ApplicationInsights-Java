@@ -90,6 +90,9 @@ public class FirstEntryPoint implements LoggingCustomizer {
       ConfigurationBuilder.logConfigurationWarnMessages();
 
       ClassicSdkInstrumentation.registerTransformers();
+
+      StartupDiagnostics startupDiagnostics = new StartupDiagnostics(startupLogger);
+      startupDiagnostics.execute();
     } catch (Exception e) {
       throw new IllegalStateException(e);
     }
