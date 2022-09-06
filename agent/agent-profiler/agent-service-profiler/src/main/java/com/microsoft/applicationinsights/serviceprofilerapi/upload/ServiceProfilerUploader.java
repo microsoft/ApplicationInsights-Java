@@ -276,7 +276,7 @@ public class ServiceProfilerUploader {
     File traceFile = uploadContext.getTraceFile();
     LOGGER.debug("Trace file: {}", traceFile.toString());
 
-    File targetFile = Files.createTempFile(traceFile.getName(), ".gz").toFile();
+    File targetFile = Files.createTempFile(traceFile.getParentFile().toPath(), traceFile.getName(), ".gz").toFile();
     if (!retainJfrFile) {
       targetFile.deleteOnExit();
     }
