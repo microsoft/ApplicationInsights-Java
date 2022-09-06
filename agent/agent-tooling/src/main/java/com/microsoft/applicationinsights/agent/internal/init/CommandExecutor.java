@@ -7,8 +7,10 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 import org.slf4j.Logger;
 
 class CommandExecutor {
@@ -39,7 +41,7 @@ class CommandExecutor {
   static String executeWithoutException(String[] command, Logger startupLogger) {
     try {
       return execute(command);
-    } catch (Exception e) {
+    } catch (RuntimeException e) {
       startupLogger.error("Error when executing command " + Arrays.asList(command) + ".", e);
       if (e.getSuppressed().length == 1) {
         return e.getMessage() + " (Suppressed: " + e.getSuppressed()[0] + ")";
@@ -48,6 +50,7 @@ class CommandExecutor {
     }
   }
 
+  @Nullable
   private static IllegalStateException buildExitValueExceptionIfNecessary(
       String[] command, int exitValue, Process directivesClearProcess) throws IOException {
     if (exitValue != 0) {
@@ -60,7 +63,8 @@ class CommandExecutor {
   }
 
   private static String toString(InputStream inputStream) throws IOException {
-    try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream))) {
+    try (BufferedReader bufferedReader =
+        new BufferedReader(new InputStreamReader(inputStream, Charset.defaultCharset()))) {
       return bufferedReader.lines().collect(Collectors.joining(System.lineSeparator()));
     }
   }
