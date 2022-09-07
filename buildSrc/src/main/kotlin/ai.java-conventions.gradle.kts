@@ -19,7 +19,7 @@ repositories {
 
 java {
   toolchain {
-    languageVersion.set(JavaLanguageVersion.of(11))
+    languageVersion.set(JavaLanguageVersion.of(17))
   }
 
   // See https://docs.gradle.org/current/userguide/upgrading_version_5.html, Automatic target JVM version
@@ -38,8 +38,8 @@ tasks.withType<JavaCompile>().configureEach {
 // Groovy compiler doesn't understand --release option
 afterEvaluate {
   tasks.withType<GroovyCompile>().configureEach {
-    sourceCompatibility = "11"
-    targetCompatibility = "11"
+    sourceCompatibility = "17"
+    targetCompatibility = "17"
   }
 }
 
