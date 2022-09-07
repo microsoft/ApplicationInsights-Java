@@ -102,15 +102,6 @@ public class Main {
     System.out.println("Unsigned agent jar: " + getRelativePath(unsignedPath));
   }
 
-  private static Path getUnsignedPath(Path agentJar) {
-    String fileName = agentJar.getFileName().toString();
-    if (!fileName.endsWith(".jar")) {
-      throw new IllegalStateException("Unexpected agent jar file name: " + fileName);
-    }
-    String unsignedFileName = fileName.substring(0, fileName.length() - 4) + "-unsigned.jar";
-    return agentJar.resolveSibling(unsignedFileName);
-  }
-
   private static void unsign(JarInputStream in, Manifest signedManifest, Path unsignedPath)
       throws IOException {
 
@@ -133,6 +124,15 @@ public class Main {
         }
       }
     }
+  }
+
+  private static Path getUnsignedPath(Path agentJar) {
+    String fileName = agentJar.getFileName().toString();
+    if (!fileName.endsWith(".jar")) {
+      throw new IllegalStateException("Unexpected agent jar file name: " + fileName);
+    }
+    String unsignedFileName = fileName.substring(0, fileName.length() - 4) + "-unsigned.jar";
+    return agentJar.resolveSibling(unsignedFileName);
   }
 
   private static Path getRelativePath(Path unsignedAgentJar) {
