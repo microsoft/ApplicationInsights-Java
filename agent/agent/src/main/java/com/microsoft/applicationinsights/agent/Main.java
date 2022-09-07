@@ -46,33 +46,34 @@ public class Main {
   private static final Pattern SIGNATURE_FILE = Pattern.compile("META-INF/.*\\.(RSA|SF)");
 
   public static void main(String[] args) throws Exception {
-    if (args.length == 1 && args[0].equals("unsign")) {
-      unsign();
-    } else {
-      System.err.println("Incorrect usage");
+    if (args.length == 0) {
+      System.err.println("No command specified");
+      return;
     }
+    String command = args[0];
+    if (command.equals("unsign")) {
+      if (args.length > 1) {
+        System.err.println("The unsign command does not expect any arguments");
+        return;
+      }
+      unsign();
+      return;
+    }
+    System.err.println("Unknown command: " + command);
   }
 
   private static void unsign() throws IOException, URISyntaxException {
-    Path agentJar = getAgentJar();
-
-    String fileName = agentJar.getFileName().toString();
-    if (!fileName.endsWith(".jar")) {
-      System.err.println("Unexpected agent jar file name: " + fileName);
-      return;
-    }
-    String unsignedFileName = fileName.substring(0, fileName.length() - 4) + "-unsigned.jar";
-    Path unsignedAgentJar = agentJar.resolveSibling(unsignedFileName);
+    Path signedPath = getAgentJar();
+    Path unsignedPath = getUnsignedPath(signedPath);
 
     ScheduledExecutorService executor;
-    byte[] buffer = new byte[1024];
-    try (JarInputStream in = new JarInputStream(Files.newInputStream(agentJar))) {
+    try (JarInputStream in = new JarInputStream(Files.newInputStream(signedPath))) {
 
-      Manifest inManifest = in.getManifest();
+      Manifest signedManifest = in.getManifest();
 
-      if (!isSigned(inManifest)) {
+      if (!isSigned(signedManifest)) {
         System.err.println();
-        System.err.println(getRelativePath(agentJar) + " is already unsigned");
+        System.err.println(getRelativePath(signedPath) + " is already unsigned");
         System.exit(0);
       }
 
@@ -90,13 +91,37 @@ public class Main {
           500,
           MILLISECONDS);
 
-      Manifest outManifest = new Manifest();
-      outManifest.getMainAttributes().putAll(inManifest.getMainAttributes());
+      unsign(in, signedManifest, unsignedPath);
+    }
 
-      JarOutputStream out =
-          new JarOutputStream(Files.newOutputStream(unsignedAgentJar), outManifest);
+    shutdown(executor);
+
+    System.err.println(); // for the "Unsigned......." line
+
+    System.out.println();
+    System.out.println("Unsigned agent jar: " + getRelativePath(unsignedPath));
+  }
+
+  private static Path getUnsignedPath(Path agentJar) {
+    String fileName = agentJar.getFileName().toString();
+    if (!fileName.endsWith(".jar")) {
+      throw new IllegalStateException("Unexpected agent jar file name: " + fileName);
+    }
+    String unsignedFileName = fileName.substring(0, fileName.length() - 4) + "-unsigned.jar";
+    return agentJar.resolveSibling(unsignedFileName);
+  }
+
+  private static void unsign(JarInputStream in, Manifest signedManifest, Path unsignedPath)
+      throws IOException {
+
+    Manifest unsignedManifest = new Manifest();
+    unsignedManifest.getMainAttributes().putAll(signedManifest.getMainAttributes());
+
+    try (JarOutputStream out =
+        new JarOutputStream(Files.newOutputStream(unsignedPath), unsignedManifest)) {
 
       JarEntry entry;
+      byte[] buffer = new byte[1024];
       while ((entry = in.getNextJarEntry()) != null) {
         if (SIGNATURE_FILE.matcher(entry.getName()).matches()) {
           continue;
@@ -107,16 +132,7 @@ public class Main {
           out.write(buffer, 0, read);
         }
       }
-
-      out.close();
     }
-
-    shutdown(executor);
-
-    System.err.println(); // for the "Unsigned......." line
-
-    System.out.println();
-    System.out.println("Unsigned agent jar: " + getRelativePath(unsignedAgentJar));
   }
 
   private static Path getRelativePath(Path unsignedAgentJar) {
@@ -145,11 +161,9 @@ public class Main {
 
   private static Path getAgentJar() throws URISyntaxException {
     CodeSource codeSource = Main.class.getProtectionDomain().getCodeSource();
-
     if (codeSource == null) {
-      throw new IllegalStateException("could not get agent jar location");
+      throw new IllegalStateException("Could not get agent jar location");
     }
-
     return Paths.get(codeSource.getLocation().toURI());
   }
 
