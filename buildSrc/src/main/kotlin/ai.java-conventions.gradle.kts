@@ -38,8 +38,8 @@ tasks.withType<JavaCompile>().configureEach {
 // Groovy compiler doesn't understand --release option
 afterEvaluate {
   tasks.withType<GroovyCompile>().configureEach {
-    sourceCompatibility = "1.8"
-    targetCompatibility = "1.8"
+    sourceCompatibility = "11"
+    targetCompatibility = "11"
   }
 }
 
