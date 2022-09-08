@@ -22,6 +22,7 @@ import io.opentelemetry.context.Scope;
 import io.opentelemetry.instrumentation.testing.junit.AgentInstrumentationExtension;
 import io.opentelemetry.instrumentation.testing.junit.InstrumentationExtension;
 import io.opentelemetry.sdk.trace.data.StatusData;
+import javax.annotation.Nullable;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -273,9 +274,10 @@ class ApplicationInsightsWebTest {
             TraceState.builder().put("one", "1").put("two", "2").build());
 
     // when
-    Scope scope = Context.root().with(Span.wrap(spanContext)).makeCurrent();
-    Tracestate tracestate = Code.getTracestate();
-    scope.close();
+    Tracestate tracestate;
+    try (Scope ignored = Context.root().with(Span.wrap(spanContext)).makeCurrent()) {
+      tracestate = Code.getTracestate();
+    }
 
     // then
     assertThat(tracestate.get("one")).isEqualTo("1");
@@ -294,9 +296,10 @@ class ApplicationInsightsWebTest {
             "12341234123412341234123412341234", "1234123412341234", flags, TraceState.getDefault());
 
     // when
-    Scope scope = Context.root().with(Span.wrap(spanContext)).makeCurrent();
-    int traceflag = Code.getTraceflag();
-    scope.close();
+    int traceflag;
+    try (Scope ignored = Context.root().with(Span.wrap(spanContext)).makeCurrent()) {
+      traceflag = Code.getTraceflag();
+    }
 
     // then
     assertThat(traceflag).isEqualTo(flags.asByte());
@@ -315,12 +318,9 @@ class ApplicationInsightsWebTest {
         GlobalOpenTelemetry.getTracer("test").spanBuilder("test").setParent(parent).startSpan();
 
     // when
-    Scope scope = parent.with(span).makeCurrent();
     Object traceparent;
-    try {
+    try (Scope ignored = parent.with(span).makeCurrent()) {
       traceparent = TraceContextCorrelation.generateChildDependencyTraceparent();
-    } finally {
-      scope.close();
     }
 
     // then
@@ -333,7 +333,8 @@ class ApplicationInsightsWebTest {
     checkTraceState(TraceState.builder().put("one", "1").build(), "one=1");
   }
 
-  private static void checkTraceState(TraceState otelTraceState, String legacyTracestate) {
+  private static void checkTraceState(
+      TraceState otelTraceState, @Nullable String legacyTracestate) {
     SpanContext spanContext =
         SpanContext.create(
             "12341234123412341234123412341234",
@@ -342,9 +343,10 @@ class ApplicationInsightsWebTest {
             otelTraceState);
 
     // when
-    Scope scope = Context.root().with(Span.wrap(spanContext)).makeCurrent();
-    String traceparent = Code.retriveTracestate();
-    scope.close();
+    String traceparent;
+    try (Scope ignored = Context.root().with(Span.wrap(spanContext)).makeCurrent()) {
+      traceparent = Code.retriveTracestate();
+    }
 
     // then
     assertThat(traceparent).isEqualTo(legacyTracestate);
