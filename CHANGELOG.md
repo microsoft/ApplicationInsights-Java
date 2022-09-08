@@ -1,5 +1,11 @@
 # CHANGELOG
 
+# Version 3.4.0-BETA.2
+
+Enhancements:
+
+* Automatic module name added to Runtime Attach library to support Modular Java.
+
 # Version 3.4.0-BETA
 
 Migration notes:
@@ -37,7 +43,6 @@ Migration notes:
 
 Enhancements:
 
-* Automatic module name added to Runtime Attach library to support Modular Java.
 * [Standard metrics](https://docs.microsoft.com/en-us/azure/azure-monitor/app/standard-metrics)
   for HTTP requests and HTTP dependencies are now pre-aggregated inside of the Java agent, and so
   they are no longer affected by sampling
