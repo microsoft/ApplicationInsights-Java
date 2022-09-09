@@ -4,13 +4,9 @@
 package com.microsoft.applicationinsights.smoketestapp;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.lang.management.ManagementFactory;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.Executors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -43,13 +39,7 @@ public class TestController {
             appJar.toString(),
             "okhttp3");
     ProcessBuilder builder = new ProcessBuilder(command);
-    Process process = builder.start();
-    ConsoleOutputPipe consoleOutputPipe =
-        new ConsoleOutputPipe(process.getInputStream(), System.out);
-    Executors.newSingleThreadExecutor().submit(consoleOutputPipe);
-    ConsoleOutputPipe consoleErrorPipe =
-        new ConsoleOutputPipe(process.getErrorStream(), System.err);
-    Executors.newSingleThreadExecutor().submit(consoleErrorPipe);
+    Process process = builder.inheritIO().start();
     process.waitFor();
     return "OK!";
   }
@@ -62,32 +52,5 @@ public class TestController {
       }
     }
     throw new AssertionError("Agent jar not found on command line: " + String.join(" ", jvmArgs));
-  }
-
-  private static class ConsoleOutputPipe implements Runnable {
-
-    private final InputStream in;
-    private final OutputStream out;
-
-    private ConsoleOutputPipe(InputStream in, OutputStream out) {
-      this.in = in;
-      this.out = out;
-    }
-
-    @Override
-    public void run() {
-      byte[] buffer = new byte[100];
-      try {
-        while (true) {
-          int n = in.read(buffer);
-          if (n == -1) {
-            break;
-          }
-          out.write(buffer, 0, n);
-        }
-      } catch (IOException e) {
-        e.printStackTrace();
-      }
-    }
   }
 }
