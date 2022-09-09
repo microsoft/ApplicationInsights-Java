@@ -28,7 +28,7 @@ class UnsignTool {
   private static final Pattern SIGNATURE_FILE = Pattern.compile("META-INF/.*\\.(RSA|SF)");
 
   @SuppressWarnings("SystemOut")
-  static void run() throws IOException, URISyntaxException {
+  static boolean run() throws IOException, URISyntaxException {
     Path signedPath = getAgentJar();
     Path unsignedPath = getUnsignedPath(signedPath);
 
@@ -40,8 +40,7 @@ class UnsignTool {
       if (!isSigned(signedManifest)) {
         System.err.println();
         System.err.println(getRelativePath(signedPath) + " is already unsigned");
-        in.close();
-        System.exit(0);
+        return false;
       }
 
       executor = Executors.newSingleThreadScheduledExecutor();
@@ -67,6 +66,7 @@ class UnsignTool {
 
     System.out.println();
     System.out.println("Unsigned agent jar: " + getRelativePath(unsignedPath));
+    return true;
   }
 
   private static void unsign(JarInputStream in, Manifest signedManifest, Path unsignedPath)

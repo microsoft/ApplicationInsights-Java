@@ -9,18 +9,19 @@ public class Main {
   public static void main(String[] args) throws Exception {
     if (args.length == 0) {
       System.err.println("No command specified");
-      return;
+      System.exit(1);
     }
     String command = args[0];
     if (command.equals("unsign")) {
       if (args.length > 1) {
         System.err.println("The unsign command does not expect any arguments");
-        return;
+        System.exit(1);
       }
-      UnsignTool.run();
-      return;
+      boolean success = UnsignTool.run();
+      System.exit(success ? 0 : 1);
     }
     System.err.println("Unknown command: " + command);
+    System.exit(1);
   }
 
   private Main() {}
