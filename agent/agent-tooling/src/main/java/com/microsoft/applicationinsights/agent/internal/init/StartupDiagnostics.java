@@ -74,11 +74,9 @@ class StartupDiagnostics {
 
   private void generateReport(DiagnosticsReport diagnosticsReport) {
     if (!diagnosticsReport.isEmpty()) {
-      String diagExport = System.getProperty(APPLICATIONINSIGHTS_DEBUG_DIAG_EXPORT);
-      if (diagExport == null || "console".equals(diagExport) || "file-console".equals(diagExport)) {
-        startupLogger.info("Start-up diagnostics" + File.separator + diagnosticsReport);
-      }
-      if ("file".equals(diagExport) || "file-console".equals(diagExport)) {
+      boolean exportToFile = Boolean.getBoolean(APPLICATIONINSIGHTS_DEBUG_DIAG_EXPORT_TO_FILE);
+      startupLogger.info("Start-up diagnostics" + File.separator + diagnosticsReport);
+      if (exportToFile) {
         saveIntoFile(diagnosticsReport);
       }
     }
