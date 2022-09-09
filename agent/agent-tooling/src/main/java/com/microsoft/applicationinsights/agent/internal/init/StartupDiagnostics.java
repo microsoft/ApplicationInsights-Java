@@ -16,16 +16,16 @@ import org.slf4j.Logger;
 
 class StartupDiagnostics {
 
-  public static final String APPPLICATIONINSIGHTS_DEBUG_RSS_ENABLED =
-      "appplicationinsights.debug.rss.enabled";
+  public static final String APPLICATIONINSIGHTS_DEBUG_RSS_ENABLED =
+      "applicationinsights.debug.rss.enabled";
 
   // Execute with -XX:NativeMemoryTracking=summary
-  private static final String APPPLICATIONINSIGHTS_DEBUG_NATIVE_MEM_TRACKING_ENABLED =
-      "appplicationinsights.debug.native-mem-tracking.enabled";
+  private static final String APPLICATIONINSIGHTS_DEBUG_NATIVE_MEM_TRACKING_ENABLED =
+      "applicationinsights.debug.native-mem-tracking.enabled";
 
   // "file" (default value) / "console" / "file-console"
-  public static final String APPPLICATIONINSIGHTS_DEBUG_DIAG_EXPORT =
-      "appplicationinsights.debug.diag-export";
+  public static final String APPLICATIONINSIGHTS_DEBUG_DIAG_EXPORT =
+      "applicationinsights.debug.diag-export";
   private final Logger startupLogger;
 
   public StartupDiagnostics(Logger startupLogger) {
@@ -56,7 +56,7 @@ class StartupDiagnostics {
 
     DiagnosticsReport diagnosticsReport = new DiagnosticsReport();
 
-    if (Boolean.getBoolean(APPPLICATIONINSIGHTS_DEBUG_RSS_ENABLED)) {
+    if (Boolean.getBoolean(APPLICATIONINSIGHTS_DEBUG_RSS_ENABLED)) {
       String os = System.getProperty("os.name");
       if (os.equals("Linux")) {
         String residentSetSize = findResidentSetSize();
@@ -64,7 +64,7 @@ class StartupDiagnostics {
       }
     }
 
-    if (Boolean.getBoolean(APPPLICATIONINSIGHTS_DEBUG_NATIVE_MEM_TRACKING_ENABLED)) {
+    if (Boolean.getBoolean(APPLICATIONINSIGHTS_DEBUG_NATIVE_MEM_TRACKING_ENABLED)) {
       String nativeSummary = executeNativeMemoryDiag();
       diagnosticsReport.addDiagnostic(nativeSummary);
     }
@@ -74,7 +74,7 @@ class StartupDiagnostics {
 
   private void generateReport(DiagnosticsReport diagnosticsReport) {
     if (!diagnosticsReport.isEmpty()) {
-      String diagExport = System.getProperty(APPPLICATIONINSIGHTS_DEBUG_DIAG_EXPORT);
+      String diagExport = System.getProperty(APPLICATIONINSIGHTS_DEBUG_DIAG_EXPORT);
       if ("console".equals(diagExport) || "file-console".equals(diagExport)) {
         startupLogger.info("Start-up diagnostics" + File.separator + diagnosticsReport);
       }
