@@ -24,7 +24,6 @@ tasks.withType<Test>().configureEach {
 
 dependencies {
   implementation(gradleApi())
-  implementation(localGroovy())
 
   implementation("org.eclipse.aether:aether-connector-basic:1.1.0")
   implementation("org.eclipse.aether:aether-transport-http:1.1.0")
