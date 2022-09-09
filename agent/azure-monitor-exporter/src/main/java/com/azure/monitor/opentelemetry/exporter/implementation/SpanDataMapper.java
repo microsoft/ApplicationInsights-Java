@@ -409,16 +409,28 @@ public final class SpanDataMapper {
     if (peerService != null) {
       return peerService;
     }
-    String netPeerName = attributes.get(SemanticAttributes.NET_PEER_NAME);
-    if (netPeerName == null) {
-      return null;
+    String host = attributes.get(SemanticAttributes.NET_PEER_NAME);
+    if (host != null) {
+      Long port = attributes.get(SemanticAttributes.NET_PEER_PORT);
+      if (port != null && port != defaultPort) {
+        return host + ":" + port;
+      } else {
+        return host;
+      }
     }
-    Long netPeerPort = attributes.get(SemanticAttributes.NET_PEER_PORT);
-    if (netPeerPort != null && netPeerPort != defaultPort) {
-      return netPeerName + ":" + netPeerPort;
-    } else {
-      return netPeerName;
+    host = attributes.get(AiSemanticAttributes.NET_SOCK_PEER_NAME);
+    if (host == null) {
+      host = attributes.get(AiSemanticAttributes.NET_SOCK_PEER_ADDR);
     }
+    if (host != null) {
+      Long port = attributes.get(AiSemanticAttributes.NET_SOCK_PEER_PORT);
+      if (port != null && port != defaultPort) {
+        return host + ":" + port;
+      } else {
+        return host;
+      }
+    }
+    return null;
   }
 
   private static void applyDatabaseClientSpan(
