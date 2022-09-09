@@ -32,6 +32,8 @@ class StartupDiagnostics {
   private static final String APPPLICATIONINSIGHTS_DEBUG_JIT_C_2_DISABLING_ENABLED =
       "appplicationinsights.debug.jit.c2-disabling.enabled";
 
+  public static final String APPPLICATIONINSIGHTS_DEBUG_RSS_ENABLED = "appplicationinsights.debug.rss.enabled";
+
   // Execute with -XX:NativeMemoryTracking=summary
   private static final String APPPLICATIONINSIGHTS_DEBUG_NATIVE_MEM_TRACKING_ENABLED =
       "appplicationinsights.debug.native-mem-tracking.enabled";
@@ -77,7 +79,7 @@ class StartupDiagnostics {
   private void executeDiagsAndGenerateReport() {
     DiagnosticsReport diagnosticsReport = new DiagnosticsReport();
 
-    if (Boolean.getBoolean("rss")) {
+    if (Boolean.getBoolean(APPPLICATIONINSIGHTS_DEBUG_RSS_ENABLED)) {
       String os = System.getProperty("os.name");
       if (os.equals("Linux")) {
         String residentSetSize = findResidentSetSize();
