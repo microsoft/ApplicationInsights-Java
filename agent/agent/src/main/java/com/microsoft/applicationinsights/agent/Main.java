@@ -6,6 +6,7 @@ package com.microsoft.applicationinsights.agent;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
@@ -56,6 +57,7 @@ public class Main {
       if (!isSigned(signedManifest)) {
         System.err.println();
         System.err.println(getRelativePath(signedPath) + " is already unsigned");
+        in.close();
         System.exit(0);
       }
 
@@ -141,6 +143,9 @@ public class Main {
     }
   }
 
+  @SuppressFBWarnings(
+      value = "SECPTI", // Potential Path Traversal
+      justification = "The constructed file path will always point to the agent jar")
   private static Path getAgentJar() throws URISyntaxException {
     CodeSource codeSource = Main.class.getProtectionDomain().getCodeSource();
     if (codeSource == null) {
