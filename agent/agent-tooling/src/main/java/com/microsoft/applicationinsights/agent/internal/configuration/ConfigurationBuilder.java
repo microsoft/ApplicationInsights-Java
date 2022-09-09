@@ -419,8 +419,7 @@ public class ConfigurationBuilder {
     String runtimeAttachedConfigurationContent =
         getSystemProperty(APPLICATIONINSIGHTS_RUNTIME_ATTACHED_CONFIGURATION_CONTENT);
     if (runtimeAttachedConfigurationContent != null) {
-      return getConfiguration(
-          runtimeAttachedConfigurationContent, true, JsonOrigin.RUNTIME_ATTACHED);
+      return getConfiguration(runtimeAttachedConfigurationContent, JsonOrigin.RUNTIME_ATTACHED);
     }
 
     String configPathStr = getConfigPath();
@@ -757,7 +756,7 @@ public class ConfigurationBuilder {
 
   static Configuration getConfigurationFromEnvVar(String json) {
 
-    Configuration configuration = getConfiguration(json, true, JsonOrigin.ENV_VAR);
+    Configuration configuration = getConfiguration(json, JsonOrigin.ENV_VAR);
 
     if (configuration.connectionString != null) {
       throw new ConfigurationException(
@@ -774,7 +773,7 @@ public class ConfigurationBuilder {
     if (!Files.exists(configPath)) {
       throw new ConfigurationException("config file does not exist: " + configPath);
     }
-    Configuration configuration = getConfigurationFromConfigFile(configPath, true);
+    Configuration configuration = getConfigurationFromConfigFile(configPath);
     if (configuration.instrumentationSettings != null) {
       throw new ConfigurationException(
           "It looks like you are using an old applicationinsights.json file"
@@ -785,44 +784,43 @@ public class ConfigurationBuilder {
   }
 
   // visible for testing
-  static Configuration getConfigurationFromConfigFile(Path configPath, boolean strict) {
-    byte[] bytes;
+  static Configuration getConfigurationFromConfigFile(Path configPath) {
+    JsonOrigin jsonOrigin = JsonOrigin.fromPath(configPath);
+    JsonNode jsonNode;
     try {
-      bytes = Files.readAllBytes(configPath);
+      jsonNode = new ObjectMapper().readTree(configPath.toFile());
+    } catch (JsonProcessingException e) {
+      throw createMalformedJsonFriendlyException(e, jsonOrigin);
     } catch (IOException e) {
       throw new ConfigurationException(
           "Error reading configuration file: " + configPath.toAbsolutePath(), e);
     }
-    String json = new String(bytes, StandardCharsets.UTF_8);
-    return getConfiguration(json, strict, JsonOrigin.fromPath(configPath));
+
+    return getConfiguration(jsonNode, jsonOrigin, true);
+  }
+
+  private static Configuration getConfiguration(String json, JsonOrigin jsonOrigin) {
+    JsonNode jsonNode;
+    try {
+      jsonNode = new ObjectMapper().readTree(json);
+    } catch (JsonProcessingException e) {
+      throw createMalformedJsonFriendlyException(e, jsonOrigin);
+    }
+    return getConfiguration(jsonNode, jsonOrigin, true);
   }
 
   private static Configuration getConfiguration(
-      String json, boolean strict, JsonOrigin jsonOrigin) {
-    configurationLogger.debug("configuration: {}", json);
+      JsonNode jsonNode, JsonOrigin jsonOrigin, boolean strict) {
+    configurationLogger.debug("configuration: {}", jsonNode);
     ObjectMapper mapper = new ObjectMapper();
     if (!strict) {
       mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-    }
-    JsonNode jsonNode;
-    try {
-      jsonNode = mapper.readTree(json);
-    } catch (JsonProcessingException e) {
-      throw new FriendlyException(
-          "The configuration "
-              + jsonOrigin
-              + " contains malformed JSON."
-              + System.lineSeparator()
-              + System.lineSeparator()
-              + e.getMessage(),
-          "Learn more about configuration options here: " + CONFIGURATION_OPTIONS_LINK,
-          e);
     }
     try {
       return mapper.treeToValue(jsonNode, Configuration.class);
     } catch (UnrecognizedPropertyException e) {
       if (strict) {
-        Configuration configuration = getConfiguration(json, false, jsonOrigin);
+        Configuration configuration = getConfiguration(jsonNode, jsonOrigin, false);
         configurationLogger.warn(getJsonEncodingExceptionMessage(e.getMessage(), jsonOrigin), e);
         return configuration;
       } else {
@@ -843,6 +841,19 @@ public class ConfigurationBuilder {
     } catch (Exception e) {
       throw new ConfigurationException("Error parsing configuration from " + jsonOrigin, e);
     }
+  }
+
+  private static FriendlyException createMalformedJsonFriendlyException(
+      JsonProcessingException e, JsonOrigin jsonOrigin) {
+    return new FriendlyException(
+        "The configuration "
+            + jsonOrigin
+            + " contains malformed JSON."
+            + System.lineSeparator()
+            + System.lineSeparator()
+            + e.getMessage(),
+        "Learn more about configuration options here: " + CONFIGURATION_OPTIONS_LINK,
+        e);
   }
 
   static String getJsonEncodingExceptionMessage(@Nullable String message, String location) {

@@ -1,6 +1,4 @@
 plugins {
-  id("groovy")
-
   id("ai.java-conventions")
   id("ai.javaagent-instrumentation")
 }

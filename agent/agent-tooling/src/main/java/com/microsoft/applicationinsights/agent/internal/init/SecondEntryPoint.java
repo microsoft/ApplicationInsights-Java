@@ -269,19 +269,17 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
     CompletableResultCode initialResult = CompletableResultCode.ofAll(results);
     initialResult.whenComplete(
         () -> {
-          if (initialResult.isSuccess()) {
-            CompletableResultCode telemetryClientResult = telemetryClient.forceFlush();
-            telemetryClientResult.whenComplete(
-                () -> {
-                  if (telemetryClientResult.isSuccess()) {
-                    overallResult.succeed();
-                  } else {
-                    overallResult.fail();
-                  }
-                });
-          } else {
-            overallResult.fail();
-          }
+          // IMPORTANT: the metric reader flush will fail if the periodic metric reader is already
+          // mid-exporter
+          CompletableResultCode telemetryClientResult = telemetryClient.forceFlush();
+          telemetryClientResult.whenComplete(
+              () -> {
+                if (initialResult.isSuccess() && telemetryClientResult.isSuccess()) {
+                  overallResult.succeed();
+                } else {
+                  overallResult.fail();
+                }
+              });
         });
     return overallResult;
   }
