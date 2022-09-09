@@ -23,9 +23,8 @@ class StartupDiagnostics {
   private static final String APPLICATIONINSIGHTS_DEBUG_NATIVE_MEM_TRACKING_ENABLED =
       "applicationinsights.debug.native-mem-tracking.enabled";
 
-  // "file"  / "console" (default value) / "file-console"
-  public static final String APPLICATIONINSIGHTS_DEBUG_DIAG_EXPORT =
-      "applicationinsights.debug.diag-export";
+  public static final String APPLICATIONINSIGHTS_DEBUG_DIAG_EXPORT_TO_FILE =
+      "applicationinsights.debug.diag-export-to-file";
   private final Logger startupLogger;
 
   public StartupDiagnostics(Logger startupLogger) {
@@ -74,8 +73,8 @@ class StartupDiagnostics {
 
   private void generateReport(DiagnosticsReport diagnosticsReport) {
     if (!diagnosticsReport.isEmpty()) {
-      boolean exportToFile = Boolean.getBoolean(APPLICATIONINSIGHTS_DEBUG_DIAG_EXPORT_TO_FILE);
       startupLogger.info("Start-up diagnostics" + File.separator + diagnosticsReport);
+      boolean exportToFile = Boolean.getBoolean(APPLICATIONINSIGHTS_DEBUG_DIAG_EXPORT_TO_FILE);
       if (exportToFile) {
         saveIntoFile(diagnosticsReport);
       }
