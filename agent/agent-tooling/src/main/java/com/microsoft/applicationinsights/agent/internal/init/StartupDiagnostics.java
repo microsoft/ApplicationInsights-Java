@@ -16,7 +16,7 @@ import org.slf4j.Logger;
 
 class StartupDiagnostics {
 
-  // For Java >= 9
+  // To disable C2 compiler during Application Insights set-up, for Java >= 9, do the following things.
   // Execute with -XX:+UnlockDiagnosticVMOptions -XX:CompilerDirectivesFile=path/jvm-disable-c2.json
   // Content of jvm-disable-c2.json file:
   // [
@@ -29,8 +29,8 @@ class StartupDiagnostics {
   //    }
   //  }
   // ]
-  private static final String APPPLICATIONINSIGHTS_DEBUG_JIT_C_2_DISABLING_ENABLED =
-      "appplicationinsights.debug.jit.c2-disabling.enabled";
+  private static final String APPLICATIONINSIGHTS_EXPERIMENT_CLEAR_COMPILER_DIRECTIVES_AFTER_INITIALIZATION =
+      "applicationinsights.experiment.clear-compiler-directives-after-initialization";
 
   public static final String APPPLICATIONINSIGHTS_DEBUG_RSS_ENABLED = "appplicationinsights.debug.rss.enabled";
 
@@ -71,8 +71,9 @@ class StartupDiagnostics {
 
     executeDiagsAndGenerateReport();
 
-    if (Boolean.getBoolean(APPPLICATIONINSIGHTS_DEBUG_JIT_C_2_DISABLING_ENABLED)) {
-      disableC2CompilerDirectives();
+    if (Boolean.getBoolean(
+        APPLICATIONINSIGHTS_EXPERIMENT_CLEAR_COMPILER_DIRECTIVES_AFTER_INITIALIZATION)) {
+      disableJvmCompilerDirectives();
     }
   }
 
@@ -158,7 +159,7 @@ class StartupDiagnostics {
   @SuppressFBWarnings(
       value = "SECCI", // Command Injection
       justification = "No user data is used to construct the command below")
-  private static void disableC2CompilerDirectives() {
+  private static void disableJvmCompilerDirectives() {
     CommandExecutor.execute(new ProcessBuilder("jcmd", pid(), "Compiler.directives_clear"));
   }
 
