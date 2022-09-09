@@ -16,7 +16,8 @@ import org.slf4j.Logger;
 
 class StartupDiagnostics {
 
-  // To disable C2 compiler during Application Insights set-up, for Java >= 9, do the following things.
+  // To disable C2 compiler during Application Insights set-up, for Java >= 9, do the following
+  // things.
   // Execute with -XX:+UnlockDiagnosticVMOptions -XX:CompilerDirectivesFile=path/jvm-disable-c2.json
   // Content of jvm-disable-c2.json file:
   // [
@@ -29,10 +30,12 @@ class StartupDiagnostics {
   //    }
   //  }
   // ]
-  private static final String APPLICATIONINSIGHTS_EXPERIMENT_CLEAR_COMPILER_DIRECTIVES_AFTER_INITIALIZATION =
-      "applicationinsights.experiment.clear-compiler-directives-after-initialization";
+  private static final String
+      APPLICATIONINSIGHTS_EXPERIMENT_CLEAR_COMPILER_DIRECTIVES_AFTER_INITIALIZATION =
+          "applicationinsights.experiment.clear-compiler-directives-after-initialization";
 
-  public static final String APPPLICATIONINSIGHTS_DEBUG_RSS_ENABLED = "appplicationinsights.debug.rss.enabled";
+  public static final String APPPLICATIONINSIGHTS_DEBUG_RSS_ENABLED =
+      "appplicationinsights.debug.rss.enabled";
 
   // Execute with -XX:NativeMemoryTracking=summary
   private static final String APPPLICATIONINSIGHTS_DEBUG_NATIVE_MEM_TRACKING_ENABLED =
