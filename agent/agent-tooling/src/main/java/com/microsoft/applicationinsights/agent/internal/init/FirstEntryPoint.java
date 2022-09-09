@@ -93,6 +93,11 @@ public class FirstEntryPoint implements LoggingCustomizer {
 
       StartupDiagnostics startupDiagnostics = new StartupDiagnostics(startupLogger);
       startupDiagnostics.execute();
+
+      if (JvmCompiler.hasToDisableJvmCompilerDirectives()) {
+        JvmCompiler.disableJvmCompilerDirectives();
+      }
+
     } catch (Exception e) {
       throw new IllegalStateException(e);
     }
