@@ -27,6 +27,7 @@ class UnsignTool {
 
   private static final Pattern SIGNATURE_FILE = Pattern.compile("META-INF/.*\\.(RSA|SF)");
 
+  @SuppressWarnings("SystemOut")
   static void run() throws IOException, URISyntaxException {
     Path signedPath = getAgentJar();
     Path unsignedPath = getUnsignedPath(signedPath);

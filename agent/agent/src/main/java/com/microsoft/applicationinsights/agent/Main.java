@@ -3,9 +3,9 @@
 
 package com.microsoft.applicationinsights.agent;
 
-@SuppressWarnings("SystemOut")
 public class Main {
 
+  @SuppressWarnings("SystemOut")
   public static void main(String[] args) throws Exception {
     if (args.length == 0) {
       System.err.println("No command specified");
