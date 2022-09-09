@@ -32,9 +32,6 @@ class StartupDiagnostics {
   private static final String APPPLICATIONINSIGHTS_DEBUG_JIT_C_2_DISABLING_ENABLED =
       "appplicationinsights.debug.jit.c2-disabling.enabled";
 
-  private static final String APPPLICATIONINSIGHTS_DEBUG_JVM_FLAGS_ENABLED =
-      "appplicationinsights.debug.jvm-flags.enabled";
-
   // Execute with -XX:NativeMemoryTracking=summary
   private static final String APPPLICATIONINSIGHTS_DEBUG_NATIVE_MEM_TRACKING_ENABLED =
       "appplicationinsights.debug.native-mem-tracking.enabled";
@@ -86,11 +83,6 @@ class StartupDiagnostics {
         String residentSetSize = findResidentSetSize();
         diagnosticsReport.addDiagnostic(residentSetSize);
       }
-    }
-
-    if (Boolean.getBoolean(APPPLICATIONINSIGHTS_DEBUG_JVM_FLAGS_ENABLED)) {
-      String jvmFlags = executeJvmFlagsDiag();
-      diagnosticsReport.addDiagnostic(jvmFlags);
     }
 
     if (Boolean.getBoolean(APPPLICATIONINSIGHTS_DEBUG_NATIVE_MEM_TRACKING_ENABLED)) {
@@ -150,14 +142,6 @@ class StartupDiagnostics {
       return Optional.empty();
     }
     return Optional.of(folder);
-  }
-
-  @SuppressFBWarnings(
-      value = "SECCI", // Command Injection
-      justification = "No user data is used to construct the command below")
-  private String executeJvmFlagsDiag() {
-    ProcessBuilder processBuilder = new ProcessBuilder("jcmd", pid(), "VM.flags");
-    return CommandExecutor.executeWithoutException(processBuilder, startupLogger);
   }
 
   @SuppressFBWarnings(
