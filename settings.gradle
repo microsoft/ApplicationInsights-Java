@@ -5,7 +5,6 @@ pluginManagement {
     id("com.github.ben-manes.versions") version "0.42.0"
     id("com.github.jk1.dependency-license-report") version "2.1"
     id("me.champeau.jmh") version "0.6.5"
-    id("org.jetbrains.kotlin.jvm") version "1.6.20"
   }
 }
 
@@ -128,6 +127,7 @@ include ':smoke-tests:apps:TraceLog4j2'
 include ':smoke-tests:apps:TraceLog4j2UsingAgent'
 include ':smoke-tests:apps:TraceLogBack'
 include ':smoke-tests:apps:TraceLogBackUsingAgent'
+include ':smoke-tests:apps:Unsign'
 include ':smoke-tests:apps:VerifyShading'
 include ':smoke-tests:apps:WebAuto'
 include ':smoke-tests:apps:WebFlux'
