@@ -21,7 +21,7 @@ tasks {
       agent.singleFile
     })
     manifest {
-      attributes("Automatic-Module-Name" to "applicationinsights.runtime.attach")
+      attributes("Automatic-Module-Name" to "com.microsoft.applicationinsights.attach")
     }
   }
 }
