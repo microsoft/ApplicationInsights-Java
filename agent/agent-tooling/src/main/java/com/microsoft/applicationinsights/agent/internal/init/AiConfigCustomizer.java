@@ -38,6 +38,9 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
     // this is needed to capture kafka.record.queue_time_ms
     properties.put("otel.instrumentation.kafka.experimental-span-attributes", "true");
 
+    // kafka metrics are enabled by default
+    properties.put("otel.instrumentation.kafka.metric-reporter.enabled", "false");
+
     setHttpHeaderConfiguration(
         properties,
         "otel.instrumentation.http.capture-headers.server.request",
