@@ -1323,7 +1323,7 @@ public final class SemanticAttributes {
    * The name of the keyspace being accessed.
    *
    * @deprecated this item has been removed as of 1.8.0 of the semantic conventions. Please use
-   *     {@link io.opentelemetry.semconv.trace.attributes.SemanticAttributes#DB_NAME} instead.
+   *     {@link SemanticAttributes#DB_NAME} instead.
    */
   @Deprecated
   public static final AttributeKey<String> DB_CASSANDRA_KEYSPACE =
@@ -1333,7 +1333,7 @@ public final class SemanticAttributes {
    * The <a href="https://hbase.apache.org/book.html#_namespace">HBase namespace</a> being accessed.
    *
    * @deprecated this item has been removed as of 1.8.0 of the semantic conventions. Please use
-   *     {@link io.opentelemetry.semconv.trace.attributes.SemanticAttributes#DB_NAME} instead.
+   *     {@link SemanticAttributes#DB_NAME} instead.
    */
   @Deprecated
   public static final AttributeKey<String> DB_HBASE_NAMESPACE = stringKey("db.hbase.namespace");
