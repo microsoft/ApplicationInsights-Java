@@ -227,6 +227,8 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
     }
     if (config.instrumentation.quartz.enabled) {
       properties.put("otel.instrumentation.quartz.enabled", "true");
+      // this is needed for the job.system attribute in order to map those spans to requests
+      properties.put("otel.instrumentation.quartz.experimental-span-attributes.enabled", "true");
     }
     if (config.instrumentation.rabbitmq.enabled) {
       properties.put("otel.instrumentation.rabbitmq.enabled", "true");
@@ -238,6 +240,9 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
     }
     if (config.instrumentation.springScheduling.enabled) {
       properties.put("otel.instrumentation.spring-scheduling.enabled", "true");
+      // this is needed for the job.system attribute in order to map those spans to requests
+      properties.put(
+          "otel.instrumentation.spring-scheduling.experimental-span-attributes.enabled", "true");
     }
     if (config.preview.instrumentation.akka.enabled) {
       properties.put("otel.instrumentation.akka-actor.enabled", "true");

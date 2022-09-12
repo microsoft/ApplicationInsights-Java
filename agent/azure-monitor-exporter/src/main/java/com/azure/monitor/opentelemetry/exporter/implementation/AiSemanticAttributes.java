@@ -84,6 +84,8 @@ public final class AiSemanticAttributes {
       AttributeKey.longKey("kafka.record.queue_time_ms");
   public static final AttributeKey<Long> KAFKA_OFFSET = AttributeKey.longKey("kafka.offset");
 
+  public static final AttributeKey<String> JOB_SYSTEM = AttributeKey.stringKey("job.system");
+
   public static final AttributeKey<Boolean> IS_PRE_AGGREGATED =
       AttributeKey.booleanKey("applicationinsights.internal.is_pre_aggregated");
 
