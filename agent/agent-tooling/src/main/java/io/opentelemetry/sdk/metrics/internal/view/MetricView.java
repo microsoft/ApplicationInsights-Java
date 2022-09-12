@@ -14,18 +14,26 @@ import java.util.HashSet;
 import java.util.Set;
 
 @SuppressWarnings("rawtypes")
-public class PreAggregatedStandardMetrics {
+public enum MetricView {
+  HTTP_CLIENT_VIEW("http.client.duration", httpClientDurationAttributeKeys(), false),
+  HTTP_SERVER_VIEW("http.server.duration", httpServerDurationAttributeKeys(), false),
+  RPC_CLIENT_VIEW("rpc.client.duration", rpcClientDurationAttributeKeys(), false),
+  RPC_SERVER_VIEW("rpc.server.duration", rpcServerDurationAttributeKeys(), false);
 
-  private static final Set<AttributeKey> HTTP_CLIENT_VIEW = buildHttpClientView();
-  private static final Set<AttributeKey> HTTP_SERVER_VIEW = buildHttpServerView();
-  private static final Set<AttributeKey> RPC_CLIENT_VIEW = buildRpcClientView();
-  private static final Set<AttributeKey> RPC_SERVER_VIEW = buildRpcServerView();
+  private final String instrumentName;
+  private final Set<AttributeKey> attributeKeys;
+  private final boolean includeSynthetic;
+
+  MetricView(String instrumentName, Set<AttributeKey> attributeKeys, boolean includeSynthetic) {
+    this.instrumentName = instrumentName;
+    this.attributeKeys = attributeKeys;
+    this.includeSynthetic = includeSynthetic;
+  }
 
   public static void registerViews(SdkMeterProviderBuilder builder) {
-    registerView(builder, "http.client.duration", HTTP_CLIENT_VIEW, false);
-    registerView(builder, "http.server.duration", HTTP_SERVER_VIEW, true);
-    registerView(builder, "rpc.client.duration", RPC_CLIENT_VIEW, false);
-    registerView(builder, "rpc.server.duration", RPC_SERVER_VIEW, true);
+    for (MetricView view : MetricView.values()) {
+      registerView(builder, view.instrumentName, view.attributeKeys, view.includeSynthetic);
+    }
   }
 
   public static void registerView(
@@ -34,39 +42,36 @@ public class PreAggregatedStandardMetrics {
       Set<AttributeKey> view,
       boolean includeSynthetic) {
     ViewBuilder viewBuilder = View.builder();
-    ViewBuilderAccessor.add(
-        viewBuilder, new PreAggregatedStandardMetricsAttributesProcessor(view, includeSynthetic));
+    ViewBuilderAccessor.add(viewBuilder, new MetricViewAttributesProcessor(view, includeSynthetic));
     builder.registerView(
         InstrumentSelector.builder().setName(meterName).build(), viewBuilder.build());
   }
 
-  private static Set<AttributeKey> buildHttpClientView() {
-    Set<AttributeKey> view = new HashSet<>();
+  private static Set<AttributeKey> httpClientDurationAttributeKeys() {
+    Set<AttributeKey> view = new HashSet<>(3);
     view.add(SemanticAttributes.HTTP_STATUS_CODE);
     view.add(SemanticAttributes.NET_PEER_NAME);
     view.add(SemanticAttributes.NET_PEER_PORT);
     return view;
   }
 
-  private static Set<AttributeKey> buildHttpServerView() {
-    Set<AttributeKey> view = new HashSet<>();
+  private static Set<AttributeKey> httpServerDurationAttributeKeys() {
+    Set<AttributeKey> view = new HashSet<>(1);
     view.add(SemanticAttributes.HTTP_STATUS_CODE);
     return view;
   }
 
-  private static Set<AttributeKey> buildRpcClientView() {
-    Set<AttributeKey> view = new HashSet<>();
+  private static Set<AttributeKey> rpcClientDurationAttributeKeys() {
+    Set<AttributeKey> view = new HashSet<>(3);
     view.add(SemanticAttributes.RPC_SYSTEM);
     view.add(SemanticAttributes.NET_PEER_NAME);
     view.add(SemanticAttributes.NET_PEER_PORT);
     return view;
   }
 
-  private static Set<AttributeKey> buildRpcServerView() {
-    Set<AttributeKey> view = new HashSet<>();
+  private static Set<AttributeKey> rpcServerDurationAttributeKeys() {
+    Set<AttributeKey> view = new HashSet<>(1);
     view.add(SemanticAttributes.RPC_SYSTEM);
     return view;
   }
-
-  private PreAggregatedStandardMetrics() {}
 }

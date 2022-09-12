@@ -37,7 +37,7 @@ import io.opentelemetry.instrumentation.api.instrumenter.rpc.RpcClientMetrics;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.internal.view.PreAggregatedStandardMetrics;
+import io.opentelemetry.sdk.metrics.internal.view.MetricView;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.util.Collection;
@@ -58,7 +58,7 @@ public class PreAggregatedMetricsTest {
   void setup() {
     metricReader = InMemoryMetricReader.create();
     SdkMeterProviderBuilder builder = SdkMeterProvider.builder();
-    PreAggregatedStandardMetrics.registerViews(builder);
+    MetricView.registerViews(builder);
     meterProvider = builder.registerMetricReader(metricReader).build();
   }
 

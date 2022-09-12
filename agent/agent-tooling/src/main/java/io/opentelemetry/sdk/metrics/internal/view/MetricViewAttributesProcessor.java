@@ -16,14 +16,13 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 
 @SuppressWarnings("rawtypes")
-class PreAggregatedStandardMetricsAttributesProcessor extends AttributesProcessor {
+class MetricViewAttributesProcessor extends AttributesProcessor {
 
-  private final Set<AttributeKey> view;
+  private final Set<AttributeKey> includeAttributeKeys;
   private final boolean includeSynthetic;
 
-  PreAggregatedStandardMetricsAttributesProcessor(
-      Set<AttributeKey> view, boolean includeSynthetic) {
-    this.view = view;
+  MetricViewAttributesProcessor(Set<AttributeKey> includeAttributeKeys, boolean includeSynthetic) {
+    this.includeAttributeKeys = includeAttributeKeys;
     this.includeSynthetic = includeSynthetic;
   }
 
@@ -38,7 +37,7 @@ class PreAggregatedStandardMetricsAttributesProcessor extends AttributesProcesso
 
     AttributesBuilder filtered = Attributes.builder();
     applyCommon(filtered, span);
-    applyView(filtered, incoming, view);
+    applyView(filtered, incoming, includeAttributeKeys);
     if (includeSynthetic) {
       filtered.put(AiSemanticAttributes.IS_SYNTHETIC, UserAgents.isBot(incoming));
     }
