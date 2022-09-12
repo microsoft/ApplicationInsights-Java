@@ -18,10 +18,11 @@ import java.util.function.BiConsumer;
 @SuppressWarnings("rawtypes")
 class MetricViewAttributesProcessor extends AttributesProcessor {
 
-  private final Set<AttributeKey> includeAttributeKeys;
+  private final Set<AttributeKey<?>> includeAttributeKeys;
   private final boolean includeSynthetic;
 
-  MetricViewAttributesProcessor(Set<AttributeKey> includeAttributeKeys, boolean includeSynthetic) {
+  MetricViewAttributesProcessor(
+      Set<AttributeKey<?>> includeAttributeKeys, boolean includeSynthetic) {
     this.includeAttributeKeys = includeAttributeKeys;
     this.includeSynthetic = includeSynthetic;
   }
@@ -80,7 +81,7 @@ class MetricViewAttributesProcessor extends AttributesProcessor {
 
   @SuppressWarnings("unchecked")
   private static void applyView(
-      AttributesBuilder filtered, Attributes attributes, Set<AttributeKey> view) {
+      AttributesBuilder filtered, Attributes attributes, Set<AttributeKey<?>> view) {
     attributes.forEach(
         (BiConsumer<AttributeKey, Object>)
             (key, value) -> {

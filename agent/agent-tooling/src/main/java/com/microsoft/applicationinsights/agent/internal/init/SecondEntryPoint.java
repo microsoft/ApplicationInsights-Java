@@ -57,7 +57,7 @@ import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReaderBuilder;
-import io.opentelemetry.sdk.metrics.internal.view.MetricView;
+import io.opentelemetry.sdk.metrics.internal.view.ViewRegistry;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
@@ -552,7 +552,7 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
             configuration.preview.metricIntervalSeconds * 1000);
     metricReader = readerBuilder.setInterval(Duration.ofMillis(intervalMillis)).build();
 
-    MetricView.registerViews(builder);
+    ViewRegistry.registerViews(builder);
 
     return builder.registerMetricReader(metricReader);
   }
