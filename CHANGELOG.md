@@ -10,7 +10,7 @@ Migration notes:
 
 Enhancements:
 
-* Automatic module name enttry added to Runtime Attach library Jar to support Modular Java.
+* Automatic module name entry added to Runtime Attach library Jar to support Modular Java.
 
 # Version 3.4.0-BETA
 
