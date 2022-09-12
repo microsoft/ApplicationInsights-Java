@@ -160,8 +160,7 @@ public final class SpanDataMapper {
       return !parentSpanContext.isValid()
           && instrumentationName != null
           && (instrumentationName.startsWith("io.opentelemetry.spring-scheduling-")
-              || instrumentationName.startsWith("io.opentelemetry.quartz-")
-              || instrumentationName.equals("io.opentelemetry.methods"));
+              || instrumentationName.startsWith("io.opentelemetry.quartz-"));
     } else if (kind == SpanKind.CLIENT || kind == SpanKind.PRODUCER) {
       return false;
     } else if (kind == SpanKind.CONSUMER

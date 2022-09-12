@@ -21,7 +21,6 @@ import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 
-@SuppressWarnings("unused")
 class InvocationInstrumentation implements TypeInstrumentation {
 
   @Override
@@ -40,7 +39,7 @@ class InvocationInstrumentation implements TypeInstrumentation {
         InvocationInstrumentation.class.getName() + "$ExecuteAdvice");
   }
 
-  @SuppressWarnings({"PrivateConstructorForUtilityClass", "MustBeClosedChecker"})
+  @SuppressWarnings({"unused", "PrivateConstructorForUtilityClass", "MustBeClosedChecker"})
   public static class ExecuteAdvice {
     @Nullable
     @Advice.OnMethodEnter(suppress = Throwable.class)

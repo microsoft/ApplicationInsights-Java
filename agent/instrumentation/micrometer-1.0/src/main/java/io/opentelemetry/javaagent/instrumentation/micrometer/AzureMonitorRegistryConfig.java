@@ -14,7 +14,8 @@ public class AzureMonitorRegistryConfig implements StepRegistryConfig {
   public AzureMonitorRegistryConfig() {
     step =
         InstrumentationConfig.get()
-            .getDuration("otel.micrometer.step.millis", Duration.ofSeconds(60));
+            .getDuration(
+                "applicationinsights.internal.micrometer.step.millis", Duration.ofSeconds(60));
   }
 
   @Override

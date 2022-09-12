@@ -28,7 +28,7 @@ public final class ActuatorInstrumentation implements TypeInstrumentation {
         ActuatorInstrumentation.class.getName() + "$GetCandidateConfigurationsAdvice");
   }
 
-  @SuppressWarnings("PrivateConstructorForUtilityClass")
+  @SuppressWarnings({"unused", "PrivateConstructorForUtilityClass"})
   public static class GetCandidateConfigurationsAdvice {
 
     @Advice.OnMethodExit(suppress = Throwable.class)
