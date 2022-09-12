@@ -20,5 +20,8 @@ tasks {
     from({
       agent.singleFile
     })
+    manifest {
+      attributes("Automatic-Module-Name" to "com.microsoft.applicationinsights.attach")
+    }
   }
 }
