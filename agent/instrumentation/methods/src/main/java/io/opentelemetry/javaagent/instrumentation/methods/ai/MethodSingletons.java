@@ -32,7 +32,11 @@ public final class MethodSingletons {
                 INSTRUMENTATION_NAME,
                 CodeSpanNameExtractor.create(codeAttributesGetter))
             .addAttributesExtractor(CodeAttributesExtractor.create(codeAttributesGetter))
+            // START APPLICATION INSIGHTS MODIFICATIONS
+            // we emit SERVER spans instead of INTERNAL spans, so that it works well with
+            // Application Insights' customInstrumentations feature
             .buildInstrumenter(SpanKindExtractor.alwaysServer());
+    // END APPLICATION INSIGHTS MODIFICATIONS
   }
 
   public static Instrumenter<ClassAndMethod, Void> instrumenter() {
