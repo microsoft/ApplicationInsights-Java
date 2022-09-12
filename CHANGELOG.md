@@ -5,7 +5,7 @@
 Migration notes:
 
 * If you were using Automatic naming before, you will need to update your module-info.java file.
-  Change ```requires applicationinsights.runtime.attach;``` to 
+  Change ```requires applicationinsights.runtime.attach;``` to
   ```requires com.microsoft.applicationinsights.runtime.attach;``` and everything should work.
 
 Enhancements:
