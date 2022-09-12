@@ -14,6 +14,7 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.instrumentation.api.instrumenter.BootstrapSemanticAttributes;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.util.HashSet;
 import java.util.Set;
@@ -37,6 +38,9 @@ final class MetricsView {
     // START APPLICATION INSIGHTS MODIFICATIONS
     // view.add(SemanticAttributes.RPC_SERVICE);
     // view.add(SemanticAttributes.RPC_METHOD);
+    view.add(BootstrapSemanticAttributes.CONNECTION_STRING);
+    view.add(BootstrapSemanticAttributes.INSTRUMENTATION_KEY);
+    view.add(BootstrapSemanticAttributes.ROLE_NAME);
     // END APPLICATION INSIGHTS MODIFICATIONS
     return view;
   }
