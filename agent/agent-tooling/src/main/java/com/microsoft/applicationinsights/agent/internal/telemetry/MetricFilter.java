@@ -72,6 +72,11 @@ public class MetricFilter {
   }
 
   public static boolean shouldSkip(String metricName, List<MetricFilter> metricFilters) {
-    return metricFilters.stream().anyMatch(metricFilter -> metricFilter.exclude(metricName));
+    for (MetricFilter metricFilter : metricFilters) {
+      if (metricFilter.exclude(metricName)) {
+        return true;
+      }
+    }
+    return false;
   }
 }
