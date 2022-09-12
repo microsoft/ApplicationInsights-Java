@@ -396,11 +396,7 @@ public final class SpanDataMapper {
     String host = attributes.get(SemanticAttributes.NET_PEER_NAME);
     if (host != null) {
       Long port = attributes.get(SemanticAttributes.NET_PEER_PORT);
-      if (port != null && port != defaultPort) {
-        return host + ":" + port;
-      } else {
-        return host;
-      }
+      return getTarget(host, port, defaultPort);
     }
     host = attributes.get(AiSemanticAttributes.NET_SOCK_PEER_NAME);
     if (host == null) {
@@ -408,13 +404,17 @@ public final class SpanDataMapper {
     }
     if (host != null) {
       Long port = attributes.get(AiSemanticAttributes.NET_SOCK_PEER_PORT);
-      if (port != null && port != defaultPort) {
-        return host + ":" + port;
-      } else {
-        return host;
-      }
+      return getTarget(host, port, defaultPort);
     }
     return null;
+  }
+
+  private static String getTarget(String host, @Nullable Long port, int defaultPort) {
+    if (port != null && port != defaultPort) {
+      return host + ":" + port;
+    } else {
+      return host;
+    }
   }
 
   private static void applyDatabaseClientSpan(
