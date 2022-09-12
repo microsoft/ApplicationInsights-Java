@@ -7,7 +7,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.javaagent.instrumentation.methods;
+package io.opentelemetry.javaagent.instrumentation.methods.ai;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
@@ -49,7 +49,7 @@ public class MethodInstrumentationModule extends InstrumentationModule {
   public List<String> getAdditionalHelperClassNames() {
     return typeInstrumentations.isEmpty()
         ? emptyList()
-        : singletonList("io.opentelemetry.javaagent.instrumentation.methods.MethodSingletons");
+        : singletonList("io.opentelemetry.javaagent.instrumentation.methods.ai.MethodSingletons");
   }
 
   @Override

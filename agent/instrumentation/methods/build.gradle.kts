@@ -23,5 +23,5 @@ dependencies {
 }
 
 tasks.withType<Test>().configureEach {
-  jvmArgs("-Dapplicationinsights.internal.methods.include=io.opentelemetry.javaagent.instrumentation.methods.MethodTest\$ConfigTracedCallable[call];io.opentelemetry.javaagent.instrumentation.methods.MethodTest\$ConfigTracedCompletableFuture[getResult]")
+  jvmArgs("-Dapplicationinsights.internal.methods.include=io.opentelemetry.javaagent.instrumentation.methods.ai.MethodTest\$ConfigTracedCallable[call];io.opentelemetry.javaagent.instrumentation.methods.ai.MethodTest\$ConfigTracedCompletableFuture[getResult]")
 }

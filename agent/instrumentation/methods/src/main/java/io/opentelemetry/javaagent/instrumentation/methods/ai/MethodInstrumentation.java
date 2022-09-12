@@ -7,12 +7,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.javaagent.instrumentation.methods;
+package io.opentelemetry.javaagent.instrumentation.methods.ai;
 
 import static io.opentelemetry.javaagent.bootstrap.Java8BytecodeBridge.currentContext;
 import static io.opentelemetry.javaagent.extension.matcher.AgentElementMatchers.hasClassesNamed;
 import static io.opentelemetry.javaagent.extension.matcher.AgentElementMatchers.hasSuperType;
-import static io.opentelemetry.javaagent.instrumentation.methods.MethodSingletons.instrumenter;
 import static net.bytebuddy.matcher.ElementMatchers.named;
 import static net.bytebuddy.matcher.ElementMatchers.namedOneOf;
 
@@ -68,11 +67,11 @@ public class MethodInstrumentation implements TypeInstrumentation {
         @Advice.Local("otelScope") Scope scope) {
       Context parentContext = currentContext();
       classAndMethod = ClassAndMethod.create(declaringClass, methodName);
-      if (!instrumenter().shouldStart(parentContext, classAndMethod)) {
+      if (!MethodSingletons.instrumenter().shouldStart(parentContext, classAndMethod)) {
         return;
       }
 
-      context = instrumenter().start(parentContext, classAndMethod);
+      context = MethodSingletons.instrumenter().start(parentContext, classAndMethod);
       scope = context.makeCurrent();
     }
 
@@ -87,7 +86,8 @@ public class MethodInstrumentation implements TypeInstrumentation {
       scope.close();
 
       returnValue =
-          AsyncOperationEndSupport.create(instrumenter(), Void.class, method.getReturnType())
+          AsyncOperationEndSupport.create(
+                  MethodSingletons.instrumenter(), Void.class, method.getReturnType())
               .asyncEnd(context, classAndMethod, returnValue, throwable);
     }
 
