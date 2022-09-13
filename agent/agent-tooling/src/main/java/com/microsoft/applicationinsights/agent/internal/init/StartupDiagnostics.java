@@ -13,6 +13,7 @@ import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 class StartupDiagnostics {
 
@@ -25,11 +26,9 @@ class StartupDiagnostics {
 
   public static final String APPLICATIONINSIGHTS_DEBUG_DIAG_EXPORT_TO_FILE =
       "applicationinsights.debug.startup.diag-export-to-file";
-  private static final Logger startupLogger = LoggerFactory.getLogger("com.microsoft.applicationinsights.agent");
 
-  public StartupDiagnostics(Logger startupLogger) {
-    this.startupLogger = startupLogger;
-  }
+  private static final Logger startupLogger =
+      LoggerFactory.getLogger("com.microsoft.applicationinsights.agent");
 
   static class DiagnosticsReport {
 

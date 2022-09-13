@@ -91,7 +91,7 @@ public class FirstEntryPoint implements LoggingCustomizer {
 
       ClassicSdkInstrumentation.registerTransformers();
 
-      StartupDiagnostics startupDiagnostics = new StartupDiagnostics(startupLogger);
+      StartupDiagnostics startupDiagnostics = new StartupDiagnostics();
       startupDiagnostics.execute();
 
       if (JvmCompiler.hasToDisableJvmCompilerDirectives()) {
