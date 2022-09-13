@@ -80,7 +80,7 @@ class StartupDiagnostics {
     }
   }
 
-  private String findResidentSetSize() {
+  private static String findResidentSetSize() {
     try (Stream<String> lines = Files.lines(Paths.get("/proc/self/status"))) {
       return lines.filter(line -> line.startsWith("VmRSS")).findAny().orElse("");
     } catch (IOException e) {
