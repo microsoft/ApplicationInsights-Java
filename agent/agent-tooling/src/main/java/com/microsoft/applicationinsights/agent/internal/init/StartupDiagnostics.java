@@ -50,7 +50,9 @@ class StartupDiagnostics {
     }
   }
 
-  void execute() {
+  private StartupDiagnostics() {}
+
+  static void execute() {
 
     DiagnosticsReport diagnosticsReport = new DiagnosticsReport();
 
