@@ -11,18 +11,18 @@ import java.util.Set;
 @SuppressWarnings("rawtypes")
 enum MetricView {
   HTTP_CLIENT_VIEW("http.client.duration", httpClientDurationAttributeKeys(), false),
-  HTTP_SERVER_VIEW("http.server.duration", httpServerDurationAttributeKeys(), false),
+  HTTP_SERVER_VIEW("http.server.duration", httpServerDurationAttributeKeys(), true),
   RPC_CLIENT_VIEW("rpc.client.duration", rpcClientDurationAttributeKeys(), false),
   RPC_SERVER_VIEW("rpc.server.duration", rpcServerDurationAttributeKeys(), false);
 
   private final String instrumentName;
   private final Set<AttributeKey<?>> attributeKeys;
-  private final boolean includeSynthetic;
+  private final boolean captureSynthetic;
 
-  MetricView(String instrumentName, Set<AttributeKey<?>> attributeKeys, boolean includeSynthetic) {
+  MetricView(String instrumentName, Set<AttributeKey<?>> attributeKeys, boolean captureSynthetic) {
     this.instrumentName = instrumentName;
     this.attributeKeys = attributeKeys;
-    this.includeSynthetic = includeSynthetic;
+    this.captureSynthetic = captureSynthetic;
   }
 
   String getInstrumentName() {
@@ -33,8 +33,8 @@ enum MetricView {
     return attributeKeys;
   }
 
-  boolean isIncludeSynthetic() {
-    return includeSynthetic;
+  boolean isCaptureSynthetic() {
+    return captureSynthetic;
   }
 
   private static Set<AttributeKey<?>> httpClientDurationAttributeKeys() {

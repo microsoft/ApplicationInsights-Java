@@ -18,13 +18,12 @@ import java.util.function.BiConsumer;
 @SuppressWarnings("rawtypes")
 class MetricViewAttributesProcessor extends AttributesProcessor {
 
-  private final Set<AttributeKey<?>> includeAttributeKeys;
-  private final boolean includeSynthetic;
+  private final Set<AttributeKey<?>> attributeKeys;
+  private final boolean captureSynthetic;
 
-  MetricViewAttributesProcessor(
-      Set<AttributeKey<?>> includeAttributeKeys, boolean includeSynthetic) {
-    this.includeAttributeKeys = includeAttributeKeys;
-    this.includeSynthetic = includeSynthetic;
+  MetricViewAttributesProcessor(Set<AttributeKey<?>> attributeKeys, boolean captureSynthetic) {
+    this.attributeKeys = attributeKeys;
+    this.captureSynthetic = captureSynthetic;
   }
 
   @Override
@@ -38,8 +37,8 @@ class MetricViewAttributesProcessor extends AttributesProcessor {
 
     AttributesBuilder filtered = Attributes.builder();
     applyCommon(filtered, span);
-    applyView(filtered, incoming, includeAttributeKeys);
-    if (includeSynthetic) {
+    applyView(filtered, incoming, attributeKeys);
+    if (captureSynthetic) {
       filtered.put(AiSemanticAttributes.IS_SYNTHETIC, UserAgents.isBot(incoming));
     }
     return filtered.build();

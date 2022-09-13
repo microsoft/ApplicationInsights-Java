@@ -16,19 +16,20 @@ public class ViewRegistry {
   public static void registerViews(SdkMeterProviderBuilder builder) {
     for (MetricView view : MetricView.values()) {
       registerView(
-          builder, view.getInstrumentName(), view.getAttributeKeys(), view.isIncludeSynthetic());
+          builder, view.getInstrumentName(), view.getAttributeKeys(), view.isCaptureSynthetic());
     }
   }
 
   private static void registerView(
       SdkMeterProviderBuilder builder,
-      String meterName,
-      Set<AttributeKey<?>> view,
-      boolean includeSynthetic) {
+      String instrumentName,
+      Set<AttributeKey<?>> attributeKeys,
+      boolean captureSynthetic) {
     ViewBuilder viewBuilder = View.builder();
-    ViewBuilderAccessor.add(viewBuilder, new MetricViewAttributesProcessor(view, includeSynthetic));
+    ViewBuilderAccessor.add(
+        viewBuilder, new MetricViewAttributesProcessor(attributeKeys, captureSynthetic));
     builder.registerView(
-        InstrumentSelector.builder().setName(meterName).build(), viewBuilder.build());
+        InstrumentSelector.builder().setName(instrumentName).build(), viewBuilder.build());
   }
 
   private ViewRegistry() {}
