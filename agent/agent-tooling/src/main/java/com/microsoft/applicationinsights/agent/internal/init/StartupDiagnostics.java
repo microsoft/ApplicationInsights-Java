@@ -70,7 +70,7 @@ class StartupDiagnostics {
     generateReport(diagnosticsReport);
   }
 
-  private void generateReport(DiagnosticsReport diagnosticsReport) {
+  private static void generateReport(DiagnosticsReport diagnosticsReport) {
     if (!diagnosticsReport.isEmpty()) {
       startupLogger.info("Start-up diagnostics" + File.separator + diagnosticsReport);
       boolean exportToFile = Boolean.getBoolean(APPLICATIONINSIGHTS_DEBUG_DIAG_EXPORT_TO_FILE);
@@ -89,7 +89,7 @@ class StartupDiagnostics {
     }
   }
 
-  private void saveIntoFile(DiagnosticsReport diagnosticsReport) {
+  private static void saveIntoFile(DiagnosticsReport diagnosticsReport) {
     Optional<File> optionalTempDir = createTempDirIfNotExists();
     if (optionalTempDir.isPresent()) {
       File tempDir = optionalTempDir.get();
@@ -98,7 +98,7 @@ class StartupDiagnostics {
     }
   }
 
-  private void write(DiagnosticsReport diagnosticsReport, File diagFile) {
+  private static void write(DiagnosticsReport diagnosticsReport, File diagFile) {
     byte[] diagReportAsBytes = diagnosticsReport.toString().getBytes(StandardCharsets.UTF_8);
     try {
       Files.write(diagFile.toPath(), diagReportAsBytes);
@@ -107,7 +107,7 @@ class StartupDiagnostics {
     }
   }
 
-  private Optional<File> createTempDirIfNotExists() {
+  private static Optional<File> createTempDirIfNotExists() {
     String tempDirectory = System.getProperty("java.io.tmpdir");
     File folder = new File(tempDirectory, "applicationinsights");
     if (!folder.exists() && !folder.mkdirs()) {
