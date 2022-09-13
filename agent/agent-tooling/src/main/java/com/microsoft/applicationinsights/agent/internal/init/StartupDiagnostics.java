@@ -120,7 +120,7 @@ class StartupDiagnostics {
   @SuppressFBWarnings(
       value = "SECCI", // Command Injection
       justification = "No user data is used to construct the command below")
-  private String executeNativeMemoryDiag() {
+  private static String executeNativeMemoryDiag() {
     ProcessBuilder processBuilder =
         new ProcessBuilder("jcmd", pid(), "VM.native_memory", "summary");
     return CommandExecutor.executeWithoutException(processBuilder, startupLogger);
