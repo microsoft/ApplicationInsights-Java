@@ -25,7 +25,7 @@ class StartupDiagnostics {
 
   public static final String APPLICATIONINSIGHTS_DEBUG_DIAG_EXPORT_TO_FILE =
       "applicationinsights.debug.startup.diag-export-to-file";
-  private final Logger startupLogger;
+  private static final Logger startupLogger = LoggerFactory.getLogger("com.microsoft.applicationinsights.agent");
 
   public StartupDiagnostics(Logger startupLogger) {
     this.startupLogger = startupLogger;
