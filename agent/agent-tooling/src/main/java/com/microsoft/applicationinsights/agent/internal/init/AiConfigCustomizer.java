@@ -221,6 +221,8 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
     if (config.instrumentation.kafka.enabled) {
       properties.put("otel.instrumentation.kafka.enabled", "true");
       properties.put("otel.instrumentation.spring-kafka.enabled", "true");
+      // TODO (trask) add to smoke test to ensure these metrics are not reported
+      properties.put("otel.instrumentation.kafka.metric-reporter.enabled", "false");
     }
     if (config.instrumentation.mongo.enabled) {
       properties.put("otel.instrumentation.mongo.enabled", "true");
