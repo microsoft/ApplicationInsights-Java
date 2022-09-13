@@ -17,14 +17,14 @@ import org.slf4j.Logger;
 class StartupDiagnostics {
 
   public static final String APPLICATIONINSIGHTS_DEBUG_RSS_ENABLED =
-      "applicationinsights.debug.rss.enabled";
+      "applicationinsights.debug.startup.rss.enabled";
 
   // Execute with -XX:NativeMemoryTracking=summary
   private static final String APPLICATIONINSIGHTS_DEBUG_NATIVE_MEM_TRACKING_ENABLED =
-      "applicationinsights.debug.native-mem-tracking.enabled";
+      "applicationinsights.debug.startup.native-mem-tracking.enabled";
 
   public static final String APPLICATIONINSIGHTS_DEBUG_DIAG_EXPORT_TO_FILE =
-      "applicationinsights.debug.diag-export-to-file";
+      "applicationinsights.debug.startup.diag-export-to-file";
   private final Logger startupLogger;
 
   public StartupDiagnostics(Logger startupLogger) {
