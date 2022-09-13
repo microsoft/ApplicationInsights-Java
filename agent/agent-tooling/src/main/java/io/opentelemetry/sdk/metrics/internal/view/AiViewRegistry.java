@@ -11,7 +11,9 @@ import io.opentelemetry.sdk.metrics.ViewBuilder;
 import io.opentelemetry.sdk.metrics.ViewBuilderAccessor;
 import java.util.Set;
 
-public class ViewRegistry {
+// there's already a ViewRegistry class in this SDK package
+// (and we have to hijack the package to get access to package-private details for now)
+public class AiViewRegistry {
 
   public static void registerViews(SdkMeterProviderBuilder builder) {
     for (MetricView view : MetricView.values()) {
@@ -32,5 +34,5 @@ public class ViewRegistry {
         InstrumentSelector.builder().setName(instrumentName).build(), viewBuilder.build());
   }
 
-  private ViewRegistry() {}
+  private AiViewRegistry() {}
 }

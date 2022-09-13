@@ -16,7 +16,10 @@ enum MetricView {
   RPC_SERVER_VIEW("rpc.server.duration", rpcServerDurationAttributeKeys(), false);
 
   private final String instrumentName;
+
+  @SuppressWarnings("ImmutableEnumChecker")
   private final Set<AttributeKey<?>> attributeKeys;
+
   private final boolean captureSynthetic;
 
   MetricView(String instrumentName, Set<AttributeKey<?>> attributeKeys, boolean captureSynthetic) {
