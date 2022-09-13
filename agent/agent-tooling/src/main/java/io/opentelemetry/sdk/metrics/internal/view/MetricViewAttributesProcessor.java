@@ -63,9 +63,12 @@ class MetricViewAttributesProcessor extends AttributesProcessor {
 
     String connectionString = readableSpan.getAttribute(AiSemanticAttributes.CONNECTION_STRING);
     if (connectionString != null) {
+      // support for connectionStringOverrides
+      // and for Classic SDK's setConnectionString()
       builder.put(AiSemanticAttributes.CONNECTION_STRING, connectionString);
     } else {
-      // back compat support
+      // back compat support for instrumentationKeyOverrides
+      // and for Classic SDK's setInstrumentationKey()
       String instrumentationKey =
           readableSpan.getAttribute(AiSemanticAttributes.INSTRUMENTATION_KEY);
       if (instrumentationKey != null) {
@@ -74,6 +77,8 @@ class MetricViewAttributesProcessor extends AttributesProcessor {
     }
     String roleName = readableSpan.getAttribute(AiSemanticAttributes.ROLE_NAME);
     if (roleName != null) {
+      // support for roleNameOverrides and for Classic SDK's setConnectionString()
+      // and Classic SDK set...
       builder.put(AiSemanticAttributes.ROLE_NAME, roleName);
     }
   }
