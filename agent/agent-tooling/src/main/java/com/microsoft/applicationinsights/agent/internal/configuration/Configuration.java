@@ -198,7 +198,7 @@ public class Configuration {
     public EnabledByDefaultInstrumentation kafka = new EnabledByDefaultInstrumentation();
     public LoggingInstrumentation logging = new LoggingInstrumentation();
     public MicrometerInstrumentation micrometer = new MicrometerInstrumentation();
-    public EnabledByDefaultInstrumentation mongo = new EnabledByDefaultInstrumentation();
+    public MongoInstrumentation mongo = new MongoInstrumentation();
     public EnabledByDefaultInstrumentation quartz = new EnabledByDefaultInstrumentation();
     public EnabledByDefaultInstrumentation rabbitmq = new EnabledByDefaultInstrumentation();
     public EnabledByDefaultInstrumentation redis = new EnabledByDefaultInstrumentation();
@@ -207,10 +207,15 @@ public class Configuration {
 
   public static class JdbcInstrumentation {
     public boolean enabled = true;
-    public JdbcMasking masking = new JdbcMasking();
+    public DatabaseMaskingConfiguration masking = new DatabaseMaskingConfiguration();
   }
 
-  public static class JdbcMasking {
+  public static class MongoInstrumentation {
+    public boolean enabled = true;
+    public DatabaseMaskingConfiguration masking = new DatabaseMaskingConfiguration();
+  }
+
+  public static class DatabaseMaskingConfiguration {
     public boolean enabled = true;
   }
 

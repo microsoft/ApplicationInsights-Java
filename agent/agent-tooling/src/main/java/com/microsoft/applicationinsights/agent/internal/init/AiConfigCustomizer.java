@@ -209,9 +209,6 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
       properties.put("otel.instrumentation.jdbc.enabled", "true");
       if (!config.instrumentation.jdbc.masking.enabled) {
         properties.put("otel.instrumentation.jdbc.statement-sanitizer.enabled", "false");
-        // TODO (trask) this line is temporary until 1.18.0, see
-        // https://github.com/open-telemetry/opentelemetry-java-instrumentation/pull/6492
-        System.setProperty("otel.instrumentation.jdbc.statement-sanitizer.enabled", "false");
       }
     }
     if (config.instrumentation.jms.enabled) {
@@ -226,6 +223,9 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
     }
     if (config.instrumentation.mongo.enabled) {
       properties.put("otel.instrumentation.mongo.enabled", "true");
+      if (!config.instrumentation.mongo.masking.enabled) {
+        properties.put("otel.instrumentation.mongo.statement-sanitizer.enabled", "false");
+      }
     }
     if (config.instrumentation.quartz.enabled) {
       properties.put("otel.instrumentation.quartz.enabled", "true");
