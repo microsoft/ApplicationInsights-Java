@@ -33,7 +33,7 @@ class StartupDiagnostics {
 
   static class DiagnosticsReport {
 
-    StringBuilder diagnosticBuilder = new StringBuilder();
+    final StringBuilder diagnosticBuilder = new StringBuilder();
 
     void addDiagnostic(String diagnostic) {
       diagnosticBuilder.append(diagnostic);
