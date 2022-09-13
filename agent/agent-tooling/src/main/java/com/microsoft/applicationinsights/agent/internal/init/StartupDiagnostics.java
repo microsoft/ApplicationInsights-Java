@@ -83,8 +83,7 @@ class StartupDiagnostics {
 
   private String findResidentSetSize() {
     try (Stream<String> lines = Files.lines(Paths.get("/proc/self/status"))) {
-      Optional<String> optionalRss = lines.filter(line -> line.startsWith("VmRSS")).findAny();
-      return optionalRss.orElse("");
+      return lines.filter(line -> line.startsWith("VmRSS")).findAny().orElse("");
     } catch (IOException e) {
       startupLogger.error("Error when retrieving rss", e);
       return e.getMessage();
