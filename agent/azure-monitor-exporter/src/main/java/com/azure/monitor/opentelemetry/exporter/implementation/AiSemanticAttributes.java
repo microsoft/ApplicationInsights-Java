@@ -35,6 +35,8 @@ public final class AiSemanticAttributes {
   public static final AttributeKey<Long> ITEM_COUNT =
       longKey("applicationinsights.internal.item_count");
 
+  // marks whether a request is coming from a "real" user, or a "synthetic" user (e.g. a bot or
+  // health check)
   public static final AttributeKey<Boolean> IS_SYNTHETIC =
       booleanKey("applicationinsights.internal.is_synthetic");
 
