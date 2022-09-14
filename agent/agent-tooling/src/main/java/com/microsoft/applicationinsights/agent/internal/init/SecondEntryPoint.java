@@ -18,7 +18,6 @@ import com.azure.monitor.opentelemetry.exporter.implementation.utils.TempDirs;
 import com.google.auto.service.AutoService;
 import com.microsoft.applicationinsights.agent.bootstrap.AiAppId;
 import com.microsoft.applicationinsights.agent.bootstrap.AzureFunctions;
-import com.microsoft.applicationinsights.agent.bootstrap.PreAggregatedStandardMetrics;
 import com.microsoft.applicationinsights.agent.internal.classicsdk.BytecodeUtilImpl;
 import com.microsoft.applicationinsights.agent.internal.common.FriendlyException;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
@@ -44,10 +43,8 @@ import com.microsoft.applicationinsights.agent.internal.telemetry.BatchItemProce
 import com.microsoft.applicationinsights.agent.internal.telemetry.MetricFilter;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryObservers;
-import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
-import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdkBuilder;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizer;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizerProvider;
@@ -60,7 +57,7 @@ import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReaderBuilder;
-import io.opentelemetry.sdk.trace.ReadableSpan;
+import io.opentelemetry.sdk.metrics.internal.view.AiViewRegistry;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
@@ -91,9 +88,6 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
 
   @Override
   public void customize(AutoConfigurationCustomizer autoConfiguration) {
-
-    PreAggregatedStandardMetrics.setAttributeGetter(new AttributeGetterImpl());
-
     File tempDir =
         TempDirs.getApplicationInsightsTempDir(
             startupLogger,
@@ -558,6 +552,8 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
             configuration.preview.metricIntervalSeconds * 1000);
     metricReader = readerBuilder.setInterval(Duration.ofMillis(intervalMillis)).build();
 
+    AiViewRegistry.registerViews(builder);
+
     return builder.registerMetricReader(metricReader);
   }
 
@@ -601,16 +597,6 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
     @Override
     public CompletableResultCode shutdown() {
       return delegate.shutdown();
-    }
-  }
-
-  public static class AttributeGetterImpl implements PreAggregatedStandardMetrics.AttributeGetter {
-    @Override
-    public <T> T get(Span span, AttributeKey<T> key) {
-      if (span instanceof ReadableSpan) {
-        return ((ReadableSpan) span).getAttribute(key);
-      }
-      return null;
     }
   }
 }

@@ -113,14 +113,6 @@ tasks {
     // into this package yet at the time exclusion takes place
     exclude("io/opentelemetry/javaagent/slf4j/impl/**")
 
-    exclude("io/opentelemetry/javaagent/shaded/instrumentation/api/instrumenter/http/HttpClientMetrics.class")
-    exclude("io/opentelemetry/javaagent/shaded/instrumentation/api/instrumenter/http/HttpServerMetrics.class")
-    exclude("io/opentelemetry/javaagent/shaded/instrumentation/api/instrumenter/http/TemporaryMetricsView.class")
-
-    exclude("io/opentelemetry/javaagent/shaded/instrumentation/api/instrumenter/rpc/RpcClientMetrics.class")
-    exclude("io/opentelemetry/javaagent/shaded/instrumentation/api/instrumenter/rpc/RpcServerMetrics.class")
-    exclude("io/opentelemetry/javaagent/shaded/instrumentation/api/instrumenter/rpc/MetricsView.class")
-
     dependsOn(isolateJavaagentLibs)
     from(isolateJavaagentLibs.get().outputs)
 
