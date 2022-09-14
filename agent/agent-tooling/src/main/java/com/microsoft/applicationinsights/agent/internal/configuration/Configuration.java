@@ -216,6 +216,7 @@ public class Configuration {
 
   public static class LoggingInstrumentation {
     public String level = "INFO";
+    public boolean captureCodeAttributes;
 
     public Severity getSeverity() {
       return getSeverity(level);
