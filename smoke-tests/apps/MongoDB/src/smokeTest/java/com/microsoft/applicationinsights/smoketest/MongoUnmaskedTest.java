@@ -3,28 +3,21 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
-import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_11;
-import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_11_OPENJ9;
-import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_17;
-import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_18;
-import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_19;
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_8;
-import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_8_OPENJ9;
-import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8;
-import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8_OPENJ9;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.data.MapEntry.entry;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-@UseAgent
 @WithDependencyContainers(
     @DependencyContainer(
         value = "mongo:4",
         exposedPort = 27017,
         hostnameEnvironmentVariable = "MONGO"))
-abstract class MongoUnmaskedTest {
+@Environment(TOMCAT_8_JAVA_8)
+@UseAgent("unmasked_applicationinsights.json")
+class MongoUnmaskedTest {
 
   @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.create();
 
@@ -52,31 +45,4 @@ abstract class MongoUnmaskedTest {
     SmokeTestExtension.assertParentChild(
         telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /MongoDB/*");
   }
-
-  @Environment(TOMCAT_8_JAVA_8)
-  static class Tomcat8Java8Test extends MongoUnmaskedTest {}
-
-  @Environment(TOMCAT_8_JAVA_8_OPENJ9)
-  static class Tomcat8Java8OpenJ9Test extends MongoUnmaskedTest {}
-
-  @Environment(TOMCAT_8_JAVA_11)
-  static class Tomcat8Java11Test extends MongoUnmaskedTest {}
-
-  @Environment(TOMCAT_8_JAVA_11_OPENJ9)
-  static class Tomcat8Java11OpenJ9Test extends MongoUnmaskedTest {}
-
-  @Environment(TOMCAT_8_JAVA_17)
-  static class Tomcat8Java17Test extends MongoUnmaskedTest {}
-
-  @Environment(TOMCAT_8_JAVA_18)
-  static class Tomcat8Java18Test extends MongoUnmaskedTest {}
-
-  @Environment(TOMCAT_8_JAVA_19)
-  static class Tomcat8Java19Test extends MongoUnmaskedTest {}
-
-  @Environment(WILDFLY_13_JAVA_8)
-  static class Wildfly13Java8Test extends MongoUnmaskedTest {}
-
-  @Environment(WILDFLY_13_JAVA_8_OPENJ9)
-  static class Wildfly13Java8OpenJ9Test extends MongoUnmaskedTest {}
 }
