@@ -272,6 +272,10 @@ public class Configuration {
     public long longIntervalSeconds = DAYS.toSeconds(1); // default to daily
   }
 
+  public static class PreAggregatedMetricsConfiguration {
+    public boolean disabled = false; // pre-aggregated metrics are on by default
+  }
+
   public static class Proxy {
 
     public String host;
@@ -446,6 +450,7 @@ public class Configuration {
   public static class InternalConfiguration {
     // This is used for collecting internal stats
     public Statsbeat statsbeat = new Statsbeat();
+    public PreAggregatedMetricsConfiguration preAggregatedMetric = new PreAggregatedMetricsConfiguration();
   }
 
   public static class PreviewInstrumentation {
