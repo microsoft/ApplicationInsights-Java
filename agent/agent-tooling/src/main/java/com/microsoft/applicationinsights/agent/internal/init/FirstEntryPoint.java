@@ -20,6 +20,7 @@ import com.microsoft.applicationinsights.agent.internal.configuration.Configurat
 import com.microsoft.applicationinsights.agent.internal.configuration.RpConfiguration;
 import com.microsoft.applicationinsights.agent.internal.configuration.RpConfigurationBuilder;
 import io.opentelemetry.javaagent.bootstrap.InstrumentationHolder;
+import io.opentelemetry.javaagent.bootstrap.InternalLogger;
 import io.opentelemetry.javaagent.bootstrap.JavaagentFileHolder;
 import io.opentelemetry.javaagent.tooling.LoggingCustomizer;
 import java.io.File;
@@ -92,6 +93,8 @@ public class FirstEntryPoint implements LoggingCustomizer {
       ClassicSdkInstrumentation.registerTransformers();
 
       StartupDiagnostics.execute();
+
+      InternalLogger.initialize(Slf4jInternalLogger::create);
 
       if (JvmCompiler.hasToDisableJvmCompilerDirectives()) {
         JvmCompiler.disableJvmCompilerDirectives();

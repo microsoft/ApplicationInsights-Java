@@ -31,7 +31,7 @@ tasks.withType<ShadowJar>().configureEach {
   relocate("io.opentelemetry.extension.kotlin", "io.opentelemetry.javaagent.shaded.io.opentelemetry.extension.kotlin")
 
   // from logback-classic
-  exclude("META-INF/services/javax.servlet.ServletContainerInitializer")
+  exclude("META-INF/services/jakarta.servlet.ServletContainerInitializer")
   // from moshi
   exclude("META-INF/proguard/**")
   exclude("META-INF/moshi.kotlin_module")
