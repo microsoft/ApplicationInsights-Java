@@ -193,24 +193,19 @@ public class Configuration {
 
     public EnabledByDefaultInstrumentation azureSdk = new EnabledByDefaultInstrumentation();
     public EnabledByDefaultInstrumentation cassandra = new EnabledByDefaultInstrumentation();
-    public JdbcInstrumentation jdbc = new JdbcInstrumentation();
+    public DatabaseInstrumentationWithMasking jdbc = new DatabaseInstrumentationWithMasking();
     public EnabledByDefaultInstrumentation jms = new EnabledByDefaultInstrumentation();
     public EnabledByDefaultInstrumentation kafka = new EnabledByDefaultInstrumentation();
     public LoggingInstrumentation logging = new LoggingInstrumentation();
     public MicrometerInstrumentation micrometer = new MicrometerInstrumentation();
-    public MongoInstrumentation mongo = new MongoInstrumentation();
+    public DatabaseInstrumentationWithMasking mongo = new DatabaseInstrumentationWithMasking();
     public EnabledByDefaultInstrumentation quartz = new EnabledByDefaultInstrumentation();
     public EnabledByDefaultInstrumentation rabbitmq = new EnabledByDefaultInstrumentation();
     public EnabledByDefaultInstrumentation redis = new EnabledByDefaultInstrumentation();
     public EnabledByDefaultInstrumentation springScheduling = new EnabledByDefaultInstrumentation();
   }
 
-  public static class JdbcInstrumentation {
-    public boolean enabled = true;
-    public DatabaseMaskingConfiguration masking = new DatabaseMaskingConfiguration();
-  }
-
-  public static class MongoInstrumentation {
+  public static class DatabaseInstrumentationWithMasking {
     public boolean enabled = true;
     public DatabaseMaskingConfiguration masking = new DatabaseMaskingConfiguration();
   }
