@@ -89,6 +89,7 @@ public final class SpanDataMapper {
             .put("thread.", true)
             .put("faas.", true)
             .put("code.", true)
+            .put("job.", true) // proposed semantic convention which we use for job.system
             .build();
   }
 
@@ -144,7 +145,7 @@ public final class SpanDataMapper {
       SpanKind kind, SpanContext parentSpanContext, Function<AttributeKey<String>, String> attrFn) {
     if (kind == SpanKind.INTERNAL) {
       // INTERNAL scheduled job spans with no parent are mapped to requests
-      return !parentSpanContext.isValid() && attrFn.apply(JOB_SYSTEM) != null;
+      return attrFn.apply(JOB_SYSTEM) != null && !parentSpanContext.isValid();
     } else if (kind == SpanKind.CLIENT || kind == SpanKind.PRODUCER) {
       return false;
     } else if (kind == SpanKind.CONSUMER
