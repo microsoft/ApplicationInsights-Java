@@ -36,7 +36,7 @@ public class UserContextInstrumentation implements TypeInstrumentation {
         UserContextInstrumentation.class.getName() + "$OtherMethodsAdvice");
   }
 
-  @SuppressWarnings("PrivateConstructorForUtilityClass")
+  @SuppressWarnings({"unused", "PrivateConstructorForUtilityClass"})
   public static class SetIdAdvice {
     @Advice.OnMethodEnter
     public static void methodEnter(
@@ -48,7 +48,7 @@ public class UserContextInstrumentation implements TypeInstrumentation {
     }
   }
 
-  @SuppressWarnings("PrivateConstructorForUtilityClass")
+  @SuppressWarnings({"unused", "PrivateConstructorForUtilityClass"})
   public static class OtherMethodsAdvice {
     @Advice.OnMethodEnter
     public static void methodEnter(

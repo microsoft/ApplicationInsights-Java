@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-package io.opentelemetry.javaagent.instrumentation.micrometer;
+package io.opentelemetry.javaagent.instrumentation.micrometer.ai;
 
 import static net.bytebuddy.matcher.ElementMatchers.isTypeInitializer;
 import static net.bytebuddy.matcher.ElementMatchers.named;
@@ -26,7 +26,7 @@ public final class MetricsInstrumentation implements TypeInstrumentation {
         isTypeInitializer(), MetricsInstrumentation.class.getName() + "$StaticInitAdvice");
   }
 
-  @SuppressWarnings("PrivateConstructorForUtilityClass")
+  @SuppressWarnings({"unused", "PrivateConstructorForUtilityClass"})
   public static class StaticInitAdvice {
 
     @Advice.OnMethodExit(suppress = Throwable.class)

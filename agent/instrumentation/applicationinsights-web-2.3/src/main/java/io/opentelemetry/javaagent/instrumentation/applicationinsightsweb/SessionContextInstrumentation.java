@@ -35,7 +35,7 @@ public class SessionContextInstrumentation implements TypeInstrumentation {
         SessionContextInstrumentation.class.getName() + "$OtherMethodsAdvice");
   }
 
-  @SuppressWarnings("PrivateConstructorForUtilityClass")
+  @SuppressWarnings({"unused", "PrivateConstructorForUtilityClass"})
   public static class SetIdAdvice {
     @Advice.OnMethodExit
     public static void methodExit(
@@ -47,7 +47,7 @@ public class SessionContextInstrumentation implements TypeInstrumentation {
     }
   }
 
-  @SuppressWarnings("PrivateConstructorForUtilityClass")
+  @SuppressWarnings({"unused", "PrivateConstructorForUtilityClass"})
   public static class OtherMethodsAdvice {
     @Advice.OnMethodEnter
     public static void methodEnter(

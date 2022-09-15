@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-package io.opentelemetry.javaagent.instrumentation.micrometer;
+package io.opentelemetry.javaagent.instrumentation.micrometer.ai;
 
 import io.micrometer.core.instrument.step.StepRegistryConfig;
 import io.opentelemetry.javaagent.bootstrap.internal.InstrumentationConfig;
@@ -14,7 +14,8 @@ public class AzureMonitorRegistryConfig implements StepRegistryConfig {
   public AzureMonitorRegistryConfig() {
     step =
         InstrumentationConfig.get()
-            .getDuration("otel.micrometer.step.millis", Duration.ofSeconds(60));
+            .getDuration(
+                "applicationinsights.internal.micrometer.step.millis", Duration.ofSeconds(60));
   }
 
   @Override

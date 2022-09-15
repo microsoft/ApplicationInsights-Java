@@ -13,7 +13,6 @@ import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 
-@SuppressWarnings("unused")
 class FunctionEnvironmentReloadInstrumentation implements TypeInstrumentation {
 
   @Override
@@ -29,7 +28,7 @@ class FunctionEnvironmentReloadInstrumentation implements TypeInstrumentation {
         FunctionEnvironmentReloadInstrumentation.class.getName() + "$ExecuteAdvice");
   }
 
-  @SuppressWarnings("PrivateConstructorForUtilityClass")
+  @SuppressWarnings({"unused", "PrivateConstructorForUtilityClass"})
   public static class ExecuteAdvice {
     @Advice.OnMethodExit(suppress = Throwable.class)
     public static void methodExit() {

@@ -16,7 +16,7 @@ import io.micrometer.core.instrument.Metrics;
 import io.micrometer.core.instrument.TimeGauge;
 import io.micrometer.core.instrument.Timer;
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
-import io.opentelemetry.javaagent.instrumentation.micrometer.AzureMonitorMeterRegistry;
+import io.opentelemetry.javaagent.instrumentation.micrometer.ai.AzureMonitorMeterRegistry;
 import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.ExecutorService;

@@ -42,6 +42,6 @@ dependencies {
 
 tasks {
   withType<Test>().configureEach {
-    jvmArgs("-Dotel.micrometer.step.millis=100")
+    jvmArgs("-Dapplicationinsights.internal.micrometer.step.millis=100")
   }
 }

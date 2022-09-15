@@ -23,7 +23,7 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
 
     Map<String, String> properties = new HashMap<>();
     properties.put(
-        "otel.micrometer.step.millis",
+        "applicationinsights.internal.micrometer.step.millis",
         Long.toString(SECONDS.toMillis(configuration.preview.metricIntervalSeconds)));
 
     enableInstrumentations(configuration, properties);
@@ -86,7 +86,7 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
         sb.append(customInstrumentation.methodName);
         sb.append(']');
       }
-      properties.put("otel.instrumentation.methods.include", sb.toString());
+      properties.put("applicationinsights.internal.methods.include", sb.toString());
     }
 
     properties.put("otel.propagators", DelegatingPropagatorProvider.NAME);
@@ -165,7 +165,7 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
     properties.put("otel.instrumentation.log4j-mdc.enabled", "true");
     properties.put("otel.instrumentation.log4j-context-data.enabled", "true");
     properties.put("otel.instrumentation.logback-mdc.enabled", "true");
-    properties.put("otel.instrumentation.methods.enabled", "true");
+    properties.put("otel.instrumentation.ai-methods.enabled", "true");
 
     // not supporting netty-3.8 for now
     properties.put("otel.instrumentation.netty-4.0.enabled", "true");
