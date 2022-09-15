@@ -450,7 +450,8 @@ public class Configuration {
   public static class InternalConfiguration {
     // This is used for collecting internal stats
     public Statsbeat statsbeat = new Statsbeat();
-    public PreAggregatedMetricsConfiguration preAggregatedMetric = new PreAggregatedMetricsConfiguration();
+    public PreAggregatedMetricsConfiguration preAggregatedMetric =
+        new PreAggregatedMetricsConfiguration();
   }
 
   public static class PreviewInstrumentation {

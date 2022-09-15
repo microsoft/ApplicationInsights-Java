@@ -21,12 +21,12 @@ import com.microsoft.applicationinsights.smoketest.schemav2.DataPoint;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
 import com.microsoft.applicationinsights.smoketest.schemav2.MessageData;
 import com.microsoft.applicationinsights.smoketest.schemav2.MetricData;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 import com.microsoft.applicationinsights.smoketest.schemav2.RemoteDependencyData;
 import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
 import com.microsoft.applicationinsights.smoketest.schemav2.SeverityLevel;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -63,7 +63,8 @@ abstract class PreAggMetricsWithRoleNameOverridesAndSamplingTest {
     Thread.sleep(SECONDS.toMillis(10));
 
     List<Envelope> metricsEnvelops = testing.mockedIngestion.getItemsEnvelopeDataType("MetricData");
-    // TODO need to fix pre agg metrics for non-sampled spans (PropagatedMetric) with role name and connection overrides
+    // TODO need to fix pre agg metrics for non-sampled spans (PropagatedMetric) with role name and
+    // connection overrides
     List<Envelope> clientRoleNameOverriddenEnvelops = new ArrayList<>();
     List<Envelope> clientRoleNameNotOverriddenEnvelops = new ArrayList<>();
     List<Envelope> serverRoleNameOverriddenEnvelops = new ArrayList<>();
@@ -93,7 +94,8 @@ abstract class PreAggMetricsWithRoleNameOverridesAndSamplingTest {
     verifyPreAggMetrics(serverRoleNameNotOverriddenEnvelops, DEFAULT_ROLE_NAME, false);
   }
 
-  private static void verifySamplingRateAndRoleNameOverrides(List<Envelope> requestEnvelopes, String roleName) throws Exception {
+  private static void verifySamplingRateAndRoleNameOverrides(
+      List<Envelope> requestEnvelopes, String roleName) throws Exception {
     List<Envelope> messageEnvelopes =
         testing.mockedIngestion.getItemsEnvelopeDataType("MessageData");
     // super super low chance that number of sampled requests/dependencies/events
@@ -145,18 +147,19 @@ abstract class PreAggMetricsWithRoleNameOverridesAndSamplingTest {
       assertThat(md.getProperties()).containsKey("ThreadName");
       assertThat(md.getProperties()).hasSize(3);
 
-      SmokeTestExtension.assertParentChild(rd, rdEnvelope, rddEnvelope,
-          "GET /PreAggMetricsWithRoleNameOverridesAndSampling/*");
-      SmokeTestExtension.assertParentChild(rd, rdEnvelope, mdEnvelope,
-          "GET /PreAggMetricsWithRoleNameOverridesAndSampling/*");
+      SmokeTestExtension.assertParentChild(
+          rd, rdEnvelope, rddEnvelope, "GET /PreAggMetricsWithRoleNameOverridesAndSampling/*");
+      SmokeTestExtension.assertParentChild(
+          rd, rdEnvelope, mdEnvelope, "GET /PreAggMetricsWithRoleNameOverridesAndSampling/*");
     }
   }
 
-  private static void verifyPreAggMetrics(List<Envelope> metrics, String roleName, boolean isClient) {
+  private static void verifyPreAggMetrics(
+      List<Envelope> metrics, String roleName, boolean isClient) {
     for (Envelope envelope : metrics) {
       validateTags(envelope, roleName);
       MetricData md1 = (MetricData) ((Data<?>) envelope.getData()).getBaseData();
-      validateMetricData(isClient? "client" : "server", md1, "200", roleName);
+      validateMetricData(isClient ? "client" : "server", md1, "200", roleName);
     }
   }
 
