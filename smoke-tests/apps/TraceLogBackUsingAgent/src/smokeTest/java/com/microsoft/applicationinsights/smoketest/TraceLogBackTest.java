@@ -86,15 +86,20 @@ abstract class TraceLogBackTest {
     assertThat(md2.getProperties()).containsEntry("LoggerName", "smoketestapp");
     assertThat(md2.getProperties()).containsKey("ThreadName");
 
-    assertThat(md2.getProperties()).containsEntry("FileName", "SimpleTestTraceLogBackServlet.java");
-    assertThat(md2.getProperties())
-        .containsEntry(
-            "ClassName",
-            "com.microsoft.applicationinsights.smoketestapp.SimpleTestTraceLogBackServlet");
-    assertThat(md2.getProperties()).containsEntry("MethodName", "doGet");
-    assertThat(md2.getProperties()).containsEntry("LineNumber", "26");
+    if (checkLogBackCodeAttributes()) {
+      assertThat(md2.getProperties())
+          .containsEntry("FileName", "SimpleTestTraceLogBackServlet.java");
+      assertThat(md2.getProperties())
+          .containsEntry(
+              "ClassName",
+              "com.microsoft.applicationinsights.smoketestapp.SimpleTestTraceLogBackServlet");
+      assertThat(md2.getProperties()).containsEntry("MethodName", "doGet");
+      assertThat(md2.getProperties()).containsEntry("LineNumber", "26");
 
-    assertThat(md2.getProperties()).hasSize(7);
+      assertThat(md2.getProperties()).hasSize(7);
+    } else {
+      assertThat(md2.getProperties()).hasSize(3);
+    }
 
     SmokeTestExtension.assertParentChild(
         rd, rdEnvelope, mdEnvelope1, "GET /TraceLogBackUsingAgent/traceLogBack");
