@@ -27,9 +27,11 @@ import com.microsoft.applicationinsights.smoketest.schemav2.SeverityLevel;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
+@Disabled
 @UseAgent
 abstract class PreAggMetricsWithRoleNameOverridesAndSamplingTest {
 
