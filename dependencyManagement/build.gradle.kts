@@ -59,7 +59,12 @@ val DEPENDENCY_SETS = listOf(
   ),
   DependencySet(
     "org.slf4j",
-    "2.0.0",
+    // moving to 2.0 is problematic because the SPI mechanism doesn't work in the bootstrap class
+    // loader because while we add the agent jar to the bootstrap class loader via
+    // Instrumentation.appendToBootstrapClassLoaderSearch(), there's nothing similar for resources
+    // (which is a known problem in the java agent world) and so the META-INF/services resource is
+    // not found
+    "1.7.36",
     listOf("slf4j-api", "slf4j-simple", "log4j-over-slf4j", "jcl-over-slf4j", "jul-to-slf4j")
   ),
   DependencySet(
@@ -96,7 +101,7 @@ val DEPENDENCY_SETS = listOf(
 )
 
 val DEPENDENCIES = listOf(
-  "ch.qos.logback:logback-classic:1.3.0", // 1.4.0 requires Java 11
+  "ch.qos.logback:logback-classic:1.2.11",
   "ch.qos.logback.contrib:logback-json-classic:0.1.5",
   "com.google.auto.service:auto-service:1.0.1",
   "com.uber.nullaway:nullaway:0.9.8",

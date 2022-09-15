@@ -19,32 +19,45 @@ public class Slf4jInternalLogger extends InternalLogger {
 
   @Override
   protected boolean isLoggable(InternalLogger.Level level) {
-    return logger.isEnabledForLevel(toSlf4jLevel(level));
+    switch (level) {
+      case TRACE:
+        return logger.isTraceEnabled();
+      case DEBUG:
+        return logger.isDebugEnabled();
+      case INFO:
+        return logger.isInfoEnabled();
+      case WARN:
+        return logger.isWarnEnabled();
+      case ERROR:
+        return logger.isErrorEnabled();
+    }
+    throw new IllegalStateException("Missing logging level value in switch");
   }
 
   @Override
   protected void log(InternalLogger.Level level, String message, @Nullable Throwable error) {
-    logger.makeLoggingEventBuilder(toSlf4jLevel(level)).setCause(error).log(message);
+    switch (level) {
+      case TRACE:
+        logger.trace(message, error);
+        return;
+      case DEBUG:
+        logger.debug(message, error);
+        return;
+      case INFO:
+        logger.info(message, error);
+        return;
+      case WARN:
+        logger.warn(message, error);
+        return;
+      case ERROR:
+        logger.error(message, error);
+        return;
+    }
+    throw new IllegalStateException("Missing logging level value in switch");
   }
 
   @Override
   protected String name() {
     return logger.getName();
-  }
-
-  private static org.slf4j.event.Level toSlf4jLevel(InternalLogger.Level level) {
-    switch (level) {
-      case ERROR:
-        return org.slf4j.event.Level.ERROR;
-      case WARN:
-        return org.slf4j.event.Level.WARN;
-      case INFO:
-        return org.slf4j.event.Level.INFO;
-      case DEBUG:
-        return org.slf4j.event.Level.DEBUG;
-      case TRACE:
-        return org.slf4j.event.Level.TRACE;
-    }
-    throw new IllegalStateException("Missing logging level value in switch");
   }
 }
