@@ -41,7 +41,7 @@ public class ChannelPipelineInstrumentation implements TypeInstrumentation {
         this.getClass().getName() + "$ChannelPipelineAddAdvice");
   }
 
-  @SuppressWarnings("PrivateConstructorForUtilityClass")
+  @SuppressWarnings({"unused", "PrivateConstructorForUtilityClass"})
   public static class ChannelPipelineAddAdvice {
     @Advice.OnMethodEnter
     public static void trackCallDepth(@Advice.Local("aiCallDepth") CallDepth callDepth) {

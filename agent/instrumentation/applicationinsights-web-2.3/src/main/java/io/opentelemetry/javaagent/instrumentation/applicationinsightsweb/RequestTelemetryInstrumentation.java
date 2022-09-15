@@ -64,7 +64,7 @@ public class RequestTelemetryInstrumentation implements TypeInstrumentation {
         RequestTelemetryInstrumentation.class.getName() + "$OtherMethodsAdvice");
   }
 
-  @SuppressWarnings("PrivateConstructorForUtilityClass")
+  @SuppressWarnings({"unused", "PrivateConstructorForUtilityClass"})
   public static class SetNameAdvice {
     @Advice.OnMethodEnter
     public static void methodEnter(
@@ -76,7 +76,7 @@ public class RequestTelemetryInstrumentation implements TypeInstrumentation {
     }
   }
 
-  @SuppressWarnings("PrivateConstructorForUtilityClass")
+  @SuppressWarnings({"unused", "PrivateConstructorForUtilityClass"})
   public static class SetSuccessAdvice {
     @Advice.OnMethodEnter
     public static void methodEnter(
@@ -88,7 +88,7 @@ public class RequestTelemetryInstrumentation implements TypeInstrumentation {
     }
   }
 
-  @SuppressWarnings("PrivateConstructorForUtilityClass")
+  @SuppressWarnings({"unused", "PrivateConstructorForUtilityClass"})
   public static class SetSourceAdvice {
     @Advice.OnMethodEnter
     public static void methodEnter(
@@ -100,7 +100,7 @@ public class RequestTelemetryInstrumentation implements TypeInstrumentation {
     }
   }
 
-  @SuppressWarnings("PrivateConstructorForUtilityClass")
+  @SuppressWarnings({"unused", "PrivateConstructorForUtilityClass"})
   public static class GetIdAdvice {
     @Advice.OnMethodExit
     public static void methodExit(
@@ -113,7 +113,7 @@ public class RequestTelemetryInstrumentation implements TypeInstrumentation {
     }
   }
 
-  @SuppressWarnings("PrivateConstructorForUtilityClass")
+  @SuppressWarnings({"unused", "PrivateConstructorForUtilityClass"})
   public static class OtherMethodsAdvice {
     @Advice.OnMethodEnter
     public static void methodEnter(

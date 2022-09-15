@@ -61,7 +61,7 @@ public class RequestTelemetryContextInstrumentation implements TypeInstrumentati
         RequestTelemetryContextInstrumentation.class.getName() + "$OtherMethodsAdvice");
   }
 
-  @SuppressWarnings("PrivateConstructorForUtilityClass")
+  @SuppressWarnings({"unused", "PrivateConstructorForUtilityClass"})
   public static class GetRequestTelemetryAdvice {
     @Advice.OnMethodExit
     public static void methodExit(
@@ -75,7 +75,7 @@ public class RequestTelemetryContextInstrumentation implements TypeInstrumentati
     }
   }
 
-  @SuppressWarnings("PrivateConstructorForUtilityClass")
+  @SuppressWarnings({"unused", "PrivateConstructorForUtilityClass"})
   public static class GetTracestateAdvice {
     @Advice.OnMethodExit
     public static void methodExit(
@@ -96,7 +96,7 @@ public class RequestTelemetryContextInstrumentation implements TypeInstrumentati
     }
   }
 
-  @SuppressWarnings("PrivateConstructorForUtilityClass")
+  @SuppressWarnings({"unused", "PrivateConstructorForUtilityClass"})
   public static class GetTraceflagAdvice {
     @Advice.OnMethodExit
     public static void methodExit(
@@ -110,7 +110,7 @@ public class RequestTelemetryContextInstrumentation implements TypeInstrumentati
     }
   }
 
-  @SuppressWarnings("PrivateConstructorForUtilityClass")
+  @SuppressWarnings({"unused", "PrivateConstructorForUtilityClass"})
   public static class OtherMethodsAdvice {
     @Advice.OnMethodEnter
     public static void methodEnter(

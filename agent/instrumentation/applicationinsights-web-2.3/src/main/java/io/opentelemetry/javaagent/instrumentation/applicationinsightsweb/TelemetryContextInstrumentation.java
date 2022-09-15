@@ -70,7 +70,7 @@ public class TelemetryContextInstrumentation implements TypeInstrumentation {
         TelemetryContextInstrumentation.class.getName() + "$OtherMethodsAdvice");
   }
 
-  @SuppressWarnings("PrivateConstructorForUtilityClass")
+  @SuppressWarnings({"unused", "PrivateConstructorForUtilityClass"})
   public static class GetUserAdvice {
     @Advice.OnMethodExit
     public static void methodExit(
@@ -82,7 +82,7 @@ public class TelemetryContextInstrumentation implements TypeInstrumentation {
     }
   }
 
-  @SuppressWarnings("PrivateConstructorForUtilityClass")
+  @SuppressWarnings({"unused", "PrivateConstructorForUtilityClass"})
   public static class GetOperationAdvice {
     @Advice.OnMethodExit
     public static void methodExit(
@@ -95,7 +95,7 @@ public class TelemetryContextInstrumentation implements TypeInstrumentation {
     }
   }
 
-  @SuppressWarnings("PrivateConstructorForUtilityClass")
+  @SuppressWarnings({"unused", "PrivateConstructorForUtilityClass"})
   public static class GetSessionAdvice {
     @Advice.OnMethodExit
     public static void methodExit(
@@ -108,7 +108,7 @@ public class TelemetryContextInstrumentation implements TypeInstrumentation {
     }
   }
 
-  @SuppressWarnings("PrivateConstructorForUtilityClass")
+  @SuppressWarnings({"unused", "PrivateConstructorForUtilityClass"})
   public static class GetDeviceAdvice {
     @Advice.OnMethodExit
     public static void methodExit(
@@ -121,7 +121,7 @@ public class TelemetryContextInstrumentation implements TypeInstrumentation {
     }
   }
 
-  @SuppressWarnings("PrivateConstructorForUtilityClass")
+  @SuppressWarnings({"unused", "PrivateConstructorForUtilityClass"})
   public static class OtherMethodsAdvice {
     @Advice.OnMethodEnter
     public static void methodEnter(

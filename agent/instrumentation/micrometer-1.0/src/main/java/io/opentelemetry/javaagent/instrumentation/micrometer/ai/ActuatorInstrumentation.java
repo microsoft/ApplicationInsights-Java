@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-package io.opentelemetry.javaagent.instrumentation.micrometer;
+package io.opentelemetry.javaagent.instrumentation.micrometer.ai;
 
 import static net.bytebuddy.matcher.ElementMatchers.named;
 import static net.bytebuddy.matcher.ElementMatchers.returns;
@@ -28,7 +28,7 @@ public final class ActuatorInstrumentation implements TypeInstrumentation {
         ActuatorInstrumentation.class.getName() + "$GetCandidateConfigurationsAdvice");
   }
 
-  @SuppressWarnings("PrivateConstructorForUtilityClass")
+  @SuppressWarnings({"unused", "PrivateConstructorForUtilityClass"})
   public static class GetCandidateConfigurationsAdvice {
 
     @Advice.OnMethodExit(suppress = Throwable.class)

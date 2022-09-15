@@ -41,7 +41,7 @@ class AiOverrideSampler implements Sampler {
 
     SpanContext parentSpanContext = Span.fromContext(parentContext).getSpanContext();
 
-    // TODO isRequest won't be correct for spring-scheduling, quartz and customInstrumentation
+    // TODO isRequest won't be correct for spring-scheduling and quartz
     //  since we don't have scope available in the sampler (yet)
     boolean isRequest =
         SpanDataMapper.isRequest(spanKind, parentSpanContext, null, attributes::get);

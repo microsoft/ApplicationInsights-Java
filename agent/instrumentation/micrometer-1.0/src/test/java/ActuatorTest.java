@@ -35,7 +35,7 @@ class ActuatorTest {
     // then
     assertThat(list)
         .contains(
-            "io.opentelemetry.javaagent.instrumentation.micrometer.AzureMonitorAutoConfiguration");
+            "io.opentelemetry.javaagent.instrumentation.micrometer.ai.AzureMonitorAutoConfiguration");
     assertThat(list)
         .doesNotContain(
             "com.microsoft.azure.spring.autoconfigure.metrics.AzureMonitorMetricsExportAutoConfiguration");
@@ -48,7 +48,7 @@ class ActuatorTest {
     // given
     ClassPathResource resource =
         new ClassPathResource(
-            "io/opentelemetry/javaagent/instrumentation/micrometer/AzureMonitorAutoConfiguration.class");
+            "io/opentelemetry/javaagent/instrumentation/micrometer/ai/AzureMonitorAutoConfiguration.class");
 
     // when
     InputStream input = resource.getInputStream();
