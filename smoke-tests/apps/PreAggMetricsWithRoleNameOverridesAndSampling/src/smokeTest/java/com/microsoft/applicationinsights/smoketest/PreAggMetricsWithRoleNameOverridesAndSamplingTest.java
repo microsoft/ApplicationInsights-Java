@@ -22,7 +22,6 @@ import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
 import com.microsoft.applicationinsights.smoketest.schemav2.MessageData;
 import com.microsoft.applicationinsights.smoketest.schemav2.MetricData;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import com.microsoft.applicationinsights.smoketest.schemav2.RemoteDependencyData;
@@ -34,9 +33,10 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 @UseAgent
 abstract class PreAggMetricsWithRoleNameOverridesAndSamplingTest {
 
-  private static final int COUNT = 100;
-
   @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.create();
+
+  private static final int COUNT = 100;
+  private static final String DEFAULT_ROLE_NAME = "testrolename";
 
   @Test
   @TargetUri(value = "/app2", callCount = COUNT)
@@ -63,27 +63,34 @@ abstract class PreAggMetricsWithRoleNameOverridesAndSamplingTest {
     Thread.sleep(SECONDS.toMillis(10));
 
     List<Envelope> metricsEnvelops = testing.mockedIngestion.getItemsEnvelopeDataType("MetricData");
-    List<Envelope> clientMetrics = new ArrayList<>();
-    List<Envelope> serverMetrics = new ArrayList<>();
+    // TODO need to fix pre agg metrics for non-sampled spans (PropagatedMetric) with role name and connection overrides
+    List<Envelope> clientRoleNameOverriddenEnvelops = new ArrayList<>();
+    List<Envelope> clientRoleNameNotOverriddenEnvelops = new ArrayList<>();
+    List<Envelope> serverRoleNameOverriddenEnvelops = new ArrayList<>();
+    List<Envelope> serverRoleNameNotOverriddenEnvelops = new ArrayList<>();
     for (Envelope envelope : metricsEnvelops) {
       MetricData metricData = (MetricData) ((Data<?>) envelope.getData()).getBaseData();
       String name = metricData.getMetrics().get(0).getName();
       if ("http.client.duration".equals(name)) {
-        clientMetrics.add(envelope);
+        if (DEFAULT_ROLE_NAME.equals(envelope.getTags().get("ai.cloud.role"))) {
+          clientRoleNameNotOverriddenEnvelops.add(envelope);
+        } else {
+          clientRoleNameOverriddenEnvelops.add(envelope);
+        }
       } else if ("http.server.duration".equals(name)) {
-        serverMetrics.add(envelope);
+        if (DEFAULT_ROLE_NAME.equals(envelope.getTags().get("ai.cloud.role"))) {
+          serverRoleNameNotOverriddenEnvelops.add(envelope);
+        } else {
+          serverRoleNameOverriddenEnvelops.add(envelope);
+        }
       }
     }
 
-    // sort metrics based on `ai.cloud.role`
-    // 1st half of metrics are ReadableSpan
-    // 2nd half of metrics are PropagatedSpan
-    clientMetrics.sort(Comparator.comparing(obj -> obj.getTags().get("ai.cloud.role")));
-    serverMetrics.sort(Comparator.comparing(obj -> obj.getTags().get("ai.cloud.role")));
-
     verifySamplingRateAndRoleNameOverrides(requestEnvelopes, roleName);
-    verifyHttpClientPreAggregatedMetrics(clientMetrics, roleName, clientMetrics.size());
-    verifyHttpServerPreAggregatedMetrics(serverMetrics, roleName, serverMetrics.size());
+    verifyPreAggMetrics(clientRoleNameOverriddenEnvelops, roleName, true);
+    verifyPreAggMetrics(clientRoleNameNotOverriddenEnvelops, DEFAULT_ROLE_NAME, true);
+    verifyPreAggMetrics(serverRoleNameOverriddenEnvelops, roleName, false);
+    verifyPreAggMetrics(serverRoleNameNotOverriddenEnvelops, DEFAULT_ROLE_NAME, false);
   }
 
   private static void verifySamplingRateAndRoleNameOverrides(List<Envelope> requestEnvelopes, String roleName) throws Exception {
@@ -145,37 +152,11 @@ abstract class PreAggMetricsWithRoleNameOverridesAndSamplingTest {
     }
   }
 
-  private static void verifyHttpClientPreAggregatedMetrics(
-      List<Envelope> metrics, String roleName, int count) {
-    assertThat(metrics.size()).isEqualTo(count);
-
-    for (int i = 0; i < count; i++) {
-      Envelope envelope = metrics.get(i);
-      // even number 2nd half starts from count/2 and old number 2nd half starts from count/2 + 1
-      if ((i % 2 == 0 && i >= count/2) || (i % 2 != 0 && i > count/2)) {
-        roleName = "testrolename"; // TODO 2nd half of the metrics: role name override is broken for PropagatedSpan
-      }
-
+  private static void verifyPreAggMetrics(List<Envelope> metrics, String roleName, boolean isClient) {
+    for (Envelope envelope : metrics) {
       validateTags(envelope, roleName);
       MetricData md1 = (MetricData) ((Data<?>) envelope.getData()).getBaseData();
-      validateMetricData("client", md1, "200", roleName);
-    }
-  }
-
-  private static void verifyHttpServerPreAggregatedMetrics(
-      List<Envelope> metrics, String roleName, int count) {
-    assertThat(metrics.size()).isEqualTo(count);
-
-    for (int i = 0; i < count; i++) {
-      Envelope envelope = metrics.get(i);
-      // even number 2nd half starts from count/2 and old number 2nd half starts from count/2 + 1
-      if ((i % 2 == 0 && i >= count/2) || (i % 2 != 0 && i > count/2)) {
-        roleName = "testrolename"; // TODO 2nd half of the metrics: role name override is broken for PropagatedSpan
-      }
-
-      validateTags(envelope, roleName);
-      MetricData md1 = (MetricData) ((Data<?>) envelope.getData()).getBaseData();
-      validateMetricData("server", md1, "200", roleName);
+      validateMetricData(isClient? "client" : "server", md1, "200", roleName);
     }
   }
 
