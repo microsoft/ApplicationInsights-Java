@@ -17,19 +17,14 @@ public class AiViewRegistry {
 
   public static void registerViews(SdkMeterProviderBuilder builder) {
     for (MetricView view : MetricView.values()) {
-      registerView(
-          builder, view.getInstrumentName(), view.getAttributeKeys(), view.isCaptureSynthetic());
+      registerView(builder, view.getInstrumentName(), view.getAttributeKeys());
     }
   }
 
   private static void registerView(
-      SdkMeterProviderBuilder builder,
-      String instrumentName,
-      Set<AttributeKey<?>> attributeKeys,
-      boolean captureSynthetic) {
+      SdkMeterProviderBuilder builder, String instrumentName, Set<AttributeKey<?>> attributeKeys) {
     ViewBuilder viewBuilder = View.builder();
-    ViewBuilderAccessor.add(
-        viewBuilder, new MetricViewAttributesProcessor(attributeKeys, captureSynthetic));
+    ViewBuilderAccessor.add(viewBuilder, new MetricViewAttributesProcessor(attributeKeys));
     builder.registerView(
         InstrumentSelector.builder().setName(instrumentName).build(), viewBuilder.build());
   }

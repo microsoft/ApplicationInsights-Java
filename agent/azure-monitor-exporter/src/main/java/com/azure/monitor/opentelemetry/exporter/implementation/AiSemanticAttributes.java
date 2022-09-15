@@ -13,21 +13,38 @@ import java.util.List;
 public final class AiSemanticAttributes {
 
   // replaced by ai.preview.connection_string
+  // not supported anymore, because if you stamp it on non-recording span then standard metrics
+  // will not see it and then be incorrect
   @Deprecated
   public static final AttributeKey<String> INSTRUMENTATION_KEY =
       AttributeKey.stringKey("ai.preview.instrumentation_key");
 
+  // not supported anymore, because if you stamp it on non-recording span then standard metrics
+  // will not see it and then be incorrect
+  @Deprecated
   public static final AttributeKey<String> CONNECTION_STRING =
       AttributeKey.stringKey("ai.preview.connection_string");
 
+  // not supported anymore, because if you stamp it on non-recording span then standard metrics
+  // will not see it and then be incorrect
+  @Deprecated
   public static final AttributeKey<String> ROLE_NAME =
       AttributeKey.stringKey("ai.preview.service_name");
 
+  // not supported anymore, because if you stamp it on non-recording span then standard metrics
+  // will not see it and then be incorrect
+  @Deprecated
   public static final AttributeKey<String> ROLE_INSTANCE_ID =
       AttributeKey.stringKey("ai.preview.service_instance_id");
 
   public static final AttributeKey<String> APPLICATION_VERSION =
       AttributeKey.stringKey("ai.preview.service_version");
+
+  public static final AttributeKey<String> INTERNAL_CONNECTION_STRING =
+      AttributeKey.stringKey("ai.internal.connection_string");
+
+  public static final AttributeKey<String> INTERNAL_ROLE_NAME =
+      AttributeKey.stringKey("ai.internal.service_name");
 
   public static final AttributeKey<String> OPERATION_NAME =
       stringKey("applicationinsights.internal.operation_name");

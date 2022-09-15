@@ -10,22 +10,19 @@ import java.util.Set;
 
 @SuppressWarnings("rawtypes")
 enum MetricView {
-  HTTP_CLIENT_VIEW("http.client.duration", httpClientDurationAttributeKeys(), false),
-  HTTP_SERVER_VIEW("http.server.duration", httpServerDurationAttributeKeys(), true),
-  RPC_CLIENT_VIEW("rpc.client.duration", rpcClientDurationAttributeKeys(), false),
-  RPC_SERVER_VIEW("rpc.server.duration", rpcServerDurationAttributeKeys(), false);
+  HTTP_CLIENT_VIEW("http.client.duration", httpClientDurationAttributeKeys()),
+  HTTP_SERVER_VIEW("http.server.duration", httpServerDurationAttributeKeys()),
+  RPC_CLIENT_VIEW("rpc.client.duration", rpcClientDurationAttributeKeys()),
+  RPC_SERVER_VIEW("rpc.server.duration", rpcServerDurationAttributeKeys());
 
   private final String instrumentName;
 
   @SuppressWarnings("ImmutableEnumChecker")
   private final Set<AttributeKey<?>> attributeKeys;
 
-  private final boolean captureSynthetic;
-
-  MetricView(String instrumentName, Set<AttributeKey<?>> attributeKeys, boolean captureSynthetic) {
+  MetricView(String instrumentName, Set<AttributeKey<?>> attributeKeys) {
     this.instrumentName = instrumentName;
     this.attributeKeys = attributeKeys;
-    this.captureSynthetic = captureSynthetic;
   }
 
   String getInstrumentName() {
@@ -34,10 +31,6 @@ enum MetricView {
 
   Set<AttributeKey<?>> getAttributeKeys() {
     return attributeKeys;
-  }
-
-  boolean isCaptureSynthetic() {
-    return captureSynthetic;
   }
 
   private static Set<AttributeKey<?>> httpClientDurationAttributeKeys() {

@@ -115,6 +115,9 @@ tasks {
     exclude("inst/io/opentelemetry/javaagent/slf4j/**")
     exclude("inst/META-INF/services/io.opentelemetry.javaagent.slf4j.spi.SLF4JServiceProvider")
 
+    exclude("io/opentelemetry/javaagent/shaded/instrumentation/api/instrumenter/http/TemporaryMetricsView.class")
+    exclude("io/opentelemetry/javaagent/shaded/instrumentation/api/instrumenter/InstrumenterBuilder.class")
+
     dependsOn(isolateJavaagentLibs)
     from(isolateJavaagentLibs.get().outputs)
 

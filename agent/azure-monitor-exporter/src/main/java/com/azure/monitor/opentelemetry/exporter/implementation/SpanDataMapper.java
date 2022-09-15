@@ -876,10 +876,6 @@ public final class SpanDataMapper {
     if (applyConnectionStringAndRoleNameOverrides(telemetryBuilder, value, key)) {
       return true;
     }
-    if (key.equals(AiSemanticAttributes.ROLE_INSTANCE_ID.getKey()) && value instanceof String) {
-      telemetryBuilder.addTag(ContextTagKeys.AI_CLOUD_ROLE_INSTANCE.toString(), (String) value);
-      return true;
-    }
     if (key.equals(AiSemanticAttributes.APPLICATION_VERSION.getKey()) && value instanceof String) {
       telemetryBuilder.addTag(ContextTagKeys.AI_APPLICATION_VER.toString(), (String) value);
       return true;
@@ -889,17 +885,13 @@ public final class SpanDataMapper {
 
   static boolean applyConnectionStringAndRoleNameOverrides(
       AbstractTelemetryBuilder telemetryBuilder, Object value, String key) {
-    if (key.equals(AiSemanticAttributes.CONNECTION_STRING.getKey()) && value instanceof String) {
+    if (key.equals(AiSemanticAttributes.INTERNAL_CONNECTION_STRING.getKey())
+        && value instanceof String) {
       // intentionally letting exceptions from parse bubble up
       telemetryBuilder.setConnectionString(ConnectionString.parse((String) value));
       return true;
     }
-    if (key.equals(AiSemanticAttributes.INSTRUMENTATION_KEY.getKey()) && value instanceof String) {
-      // intentionally letting exceptions from parse bubble up
-      telemetryBuilder.setConnectionString(ConnectionString.parse("InstrumentationKey=" + value));
-      return true;
-    }
-    if (key.equals(AiSemanticAttributes.ROLE_NAME.getKey()) && value instanceof String) {
+    if (key.equals(AiSemanticAttributes.INTERNAL_ROLE_NAME.getKey()) && value instanceof String) {
       telemetryBuilder.addTag(ContextTagKeys.AI_CLOUD_ROLE.toString(), (String) value);
       return true;
     }
