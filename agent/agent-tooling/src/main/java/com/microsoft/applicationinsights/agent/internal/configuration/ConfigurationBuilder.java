@@ -532,8 +532,11 @@ public class ConfigurationBuilder {
     overlayAadEnvVars(config);
     overlayInstrumentationEnabledEnvVars(config);
 
-    // disable pre-aggregated metric if sampling rate is not 100 and roleName/connectionString overrides are used
-    if ((config.preview.roleNameOverrides.size() != 0 || config.preview.connectionStringOverrides.size() != 0) && config.sampling.percentage != 100) {
+    // disable pre-aggregated metric if sampling rate is not 100 and roleName/connectionString
+    // overrides are used
+    if ((config.preview.roleNameOverrides.size() != 0
+            || config.preview.connectionStringOverrides.size() != 0)
+        && config.sampling.percentage != 100) {
       config.internal.preAggregatedMetric.disabled = true;
     }
   }
