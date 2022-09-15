@@ -252,7 +252,7 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
       System.setProperty(
           "otel.instrumentation.spring-scheduling.experimental-span-attributes", "true");
     }
-    if (config.instrumentation.logging.captureCodeAttributes) {
+    if (config.preview.captureLogbackCodeAttributes) {
       properties.put(
           "otel.instrumentation.logback-appender.experimental.capture-code-attributes", "true");
     }

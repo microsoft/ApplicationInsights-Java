@@ -216,7 +216,6 @@ public class Configuration {
 
   public static class LoggingInstrumentation {
     public String level = "INFO";
-    public boolean captureCodeAttributes;
 
     public Severity getSeverity() {
       return getSeverity(level);
@@ -312,6 +311,8 @@ public class Configuration {
     // their Javaagent version
     // Note: this configuration option will be removed in 4.0.0
     public boolean captureLoggingLevelAsCustomDimension;
+
+    public boolean captureLogbackCodeAttributes;
 
     // this is to support interoperability with other systems
     // intentionally not allowing the removal of w3c propagator since that is key to many Azure
