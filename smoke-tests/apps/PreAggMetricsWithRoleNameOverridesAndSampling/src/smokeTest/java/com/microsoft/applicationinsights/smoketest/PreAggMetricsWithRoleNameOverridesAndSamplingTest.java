@@ -76,7 +76,7 @@ abstract class PreAggMetricsWithRoleNameOverridesAndSamplingTest {
 
     verifySamplingRateAndRoleNameOverrides(requestEnvelopes, roleName);
     verifyPreAggMetrics(clientMetrics, roleName, true);
-    verifyPreAggMetrics(serverMetrics, roleName, true);
+    verifyPreAggMetrics(serverMetrics, roleName, false);
   }
 
   private static void verifySamplingRateAndRoleNameOverrides(
