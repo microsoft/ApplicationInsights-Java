@@ -1,5 +1,17 @@
 # CHANGELOG
 
+# Version 3.4.0-BETA.2
+
+Migration notes:
+
+* If you were using Automatic naming before, you will need to update your module-info.java file.
+  Change ```requires applicationinsights.runtime.attach;``` to
+  ```requires com.microsoft.applicationinsights.runtime.attach;``` and everything should work.
+
+Enhancements:
+
+* Automatic module name entry added to Runtime Attach library Jar to support Modular Java.
+
 # Version 3.4.0-BETA
 
 Migration notes:

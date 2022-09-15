@@ -90,6 +90,19 @@ public class FirstEntryPoint implements LoggingCustomizer {
       ConfigurationBuilder.logConfigurationWarnMessages();
 
       ClassicSdkInstrumentation.registerTransformers();
+
+      StartupDiagnostics.execute();
+
+      if (JvmCompiler.hasToDisableJvmCompilerDirectives()) {
+        JvmCompiler.disableJvmCompilerDirectives();
+      }
+
+      if (startupLogger.isDebugEnabled()) {
+        startupLogger.debug("Classpath: " + System.getProperty("java.class.path"));
+        startupLogger.debug(
+            "Input arguments: " + ManagementFactory.getRuntimeMXBean().getInputArguments());
+      }
+
     } catch (Exception e) {
       throw new IllegalStateException(e);
     }
