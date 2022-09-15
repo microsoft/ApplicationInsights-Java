@@ -36,7 +36,7 @@ class MongoUnmaskedTest {
     assertThat(telemetry.rd.getMeasurements()).isEmpty();
 
     assertThat(telemetry.rdd1.getName()).isEqualTo("find testdb.test");
-    assertThat(telemetry.rdd1.getData()).isEqualTo("{\"find\": \"test\", \"$db\": \"xyz\"}");
+    assertThat(telemetry.rdd1.getData()).isEqualTo("{\"find\": \"test\", \"$db\": \"testdb\"}");
     assertThat(telemetry.rdd1.getType()).isEqualTo("mongodb");
     assertThat(telemetry.rdd1.getTarget()).matches("dependency[0-9]+ \\| testdb");
     assertThat(telemetry.rdd1.getProperties()).isEmpty();
