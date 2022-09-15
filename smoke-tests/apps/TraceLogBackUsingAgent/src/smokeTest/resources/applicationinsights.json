@@ -8,7 +8,8 @@
   },
   "instrumentation": {
     "logging": {
-      "level": "warn"
+      "level": "warn",
+      "captureCodeAttributes": true
     }
   }
 }
