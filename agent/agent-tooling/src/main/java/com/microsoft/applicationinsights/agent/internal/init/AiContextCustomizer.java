@@ -37,29 +37,31 @@ public class AiContextCustomizer<R> implements ContextCustomizer<R> {
     // TODO (trask) ideally would also check parentSpanContext !isValid || isRemote
     // but context has the span in it, not the parentSpan
 
+    Context newContext = context;
+
     String target = startAttributes.get(SemanticAttributes.HTTP_TARGET);
 
     String connectionStringOverride = getConnectionStringOverride(target);
     if (connectionStringOverride != null) {
-      context = context.with(AiContextKeys.CONNECTION_STRING, connectionStringOverride);
+      newContext = newContext.with(AiContextKeys.CONNECTION_STRING, connectionStringOverride);
       // InheritedConnectionStringSpanProcessor will stamp connection string attribute from the
       // context onto other spans, but this onStart() occurs after spanStart(), so we must stamp
       // this span separately
-      Span span = Span.fromContext(context);
+      Span span = Span.fromContext(newContext);
       span.setAttribute(AiSemanticAttributes.INTERNAL_CONNECTION_STRING, connectionStringOverride);
     }
 
     String roleNameOverride = getRoleNameOverride(target);
     if (roleNameOverride != null) {
-      context = context.with(AiContextKeys.ROLE_NAME, roleNameOverride);
+      newContext = newContext.with(AiContextKeys.ROLE_NAME, roleNameOverride);
       // InheritedRoleNameSpanProcessor will stamp role name attribute from the
       // context onto other spans, but this onStart() occurs after spanStart(), so we must stamp
       // this span separately
-      Span span = Span.fromContext(context);
+      Span span = Span.fromContext(newContext);
       span.setAttribute(AiSemanticAttributes.INTERNAL_ROLE_NAME, roleNameOverride);
     }
 
-    return context;
+    return newContext;
   }
 
   @Nullable
