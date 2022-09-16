@@ -78,7 +78,9 @@ public final class InstrumenterBuilder<REQUEST, RESPONSE> {
     this.instrumentationVersion =
         EmbeddedInstrumentationProperties.findVersion(instrumentationName);
 
+    // START APPLICATION INSIGHTS MODIFICATIONS
     contextCustomizers.add(AiContextCustomizerHolder.getInstance());
+    // END APPLICATION INSIGHTS MODIFICATIONS
   }
 
   /**
