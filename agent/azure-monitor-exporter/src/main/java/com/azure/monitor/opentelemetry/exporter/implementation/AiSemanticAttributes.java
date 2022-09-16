@@ -41,10 +41,10 @@ public final class AiSemanticAttributes {
       AttributeKey.stringKey("ai.preview.service_version");
 
   public static final AttributeKey<String> INTERNAL_CONNECTION_STRING =
-      AttributeKey.stringKey("ai.internal.connection_string");
+      AttributeKey.stringKey("applicationinsights.internal.connection_string");
 
   public static final AttributeKey<String> INTERNAL_ROLE_NAME =
-      AttributeKey.stringKey("ai.internal.service_name");
+      AttributeKey.stringKey("applicationinsights.internal.service_name");
 
   public static final AttributeKey<String> OPERATION_NAME =
       stringKey("applicationinsights.internal.operation_name");
