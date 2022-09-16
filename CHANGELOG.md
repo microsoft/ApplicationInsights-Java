@@ -1,5 +1,12 @@
 # CHANGELOG
 
+# Version 3.4.0 GA
+
+* Introduce a new preview feature: Java Profiler for Azure Monitor Application Insights
+* Update OpenTelemetry to 1.18.0 [2509](https://github.com/microsoft/ApplicationInsights-Java/pull/2509).
+* Add support to suppress all metrics [2490](https://github.com/microsoft/ApplicationInsights-Java/pull/2490).
+* Add a new config to export logback code attributes [2518](https://github.com/microsoft/ApplicationInsights-Java/pull/2518).
+
 # Version 3.4.0-BETA.2
 
 Migration notes:
