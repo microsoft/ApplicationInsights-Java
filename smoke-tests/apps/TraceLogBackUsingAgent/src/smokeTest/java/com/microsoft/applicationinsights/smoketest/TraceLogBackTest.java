@@ -30,6 +30,10 @@ abstract class TraceLogBackTest {
 
   @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.create();
 
+  boolean checkLogBackCodeAttributes() {
+    return true;
+  }
+
   @Test
   @TargetUri("/traceLogBack")
   void testTraceLogBack() throws Exception {
@@ -60,14 +64,42 @@ abstract class TraceLogBackTest {
     assertThat(md1.getProperties()).containsEntry("LoggerName", "smoketestapp");
     assertThat(md1.getProperties()).containsKey("ThreadName");
     assertThat(md1.getProperties()).containsEntry("MDC key", "MDC value");
-    assertThat(md1.getProperties()).hasSize(4);
+
+    if (checkLogBackCodeAttributes()) {
+      assertThat(md1.getProperties())
+          .containsEntry("FileName", "SimpleTestTraceLogBackServlet.java");
+      assertThat(md1.getProperties())
+          .containsEntry(
+              "ClassName",
+              "com.microsoft.applicationinsights.smoketestapp.SimpleTestTraceLogBackServlet");
+      assertThat(md1.getProperties()).containsEntry("MethodName", "doGet");
+      assertThat(md1.getProperties()).containsEntry("LineNumber", "24");
+
+      assertThat(md1.getProperties()).hasSize(8);
+    } else {
+      assertThat(md1.getProperties()).hasSize(4);
+    }
 
     assertThat(md2.getMessage()).isEqualTo("This is logback error.");
     assertThat(md2.getSeverityLevel()).isEqualTo(SeverityLevel.ERROR);
     assertThat(md2.getProperties()).containsEntry("SourceType", "Logger");
     assertThat(md2.getProperties()).containsEntry("LoggerName", "smoketestapp");
     assertThat(md2.getProperties()).containsKey("ThreadName");
-    assertThat(md2.getProperties()).hasSize(3);
+
+    if (checkLogBackCodeAttributes()) {
+      assertThat(md2.getProperties())
+          .containsEntry("FileName", "SimpleTestTraceLogBackServlet.java");
+      assertThat(md2.getProperties())
+          .containsEntry(
+              "ClassName",
+              "com.microsoft.applicationinsights.smoketestapp.SimpleTestTraceLogBackServlet");
+      assertThat(md2.getProperties()).containsEntry("MethodName", "doGet");
+      assertThat(md2.getProperties()).containsEntry("LineNumber", "26");
+
+      assertThat(md2.getProperties()).hasSize(7);
+    } else {
+      assertThat(md2.getProperties()).hasSize(3);
+    }
 
     SmokeTestExtension.assertParentChild(
         rd, rdEnvelope, mdEnvelope1, "GET /TraceLogBackUsingAgent/traceLogBack");
@@ -77,7 +109,7 @@ abstract class TraceLogBackTest {
 
   @Test
   @TargetUri("/traceLogBackWithException")
-  void testTraceLogBackWithExeption() throws Exception {
+  void testTraceLogBackWithException() throws Exception {
     List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
 
     Envelope rdEnvelope = rdList.get(0);
@@ -101,7 +133,20 @@ abstract class TraceLogBackTest {
     assertThat(ed.getProperties()).containsEntry("LoggerName", "smoketestapp");
     assertThat(ed.getProperties()).containsKey("ThreadName");
     assertThat(ed.getProperties()).containsEntry("MDC key", "MDC value");
-    assertThat(ed.getProperties()).hasSize(5);
+
+    if (checkLogBackCodeAttributes()) {
+      assertThat(ed.getProperties())
+          .containsEntry("FileName", "SimpleTestTraceLogBackWithExceptionServlet.java");
+      assertThat(ed.getProperties())
+          .containsEntry(
+              "ClassName",
+              "com.microsoft.applicationinsights.smoketestapp.SimpleTestTraceLogBackWithExceptionServlet");
+      assertThat(ed.getProperties()).containsEntry("MethodName", "doGet");
+      assertThat(ed.getProperties()).containsEntry("LineNumber", "21");
+      assertThat(ed.getProperties()).hasSize(9);
+    } else {
+      assertThat(ed.getProperties()).hasSize(5);
+    }
 
     SmokeTestExtension.assertParentChild(
         rd, rdEnvelope, edEnvelope, "GET /TraceLogBackUsingAgent/traceLogBackWithException");
@@ -129,8 +174,18 @@ abstract class TraceLogBackTest {
   static class Tomcat8Java19Test extends TraceLogBackTest {}
 
   @Environment(WILDFLY_13_JAVA_8)
-  static class Wildfly13Java8Test extends TraceLogBackTest {}
+  static class Wildfly13Java8Test extends TraceLogBackTest {
+    @Override
+    boolean checkLogBackCodeAttributes() {
+      return false;
+    }
+  }
 
   @Environment(WILDFLY_13_JAVA_8_OPENJ9)
-  static class Wildfly13Java8OpenJ9Test extends TraceLogBackTest {}
+  static class Wildfly13Java8OpenJ9Test extends TraceLogBackTest {
+    @Override
+    boolean checkLogBackCodeAttributes() {
+      return false;
+    }
+  }
 }
