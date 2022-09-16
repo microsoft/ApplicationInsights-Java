@@ -18,6 +18,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.utils.TempDirs;
 import com.google.auto.service.AutoService;
 import com.microsoft.applicationinsights.agent.bootstrap.AiAppId;
 import com.microsoft.applicationinsights.agent.bootstrap.AzureFunctions;
+import com.microsoft.applicationinsights.agent.bootstrap.preagg.AiContextCustomizerHolder;
 import com.microsoft.applicationinsights.agent.internal.classicsdk.BytecodeUtilImpl;
 import com.microsoft.applicationinsights.agent.internal.common.FriendlyException;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
@@ -244,6 +245,11 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
             (builder, otelConfig) ->
                 configureMetrics(metricFilters, builder, telemetryClient, configuration));
 
+    AiContextCustomizerHolder.setInstance(
+        new AiContextCustomizer<>(
+            configuration.preview.connectionStringOverrides,
+            configuration.preview.roleNameOverrides));
+
     Runtime.getRuntime()
         .addShutdownHook(new Thread(() -> flushAll(telemetryClient).join(10, TimeUnit.SECONDS)));
   }
@@ -305,15 +311,11 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
           new InheritedAttributesSpanProcessor(configuration.preview.inheritedAttributes));
     }
     // adding this even if there are no connectionStringOverrides, in order to support
-    // "ai.preview.connection_string" being set programmatically on CONSUMER spans
-    // (or "ai.preview.instrumentation_key" for backwards compatibility)
-    tracerProvider.addSpanProcessor(
-        new InheritedConnectionStringSpanProcessor(
-            configuration.preview.connectionStringOverrides));
+    // overriding connection string programmatically via Classic SDK
+    tracerProvider.addSpanProcessor(new InheritedConnectionStringSpanProcessor());
     // adding this even if there are no roleNameOverrides, in order to support
-    // "ai.preview.service_name" being set programmatically on CONSUMER spans
-    tracerProvider.addSpanProcessor(
-        new InheritedRoleNameSpanProcessor(configuration.preview.roleNameOverrides));
+    // overriding role name programmatically via Classic SDK
+    tracerProvider.addSpanProcessor(new InheritedRoleNameSpanProcessor());
     if (configuration.preview.profiler.enabled
         && configuration.preview.profiler.enableRequestTriggering) {
       tracerProvider.addSpanProcessor(new AlertTriggerSpanProcessor());

@@ -8,7 +8,6 @@ import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.util.HashSet;
 import java.util.Set;
 
-@SuppressWarnings("rawtypes")
 enum MetricView {
   HTTP_CLIENT_VIEW("http.client.duration", httpClientDurationAttributeKeys(), false),
   HTTP_SERVER_VIEW("http.server.duration", httpServerDurationAttributeKeys(), true),

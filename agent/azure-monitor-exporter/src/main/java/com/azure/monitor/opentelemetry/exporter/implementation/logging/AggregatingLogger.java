@@ -18,7 +18,7 @@ import reactor.util.annotation.Nullable;
 
 class AggregatingLogger {
 
-  private static final ScheduledExecutorService scheduledExecutor =
+  static final ScheduledExecutorService scheduledExecutor =
       Executors.newSingleThreadScheduledExecutor(
           ThreadPoolUtils.createDaemonThreadFactory(AggregatingLogger.class, "aggregating logger"));
 
