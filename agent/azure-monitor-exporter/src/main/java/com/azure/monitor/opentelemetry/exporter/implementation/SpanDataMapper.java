@@ -3,6 +3,7 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation;
 
+import static com.azure.monitor.opentelemetry.exporter.implementation.AiSemanticAttributes.JOB_SYSTEM;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
@@ -26,7 +27,6 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.SpanKind;
-import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.data.EventData;
@@ -89,6 +89,7 @@ public final class SpanDataMapper {
             .put("thread.", true)
             .put("faas.", true)
             .put("code.", true)
+            .put("job.", true) // proposed semantic convention which we use for job.system
             .build();
   }
 
@@ -133,34 +134,18 @@ public final class SpanDataMapper {
   }
 
   public static boolean isRequest(SpanData span) {
-    return isRequest(
-        span.getKind(),
-        span.getParentSpanContext(),
-        span.getInstrumentationScopeInfo(),
-        span.getAttributes()::get);
+    return isRequest(span.getKind(), span.getParentSpanContext(), span.getAttributes()::get);
   }
 
   public static boolean isRequest(ReadableSpan span) {
-    return isRequest(
-        span.getKind(),
-        span.getParentSpanContext(),
-        span.getInstrumentationScopeInfo(),
-        span::getAttribute);
+    return isRequest(span.getKind(), span.getParentSpanContext(), span::getAttribute);
   }
 
   public static boolean isRequest(
-      SpanKind kind,
-      SpanContext parentSpanContext,
-      @Nullable InstrumentationScopeInfo scopeInfo,
-      Function<AttributeKey<String>, String> attrFn) {
-    String instrumentationName = scopeInfo == null ? null : scopeInfo.getName();
+      SpanKind kind, SpanContext parentSpanContext, Function<AttributeKey<String>, String> attrFn) {
     if (kind == SpanKind.INTERNAL) {
-      // TODO (trask) AI mapping: need semantic convention for determining whether to map INTERNAL
-      // to request or dependency (or need clarification to use SERVER for this)
-      return !parentSpanContext.isValid()
-          && instrumentationName != null
-          && (instrumentationName.startsWith("io.opentelemetry.spring-scheduling-")
-              || instrumentationName.startsWith("io.opentelemetry.quartz-"));
+      // INTERNAL scheduled job spans with no parent are mapped to requests
+      return attrFn.apply(JOB_SYSTEM) != null && !parentSpanContext.isValid();
     } else if (kind == SpanKind.CLIENT || kind == SpanKind.PRODUCER) {
       return false;
     } else if (kind == SpanKind.CONSUMER
@@ -409,15 +394,27 @@ public final class SpanDataMapper {
     if (peerService != null) {
       return peerService;
     }
-    String netPeerName = attributes.get(SemanticAttributes.NET_PEER_NAME);
-    if (netPeerName == null) {
-      return null;
+    String host = attributes.get(SemanticAttributes.NET_PEER_NAME);
+    if (host != null) {
+      Long port = attributes.get(SemanticAttributes.NET_PEER_PORT);
+      return getTarget(host, port, defaultPort);
     }
-    Long netPeerPort = attributes.get(SemanticAttributes.NET_PEER_PORT);
-    if (netPeerPort != null && netPeerPort != defaultPort) {
-      return netPeerName + ":" + netPeerPort;
+    host = attributes.get(AiSemanticAttributes.NET_SOCK_PEER_NAME);
+    if (host == null) {
+      host = attributes.get(AiSemanticAttributes.NET_SOCK_PEER_ADDR);
+    }
+    if (host != null) {
+      Long port = attributes.get(AiSemanticAttributes.NET_SOCK_PEER_PORT);
+      return getTarget(host, port, defaultPort);
+    }
+    return null;
+  }
+
+  private static String getTarget(String host, @Nullable Long port, int defaultPort) {
+    if (port != null && port != defaultPort) {
+      return host + ":" + port;
     } else {
-      return netPeerName;
+      return host;
     }
   }
 

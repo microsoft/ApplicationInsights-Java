@@ -38,6 +38,9 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
     // this is needed to capture kafka.record.queue_time_ms
     properties.put("otel.instrumentation.kafka.experimental-span-attributes", "true");
 
+    // kafka metrics are enabled by default
+    properties.put("otel.instrumentation.kafka.metric-reporter.enabled", "false");
+
     setHttpHeaderConfiguration(
         properties,
         "otel.instrumentation.http.capture-headers.server.request",
@@ -206,9 +209,6 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
       properties.put("otel.instrumentation.jdbc.enabled", "true");
       if (!config.instrumentation.jdbc.masking.enabled) {
         properties.put("otel.instrumentation.jdbc.statement-sanitizer.enabled", "false");
-        // TODO (trask) this line is temporary until 1.18.0, see
-        // https://github.com/open-telemetry/opentelemetry-java-instrumentation/pull/6492
-        System.setProperty("otel.instrumentation.jdbc.statement-sanitizer.enabled", "false");
       }
     }
     if (config.instrumentation.jms.enabled) {
@@ -218,12 +218,22 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
     if (config.instrumentation.kafka.enabled) {
       properties.put("otel.instrumentation.kafka.enabled", "true");
       properties.put("otel.instrumentation.spring-kafka.enabled", "true");
+      // TODO (trask) add to smoke test to ensure these metrics are not reported
+      properties.put("otel.instrumentation.kafka.metric-reporter.enabled", "false");
     }
     if (config.instrumentation.mongo.enabled) {
       properties.put("otel.instrumentation.mongo.enabled", "true");
+      if (!config.instrumentation.mongo.masking.enabled) {
+        properties.put("otel.instrumentation.mongo.statement-sanitizer.enabled", "false");
+      }
     }
     if (config.instrumentation.quartz.enabled) {
       properties.put("otel.instrumentation.quartz.enabled", "true");
+      // this is needed for the job.system attribute in order to map those spans to requests
+      properties.put("otel.instrumentation.quartz.experimental-span-attributes", "true");
+      // TODO (trask) this line is temporary until 1.19.0, see
+      // https://github.com/open-telemetry/opentelemetry-java-instrumentation/pull/6633
+      System.setProperty("otel.instrumentation.quartz.experimental-span-attributes", "true");
     }
     if (config.instrumentation.rabbitmq.enabled) {
       properties.put("otel.instrumentation.rabbitmq.enabled", "true");
@@ -235,6 +245,12 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
     }
     if (config.instrumentation.springScheduling.enabled) {
       properties.put("otel.instrumentation.spring-scheduling.enabled", "true");
+      // this is needed for the job.system attribute in order to map those spans to requests
+      properties.put("otel.instrumentation.spring-scheduling.experimental-span-attributes", "true");
+      // TODO (trask) this line is temporary until 1.19.0, see
+      // https://github.com/open-telemetry/opentelemetry-java-instrumentation/pull/6633
+      System.setProperty(
+          "otel.instrumentation.spring-scheduling.experimental-span-attributes", "true");
     }
     if (config.preview.instrumentation.akka.enabled) {
       properties.put("otel.instrumentation.akka-actor.enabled", "true");
