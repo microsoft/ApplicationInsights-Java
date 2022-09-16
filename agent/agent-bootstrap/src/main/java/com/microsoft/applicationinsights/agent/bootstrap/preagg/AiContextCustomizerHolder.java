@@ -5,7 +5,7 @@ package com.microsoft.applicationinsights.agent.bootstrap.preagg;
 
 import io.opentelemetry.instrumentation.api.instrumenter.ContextCustomizer;
 
-public class AiContextCustomizerHolder {
+public final class AiContextCustomizerHolder {
 
   private static volatile ContextCustomizer<Object> instance;
 
