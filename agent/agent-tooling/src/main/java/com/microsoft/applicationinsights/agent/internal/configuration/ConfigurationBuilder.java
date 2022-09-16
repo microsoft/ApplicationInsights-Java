@@ -189,6 +189,11 @@ public class ConfigurationBuilder {
                 + " and will be required in a future release, please transition to add"
                 + " \"telemetryKind\" for sampling overrides.");
       }
+      if (override.includingStandaloneTelemetry != null) {
+        configurationLogger.warn(
+            "Sampling overrides \"includingStandaloneTelemetry\" (from 3.4.0-BETA) has been"
+                + " removed in 3.4.0 (GA)");
+      }
     }
     if (!config.preview.instrumentationKeyOverrides.isEmpty()) {
       configurationLogger.warn(
@@ -200,6 +205,14 @@ public class ConfigurationBuilder {
         newOverride.httpPathPrefix = override.httpPathPrefix;
         newOverride.connectionString = "InstrumentationKey=" + override.instrumentationKey;
         config.preview.connectionStringOverrides.add(newOverride);
+      }
+    }
+    if (config.sampling.limitPerSecond != null) {
+      configurationLogger.warn(
+          "\"limitPerSecond\" (from 3.4.0-BETA) has been renamed to \"requestsPerSecond\""
+              + " in 3.4.0 (GA)");
+      if (config.sampling.requestsPerSecond == null && config.sampling.percentage == null) {
+        config.sampling.requestsPerSecond = config.sampling.limitPerSecond;
       }
     }
 
