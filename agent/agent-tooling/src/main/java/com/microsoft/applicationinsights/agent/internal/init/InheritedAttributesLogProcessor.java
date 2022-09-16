@@ -12,7 +12,7 @@ import io.opentelemetry.sdk.trace.ReadableSpan;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class InheritedAttributesLogProcessor implements LogProcessor {
+public final class InheritedAttributesLogProcessor implements LogProcessor {
 
   private final List<AttributeKey<?>> inheritedAttributes;
 

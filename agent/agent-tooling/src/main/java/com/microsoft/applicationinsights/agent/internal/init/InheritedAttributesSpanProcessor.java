@@ -13,7 +13,7 @@ import io.opentelemetry.sdk.trace.SpanProcessor;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class InheritedAttributesSpanProcessor implements SpanProcessor {
+public final class InheritedAttributesSpanProcessor implements SpanProcessor {
 
   private final List<AttributeKey<?>> inheritAttributes;
 

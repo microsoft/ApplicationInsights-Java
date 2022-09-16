@@ -40,16 +40,11 @@ abstract class OpenTelemetryApiSupportTest {
     assertThat(telemetry.rd.getProperties())
         .containsEntry("_MS.ProcessedByMetricExtractors", "True");
 
-    // ideally want the properties below on rd, but can't get SERVER span yet
-    // see
-    // https://github.com/open-telemetry/opentelemetry-java-instrumentation/issues/1726#issuecomment-731890267
-
-    // checking that instrumentation key, cloud role name, cloud role instance, and sdk version are
-    // from the agent
     assertThat(telemetry.rdEnvelope.getIKey()).isEqualTo("00000000-0000-0000-0000-0FEEDDADBEEF");
     assertThat(telemetry.rdEnvelope.getTags()).containsEntry("ai.cloud.role", "testrolename");
     assertThat(telemetry.rdEnvelope.getTags().get("ai.cloud.roleInstance"))
         .isEqualTo("testroleinstance");
+
     assertThat(telemetry.rdEnvelope.getTags())
         .hasEntrySatisfying("ai.internal.sdkVersion", v -> assertThat(v).startsWith("java:3."));
     assertThat(telemetry.rdEnvelope.getTags()).containsEntry("ai.user.id", "myuser");
@@ -74,10 +69,15 @@ abstract class OpenTelemetryApiSupportTest {
 
     // checking that instrumentation key, cloud role name, cloud role instance, and sdk version are
     // from the agent
-    assertThat(telemetry.rdEnvelope.getIKey()).isEqualTo("12341234-1234-1234-1234-123412341234");
-    assertThat(telemetry.rdEnvelope.getTags()).containsEntry("ai.cloud.role", "role-name-here");
-    assertThat(telemetry.rdEnvelope.getTags().get("ai.cloud.roleInstance"))
-        .isEqualTo("role-instance-here");
+
+    // these are no longer supported since 3.4.0, but the test is still included here to (manually)
+    // inspect that appropriate warning log about it no longer being supported is emitted
+    //
+    // assertThat(telemetry.rdEnvelope.getIKey()).isEqualTo("12341234-1234-1234-1234-123412341234");
+    // assertThat(telemetry.rdEnvelope.getTags()).containsEntry("ai.cloud.role", "role-name-here");
+    // assertThat(telemetry.rdEnvelope.getTags().get("ai.cloud.roleInstance"))
+    //     .isEqualTo("role-instance-here");
+
     assertThat(telemetry.rdEnvelope.getTags())
         .containsEntry("ai.application.ver", "application-version-here");
     assertThat(telemetry.rdEnvelope.getTags())

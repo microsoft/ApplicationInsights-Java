@@ -4,23 +4,18 @@
 package com.microsoft.applicationinsights.agent.internal.init;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.AiSemanticAttributes;
-import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.logs.LogProcessor;
 import io.opentelemetry.sdk.logs.ReadWriteLogRecord;
-import io.opentelemetry.sdk.trace.ReadableSpan;
 
-public class InheritedRoleNameLogProcessor implements LogProcessor {
+public final class InheritedRoleNameLogProcessor implements LogProcessor {
 
   @Override
   public void onEmit(ReadWriteLogRecord logRecord) {
-    Span currentSpan = Span.current();
-    if (!(currentSpan instanceof ReadableSpan)) {
-      return;
-    }
-    ReadableSpan currentReadableSpan = (ReadableSpan) currentSpan;
-    String roleName = currentReadableSpan.getAttribute(AiSemanticAttributes.ROLE_NAME);
+    Context context = Context.current();
+    String roleName = context.get(AiContextKeys.ROLE_NAME);
     if (roleName != null) {
-      logRecord.setAttribute(AiSemanticAttributes.ROLE_NAME, roleName);
+      logRecord.setAttribute(AiSemanticAttributes.INTERNAL_ROLE_NAME, roleName);
     }
   }
 }

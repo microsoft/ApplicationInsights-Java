@@ -41,7 +41,9 @@ abstract class OpenTelemetryApiSupportInstrumentationKeyTest {
         .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
     assertThat(telemetry.rd.getMeasurements()).isEmpty();
 
-    assertThat(telemetry.rdEnvelope.getIKey()).isEqualTo("12341234-1234-1234-1234-123412341234");
+    // this is no longer supported since 3.4.0, but the test is still included here to (manually)
+    // inspect that appropriate warning log about it no longer being supported is emitted
+    // assertThat(telemetry.rdEnvelope.getIKey()).isEqualTo("12341234-1234-1234-1234-123412341234");
   }
 
   @Environment(TOMCAT_8_JAVA_8)

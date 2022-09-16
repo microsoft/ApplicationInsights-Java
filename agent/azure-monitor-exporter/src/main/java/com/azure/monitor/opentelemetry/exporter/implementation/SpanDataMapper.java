@@ -15,6 +15,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.builders.MessageT
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.RemoteDependencyTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.RequestTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
+import com.azure.monitor.opentelemetry.exporter.implementation.logging.WarningLogger;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedDuration;
@@ -830,9 +831,6 @@ public final class SpanDataMapper {
     attributes.forEach(
         (attributeKey, value) -> {
           String key = attributeKey.getKey();
-          if (key.startsWith("applicationinsights.internal.")) {
-            return;
-          }
           if (key.equals(AiSemanticAttributes.AZURE_SDK_NAMESPACE.getKey())
               || key.equals(AiSemanticAttributes.AZURE_SDK_MESSAGE_BUS_DESTINATION.getKey())
               || key.equals(AiSemanticAttributes.AZURE_SDK_ENQUEUED_TIME.getKey())) {
@@ -852,6 +850,9 @@ public final class SpanDataMapper {
             return;
           }
           if (applyCommonTags(telemetryBuilder, key, value)) {
+            return;
+          }
+          if (key.startsWith("applicationinsights.internal.")) {
             return;
           }
           if (STANDARD_ATTRIBUTE_PREFIX_TRIE.getOrDefault(key, false)
@@ -876,31 +877,77 @@ public final class SpanDataMapper {
     if (applyConnectionStringAndRoleNameOverrides(telemetryBuilder, value, key)) {
       return true;
     }
-    if (key.equals(AiSemanticAttributes.ROLE_INSTANCE_ID.getKey()) && value instanceof String) {
-      telemetryBuilder.addTag(ContextTagKeys.AI_CLOUD_ROLE_INSTANCE.toString(), (String) value);
-      return true;
-    }
-    if (key.equals(AiSemanticAttributes.APPLICATION_VERSION.getKey()) && value instanceof String) {
+    if (key.equals(AiSemanticAttributes.PREVIEW_APPLICATION_VERSION.getKey())
+        && value instanceof String) {
       telemetryBuilder.addTag(ContextTagKeys.AI_APPLICATION_VER.toString(), (String) value);
       return true;
     }
     return false;
   }
 
+  private static final WarningLogger connectionStringAttributeNoLongerSupported =
+      new WarningLogger(
+          SpanDataMapper.class,
+          AiSemanticAttributes.DEPRECATED_CONNECTION_STRING.getKey()
+              + " is no longer supported starting from Application Insights Java 3.4.0, because it"
+              + " is incompatible with pre-aggregated standard metrics. Please use"
+              + " \"connectionStringOverrides\" configuration, or reach out to"
+              + " https://github.com/microsoft/ApplicationInsights-Java/issues if you have a"
+              + " different use case.");
+  private static final WarningLogger roleNameAttributeNoLongerSupported =
+      new WarningLogger(
+          SpanDataMapper.class,
+          AiSemanticAttributes.DEPRECATED_ROLE_NAME.getKey()
+              + " is no longer supported starting from Application Insights Java 3.4.0, because it"
+              + " is incompatible with pre-aggregated standard metrics. Please use"
+              + " \"roleNameOverrides\" configuration, or reach out to"
+              + " https://github.com/microsoft/ApplicationInsights-Java/issues if you have a"
+              + " different use case.");
+  private static final WarningLogger roleInstanceAttributeNoLongerSupported =
+      new WarningLogger(
+          SpanDataMapper.class,
+          AiSemanticAttributes.DEPRECATED_ROLE_INSTANCE.getKey()
+              + " is no longer supported starting from Application Insights Java 3.4.0, because it"
+              + " is incompatible with pre-aggregated standard metrics. Please reach out to"
+              + " https://github.com/microsoft/ApplicationInsights-Java/issues if you have a use"
+              + " case for this.");
+  private static final WarningLogger instrumentationKeyAttributeNoLongerSupported =
+      new WarningLogger(
+          SpanDataMapper.class,
+          AiSemanticAttributes.DEPRECATED_INSTRUMENTATION_KEY.getKey()
+              + " is no longer supported starting from Application Insights Java 3.4.0, because it"
+              + " is incompatible with pre-aggregated standard metrics. Please use"
+              + " \"connectionStringOverrides\" configuration, or reach out to"
+              + " https://github.com/microsoft/ApplicationInsights-Java/issues if you have a"
+              + " different use case.");
+
   static boolean applyConnectionStringAndRoleNameOverrides(
       AbstractTelemetryBuilder telemetryBuilder, Object value, String key) {
-    if (key.equals(AiSemanticAttributes.CONNECTION_STRING.getKey()) && value instanceof String) {
+    if (key.equals(AiSemanticAttributes.INTERNAL_CONNECTION_STRING.getKey())
+        && value instanceof String) {
       // intentionally letting exceptions from parse bubble up
       telemetryBuilder.setConnectionString(ConnectionString.parse((String) value));
       return true;
     }
-    if (key.equals(AiSemanticAttributes.INSTRUMENTATION_KEY.getKey()) && value instanceof String) {
-      // intentionally letting exceptions from parse bubble up
-      telemetryBuilder.setConnectionString(ConnectionString.parse("InstrumentationKey=" + value));
+    if (key.equals(AiSemanticAttributes.INTERNAL_ROLE_NAME.getKey()) && value instanceof String) {
+      telemetryBuilder.addTag(ContextTagKeys.AI_CLOUD_ROLE.toString(), (String) value);
       return true;
     }
-    if (key.equals(AiSemanticAttributes.ROLE_NAME.getKey()) && value instanceof String) {
-      telemetryBuilder.addTag(ContextTagKeys.AI_CLOUD_ROLE.toString(), (String) value);
+    if (key.equals(AiSemanticAttributes.DEPRECATED_CONNECTION_STRING.getKey())) {
+      connectionStringAttributeNoLongerSupported.recordWarning();
+      return true;
+    }
+    if (key.equals(AiSemanticAttributes.DEPRECATED_ROLE_NAME.getKey())) {
+      roleNameAttributeNoLongerSupported.recordWarning();
+      return true;
+    }
+    if (key.equals(AiSemanticAttributes.DEPRECATED_ROLE_INSTANCE.getKey())
+        && value instanceof String) {
+      roleInstanceAttributeNoLongerSupported.recordWarning();
+      return true;
+    }
+    if (key.equals(AiSemanticAttributes.DEPRECATED_INSTRUMENTATION_KEY.getKey())) {
+      instrumentationKeyAttributeNoLongerSupported.recordWarning();
       return true;
     }
     return false;
