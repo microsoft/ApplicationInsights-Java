@@ -11,10 +11,10 @@ data class DependencySet(val group: String, val version: String, val modules: Li
 val dependencyVersions = hashMapOf<String, String>()
 rootProject.extra["versions"] = dependencyVersions
 
-val otelVersion = "1.17.0"
+val otelVersion = "1.18.0"
 // IMPORTANT when updating opentelemetry instrumentation version, be sure to update bytebuddy version to match
-val otelInstrumentationVersion = "1.17.0"
-val otelInstrumentationAlphaVersion = "1.17.0-alpha"
+val otelInstrumentationVersion = "1.18.0"
+val otelInstrumentationAlphaVersion = "1.18.0-alpha"
 val otelContribAlphaVersion = "1.17.0-alpha"
 
 rootProject.extra["otelVersion"] = otelVersion
@@ -26,8 +26,9 @@ val DEPENDENCY_BOMS = listOf(
   "com.google.guava:guava-bom:31.1-jre",
   "io.opentelemetry:opentelemetry-bom:${otelVersion}",
   "io.opentelemetry:opentelemetry-bom-alpha:${otelVersion}-alpha",
+  "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:${otelInstrumentationVersion}",
   "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${otelInstrumentationAlphaVersion}",
-  "com.azure:azure-sdk-bom:1.2.4",
+  "com.azure:azure-sdk-bom:1.2.5",
   "org.junit:junit-bom:5.8.2"
 )
 
@@ -58,6 +59,11 @@ val DEPENDENCY_SETS = listOf(
   ),
   DependencySet(
     "org.slf4j",
+    // moving to 2.0 is problematic because the SPI mechanism doesn't work in the bootstrap class
+    // loader because while we add the agent jar to the bootstrap class loader via
+    // Instrumentation.appendToBootstrapClassLoaderSearch(), there's nothing similar for resources
+    // (which is a known problem in the java agent world) and so the META-INF/services resource is
+    // not found
     "1.7.36",
     listOf("slf4j-api", "slf4j-simple", "log4j-over-slf4j", "jcl-over-slf4j", "jul-to-slf4j")
   ),
@@ -73,7 +79,7 @@ val DEPENDENCY_SETS = listOf(
   ),
   DependencySet(
     "io.opentelemetry.javaagent",
-    "${otelInstrumentationAlphaVersion}",
+    otelInstrumentationAlphaVersion,
     listOf(
       "opentelemetry-javaagent-extension-api",
       "opentelemetry-javaagent-bootstrap",
