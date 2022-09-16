@@ -149,7 +149,7 @@ public class Configuration {
     @Nullable public Double percentage;
 
     // default is 5 requests per second (set in ConfigurationBuilder if neither percentage nor
-    // limitPerSecond was configured)
+    // requestsPerSecond was configured)
     @Nullable public Double requestsPerSecond;
   }
 

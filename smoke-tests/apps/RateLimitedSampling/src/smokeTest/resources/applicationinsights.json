@@ -4,6 +4,6 @@
     "instance": "testroleinstance"
   },
   "sampling" : {
-    "limitPerSecond": 0.5
+    "requestsPerSecond": 0.5
   }
 }
