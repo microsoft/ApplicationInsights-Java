@@ -36,7 +36,6 @@ abstract class PreAggMetricsWithRoleNameOverridesAndSamplingTest {
   @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.create();
 
   private static final int COUNT = 100;
-  private static final String DEFAULT_ROLE_NAME = "testrolename";
 
   @Test
   @TargetUri(value = "/app2", callCount = COUNT)
@@ -63,35 +62,21 @@ abstract class PreAggMetricsWithRoleNameOverridesAndSamplingTest {
     Thread.sleep(SECONDS.toMillis(10));
 
     List<Envelope> metricsEnvelops = testing.mockedIngestion.getItemsEnvelopeDataType("MetricData");
-    // TODO need to fix pre agg metrics for non-sampled spans (PropagatedMetric) with role name
-    // overrides
-    List<Envelope> clientRoleNameOverriddenEnvelops = new ArrayList<>();
-    List<Envelope> clientRoleNameNotOverriddenEnvelops = new ArrayList<>();
-    List<Envelope> serverRoleNameOverriddenEnvelops = new ArrayList<>();
-    List<Envelope> serverRoleNameNotOverriddenEnvelops = new ArrayList<>();
+    List<Envelope> clientMetrics = new ArrayList<>();
+    List<Envelope> serverMetrics = new ArrayList<>();
     for (Envelope envelope : metricsEnvelops) {
       MetricData metricData = (MetricData) ((Data<?>) envelope.getData()).getBaseData();
       String name = metricData.getMetrics().get(0).getName();
       if ("http.client.duration".equals(name)) {
-        if (DEFAULT_ROLE_NAME.equals(envelope.getTags().get("ai.cloud.role"))) {
-          clientRoleNameNotOverriddenEnvelops.add(envelope);
-        } else {
-          clientRoleNameOverriddenEnvelops.add(envelope);
-        }
+        clientMetrics.add(envelope);
       } else if ("http.server.duration".equals(name)) {
-        if (DEFAULT_ROLE_NAME.equals(envelope.getTags().get("ai.cloud.role"))) {
-          serverRoleNameNotOverriddenEnvelops.add(envelope);
-        } else {
-          serverRoleNameOverriddenEnvelops.add(envelope);
-        }
+        serverMetrics.add(envelope);
       }
     }
 
     verifySamplingRateAndRoleNameOverrides(requestEnvelopes, roleName);
-    verifyPreAggMetrics(clientRoleNameOverriddenEnvelops, roleName, true);
-    verifyPreAggMetrics(clientRoleNameNotOverriddenEnvelops, DEFAULT_ROLE_NAME, true);
-    verifyPreAggMetrics(serverRoleNameOverriddenEnvelops, roleName, false);
-    verifyPreAggMetrics(serverRoleNameNotOverriddenEnvelops, DEFAULT_ROLE_NAME, false);
+    verifyPreAggMetrics(clientMetrics, roleName, true);
+    verifyPreAggMetrics(serverMetrics, roleName, true);
   }
 
   private static void verifySamplingRateAndRoleNameOverrides(
