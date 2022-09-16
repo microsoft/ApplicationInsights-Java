@@ -831,9 +831,6 @@ public final class SpanDataMapper {
     attributes.forEach(
         (attributeKey, value) -> {
           String key = attributeKey.getKey();
-          if (key.startsWith("applicationinsights.internal.")) {
-            return;
-          }
           if (key.equals(AiSemanticAttributes.AZURE_SDK_NAMESPACE.getKey())
               || key.equals(AiSemanticAttributes.AZURE_SDK_MESSAGE_BUS_DESTINATION.getKey())
               || key.equals(AiSemanticAttributes.AZURE_SDK_ENQUEUED_TIME.getKey())) {
@@ -853,6 +850,9 @@ public final class SpanDataMapper {
             return;
           }
           if (applyCommonTags(telemetryBuilder, key, value)) {
+            return;
+          }
+          if (key.startsWith("applicationinsights.internal.")) {
             return;
           }
           if (STANDARD_ATTRIBUTE_PREFIX_TRIE.getOrDefault(key, false)
