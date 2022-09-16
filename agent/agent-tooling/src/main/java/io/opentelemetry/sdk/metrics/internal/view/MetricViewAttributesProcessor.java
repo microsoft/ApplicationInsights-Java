@@ -57,7 +57,7 @@ class MetricViewAttributesProcessor extends AttributesProcessor {
   }
 
   @SuppressWarnings("unchecked")
-  private void applyView(
+  private static void applyView(
       AttributesBuilder filtered, Attributes attributes, Set<AttributeKey<?>> view) {
     attributes.forEach(
         (BiConsumer<AttributeKey, Object>)
