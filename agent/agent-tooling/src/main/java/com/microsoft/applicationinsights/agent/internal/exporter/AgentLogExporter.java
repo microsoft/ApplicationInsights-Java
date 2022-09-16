@@ -95,16 +95,14 @@ public class AgentLogExporter implements LogExporter {
 
         SpanContext spanContext = log.getSpanContext();
 
-        boolean isStandaloneLog = !spanContext.isValid();
-        Double samplingPercentage =
-            samplingOverrides.getOverridePercentage(isStandaloneLog, log.getAttributes());
+        Double samplingPercentage = samplingOverrides.getOverridePercentage(log.getAttributes());
 
         if (samplingPercentage != null && !shouldSample(spanContext, samplingPercentage)) {
           continue;
         }
 
         if (samplingPercentage == null
-            && !isStandaloneLog
+            && spanContext.isValid()
             && !spanContext.getTraceFlags().isSampled()) {
           // if there is no sampling override, and the log is part of an unsampled trace, then don't
           // capture it

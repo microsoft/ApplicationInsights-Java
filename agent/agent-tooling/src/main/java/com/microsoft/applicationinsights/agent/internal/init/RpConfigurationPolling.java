@@ -101,16 +101,17 @@ public class RpConfigurationPolling implements Runnable {
           changed = true;
         }
         if (!Objects.equals(
-            rpConfiguration.sampling.limitPerSecond, newRpConfiguration.sampling.limitPerSecond)) {
+            rpConfiguration.sampling.requestsPerSecond,
+            newRpConfiguration.sampling.requestsPerSecond)) {
           logger.debug(
               "Updating limit per second from {} to {}",
-              rpConfiguration.sampling.limitPerSecond,
-              newRpConfiguration.sampling.limitPerSecond);
+              rpConfiguration.sampling.requestsPerSecond,
+              newRpConfiguration.sampling.requestsPerSecond);
           changed = true;
         }
         if (changed) {
           configuration.sampling.percentage = newRpConfiguration.sampling.percentage;
-          configuration.sampling.limitPerSecond = newRpConfiguration.sampling.limitPerSecond;
+          configuration.sampling.requestsPerSecond = newRpConfiguration.sampling.requestsPerSecond;
           DelegatingSampler.getInstance().setDelegate(Samplers.getSampler(configuration));
           if (configuration.sampling.percentage != null) {
             BytecodeUtilImpl.samplingPercentage = configuration.sampling.percentage.floatValue();

@@ -12,16 +12,18 @@ import java.util.stream.Collectors;
 public class Samplers {
 
   public static Sampler getSampler(Configuration config) {
-    SamplingPercentage samplingPercentage;
-    if (config.sampling.limitPerSecond != null) {
-      samplingPercentage = SamplingPercentage.rateLimited(config.sampling.limitPerSecond);
+    Sampler sampler;
+    if (config.sampling.requestsPerSecond != null) {
+      SamplingPercentage requestSamplingPercentage =
+          SamplingPercentage.rateLimited(config.sampling.requestsPerSecond);
+      SamplingPercentage dependencySamplingPercentage = SamplingPercentage.fixed(100);
+      sampler = new AiSampler(requestSamplingPercentage, dependencySamplingPercentage);
     } else if (config.sampling.percentage != null) {
-      samplingPercentage = SamplingPercentage.fixed(config.sampling.percentage);
+      SamplingPercentage samplingPercentage = SamplingPercentage.fixed(config.sampling.percentage);
+      sampler = new AiSampler(samplingPercentage, samplingPercentage);
     } else {
       throw new AssertionError("ConfigurationBuilder should have set the default sampling");
     }
-
-    Sampler sampler = new AiSampler(samplingPercentage);
 
     Configuration.SamplingPreview sampling = config.preview.sampling;
 
