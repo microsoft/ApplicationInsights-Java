@@ -65,7 +65,8 @@ abstract class PreAggMetricsWithRoleNameOverridesAndSamplingTest {
     Thread.sleep(SECONDS.toMillis(10));
 
     List<Envelope> metricsEnvelops = testing.mockedIngestion.getItemsEnvelopeDataType("MetricData");
-    // TODO need to fix pre agg metrics for non-sampled spans (PropagatedMetric) with role name overrides
+    // TODO need to fix pre agg metrics for non-sampled spans (PropagatedMetric) with role name
+    // overrides
     List<Envelope> clientRoleNameOverriddenEnvelops = new ArrayList<>();
     List<Envelope> clientRoleNameNotOverriddenEnvelops = new ArrayList<>();
     List<Envelope> serverRoleNameOverriddenEnvelops = new ArrayList<>();
