@@ -17,9 +17,11 @@ import java.util.function.BiConsumer;
 class MetricViewAttributesProcessor extends AttributesProcessor {
 
   private final Set<AttributeKey<?>> attributeKeys;
+  private final boolean captureSynthetic;
 
-  MetricViewAttributesProcessor(Set<AttributeKey<?>> attributeKeys) {
+  MetricViewAttributesProcessor(Set<AttributeKey<?>> attributeKeys, boolean captureSynthetic) {
     this.attributeKeys = attributeKeys;
+    this.captureSynthetic = captureSynthetic;
   }
 
   @Override
@@ -43,6 +45,9 @@ class MetricViewAttributesProcessor extends AttributesProcessor {
       builder.put(AiSemanticAttributes.INTERNAL_ROLE_NAME, roleName);
     }
     applyView(builder, incoming, attributeKeys);
+    if (captureSynthetic) {
+      builder.put(AiSemanticAttributes.IS_SYNTHETIC, UserAgents.isBot(incoming));
+    }
     return builder.build();
   }
 
@@ -52,7 +57,7 @@ class MetricViewAttributesProcessor extends AttributesProcessor {
   }
 
   @SuppressWarnings("unchecked")
-  private static void applyView(
+  private void applyView(
       AttributesBuilder filtered, Attributes attributes, Set<AttributeKey<?>> view) {
     attributes.forEach(
         (BiConsumer<AttributeKey, Object>)

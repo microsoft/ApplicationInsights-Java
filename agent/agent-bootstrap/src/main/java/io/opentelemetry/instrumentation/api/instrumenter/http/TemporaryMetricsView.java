@@ -9,7 +9,6 @@
 
 package io.opentelemetry.instrumentation.api.instrumenter.http;
 
-import com.microsoft.applicationinsights.agent.bootstrap.preagg.BootstrapSemanticAttributes;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
@@ -61,7 +60,7 @@ final class TemporaryMetricsView {
     view.add(SemanticAttributes.HTTP_HOST);
     view.add(SemanticAttributes.HTTP_ROUTE);
     // START APPLICATION INSIGHTS MODIFICATIONS
-    view.add(BootstrapSemanticAttributes.IS_SYNTHETIC);
+    view.add(SemanticAttributes.HTTP_USER_AGENT);
     // END APPLICATION INSIGHTS MODIFICATIONS
     return view;
   }
