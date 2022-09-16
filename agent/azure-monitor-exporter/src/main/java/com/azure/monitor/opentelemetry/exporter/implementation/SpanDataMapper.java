@@ -888,7 +888,7 @@ public final class SpanDataMapper {
   private static final WarningLogger connectionStringAttributeNoLongerSupported =
       new WarningLogger(
           SpanDataMapper.class,
-          AiSemanticAttributes.PREVIEW_CONNECTION_STRING.getKey()
+          AiSemanticAttributes.DEPRECATED_CONNECTION_STRING.getKey()
               + " is no longer supported starting from Application Insights Java 3.4.0, because it"
               + " is incompatible with pre-aggregated standard metrics. Please use"
               + " \"connectionStringOverrides\" configuration, or reach out to"
@@ -897,7 +897,7 @@ public final class SpanDataMapper {
   private static final WarningLogger roleNameAttributeNoLongerSupported =
       new WarningLogger(
           SpanDataMapper.class,
-          AiSemanticAttributes.PREVIEW_ROLE_NAME.getKey()
+          AiSemanticAttributes.DEPRECATED_ROLE_NAME.getKey()
               + " is no longer supported starting from Application Insights Java 3.4.0, because it"
               + " is incompatible with pre-aggregated standard metrics. Please use"
               + " \"roleNameOverrides\" configuration, or reach out to"
@@ -906,7 +906,7 @@ public final class SpanDataMapper {
   private static final WarningLogger roleInstanceAttributeNoLongerSupported =
       new WarningLogger(
           SpanDataMapper.class,
-          AiSemanticAttributes.PREVIEW_ROLE_INSTANCE.getKey()
+          AiSemanticAttributes.DEPRECATED_ROLE_INSTANCE.getKey()
               + " is no longer supported starting from Application Insights Java 3.4.0, because it"
               + " is incompatible with pre-aggregated standard metrics. Please reach out to"
               + " https://github.com/microsoft/ApplicationInsights-Java/issues if you have a use"
@@ -914,7 +914,7 @@ public final class SpanDataMapper {
   private static final WarningLogger instrumentationKeyAttributeNoLongerSupported =
       new WarningLogger(
           SpanDataMapper.class,
-          AiSemanticAttributes.PREVIEW_INSTRUMENTATION_KEY.getKey()
+          AiSemanticAttributes.DEPRECATED_INSTRUMENTATION_KEY.getKey()
               + " is no longer supported starting from Application Insights Java 3.4.0, because it"
               + " is incompatible with pre-aggregated standard metrics. Please use"
               + " \"connectionStringOverrides\" configuration, or reach out to"
@@ -933,20 +933,20 @@ public final class SpanDataMapper {
       telemetryBuilder.addTag(ContextTagKeys.AI_CLOUD_ROLE.toString(), (String) value);
       return true;
     }
-    if (key.equals(AiSemanticAttributes.PREVIEW_CONNECTION_STRING.getKey())) {
+    if (key.equals(AiSemanticAttributes.DEPRECATED_CONNECTION_STRING.getKey())) {
       connectionStringAttributeNoLongerSupported.recordWarning();
       return true;
     }
-    if (key.equals(AiSemanticAttributes.PREVIEW_ROLE_NAME.getKey())) {
+    if (key.equals(AiSemanticAttributes.DEPRECATED_ROLE_NAME.getKey())) {
       roleNameAttributeNoLongerSupported.recordWarning();
       return true;
     }
-    if (key.equals(AiSemanticAttributes.PREVIEW_ROLE_INSTANCE.getKey())
+    if (key.equals(AiSemanticAttributes.DEPRECATED_ROLE_INSTANCE.getKey())
         && value instanceof String) {
       roleInstanceAttributeNoLongerSupported.recordWarning();
       return true;
     }
-    if (key.equals(AiSemanticAttributes.PREVIEW_INSTRUMENTATION_KEY.getKey())) {
+    if (key.equals(AiSemanticAttributes.DEPRECATED_INSTRUMENTATION_KEY.getKey())) {
       instrumentationKeyAttributeNoLongerSupported.recordWarning();
       return true;
     }
