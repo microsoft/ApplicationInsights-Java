@@ -5,7 +5,7 @@ package com.microsoft.applicationinsights.agent.internal.init;
 
 import io.opentelemetry.context.ContextKey;
 
-public class AiContextKeys {
+public final class AiContextKeys {
 
   public static final ContextKey<String> CONNECTION_STRING =
       ContextKey.named("applicationinsights.internal.connection_string");

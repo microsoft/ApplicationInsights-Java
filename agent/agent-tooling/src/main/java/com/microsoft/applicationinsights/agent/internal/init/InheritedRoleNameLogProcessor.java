@@ -8,7 +8,7 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.logs.LogProcessor;
 import io.opentelemetry.sdk.logs.ReadWriteLogRecord;
 
-public class InheritedRoleNameLogProcessor implements LogProcessor {
+public final class InheritedRoleNameLogProcessor implements LogProcessor {
 
   @Override
   public void onEmit(ReadWriteLogRecord logRecord) {
