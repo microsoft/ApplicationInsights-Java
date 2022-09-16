@@ -5,6 +5,7 @@ package com.microsoft.applicationinsights.agent.internal.sampling;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.AiSemanticAttributes;
 import com.azure.monitor.opentelemetry.exporter.implementation.SamplingScoreGeneratorV2;
+import com.azure.monitor.opentelemetry.exporter.implementation.SpanDataMapper;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
@@ -27,15 +28,23 @@ import javax.annotation.Nullable;
 public class AiSampler implements Sampler {
 
   private final boolean localParentBased;
-  private final SamplingPercentage samplingPercentage;
+  private final SamplingPercentage requestSamplingPercentage;
+  // when localParentBased=false, then this applies to all dependencies, not only parentless
+  private final SamplingPercentage parentlessDependencySamplingPercentage;
   private final Cache<Long, SamplingResult> recordAndSampleWithItemCountMap = Cache.bounded(100);
 
-  public AiSampler(SamplingPercentage samplingPercentage) {
-    this(samplingPercentage, true);
+  public AiSampler(
+      SamplingPercentage requestSamplingPercentage,
+      SamplingPercentage parentlessDependencySamplingPercentage) {
+    this(requestSamplingPercentage, parentlessDependencySamplingPercentage, true);
   }
 
-  public AiSampler(SamplingPercentage samplingPercentage, boolean localParentBased) {
-    this.samplingPercentage = samplingPercentage;
+  public AiSampler(
+      SamplingPercentage requestSamplingPercentage,
+      SamplingPercentage parentlessDependencySamplingPercentage,
+      boolean localParentBased) {
+    this.requestSamplingPercentage = requestSamplingPercentage;
+    this.parentlessDependencySamplingPercentage = parentlessDependencySamplingPercentage;
     this.localParentBased = localParentBased;
   }
 
@@ -49,13 +58,25 @@ public class AiSampler implements Sampler {
       List<LinkData> parentLinks) {
 
     if (localParentBased) {
-      SamplingResult samplingResult = handleLocalParent(parentContext);
+      SamplingResult samplingResult = useLocalParentDecisionIfPossible(parentContext);
       if (samplingResult != null) {
         return samplingResult;
       }
     }
 
-    double sp = samplingPercentage.get();
+    double sp;
+    if (requestSamplingPercentage == parentlessDependencySamplingPercentage) {
+      // optimization for fixed-rate sampling
+      sp = requestSamplingPercentage.get();
+    } else {
+      SpanContext parentSpanContext = Span.fromContext(parentContext).getSpanContext();
+      boolean isRequest = SpanDataMapper.isRequest(spanKind, parentSpanContext, attributes::get);
+
+      sp =
+          isRequest
+              ? requestSamplingPercentage.get()
+              : parentlessDependencySamplingPercentage.get();
+    }
 
     if (sp == 0) {
       return SamplingResult.drop();
@@ -76,7 +97,7 @@ public class AiSampler implements Sampler {
   }
 
   @Nullable
-  private static SamplingResult handleLocalParent(Context parentContext) {
+  private static SamplingResult useLocalParentDecisionIfPossible(Context parentContext) {
     // remote parent-based sampling messes up item counts since item count is not propagated in
     // tracestate (yet), but local parent-based sampling doesn't have this issue since we are
     // propagating item count locally

@@ -149,8 +149,11 @@ public class Configuration {
     @Nullable public Double percentage;
 
     // default is 5 requests per second (set in ConfigurationBuilder if neither percentage nor
-    // limitPerSecond was configured)
-    @Nullable public Double limitPerSecond;
+    // requestsPerSecond was configured)
+    @Nullable public Double requestsPerSecond;
+
+    // this config option only existed in one BETA release (3.4.0-BETA)
+    @Deprecated @Nullable public Double limitPerSecond;
   }
 
   public static class SamplingPreview {
@@ -615,9 +618,8 @@ public class Configuration {
     //   for now the default is both "request" and "dependency" for backwards compatibility
     @Nullable public SamplingTelemetryKind telemetryKind;
 
-    // TODO (trask) add test for this
-    // this is primarily useful for batch jobs
-    public boolean includingStandaloneTelemetry;
+    // this config option only existed in one BETA release (3.4.0-BETA)
+    @Deprecated @Nullable public Boolean includingStandaloneTelemetry;
 
     // not using include/exclude, because you can still get exclude with this by adding a second
     // (exclude) override above it

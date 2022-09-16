@@ -68,7 +68,7 @@ public class ConfigurationBuilder {
   private static final String APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE =
       "APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE";
 
-  private static final String APPLICATIONINSIGHTS_SAMPLING_LIMIT_PER_SECOND =
+  private static final String APPLICATIONINSIGHTS_SAMPLING_REQUESTS_PER_SECOND =
       "APPLICATIONINSIGHTS_SAMPLING_LIMIT_PER_SECOND";
 
   private static final String APPLICATIONINSIGHTS_INSTRUMENTATION_LOGGING_LEVEL =
@@ -189,6 +189,11 @@ public class ConfigurationBuilder {
                 + " and will be required in a future release, please transition to add"
                 + " \"telemetryKind\" for sampling overrides.");
       }
+      if (override.includingStandaloneTelemetry != null) {
+        configurationLogger.warn(
+            "Sampling overrides \"includingStandaloneTelemetry\" (from 3.4.0-BETA) has been"
+                + " removed in 3.4.0 (GA)");
+      }
     }
     if (!config.preview.instrumentationKeyOverrides.isEmpty()) {
       configurationLogger.warn(
@@ -200,6 +205,14 @@ public class ConfigurationBuilder {
         newOverride.httpPathPrefix = override.httpPathPrefix;
         newOverride.connectionString = "InstrumentationKey=" + override.instrumentationKey;
         config.preview.connectionStringOverrides.add(newOverride);
+      }
+    }
+    if (config.sampling.limitPerSecond != null) {
+      configurationLogger.warn(
+          "\"limitPerSecond\" (from 3.4.0-BETA) has been renamed to \"requestsPerSecond\""
+              + " in 3.4.0 (GA)");
+      if (config.sampling.requestsPerSecond == null && config.sampling.percentage == null) {
+        config.sampling.requestsPerSecond = config.sampling.limitPerSecond;
       }
     }
 
@@ -220,8 +233,8 @@ public class ConfigurationBuilder {
       overlayRpConfiguration(config, rpConfiguration);
     }
     // only fall back to default sampling configuration after all overlays have been performed
-    if (config.sampling.limitPerSecond == null && config.sampling.percentage == null) {
-      config.sampling.limitPerSecond = 5.0;
+    if (config.sampling.requestsPerSecond == null && config.sampling.percentage == null) {
+      config.sampling.requestsPerSecond = 5.0;
     }
     // only set role instance to host name as a last resort
     if (config.role.instance == null) {
@@ -494,9 +507,9 @@ public class ConfigurationBuilder {
     config.sampling.percentage =
         overlayWithEnvVar(APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE, config.sampling.percentage);
 
-    config.sampling.limitPerSecond =
+    config.sampling.requestsPerSecond =
         overlayWithEnvVar(
-            APPLICATIONINSIGHTS_SAMPLING_LIMIT_PER_SECOND, config.sampling.limitPerSecond);
+            APPLICATIONINSIGHTS_SAMPLING_REQUESTS_PER_SECOND, config.sampling.requestsPerSecond);
 
     config.proxy = overlayProxyFromEnv(config.proxy);
 
@@ -616,7 +629,7 @@ public class ConfigurationBuilder {
     }
     if (rpConfiguration.sampling != null) {
       config.sampling.percentage = rpConfiguration.sampling.percentage;
-      config.sampling.limitPerSecond = rpConfiguration.sampling.limitPerSecond;
+      config.sampling.requestsPerSecond = rpConfiguration.sampling.requestsPerSecond;
     }
     if (isTrimEmpty(config.role.name)) {
       // only use rp configuration role name as a fallback, similar to WEBSITE_SITE_NAME
