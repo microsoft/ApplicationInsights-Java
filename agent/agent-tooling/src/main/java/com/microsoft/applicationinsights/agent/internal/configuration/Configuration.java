@@ -272,7 +272,7 @@ public class Configuration {
     public long longIntervalSeconds = DAYS.toSeconds(1); // default to daily
   }
 
-  public static class PreAggregatedMetricsConfiguration {
+  public static class PreAggregatedStandardMetricsConfiguration {
     public boolean disabled = false; // pre-aggregated metrics are on by default
   }
 
@@ -450,8 +450,8 @@ public class Configuration {
   public static class InternalConfiguration {
     // This is used for collecting internal stats
     public Statsbeat statsbeat = new Statsbeat();
-    public PreAggregatedMetricsConfiguration preAggregatedMetric =
-        new PreAggregatedMetricsConfiguration();
+    public PreAggregatedStandardMetricsConfiguration preAggregatedStandardMetric =
+        new PreAggregatedStandardMetricsConfiguration();
   }
 
   public static class PreviewInstrumentation {

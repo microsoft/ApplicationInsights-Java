@@ -554,7 +554,7 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
             configuration.preview.metricIntervalSeconds * 1000);
     metricReader = readerBuilder.setInterval(Duration.ofMillis(intervalMillis)).build();
 
-    if (!configuration.internal.preAggregatedMetric.disabled) {
+    if (!configuration.internal.preAggregatedStandardMetric.disabled) {
       AiViewRegistry.registerViews(builder);
     }
 
