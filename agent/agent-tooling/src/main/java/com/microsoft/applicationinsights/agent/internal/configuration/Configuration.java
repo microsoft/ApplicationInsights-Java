@@ -312,6 +312,8 @@ public class Configuration {
     // Note: this configuration option will be removed in 4.0.0
     public boolean captureLoggingLevelAsCustomDimension;
 
+    public boolean captureLogbackCodeAttributes;
+
     // this is to support interoperability with other systems
     // intentionally not allowing the removal of w3c propagator since that is key to many Azure
     // integrated experiences

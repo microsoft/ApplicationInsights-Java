@@ -136,7 +136,8 @@ public class LogDataMapper {
   private static final String LOGBACK_MDC_PREFIX = "logback.mdc.";
   private static final String JBOSS_LOGGING_MDC_PREFIX = "jboss-logmanager.mdc.";
 
-  static void setExtraAttributes(AbstractTelemetryBuilder telemetryBuilder, Attributes attributes) {
+  private static void setExtraAttributes(
+      AbstractTelemetryBuilder telemetryBuilder, Attributes attributes) {
     attributes.forEach(
         (attributeKey, value) -> {
           String key = attributeKey.getKey();
@@ -151,6 +152,22 @@ public class LogDataMapper {
           if (key.startsWith(LOGBACK_MDC_PREFIX)) {
             telemetryBuilder.addProperty(
                 key.substring(LOGBACK_MDC_PREFIX.length()), String.valueOf(value));
+            return;
+          }
+          if (SemanticAttributes.CODE_FILEPATH.getKey().equals(key)) {
+            telemetryBuilder.addProperty("FileName", String.valueOf(value));
+            return;
+          }
+          if (SemanticAttributes.CODE_NAMESPACE.getKey().equals(key)) {
+            telemetryBuilder.addProperty("ClassName", String.valueOf(value));
+            return;
+          }
+          if (SemanticAttributes.CODE_FUNCTION.getKey().equals(key)) {
+            telemetryBuilder.addProperty("MethodName", String.valueOf(value));
+            return;
+          }
+          if (SemanticAttributes.CODE_LINENO.getKey().equals(key)) {
+            telemetryBuilder.addProperty("LineNumber", String.valueOf(value));
             return;
           }
           if (key.startsWith(JBOSS_LOGGING_MDC_PREFIX)) {
