@@ -13,9 +13,9 @@ public final class InheritedRoleNameLogProcessor implements LogProcessor {
   @Override
   public void onEmit(ReadWriteLogRecord logRecord) {
     Context context = Context.current();
-    String connectionString = context.get(AiContextKeys.ROLE_NAME);
-    if (connectionString != null) {
-      logRecord.setAttribute(AiSemanticAttributes.INTERNAL_ROLE_NAME, connectionString);
+    String roleName = context.get(AiContextKeys.ROLE_NAME);
+    if (roleName != null) {
+      logRecord.setAttribute(AiSemanticAttributes.INTERNAL_ROLE_NAME, roleName);
     }
   }
 }
