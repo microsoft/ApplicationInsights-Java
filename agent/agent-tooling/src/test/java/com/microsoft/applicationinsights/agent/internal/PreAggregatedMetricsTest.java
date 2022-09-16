@@ -23,7 +23,6 @@ import com.azure.monitor.opentelemetry.exporter.implementation.MetricDataMapper;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.MetricTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricsData;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
-import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
@@ -282,11 +281,10 @@ public class PreAggregatedMetricsTest {
                                     point
                                         .hasSum(150 /* millis */)
                                         .hasAttributesSatisfying(
-                                            equalTo(SemanticAttributes.HTTP_STATUS_CODE, 200),
-                                            equalTo(
-                                                AttributeKey.booleanKey(
-                                                    "applicationinsights.internal.is_synthetic"),
-                                                false))
+                                            equalTo(SemanticAttributes.HTTP_STATUS_CODE, 200)
+                                            // ,equalTo(AttributeKey.booleanKey(
+                                            // "applicationinsights.internal.is_synthetic"), false)
+                                            )
                                         .hasExemplarsSatisfying(
                                             exemplar ->
                                                 exemplar

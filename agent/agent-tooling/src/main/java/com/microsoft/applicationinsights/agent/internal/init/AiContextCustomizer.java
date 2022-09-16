@@ -17,7 +17,7 @@ import javax.annotation.Nullable;
 //  ai.preview.connection_string, ai.preview.service_name, and ai.preview.instrumentation_key
 //  for programmatic access customers can use classic SDK's
 //  ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry()
-//     .setConnectionString(...)
+//     .getContext().setConnectionString(...)
 //     .getContext().getCloud().setRole(...)
 public class AiContextCustomizer<R> implements ContextCustomizer<R> {
 

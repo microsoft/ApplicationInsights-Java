@@ -13,9 +13,9 @@ public class InheritedRoleNameSpanProcessor implements SpanProcessor {
 
   @Override
   public void onStart(Context parentContext, ReadWriteSpan span) {
-    String connectionString = parentContext.get(AiContextKeys.CONNECTION_STRING);
-    if (connectionString != null) {
-      span.setAttribute(AiSemanticAttributes.INTERNAL_CONNECTION_STRING, connectionString);
+    String roleName = parentContext.get(AiContextKeys.ROLE_NAME);
+    if (roleName != null) {
+      span.setAttribute(AiSemanticAttributes.INTERNAL_ROLE_NAME, roleName);
     }
   }
 

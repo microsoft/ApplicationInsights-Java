@@ -10,6 +10,8 @@ dependencies {
   // 1.4.0 is when @SpanAttribute annotation was introduced
   implementation("io.opentelemetry:opentelemetry-extension-annotations:1.4.0")
   implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:1.16.0-alpha")
+
+//  implementation(project(":classic-sdk:web"))
 }
 
 // need to use older versions to prevent regression
