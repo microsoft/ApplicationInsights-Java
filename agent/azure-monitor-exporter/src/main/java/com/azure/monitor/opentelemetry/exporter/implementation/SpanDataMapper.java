@@ -15,7 +15,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.builders.MessageT
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.RemoteDependencyTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.RequestTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
-import com.azure.monitor.opentelemetry.exporter.implementation.logging.OperationLogger;
+import com.azure.monitor.opentelemetry.exporter.implementation.logging.WarningLogger;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedDuration;
@@ -885,8 +885,41 @@ public final class SpanDataMapper {
     return false;
   }
 
-  private static final OperationLogger previewAttributeNoLongerSupported =
-      new OperationLogger(SpanDataMapper.class, "Preview attribute is no longer supported");
+  private static final WarningLogger connectionStringAttributeNoLongerSupported =
+      new WarningLogger(
+          SpanDataMapper.class,
+          AiSemanticAttributes.PREVIEW_CONNECTION_STRING.getKey()
+              + " is no longer supported starting from Application Insights Java 3.4.0, because it"
+              + " is incompatible with pre-aggregated standard metrics. Please use"
+              + " \"connectionStringOverrides\" configuration, or reach out to"
+              + " https://github.com/microsoft/ApplicationInsights-Java/issues if you have a"
+              + " different use case.");
+  private static final WarningLogger roleNameAttributeNoLongerSupported =
+      new WarningLogger(
+          SpanDataMapper.class,
+          AiSemanticAttributes.PREVIEW_ROLE_NAME.getKey()
+              + " is no longer supported starting from Application Insights Java 3.4.0, because it"
+              + " is incompatible with pre-aggregated standard metrics. Please use"
+              + " \"roleNameOverrides\" configuration, or reach out to"
+              + " https://github.com/microsoft/ApplicationInsights-Java/issues if you have a"
+              + " different use case.");
+  private static final WarningLogger roleInstanceAttributeNoLongerSupported =
+      new WarningLogger(
+          SpanDataMapper.class,
+          AiSemanticAttributes.PREVIEW_ROLE_INSTANCE.getKey()
+              + " is no longer supported starting from Application Insights Java 3.4.0, because it"
+              + " is incompatible with pre-aggregated standard metrics. Please reach out to"
+              + " https://github.com/microsoft/ApplicationInsights-Java/issues if you have a use"
+              + " case for this.");
+  private static final WarningLogger instrumentationKeyAttributeNoLongerSupported =
+      new WarningLogger(
+          SpanDataMapper.class,
+          AiSemanticAttributes.PREVIEW_INSTRUMENTATION_KEY.getKey()
+              + " is no longer supported starting from Application Insights Java 3.4.0, because it"
+              + " is incompatible with pre-aggregated standard metrics. Please use"
+              + " \"connectionStringOverrides\" configuration, or reach out to"
+              + " https://github.com/microsoft/ApplicationInsights-Java/issues if you have a"
+              + " different use case.");
 
   static boolean applyConnectionStringAndRoleNameOverrides(
       AbstractTelemetryBuilder telemetryBuilder, Object value, String key) {
@@ -901,30 +934,20 @@ public final class SpanDataMapper {
       return true;
     }
     if (key.equals(AiSemanticAttributes.PREVIEW_CONNECTION_STRING.getKey())) {
-      previewAttributeNoLongerSupported.recordFailure(
-          AiSemanticAttributes.PREVIEW_CONNECTION_STRING.getKey()
-              + " is no longer supported since 3.4.0 because it is incompatible with pre-aggregated"
-              + " standard metrics, please use \"connectionStringOverrides\" configuration, or"
-              + " reach out to https://github.com/microsoft/ApplicationInsights-Java/issues if you"
-              + " have a different use case");
+      connectionStringAttributeNoLongerSupported.recordWarning();
       return true;
     }
     if (key.equals(AiSemanticAttributes.PREVIEW_ROLE_NAME.getKey())) {
-      previewAttributeNoLongerSupported.recordFailure(
-          AiSemanticAttributes.PREVIEW_ROLE_NAME.getKey()
-              + " is no longer supported since 3.4.0 because it is incompatible with pre-aggregated"
-              + " standard metrics, please use \"roleNameOverrides\" configuration, or"
-              + " reach out to https://github.com/microsoft/ApplicationInsights-Java/issues if you"
-              + " have a different use case");
+      roleNameAttributeNoLongerSupported.recordWarning();
+      return true;
+    }
+    if (key.equals(AiSemanticAttributes.PREVIEW_ROLE_INSTANCE.getKey())
+        && value instanceof String) {
+      roleInstanceAttributeNoLongerSupported.recordWarning();
       return true;
     }
     if (key.equals(AiSemanticAttributes.PREVIEW_INSTRUMENTATION_KEY.getKey())) {
-      previewAttributeNoLongerSupported.recordFailure(
-          AiSemanticAttributes.PREVIEW_INSTRUMENTATION_KEY.getKey()
-              + " is no longer supported since 3.4.0 because it is incompatible with pre-aggregated"
-              + " standard metrics, please use \"connectionStringOverrides\" configuration, or"
-              + " reach out to https://github.com/microsoft/ApplicationInsights-Java/issues if you"
-              + " have a different use case");
+      instrumentationKeyAttributeNoLongerSupported.recordWarning();
       return true;
     }
     return false;

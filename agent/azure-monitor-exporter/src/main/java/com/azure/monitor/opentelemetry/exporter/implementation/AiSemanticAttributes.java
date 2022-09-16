@@ -34,7 +34,7 @@ public final class AiSemanticAttributes {
   // not supported anymore, because if you stamp it on non-recording span then standard metrics
   // will not see it and then be incorrect
   @Deprecated
-  public static final AttributeKey<String> PREVIEW_ROLE_INSTANCE_ID =
+  public static final AttributeKey<String> PREVIEW_ROLE_INSTANCE =
       AttributeKey.stringKey("ai.preview.service_instance_id");
 
   public static final AttributeKey<String> PREVIEW_APPLICATION_VERSION =

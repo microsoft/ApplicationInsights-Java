@@ -26,21 +26,27 @@ public class TestController {
 
   @GetMapping("/test-overriding-connection-string-etc")
   public String testOverridingConnectionStringEtc() {
-    //    Span.current()
-    //        .setAttribute(
-    //            "ai.preview.connection_string",
-    //
-    // "InstrumentationKey=12341234-1234-1234-1234-123412341234;IngestionEndpoint=http://host.testcontainers.internal:6060/");
-    //    Span.current().setAttribute("ai.preview.service_name", "role-name-here");
-    //    Span.current().setAttribute("ai.preview.service_instance_id", "role-instance-here");
+    // these are no longer supported since 3.4.0, but included here to (manually) inspect that
+    // appropriate warning logs about them no longer being supported are emitted
+    Span.current()
+        .setAttribute(
+            "ai.preview.connection_string",
+            "InstrumentationKey=12341234-1234-1234-1234-123412341234;IngestionEndpoint=http://host.testcontainers.internal:6060/");
+    Span.current().setAttribute("ai.preview.service_name", "role-name-here");
+    Span.current().setAttribute("ai.preview.service_instance_id", "role-instance-here");
+
+    // this is still supported:
     Span.current().setAttribute("ai.preview.service_version", "application-version-here");
     return "OK!";
   }
 
   @GetMapping("/test-overriding-ikey")
   public String testOverridingIkey() {
+    // this is no longer supported since 3.4.0, but included here to (manually) inspect that
+    // appropriate warning log about it no longer being supported is emitted
     Span.current()
         .setAttribute("ai.preview.instrumentation_key", "12341234-1234-1234-1234-123412341234");
+
     return "OK!";
   }
 
