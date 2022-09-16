@@ -29,21 +29,22 @@ public class AiSampler implements Sampler {
 
   private final boolean localParentBased;
   private final SamplingPercentage requestSamplingPercentage;
-  private final SamplingPercentage dependencySamplingPercentage;
+  // when localParentBased=false, then this applies to all dependencies, not only parentless
+  private final SamplingPercentage parentlessDependencySamplingPercentage;
   private final Cache<Long, SamplingResult> recordAndSampleWithItemCountMap = Cache.bounded(100);
 
   public AiSampler(
       SamplingPercentage requestSamplingPercentage,
-      SamplingPercentage dependencySamplingPercentage) {
-    this(requestSamplingPercentage, dependencySamplingPercentage, true);
+      SamplingPercentage parentlessDependencySamplingPercentage) {
+    this(requestSamplingPercentage, parentlessDependencySamplingPercentage, true);
   }
 
   public AiSampler(
       SamplingPercentage requestSamplingPercentage,
-      SamplingPercentage dependencySamplingPercentage,
+      SamplingPercentage parentlessDependencySamplingPercentage,
       boolean localParentBased) {
     this.requestSamplingPercentage = requestSamplingPercentage;
-    this.dependencySamplingPercentage = dependencySamplingPercentage;
+    this.parentlessDependencySamplingPercentage = parentlessDependencySamplingPercentage;
     this.localParentBased = localParentBased;
   }
 
@@ -64,14 +65,17 @@ public class AiSampler implements Sampler {
     }
 
     double sp;
-    if (requestSamplingPercentage == dependencySamplingPercentage) {
+    if (requestSamplingPercentage == parentlessDependencySamplingPercentage) {
       // optimization for fixed-rate sampling
       sp = requestSamplingPercentage.get();
     } else {
       SpanContext parentSpanContext = Span.fromContext(parentContext).getSpanContext();
       boolean isRequest = SpanDataMapper.isRequest(spanKind, parentSpanContext, attributes::get);
 
-      sp = isRequest ? requestSamplingPercentage.get() : dependencySamplingPercentage.get();
+      sp =
+          isRequest
+              ? requestSamplingPercentage.get()
+              : parentlessDependencySamplingPercentage.get();
     }
 
     if (sp == 0) {

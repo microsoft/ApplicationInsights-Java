@@ -16,8 +16,8 @@ public class Samplers {
     if (config.sampling.requestsPerSecond != null) {
       SamplingPercentage requestSamplingPercentage =
           SamplingPercentage.rateLimited(config.sampling.requestsPerSecond);
-      SamplingPercentage dependencySamplingPercentage = SamplingPercentage.fixed(100);
-      sampler = new AiSampler(requestSamplingPercentage, dependencySamplingPercentage);
+      SamplingPercentage parentlessDependencySamplingPercentage = SamplingPercentage.fixed(100);
+      sampler = new AiSampler(requestSamplingPercentage, parentlessDependencySamplingPercentage);
     } else if (config.sampling.percentage != null) {
       SamplingPercentage samplingPercentage = SamplingPercentage.fixed(config.sampling.percentage);
       sampler = new AiSampler(samplingPercentage, samplingPercentage);
