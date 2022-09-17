@@ -1,0 +1,21 @@
+{
+  "role": {
+    "name": "testrolename",
+    "instance": "testroleinstance"
+  },
+  "sampling": {
+    "percentage": 50
+  },
+  "preview": {
+    "roleNameOverrides": [
+      {
+        "httpPathPrefix": "/PreAggMetricsWithRoleNameOverridesAndSampling/app2",
+        "roleName": "app2"
+      },
+      {
+        "httpPathPrefix": "/PreAggMetricsWithRoleNameOverridesAndSampling/app3",
+        "roleName": "app3"
+      }
+    ]
+  }
+}
