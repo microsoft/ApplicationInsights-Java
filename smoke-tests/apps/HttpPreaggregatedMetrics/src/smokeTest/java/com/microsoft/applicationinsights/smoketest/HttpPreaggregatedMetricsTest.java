@@ -37,7 +37,7 @@ abstract class HttpPreaggregatedMetricsTest {
   }
 
   @Test
-  @TargetUri(value = "/httpUrlConnection", userAgent = "something AlwaysOn something")
+  @TargetUri(value = "/httpUrlConnection", userAgent = "AlwaysOn")
   void testHttpUrlConnectionAndSynthetic() throws Exception {
     testHttpUrlConnectionAndSynthetic(true);
   }
