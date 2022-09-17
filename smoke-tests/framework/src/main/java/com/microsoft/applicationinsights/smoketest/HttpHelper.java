@@ -20,8 +20,12 @@ public class HttpHelper {
     return getResponseCode(httpGet);
   }
 
-  public static String get(String url) throws IOException {
-    return getBody(new HttpGet(url));
+  public static String get(String url, String userAgent) throws IOException {
+    HttpGet httpGet = new HttpGet(url);
+    if (!userAgent.isEmpty()) {
+      httpGet.setHeader("User-Agent", userAgent);
+    }
+    return getBody(httpGet);
   }
 
   private static String getBody(HttpGet httpGet) throws IOException {

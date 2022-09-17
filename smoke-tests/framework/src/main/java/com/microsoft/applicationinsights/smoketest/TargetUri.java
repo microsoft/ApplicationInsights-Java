@@ -15,4 +15,6 @@ public @interface TargetUri {
 
   /** The number of times to call the target uri. */
   int callCount() default 1;
+
+  String userAgent() default "";
 }

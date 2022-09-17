@@ -186,7 +186,7 @@ public class SmokeTestExtension
       System.out.println("calling " + url + " " + targetUri.callCount() + " times");
     }
     for (int i = 0; i < targetUri.callCount(); i++) {
-      HttpHelper.get(url);
+      HttpHelper.get(url, targetUri.userAgent());
     }
   }
 
