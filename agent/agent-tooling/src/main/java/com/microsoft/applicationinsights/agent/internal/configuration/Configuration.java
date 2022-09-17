@@ -273,7 +273,7 @@ public class Configuration {
   }
 
   public static class PreAggregatedStandardMetricsConfiguration {
-    public boolean disabled = false; // pre-aggregated metrics are on by default
+    public boolean enabled = true; // pre-aggregated standard metrics are on by default
   }
 
   public static class Proxy {
@@ -450,7 +450,7 @@ public class Configuration {
   public static class InternalConfiguration {
     // This is used for collecting internal stats
     public Statsbeat statsbeat = new Statsbeat();
-    public PreAggregatedStandardMetricsConfiguration preAggregatedStandardMetric =
+    public PreAggregatedStandardMetricsConfiguration preAggregatedStandardMetrics =
         new PreAggregatedStandardMetricsConfiguration();
   }
 
