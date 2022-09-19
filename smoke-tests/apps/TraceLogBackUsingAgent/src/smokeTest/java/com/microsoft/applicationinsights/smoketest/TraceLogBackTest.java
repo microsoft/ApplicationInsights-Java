@@ -57,7 +57,7 @@ abstract class TraceLogBackTest {
 
     MessageData md1 = logs.get(0);
     MessageData md2 = logs.get(1);
-    //MessageData md3 = logs.get(2);
+    // MessageData md3 = logs.get(2);
 
     assertThat(md1.getMessage()).isEqualTo("This is logback warn.");
     assertThat(md1.getSeverityLevel()).isEqualTo(SeverityLevel.WARNING);
@@ -102,7 +102,7 @@ abstract class TraceLogBackTest {
       assertThat(md2.getProperties()).hasSize(3);
     }
 
-    //assertThat(md3.getProperties()).containsEntry("Marker", "aMarker");
+    // assertThat(md3.getProperties()).containsEntry("Marker", "aMarker");
 
     SmokeTestExtension.assertParentChild(
         rd, rdEnvelope, mdEnvelope1, "GET /TraceLogBackUsingAgent/traceLogBack");
