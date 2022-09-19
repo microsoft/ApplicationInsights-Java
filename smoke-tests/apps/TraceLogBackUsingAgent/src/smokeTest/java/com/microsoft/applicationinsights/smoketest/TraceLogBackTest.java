@@ -41,7 +41,7 @@ abstract class TraceLogBackTest {
 
     Envelope rdEnvelope = rdList.get(0);
     String operationId = rdEnvelope.getTags().get("ai.operation.id");
-    List<Envelope> mdList = testing.mockedIngestion.waitForMessageItemsInRequest(2, operationId);
+    List<Envelope> mdList = testing.mockedIngestion.waitForMessageItemsInRequest(3, operationId);
 
     Envelope mdEnvelope1 = mdList.get(0);
     Envelope mdEnvelope2 = mdList.get(1);
@@ -57,6 +57,7 @@ abstract class TraceLogBackTest {
 
     MessageData md1 = logs.get(0);
     MessageData md2 = logs.get(1);
+    //MessageData md3 = logs.get(2);
 
     assertThat(md1.getMessage()).isEqualTo("This is logback warn.");
     assertThat(md1.getSeverityLevel()).isEqualTo(SeverityLevel.WARNING);
@@ -73,7 +74,7 @@ abstract class TraceLogBackTest {
               "ClassName",
               "com.microsoft.applicationinsights.smoketestapp.SimpleTestTraceLogBackServlet");
       assertThat(md1.getProperties()).containsEntry("MethodName", "doGet");
-      assertThat(md1.getProperties()).containsEntry("LineNumber", "24");
+      assertThat(md1.getProperties()).containsEntry("LineNumber", "26");
 
       assertThat(md1.getProperties()).hasSize(8);
     } else {
@@ -94,12 +95,14 @@ abstract class TraceLogBackTest {
               "ClassName",
               "com.microsoft.applicationinsights.smoketestapp.SimpleTestTraceLogBackServlet");
       assertThat(md2.getProperties()).containsEntry("MethodName", "doGet");
-      assertThat(md2.getProperties()).containsEntry("LineNumber", "26");
+      assertThat(md2.getProperties()).containsEntry("LineNumber", "28");
 
       assertThat(md2.getProperties()).hasSize(7);
     } else {
       assertThat(md2.getProperties()).hasSize(3);
     }
+
+    //assertThat(md3.getProperties()).containsEntry("Marker", "aMarker");
 
     SmokeTestExtension.assertParentChild(
         rd, rdEnvelope, mdEnvelope1, "GET /TraceLogBackUsingAgent/traceLogBack");

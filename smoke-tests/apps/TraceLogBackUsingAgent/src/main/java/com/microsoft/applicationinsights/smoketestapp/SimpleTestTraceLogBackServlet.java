@@ -10,6 +10,8 @@ import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
+import org.slf4j.Marker;
+import org.slf4j.MarkerFactory;
 
 @WebServlet("/traceLogBack")
 public class SimpleTestTraceLogBackServlet extends HttpServlet {
@@ -24,5 +26,8 @@ public class SimpleTestTraceLogBackServlet extends HttpServlet {
     logger.warn("This is logback warn.");
     MDC.remove("MDC key");
     logger.error("This is logback error.");
+
+    Marker marker = MarkerFactory.getMarker("aMarker");
+    logger.error(marker, "Log with marker");
   }
 }

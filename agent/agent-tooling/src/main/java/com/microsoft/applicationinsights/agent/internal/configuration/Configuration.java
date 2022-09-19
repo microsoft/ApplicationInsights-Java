@@ -322,6 +322,8 @@ public class Configuration {
 
     public boolean captureLogbackCodeAttributes;
 
+    public boolean captureLogbackMarkerAttributes;
+
     // this is to support interoperability with other systems
     // intentionally not allowing the removal of w3c propagator since that is key to many Azure
     // integrated experiences
