@@ -258,7 +258,7 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
     }
     if (config.preview.captureLogbackMarkerAttributes) {
       properties.put(
-          "otel.instrumentation.logback-appender.experimental.capture-marker-attributes", "true");
+          "otel.instrumentation.logback-appender.experimental.capture-marker-attribute", "true");
     }
     if (config.preview.instrumentation.akka.enabled) {
       properties.put("otel.instrumentation.akka-actor.enabled", "true");
