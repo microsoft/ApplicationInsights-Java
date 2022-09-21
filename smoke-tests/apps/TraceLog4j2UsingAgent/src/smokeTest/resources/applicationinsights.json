@@ -12,6 +12,6 @@
     }
   },
   "preview": {
-    "captureLog4jMarkerAttributes": true
+    "captureLog4jMarkerAttribute": true
   }
 }

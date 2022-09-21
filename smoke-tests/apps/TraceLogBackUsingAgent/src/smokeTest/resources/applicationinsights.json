@@ -13,6 +13,6 @@
   },
   "preview": {
     "captureLogbackCodeAttributes": true,
-    "captureLogbackMarkerAttributes": true
+    "captureLogbackMarkerAttribute": true
   }
 }
