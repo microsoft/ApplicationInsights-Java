@@ -7,7 +7,6 @@ import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TO
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_11_OPENJ9;
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_17;
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_18;
-import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_19;
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_8;
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_8_OPENJ9;
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8;
@@ -542,8 +541,7 @@ abstract class CoreAndFilter3xUsingOld3xAgentTest {
   @Environment(TOMCAT_8_JAVA_18)
   static class Tomcat8Java18Test extends CoreAndFilter3xUsingOld3xAgentTest {}
 
-  @Environment(TOMCAT_8_JAVA_19)
-  static class Tomcat8Java19Test extends CoreAndFilter3xUsingOld3xAgentTest {}
+  // note: old 3.x agents don't support Java 19
 
   @Environment(WILDFLY_13_JAVA_8)
   static class Wildfly13Java8Test extends CoreAndFilter3xUsingOld3xAgentTest {}
