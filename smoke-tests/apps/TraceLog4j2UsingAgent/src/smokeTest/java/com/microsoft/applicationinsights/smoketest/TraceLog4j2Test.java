@@ -30,6 +30,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 abstract class TraceLog4j2Test {
 
   @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.create();
+  private static final String TRACE_OPERATION_NAME = "GET /TraceLog4j2UsingAgent/traceLog4j2";
 
   @Test
   @TargetUri("/traceLog4j2")
@@ -38,16 +39,19 @@ abstract class TraceLog4j2Test {
 
     Envelope rdEnvelope = rdList.get(0);
     String operationId = rdEnvelope.getTags().get("ai.operation.id");
-    List<Envelope> mdList = testing.mockedIngestion.waitForMessageItemsInRequest(3, operationId);
+    List<Envelope> mdList = testing.mockedIngestion.waitForMessageItemsInRequest(4, operationId);
 
     Envelope mdEnvelope1 = mdList.get(0);
     Envelope mdEnvelope2 = mdList.get(1);
     Envelope mdEnvelope3 = mdList.get(2);
+    Envelope mdEnvelope4 = mdList.get(3);
+
 
     assertThat(rdEnvelope.getSampleRate()).isNull();
     assertThat(mdEnvelope1.getSampleRate()).isNull();
     assertThat(mdEnvelope2.getSampleRate()).isNull();
     assertThat(mdEnvelope3.getSampleRate()).isNull();
+    assertThat(mdEnvelope4.getSampleRate()).isNull();
 
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
 
@@ -55,8 +59,9 @@ abstract class TraceLog4j2Test {
     logs.sort(Comparator.comparing(MessageData::getSeverityLevel));
 
     MessageData md1 = logs.get(0);
-    MessageData md2 = logs.get(1);
+    // MessageData md2 = logs.get(1);
     MessageData md3 = logs.get(2);
+    MessageData md4 = logs.get(3);
 
     assertThat(md1.getMessage()).isEqualTo("This is log4j2 warn.");
     assertThat(md1.getSeverityLevel()).isEqualTo(SeverityLevel.WARNING);
@@ -66,26 +71,30 @@ abstract class TraceLog4j2Test {
     assertThat(md1.getProperties()).containsEntry("MDC key", "MDC value");
     assertThat(md1.getProperties()).hasSize(4);
 
-    assertThat(md2.getMessage()).isEqualTo("This is log4j2 error.");
-    assertThat(md2.getSeverityLevel()).isEqualTo(SeverityLevel.ERROR);
-    assertThat(md2.getProperties()).containsEntry("SourceType", "Logger");
+    // assertThat(md2.getProperties()).containsEntry("Marker", "aMarker");
+
+    assertThat(md3.getMessage()).isEqualTo("This is log4j2 error.");
+    assertThat(md3.getSeverityLevel()).isEqualTo(SeverityLevel.ERROR);
+    assertThat(md3.getProperties()).containsEntry("SourceType", "Logger");
     assertThat(md1.getProperties()).containsEntry("LoggerName", "smoketestapp");
     assertThat(md1.getProperties()).containsKey("ThreadName");
-    assertThat(md2.getProperties()).hasSize(3);
-
-    assertThat(md3.getMessage()).isEqualTo("This is log4j2 fatal.");
-    assertThat(md3.getSeverityLevel()).isEqualTo(SeverityLevel.CRITICAL);
-    assertThat(md3.getProperties()).containsEntry("SourceType", "Logger");
-    assertThat(md3.getProperties()).containsEntry("LoggerName", "smoketestapp");
-    assertThat(md3.getProperties()).containsKey("ThreadName");
     assertThat(md3.getProperties()).hasSize(3);
 
+    assertThat(md4.getMessage()).isEqualTo("This is log4j2 fatal.");
+    assertThat(md4.getSeverityLevel()).isEqualTo(SeverityLevel.CRITICAL);
+    assertThat(md4.getProperties()).containsEntry("SourceType", "Logger");
+    assertThat(md4.getProperties()).containsEntry("LoggerName", "smoketestapp");
+    assertThat(md4.getProperties()).containsKey("ThreadName");
+    assertThat(md4.getProperties()).hasSize(3);
+
     SmokeTestExtension.assertParentChild(
-        rd, rdEnvelope, mdEnvelope1, "GET /TraceLog4j2UsingAgent/traceLog4j2");
+        rd, rdEnvelope, mdEnvelope1, TRACE_OPERATION_NAME);
     SmokeTestExtension.assertParentChild(
-        rd, rdEnvelope, mdEnvelope2, "GET /TraceLog4j2UsingAgent/traceLog4j2");
+        rd, rdEnvelope, mdEnvelope2, TRACE_OPERATION_NAME);
     SmokeTestExtension.assertParentChild(
-        rd, rdEnvelope, mdEnvelope3, "GET /TraceLog4j2UsingAgent/traceLog4j2");
+        rd, rdEnvelope, mdEnvelope3, TRACE_OPERATION_NAME);
+    SmokeTestExtension.assertParentChild(
+        rd, rdEnvelope, mdEnvelope4, TRACE_OPERATION_NAME);
   }
 
   @Test
