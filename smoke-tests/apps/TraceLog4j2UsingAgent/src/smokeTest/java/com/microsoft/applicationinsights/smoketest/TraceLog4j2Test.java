@@ -46,7 +46,6 @@ abstract class TraceLog4j2Test {
     Envelope mdEnvelope3 = mdList.get(2);
     Envelope mdEnvelope4 = mdList.get(3);
 
-
     assertThat(rdEnvelope.getSampleRate()).isNull();
     assertThat(mdEnvelope1.getSampleRate()).isNull();
     assertThat(mdEnvelope2.getSampleRate()).isNull();
@@ -87,14 +86,10 @@ abstract class TraceLog4j2Test {
     assertThat(md4.getProperties()).containsKey("ThreadName");
     assertThat(md4.getProperties()).hasSize(3);
 
-    SmokeTestExtension.assertParentChild(
-        rd, rdEnvelope, mdEnvelope1, TRACE_OPERATION_NAME);
-    SmokeTestExtension.assertParentChild(
-        rd, rdEnvelope, mdEnvelope2, TRACE_OPERATION_NAME);
-    SmokeTestExtension.assertParentChild(
-        rd, rdEnvelope, mdEnvelope3, TRACE_OPERATION_NAME);
-    SmokeTestExtension.assertParentChild(
-        rd, rdEnvelope, mdEnvelope4, TRACE_OPERATION_NAME);
+    SmokeTestExtension.assertParentChild(rd, rdEnvelope, mdEnvelope1, TRACE_OPERATION_NAME);
+    SmokeTestExtension.assertParentChild(rd, rdEnvelope, mdEnvelope2, TRACE_OPERATION_NAME);
+    SmokeTestExtension.assertParentChild(rd, rdEnvelope, mdEnvelope3, TRACE_OPERATION_NAME);
+    SmokeTestExtension.assertParentChild(rd, rdEnvelope, mdEnvelope4, TRACE_OPERATION_NAME);
   }
 
   @Test
