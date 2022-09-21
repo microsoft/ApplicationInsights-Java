@@ -12,6 +12,7 @@ import com.microsoft.applicationinsights.extensibility.context.SessionContext;
 import com.microsoft.applicationinsights.extensibility.context.UserContext;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import javax.annotation.Nullable;
 
 /**
  * Represents a context for sending telemetry to the Application Insights service. The context holds
@@ -114,6 +115,12 @@ public final class TelemetryContext {
 
   public void setConnectionString(String connectionString) {
     this.connectionString = connectionString;
+  }
+
+  // this is required for interop with versions of the Java agent prior to 3.4.0
+  @Nullable
+  public String getInstrumentationKey() {
+    return null;
   }
 
   /** Gets a dictionary of application-defined property values. */
