@@ -28,7 +28,11 @@ public class LogDataMapper {
   private final boolean captureLoggingLevelAsCustomDimension;
   private final BiConsumer<AbstractTelemetryBuilder, Resource> telemetryInitializer;
 
-  private static final AttributeKey<String> OTEL_LOG_MARKER = AttributeKey.stringKey("log.marker");
+  private static final AttributeKey<String> OTEL_LOG4J_MARKER =
+      AttributeKey.stringKey("log4j.marker");
+
+  private static final AttributeKey<String> OTEL_LOGBACK_MARKER =
+      AttributeKey.stringKey("logback.marker");
 
   public LogDataMapper(
       boolean captureLoggingLevelAsCustomDimension,
@@ -174,7 +178,7 @@ public class LogDataMapper {
             telemetryBuilder.addProperty("LineNumber", String.valueOf(value));
             return;
           }
-          if (OTEL_LOG_MARKER.getKey().equals(key)) {
+          if (OTEL_LOG4J_MARKER.getKey().equals(key) || OTEL_LOGBACK_MARKER.getKey().equals(key)) {
             telemetryBuilder.addProperty("Marker", String.valueOf(value));
             return;
           }
