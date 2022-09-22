@@ -61,43 +61,41 @@ abstract class TraceLogBackTest {
 
     assertThat(md1.getMessage()).isEqualTo("This is logback warn.");
     assertThat(md1.getSeverityLevel()).isEqualTo(SeverityLevel.WARNING);
-    assertThat(md1.getProperties()).containsEntry("SourceType", "Logger");
-    assertThat(md1.getProperties()).containsEntry("LoggerName", "smoketestapp");
-    assertThat(md1.getProperties()).containsKey("ThreadName");
-    assertThat(md1.getProperties()).containsEntry("MDC key", "MDC value");
+    assertThat(md1.getProperties())
+        .containsEntry("SourceType", "Logger")
+        .containsEntry("LoggerName", "smoketestapp")
+        .containsKey("ThreadName")
+        .containsEntry("MDC key", "MDC value");
 
     if (checkLogBackCodeAttributes()) {
       assertThat(md1.getProperties())
-          .containsEntry("FileName", "SimpleTestTraceLogBackServlet.java");
-      assertThat(md1.getProperties())
+          .containsEntry("FileName", "SimpleTestTraceLogBackServlet.java")
           .containsEntry(
               "ClassName",
-              "com.microsoft.applicationinsights.smoketestapp.SimpleTestTraceLogBackServlet");
-      assertThat(md1.getProperties()).containsEntry("MethodName", "doGet");
-      assertThat(md1.getProperties()).containsEntry("LineNumber", "26");
-
-      assertThat(md1.getProperties()).hasSize(8);
+              "com.microsoft.applicationinsights.smoketestapp.SimpleTestTraceLogBackServlet")
+          .containsEntry("MethodName", "doGet")
+          .containsEntry("LineNumber", "26")
+          .hasSize(8);
     } else {
       assertThat(md1.getProperties()).hasSize(4);
     }
 
     assertThat(md2.getMessage()).isEqualTo("This is logback error.");
     assertThat(md2.getSeverityLevel()).isEqualTo(SeverityLevel.ERROR);
-    assertThat(md2.getProperties()).containsEntry("SourceType", "Logger");
-    assertThat(md2.getProperties()).containsEntry("LoggerName", "smoketestapp");
-    assertThat(md2.getProperties()).containsKey("ThreadName");
+    assertThat(md2.getProperties())
+        .containsEntry("SourceType", "Logger")
+        .containsEntry("LoggerName", "smoketestapp")
+        .containsKey("ThreadName");
 
     if (checkLogBackCodeAttributes()) {
       assertThat(md2.getProperties())
-          .containsEntry("FileName", "SimpleTestTraceLogBackServlet.java");
-      assertThat(md2.getProperties())
+          .containsEntry("FileName", "SimpleTestTraceLogBackServlet.java")
           .containsEntry(
               "ClassName",
-              "com.microsoft.applicationinsights.smoketestapp.SimpleTestTraceLogBackServlet");
-      assertThat(md2.getProperties()).containsEntry("MethodName", "doGet");
-      assertThat(md2.getProperties()).containsEntry("LineNumber", "28");
-
-      assertThat(md2.getProperties()).hasSize(7);
+              "com.microsoft.applicationinsights.smoketestapp.SimpleTestTraceLogBackServlet")
+          .containsEntry("MethodName", "doGet")
+          .containsEntry("LineNumber", "28")
+          .hasSize(7);
     } else {
       assertThat(md2.getProperties()).hasSize(3);
     }
@@ -131,22 +129,22 @@ abstract class TraceLogBackTest {
 
     assertThat(ed.getExceptions().get(0).getMessage()).isEqualTo("Fake Exception");
     assertThat(ed.getSeverityLevel()).isEqualTo(SeverityLevel.ERROR);
-    assertThat(ed.getProperties()).containsEntry("Logger Message", "This is an exception!");
-    assertThat(ed.getProperties()).containsEntry("SourceType", "Logger");
-    assertThat(ed.getProperties()).containsEntry("LoggerName", "smoketestapp");
-    assertThat(ed.getProperties()).containsKey("ThreadName");
-    assertThat(ed.getProperties()).containsEntry("MDC key", "MDC value");
+    assertThat(ed.getProperties())
+        .containsEntry("Logger Message", "This is an exception!")
+        .containsEntry("SourceType", "Logger")
+        .containsEntry("LoggerName", "smoketestapp")
+        .containsKey("ThreadName")
+        .containsEntry("MDC key", "MDC value");
 
     if (checkLogBackCodeAttributes()) {
       assertThat(ed.getProperties())
-          .containsEntry("FileName", "SimpleTestTraceLogBackWithExceptionServlet.java");
-      assertThat(ed.getProperties())
+          .containsEntry("FileName", "SimpleTestTraceLogBackWithExceptionServlet.java")
           .containsEntry(
               "ClassName",
-              "com.microsoft.applicationinsights.smoketestapp.SimpleTestTraceLogBackWithExceptionServlet");
-      assertThat(ed.getProperties()).containsEntry("MethodName", "doGet");
-      assertThat(ed.getProperties()).containsEntry("LineNumber", "21");
-      assertThat(ed.getProperties()).hasSize(9);
+              "com.microsoft.applicationinsights.smoketestapp.SimpleTestTraceLogBackWithExceptionServlet")
+          .containsEntry("MethodName", "doGet")
+          .containsEntry("LineNumber", "21")
+          .hasSize(9);
     } else {
       assertThat(ed.getProperties()).hasSize(5);
     }
