@@ -10,7 +10,7 @@
     "sampling": {
       "overrides": [
         {
-          "telemetryType": "request",
+          "telemetryKind": "request",
           "attributes": [
             {
               "key": "http.url",
@@ -22,7 +22,7 @@
           "id": "filter out health check"
         },
         {
-          "telemetryType": "dependency",
+          "telemetryKind": "dependency",
           "attributes": [
             {
               "key": "db.statement",
