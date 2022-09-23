@@ -96,7 +96,7 @@ tasks {
       systemProperty("ai.smoke-test.test-app-file", appFile)
       systemProperty("ai.smoke-test.javaagent-file", javaagentFile)
 
-      val smokeTestMatrix = findProperty("smokeTestMatrix") ?: System.getenv("CI") != null
+      val smokeTestMatrix = findProperty("smokeTestMatrix") ?: System.getProperty("ci") != null
       systemProperty("ai.smoke-test.matrix", smokeTestMatrix)
 
       findProperty("smokeTestRemoteDebug")?.let { systemProperty("ai.smoke-test.remote-debug", it) }

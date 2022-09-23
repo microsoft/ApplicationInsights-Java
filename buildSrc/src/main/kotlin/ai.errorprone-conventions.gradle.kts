@@ -24,7 +24,7 @@ tasks {
 
         excludedPaths.set(".*/build/generated/.*")
 
-        if (System.getenv("CI") == null) {
+        if (System.getProperty("ci") == null) {
           disable("SystemOut")
         }
 

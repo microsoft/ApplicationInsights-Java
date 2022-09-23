@@ -19,7 +19,7 @@ dependencyResolutionManagement {
   }
 }
 
-def isCI = System.getenv("CI") != null
+def isCI = System.getProperty("ci") != null
 gradleEnterprise {
   buildScan {
     termsOfServiceUrl = 'https://gradle.com/terms-of-service'
@@ -34,9 +34,9 @@ gradleEnterprise {
 
 rootProject.name = 'applicationinsights-java'
 
-logger.info("#### Env Var 'CI'=" + System.getenv("CI"))
+logger.info("#### Env Var 'CI'=" + System.getProperty("ci"))
 logger.info("#### OS is family windows: " + Os.isFamily(Os.FAMILY_WINDOWS))
-def buildNative = System.getenv("CI") != null && Os.isFamily(Os.FAMILY_WINDOWS)
+def buildNative = System.getProperty("ci") != null && Os.isFamily(Os.FAMILY_WINDOWS)
 if (buildNative) {
   include ':etw:native'
 } else {

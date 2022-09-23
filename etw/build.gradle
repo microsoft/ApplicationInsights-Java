@@ -6,8 +6,9 @@ plugins {
 
 clean {
   dependsOn(":etw:java:clean")
-  def buildNative = System.getenv("CI") != null && Os.isFamily(Os.FAMILY_WINDOWS)
-  logger.info("#### Env Var 'CI'=" + System.getenv("CI"))
+  def buildNative = isRelease && Os.isFamily(Os.FAMILY_WINDOWS)
+  logger.info("### isRelease:{}, ", isRelease)
+  logger.info("#### Env Var 'CI'=" + System.getProperty("ci"))
   logger.info("#### OS is family windows: " + Os.isFamily(Os.FAMILY_WINDOWS))
   if (buildNative) {
     dependsOn ":etw:native:clean"

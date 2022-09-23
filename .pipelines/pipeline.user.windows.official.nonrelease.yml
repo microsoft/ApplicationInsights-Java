@@ -1,5 +1,5 @@
 variables:
-  CI: 'non-release'
+  - CI: 'non-release'
 
 version:
   major: 0
@@ -19,7 +19,7 @@ build:
     - !!buildcommand
       name: 'Assemble'
       command: '.scripts/gradle.cmd'
-      arguments: ':agent:agent:assemble --offline'
+      arguments: ':agent:agent:assemble -Dci=non-release --offline'
       artifacts:
         - to: 'Artifacts'
           include:
