@@ -27,7 +27,7 @@ jobs:
         uses: gradle/gradle-build-action@v2
         with:
           # javadoc task fails sporadically fetching https://docs.oracle.com/javase/8/docs/api/
-          arguments: assemble -x javadoc ${{ inputs.no-build-cache && '--no-build-cache' || '' }}
+          arguments: assemble -Dai.etw.native.build=release -x javadoc ${{ inputs.no-build-cache && '--no-build-cache' || '' }}
 
       - name: Upload snapshot
         uses: actions/upload-artifact@v3
