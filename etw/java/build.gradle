@@ -57,7 +57,7 @@ if (hasProperty("ai.etw.native.generateHeaders")) {
 
 if (buildNative) {
   tasks.register("processNativeResources", Copy) {
-    def useReleaseBuild = System.properties("ai.etw.native.build").equalsIgnoreCase("release")
+    def useReleaseBuild = System.properties["ai.etw.native.build"].equalsIgnoreCase("release")
     dependsOn project(":etw:native").tasks.named("assemble${useReleaseBuild ? 'Release' : 'Debug'}X86").get()
     dependsOn project(":etw:native").tasks.named("assemble${useReleaseBuild ? 'Release' : 'Debug'}X86-64").get()
 
