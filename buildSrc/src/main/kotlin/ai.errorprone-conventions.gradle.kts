@@ -24,7 +24,7 @@ tasks {
 
         excludedPaths.set(".*/build/generated/.*")
 
-        if (project.hasProperty("ai.etw.native.build") == null) {
+        if (System.getenv("CI") == null) {
           disable("SystemOut")
         }
 

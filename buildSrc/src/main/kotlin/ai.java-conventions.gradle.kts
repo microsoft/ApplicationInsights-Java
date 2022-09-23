@@ -106,7 +106,7 @@ tasks.withType<Test>().configureEach {
 
   retry {
     // You can see tests that were retried by this mechanism in the collected test reports and build scans.
-    maxRetries.set(if (project.hasProperty("ai.etw.native.build") != null) 5 else 0)
+    maxRetries.set(if (System.getenv("CI") != null) 5 else 0)
   }
 
   reports {
