@@ -57,6 +57,7 @@ afterEvaluate {
 }
 
 val agent by configurations.creating
+val old3xAgent by configurations.creating
 
 dependencies {
   // FIXME (trask) copy-pasted from ai.java-conventions.gradle
@@ -70,6 +71,8 @@ dependencies {
   smokeTestImplementation("org.assertj:assertj-core")
 
   agent(project(":agent:agent", configuration = "shadow"))
+
+  old3xAgent("com.microsoft.azure:applicationinsights-agent:3.2.11")
 }
 
 tasks {
@@ -91,10 +94,12 @@ tasks {
 
       val appFile = aiSmokeTest.testAppArtifactDir.file(aiSmokeTest.testAppArtifactFilename.get()).get()
       val javaagentFile = agent.singleFile
+      val old3xJavaagentFile = old3xAgent.singleFile
 
       // need to delay for project to configure the extension
       systemProperty("ai.smoke-test.test-app-file", appFile)
       systemProperty("ai.smoke-test.javaagent-file", javaagentFile)
+      systemProperty("ai.smoke-test.old-3x-javaagent-file", old3xJavaagentFile)
 
       val smokeTestMatrix = findProperty("smokeTestMatrix") ?: System.getenv("CI") != null
       systemProperty("ai.smoke-test.matrix", smokeTestMatrix)

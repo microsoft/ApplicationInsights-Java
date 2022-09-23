@@ -65,8 +65,6 @@ public class SmokeTestExtension
   private static final String FAKE_INGESTION_ENDPOINT = "http://host.testcontainers.internal:6060/";
 
   private static final File appFile = new File(System.getProperty("ai.smoke-test.test-app-file"));
-  private static final File javaagentFile =
-      new File(System.getProperty("ai.smoke-test.javaagent-file"));
 
   // TODO (trask) make private and expose methods on AiSmokeTest(?)
   protected final MockedAppInsightsIngestionServer mockedIngestion =
@@ -91,6 +89,8 @@ public class SmokeTestExtension
   private final boolean skipHealthCheck;
   private final boolean readOnly;
   private final boolean usesGlobalIngestionEndpoint;
+  private final boolean useOld3xAgent;
+  private final File javaagentFile;
 
   public static SmokeTestExtension create() {
     return builder().build();
@@ -105,12 +105,18 @@ public class SmokeTestExtension
       @Nullable String dependencyContainerEnvVarName,
       boolean usesGlobalIngestionEndpoint,
       boolean skipHealthCheck,
-      boolean readOnly) {
+      boolean readOnly,
+      boolean useOld3xAgent) {
     this.skipHealthCheck = skipHealthCheck;
     this.readOnly = readOnly;
     this.dependencyContainer = dependencyContainer;
     this.dependencyContainerEnvVarName = dependencyContainerEnvVarName;
     this.usesGlobalIngestionEndpoint = usesGlobalIngestionEndpoint;
+    this.useOld3xAgent = useOld3xAgent;
+
+    String javaagentPathSystemProperty =
+        useOld3xAgent ? "ai.smoke-test.old-3x-javaagent-file" : "ai.smoke-test.javaagent-file";
+    javaagentFile = new File(System.getProperty(javaagentPathSystemProperty));
   }
 
   @Override
@@ -233,17 +239,19 @@ public class SmokeTestExtension
           },
           TELEMETRY_RECEIVE_TIMEOUT_SECONDS,
           TimeUnit.SECONDS);
-      mockedIngestion.waitForItem(
-          input -> {
-            if (!"MetricData".equals(input.getData().getBaseType())) {
-              return false;
-            }
-            MetricData data = (MetricData) ((Data<?>) input.getData()).getBaseData();
-            String metricId = data.getProperties().get("_MS.MetricId");
-            return metricId != null && metricId.equals("requests/duration");
-          },
-          10, // metrics should come in pretty quickly after spans
-          TimeUnit.SECONDS);
+      if (!useOld3xAgent) {
+        mockedIngestion.waitForItem(
+            input -> {
+              if (!"MetricData".equals(input.getData().getBaseType())) {
+                return false;
+              }
+              MetricData data = (MetricData) ((Data<?>) input.getData()).getBaseData();
+              String metricId = data.getProperties().get("_MS.MetricId");
+              return metricId != null && metricId.equals("requests/duration");
+            },
+            10, // metrics should come in pretty quickly after spans
+            TimeUnit.SECONDS);
+      }
       System.out.printf(
           "Received request telemetry after %.3f seconds...%n",
           receivedTelemetryTimer.elapsed(TimeUnit.MILLISECONDS) / 1000.0);

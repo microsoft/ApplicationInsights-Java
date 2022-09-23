@@ -25,6 +25,16 @@ public class TelemetryClient {
 
   private final TelemetryContext context = new TelemetryContext();
 
+  // this is required for interop with versions of the Java agent prior to 3.4.0
+  @SuppressWarnings("UnusedVariable")
+  private final TelemetryConfiguration configuration = new TelemetryConfiguration();
+
+  // this is required for interop with versions of the Java agent prior to 3.4.0
+  @SuppressWarnings({"UnusedMethod", "MethodCanBeStatic"})
+  private boolean isDisabled() {
+    return false;
+  }
+
   public TelemetryClient() {}
 
   public TelemetryContext getContext() {

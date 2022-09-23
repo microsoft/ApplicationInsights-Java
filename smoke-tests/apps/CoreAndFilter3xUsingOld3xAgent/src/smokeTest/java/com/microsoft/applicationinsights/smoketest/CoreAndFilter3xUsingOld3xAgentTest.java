@@ -7,14 +7,12 @@ import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TO
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_11_OPENJ9;
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_17;
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_18;
-import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_19;
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_8;
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_8_OPENJ9;
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8;
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8_OPENJ9;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.microsoft.applicationinsights.smoketest.schemav2.AvailabilityData;
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.DataPoint;
 import com.microsoft.applicationinsights.smoketest.schemav2.Duration;
@@ -35,9 +33,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 @UseAgent
-abstract class CoreAndFilter3xTest {
+abstract class CoreAndFilter3xUsingOld3xAgentTest {
 
-  @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.create();
+  @RegisterExtension
+  static final SmokeTestExtension testing = SmokeTestExtension.builder().useOld3xAgent().build();
 
   @Test
   @TargetUri("/trackDependency")
@@ -59,7 +58,7 @@ abstract class CoreAndFilter3xTest {
         telemetry.rd,
         telemetry.rdEnvelope,
         telemetry.rddEnvelope1,
-        "GET /CoreAndFilter3x/trackDependency");
+        "GET /CoreAndFilter3xUsingOld3xAgent/trackDependency");
   }
 
   @Test
@@ -94,9 +93,9 @@ abstract class CoreAndFilter3xTest {
     assertThat(ed2.getName()).isEqualTo("EventDataTest");
 
     SmokeTestExtension.assertParentChild(
-        rd, rdEnvelope, edEnvelope1, "GET /CoreAndFilter3x/trackEvent");
+        rd, rdEnvelope, edEnvelope1, "GET /CoreAndFilter3xUsingOld3xAgent/trackEvent");
     SmokeTestExtension.assertParentChild(
-        rd, rdEnvelope, edEnvelope2, "GET /CoreAndFilter3x/trackEvent");
+        rd, rdEnvelope, edEnvelope2, "GET /CoreAndFilter3xUsingOld3xAgent/trackEvent");
   }
 
   @Test
@@ -152,11 +151,11 @@ abstract class CoreAndFilter3xTest {
             });
 
     SmokeTestExtension.assertParentChild(
-        rd, rdEnvelope, edEnvelope1, "GET /CoreAndFilter3x/trackException");
+        rd, rdEnvelope, edEnvelope1, "GET /CoreAndFilter3xUsingOld3xAgent/trackException");
     SmokeTestExtension.assertParentChild(
-        rd, rdEnvelope, edEnvelope2, "GET /CoreAndFilter3x/trackException");
+        rd, rdEnvelope, edEnvelope2, "GET /CoreAndFilter3xUsingOld3xAgent/trackException");
     SmokeTestExtension.assertParentChild(
-        rd, rdEnvelope, edEnvelope3, "GET /CoreAndFilter3x/trackException");
+        rd, rdEnvelope, edEnvelope3, "GET /CoreAndFilter3xUsingOld3xAgent/trackException");
   }
 
   @Test
@@ -233,7 +232,7 @@ abstract class CoreAndFilter3xTest {
     assertThat(dp.getStdDev()).isNull();
 
     SmokeTestExtension.assertParentChild(
-        rd, rdEnvelope, mdEnvelope, "GET /CoreAndFilter3x/trackMetric");
+        rd, rdEnvelope, mdEnvelope, "GET /CoreAndFilter3xUsingOld3xAgent/trackMetric");
   }
 
   @Test
@@ -277,11 +276,11 @@ abstract class CoreAndFilter3xTest {
             });
 
     SmokeTestExtension.assertParentChild(
-        rd, rdEnvelope, mdEnvelope1, "GET /CoreAndFilter3x/trackTrace");
+        rd, rdEnvelope, mdEnvelope1, "GET /CoreAndFilter3xUsingOld3xAgent/trackTrace");
     SmokeTestExtension.assertParentChild(
-        rd, rdEnvelope, mdEnvelope2, "GET /CoreAndFilter3x/trackTrace");
+        rd, rdEnvelope, mdEnvelope2, "GET /CoreAndFilter3xUsingOld3xAgent/trackTrace");
     SmokeTestExtension.assertParentChild(
-        rd, rdEnvelope, mdEnvelope3, "GET /CoreAndFilter3x/trackTrace");
+        rd, rdEnvelope, mdEnvelope3, "GET /CoreAndFilter3xUsingOld3xAgent/trackTrace");
   }
 
   @Test
@@ -345,7 +344,9 @@ abstract class CoreAndFilter3xTest {
     assertThat(pvdEnvelope2.getTags()).containsEntry("ai.session.id", "session-id-goes-here");
     assertThat(pvdEnvelope2.getTags()).containsEntry("ai.location.ip", "1.2.3.4");
     // checking that instrumentation key, cloud role name and cloud role instance are overridden
-    assertThat(pvdEnvelope2.getIKey()).isEqualTo("12341234-1234-1234-1234-123412341234");
+    // 3.4 Classic SDK doesn't have setInstrumentationKey(), and prior Agent doesn't have support
+    // for setConnectionString()
+    // assertThat(pvdEnvelope2.getIKey()).isEqualTo("12341234-1234-1234-1234-123412341234");
     assertThat(pvdEnvelope2.getTags()).containsEntry("ai.cloud.role", "role-goes-here");
     assertThat(pvdEnvelope2.getTags().get("ai.cloud.roleInstance"))
         .isEqualTo("role-instance-goes-here");
@@ -375,7 +376,7 @@ abstract class CoreAndFilter3xTest {
         .hasEntrySatisfying("ai.internal.sdkVersion", v -> assertThat(v).startsWith("java:3."));
 
     SmokeTestExtension.assertParentChild(
-        rd, rdEnvelope, pvdEnvelope1, "GET /CoreAndFilter3x/trackPageView");
+        rd, rdEnvelope, pvdEnvelope1, "GET /CoreAndFilter3xUsingOld3xAgent/trackPageView");
 
     assertThat(pvdEnvelope2.getTags()).containsEntry("ai.operation.id", "operation-id-goes-here");
     assertThat(pvdEnvelope2.getTags())
@@ -413,36 +414,7 @@ abstract class CoreAndFilter3xTest {
     assertThat(pv.getDuration()).isEqualTo(new Duration(0));
 
     SmokeTestExtension.assertParentChild(
-        rd, rdEnvelope, pvdEnvelope, "GET /CoreAndFilter3x/doPageView.jsp");
-  }
-
-  @Test
-  @TargetUri("/trackAvailability")
-  void trackAvailability() throws Exception {
-    List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
-
-    Envelope rdEnvelope = rdList.get(0);
-    String operationId = rdEnvelope.getTags().get("ai.operation.id");
-    List<Envelope> adList =
-        testing.mockedIngestion.waitForItemsInOperation("AvailabilityData", 1, operationId);
-
-    Envelope adEnvelope = adList.get(0);
-
-    assertThat(rdEnvelope.getSampleRate()).isNull();
-    assertThat(adEnvelope.getSampleRate()).isNull();
-
-    RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
-
-    AvailabilityData pv = (AvailabilityData) ((Data<?>) adEnvelope.getData()).getBaseData();
-    assertThat(pv.getId()).isEqualTo("an-id");
-    assertThat(pv.getName()).isEqualTo("a-name");
-    assertThat(pv.getDuration()).isEqualTo(new Duration(1234));
-    assertThat(pv.getSuccess()).isTrue();
-    assertThat(pv.getRunLocation()).isEqualTo("a-run-location");
-    assertThat(pv.getMessage()).isEqualTo("a-message");
-
-    SmokeTestExtension.assertParentChild(
-        rd, rdEnvelope, adEnvelope, "GET /CoreAndFilter3x/trackAvailability");
+        rd, rdEnvelope, pvdEnvelope, "GET /CoreAndFilter3xUsingOld3xAgent/doPageView.jsp");
   }
 
   @Test
@@ -459,19 +431,20 @@ abstract class CoreAndFilter3xTest {
     assertThat(rd.getSuccess()).isFalse();
     assertThat(rd.getResponseCode()).isEqualTo("404");
 
-    assertThat(rdEnvelope.getTags()).containsEntry("ai.operation.name", "GET /CoreAndFilter3x/*");
+    assertThat(rdEnvelope.getTags())
+        .containsEntry("ai.operation.name", "GET /CoreAndFilter3xUsingOld3xAgent/*");
   }
 
   @Test
   @TargetUri("/requestSlow?sleeptime=20")
   void testRequestSlowWithResponseTime() throws Exception {
-    validateSlowTest(20, "GET /CoreAndFilter3x/requestSlow");
+    validateSlowTest(20, "GET /CoreAndFilter3xUsingOld3xAgent/requestSlow");
   }
 
   @Test
   @TargetUri("/slowLoop?responseTime=20")
   void testSlowRequestUsingCpuBoundLoop() throws Exception {
-    validateSlowTest(20, "GET /CoreAndFilter3x/slowLoop");
+    validateSlowTest(20, "GET /CoreAndFilter3xUsingOld3xAgent/slowLoop");
   }
 
   @Test
@@ -551,29 +524,28 @@ abstract class CoreAndFilter3xTest {
   }
 
   @Environment(TOMCAT_8_JAVA_8)
-  static class Tomcat8Java8Test extends CoreAndFilter3xTest {}
+  static class Tomcat8Java8Test extends CoreAndFilter3xUsingOld3xAgentTest {}
 
   @Environment(TOMCAT_8_JAVA_8_OPENJ9)
-  static class Tomcat8Java8OpenJ9Test extends CoreAndFilter3xTest {}
+  static class Tomcat8Java8OpenJ9Test extends CoreAndFilter3xUsingOld3xAgentTest {}
 
   @Environment(TOMCAT_8_JAVA_11)
-  static class Tomcat8Java11Test extends CoreAndFilter3xTest {}
+  static class Tomcat8Java11Test extends CoreAndFilter3xUsingOld3xAgentTest {}
 
   @Environment(TOMCAT_8_JAVA_11_OPENJ9)
-  static class Tomcat8Java11OpenJ9Test extends CoreAndFilter3xTest {}
+  static class Tomcat8Java11OpenJ9Test extends CoreAndFilter3xUsingOld3xAgentTest {}
 
   @Environment(TOMCAT_8_JAVA_17)
-  static class Tomcat8Java17Test extends CoreAndFilter3xTest {}
+  static class Tomcat8Java17Test extends CoreAndFilter3xUsingOld3xAgentTest {}
 
   @Environment(TOMCAT_8_JAVA_18)
-  static class Tomcat8Java18Test extends CoreAndFilter3xTest {}
+  static class Tomcat8Java18Test extends CoreAndFilter3xUsingOld3xAgentTest {}
 
-  @Environment(TOMCAT_8_JAVA_19)
-  static class Tomcat8Java19Test extends CoreAndFilter3xTest {}
+  // note: old 3.x agents don't support Java 19
 
   @Environment(WILDFLY_13_JAVA_8)
-  static class Wildfly13Java8Test extends CoreAndFilter3xTest {}
+  static class Wildfly13Java8Test extends CoreAndFilter3xUsingOld3xAgentTest {}
 
   @Environment(WILDFLY_13_JAVA_8_OPENJ9)
-  static class Wildfly13Java8OpenJ9Test extends CoreAndFilter3xTest {}
+  static class Wildfly13Java8OpenJ9Test extends CoreAndFilter3xUsingOld3xAgentTest {}
 }

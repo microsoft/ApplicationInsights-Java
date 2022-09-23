@@ -12,6 +12,7 @@ public class SmokeTestExtensionBuilder {
   private boolean usesGlobalIngestionEndpoint;
   private boolean skipHealthCheck;
   private boolean readOnly;
+  private boolean useOld3xAgent;
 
   public SmokeTestExtensionBuilder setDependencyContainer(
       String envVarName, GenericContainer<?> container) {
@@ -35,12 +36,18 @@ public class SmokeTestExtensionBuilder {
     return this;
   }
 
+  public SmokeTestExtensionBuilder useOld3xAgent() {
+    useOld3xAgent = true;
+    return this;
+  }
+
   public SmokeTestExtension build() {
     return new SmokeTestExtension(
         dependencyContainer,
         dependencyContainerEnvVarName,
         usesGlobalIngestionEndpoint,
         skipHealthCheck,
-        readOnly);
+        readOnly,
+        useOld3xAgent);
   }
 }

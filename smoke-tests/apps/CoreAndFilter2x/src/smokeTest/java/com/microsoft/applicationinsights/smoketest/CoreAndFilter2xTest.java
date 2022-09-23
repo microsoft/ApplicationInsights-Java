@@ -518,7 +518,7 @@ abstract class CoreAndFilter2xTest {
     assertThat(rdEnvelope.getTags()).containsEntry("ai.operation.name", operationName);
   }
 
-  // old Application Insights version that do not support Java 11+
+  // old 2.x Application Insights version that do not support Java 11+
 
   @Environment(TOMCAT_8_JAVA_8)
   static class Tomcat8Java8Test extends CoreAndFilter2xTest {}
