@@ -4,23 +4,20 @@ plugins {
   id("base")
 }
 
-clean {
-  dependsOn(":etw:java:clean")
-  def buildNative = isRelease && Os.isFamily(Os.FAMILY_WINDOWS)
-  logger.info("### isRelease:{}, ", isRelease)
-  logger.info("#### Env Var 'CI'=" + System.getProperty("ci"))
-  logger.info("#### OS is family windows: " + Os.isFamily(Os.FAMILY_WINDOWS))
-  if (buildNative) {
-    dependsOn ":etw:native:clean"
-  }
-}
-
 /**
  * Configures the native build variant.
  * Values:  release|debug
  * Default: debug
  */
 final def NATIVE_BUILD_VARIANT_PROPERTY = "ai.etw.native.build"
+
+clean {
+  dependsOn(":etw:java:clean")
+  def buildNative = project.hasProperty(NATIVE_BUILD_VARIANT_PROPERTY) != null && Os.isFamily(Os.FAMILY_WINDOWS)
+  if (buildNative) {
+    dependsOn ":etw:native:clean"
+  }
+}
 
 /**
  * Configures the verbosity of debug output.

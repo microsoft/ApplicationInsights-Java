@@ -19,7 +19,7 @@ build:
     - !!buildcommand
       name: 'Assemble'
       command: '.scripts/gradle.cmd'
-      arguments: ':agent:agent:assemble -Dci=non-release --offline'
+      arguments: ':agent:agent:assemble --offline'
       artifacts:
         - to: 'Artifacts'
           include:

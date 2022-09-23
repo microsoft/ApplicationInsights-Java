@@ -17,7 +17,7 @@ build:
     - !!defaultcommand
       name: 'Assemble'
       command: '.scripts/gradle.cmd'
-      arguments: 'publishToMavenLocal -DisRelease=true -Pai.etw.native.build=release -Dci=release --offline'
+      arguments: 'publishToMavenLocal -DisRelease=true -Pai.etw.native.build=release --offline'
     - !!buildcommand
       name: 'Copy files from maven local repository'
       command: '.scripts/copy-from-maven-local.cmd'
