@@ -76,8 +76,8 @@ public class Configuration {
     }
   }
 
-  public enum SamplingTelemetryKind {
-    // restricted to telemetry kinds that are supported by SamplingOverrides
+  public enum SamplingTelemetryType {
+    // restricted to telemetry types that are supported by SamplingOverrides
     @JsonProperty("request")
     REQUEST,
     @JsonProperty("dependency")
@@ -622,7 +622,10 @@ public class Configuration {
 
     // TODO (trask) make this required when moving out of preview
     //   for now the default is both "request" and "dependency" for backwards compatibility
-    @Nullable public SamplingTelemetryKind telemetryKind;
+    @Nullable public SamplingTelemetryType telemetryType;
+
+    // this config option existed in one GA release (3.4.0), and was then replaced by telemetryType
+    @Deprecated @Nullable public SamplingTelemetryType telemetryKind;
 
     // this config option only existed in one BETA release (3.4.0-BETA)
     @Deprecated @Nullable public Boolean includingStandaloneTelemetry;
@@ -635,15 +638,15 @@ public class Configuration {
     public String id; // optional, used for debugging purposes only
 
     public boolean isForRequestTelemetry() {
-      return telemetryKind == SamplingTelemetryKind.REQUEST
+      return telemetryType == SamplingTelemetryType.REQUEST
           // this part is for backwards compatibility:
-          || (telemetryKind == null && spanKind != SpanKind.CLIENT);
+          || (telemetryType == null && spanKind != SpanKind.CLIENT);
     }
 
     public boolean isForDependencyTelemetry() {
-      return telemetryKind == SamplingTelemetryKind.DEPENDENCY
+      return telemetryType == SamplingTelemetryType.DEPENDENCY
           // this part is for backwards compatibility:
-          || (telemetryKind == null && spanKind != SpanKind.SERVER);
+          || (telemetryType == null && spanKind != SpanKind.SERVER);
     }
 
     public void validate() {

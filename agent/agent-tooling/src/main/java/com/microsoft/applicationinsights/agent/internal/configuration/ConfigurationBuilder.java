@@ -177,17 +177,26 @@ public class ConfigurationBuilder {
               + " so no need to enable it under preview configuration");
     }
     for (SamplingOverride override : config.preview.sampling.overrides) {
+      if (override.telemetryKind != null) {
+        configurationLogger.warn(
+            "Sampling overrides \"telemetryKind\" has been deprecated,"
+                + " and support for it will be removed in a future release, please transition from"
+                + " \"telemetryKind\" to \"telemetryType\".");
+        if (override.telemetryType == null) {
+          override.telemetryType = override.telemetryKind;
+        }
+      }
       if (override.spanKind != null) {
         configurationLogger.warn(
             "Sampling overrides \"spanKind\" has been deprecated,"
                 + " and support for it will be removed in a future release, please transition from"
-                + " \"spanKind\" to \"telemetryKind\".");
+                + " \"spanKind\" to \"telemetryType\".");
       }
-      if (override.telemetryKind == null) {
+      if (override.telemetryType == null) {
         configurationLogger.warn(
-            "Sampling overrides \"telemetryKind\" is missing,"
+            "Sampling overrides \"telemetryType\" is missing,"
                 + " and will be required in a future release, please transition to add"
-                + " \"telemetryKind\" for sampling overrides.");
+                + " \"telemetryType\" for sampling overrides.");
       }
       if (override.includingStandaloneTelemetry != null) {
         configurationLogger.warn(
