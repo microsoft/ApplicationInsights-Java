@@ -1,3 +1,6 @@
+variables:
+  CI: "TRUE"
+
 version:
   major: 0
   minor: 0
@@ -5,6 +8,7 @@ version:
   system: 'custom'
 build:
   commands:
+
     - !!buildcommand
       name: 'Upload Build Scripts'
       command: '.scripts/copy-source.cmd' # this file is empty
@@ -13,6 +17,10 @@ build:
           to: 'Scripts'
           include:
             - '**/*'
+    - !!buildcommand
+      name: 'Create CI env var'
+      command: '.scripts/setEnvVars.cmd'
+
     - !!defaultcommand
       name: 'Assemble'
       command: '.scripts/gradle.cmd'
