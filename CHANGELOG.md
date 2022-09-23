@@ -1,5 +1,11 @@
 # CHANGELOG
 
+# Version 3.4.1 GA
+
+* Fix ETW dll [#2534](https://github.com/microsoft/ApplicationInsights-Java/pull/2534).
+* Rename TelemetryKind to TelemetryType [#2535](https://github.com/microsoft/ApplicationInsights-Java/pull/2535).
+* Make classic SDKs work with older 3.2.x Agent versions [#2531](https://github.com/microsoft/ApplicationInsights-Java/pull/2531).
+
 # Version 3.4.0 GA
 
 * Introduce a new preview feature: Java Profiler for Azure Monitor Application Insights
