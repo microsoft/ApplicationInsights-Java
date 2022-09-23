@@ -5,7 +5,6 @@ version:
   system: 'custom'
 build:
   commands:
-
     - !!buildcommand
       name: 'Upload Build Scripts'
       command: '.scripts/copy-source.cmd' # this file is empty
