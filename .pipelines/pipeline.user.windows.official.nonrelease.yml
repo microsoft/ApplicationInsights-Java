@@ -1,3 +1,6 @@
+variables:
+  CI: 'non-release'
+
 version:
   major: 0
   minor: 0

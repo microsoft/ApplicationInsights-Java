@@ -1,5 +1,5 @@
 variables:
-  CI: 'Release'
+  CI: 'release'
 
 version:
   major: 0
