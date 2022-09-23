@@ -1,3 +1,6 @@
+variables:
+  CI: 'Release'
+
 version:
   major: 0
   minor: 0
@@ -14,10 +17,6 @@ build:
           to: 'Scripts'
           include:
             - '**/*'
-    - !!buildcommand
-      name: 'Create CI env var'
-      command: '.scripts/setEnvVars.cmd'
-
     - !!defaultcommand
       name: 'Assemble'
       command: '.scripts/gradle.cmd'
