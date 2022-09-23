@@ -10,7 +10,7 @@
     "sampling": {
       "overrides": [
         {
-          "telemetryKind": "request",
+          "telemetryType": "request",
           "attributes": [
             {
               "key": "http.url",
@@ -22,7 +22,7 @@
           "id": "filter out health check"
         },
         {
-          "telemetryKind": "dependency",
+          "telemetryType": "dependency",
           "attributes": [
             {
               "key": "db.statement",
@@ -34,7 +34,7 @@
           "id": "filter out noisy jdbc"
         },
         {
-          "telemetryKind": "trace",
+          "telemetryType": "trace",
           "percentage": 100
         }
       ]
