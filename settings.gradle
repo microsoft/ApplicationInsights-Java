@@ -19,7 +19,7 @@ dependencyResolutionManagement {
   }
 }
 
-def isCI = System.getProperty("ci") != null
+def isCI = project.hasProperty("ai.etw.native.build") != null
 gradleEnterprise {
   buildScan {
     termsOfServiceUrl = 'https://gradle.com/terms-of-service'

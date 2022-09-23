@@ -26,7 +26,7 @@ archivesBaseName = "applicationinsights-java-etw-provider"
 
 logger.info "project ${project.path} prop: ai.etw.native.build=${project.properties['ai.etw.native.build']}"
 
-def buildNative = System.getProperty("ci") != null && Os.isFamily(Os.FAMILY_WINDOWS)
+def buildNative = project.hasProperty("ai.etw.native.build") != null && Os.isFamily(Os.FAMILY_WINDOWS)
 dependencies {
   implementation("org.slf4j:slf4j-api")
 
