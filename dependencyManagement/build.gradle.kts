@@ -90,7 +90,7 @@ val DEPENDENCIES = listOf(
   "com.github.oshi:oshi-core:6.2.0",
   "org.assertj:assertj-core:3.23.1",
   "org.awaitility:awaitility:4.2.0",
-  "io.github.hakky54:logcaptor:2.7.9",
+  "io.github.hakky54:logcaptor:2.7.10",
   "com.microsoft.jfr:jfr-streaming:1.2.0",
   "com.google.code.findbugs:jsr305:3.0.2",
   "com.github.spotbugs:spotbugs-annotations:4.7.1"
