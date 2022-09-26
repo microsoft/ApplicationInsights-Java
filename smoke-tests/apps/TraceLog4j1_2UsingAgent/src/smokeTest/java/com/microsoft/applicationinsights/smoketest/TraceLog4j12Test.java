@@ -35,19 +35,9 @@ abstract class TraceLog4j12Test {
 
   private static final Logger logger = LogManager.getLogger(TraceLog4j12Test.class);
 
-  // See https://github.com/microsoft/ApplicationInsights-Java/pull/2391#issuecomment-1189301659
-  boolean disableBecauseJavaVersionGreaterThan17() {
-    return false;
-  }
-
   @Test
   @TargetUri("/traceLog4j12")
   void testTraceLog4j12() throws Exception {
-    if (disableBecauseJavaVersionGreaterThan17()) {
-      logDisableMessage();
-      return;
-    }
-
     List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
 
     Envelope rdEnvelope = rdList.get(0);
@@ -109,11 +99,6 @@ abstract class TraceLog4j12Test {
   @Test
   @TargetUri("/traceLog4j1_2WithException")
   void testTraceLog4j1_2WithException() throws Exception {
-    if (disableBecauseJavaVersionGreaterThan17()) {
-      logDisableMessage();
-      return;
-    }
-
     List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
 
     Envelope rdEnvelope = rdList.get(0);
@@ -162,20 +147,10 @@ abstract class TraceLog4j12Test {
   static class Tomcat8Java17Test extends TraceLog4j12Test {}
 
   @Environment(TOMCAT_8_JAVA_18)
-  static class Tomcat8Java18Test extends TraceLog4j12Test {
-    @Override
-    boolean disableBecauseJavaVersionGreaterThan17() {
-      return true;
-    }
-  }
+  static class Tomcat8Java18Test extends TraceLog4j12Test {}
 
   @Environment(TOMCAT_8_JAVA_19)
-  static class Tomcat8Java19Test extends TraceLog4j12Test {
-    @Override
-    boolean disableBecauseJavaVersionGreaterThan17() {
-      return true;
-    }
-  }
+  static class Tomcat8Java19Test extends TraceLog4j12Test {}
 
   @Environment(WILDFLY_13_JAVA_8)
   static class Wildfly13Java8Test extends TraceLog4j12Test {}
