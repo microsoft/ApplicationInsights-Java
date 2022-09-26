@@ -62,7 +62,7 @@ val CORE_DEPENDENCIES = listOf(
   "org.slf4j:slf4j-simple:1.7.36",
   "org.slf4j:log4j-over-slf4j:1.7.36",
   "org.slf4j:jcl-over-slf4j:1.7.36",
-  "org.slf4j:jul-to-slf4j:1.7.36",
+  "org.slf4j:jul-to-slf4j:2.0.2",
   // 1.12.0 and above use okio 2.x which pulls in kotlin libs
   "com.squareup.moshi:moshi:1.11.0",
   "com.squareup.moshi:moshi-adapters:1.11.0",
