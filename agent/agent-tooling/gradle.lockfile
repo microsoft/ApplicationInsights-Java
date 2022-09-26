@@ -1,13 +1,13 @@
 # This is a Gradle generated file for dependency locking.
 # Manual edits can break the build and are not advised.
 # This file is expected to be part of source control.
-com.azure:azure-core-http-netty:1.12.4=runtimeClasspath
-com.azure:azure-core:1.31.0=runtimeClasspath
-com.azure:azure-identity:1.5.4=runtimeClasspath
-com.azure:azure-sdk-bom:1.2.5=runtimeClasspath
-com.azure:azure-storage-blob:12.19.0=runtimeClasspath
-com.azure:azure-storage-common:12.18.0=runtimeClasspath
-com.azure:azure-storage-internal-avro:12.4.1=runtimeClasspath
+com.azure:azure-core-http-netty:1.12.5=runtimeClasspath
+com.azure:azure-core:1.32.0=runtimeClasspath
+com.azure:azure-identity:1.6.0=runtimeClasspath
+com.azure:azure-sdk-bom:1.2.6=runtimeClasspath
+com.azure:azure-storage-blob:12.19.1=runtimeClasspath
+com.azure:azure-storage-common:12.18.1=runtimeClasspath
+com.azure:azure-storage-internal-avro:12.4.2=runtimeClasspath
 com.fasterxml.jackson.core:jackson-annotations:2.13.3=runtimeClasspath
 com.fasterxml.jackson.core:jackson-core:2.13.3=runtimeClasspath
 com.fasterxml.jackson.core:jackson-databind:2.13.3=runtimeClasspath
@@ -20,12 +20,12 @@ com.github.stephenc.jcip:jcip-annotations:1.0-1=runtimeClasspath
 com.google.errorprone:error_prone_annotations:2.14.0=runtimeClasspath
 com.google.guava:guava-bom:31.1-jre=runtimeClasspath
 com.microsoft.azure:msal4j-persistence-extension:1.1.0=runtimeClasspath
-com.microsoft.azure:msal4j:1.12.0=runtimeClasspath
+com.microsoft.azure:msal4j:1.13.1=runtimeClasspath
 com.microsoft.jfr:jfr-streaming:1.2.0=runtimeClasspath
 com.nimbusds:content-type:2.2=runtimeClasspath
 com.nimbusds:lang-tag:1.6=runtimeClasspath
-com.nimbusds:nimbus-jose-jwt:9.21=runtimeClasspath
-com.nimbusds:oauth2-oidc-sdk:9.32=runtimeClasspath
+com.nimbusds:nimbus-jose-jwt:9.22=runtimeClasspath
+com.nimbusds:oauth2-oidc-sdk:9.35=runtimeClasspath
 com.squareup.moshi:moshi-adapters:1.11.0=runtimeClasspath
 com.squareup.moshi:moshi:1.11.0=runtimeClasspath
 com.squareup.okio:okio:1.17.5=runtimeClasspath
@@ -55,9 +55,9 @@ io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:1.18.0-
 io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:1.18.0=runtimeClasspath
 io.opentelemetry:opentelemetry-bom-alpha:1.18.0-alpha=runtimeClasspath
 io.opentelemetry:opentelemetry-bom:1.18.0=runtimeClasspath
-io.projectreactor.netty:reactor-netty-core:1.0.21=runtimeClasspath
-io.projectreactor.netty:reactor-netty-http:1.0.21=runtimeClasspath
-io.projectreactor:reactor-core:3.4.21=runtimeClasspath
+io.projectreactor.netty:reactor-netty-core:1.0.22=runtimeClasspath
+io.projectreactor.netty:reactor-netty-http:1.0.22=runtimeClasspath
+io.projectreactor:reactor-core:3.4.22=runtimeClasspath
 net.java.dev.jna:jna-platform:5.12.0=runtimeClasspath
 net.java.dev.jna:jna:5.12.0=runtimeClasspath
 net.minidev:accessors-smart:2.4.8=runtimeClasspath
