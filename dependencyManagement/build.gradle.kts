@@ -28,7 +28,7 @@ val DEPENDENCY_BOMS = listOf(
   "io.opentelemetry:opentelemetry-bom-alpha:${otelVersion}-alpha",
   "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:${otelInstrumentationVersion}",
   "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${otelInstrumentationAlphaVersion}",
-  "com.azure:azure-sdk-bom:1.2.5",
+  "com.azure:azure-sdk-bom:1.2.6",
   "org.junit:junit-bom:5.8.2",
   "org.testcontainers:testcontainers-bom:1.17.3",
 )
