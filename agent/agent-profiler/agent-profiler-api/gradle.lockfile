@@ -1,8 +1,8 @@
 # This is a Gradle generated file for dependency locking.
 # Manual edits can break the build and are not advised.
 # This file is expected to be part of source control.
-com.azure:azure-core:1.31.0=runtimeClasspath
-com.azure:azure-sdk-bom:1.2.5=runtimeClasspath
+com.azure:azure-core:1.32.0=runtimeClasspath
+com.azure:azure-sdk-bom:1.2.6=runtimeClasspath
 com.fasterxml.jackson.core:jackson-annotations:2.13.3=runtimeClasspath
 com.fasterxml.jackson.core:jackson-core:2.13.3=runtimeClasspath
 com.fasterxml.jackson.core:jackson-databind:2.13.3=runtimeClasspath
@@ -17,7 +17,7 @@ io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:1.18.0-
 io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:1.18.0=runtimeClasspath
 io.opentelemetry:opentelemetry-bom-alpha:1.18.0-alpha=runtimeClasspath
 io.opentelemetry:opentelemetry-bom:1.18.0=runtimeClasspath
-io.projectreactor:reactor-core:3.4.21=runtimeClasspath
+io.projectreactor:reactor-core:3.4.22=runtimeClasspath
 org.codehaus.woodstox:stax2-api:4.2.1=runtimeClasspath
 org.junit:junit-bom:5.8.2=runtimeClasspath
 org.reactivestreams:reactive-streams:1.0.4=runtimeClasspath

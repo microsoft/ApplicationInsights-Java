@@ -1,7 +1,7 @@
 
 #agent
 ##Dependency License Report
-_2022-09-14 20:59:39 PDT_
+_2022-09-26 13:36:55 PDT_
 ## Apache License, Version 2.0
 
 **1** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-annotations` **Version:** `2.13.3` 
@@ -62,13 +62,13 @@ _2022-09-14 20:59:39 PDT_
 > - **POM Project URL**: [https://bitbucket.org/connect2id/nimbus-language-tags](https://bitbucket.org/connect2id/nimbus-language-tags)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
-**11** **Group:** `com.nimbusds` **Name:** `nimbus-jose-jwt` **Version:** `9.21` 
+**11** **Group:** `com.nimbusds` **Name:** `nimbus-jose-jwt` **Version:** `9.22` 
 > - **Manifest Project URL**: [https://connect2id.com](https://connect2id.com)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM Project URL**: [https://bitbucket.org/connect2id/nimbus-jose-jwt](https://bitbucket.org/connect2id/nimbus-jose-jwt)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
-**12** **Group:** `com.nimbusds` **Name:** `oauth2-oidc-sdk` **Version:** `9.32` 
+**12** **Group:** `com.nimbusds` **Name:** `oauth2-oidc-sdk` **Version:** `9.35` 
 > - **Manifest Project URL**: [https://connect2id.com](https://connect2id.com)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM Project URL**: [https://bitbucket.org/connect2id/oauth-2.0-sdk-with-openid-connect-extensions](https://bitbucket.org/connect2id/oauth-2.0-sdk-with-openid-connect-extensions)
@@ -198,15 +198,15 @@ _2022-09-14 20:59:39 PDT_
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
 
-**38** **Group:** `io.projectreactor` **Name:** `reactor-core` **Version:** `3.4.21` 
+**38** **Group:** `io.projectreactor` **Name:** `reactor-core` **Version:** `3.4.22` 
 > - **POM Project URL**: [https://github.com/reactor/reactor-core](https://github.com/reactor/reactor-core)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
 
-**39** **Group:** `io.projectreactor.netty` **Name:** `reactor-netty-core` **Version:** `1.0.21` 
+**39** **Group:** `io.projectreactor.netty` **Name:** `reactor-netty-core` **Version:** `1.0.22` 
 > - **POM Project URL**: [https://github.com/reactor/reactor-netty](https://github.com/reactor/reactor-netty)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
-**40** **Group:** `io.projectreactor.netty` **Name:** `reactor-netty-http` **Version:** `1.0.21` 
+**40** **Group:** `io.projectreactor.netty` **Name:** `reactor-netty-http` **Version:** `1.0.22` 
 > - **POM Project URL**: [https://github.com/reactor/reactor-netty](https://github.com/reactor/reactor-netty)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
@@ -320,27 +320,27 @@ _2022-09-14 20:59:39 PDT_
 
 ## MIT License
 
-**59** **Group:** `com.azure` **Name:** `azure-core` **Version:** `1.31.0` 
+**59** **Group:** `com.azure` **Name:** `azure-core` **Version:** `1.32.0` 
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**60** **Group:** `com.azure` **Name:** `azure-core-http-netty` **Version:** `1.12.4` 
+**60** **Group:** `com.azure` **Name:** `azure-core-http-netty` **Version:** `1.12.5` 
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**61** **Group:** `com.azure` **Name:** `azure-identity` **Version:** `1.5.4` 
+**61** **Group:** `com.azure` **Name:** `azure-identity` **Version:** `1.6.0` 
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**62** **Group:** `com.azure` **Name:** `azure-storage-blob` **Version:** `12.19.0` 
+**62** **Group:** `com.azure` **Name:** `azure-storage-blob` **Version:** `12.19.1` 
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**63** **Group:** `com.azure` **Name:** `azure-storage-common` **Version:** `12.18.0` 
+**63** **Group:** `com.azure` **Name:** `azure-storage-common` **Version:** `12.18.1` 
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**64** **Group:** `com.azure` **Name:** `azure-storage-internal-avro` **Version:** `12.4.1` 
+**64** **Group:** `com.azure` **Name:** `azure-storage-internal-avro` **Version:** `12.4.2` 
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
@@ -349,7 +349,7 @@ _2022-09-14 20:59:39 PDT_
 > - **Manifest License**: "SPDX-License-Identifier: MIT";link="https://opensource.org/licenses/MIT" (Not Packaged)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**66** **Group:** `com.microsoft.azure` **Name:** `msal4j` **Version:** `1.12.0` 
+**66** **Group:** `com.microsoft.azure` **Name:** `msal4j` **Version:** `1.13.1` 
 > - **Project URL**: [https://github.com/AzureAD/microsoft-authentication-library-for-java](https://github.com/AzureAD/microsoft-authentication-library-for-java)
 > - **Manifest License**: "MIT License" (Not Packaged)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
