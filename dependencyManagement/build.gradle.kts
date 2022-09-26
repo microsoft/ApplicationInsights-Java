@@ -69,7 +69,7 @@ val CORE_DEPENDENCIES = listOf(
   "io.opentelemetry.javaagent:opentelemetry-javaagent-extension-api:otelInstrumentationAlphaVersion",
   "io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap:otelInstrumentationAlphaVersion",
   "io.opentelemetry.javaagent:opentelemetry-javaagent-tooling:otelInstrumentationAlphaVersion",
-  "com.microsoft.azure:applicationinsights-core:2.6.4",
+  "com.microsoft.azure:applicationinsights-core:3.4.1",
   "com.microsoft.azure:applicationinsights-logging-log4j1_2:2.6.4",
   "com.microsoft.azure:applicationinsights-logging-log4j2:2.6.4",
   "com.microsoft.azure:applicationinsights-logging-logback:2.6.4",
