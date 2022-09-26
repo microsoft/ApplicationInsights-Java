@@ -8,4 +8,5 @@ io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:1.18.0=runtim
 io.opentelemetry:opentelemetry-bom-alpha:1.18.0-alpha=runtimeClasspath
 io.opentelemetry:opentelemetry-bom:1.18.0=runtimeClasspath
 org.junit:junit-bom:5.8.2=runtimeClasspath
+org.testcontainers:testcontainers-bom:1.17.3=runtimeClasspath
 empty=
