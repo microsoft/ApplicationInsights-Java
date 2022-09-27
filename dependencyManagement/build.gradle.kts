@@ -68,14 +68,7 @@ val CORE_DEPENDENCIES = listOf(
   "com.squareup.moshi:moshi-adapters:1.11.0",
   "io.opentelemetry.javaagent:opentelemetry-javaagent-extension-api:otelInstrumentationAlphaVersion",
   "io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap:otelInstrumentationAlphaVersion",
-  "io.opentelemetry.javaagent:opentelemetry-javaagent-tooling:otelInstrumentationAlphaVersion",
-  "com.microsoft.azure:applicationinsights-core:2.6.4",
-  "com.microsoft.azure:applicationinsights-logging-log4j1_2:2.6.4",
-  "com.microsoft.azure:applicationinsights-logging-log4j2:2.6.4",
-  "com.microsoft.azure:applicationinsights-logging-logback:2.6.4",
-  "com.microsoft.azure:applicationinsights-web:2.6.4",
-  "com.microsoft.azure:applicationinsights-web-auto:2.6.4",
-  "com.microsoft.azure:applicationinsights-spring-boot-starter:2.6.4",
+  "io.opentelemetry.javaagent:opentelemetry-javaagent-tooling:otelInstrumentationAlphaVersion"
 )
 
 val DEPENDENCIES = listOf(

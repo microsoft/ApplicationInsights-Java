@@ -3,7 +3,6 @@ plugins {
 }
 
 dependencies {
-  implementation("com.microsoft.azure:applicationinsights-web-auto")
   implementation("org.springframework.boot:spring-boot-starter-web:2.1.7.RELEASE") {
     exclude("org.springframework.boot", "spring-boot-starter-tomcat")
   }

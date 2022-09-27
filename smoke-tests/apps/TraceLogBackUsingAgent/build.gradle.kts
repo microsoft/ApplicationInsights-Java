@@ -3,6 +3,5 @@ plugins {
 }
 
 dependencies {
-  implementation("com.microsoft.azure:applicationinsights-web-auto")
   implementation("ch.qos.logback:logback-classic")
 }
