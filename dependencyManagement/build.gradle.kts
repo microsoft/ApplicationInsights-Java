@@ -65,7 +65,7 @@ val CORE_DEPENDENCIES = listOf(
   "org.slf4j:jul-to-slf4j:1.7.36",
   // 1.12.0 and above use okio 2.x which pulls in kotlin libs
   "com.squareup.moshi:moshi:1.11.0",
-  "com.squareup.moshi:moshi-adapters:1.11.0",
+  "com.squareup.moshi:moshi-adapters:1.14.0",
   "io.opentelemetry.javaagent:opentelemetry-javaagent-extension-api:otelInstrumentationAlphaVersion",
   "io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap:otelInstrumentationAlphaVersion",
   "io.opentelemetry.javaagent:opentelemetry-javaagent-tooling:otelInstrumentationAlphaVersion",
