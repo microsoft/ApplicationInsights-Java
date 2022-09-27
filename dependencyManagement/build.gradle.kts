@@ -67,7 +67,7 @@ val CORE_DEPENDENCIES = listOf(
   "com.squareup.moshi:moshi:1.11.0",
   "com.squareup.moshi:moshi-adapters:1.11.0",
   "io.opentelemetry.javaagent:opentelemetry-javaagent-extension-api:otelInstrumentationAlphaVersion",
-  "io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap:otelInstrumentationAlphaVersion",
+  "io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap:0.16.1",
   "io.opentelemetry.javaagent:opentelemetry-javaagent-tooling:otelInstrumentationAlphaVersion"
 )
 
