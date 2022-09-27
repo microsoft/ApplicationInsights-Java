@@ -87,7 +87,7 @@ val DEPENDENCIES = listOf(
   "org.apache.commons:commons-text:1.9",
   "com.google.code.gson:gson:2.8.2",
   "com.azure:azure-core-test:1.9.1",
-  "com.github.oshi:oshi-core:6.2.0",
+  "com.github.oshi:oshi-core:6.2.2",
   "org.assertj:assertj-core:3.23.1",
   "org.awaitility:awaitility:4.2.0",
   "io.github.hakky54:logcaptor:2.7.10",
