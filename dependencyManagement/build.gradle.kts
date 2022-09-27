@@ -28,8 +28,8 @@ val DEPENDENCY_BOMS = listOf(
   "io.opentelemetry:opentelemetry-bom-alpha:${otelVersion}-alpha",
   "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:${otelInstrumentationVersion}",
   "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${otelInstrumentationAlphaVersion}",
-  "com.azure:azure-sdk-bom:1.2.5",
-  "org.junit:junit-bom:5.8.2",
+  "com.azure:azure-sdk-bom:1.2.6",
+  "org.junit:junit-bom:5.9.1",
   "org.testcontainers:testcontainers-bom:1.17.3",
 )
 
@@ -87,10 +87,10 @@ val DEPENDENCIES = listOf(
   "org.apache.commons:commons-text:1.9",
   "com.google.code.gson:gson:2.8.2",
   "com.azure:azure-core-test:1.9.1",
-  "com.github.oshi:oshi-core:6.2.0",
+  "com.github.oshi:oshi-core:6.2.2",
   "org.assertj:assertj-core:3.23.1",
   "org.awaitility:awaitility:4.2.0",
-  "io.github.hakky54:logcaptor:2.7.9",
+  "io.github.hakky54:logcaptor:2.7.10",
   "com.microsoft.jfr:jfr-streaming:1.2.0",
   "com.google.code.findbugs:jsr305:3.0.2",
   "com.github.spotbugs:spotbugs-annotations:4.7.1"
