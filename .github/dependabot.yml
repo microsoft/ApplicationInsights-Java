@@ -13,6 +13,14 @@ updates:
 
   - package-ecosystem: "gradle"
     directory: "/dependencyManagement"
+    ignore:
+      - dependency-name: "org.slf4j:*"
+        # moving to 2.0 is problematic because the SPI mechanism in 2.0 doesn't work in the
+        # bootstrap class loader because, while we add the agent jar to the bootstrap class loader
+        # via Instrumentation.appendToBootstrapClassLoaderSearch(), there's nothing similar for
+        # resources (which is a known problem in the java agent world), and so the META-INF/services
+        # resource is not found
+        versions: [ "2.x" ]
     schedule:
       interval: "daily"
     open-pull-requests-limit: 10
