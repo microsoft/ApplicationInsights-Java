@@ -12,7 +12,6 @@ val dependencyVersions = hashMapOf<String, String>()
 rootProject.extra["versions"] = dependencyVersions
 
 val otelVersion = "1.18.0"
-// IMPORTANT when updating opentelemetry instrumentation version, be sure to update bytebuddy version to match
 val otelInstrumentationVersion = "1.18.0"
 val otelInstrumentationAlphaVersion = "1.18.0-alpha"
 val otelContribAlphaVersion = "1.17.0-alpha"
@@ -43,11 +42,6 @@ val CORE_DEPENDENCIES = listOf(
   "com.google.auto.value:auto-value-annotations:1.9",
   "com.google.errorprone:error_prone_annotations:2.15.0",
   "com.google.errorprone:error_prone_core:2.15.0",
-  // When updating, also update buildSrc/build.gradle.kts
-  "net.bytebuddy:byte-buddy:1.12.10",
-  "net.bytebuddy:byte-buddy-dep:1.12.10",
-  "net.bytebuddy:byte-buddy-agent:1.12.10",
-  "net.bytebuddy:byte-buddy-gradle-plugin:1.12.10",
   "org.openjdk.jmh:jmh-core:1.35",
   "org.openjdk.jmh:jmh-generator-bytecode:1.35",
   "org.mockito:mockito-core:4.8.0",
