@@ -65,7 +65,7 @@ val CORE_DEPENDENCIES = listOf(
   "org.slf4j:jul-to-slf4j:1.7.36",
   // 1.12.0 and above use okio 2.x which pulls in kotlin libs
   "com.squareup.moshi:moshi:1.11.0",
-  "com.squareup.moshi:moshi-adapters:1.11.0",
+  "com.squareup.moshi:moshi-adapters:1.12.0",
   "io.opentelemetry.javaagent:opentelemetry-javaagent-extension-api:otelInstrumentationAlphaVersion",
   "io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap:otelInstrumentationAlphaVersion",
   "io.opentelemetry.javaagent:opentelemetry-javaagent-tooling:otelInstrumentationAlphaVersion"
@@ -75,7 +75,7 @@ val DEPENDENCIES = listOf(
   "ch.qos.logback:logback-classic:1.2.11",
   "ch.qos.logback.contrib:logback-json-classic:0.1.5",
   "com.google.auto.service:auto-service:1.0.1",
-  "com.uber.nullaway:nullaway:0.9.8",
+  "com.uber.nullaway:nullaway:0.10.2",
   "commons-codec:commons-codec:1.15",
   "org.apache.commons:commons-text:1.9",
   "com.google.code.gson:gson:2.9.1",
