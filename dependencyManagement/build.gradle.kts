@@ -65,7 +65,7 @@ val CORE_DEPENDENCIES = listOf(
 )
 
 val DEPENDENCIES = listOf(
-  "ch.qos.logback:logback-classic:1.2.11",
+  "ch.qos.logback:logback-classic:1.3.1",
   "ch.qos.logback.contrib:logback-json-classic:0.1.5",
   "com.google.auto.service:auto-service:1.0.1",
   "com.uber.nullaway:nullaway:0.10.2",
