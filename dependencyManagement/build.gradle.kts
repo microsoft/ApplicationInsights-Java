@@ -60,7 +60,7 @@ val CORE_DEPENDENCIES = listOf(
   // resource is not found
   "org.slf4j:slf4j-api:1.7.36",
   "org.slf4j:slf4j-simple:1.7.36",
-  "org.slf4j:log4j-over-slf4j:1.7.36",
+  "org.slf4j:log4j-over-slf4j:2.0.3",
   "org.slf4j:jcl-over-slf4j:1.7.36",
   "org.slf4j:jul-to-slf4j:1.7.36",
   // 1.12.0 and above use okio 2.x which pulls in kotlin libs
