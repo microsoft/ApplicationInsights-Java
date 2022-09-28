@@ -53,11 +53,11 @@ val CORE_DEPENDENCIES = listOf(
   "org.mockito:mockito-core:4.8.0",
   "org.mockito:mockito-junit-jupiter:4.8.0",
   "org.mockito:mockito-inline:4.8.0",
-  // moving to 2.0 is problematic because the SPI mechanism doesn't work in the bootstrap class
-  // loader because while we add the agent jar to the bootstrap class loader via
-  // Instrumentation.appendToBootstrapClassLoaderSearch(), there's nothing similar for resources
-  // (which is a known problem in the java agent world) and so the META-INF/services resource is
-  // not found
+  // moving to 2.0 is problematic because the SPI mechanism in 2.0 doesn't work in the
+  // bootstrap class loader because, while we add the agent jar to the bootstrap class loader
+  // via Instrumentation.appendToBootstrapClassLoaderSearch(), there's nothing similar for
+  // resources (which is a known problem in the java agent world), and so the META-INF/services
+  // resource is not found
   "org.slf4j:slf4j-api:1.7.36",
   "org.slf4j:slf4j-simple:1.7.36",
   "org.slf4j:log4j-over-slf4j:1.7.36",
