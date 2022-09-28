@@ -41,7 +41,7 @@ val CORE_DEPENDENCIES = listOf(
   "com.google.auto.value:auto-value:1.9",
   "com.google.auto.value:auto-value-annotations:1.9",
   "com.google.errorprone:error_prone_annotations:2.14.0",
-  "com.google.errorprone:error_prone_core:2.14.0",
+  "com.google.errorprone:error_prone_core:2.15.0",
   "org.openjdk.jmh:jmh-core:1.35",
   "org.openjdk.jmh:jmh-generator-bytecode:1.35",
   "org.mockito:mockito-core:4.8.0",
