@@ -21,6 +21,8 @@ updates:
         # resources (which is a known problem in the java agent world), and so the META-INF/services
         # resource is not found
         versions: [ "2.x" ]
+      - dependency-name: "com.squareup.moshi:*"
+        versions: [ "[1.12.0,)" ]
     schedule:
       interval: "daily"
     open-pull-requests-limit: 10
