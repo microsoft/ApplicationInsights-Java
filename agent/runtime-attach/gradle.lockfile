@@ -8,7 +8,7 @@ io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:1.18.0-
 io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:1.18.0=runtimeClasspath
 io.opentelemetry:opentelemetry-bom-alpha:1.18.0-alpha=runtimeClasspath
 io.opentelemetry:opentelemetry-bom:1.18.0=runtimeClasspath
-net.bytebuddy:byte-buddy-agent:1.12.10=runtimeClasspath
+net.bytebuddy:byte-buddy-agent:1.11.18=runtimeClasspath
 org.junit:junit-bom:5.9.1=runtimeClasspath
 org.testcontainers:testcontainers-bom:1.17.3=runtimeClasspath
 empty=

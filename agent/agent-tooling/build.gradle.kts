@@ -30,7 +30,6 @@ dependencies {
   }
 
   compileOnly("io.opentelemetry.javaagent:opentelemetry-javaagent-extension-api")
-  compileOnly("net.bytebuddy:byte-buddy-dep")
 
   implementation("commons-codec:commons-codec")
   implementation("org.apache.commons:commons-text")
