@@ -59,7 +59,6 @@ val CORE_DEPENDENCIES = listOf(
   // resources (which is a known problem in the java agent world), and so the META-INF/services
   // resource is not found
   "org.slf4j:slf4j-api:1.7.36",
-  "org.slf4j:slf4j-simple:1.7.36",
   "org.slf4j:log4j-over-slf4j:1.7.36",
   "org.slf4j:jcl-over-slf4j:1.7.36",
   "org.slf4j:jul-to-slf4j:1.7.36",
@@ -86,7 +85,7 @@ val DEPENDENCIES = listOf(
   "io.github.hakky54:logcaptor:2.7.10",
   "com.microsoft.jfr:jfr-streaming:1.2.0",
   "com.google.code.findbugs:jsr305:3.0.2",
-  "com.github.spotbugs:spotbugs-annotations:4.7.1"
+  "com.github.spotbugs:spotbugs-annotations:4.7.2"
 )
 
 javaPlatform {
