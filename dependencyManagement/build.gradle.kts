@@ -59,7 +59,6 @@ val CORE_DEPENDENCIES = listOf(
   // resources (which is a known problem in the java agent world), and so the META-INF/services
   // resource is not found
   "org.slf4j:slf4j-api:1.7.36",
-  "org.slf4j:slf4j-simple:1.7.36",
   "org.slf4j:log4j-over-slf4j:1.7.36",
   "org.slf4j:jcl-over-slf4j:1.7.36",
   "org.slf4j:jul-to-slf4j:1.7.36",
