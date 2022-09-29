@@ -21,6 +21,8 @@ updates:
         # resources (which is a known problem in the java agent world), and so the META-INF/services
         # resource is not found
         versions: [ "[2,)" ]
+      - dependency-name: "ch.qos.logback:*"
+        versions: [ "[1.3,)" ]
       - dependency-name: "com.squareup.moshi:*"
         versions: [ "[1.12,)" ]
     schedule:
