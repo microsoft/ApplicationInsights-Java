@@ -44,6 +44,7 @@ public class AzureFunctionsCustomDimensions implements ImplicitContextKeyed {
   }
 
   // TODO to be removed and it's for debugging
+  @Override
   public String toString() {
     return "{invocationId:"
         + invocationId
