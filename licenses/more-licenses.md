@@ -1,7 +1,7 @@
 
 #agent
 ##Dependency License Report
-_2022-09-28 15:55:03 PDT_
+_2022-09-29 19:56:42 PDT_
 ## Apache License, Version 2.0
 
 **1** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-annotations` **Version:** `2.13.3` 
@@ -232,19 +232,19 @@ _2022-09-28 15:55:03 PDT_
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
-**45** **Group:** `org.apache.commons` **Name:** `commons-lang3` **Version:** `3.11` 
+**45** **Group:** `org.apache.commons` **Name:** `commons-lang3` **Version:** `3.12.0` 
 > - **Project URL**: [https://commons.apache.org/proper/commons-lang/](https://commons.apache.org/proper/commons-lang/)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
-> - **Embedded license files**: [commons-lang3-3.11.jar/META-INF/LICENSE.txt](commons-lang3-3.11.jar/META-INF/LICENSE.txt) 
-    - [commons-lang3-3.11.jar/META-INF/NOTICE.txt](commons-lang3-3.11.jar/META-INF/NOTICE.txt)
+> - **Embedded license files**: [commons-lang3-3.12.0.jar/META-INF/LICENSE.txt](commons-lang3-3.12.0.jar/META-INF/LICENSE.txt) 
+    - [commons-lang3-3.12.0.jar/META-INF/NOTICE.txt](commons-lang3-3.12.0.jar/META-INF/NOTICE.txt)
 
-**46** **Group:** `org.apache.commons` **Name:** `commons-text` **Version:** `1.9` 
+**46** **Group:** `org.apache.commons` **Name:** `commons-text` **Version:** `1.10.0` 
 > - **Project URL**: [https://commons.apache.org/proper/commons-text](https://commons.apache.org/proper/commons-text)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
-> - **Embedded license files**: [commons-text-1.9.jar/META-INF/LICENSE.txt](commons-text-1.9.jar/META-INF/LICENSE.txt) 
-    - [commons-text-1.9.jar/META-INF/NOTICE.txt](commons-text-1.9.jar/META-INF/NOTICE.txt)
+> - **Embedded license files**: [commons-text-1.10.0.jar/META-INF/LICENSE.txt](commons-text-1.10.0.jar/META-INF/LICENSE.txt) 
+    - [commons-text-1.10.0.jar/META-INF/NOTICE.txt](commons-text-1.10.0.jar/META-INF/NOTICE.txt)
 
 **47** **Group:** `org.codehaus.woodstox` **Name:** `stax2-api` **Version:** `4.2.1` 
 > - **Project URL**: [http://github.com/FasterXML/stax2-api](http://github.com/FasterXML/stax2-api)
