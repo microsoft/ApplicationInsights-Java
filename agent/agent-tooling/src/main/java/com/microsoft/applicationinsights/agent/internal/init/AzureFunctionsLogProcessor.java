@@ -21,13 +21,23 @@ public class AzureFunctionsLogProcessor implements LogProcessor {
     logger.verbose(
         "####### AzureFunctionsLogProcessor::onEmit:: \n CustomDimensions: {}",
         customDimensions.toString());
-    if (customDimensions != null) {
+    if (customDimensions.invocationId != null) {
       logRecord.setAttribute(AiSemanticAttributes.INVOCATION_ID, customDimensions.invocationId);
-      logRecord.setAttribute(AiSemanticAttributes.PROCESS_ID, customDimensions.processId);
-      logRecord.setAttribute(AiSemanticAttributes.LOG_LEVEL, customDimensions.logLevel);
+    }
+    if (customDimensions.processId != null) {
+    logRecord.setAttribute(AiSemanticAttributes.PROCESS_ID, customDimensions.processId);
+    }
+    if (customDimensions.logLevel != null) {
+    logRecord.setAttribute(AiSemanticAttributes.LOG_LEVEL, customDimensions.logLevel);
+    }
+    if (customDimensions.category != null) {
       logRecord.setAttribute(AiSemanticAttributes.CATEGORY, customDimensions.category);
+    }
+    if (customDimensions.hostInstanceId != null) {
       logRecord.setAttribute(
           AiSemanticAttributes.HOST_INSTANCE_ID, customDimensions.hostInstanceId);
+    }
+    if (customDimensions.azFunctionLiveLogsSessionId != null) {
       logRecord.setAttribute(
           AiSemanticAttributes.AZ_FUNC_LIVE_LOGS_SESSION_ID,
           customDimensions.azFunctionLiveLogsSessionId);
