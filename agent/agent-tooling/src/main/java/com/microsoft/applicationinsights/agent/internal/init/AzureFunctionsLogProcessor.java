@@ -25,10 +25,10 @@ public class AzureFunctionsLogProcessor implements LogProcessor {
       logRecord.setAttribute(AiSemanticAttributes.INVOCATION_ID, customDimensions.invocationId);
     }
     if (customDimensions.processId != null) {
-    logRecord.setAttribute(AiSemanticAttributes.PROCESS_ID, customDimensions.processId);
+      logRecord.setAttribute(AiSemanticAttributes.PROCESS_ID, customDimensions.processId);
     }
     if (customDimensions.logLevel != null) {
-    logRecord.setAttribute(AiSemanticAttributes.LOG_LEVEL, customDimensions.logLevel);
+      logRecord.setAttribute(AiSemanticAttributes.LOG_LEVEL, customDimensions.logLevel);
     }
     if (customDimensions.category != null) {
       logRecord.setAttribute(AiSemanticAttributes.CATEGORY, customDimensions.category);
