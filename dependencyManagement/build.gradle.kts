@@ -70,7 +70,7 @@ val DEPENDENCIES = listOf(
   "com.google.auto.service:auto-service:1.0.1",
   "com.uber.nullaway:nullaway:0.10.2",
   "commons-codec:commons-codec:1.15",
-  "org.apache.commons:commons-text:1.9",
+  "org.apache.commons:commons-text:1.10.0",
   "com.google.code.gson:gson:2.9.1",
   "com.azure:azure-core-test:1.12.0", // this is not included in azure-sdk-bom
   "com.github.oshi:oshi-core:6.2.2",
