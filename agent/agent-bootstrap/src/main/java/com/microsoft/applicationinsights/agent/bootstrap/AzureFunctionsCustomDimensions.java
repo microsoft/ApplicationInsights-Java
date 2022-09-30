@@ -10,7 +10,7 @@ import io.opentelemetry.context.ImplicitContextKeyed;
 public class AzureFunctionsCustomDimensions implements ImplicitContextKeyed {
 
   private static final ContextKey<AzureFunctionsCustomDimensions>
-          AI_FUNCTIONS_CUSTOM_DIMENSIONS_KEY = ContextKey.named("ai-functions-custom-dimensions");
+      AI_FUNCTIONS_CUSTOM_DIMENSIONS_KEY = ContextKey.named("ai-functions-custom-dimensions");
 
   public final String invocationId;
   public final String processId;
