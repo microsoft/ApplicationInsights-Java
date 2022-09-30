@@ -432,6 +432,11 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
       Configuration configuration) {
 
     builder.addLogProcessor(new AzureMonitorLogProcessor());
+
+    if ("java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME"))) {
+      builder.addLogProcessor(new AzureFunctionsLogProcessor());
+    }
+
     if (!configuration.preview.inheritedAttributes.isEmpty()) {
       builder.addLogProcessor(
           new InheritedAttributesLogProcessor(configuration.preview.inheritedAttributes));

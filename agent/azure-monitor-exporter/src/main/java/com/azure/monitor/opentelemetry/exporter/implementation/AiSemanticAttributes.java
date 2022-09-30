@@ -106,5 +106,16 @@ public final class AiSemanticAttributes {
   public static final AttributeKey<Boolean> IS_PRE_AGGREGATED =
       AttributeKey.booleanKey("applicationinsights.internal.is_pre_aggregated");
 
+  // Azure Function
+
+  public static final AttributeKey<String> INVOCATION_ID = AttributeKey.stringKey("InvocationId");
+  public static final AttributeKey<String> PROCESS_ID = AttributeKey.stringKey("ProcessId");
+  public static final AttributeKey<String> LOG_LEVEL = AttributeKey.stringKey("LogLevel");
+  public static final AttributeKey<String> CATEGORY = AttributeKey.stringKey("Category");
+  public static final AttributeKey<String> HOST_INSTANCE_ID =
+      AttributeKey.stringKey("HostInstanceId");
+  public static final AttributeKey<String> AZ_FUNC_LIVE_LOGS_SESSION_ID =
+      AttributeKey.stringKey("#AzFuncLiveLogsSessionId");
+
   private AiSemanticAttributes() {}
 }
