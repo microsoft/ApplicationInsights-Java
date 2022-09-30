@@ -10,7 +10,7 @@ import io.opentelemetry.context.ImplicitContextKeyed;
 public class AzureFunctionsCustomDimensions implements ImplicitContextKeyed {
 
   private static final ContextKey<AzureFunctionsCustomDimensions>
-      AI_FUNCTION_CUSTOM_DIMENSIONS_KEY = ContextKey.named("ai-function-custom-dimensions");
+          AI_FUNCTIONS_CUSTOM_DIMENSIONS_KEY = ContextKey.named("ai-functions-custom-dimensions");
 
   public final String invocationId;
   public final String processId;
@@ -35,12 +35,12 @@ public class AzureFunctionsCustomDimensions implements ImplicitContextKeyed {
   }
 
   public static AzureFunctionsCustomDimensions fromContext(Context context) {
-    return context.get(AI_FUNCTION_CUSTOM_DIMENSIONS_KEY);
+    return context.get(AI_FUNCTIONS_CUSTOM_DIMENSIONS_KEY);
   }
 
   @Override
   public Context storeInContext(Context context) {
-    return context.with(AI_FUNCTION_CUSTOM_DIMENSIONS_KEY, this);
+    return context.with(AI_FUNCTIONS_CUSTOM_DIMENSIONS_KEY, this);
   }
 
   // TODO to be removed and it's for debugging
