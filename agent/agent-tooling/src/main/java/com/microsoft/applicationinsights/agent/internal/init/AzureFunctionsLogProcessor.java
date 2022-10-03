@@ -10,7 +10,7 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.logs.LogProcessor;
 import io.opentelemetry.sdk.logs.ReadWriteLogRecord;
 
-public class AzureFunctionsLogProcessor implements LogProcessor {
+public final class AzureFunctionsLogProcessor implements LogProcessor {
 
   private static final ClientLogger logger = new ClientLogger(AzureFunctionsLogProcessor.class);
 
@@ -18,28 +18,33 @@ public class AzureFunctionsLogProcessor implements LogProcessor {
   public void onEmit(ReadWriteLogRecord logRecord) {
     AzureFunctionsCustomDimensions customDimensions =
         AzureFunctionsCustomDimensions.fromContext(Context.current());
+    if (customDimensions == null) {
+      logger.warning("'ai-functions-custom-dimensions' is missing from the context");
+      return;
+    }
     logger.verbose(
         "####### AzureFunctionsLogProcessor::onEmit:: \n CustomDimensions: {}",
         customDimensions.toString());
     if (customDimensions.invocationId != null) {
-      logRecord.setAttribute(AiSemanticAttributes.INVOCATION_ID, customDimensions.invocationId);
+      logRecord.setAttribute(
+          AiSemanticAttributes.AZ_FN_INVOCATION_ID, customDimensions.invocationId);
     }
     if (customDimensions.processId != null) {
-      logRecord.setAttribute(AiSemanticAttributes.PROCESS_ID, customDimensions.processId);
+      logRecord.setAttribute(AiSemanticAttributes.AZ_FN_PROCESS_ID, customDimensions.processId);
     }
     if (customDimensions.logLevel != null) {
-      logRecord.setAttribute(AiSemanticAttributes.LOG_LEVEL, customDimensions.logLevel);
+      logRecord.setAttribute(AiSemanticAttributes.AZ_FN_LOG_LEVEL, customDimensions.logLevel);
     }
     if (customDimensions.category != null) {
-      logRecord.setAttribute(AiSemanticAttributes.CATEGORY, customDimensions.category);
+      logRecord.setAttribute(AiSemanticAttributes.AZ_FN_CATEGORY, customDimensions.category);
     }
     if (customDimensions.hostInstanceId != null) {
       logRecord.setAttribute(
-          AiSemanticAttributes.HOST_INSTANCE_ID, customDimensions.hostInstanceId);
+          AiSemanticAttributes.AZ_FN_HOST_INSTANCE_ID, customDimensions.hostInstanceId);
     }
     if (customDimensions.azFunctionLiveLogsSessionId != null) {
       logRecord.setAttribute(
-          AiSemanticAttributes.AZ_FUNC_LIVE_LOGS_SESSION_ID,
+          AiSemanticAttributes.AZ_FN_LIVE_LOGS_SESSION_ID,
           customDimensions.azFunctionLiveLogsSessionId);
     }
   }

@@ -108,13 +108,14 @@ public final class AiSemanticAttributes {
 
   // Azure Function
 
-  public static final AttributeKey<String> INVOCATION_ID = AttributeKey.stringKey("InvocationId");
-  public static final AttributeKey<String> PROCESS_ID = AttributeKey.stringKey("ProcessId");
-  public static final AttributeKey<String> LOG_LEVEL = AttributeKey.stringKey("LogLevel");
-  public static final AttributeKey<String> CATEGORY = AttributeKey.stringKey("Category");
-  public static final AttributeKey<String> HOST_INSTANCE_ID =
+  public static final AttributeKey<String> AZ_FN_INVOCATION_ID =
+      AttributeKey.stringKey("InvocationId");
+  public static final AttributeKey<String> AZ_FN_PROCESS_ID = AttributeKey.stringKey("ProcessId");
+  public static final AttributeKey<String> AZ_FN_LOG_LEVEL = AttributeKey.stringKey("LogLevel");
+  public static final AttributeKey<String> AZ_FN_CATEGORY = AttributeKey.stringKey("Category");
+  public static final AttributeKey<String> AZ_FN_HOST_INSTANCE_ID =
       AttributeKey.stringKey("HostInstanceId");
-  public static final AttributeKey<String> AZ_FUNC_LIVE_LOGS_SESSION_ID =
+  public static final AttributeKey<String> AZ_FN_LIVE_LOGS_SESSION_ID =
       AttributeKey.stringKey("#AzFuncLiveLogsSessionId");
 
   private AiSemanticAttributes() {}

@@ -63,21 +63,10 @@ class InvocationInstrumentation implements TypeInstrumentation {
               .getTextMapPropagator()
               .extract(Context.root(), traceContext, GETTER);
       SpanContext spanContext = Span.fromContext(extractedContext).getSpanContext();
-
-      String invocationId =
-          (String) InvocationRequestExtractAdapter.getInvocationId.invoke(request);
-      Map<String, String> attributesMap =
-          (Map<String, String>)
-              InvocationRequestExtractAdapter.getAttributesMap.invoke(traceContext);
-      AzureFunctionsCustomDimensions customDimensions =
-          new AzureFunctionsCustomDimensions(
-              invocationId,
-              attributesMap.get("ProcessId"),
-              attributesMap.get("LogLevel"),
-              attributesMap.get("Category"),
-              attributesMap.get("HostInstanceId"),
-              attributesMap.get("#AzFuncLiveLogsSessionId"));
-      return Context.current().with(Span.wrap(spanContext)).with(customDimensions).makeCurrent();
+      return Context.current()
+          .with(Span.wrap(spanContext))
+          .with(generateCustomDimensions(request, traceContext))
+          .makeCurrent();
     }
 
     @Advice.OnMethodExit(onThrowable = Throwable.class, suppress = Throwable.class)
@@ -85,6 +74,22 @@ class InvocationInstrumentation implements TypeInstrumentation {
       if (scope != null) {
         scope.close();
       }
+    }
+
+    private static AzureFunctionsCustomDimensions generateCustomDimensions(
+        Object request, Object traceContext) throws ReflectiveOperationException {
+      String invocationId =
+          (String) InvocationRequestExtractAdapter.getInvocationId.invoke(request);
+      Map<String, String> attributesMap =
+          (Map<String, String>)
+              InvocationRequestExtractAdapter.getAttributesMap.invoke(traceContext);
+      return new AzureFunctionsCustomDimensions(
+          invocationId,
+          attributesMap.get("ProcessId"),
+          attributesMap.get("LogLevel"),
+          attributesMap.get("Category"),
+          attributesMap.get("HostInstanceId"),
+          attributesMap.get("#AzFuncLiveLogsSessionId"));
     }
   }
 }
