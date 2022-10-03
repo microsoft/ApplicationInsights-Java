@@ -8,9 +8,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.profiler.triggers.RequestAlertPipelineBuilder;
 import com.microsoft.applicationinsights.alerting.aiconfig.AlertingConfig;
+import java.time.Instant;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import java.time.Instant;
 
 public class RequestAlertPipelineBuilderTest {
 
@@ -32,11 +32,12 @@ public class RequestAlertPipelineBuilderTest {
     String alertingConfigStr = mapper.writeValueAsString(config);
 
     // Account for serialization differences
-    alertingConfigStr = alertingConfigStr
-        .replaceAll("NAME_REGEX", "name-regex")
-        .replaceAll("BREACH_RATIO", "breach-ratio")
-        .replaceAll("GREATER_THAN", "greater-than")
-        .replaceAll("FIXED_DURATION_COOLDOWN", "fixed-duration-cooldown");
+    alertingConfigStr =
+        alertingConfigStr
+            .replaceAll("NAME_REGEX", "name-regex")
+            .replaceAll("BREACH_RATIO", "breach-ratio")
+            .replaceAll("GREATER_THAN", "greater-than")
+            .replaceAll("FIXED_DURATION_COOLDOWN", "fixed-duration-cooldown");
 
     Assertions.assertEquals(configurationStr, alertingConfigStr);
   }
