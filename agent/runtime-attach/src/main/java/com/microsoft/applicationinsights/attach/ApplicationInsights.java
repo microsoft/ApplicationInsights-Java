@@ -17,6 +17,9 @@ import java.util.stream.Collectors;
 /** This class allows you to attach the Application Insights agent for Java at runtime. */
 public final class ApplicationInsights {
 
+  public static final String APPLICATIONINSIGHTS_RUNTIMEATTACH_CONFIGURATION_FILE =
+      "applicationinsights.runtimeattach.configuration.file";
+
   private static final Logger logger = Logger.getLogger(ApplicationInsights.class.getName());
 
   private static final String RUNTIME_ATTACHED_ENABLED_PROPERTY =
@@ -53,8 +56,9 @@ public final class ApplicationInsights {
 
   private static Optional<String> findJsonConfig() {
 
+    String fileName = findJsonConfigFile();
     InputStream configContentAsInputStream =
-        ApplicationInsights.class.getResourceAsStream("/applicationinsights.json");
+        ApplicationInsights.class.getResourceAsStream("/" + fileName);
     if (configContentAsInputStream == null) {
       return Optional.empty();
     }
@@ -67,6 +71,15 @@ public final class ApplicationInsights {
       throw new IllegalStateException(
           "Unexpected issue during loading of JSON configuration file: " + e.getMessage());
     }
+  }
+
+  private static String findJsonConfigFile() {
+    String fileFromProperty =
+        System.getProperty(APPLICATIONINSIGHTS_RUNTIMEATTACH_CONFIGURATION_FILE);
+    if (fileFromProperty != null) {
+      return fileFromProperty;
+    }
+    return "applicationinsights.json";
   }
 
   private static boolean agentIsAttached() {
