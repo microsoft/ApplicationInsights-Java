@@ -4,6 +4,7 @@
 package com.microsoft.applicationinsights.agent.internal.profiler.triggers;
 
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
+import com.microsoft.applicationinsights.alerting.aiconfig.AlertingConfig;
 import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
 import com.microsoft.applicationinsights.alerting.analysis.TimeSource;
 import com.microsoft.applicationinsights.alerting.analysis.aggregations.Aggregation;
@@ -22,11 +23,13 @@ public class RequestAlertPipelineBuilder {
   private RequestAlertPipelineBuilder() {}
 
   /** Form a single trigger context from configuration. */
-  @Nullable
   public static AlertPipeline build(
       Configuration.RequestTrigger configuration,
       Consumer<AlertBreach> alertAction,
       TimeSource timeSource) {
+
+    AlertingConfig.RequestTrigger requestTriggerConfiguration =
+        buildRequestTriggerConfiguration(configuration);
 
     AlertRequestFilter filter = AlertRequestFilterBuilder.build(configuration.filter);
 
@@ -39,9 +42,53 @@ public class RequestAlertPipelineBuilder {
             true,
             configuration.threshold.value,
             configuration.profileDuration,
-            configuration.throttling.value);
+            configuration.throttling.value,
+            requestTriggerConfiguration);
 
     return SingleAlertPipeline.create(filter, aggregation, config, alertAction);
+  }
+
+  public static AlertingConfig.RequestTrigger buildRequestTriggerConfiguration(
+      Configuration.RequestTrigger configuration) {
+
+    AlertingConfig.RequestTriggerType type =
+        AlertingConfig.RequestTriggerType.valueOf(configuration.type.name());
+
+    AlertingConfig.RequestFilter filter =
+        new AlertingConfig.RequestFilter(
+            AlertingConfig.RequestFilterType.valueOf(configuration.filter.type.name()),
+            configuration.filter.value);
+
+    AlertingConfig.RequestAggregationConfig requestAggregationConfig =
+        new AlertingConfig.RequestAggregationConfig(
+            configuration.aggregation.configuration.thresholdMillis,
+            configuration.aggregation.configuration.minimumSamples);
+
+    AlertingConfig.RequestAggregation aggregation =
+        new AlertingConfig.RequestAggregation(
+            AlertingConfig.RequestAggregationType.valueOf(configuration.aggregation.type.name()),
+            configuration.aggregation.windowSizeMillis,
+            requestAggregationConfig);
+
+    AlertingConfig.RequestTriggerThreshold requestTriggerThreshold =
+        new AlertingConfig.RequestTriggerThreshold(
+            AlertingConfig.RequestTriggerThresholdType.valueOf(configuration.threshold.type.name()),
+            configuration.threshold.value);
+
+    AlertingConfig.RequestTriggerThrottling throttling =
+        new AlertingConfig.RequestTriggerThrottling(
+            AlertingConfig.RequestTriggerThrottlingType.valueOf(
+                configuration.throttling.type.name()),
+            configuration.throttling.value);
+
+    return new AlertingConfig.RequestTrigger(
+        configuration.name,
+        type,
+        filter,
+        aggregation,
+        requestTriggerThreshold,
+        throttling,
+        configuration.profileDuration);
   }
 
   @Nullable

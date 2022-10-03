@@ -3,6 +3,7 @@
 
 package com.microsoft.applicationinsights.alerting.config;
 
+import com.microsoft.applicationinsights.alerting.aiconfig.AlertingConfig;
 import java.util.Objects;
 import javax.annotation.Nullable;
 
@@ -77,6 +78,8 @@ public class AlertingConfiguration {
     private final long profileDuration;
     private final long cooldown;
 
+    @Nullable private final AlertingConfig.RequestTrigger requestTrigger;
+
     public AlertConfiguration(
         AlertMetricType type,
         boolean enabled,
@@ -88,6 +91,22 @@ public class AlertingConfiguration {
       this.threshold = threshold;
       this.profileDuration = profileDuration;
       this.cooldown = cooldown;
+      this.requestTrigger = null;
+    }
+
+    public AlertConfiguration(
+        AlertMetricType type,
+        boolean enabled,
+        float threshold,
+        long profileDuration,
+        long cooldown,
+        @Nullable AlertingConfig.RequestTrigger requestTrigger) {
+      this.type = type;
+      this.enabled = enabled;
+      this.threshold = threshold;
+      this.profileDuration = profileDuration;
+      this.cooldown = cooldown;
+      this.requestTrigger = requestTrigger;
     }
 
     public boolean isEnabled() {
@@ -144,6 +163,10 @@ public class AlertingConfiguration {
           + ", cooldown="
           + cooldown
           + '}';
+    }
+
+    public AlertingConfig.RequestTrigger getRequestTrigger() {
+      return requestTrigger;
     }
   }
 
