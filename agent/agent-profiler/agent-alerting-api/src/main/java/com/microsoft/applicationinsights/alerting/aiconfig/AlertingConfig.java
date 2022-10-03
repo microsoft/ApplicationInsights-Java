@@ -3,13 +3,10 @@
 
 package com.microsoft.applicationinsights.alerting.aiconfig;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 public class AlertingConfig {
   private AlertingConfig() {}
 
   public enum RequestFilterType {
-    @JsonProperty("name-regex")
     NAME_REGEX
   }
 
@@ -40,7 +37,6 @@ public class AlertingConfig {
   }
 
   public enum RequestAggregationType {
-    @JsonProperty("breach-ratio")
     BREACH_RATIO
   }
 
@@ -60,7 +56,6 @@ public class AlertingConfig {
   }
 
   public enum RequestTriggerThresholdType {
-    @JsonProperty("greater-than")
     GREATER_THAN
   }
 
@@ -83,7 +78,6 @@ public class AlertingConfig {
   }
 
   public enum RequestTriggerThrottlingType {
-    @JsonProperty("fixed-duration-cooldown")
     FIXED_DURATION_COOLDOWN
   }
 
