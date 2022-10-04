@@ -42,22 +42,4 @@ public final class AzureFunctionsCustomDimensions implements ImplicitContextKeye
   public Context storeInContext(Context context) {
     return context.with(AI_FUNCTIONS_CUSTOM_DIMENSIONS_KEY, this);
   }
-
-  // TODO to be removed and it's for debugging
-  @Override
-  public String toString() {
-    return "{invocationId:"
-        + invocationId
-        + ", processId:"
-        + processId
-        + ", logLevel:"
-        + logLevel
-        + ", category:"
-        + category
-        + ", hostInstanceId:"
-        + hostInstanceId
-        + ", azFunctionLiveLogSessionId:"
-        + azFunctionLiveLogsSessionId
-        + "}";
-  }
 }

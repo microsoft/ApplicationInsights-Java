@@ -22,9 +22,6 @@ public final class AzureFunctionsLogProcessor implements LogProcessor {
       logger.warning("'ai-functions-custom-dimensions' is missing from the context");
       return;
     }
-    logger.verbose(
-        "####### AzureFunctionsLogProcessor::onEmit:: \n CustomDimensions: {}",
-        customDimensions.toString());
     if (customDimensions.invocationId != null) {
       logRecord.setAttribute(
           AiSemanticAttributes.AZ_FN_INVOCATION_ID, customDimensions.invocationId);
