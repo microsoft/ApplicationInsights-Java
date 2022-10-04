@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 public final class ApplicationInsights {
 
   private static final String APPLICATIONINSIGHTS_RUNTIME_ATTACH_CONFIGURATION_FILE =
-      "applicationinsights.runtimeattach.configuration.file";
+      "applicationinsights.runtime-attach.configuration.file";
 
   private static final Logger logger = Logger.getLogger(ApplicationInsights.class.getName());
 
