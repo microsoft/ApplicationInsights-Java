@@ -20,8 +20,7 @@ import java.util.function.Function;
 
 public final class RequestChecker {
 
-  private RequestChecker() {
-  }
+  private RequestChecker() {}
 
   public static boolean isRequest(SpanData span) {
     return isRequest(span.getKind(), span.getParentSpanContext(), span.getAttributes()::get);
@@ -47,5 +46,4 @@ public final class RequestChecker {
       throw new UnsupportedOperationException(kind.name());
     }
   }
-
 }
