@@ -9,14 +9,14 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation;
 
+import static com.azure.monitor.opentelemetry.exporter.implementation.AiSemanticAttributes.JOB_SYSTEM;
+
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.util.function.Function;
-
-import static com.azure.monitor.opentelemetry.exporter.implementation.AiSemanticAttributes.JOB_SYSTEM;
 
 public final class RequestChecker {
 
