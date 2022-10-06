@@ -4,8 +4,8 @@
 package com.microsoft.applicationinsights.agent.internal.sampling;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.AiSemanticAttributes;
+import com.azure.monitor.opentelemetry.exporter.implementation.RequestChecker;
 import com.azure.monitor.opentelemetry.exporter.implementation.SamplingScoreGeneratorV2;
-import com.azure.monitor.opentelemetry.exporter.implementation.SpanDataMapper;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
@@ -70,7 +70,7 @@ public class AiSampler implements Sampler {
       sp = requestSamplingPercentage.get();
     } else {
       SpanContext parentSpanContext = Span.fromContext(parentContext).getSpanContext();
-      boolean isRequest = SpanDataMapper.isRequest(spanKind, parentSpanContext, attributes::get);
+      boolean isRequest = RequestChecker.isRequest(spanKind, parentSpanContext, attributes::get);
 
       sp =
           isRequest

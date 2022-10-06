@@ -3,7 +3,6 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation;
 
-import static com.azure.monitor.opentelemetry.exporter.implementation.AiSemanticAttributes.JOB_SYSTEM;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
@@ -22,14 +21,12 @@ import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedDu
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedTime;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Trie;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.UrlParser;
-import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.AttributeType;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -41,7 +38,6 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Supplier;
 import reactor.util.annotation.Nullable;
 
@@ -127,35 +123,10 @@ public final class SpanDataMapper {
   }
 
   public TelemetryItem map(SpanData span, long itemCount) {
-    if (isRequest(span)) {
+    if (RequestChecker.isRequest(span)) {
       return exportRequest(span, itemCount);
     } else {
       return exportRemoteDependency(span, span.getKind() == SpanKind.INTERNAL, itemCount);
-    }
-  }
-
-  public static boolean isRequest(SpanData span) {
-    return isRequest(span.getKind(), span.getParentSpanContext(), span.getAttributes()::get);
-  }
-
-  public static boolean isRequest(ReadableSpan span) {
-    return isRequest(span.getKind(), span.getParentSpanContext(), span::getAttribute);
-  }
-
-  public static boolean isRequest(
-      SpanKind kind, SpanContext parentSpanContext, Function<AttributeKey<String>, String> attrFn) {
-    if (kind == SpanKind.INTERNAL) {
-      // INTERNAL scheduled job spans with no parent are mapped to requests
-      return attrFn.apply(JOB_SYSTEM) != null && !parentSpanContext.isValid();
-    } else if (kind == SpanKind.CLIENT || kind == SpanKind.PRODUCER) {
-      return false;
-    } else if (kind == SpanKind.CONSUMER
-        && "receive".equals(attrFn.apply(SemanticAttributes.MESSAGING_OPERATION))) {
-      return false;
-    } else if (kind == SpanKind.SERVER || kind == SpanKind.CONSUMER) {
-      return true;
-    } else {
-      throw new UnsupportedOperationException(kind.name());
     }
   }
 

@@ -3,7 +3,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.sampling;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.SpanDataMapper;
+import com.azure.monitor.opentelemetry.exporter.implementation.RequestChecker;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.SamplingOverride;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
@@ -40,7 +40,7 @@ class AiOverrideSampler implements Sampler {
       List<LinkData> parentLinks) {
 
     SpanContext parentSpanContext = Span.fromContext(parentContext).getSpanContext();
-    boolean isRequest = SpanDataMapper.isRequest(spanKind, parentSpanContext, attributes::get);
+    boolean isRequest = RequestChecker.isRequest(spanKind, parentSpanContext, attributes::get);
 
     SamplingOverrides samplingOverrides =
         isRequest ? requestSamplingOverrides : dependencySamplingOverrides;
