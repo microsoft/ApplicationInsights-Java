@@ -33,6 +33,9 @@ public final class ApplicationInsights {
   /**
    * Attach the Application Insights agent for Java to the current JVM. The attachment must be
    * requested at the beginning of the main method.
+   *
+   * @throws ConfigurationException If the file given by the
+   *     applicationinsights.internal.runtime.attached.json property was not found
    */
   public static void attach() {
 
@@ -60,7 +63,7 @@ public final class ApplicationInsights {
     InputStream configContentAsInputStream =
         ApplicationInsights.class.getResourceAsStream("/" + fileName);
     if (configContentAsInputStream == null) {
-      return Optional.empty();
+      throw new ConfigurationException(fileName + " not found");
     }
     try (InputStreamReader inputStreamReader =
             new InputStreamReader(configContentAsInputStream, StandardCharsets.UTF_8);
@@ -70,6 +73,12 @@ public final class ApplicationInsights {
     } catch (IOException e) {
       throw new IllegalStateException(
           "Unexpected issue during loading of JSON configuration file: " + e.getMessage());
+    }
+  }
+
+  public static class ConfigurationException extends IllegalArgumentException {
+    ConfigurationException(String message) {
+      super(message);
     }
   }
 
