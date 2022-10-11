@@ -60,20 +60,35 @@ public final class ApplicationInsights {
   private static Optional<String> findJsonConfig() {
 
     String fileName = findJsonConfigFile();
-    InputStream configContentAsInputStream =
-        ApplicationInsights.class.getResourceAsStream("/" + fileName);
+
+    InputStream configContentAsInputStream = findResourceAsStream(fileName);
+
     if (configContentAsInputStream == null) {
-      throw new ConfigurationException(fileName + " not found");
+      return Optional.empty();
     }
+
+    String json = findJson(configContentAsInputStream);
+    return Optional.of(json);
+  }
+
+  private static String findJson(InputStream configContentAsInputStream) {
     try (InputStreamReader inputStreamReader =
             new InputStreamReader(configContentAsInputStream, StandardCharsets.UTF_8);
         BufferedReader bufferedReader = new BufferedReader(inputStreamReader)) {
-      String json = bufferedReader.lines().collect(Collectors.joining(""));
-      return Optional.of(json);
+      return bufferedReader.lines().collect(Collectors.joining(""));
     } catch (IOException e) {
       throw new IllegalStateException(
           "Unexpected issue during loading of JSON configuration file: " + e.getMessage());
     }
+  }
+
+  private static InputStream findResourceAsStream(String fileName) {
+    InputStream configContentAsInputStream =
+        ApplicationInsights.class.getResourceAsStream("/" + fileName);
+    if (configContentAsInputStream == null && isJsonFileConfiguredWithProperty()) {
+      throw new ConfigurationException(fileName + " not found");
+    }
+    return configContentAsInputStream;
   }
 
   public static class ConfigurationException extends IllegalArgumentException {
@@ -83,12 +98,16 @@ public final class ApplicationInsights {
   }
 
   private static String findJsonConfigFile() {
-    String fileFromProperty =
-        System.getProperty(APPLICATIONINSIGHTS_RUNTIME_ATTACH_CONFIGURATION_FILE);
-    if (fileFromProperty != null) {
-      return fileFromProperty;
+    if (isJsonFileConfiguredWithProperty()) {
+      return System.getProperty(APPLICATIONINSIGHTS_RUNTIME_ATTACH_CONFIGURATION_FILE);
     }
     return "applicationinsights.json";
+  }
+
+  private static boolean isJsonFileConfiguredWithProperty() {
+    String fileFromProperty =
+        System.getProperty(APPLICATIONINSIGHTS_RUNTIME_ATTACH_CONFIGURATION_FILE);
+    return fileFromProperty != null;
   }
 
   private static boolean agentIsAttached() {
