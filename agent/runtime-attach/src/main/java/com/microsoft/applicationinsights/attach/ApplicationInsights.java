@@ -90,7 +90,7 @@ public final class ApplicationInsights {
     InputStream configContentAsInputStream =
         ApplicationInsights.class.getResourceAsStream("/" + fileName);
     if (configContentAsInputStream == null && isJsonFileConfiguredWithProperty()) {
-      throw new ConfigurationException(fileName + " not found");
+      throw new ConfigurationException(fileName + " not found on the class path");
     }
     return configContentAsInputStream;
   }
