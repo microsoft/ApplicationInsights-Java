@@ -1,4 +1,4 @@
-name: Reusable - Assemble
+name: Reusable - License check
 
 on:
   workflow_call:
@@ -22,7 +22,9 @@ jobs:
       - name: Generate license report
         uses: gradle/gradle-build-action@v2
         with:
-          arguments: generateLicenseReport ${{ inputs.no-build-cache && '--no-build-cache' || '' }}
+          # ignore inputs.no-build-cache and always run with --no-build-cache
+          # see https://github.com/jk1/Gradle-License-Report/issues/231
+          arguments: generateLicenseReport --no-build-cache
 
       - name: Check licenses
         run: |
