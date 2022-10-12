@@ -39,7 +39,7 @@ public final class ApplicationInsights {
    * requested at the beginning of the main method.
    *
    * @throws ConfigurationException If the file given by the
-   *     applicationinsights.internal.runtime.attached.json property was not found
+   *     applicationinsights.runtime-attach.configuration.classpath.file property was not found
    */
   public static void attach() {
 
