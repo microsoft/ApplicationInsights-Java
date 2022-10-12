@@ -107,9 +107,9 @@ public final class AiSemanticAttributes {
       AttributeKey.booleanKey("applicationinsights.internal.is_pre_aggregated");
 
   // These attributes are specific for Azure Function and are added to Application Insights traces'
-  // custom dimensions.
-  // When Azure Function host starts suppressing the same logs to Application Insights, these new
-  // attributes will provide backward compatibility for keeping the same behaviour.
+  // custom dimensions. When Azure Function host starts suppressing the same logs to Application
+  // Insights, these new attributes will provide backward compatibility for keeping the same
+  // behaviour.
   public static final AttributeKey<String> AZ_FN_INVOCATION_ID =
       AttributeKey.stringKey("applicationinsights.internal.invocationId");
   public static final AttributeKey<String> AZ_FN_PROCESS_ID =
