@@ -20,11 +20,15 @@ public class InvocationRequestExtractAdapter implements TextMapGetter<Object> {
       new InvocationRequestExtractAdapter();
 
   public static final Method getTraceContextMethod;
+  public static final Method getInvocationId;
+  public static final Method getAttributesMap;
   private static final Method getTraceParentMethod;
   private static final Method getTraceStateMethod;
 
   static {
     Method getTraceContextMethodLocal = null;
+    Method getInvocationIdLocal = null;
+    Method getAttributesMapLocal = null;
     Method getTraceParentMethodLocal = null;
     Method getTraceStateMethodLocal = null;
     try {
@@ -33,12 +37,16 @@ public class InvocationRequestExtractAdapter implements TextMapGetter<Object> {
       Class<?> rpcTraceContextClass =
           Class.forName("com.microsoft.azure.functions.rpc.messages.RpcTraceContext");
       getTraceContextMethodLocal = invocationRequestClass.getMethod("getTraceContext");
+      getInvocationIdLocal = invocationRequestClass.getMethod("getInvocationId");
+      getAttributesMapLocal = rpcTraceContextClass.getMethod("getAttributesMap");
       getTraceParentMethodLocal = rpcTraceContextClass.getMethod("getTraceParent");
       getTraceStateMethodLocal = rpcTraceContextClass.getMethod("getTraceState");
     } catch (ReflectiveOperationException e) {
       logger.log(Level.SEVERE, e.getMessage(), e);
     }
     getTraceContextMethod = getTraceContextMethodLocal;
+    getInvocationId = getInvocationIdLocal;
+    getAttributesMap = getAttributesMapLocal;
     getTraceParentMethod = getTraceParentMethodLocal;
     getTraceStateMethod = getTraceStateMethodLocal;
   }

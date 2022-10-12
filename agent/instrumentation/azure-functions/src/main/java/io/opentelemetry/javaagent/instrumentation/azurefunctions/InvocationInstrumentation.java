@@ -9,6 +9,7 @@ import static net.bytebuddy.matcher.ElementMatchers.named;
 import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 
 import com.microsoft.applicationinsights.agent.bootstrap.AzureFunctions;
+import com.microsoft.applicationinsights.agent.bootstrap.AzureFunctionsCustomDimensions;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
@@ -16,6 +17,7 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
+import java.util.Map;
 import javax.annotation.Nullable;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
@@ -39,7 +41,12 @@ class InvocationInstrumentation implements TypeInstrumentation {
         InvocationInstrumentation.class.getName() + "$ExecuteAdvice");
   }
 
-  @SuppressWarnings({"unused", "PrivateConstructorForUtilityClass", "MustBeClosedChecker"})
+  @SuppressWarnings({
+    "unused",
+    "PrivateConstructorForUtilityClass",
+    "MustBeClosedChecker",
+    "unchecked"
+  })
   public static class ExecuteAdvice {
     @Nullable
     @Advice.OnMethodEnter(suppress = Throwable.class)
@@ -56,8 +63,10 @@ class InvocationInstrumentation implements TypeInstrumentation {
               .getTextMapPropagator()
               .extract(Context.root(), traceContext, GETTER);
       SpanContext spanContext = Span.fromContext(extractedContext).getSpanContext();
-
-      return Context.current().with(Span.wrap(spanContext)).makeCurrent();
+      return Context.current()
+          .with(Span.wrap(spanContext))
+          .with(generateCustomDimensions(request, traceContext))
+          .makeCurrent();
     }
 
     @Advice.OnMethodExit(onThrowable = Throwable.class, suppress = Throwable.class)
@@ -65,6 +74,22 @@ class InvocationInstrumentation implements TypeInstrumentation {
       if (scope != null) {
         scope.close();
       }
+    }
+
+    private static AzureFunctionsCustomDimensions generateCustomDimensions(
+        Object request, Object traceContext) throws ReflectiveOperationException {
+      String invocationId =
+          (String) InvocationRequestExtractAdapter.getInvocationId.invoke(request);
+      Map<String, String> attributesMap =
+          (Map<String, String>)
+              InvocationRequestExtractAdapter.getAttributesMap.invoke(traceContext);
+      return new AzureFunctionsCustomDimensions(
+          invocationId,
+          attributesMap.get("ProcessId"),
+          attributesMap.get("LogLevel"),
+          attributesMap.get("Category"),
+          attributesMap.get("HostInstanceId"),
+          attributesMap.get("#AzFuncLiveLogsSessionId"));
     }
   }
 }

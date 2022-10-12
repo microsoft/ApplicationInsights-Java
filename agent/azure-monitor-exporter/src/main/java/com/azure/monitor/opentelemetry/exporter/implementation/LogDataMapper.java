@@ -138,6 +138,9 @@ public class LogDataMapper {
 
   private static void setExtraAttributes(
       AbstractTelemetryBuilder telemetryBuilder, Attributes attributes) {
+    if ("java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME"))) {
+      setFunctionExtraAttributes(telemetryBuilder, attributes);
+    }
     attributes.forEach(
         (attributeKey, value) -> {
           String key = attributeKey.getKey();
@@ -194,6 +197,35 @@ public class LogDataMapper {
             telemetryBuilder.addProperty(attributeKey.getKey(), val);
           }
         });
+  }
+
+  private static void setFunctionExtraAttributes(
+      AbstractTelemetryBuilder telemetryBuilder, Attributes attributes) {
+    String invocationId = attributes.get(AiSemanticAttributes.AZ_FN_INVOCATION_ID);
+    if (invocationId != null) {
+      telemetryBuilder.addProperty(
+          "InvocationId", attributes.get(AiSemanticAttributes.AZ_FN_INVOCATION_ID));
+    }
+    String processId = attributes.get(AiSemanticAttributes.AZ_FN_PROCESS_ID);
+    if (processId != null) {
+      telemetryBuilder.addProperty("ProcessId", processId);
+    }
+    String logLevel = attributes.get(AiSemanticAttributes.AZ_FN_LOG_LEVEL);
+    if (logLevel != null) {
+      telemetryBuilder.addProperty("LogLevel", logLevel);
+    }
+    String category = attributes.get(AiSemanticAttributes.AZ_FN_CATEGORY);
+    if (category != null) {
+      telemetryBuilder.addProperty("Category", category);
+    }
+    String hostInstanceId = attributes.get(AiSemanticAttributes.AZ_FN_HOST_INSTANCE_ID);
+    if (hostInstanceId != null) {
+      telemetryBuilder.addProperty("HostInstanceId", hostInstanceId);
+    }
+    String liveLogsSessionId = attributes.get(AiSemanticAttributes.AZ_FN_LIVE_LOGS_SESSION_ID);
+    if (liveLogsSessionId != null) {
+      telemetryBuilder.addProperty("#AzFuncLiveLogsSessionId", liveLogsSessionId);
+    }
   }
 
   private void setLoggerProperties(
