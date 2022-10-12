@@ -19,7 +19,7 @@ public final class AzureFunctionsLogProcessor implements LogProcessor {
     AzureFunctionsCustomDimensions customDimensions =
         AzureFunctionsCustomDimensions.fromContext(Context.current());
     if (customDimensions == null) {
-      logger.warning("'ai-functions-custom-dimensions' is missing from the context");
+      logger.verbose("'ai-functions-custom-dimensions' is missing from the context");
       return;
     }
     if (customDimensions.invocationId != null) {
