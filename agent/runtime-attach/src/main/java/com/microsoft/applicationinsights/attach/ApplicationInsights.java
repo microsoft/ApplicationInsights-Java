@@ -17,8 +17,12 @@ import java.util.stream.Collectors;
 /** This class allows you to attach the Application Insights agent for Java at runtime. */
 public final class ApplicationInsights {
 
+  /**
+   * This property allows configuring an Application Insights json file. It can be helpful to get an
+   * Application Insights json file by Spring profile.
+   */
   public static final String APPLICATIONINSIGHTS_RUNTIME_ATTACH_CONFIGURATION_FILE =
-      "applicationinsights.runtime-attach.classpath.file";
+      "applicationinsights.runtime-attach.configuration.classpath.file";
 
   private static final Logger logger = Logger.getLogger(ApplicationInsights.class.getName());
 
@@ -105,9 +109,7 @@ public final class ApplicationInsights {
   }
 
   private static boolean isJsonFileConfiguredWithProperty() {
-    String fileFromProperty =
-        System.getProperty(APPLICATIONINSIGHTS_RUNTIME_ATTACH_CONFIGURATION_FILE);
-    return fileFromProperty != null;
+    return System.getProperty(APPLICATIONINSIGHTS_RUNTIME_ATTACH_CONFIGURATION_FILE) != null;
   }
 
   private static boolean agentIsAttached() {
