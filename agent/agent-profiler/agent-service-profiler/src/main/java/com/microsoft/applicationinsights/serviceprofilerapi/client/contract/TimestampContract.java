@@ -24,6 +24,8 @@ public final class TimestampContract {
   private static final DateTimeFormatter FORMATTER =
       DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.nX");
 
+  private static final Pattern TIMESTAMP_PATTERN = Pattern.compile(".*\\.([0-9]+)Z$");
+
   public static String timestampToString(OffsetDateTime timestamp) {
     // This will give you an ISO 8601 compliant format and the use of UTC will
     // ensure that there are no issues with time zones etc.
@@ -49,7 +51,7 @@ public final class TimestampContract {
 
   public static String padNanos(String timestamp) {
     // ensure that timestamp has 7 nano figures
-    Matcher matcher = Pattern.compile(".*\\.([0-9]+)Z$").matcher(timestamp);
+    Matcher matcher = TIMESTAMP_PATTERN.matcher(timestamp);
     if (matcher.matches()) {
       int currentFigures = matcher.group(1).length();
       int pad = 7 - currentFigures;
