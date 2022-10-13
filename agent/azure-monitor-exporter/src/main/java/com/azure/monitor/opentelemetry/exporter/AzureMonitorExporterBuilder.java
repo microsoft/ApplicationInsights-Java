@@ -35,7 +35,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.Telemetr
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipelineListener;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.TempDirs;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.VersionGenerator;
-import io.opentelemetry.sdk.logs.export.LogExporter;
+import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
@@ -247,15 +247,15 @@ public final class AzureMonitorExporterBuilder {
   }
 
   /**
-   * Creates an {@link AzureMonitorLogExporter} based on the options set in the builder. This
-   * exporter is an implementation of OpenTelemetry {@link LogExporter}.
+   * Creates an {@link AzureMonitorLogRecordExporter} based on the options set in the builder. This
+   * exporter is an implementation of OpenTelemetry {@link LogRecordExporter}.
    *
-   * @return An instance of {@link AzureMonitorLogExporter}.
+   * @return An instance of {@link AzureMonitorLogRecordExporter}.
    * @throws NullPointerException if the connection string is not set on this builder or if the
    *     environment variable "APPLICATIONINSIGHTS_CONNECTION_STRING" is not set.
    */
-  public LogExporter buildLogExporter() {
-    return new AzureMonitorLogExporter(
+  public LogRecordExporter buildLogExporter() {
+    return new AzureMonitorLogRecordExporter(
         new LogDataMapper(true, this::populateDefaults), initExporterBuilder());
   }
 

@@ -13,7 +13,7 @@ import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.Diagnostics
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.status.StatusFile;
 import com.microsoft.applicationinsights.agent.internal.common.FriendlyException;
 import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.sdk.logs.data.Severity;
+import io.opentelemetry.api.logs.Severity;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;

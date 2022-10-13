@@ -13,9 +13,9 @@ import com.azure.monitor.opentelemetry.exporter.implementation.models.SeverityLe
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedTime;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.SpanContext;
-import io.opentelemetry.sdk.logs.data.LogData;
-import io.opentelemetry.sdk.logs.data.Severity;
+import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.function.BiConsumer;
 import reactor.util.annotation.Nullable;
@@ -34,7 +34,7 @@ public class LogDataMapper {
     this.telemetryInitializer = telemetryInitializer;
   }
 
-  public TelemetryItem map(LogData log, @Nullable String stack, @Nullable Long itemCount) {
+  public TelemetryItem map(LogRecordData log, @Nullable String stack, @Nullable Long itemCount) {
     if (stack == null) {
       return createMessageTelemetryItem(log, itemCount);
     } else {
@@ -42,7 +42,7 @@ public class LogDataMapper {
     }
   }
 
-  private TelemetryItem createMessageTelemetryItem(LogData log, @Nullable Long itemCount) {
+  private TelemetryItem createMessageTelemetryItem(LogRecordData log, @Nullable Long itemCount) {
     MessageTelemetryBuilder telemetryBuilder = MessageTelemetryBuilder.create();
     telemetryInitializer.accept(telemetryBuilder, log.getResource());
 
@@ -69,7 +69,7 @@ public class LogDataMapper {
   }
 
   private TelemetryItem createExceptionTelemetryItem(
-      LogData log, @Nullable Long itemCount, String stack) {
+      LogRecordData log, @Nullable Long itemCount, String stack) {
     ExceptionTelemetryBuilder telemetryBuilder = ExceptionTelemetryBuilder.create();
     telemetryInitializer.accept(telemetryBuilder, log.getResource());
 
@@ -99,7 +99,8 @@ public class LogDataMapper {
     return telemetryBuilder.build();
   }
 
-  private static void setOperationTags(AbstractTelemetryBuilder telemetryBuilder, LogData log) {
+  private static void setOperationTags(
+      AbstractTelemetryBuilder telemetryBuilder, LogRecordData log) {
     SpanContext spanContext = log.getSpanContext();
     if (spanContext.isValid()) {
       telemetryBuilder.addTag(ContextTagKeys.AI_OPERATION_ID.toString(), spanContext.getTraceId());
@@ -122,7 +123,7 @@ public class LogDataMapper {
   }
 
   private static void setItemCount(
-      AbstractTelemetryBuilder telemetryBuilder, LogData log, @Nullable Long itemCount) {
+      AbstractTelemetryBuilder telemetryBuilder, LogRecordData log, @Nullable Long itemCount) {
     if (itemCount == null) {
       itemCount = log.getAttributes().get(AiSemanticAttributes.ITEM_COUNT);
     }

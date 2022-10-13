@@ -4,22 +4,22 @@
 package com.microsoft.applicationinsights.agent.internal.processors;
 
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.logs.data.LogData;
-import io.opentelemetry.sdk.logs.export.LogExporter;
+import io.opentelemetry.sdk.logs.data.LogRecordData;
+import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public class MockLoggerExporter implements LogExporter {
+public class MockLoggerExporter implements LogRecordExporter {
 
-  private final List<LogData> logs = new ArrayList<>();
+  private final List<LogRecordData> logs = new ArrayList<>();
 
-  public List<LogData> getLogs() {
+  public List<LogRecordData> getLogs() {
     return logs;
   }
 
   @Override
-  public CompletableResultCode export(Collection<LogData> logs) {
+  public CompletableResultCode export(Collection<LogRecordData> logs) {
     this.logs.addAll(logs);
     return CompletableResultCode.ofSuccess();
   }
