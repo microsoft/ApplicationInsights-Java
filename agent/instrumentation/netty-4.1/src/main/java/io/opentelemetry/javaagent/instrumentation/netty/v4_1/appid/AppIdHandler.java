@@ -9,7 +9,7 @@ import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.http.HttpResponse;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.javaagent.instrumentation.netty.v4_1.AttributeKeys;
+import io.opentelemetry.instrumentation.netty.v4_1.internal.AttributeKeys;
 
 public class AppIdHandler extends ChannelOutboundHandlerAdapter {
   @Override
