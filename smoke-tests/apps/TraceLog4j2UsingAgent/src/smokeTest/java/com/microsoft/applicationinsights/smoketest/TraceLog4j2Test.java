@@ -58,7 +58,7 @@ abstract class TraceLog4j2Test {
     logs.sort(Comparator.comparing(MessageData::getSeverityLevel));
 
     MessageData md1 = logs.get(0);
-    // MessageData md2 = logs.get(1);
+    MessageData md2 = logs.get(1);
     MessageData md3 = logs.get(2);
     MessageData md4 = logs.get(3);
 
@@ -70,7 +70,7 @@ abstract class TraceLog4j2Test {
     assertThat(md1.getProperties()).containsEntry("MDC key", "MDC value");
     assertThat(md1.getProperties()).hasSize(4);
 
-    // assertThat(md2.getProperties()).containsEntry("Marker", "aMarker");
+    assertThat(md2.getProperties()).containsEntry("Marker", "aMarker");
 
     assertThat(md3.getMessage()).isEqualTo("This is log4j2 error.");
     assertThat(md3.getSeverityLevel()).isEqualTo(SeverityLevel.ERROR);
