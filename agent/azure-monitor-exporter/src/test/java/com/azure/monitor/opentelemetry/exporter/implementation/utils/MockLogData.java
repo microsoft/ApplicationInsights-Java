@@ -70,6 +70,6 @@ public class MockLogData implements LogRecordData {
 
   @Override
   public int getTotalAttributeCount() {
-    return 0;
+    return getAttributes().size();
   }
 }
