@@ -1,3 +1,7 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+// Includes work from:
 /*
  * Copyright The OpenTelemetry Authors
  * SPDX-License-Identifier: Apache-2.0
@@ -1140,13 +1144,9 @@ public final class SemanticAttributes {
     public static final String INPROC = "inproc";
     /** Something else (non IP-based). */
     public static final String OTHER = "other";
-    /**
-     * @deprecated This item has been removed as of 1.13.0 of the semantic conventions.
-     */
+    /** @deprecated This item has been removed as of 1.13.0 of the semantic conventions. */
     @Deprecated public static final String IP = "ip";
-    /**
-     * @deprecated This item has been removed as of 1.13.0 of the semantic conventions.
-     */
+    /** @deprecated This item has been removed as of 1.13.0 of the semantic conventions. */
     @Deprecated public static final String UNIX = "unix";
 
     private NetTransportValues() {}
@@ -1414,14 +1414,10 @@ public final class SemanticAttributes {
    */
   @Deprecated public static final AttributeKey<String> HTTP_HOST = stringKey("http.host");
 
-  /**
-   * @deprecated This item has been removed as of 1.13.0 of the semantic conventions.
-   */
+  /** @deprecated This item has been removed as of 1.13.0 of the semantic conventions. */
   @Deprecated public static final AttributeKey<String> NET_PEER_IP = stringKey("net.peer.ip");
 
-  /**
-   * @deprecated This item has been removed as of 1.13.0 of the semantic conventions.
-   */
+  /** @deprecated This item has been removed as of 1.13.0 of the semantic conventions. */
   @Deprecated public static final AttributeKey<String> NET_HOST_IP = stringKey("net.host.ip");
 
   private SemanticAttributes() {}
