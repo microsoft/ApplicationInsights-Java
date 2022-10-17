@@ -1,0 +1,12 @@
+{
+  "role": {
+    "name": "testrolename",
+    "instance": "testroleinstance"
+  },
+  "sampling": {
+    "percentage": 100
+  },
+  "selfDiagnostics": {
+    "level": "debug"
+  }
+}

@@ -604,7 +604,10 @@ public final class SpanDataMapper {
     }
     String host = attributes.get(SemanticAttributes.NET_HOST_NAME);
     if (host == null) {
-      return null;
+      host = attributes.get(SemanticAttributes.NET_SOCK_HOST_ADDR);
+      if (host == null) {
+        return null;
+      }
     }
     Long port = attributes.get(SemanticAttributes.NET_HOST_PORT);
     String target = attributes.get(SemanticAttributes.HTTP_TARGET);
