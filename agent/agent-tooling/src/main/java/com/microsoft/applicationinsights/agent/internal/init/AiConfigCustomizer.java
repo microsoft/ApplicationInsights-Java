@@ -256,11 +256,11 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
       properties.put(
           "otel.instrumentation.logback-appender.experimental.capture-code-attributes", "true");
     }
-    if (config.preview.captureLogbackMarkerAttribute) {
+    if (config.preview.captureLogbackMarker) {
       properties.put(
           "otel.instrumentation.logback-appender.experimental.capture-marker-attribute", "true");
     }
-    if (config.preview.captureLog4jMarkerAttribute) {
+    if (config.preview.captureLog4jMarker) {
       properties.put(
           "otel.instrumentation.log4j-appender.experimental.capture-marker-attribute", "true");
     }
