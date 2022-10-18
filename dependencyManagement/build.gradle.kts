@@ -45,7 +45,7 @@ val CORE_DEPENDENCIES = listOf(
   "org.openjdk.jmh:jmh-core:1.35",
   "org.openjdk.jmh:jmh-generator-bytecode:1.35",
   "org.mockito:mockito-core:4.8.0",
-  "org.mockito:mockito-junit-jupiter:4.8.0",
+  "org.mockito:mockito-junit-jupiter:4.8.1",
   "org.mockito:mockito-inline:4.8.0",
   // moving to 2.0 is problematic because the SPI mechanism in 2.0 doesn't work in the
   // bootstrap class loader because, while we add the agent jar to the bootstrap class loader
