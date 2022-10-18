@@ -35,7 +35,7 @@ abstract class RateLimitedSamplingTest {
 
     // average response time of 10 ms, times 1000 requests, equals 10 seconds
     // so ideally with rate of 0.5 requests per second we would get 5 requests
-    assertThat(rdEnvelopes.size()).isLessThan(20);
+    assertThat(rdEnvelopes.size()).isLessThan(25);
   }
 
   @Environment(TOMCAT_8_JAVA_8)
