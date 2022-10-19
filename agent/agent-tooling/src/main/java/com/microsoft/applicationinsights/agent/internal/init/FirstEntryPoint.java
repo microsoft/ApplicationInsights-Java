@@ -101,6 +101,7 @@ public class FirstEntryPoint implements LoggingCustomizer {
       }
 
       if (startupLogger.isDebugEnabled()) {
+        startupLogger.debug("OS: " + System.getProperty("os.name"));
         startupLogger.debug("Classpath: " + System.getProperty("java.class.path"));
         startupLogger.debug(
             "Input arguments: " + ManagementFactory.getRuntimeMXBean().getInputArguments());
