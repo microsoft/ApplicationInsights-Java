@@ -9,6 +9,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.MarkerManager;
 import org.apache.logging.log4j.ThreadContext;
 
 @WebServlet("/traceLog4j2")
@@ -22,6 +23,7 @@ public class SimpleTestTraceLog4j2Servlet extends HttpServlet {
     logger.info("This is log4j2 info.");
     ThreadContext.put("MDC key", "MDC value");
     logger.warn("This is log4j2 warn.");
+    logger.warn(MarkerManager.getMarker("aMarker"), "Warn with marker");
     ThreadContext.remove("MDC key");
     logger.error("This is log4j2 error.");
     logger.fatal("This is log4j2 fatal.");

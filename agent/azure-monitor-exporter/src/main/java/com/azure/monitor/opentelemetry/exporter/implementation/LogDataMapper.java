@@ -12,6 +12,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTag
 import com.azure.monitor.opentelemetry.exporter.implementation.models.SeverityLevel;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedTime;
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.SpanContext;
@@ -26,6 +27,12 @@ public class LogDataMapper {
 
   private final boolean captureLoggingLevelAsCustomDimension;
   private final BiConsumer<AbstractTelemetryBuilder, Resource> telemetryInitializer;
+
+  private static final AttributeKey<String> OTEL_LOG4J_MARKER =
+      AttributeKey.stringKey("log4j.marker");
+
+  private static final AttributeKey<String> OTEL_LOGBACK_MARKER =
+      AttributeKey.stringKey("logback.marker");
 
   public LogDataMapper(
       boolean captureLoggingLevelAsCustomDimension,
@@ -169,6 +176,10 @@ public class LogDataMapper {
           }
           if (SemanticAttributes.CODE_LINENO.getKey().equals(key)) {
             telemetryBuilder.addProperty("LineNumber", String.valueOf(value));
+            return;
+          }
+          if (OTEL_LOG4J_MARKER.getKey().equals(key) || OTEL_LOGBACK_MARKER.getKey().equals(key)) {
+            telemetryBuilder.addProperty("Marker", String.valueOf(value));
             return;
           }
           if (key.startsWith(JBOSS_LOGGING_MDC_PREFIX)) {

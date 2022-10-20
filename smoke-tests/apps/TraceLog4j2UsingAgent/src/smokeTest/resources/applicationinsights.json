@@ -10,5 +10,8 @@
     "logging": {
       "level": "warn"
     }
+  },
+  "preview": {
+    "captureLog4jMarker": true
   }
 }
