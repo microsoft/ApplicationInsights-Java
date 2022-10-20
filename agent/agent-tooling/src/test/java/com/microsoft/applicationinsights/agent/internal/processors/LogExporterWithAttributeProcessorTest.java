@@ -19,9 +19,9 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.logs.data.Body;
-import io.opentelemetry.sdk.logs.data.LogData;
-import io.opentelemetry.sdk.logs.export.LogExporter;
+import io.opentelemetry.sdk.logs.data.LogRecordData;
+import io.opentelemetry.sdk.logs.export.LogRecordExporter;
+import io.opentelemetry.sdk.testing.logs.TestLogRecordData;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
@@ -91,7 +91,8 @@ class LogExporterWithAttributeProcessorTest {
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
-    LogExporter exampleExporter = new LogExporterWithAttributeProcessor(config, mockLoggerExporter);
+    LogRecordExporter exampleExporter =
+        new LogExporterWithAttributeProcessor(config, mockLoggerExporter);
 
     Attributes attributes =
         Attributes.builder()
@@ -102,16 +103,16 @@ class LogExporterWithAttributeProcessorTest {
             .put("id", "1234")
             .build();
 
-    TestLogData mockLog =
-        TestLogData.builder().setBody(Body.string("my log")).setAttributes(attributes).build();
+    TestLogRecordData mockLog =
+        TestLogRecordData.builder().setBody("my log").setAttributes(attributes).build();
 
-    List<LogData> logs = new ArrayList<>();
+    List<LogRecordData> logs = new ArrayList<>();
     logs.add(mockLog);
     exampleExporter.export(logs);
 
     // verify that resulting logs are filtered in the way we want
-    List<LogData> result = mockLoggerExporter.getLogs();
-    LogData resultLog = result.get(0);
+    List<LogRecordData> result = mockLoggerExporter.getLogs();
+    LogRecordData resultLog = result.get(0);
 
     assertThat(resultLog.getAttributes().get(AttributeKey.stringKey("testKey"))).isNull();
     assertThat(resultLog.getAttributes().get(AttributeKey.stringKey("one"))).isNotNull();
@@ -128,7 +129,8 @@ class LogExporterWithAttributeProcessorTest {
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
-    LogExporter exampleExporter = new LogExporterWithAttributeProcessor(config, mockLoggerExporter);
+    LogRecordExporter exampleExporter =
+        new LogExporterWithAttributeProcessor(config, mockLoggerExporter);
 
     Attributes attributes =
         Attributes.builder()
@@ -138,16 +140,16 @@ class LogExporterWithAttributeProcessorTest {
             .put("TESTKEY", "testValue2")
             .build();
 
-    TestLogData mockLog =
-        TestLogData.builder().setBody(Body.string("my log")).setAttributes(attributes).build();
+    TestLogRecordData mockLog =
+        TestLogRecordData.builder().setBody("my log").setAttributes(attributes).build();
 
-    List<LogData> logs = new ArrayList<>();
+    List<LogRecordData> logs = new ArrayList<>();
     logs.add(mockLog);
     exampleExporter.export(logs);
 
     // verify that resulting logs are filtered in the way we want
-    List<LogData> result = mockLoggerExporter.getLogs();
-    LogData resultLog = result.get(0);
+    List<LogRecordData> result = mockLoggerExporter.getLogs();
+    LogRecordData resultLog = result.get(0);
     assertThat(resultLog.getAttributes().get(AttributeKey.stringKey("testNewKey"))).isNotNull();
     assertThat(resultLog.getAttributes().get(AttributeKey.stringKey("testNewKey")))
         .isEqualTo("testNewValue");
@@ -166,7 +168,8 @@ class LogExporterWithAttributeProcessorTest {
     actions.add(action);
     actions.add(updateAction);
     config.actions = actions;
-    LogExporter exampleExporter = new LogExporterWithAttributeProcessor(config, mockLoggerExporter);
+    LogRecordExporter exampleExporter =
+        new LogExporterWithAttributeProcessor(config, mockLoggerExporter);
 
     Attributes attributes =
         Attributes.builder()
@@ -176,16 +179,16 @@ class LogExporterWithAttributeProcessorTest {
             .put("TESTKEY", "testValue2")
             .build();
 
-    TestLogData mockLog =
-        TestLogData.builder().setBody(Body.string("my log")).setAttributes(attributes).build();
+    TestLogRecordData mockLog =
+        TestLogRecordData.builder().setBody("my log").setAttributes(attributes).build();
 
-    List<LogData> logs = new ArrayList<>();
+    List<LogRecordData> logs = new ArrayList<>();
     logs.add(mockLog);
     exampleExporter.export(logs);
 
     // verify that resulting logs are filtered in the way we want
-    List<LogData> result = mockLoggerExporter.getLogs();
-    LogData resultLog = result.get(0);
+    List<LogRecordData> result = mockLoggerExporter.getLogs();
+    LogRecordData resultLog = result.get(0);
     assertThat(resultLog.getAttributes().get(AttributeKey.stringKey("testNewKey"))).isNotNull();
     assertThat(resultLog.getAttributes().get(AttributeKey.stringKey("testNewKey")))
         .isEqualTo("testNewValue");
@@ -206,7 +209,8 @@ class LogExporterWithAttributeProcessorTest {
     actions.add(action);
     actions.add(updateAction);
     config.actions = actions;
-    LogExporter exampleExporter = new LogExporterWithAttributeProcessor(config, mockLoggerExporter);
+    LogRecordExporter exampleExporter =
+        new LogExporterWithAttributeProcessor(config, mockLoggerExporter);
 
     Attributes attributes =
         Attributes.builder()
@@ -215,16 +219,16 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey", "testValue")
             .put("TESTKEY", "testValue2")
             .build();
-    TestLogData log =
-        TestLogData.builder().setBody(Body.string("my log")).setAttributes(attributes).build();
+    TestLogRecordData log =
+        TestLogRecordData.builder().setBody("my log").setAttributes(attributes).build();
 
-    List<LogData> logs = new ArrayList<>();
+    List<LogRecordData> logs = new ArrayList<>();
     logs.add(log);
     exampleExporter.export(logs);
 
     // verify that resulting logs are filtered in the way we want
-    List<LogData> result = mockLoggerExporter.getLogs();
-    LogData resultLog = result.get(0);
+    List<LogRecordData> result = mockLoggerExporter.getLogs();
+    LogRecordData resultLog = result.get(0);
     assertThat(resultLog.getAttributes().get(AttributeKey.stringKey("testNewKey"))).isNotNull();
     assertThat(resultLog.getAttributes().get(AttributeKey.stringKey("testNewKey")))
         .isEqualTo("testNewValue2");
@@ -239,7 +243,8 @@ class LogExporterWithAttributeProcessorTest {
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
-    LogExporter exampleExporter = new LogExporterWithAttributeProcessor(config, mockLoggerExporter);
+    LogRecordExporter exampleExporter =
+        new LogExporterWithAttributeProcessor(config, mockLoggerExporter);
 
     Attributes attributes =
         Attributes.builder()
@@ -248,16 +253,16 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey", "testValue")
             .put("TESTKEY", "testValue2")
             .build();
-    TestLogData log =
-        TestLogData.builder().setBody(Body.string("my log")).setAttributes(attributes).build();
+    TestLogRecordData log =
+        TestLogRecordData.builder().setBody("my log").setAttributes(attributes).build();
 
-    List<LogData> logs = new ArrayList<>();
+    List<LogRecordData> logs = new ArrayList<>();
     logs.add(log);
     exampleExporter.export(logs);
 
     // verify that resulting logs are filtered in the way we want
-    List<LogData> result = mockLoggerExporter.getLogs();
-    LogData resultLog = result.get(0);
+    List<LogRecordData> result = mockLoggerExporter.getLogs();
+    LogRecordData resultLog = result.get(0);
     assertThat(resultLog.getAttributes().get(AttributeKey.stringKey("testKey")))
         .isEqualTo("testValue");
     assertThat(resultLog.getAttributes().get(AttributeKey.stringKey("testKey")))
@@ -273,7 +278,8 @@ class LogExporterWithAttributeProcessorTest {
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
-    LogExporter exampleExporter = new LogExporterWithAttributeProcessor(config, mockLoggerExporter);
+    LogRecordExporter exampleExporter =
+        new LogExporterWithAttributeProcessor(config, mockLoggerExporter);
 
     Attributes attributes =
         Attributes.builder()
@@ -283,16 +289,16 @@ class LogExporterWithAttributeProcessorTest {
             .put("TESTKEY", "testValue2")
             .put("testKey2", "testValue2")
             .build();
-    TestLogData log =
-        TestLogData.builder().setBody(Body.string("my log")).setAttributes(attributes).build();
+    TestLogRecordData log =
+        TestLogRecordData.builder().setBody("my log").setAttributes(attributes).build();
 
-    List<LogData> logs = new ArrayList<>();
+    List<LogRecordData> logs = new ArrayList<>();
     logs.add(log);
     exampleExporter.export(logs);
 
     // verify that resulting logs are filtered in the way we want
-    List<LogData> result = mockLoggerExporter.getLogs();
-    LogData resultLog = result.get(0);
+    List<LogRecordData> result = mockLoggerExporter.getLogs();
+    LogRecordData resultLog = result.get(0);
     assertThat(resultLog.getAttributes().get(AttributeKey.stringKey("testKey")))
         .isEqualTo("testValue");
     assertThat(resultLog.getAttributes().get(AttributeKey.stringKey("testKey3")))
@@ -308,7 +314,8 @@ class LogExporterWithAttributeProcessorTest {
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
-    LogExporter logExporter = new LogExporterWithAttributeProcessor(config, mockLoggerExporter);
+    LogRecordExporter logExporter =
+        new LogExporterWithAttributeProcessor(config, mockLoggerExporter);
 
     // set up log
     Attributes attributes =
@@ -318,8 +325,8 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey", "testValue")
             .put("TESTKEY", "testValue2")
             .build();
-    TestLogData log =
-        TestLogData.builder().setBody(Body.string("my log")).setAttributes(attributes).build();
+    TestLogRecordData log =
+        TestLogRecordData.builder().setBody("my log").setAttributes(attributes).build();
 
     // set up span
     Span span =
@@ -334,7 +341,7 @@ class LogExporterWithAttributeProcessorTest {
             .startSpan();
 
     // export log
-    List<LogData> logs = new ArrayList<>();
+    List<LogRecordData> logs = new ArrayList<>();
     logs.add(log);
     logExporter.export(logs);
 
@@ -346,8 +353,8 @@ class LogExporterWithAttributeProcessorTest {
     spanExporter.export(spans);
 
     // retrieve updated log
-    List<LogData> resultLogs = mockLoggerExporter.getLogs();
-    LogData resultLog = resultLogs.get(0);
+    List<LogRecordData> resultLogs = mockLoggerExporter.getLogs();
+    LogRecordData resultLog = resultLogs.get(0);
 
     // retrieve updated span
     List<SpanData> resultSpans = mockSpanExporter.getSpans();
@@ -368,7 +375,8 @@ class LogExporterWithAttributeProcessorTest {
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
-    LogExporter exampleExporter = new LogExporterWithAttributeProcessor(config, mockLoggerExporter);
+    LogRecordExporter exampleExporter =
+        new LogExporterWithAttributeProcessor(config, mockLoggerExporter);
 
     Attributes attributes =
         Attributes.builder()
@@ -377,16 +385,16 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey", "testValue")
             .put("testKey2", "testValue2")
             .build();
-    TestLogData log =
-        TestLogData.builder().setBody(Body.string("my log")).setAttributes(attributes).build();
+    TestLogRecordData log =
+        TestLogRecordData.builder().setBody("my log").setAttributes(attributes).build();
 
-    List<LogData> logs = new ArrayList<>();
+    List<LogRecordData> logs = new ArrayList<>();
     logs.add(log);
     exampleExporter.export(logs);
 
     // verify that resulting logs are filtered in the way we want
-    List<LogData> result = mockLoggerExporter.getLogs();
-    LogData resultLog = result.get(0);
+    List<LogRecordData> result = mockLoggerExporter.getLogs();
+    LogRecordData resultLog = result.get(0);
     assertThat(resultLog.getAttributes().get(AttributeKey.stringKey("testKey")))
         .isEqualTo("testValue2");
   }
@@ -402,7 +410,8 @@ class LogExporterWithAttributeProcessorTest {
     actions.add(updateAction);
     actions.add(deleteAction);
     config.actions = actions;
-    LogExporter exampleExporter = new LogExporterWithAttributeProcessor(config, mockLoggerExporter);
+    LogRecordExporter exampleExporter =
+        new LogExporterWithAttributeProcessor(config, mockLoggerExporter);
 
     Attributes attributes =
         Attributes.builder()
@@ -411,16 +420,16 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey", "testValue")
             .put("testKey2", "testValue2")
             .build();
-    TestLogData log =
-        TestLogData.builder().setBody(Body.string("my log")).setAttributes(attributes).build();
+    TestLogRecordData log =
+        TestLogRecordData.builder().setBody("my log").setAttributes(attributes).build();
 
-    List<LogData> logs = new ArrayList<>();
+    List<LogRecordData> logs = new ArrayList<>();
     logs.add(log);
     exampleExporter.export(logs);
 
     // verify that resulting logs are filtered in the way we want
-    List<LogData> result = mockLoggerExporter.getLogs();
-    LogData resultLog = result.get(0);
+    List<LogRecordData> result = mockLoggerExporter.getLogs();
+    LogRecordData resultLog = result.get(0);
     assertThat(resultLog.getAttributes().get(AttributeKey.stringKey("testKey")))
         .isEqualTo("redacted");
     assertThat(resultLog.getAttributes().get(AttributeKey.stringKey("testKey2"))).isNull();
@@ -437,7 +446,8 @@ class LogExporterWithAttributeProcessorTest {
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
-    LogExporter exampleExporter = new LogExporterWithAttributeProcessor(config, mockLoggerExporter);
+    LogRecordExporter exampleExporter =
+        new LogExporterWithAttributeProcessor(config, mockLoggerExporter);
 
     Attributes attributesA =
         Attributes.builder()
@@ -446,8 +456,8 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey", "testValue")
             .put("testKey2", "testValue2")
             .build();
-    TestLogData logA =
-        TestLogData.builder().setBody(Body.string("svcA")).setAttributes(attributesA).build();
+    TestLogRecordData logA =
+        TestLogRecordData.builder().setBody("svcA").setAttributes(attributesA).build();
 
     Attributes attributesB =
         Attributes.builder()
@@ -455,8 +465,8 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey", "testValue")
             .put("testKey2", "testValue2")
             .build();
-    TestLogData logB =
-        TestLogData.builder().setBody(Body.string("svcB")).setAttributes(attributesB).build();
+    TestLogRecordData logB =
+        TestLogRecordData.builder().setBody("svcB").setAttributes(attributesB).build();
 
     Attributes attributesC =
         Attributes.builder()
@@ -464,8 +474,8 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey", "testValue")
             .put("testKey2", "testValue2")
             .build();
-    TestLogData logC =
-        TestLogData.builder().setBody(Body.string("svcC")).setAttributes(attributesC).build();
+    TestLogRecordData logC =
+        TestLogRecordData.builder().setBody("svcC").setAttributes(attributesC).build();
 
     Attributes attributesD =
         Attributes.builder()
@@ -474,10 +484,10 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey", "testValue")
             .put("testKey2", "testValue2")
             .build();
-    TestLogData logD =
-        TestLogData.builder().setBody(Body.string("svcD")).setAttributes(attributesD).build();
+    TestLogRecordData logD =
+        TestLogRecordData.builder().setBody("svcD").setAttributes(attributesD).build();
 
-    List<LogData> logs = new ArrayList<>();
+    List<LogRecordData> logs = new ArrayList<>();
     logs.add(logA);
     logs.add(logB);
     logs.add(logC);
@@ -486,11 +496,11 @@ class LogExporterWithAttributeProcessorTest {
     exampleExporter.export(logs);
 
     // verify that resulting logs are filtered in the way we want
-    List<LogData> result = mockLoggerExporter.getLogs();
-    LogData result1 = result.get(0);
-    LogData result2 = result.get(1);
-    LogData result3 = result.get(2);
-    LogData result4 = result.get(3);
+    List<LogRecordData> result = mockLoggerExporter.getLogs();
+    LogRecordData result1 = result.get(0);
+    LogRecordData result2 = result.get(1);
+    LogRecordData result3 = result.get(2);
+    LogRecordData result4 = result.get(3);
 
     assertThat(result1.getAttributes().get(AttributeKey.stringKey("testKey")))
         .isEqualTo("redacted");
@@ -513,7 +523,8 @@ class LogExporterWithAttributeProcessorTest {
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
-    LogExporter exampleExporter = new LogExporterWithAttributeProcessor(config, mockLoggerExporter);
+    LogRecordExporter exampleExporter =
+        new LogExporterWithAttributeProcessor(config, mockLoggerExporter);
 
     Attributes attributesA =
         Attributes.builder()
@@ -522,8 +533,8 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey", "testValue")
             .put("testKey2", "testValue2")
             .build();
-    TestLogData logA =
-        TestLogData.builder().setBody(Body.string("svcA")).setAttributes(attributesA).build();
+    TestLogRecordData logA =
+        TestLogRecordData.builder().setBody("svcA").setAttributes(attributesA).build();
 
     Attributes attributesB =
         Attributes.builder()
@@ -531,8 +542,8 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey", "testValue")
             .put("testKey2", "testValue2")
             .build();
-    TestLogData logB =
-        TestLogData.builder().setBody(Body.string("svcB")).setAttributes(attributesB).build();
+    TestLogRecordData logB =
+        TestLogRecordData.builder().setBody("svcB").setAttributes(attributesB).build();
 
     Attributes attributesC =
         Attributes.builder()
@@ -540,8 +551,8 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey", "testValueC")
             .put("testKey2", "testValue2")
             .build();
-    TestLogData logC =
-        TestLogData.builder().setBody(Body.string("svcC")).setAttributes(attributesC).build();
+    TestLogRecordData logC =
+        TestLogRecordData.builder().setBody("svcC").setAttributes(attributesC).build();
 
     Attributes attributesD =
         Attributes.builder()
@@ -550,10 +561,10 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey", "testValueD")
             .put("testKey2", "testValue2")
             .build();
-    TestLogData logD =
-        TestLogData.builder().setBody(Body.string("svcD")).setAttributes(attributesD).build();
+    TestLogRecordData logD =
+        TestLogRecordData.builder().setBody("svcD").setAttributes(attributesD).build();
 
-    List<LogData> logs = new ArrayList<>();
+    List<LogRecordData> logs = new ArrayList<>();
     logs.add(logA);
     logs.add(logB);
     logs.add(logC);
@@ -562,11 +573,11 @@ class LogExporterWithAttributeProcessorTest {
     exampleExporter.export(logs);
 
     // verify that resulting logs are filtered in the way we want
-    List<LogData> result = mockLoggerExporter.getLogs();
-    LogData result1 = result.get(0);
-    LogData result2 = result.get(1);
-    LogData result3 = result.get(2);
-    LogData result4 = result.get(3);
+    List<LogRecordData> result = mockLoggerExporter.getLogs();
+    LogRecordData result1 = result.get(0);
+    LogRecordData result2 = result.get(1);
+    LogRecordData result3 = result.get(2);
+    LogRecordData result4 = result.get(3);
 
     assertThat(result1.getAttributes().get(AttributeKey.stringKey("testKey")))
         .isEqualTo("redacted");
@@ -589,7 +600,8 @@ class LogExporterWithAttributeProcessorTest {
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
-    LogExporter exampleExporter = new LogExporterWithAttributeProcessor(config, mockLoggerExporter);
+    LogRecordExporter exampleExporter =
+        new LogExporterWithAttributeProcessor(config, mockLoggerExporter);
 
     Attributes attributesA =
         Attributes.builder()
@@ -598,8 +610,8 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey", "testValue")
             .put("testKey2", "testValue2")
             .build();
-    TestLogData logA =
-        TestLogData.builder().setBody(Body.string("svcA")).setAttributes(attributesA).build();
+    TestLogRecordData logA =
+        TestLogRecordData.builder().setBody("svcA").setAttributes(attributesA).build();
 
     Attributes attributesB =
         Attributes.builder()
@@ -607,8 +619,8 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey", "testValue")
             .put("testKey2", "testValue2")
             .build();
-    TestLogData logB =
-        TestLogData.builder().setBody(Body.string("svcB")).setAttributes(attributesB).build();
+    TestLogRecordData logB =
+        TestLogRecordData.builder().setBody("svcB").setAttributes(attributesB).build();
 
     Attributes attributesC =
         Attributes.builder()
@@ -616,8 +628,8 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey", "testValueC")
             .put("testKey2", "testValue2")
             .build();
-    TestLogData logC =
-        TestLogData.builder().setBody(Body.string("serviceC")).setAttributes(attributesC).build();
+    TestLogRecordData logC =
+        TestLogRecordData.builder().setBody("serviceC").setAttributes(attributesC).build();
 
     Attributes attributesD =
         Attributes.builder()
@@ -626,10 +638,10 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey", "testValueD")
             .put("testKey2", "testValue2")
             .build();
-    TestLogData logD =
-        TestLogData.builder().setBody(Body.string("serviceD")).setAttributes(attributesD).build();
+    TestLogRecordData logD =
+        TestLogRecordData.builder().setBody("serviceD").setAttributes(attributesD).build();
 
-    List<LogData> logs = new ArrayList<>();
+    List<LogRecordData> logs = new ArrayList<>();
     logs.add(logA);
     logs.add(logB);
     logs.add(logC);
@@ -638,11 +650,11 @@ class LogExporterWithAttributeProcessorTest {
     exampleExporter.export(logs);
 
     // verify that resulting logs are filtered in the way we want
-    List<LogData> result = mockLoggerExporter.getLogs();
-    LogData result1 = result.get(0);
-    LogData result2 = result.get(1);
-    LogData result3 = result.get(2);
-    LogData result4 = result.get(3);
+    List<LogRecordData> result = mockLoggerExporter.getLogs();
+    LogRecordData result1 = result.get(0);
+    LogRecordData result2 = result.get(1);
+    LogRecordData result3 = result.get(2);
+    LogRecordData result4 = result.get(3);
 
     assertThat(result1.getAttributes().get(AttributeKey.stringKey("testKey")))
         .isEqualTo("redacted");
@@ -686,7 +698,8 @@ class LogExporterWithAttributeProcessorTest {
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
-    LogExporter exampleExporter = new LogExporterWithAttributeProcessor(config, mockLoggerExporter);
+    LogRecordExporter exampleExporter =
+        new LogExporterWithAttributeProcessor(config, mockLoggerExporter);
 
     Attributes attributesA =
         Attributes.builder()
@@ -695,8 +708,8 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey", "testValue")
             .put("testKey2", "testValue2")
             .build();
-    TestLogData logA =
-        TestLogData.builder().setBody(Body.string("svcA")).setAttributes(attributesA).build();
+    TestLogRecordData logA =
+        TestLogRecordData.builder().setBody("svcA").setAttributes(attributesA).build();
 
     Attributes attributesB =
         Attributes.builder()
@@ -704,8 +717,8 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey", "testValue")
             .put("testKey2", "testValue2")
             .build();
-    TestLogData logB =
-        TestLogData.builder().setBody(Body.string("svcB")).setAttributes(attributesB).build();
+    TestLogRecordData logB =
+        TestLogRecordData.builder().setBody("svcB").setAttributes(attributesB).build();
 
     Attributes attributesC =
         Attributes.builder()
@@ -713,8 +726,8 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey", "testValueC")
             .put("testKey2", "testValue2")
             .build();
-    TestLogData logC =
-        TestLogData.builder().setBody(Body.string("serviceC")).setAttributes(attributesC).build();
+    TestLogRecordData logC =
+        TestLogRecordData.builder().setBody("serviceC").setAttributes(attributesC).build();
 
     Attributes attributesD =
         Attributes.builder()
@@ -723,8 +736,8 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey", "testValueD")
             .put("testKey2", "testValue2")
             .build();
-    TestLogData logD =
-        TestLogData.builder().setBody(Body.string("serviceD")).setAttributes(attributesD).build();
+    TestLogRecordData logD =
+        TestLogRecordData.builder().setBody("serviceD").setAttributes(attributesD).build();
 
     Attributes attributesE =
         Attributes.builder()
@@ -733,10 +746,10 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey", "testV1")
             .put("testKey2", "testValue2")
             .build();
-    TestLogData logE =
-        TestLogData.builder().setBody(Body.string("svcE")).setAttributes(attributesE).build();
+    TestLogRecordData logE =
+        TestLogRecordData.builder().setBody("svcE").setAttributes(attributesE).build();
 
-    List<LogData> logs = new ArrayList<>();
+    List<LogRecordData> logs = new ArrayList<>();
     logs.add(logA);
     logs.add(logB);
     logs.add(logC);
@@ -746,12 +759,12 @@ class LogExporterWithAttributeProcessorTest {
     exampleExporter.export(logs);
 
     // verify that resulting logs are filtered in the way we want
-    List<LogData> result = mockLoggerExporter.getLogs();
-    LogData result1 = result.get(0);
-    LogData result2 = result.get(1);
-    LogData result3 = result.get(2);
-    LogData result4 = result.get(3);
-    LogData result5 = result.get(4);
+    List<LogRecordData> result = mockLoggerExporter.getLogs();
+    LogRecordData result1 = result.get(0);
+    LogRecordData result2 = result.get(1);
+    LogRecordData result3 = result.get(2);
+    LogRecordData result4 = result.get(3);
+    LogRecordData result5 = result.get(4);
 
     assertThat(result1.getAttributes().get(AttributeKey.stringKey("testKey")))
         .isEqualTo("redacted");
@@ -775,7 +788,8 @@ class LogExporterWithAttributeProcessorTest {
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
-    LogExporter exampleExporter = new LogExporterWithAttributeProcessor(config, mockLoggerExporter);
+    LogRecordExporter exampleExporter =
+        new LogExporterWithAttributeProcessor(config, mockLoggerExporter);
 
     Attributes attributesA =
         Attributes.builder()
@@ -784,8 +798,8 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey", "testValue")
             .put("testKey2", "testValue2")
             .build();
-    TestLogData logA =
-        TestLogData.builder().setBody(Body.string("svcA")).setAttributes(attributesA).build();
+    TestLogRecordData logA =
+        TestLogRecordData.builder().setBody("svcA").setAttributes(attributesA).build();
 
     Attributes attributesB =
         Attributes.builder()
@@ -793,8 +807,8 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey", "testValue")
             .put("testKey2", "testValue2")
             .build();
-    TestLogData logB =
-        TestLogData.builder().setBody(Body.string("svcB")).setAttributes(attributesB).build();
+    TestLogRecordData logB =
+        TestLogRecordData.builder().setBody("svcB").setAttributes(attributesB).build();
 
     Attributes attributesC =
         Attributes.builder()
@@ -802,8 +816,8 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey", "testValue")
             .put("testKey2", "testValue2")
             .build();
-    TestLogData logC =
-        TestLogData.builder().setBody(Body.string("svcC")).setAttributes(attributesC).build();
+    TestLogRecordData logC =
+        TestLogRecordData.builder().setBody("svcC").setAttributes(attributesC).build();
 
     Attributes attributesD =
         Attributes.builder()
@@ -812,10 +826,10 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey", "testValue")
             .put("testKey2", "testValue2")
             .build();
-    TestLogData logD =
-        TestLogData.builder().setBody(Body.string("svcD")).setAttributes(attributesD).build();
+    TestLogRecordData logD =
+        TestLogRecordData.builder().setBody("svcD").setAttributes(attributesD).build();
 
-    List<LogData> logs = new ArrayList<>();
+    List<LogRecordData> logs = new ArrayList<>();
     logs.add(logA);
     logs.add(logB);
     logs.add(logC);
@@ -824,11 +838,11 @@ class LogExporterWithAttributeProcessorTest {
     exampleExporter.export(logs);
 
     // verify that resulting logs are filtered in the way we want
-    List<LogData> result = mockLoggerExporter.getLogs();
-    LogData result1 = result.get(0);
-    LogData result2 = result.get(1);
-    LogData result3 = result.get(2);
-    LogData result4 = result.get(3);
+    List<LogRecordData> result = mockLoggerExporter.getLogs();
+    LogRecordData result1 = result.get(0);
+    LogRecordData result2 = result.get(1);
+    LogRecordData result3 = result.get(2);
+    LogRecordData result4 = result.get(3);
 
     assertThat(result1.getAttributes().get(AttributeKey.stringKey("testKey")))
         .isNotEqualTo("testValue");
@@ -851,7 +865,8 @@ class LogExporterWithAttributeProcessorTest {
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
-    LogExporter exampleExporter = new LogExporterWithAttributeProcessor(config, mockLoggerExporter);
+    LogRecordExporter exampleExporter =
+        new LogExporterWithAttributeProcessor(config, mockLoggerExporter);
 
     Attributes attributesA =
         Attributes.builder()
@@ -860,8 +875,8 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey", "testValue")
             .put("testKey2", "testValue2")
             .build();
-    TestLogData logA =
-        TestLogData.builder().setBody(Body.string("svcA")).setAttributes(attributesA).build();
+    TestLogRecordData logA =
+        TestLogRecordData.builder().setBody("svcA").setAttributes(attributesA).build();
 
     Attributes attributesB =
         Attributes.builder()
@@ -869,8 +884,8 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey", "testValue")
             .put("testKey2", "testValue2")
             .build();
-    TestLogData logB =
-        TestLogData.builder().setBody(Body.string("svcB")).setAttributes(attributesB).build();
+    TestLogRecordData logB =
+        TestLogRecordData.builder().setBody("svcB").setAttributes(attributesB).build();
 
     Attributes attributesC =
         Attributes.builder()
@@ -878,8 +893,8 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey", "testValue")
             .put("testKey2", "testValue2")
             .build();
-    TestLogData logC =
-        TestLogData.builder().setBody(Body.string("svcC")).setAttributes(attributesC).build();
+    TestLogRecordData logC =
+        TestLogRecordData.builder().setBody("svcC").setAttributes(attributesC).build();
 
     Attributes attributesD =
         Attributes.builder()
@@ -888,10 +903,10 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey", "testValue")
             .put("testKey2", "testValue2")
             .build();
-    TestLogData logD =
-        TestLogData.builder().setBody(Body.string("svcD")).setAttributes(attributesD).build();
+    TestLogRecordData logD =
+        TestLogRecordData.builder().setBody("svcD").setAttributes(attributesD).build();
 
-    List<LogData> logs = new ArrayList<>();
+    List<LogRecordData> logs = new ArrayList<>();
     logs.add(logA);
     logs.add(logB);
     logs.add(logC);
@@ -900,11 +915,11 @@ class LogExporterWithAttributeProcessorTest {
     exampleExporter.export(logs);
 
     // verify that resulting logs are filtered in the way we want
-    List<LogData> result = mockLoggerExporter.getLogs();
-    LogData result1 = result.get(0);
-    LogData result2 = result.get(1);
-    LogData result3 = result.get(2);
-    LogData result4 = result.get(3);
+    List<LogRecordData> result = mockLoggerExporter.getLogs();
+    LogRecordData result1 = result.get(0);
+    LogRecordData result2 = result.get(1);
+    LogRecordData result3 = result.get(2);
+    LogRecordData result4 = result.get(3);
 
     assertThat(result1.getAttributes().get(AttributeKey.stringKey("testKey")))
         .isEqualTo("testValue");
@@ -935,7 +950,8 @@ class LogExporterWithAttributeProcessorTest {
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
-    LogExporter exampleExporter = new LogExporterWithAttributeProcessor(config, mockLoggerExporter);
+    LogRecordExporter exampleExporter =
+        new LogExporterWithAttributeProcessor(config, mockLoggerExporter);
 
     Attributes attributesA =
         Attributes.builder()
@@ -944,8 +960,8 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey", "testValue")
             .put("testKey2", "testValue2")
             .build();
-    TestLogData logA =
-        TestLogData.builder().setBody(Body.string("svcA")).setAttributes(attributesA).build();
+    TestLogRecordData logA =
+        TestLogRecordData.builder().setBody("svcA").setAttributes(attributesA).build();
 
     Attributes attributesB =
         Attributes.builder()
@@ -953,8 +969,8 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey", "testValue")
             .put("testKey3", "testValue3")
             .build();
-    TestLogData logB =
-        TestLogData.builder().setBody(Body.string("svcB")).setAttributes(attributesB).build();
+    TestLogRecordData logB =
+        TestLogRecordData.builder().setBody("svcB").setAttributes(attributesB).build();
 
     Attributes attributesC =
         Attributes.builder()
@@ -962,8 +978,8 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey", "testValue")
             .put("testKey2", "testValue2")
             .build();
-    TestLogData logC =
-        TestLogData.builder().setBody(Body.string("svcC")).setAttributes(attributesC).build();
+    TestLogRecordData logC =
+        TestLogRecordData.builder().setBody("svcC").setAttributes(attributesC).build();
 
     Attributes attributesD =
         Attributes.builder()
@@ -972,10 +988,10 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey", "testValue")
             .put("testKey2", "testValue2")
             .build();
-    TestLogData logD =
-        TestLogData.builder().setBody(Body.string("svcD")).setAttributes(attributesD).build();
+    TestLogRecordData logD =
+        TestLogRecordData.builder().setBody("svcD").setAttributes(attributesD).build();
 
-    List<LogData> logs = new ArrayList<>();
+    List<LogRecordData> logs = new ArrayList<>();
     logs.add(logA);
     logs.add(logB);
     logs.add(logC);
@@ -984,11 +1000,11 @@ class LogExporterWithAttributeProcessorTest {
     exampleExporter.export(logs);
 
     // verify that resulting logs are filtered in the way we want
-    List<LogData> result = mockLoggerExporter.getLogs();
-    LogData result1 = result.get(0);
-    LogData result2 = result.get(1);
-    LogData result3 = result.get(2);
-    LogData result4 = result.get(3);
+    List<LogRecordData> result = mockLoggerExporter.getLogs();
+    LogRecordData result1 = result.get(0);
+    LogRecordData result2 = result.get(1);
+    LogRecordData result3 = result.get(2);
+    LogRecordData result4 = result.get(3);
 
     assertThat(result1.getAttributes().get(AttributeKey.stringKey("testKey"))).isNull();
     assertThat(result2.getAttributes().get(AttributeKey.stringKey("testKey")))
@@ -1018,7 +1034,8 @@ class LogExporterWithAttributeProcessorTest {
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
-    LogExporter exampleExporter = new LogExporterWithAttributeProcessor(config, mockLoggerExporter);
+    LogRecordExporter exampleExporter =
+        new LogExporterWithAttributeProcessor(config, mockLoggerExporter);
 
     Attributes attributesA =
         Attributes.builder()
@@ -1027,8 +1044,8 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey", "testValue")
             .put("testKey2", "testValue2")
             .build();
-    TestLogData logA =
-        TestLogData.builder().setBody(Body.string("svcA")).setAttributes(attributesA).build();
+    TestLogRecordData logA =
+        TestLogRecordData.builder().setBody("svcA").setAttributes(attributesA).build();
 
     Attributes attributesB =
         Attributes.builder()
@@ -1036,8 +1053,8 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey", "testValue")
             .put("testKey3", "testValue2")
             .build();
-    TestLogData logB =
-        TestLogData.builder().setBody(Body.string("svcB")).setAttributes(attributesB).build();
+    TestLogRecordData logB =
+        TestLogRecordData.builder().setBody("svcB").setAttributes(attributesB).build();
 
     Attributes attributesC =
         Attributes.builder()
@@ -1045,8 +1062,8 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey", "testValue")
             .put("testKey2", "testValue2")
             .build();
-    TestLogData logC =
-        TestLogData.builder().setBody(Body.string("serviceC")).setAttributes(attributesC).build();
+    TestLogRecordData logC =
+        TestLogRecordData.builder().setBody("serviceC").setAttributes(attributesC).build();
 
     Attributes attributesD =
         Attributes.builder()
@@ -1055,10 +1072,10 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey", "testValue")
             .put("testKey2", "testValue2")
             .build();
-    TestLogData logD =
-        TestLogData.builder().setBody(Body.string("serviceD")).setAttributes(attributesD).build();
+    TestLogRecordData logD =
+        TestLogRecordData.builder().setBody("serviceD").setAttributes(attributesD).build();
 
-    List<LogData> logs = new ArrayList<>();
+    List<LogRecordData> logs = new ArrayList<>();
     logs.add(logA);
     logs.add(logB);
     logs.add(logC);
@@ -1067,11 +1084,11 @@ class LogExporterWithAttributeProcessorTest {
     exampleExporter.export(logs);
 
     // verify that resulting logs are filtered in the way we want
-    List<LogData> result = mockLoggerExporter.getLogs();
-    LogData result1 = result.get(0);
-    LogData result2 = result.get(1);
-    LogData result3 = result.get(2);
-    LogData result4 = result.get(3);
+    List<LogRecordData> result = mockLoggerExporter.getLogs();
+    LogRecordData result1 = result.get(0);
+    LogRecordData result2 = result.get(1);
+    LogRecordData result3 = result.get(2);
+    LogRecordData result4 = result.get(3);
 
     assertThat(result1.getAttributes().get(AttributeKey.stringKey("testKey")))
         .isEqualTo("testValue");
@@ -1098,7 +1115,8 @@ class LogExporterWithAttributeProcessorTest {
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
-    LogExporter exampleExporter = new LogExporterWithAttributeProcessor(config, mockLoggerExporter);
+    LogRecordExporter exampleExporter =
+        new LogExporterWithAttributeProcessor(config, mockLoggerExporter);
 
     Attributes attributesA =
         Attributes.builder()
@@ -1107,8 +1125,8 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey", "testValue")
             .put("testKey2", "testValue2")
             .build();
-    TestLogData logA =
-        TestLogData.builder().setBody(Body.string("svcA")).setAttributes(attributesA).build();
+    TestLogRecordData logA =
+        TestLogRecordData.builder().setBody("svcA").setAttributes(attributesA).build();
 
     Attributes attributesB =
         Attributes.builder()
@@ -1116,8 +1134,8 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey", "testValue1")
             .put("testKey2", "testValue2")
             .build();
-    TestLogData logB =
-        TestLogData.builder().setBody(Body.string("svcB")).setAttributes(attributesB).build();
+    TestLogRecordData logB =
+        TestLogRecordData.builder().setBody("svcB").setAttributes(attributesB).build();
 
     Attributes attributesC =
         Attributes.builder()
@@ -1125,8 +1143,8 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey", "testValue")
             .put("testKey2", "testValue2")
             .build();
-    TestLogData logC =
-        TestLogData.builder().setBody(Body.string("svcC")).setAttributes(attributesC).build();
+    TestLogRecordData logC =
+        TestLogRecordData.builder().setBody("svcC").setAttributes(attributesC).build();
 
     Attributes attributesD =
         Attributes.builder()
@@ -1135,10 +1153,10 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey", "testValue")
             .put("testKey2", "testValue2")
             .build();
-    TestLogData logD =
-        TestLogData.builder().setBody(Body.string("svcD")).setAttributes(attributesD).build();
+    TestLogRecordData logD =
+        TestLogRecordData.builder().setBody("svcD").setAttributes(attributesD).build();
 
-    List<LogData> logs = new ArrayList<>();
+    List<LogRecordData> logs = new ArrayList<>();
     logs.add(logA);
     logs.add(logB);
     logs.add(logC);
@@ -1147,11 +1165,11 @@ class LogExporterWithAttributeProcessorTest {
     exampleExporter.export(logs);
 
     // verify that resulting logs are filtered in the way we want
-    List<LogData> result = mockLoggerExporter.getLogs();
-    LogData result1 = result.get(0);
-    LogData result2 = result.get(1);
-    LogData result3 = result.get(2);
-    LogData result4 = result.get(3);
+    List<LogRecordData> result = mockLoggerExporter.getLogs();
+    LogRecordData result1 = result.get(0);
+    LogRecordData result2 = result.get(1);
+    LogRecordData result3 = result.get(2);
+    LogRecordData result4 = result.get(3);
 
     assertThat(result1.getAttributes().get(AttributeKey.stringKey("testKey2")))
         .isEqualTo("testValue2");
@@ -1201,7 +1219,8 @@ class LogExporterWithAttributeProcessorTest {
     actions.add(action4);
     actions.add(action5);
     config.actions = actions;
-    LogExporter exampleExporter = new LogExporterWithAttributeProcessor(config, mockLoggerExporter);
+    LogRecordExporter exampleExporter =
+        new LogExporterWithAttributeProcessor(config, mockLoggerExporter);
 
     Attributes attributes =
         Attributes.builder()
@@ -1214,16 +1233,16 @@ class LogExporterWithAttributeProcessorTest {
             .put("testKey4", "/TelemetryProcessors/test")
             .put("testKey5", "/abc/xyz")
             .build();
-    TestLogData log =
-        TestLogData.builder().setBody(Body.string("my log")).setAttributes(attributes).build();
+    TestLogRecordData log =
+        TestLogRecordData.builder().setBody("my log").setAttributes(attributes).build();
 
-    List<LogData> logs = new ArrayList<>();
+    List<LogRecordData> logs = new ArrayList<>();
     logs.add(log);
     exampleExporter.export(logs);
 
     // verify that resulting logs are filtered in the way we want
-    List<LogData> result = mockLoggerExporter.getLogs();
-    LogData resultLog = result.get(0);
+    List<LogRecordData> result = mockLoggerExporter.getLogs();
+    LogRecordData resultLog = result.get(0);
     assertThat(resultLog.getAttributes().get(AttributeKey.stringKey("testKey")))
         .isEqualTo("http://example.com/cardid/****7899");
     assertThat(resultLog.getAttributes().get(AttributeKey.stringKey("testKey2")))

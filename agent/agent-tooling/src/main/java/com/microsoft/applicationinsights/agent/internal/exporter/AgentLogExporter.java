@@ -18,8 +18,8 @@ import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryObser
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.logs.data.LogData;
-import io.opentelemetry.sdk.logs.export.LogExporter;
+import io.opentelemetry.sdk.logs.data.LogRecordData;
+import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.util.Collection;
 import java.util.List;
@@ -29,7 +29,7 @@ import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class AgentLogExporter implements LogExporter {
+public class AgentLogExporter implements LogRecordExporter {
 
   private static final Logger logger = LoggerFactory.getLogger(AgentLogExporter.class);
 
@@ -72,13 +72,13 @@ public class AgentLogExporter implements LogExporter {
   }
 
   @Override
-  public CompletableResultCode export(Collection<LogData> logs) {
+  public CompletableResultCode export(Collection<LogRecordData> logs) {
     if (TelemetryClient.getActive().getConnectionString() == null) {
       // Azure Functions consumption plan
       logger.debug("Instrumentation key is null or empty. Fail to export logs.");
       return CompletableResultCode.ofFailure();
     }
-    for (LogData log : logs) {
+    for (LogRecordData log : logs) {
       logger.debug("exporting log: {}", log);
       try {
         int severityNumber = log.getSeverity().getSeverityNumber();

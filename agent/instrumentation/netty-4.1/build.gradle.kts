@@ -7,7 +7,7 @@ val otelInstrumentationAlphaVersion: String by project
 
 dependencies {
   compileOnly("io.netty:netty-codec-http:4.1.0.Final")
-  compileOnly("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-netty-4.1:$otelInstrumentationAlphaVersion")
+  compileOnly("io.opentelemetry.instrumentation:opentelemetry-netty-4.1:$otelInstrumentationAlphaVersion")
 
   add("codegen", "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-netty-4.1:$otelInstrumentationAlphaVersion")
 

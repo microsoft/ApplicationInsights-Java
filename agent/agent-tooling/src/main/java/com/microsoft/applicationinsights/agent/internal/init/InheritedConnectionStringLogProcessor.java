@@ -5,10 +5,10 @@ package com.microsoft.applicationinsights.agent.internal.init;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.AiSemanticAttributes;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.sdk.logs.LogProcessor;
+import io.opentelemetry.sdk.logs.LogRecordProcessor;
 import io.opentelemetry.sdk.logs.ReadWriteLogRecord;
 
-public final class InheritedConnectionStringLogProcessor implements LogProcessor {
+public final class InheritedConnectionStringLogProcessor implements LogRecordProcessor {
 
   @Override
   public void onEmit(ReadWriteLogRecord logRecord) {

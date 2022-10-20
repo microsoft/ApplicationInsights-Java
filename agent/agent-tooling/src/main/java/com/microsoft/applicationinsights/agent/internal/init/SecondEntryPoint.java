@@ -51,9 +51,9 @@ import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizer;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizerProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.logs.SdkLogEmitterProviderBuilder;
-import io.opentelemetry.sdk.logs.export.BatchLogProcessor;
-import io.opentelemetry.sdk.logs.export.LogExporter;
+import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
+import io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor;
+import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
@@ -83,7 +83,7 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
 
   @Nullable public static AgentLogExporter agentLogExporter;
 
-  @Nullable private static BatchLogProcessor batchLogProcessor;
+  @Nullable private static BatchLogRecordProcessor batchLogProcessor;
   @Nullable private static BatchSpanProcessor batchSpanProcessor;
   @Nullable private static MetricReader metricReader;
 
@@ -229,7 +229,7 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
         .addTracerProviderCustomizer(
             (builder, otelConfig) ->
                 configureTracing(builder, telemetryClient, quickPulse, otelConfig, configuration))
-        .addLogExporterCustomizer(
+        .addLogRecordExporterCustomizer(
             (logExporter, otelConfig) -> {
               if ("none".equals(otelConfig.getString("otel.logs.exporter"))) {
                 // in this case the logExporter here is the noop spanExporter
@@ -238,7 +238,7 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
                 return wrapLogExporter(logExporter, configuration);
               }
             })
-        .addLogEmitterProviderCustomizer(
+        .addLoggerProviderCustomizer(
             (builder, otelConfig) ->
                 configureLogging(builder, telemetryClient, quickPulse, otelConfig, configuration))
         .addMeterProviderCustomizer(
@@ -424,48 +424,50 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
   // QuickPulse is injected into the logging pipeline because QuickPulse displays exception
   // telemetry and exception telemetry can be reported as either span events or as log records with
   // an exception stack traces
-  private static SdkLogEmitterProviderBuilder configureLogging(
-      SdkLogEmitterProviderBuilder builder,
+  private static SdkLoggerProviderBuilder configureLogging(
+      SdkLoggerProviderBuilder builder,
       TelemetryClient telemetryClient,
       @Nullable QuickPulse quickPulse,
       ConfigProperties otelConfig,
       Configuration configuration) {
 
-    builder.addLogProcessor(new AzureMonitorLogProcessor());
+    builder.addLogRecordProcessor(new AzureMonitorLogProcessor());
 
     if ("java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME"))) {
-      builder.addLogProcessor(new AzureFunctionsLogProcessor());
+      builder.addLogRecordProcessor(new AzureFunctionsLogProcessor());
     }
 
     if (!configuration.preview.inheritedAttributes.isEmpty()) {
-      builder.addLogProcessor(
+      builder.addLogRecordProcessor(
           new InheritedAttributesLogProcessor(configuration.preview.inheritedAttributes));
     }
     // adding this even if there are no connectionStringOverrides, in order to support
     // "ai.preview.connection_string" being set programmatically on CONSUMER spans
     // (or "ai.preview.instrumentation_key" for backwards compatibility)
-    builder.addLogProcessor(new InheritedConnectionStringLogProcessor());
+    builder.addLogRecordProcessor(new InheritedConnectionStringLogProcessor());
     // adding this even if there are no roleNameOverrides, in order to support
     // "ai.preview.service_name" being set programmatically on CONSUMER spans
-    builder.addLogProcessor(new InheritedRoleNameLogProcessor());
+    builder.addLogRecordProcessor(new InheritedRoleNameLogProcessor());
 
     String logsExporter = otelConfig.getString("otel.logs.exporter");
     if ("none".equals(logsExporter)) { // "none" is the default set in AiConfigCustomizer
-      LogExporter logExporter = createLogExporter(telemetryClient, quickPulse, configuration);
+      LogRecordExporter logExporter = createLogExporter(telemetryClient, quickPulse, configuration);
 
       logExporter = wrapLogExporter(logExporter, configuration);
 
       // using BatchLogProcessor in order to get off of the application thread as soon as possible
       batchLogProcessor =
-          BatchLogProcessor.builder(logExporter).setScheduleDelay(getBatchProcessorDelay()).build();
+          BatchLogRecordProcessor.builder(logExporter)
+              .setScheduleDelay(getBatchProcessorDelay())
+              .build();
 
-      builder.addLogProcessor(batchLogProcessor);
+      builder.addLogRecordProcessor(batchLogProcessor);
     }
 
     return builder;
   }
 
-  private static LogExporter createLogExporter(
+  private static LogRecordExporter createLogExporter(
       TelemetryClient telemetryClient,
       @Nullable QuickPulse quickPulse,
       Configuration configuration) {
@@ -496,7 +498,8 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
     return agentLogExporter;
   }
 
-  private static LogExporter wrapLogExporter(LogExporter logExporter, Configuration configuration) {
+  private static LogRecordExporter wrapLogExporter(
+      LogRecordExporter logExporter, Configuration configuration) {
 
     List<ProcessorConfig> processorConfigs = getLogProcessorConfigs(configuration);
     if (!processorConfigs.isEmpty()) {

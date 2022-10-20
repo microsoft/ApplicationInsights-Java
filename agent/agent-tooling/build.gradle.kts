@@ -67,6 +67,7 @@ dependencies {
   testImplementation("io.opentelemetry:opentelemetry-sdk-metrics")
   testImplementation("io.opentelemetry:opentelemetry-sdk-logs")
   testImplementation("io.opentelemetry:opentelemetry-sdk-testing")
+  testImplementation("io.opentelemetry:opentelemetry-sdk-logs-testing")
 
   // TODO(trask): update tests, no need to use this anymore
   testImplementation("com.squareup.okio:okio:2.8.0")

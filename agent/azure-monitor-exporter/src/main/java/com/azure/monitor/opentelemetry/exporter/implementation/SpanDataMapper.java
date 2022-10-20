@@ -602,13 +602,14 @@ public final class SpanDataMapper {
     if (scheme == null) {
       return null;
     }
-    String host = attributes.get(SemanticAttributes.HTTP_HOST);
-    if (host == null) {
-      return null;
-    }
+    String host = attributes.get(SemanticAttributes.NET_HOST_NAME);
+    Long port = attributes.get(SemanticAttributes.NET_HOST_PORT);
     String target = attributes.get(SemanticAttributes.HTTP_TARGET);
     if (target == null) {
       return null;
+    }
+    if (port != null && port > 0) {
+      return scheme + "://" + host + ":" + port + target;
     }
     return scheme + "://" + host + target;
   }

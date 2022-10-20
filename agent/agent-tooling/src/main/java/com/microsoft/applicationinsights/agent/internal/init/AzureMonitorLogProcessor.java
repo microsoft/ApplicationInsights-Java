@@ -6,11 +6,11 @@ package com.microsoft.applicationinsights.agent.internal.init;
 import com.azure.monitor.opentelemetry.exporter.implementation.AiSemanticAttributes;
 import com.azure.monitor.opentelemetry.exporter.implementation.OperationNames;
 import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.sdk.logs.LogProcessor;
+import io.opentelemetry.sdk.logs.LogRecordProcessor;
 import io.opentelemetry.sdk.logs.ReadWriteLogRecord;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 
-public class AzureMonitorLogProcessor implements LogProcessor {
+public class AzureMonitorLogProcessor implements LogRecordProcessor {
 
   @Override
   public void onEmit(ReadWriteLogRecord logRecord) {

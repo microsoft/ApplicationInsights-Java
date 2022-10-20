@@ -7,10 +7,10 @@ import com.azure.core.util.logging.ClientLogger;
 import com.azure.monitor.opentelemetry.exporter.implementation.AiSemanticAttributes;
 import com.microsoft.applicationinsights.agent.bootstrap.AzureFunctionsCustomDimensions;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.sdk.logs.LogProcessor;
+import io.opentelemetry.sdk.logs.LogRecordProcessor;
 import io.opentelemetry.sdk.logs.ReadWriteLogRecord;
 
-public final class AzureFunctionsLogProcessor implements LogProcessor {
+public final class AzureFunctionsLogProcessor implements LogRecordProcessor {
 
   private static final ClientLogger logger = new ClientLogger(AzureFunctionsLogProcessor.class);
 

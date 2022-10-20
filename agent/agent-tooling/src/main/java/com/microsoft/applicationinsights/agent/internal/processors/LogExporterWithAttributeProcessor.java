@@ -5,36 +5,36 @@ package com.microsoft.applicationinsights.agent.internal.processors;
 
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.logs.data.LogData;
-import io.opentelemetry.sdk.logs.export.LogExporter;
+import io.opentelemetry.sdk.logs.data.LogRecordData;
+import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public class LogExporterWithAttributeProcessor implements LogExporter {
+public class LogExporterWithAttributeProcessor implements LogRecordExporter {
 
-  public final LogExporter delegate;
+  public final LogRecordExporter delegate;
   private final AttributeProcessor attributeProcessor;
 
   // caller should check config.isValid before creating
   public LogExporterWithAttributeProcessor(
-      Configuration.ProcessorConfig config, LogExporter delegate) {
+      Configuration.ProcessorConfig config, LogRecordExporter delegate) {
     config.validate();
     attributeProcessor = AttributeProcessor.create(config, true);
     this.delegate = delegate;
   }
 
   @Override
-  public CompletableResultCode export(Collection<LogData> logs) {
+  public CompletableResultCode export(Collection<LogRecordData> logs) {
     // we need to filter attributes before passing on to delegate
-    List<LogData> copy = new ArrayList<>();
-    for (LogData log : logs) {
+    List<LogRecordData> copy = new ArrayList<>();
+    for (LogRecordData log : logs) {
       copy.add(process(log));
     }
     return delegate.export(copy);
   }
 
-  private LogData process(LogData log) {
+  private LogRecordData process(LogRecordData log) {
     AgentProcessor.IncludeExclude include = attributeProcessor.getInclude();
     if (include != null && !include.isMatch(log.getAttributes(), log.getBody().asString())) {
       // If not included we can skip further processing

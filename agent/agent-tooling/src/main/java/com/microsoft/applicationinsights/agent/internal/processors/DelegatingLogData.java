@@ -6,19 +6,19 @@ package com.microsoft.applicationinsights.agent.internal.processors;
 import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.logs.data.Body;
-import io.opentelemetry.sdk.logs.data.LogData;
-import io.opentelemetry.sdk.logs.data.Severity;
+import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.resources.Resource;
 import javax.annotation.Nullable;
 
-public abstract class DelegatingLogData implements LogData {
+public abstract class DelegatingLogData implements LogRecordData {
 
-  private final LogData delegate;
+  private final LogRecordData delegate;
 
-  protected DelegatingLogData(LogData delegate) {
+  protected DelegatingLogData(LogRecordData delegate) {
     this.delegate = requireNonNull(delegate, "delegate");
   }
 
@@ -61,6 +61,11 @@ public abstract class DelegatingLogData implements LogData {
   @Override
   public Attributes getAttributes() {
     return delegate.getAttributes();
+  }
+
+  @Override
+  public int getTotalAttributeCount() {
+    return delegate.getTotalAttributeCount();
   }
 
   @Override
