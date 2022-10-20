@@ -1,7 +1,7 @@
 # CHANGELOG
 
 # Version 3.4.2 GA
-* Update OpenTelemetry to 1.19.0 [](https://github.com/microsoft/ApplicationInsights-Java/pull/2596).
+* Update to OpenTelemetry 1.19.0 [#2596](https://github.com/microsoft/ApplicationInsights-Java/pull/2596).
 * Add a new configuration for runtime attach configuration file [#2581](https://github.com/microsoft/ApplicationInsights-Java/pull/2581).
 * Fix duplicate Azure Functions logs [#2579](https://github.com/microsoft/ApplicationInsights-Java/pull/2579).
 * Fix OFF logging threshold [#2592](https://github.com/microsoft/ApplicationInsights-Java/pull/2592).
