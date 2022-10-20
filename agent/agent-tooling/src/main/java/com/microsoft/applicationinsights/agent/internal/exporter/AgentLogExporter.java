@@ -16,7 +16,6 @@ import com.microsoft.applicationinsights.agent.internal.telemetry.BatchItemProce
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryObservers;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
