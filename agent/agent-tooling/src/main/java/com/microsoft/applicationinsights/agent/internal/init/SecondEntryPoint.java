@@ -16,7 +16,6 @@ import com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.QuickP
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.TempDirs;
 import com.google.auto.service.AutoService;
-import com.microsoft.applicationinsights.agent.bootstrap.AiAppId;
 import com.microsoft.applicationinsights.agent.bootstrap.AzureFunctions;
 import com.microsoft.applicationinsights.agent.bootstrap.preagg.AiContextCustomizerHolder;
 import com.microsoft.applicationinsights.agent.internal.classicsdk.BytecodeUtilImpl;
@@ -161,8 +160,8 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
     }
     BytecodeUtilImpl.featureStatsbeat = statsbeatModule.getFeatureStatsbeat();
 
+    // appId is still used by the profiling service
     AppIdSupplier appIdSupplier = new AppIdSupplier(telemetryClient);
-    AiAppId.setSupplier(appIdSupplier);
 
     if (configuration.preview.profiler.enabled) {
       try {
@@ -371,8 +370,7 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
                 return true;
               }
               return false;
-            },
-            AiAppId::getAppId);
+            });
 
     BatchItemProcessor batchItemProcessor = telemetryClient.getGeneralBatchItemProcessor();
 
