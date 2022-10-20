@@ -7,6 +7,7 @@ import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TO
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_8_OPENJ9;
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8;
 import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8_OPENJ9;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
@@ -437,9 +438,9 @@ abstract class CoreAndFilter2xTest {
   }
 
   @Test
-  @TargetUri("/slowLoop?responseTime=20")
+  @TargetUri("/slowLoop?responseTime=5")
   void testSlowRequestUsingCpuBoundLoop() throws Exception {
-    validateSlowTest(20, "GET /CoreAndFilter2x/slowLoop");
+    validateSlowTest(5, "GET /CoreAndFilter2x/slowLoop");
   }
 
   @Test
@@ -505,8 +506,8 @@ abstract class CoreAndFilter2xTest {
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
 
     long actual = rd.getDuration().getTotalMilliseconds();
-    long expected = (new Duration(0, 0, 0, expectedDurationSeconds, 0).getTotalMilliseconds());
-    long tolerance = 2 * 1000; // 2 seconds
+    long expected = SECONDS.toMillis(expectedDurationSeconds);
+    long tolerance = 2000; // 2 seconds
 
     long min = expected - tolerance;
     long max = expected + tolerance;
