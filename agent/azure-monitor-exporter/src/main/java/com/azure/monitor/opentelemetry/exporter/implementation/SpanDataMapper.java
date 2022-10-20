@@ -205,7 +205,7 @@ public final class SpanDataMapper {
     return path.isEmpty() ? method + " /" : method + " " + path;
   }
 
-  private void applySemanticConventions(
+  private static void applySemanticConventions(
       RemoteDependencyTelemetryBuilder telemetryBuilder, SpanData span) {
     Attributes attributes = span.getAttributes();
     String httpMethod = attributes.get(SemanticAttributes.HTTP_METHOD);
@@ -286,7 +286,7 @@ public final class SpanDataMapper {
     telemetryBuilder.addTag(ContextTagKeys.AI_OPERATION_NAME.toString(), operationName);
   }
 
-  private void applyHttpClientSpan(
+  private static void applyHttpClientSpan(
       RemoteDependencyTelemetryBuilder telemetryBuilder, Attributes attributes) {
 
     int defaultPort = getDefaultPortForHttpUrl(attributes.get(SemanticAttributes.HTTP_URL));
@@ -594,7 +594,7 @@ public final class SpanDataMapper {
   }
 
   @Nullable
-  private String getSource(Attributes attributes) {
+  private static String getSource(Attributes attributes) {
     // this is only used by the 2.x web interop bridge
     // for ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry().setSource()
     String source = attributes.get(AiSemanticAttributes.SPAN_SOURCE);
