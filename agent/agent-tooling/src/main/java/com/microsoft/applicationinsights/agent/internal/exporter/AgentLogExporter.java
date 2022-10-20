@@ -38,7 +38,7 @@ public class AgentLogExporter implements LogRecordExporter {
       new OperationLogger(AgentLogExporter.class, "Exporting log");
 
   // TODO (trask) could implement this in a filtering LogExporter instead
-  private volatile Severity threshold;
+  private volatile int severityThreshold;
 
   private final SamplingOverrides logSamplingOverrides;
   private final SamplingOverrides exceptionSamplingOverrides;
@@ -46,13 +46,13 @@ public class AgentLogExporter implements LogRecordExporter {
   private final Consumer<TelemetryItem> telemetryItemConsumer;
 
   public AgentLogExporter(
-      Severity threshold,
+      int severityThreshold,
       List<SamplingOverride> logSamplingOverrides,
       List<SamplingOverride> exceptionSamplingOverrides,
       LogDataMapper mapper,
       @Nullable QuickPulse quickPulse,
       BatchItemProcessor batchItemProcessor) {
-    this.threshold = threshold;
+    this.severityThreshold = severityThreshold;
     this.logSamplingOverrides = new SamplingOverrides(logSamplingOverrides);
     this.exceptionSamplingOverrides = new SamplingOverrides(exceptionSamplingOverrides);
     this.mapper = mapper;
@@ -68,8 +68,8 @@ public class AgentLogExporter implements LogRecordExporter {
         };
   }
 
-  public void setThreshold(Severity threshold) {
-    this.threshold = threshold;
+  public void setSeverityThreshold(int severityThreshold) {
+    this.severityThreshold = severityThreshold;
   }
 
   @Override
@@ -82,9 +82,8 @@ public class AgentLogExporter implements LogRecordExporter {
     for (LogRecordData log : logs) {
       logger.debug("exporting log: {}", log);
       try {
-        int severity = log.getSeverity().getSeverityNumber();
-        int threshold = this.threshold.getSeverityNumber();
-        if (severity < threshold) {
+        int severityNumber = log.getSeverity().getSeverityNumber();
+        if (severityNumber < severityThreshold) {
           continue;
         }
 

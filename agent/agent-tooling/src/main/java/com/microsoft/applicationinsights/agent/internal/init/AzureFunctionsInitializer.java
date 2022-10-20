@@ -83,8 +83,8 @@ public class AzureFunctionsInitializer implements Runnable {
     setWebsiteSiteName(websiteSiteName);
     setSelfDiagnosticsLevel(selfDiagnosticsLevel);
     if (instrumentationLoggingLevel != null) {
-      agentLogExporter.setThreshold(
-          Configuration.LoggingInstrumentation.getSeverity(instrumentationLoggingLevel));
+      agentLogExporter.setSeverityThreshold(
+          Configuration.LoggingInstrumentation.getSeverityThreshold(instrumentationLoggingLevel));
     }
   }
 

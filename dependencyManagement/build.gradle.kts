@@ -45,8 +45,8 @@ val CORE_DEPENDENCIES = listOf(
   "org.openjdk.jmh:jmh-core:1.35",
   "org.openjdk.jmh:jmh-generator-bytecode:1.35",
   "org.mockito:mockito-core:4.8.0",
-  "org.mockito:mockito-junit-jupiter:4.8.0",
-  "org.mockito:mockito-inline:4.8.0",
+  "org.mockito:mockito-junit-jupiter:4.8.1",
+  "org.mockito:mockito-inline:4.8.1",
   // moving to 2.0 is problematic because the SPI mechanism in 2.0 doesn't work in the
   // bootstrap class loader because, while we add the agent jar to the bootstrap class loader
   // via Instrumentation.appendToBootstrapClassLoaderSearch(), there's nothing similar for
@@ -79,7 +79,7 @@ val DEPENDENCIES = listOf(
   "io.github.hakky54:logcaptor:2.7.10",
   "com.microsoft.jfr:jfr-streaming:1.2.0",
   "com.google.code.findbugs:jsr305:3.0.2",
-  "com.github.spotbugs:spotbugs-annotations:4.7.2"
+  "com.github.spotbugs:spotbugs-annotations:4.7.3"
 )
 
 javaPlatform {

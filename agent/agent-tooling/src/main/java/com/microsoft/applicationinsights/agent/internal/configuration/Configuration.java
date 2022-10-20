@@ -52,7 +52,7 @@ public class Configuration {
   }
 
   public void validate() {
-    instrumentation.logging.getSeverity();
+    instrumentation.logging.getSeverityThreshold();
     preview.validate();
   }
 
@@ -220,32 +220,33 @@ public class Configuration {
   public static class LoggingInstrumentation {
     public String level = "INFO";
 
-    public Severity getSeverity() {
-      return getSeverity(level);
+    public int getSeverityThreshold() {
+      return getSeverityThreshold(level);
     }
 
-    public static Severity getSeverity(String level) {
+    public static int getSeverityThreshold(String level) {
       switch (level.toUpperCase()) {
         case "OFF":
-          return Severity.UNDEFINED_SEVERITY_NUMBER;
+          return Integer.MAX_VALUE;
         case "FATAL":
+          return Severity.FATAL.getSeverityNumber();
         case "ERROR":
         case "SEVERE":
-          return Severity.ERROR;
+          return Severity.ERROR.getSeverityNumber();
         case "WARN":
         case "WARNING":
-          return Severity.WARN;
+          return Severity.WARN.getSeverityNumber();
         case "INFO":
-          return Severity.INFO;
+          return Severity.INFO.getSeverityNumber();
         case "CONFIG":
         case "DEBUG":
         case "FINE":
         case "FINER":
-          return Severity.DEBUG;
+          return Severity.DEBUG.getSeverityNumber();
         case "TRACE":
         case "FINEST":
         case "ALL":
-          return Severity.TRACE;
+          return Severity.TRACE.getSeverityNumber();
         default:
           throw new FriendlyException(
               "Invalid logging instrumentation level: " + level, "Please provide a valid level.");
