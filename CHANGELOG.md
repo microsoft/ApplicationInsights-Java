@@ -1,5 +1,12 @@
 # CHANGELOG
 
+# Version 3.4.2 GA
+* Update OpenTelemetry to 1.19.0 [](https://github.com/microsoft/ApplicationInsights-Java/pull/2596).
+* Add a new configuration for runtime attach configuration file [#2581](https://github.com/microsoft/ApplicationInsights-Java/pull/2581).
+* Fix duplicate Azure Functions logs [#2579](https://github.com/microsoft/ApplicationInsights-Java/pull/2579).
+* Fix OFF logging threshold [#2592](https://github.com/microsoft/ApplicationInsights-Java/pull/2592).
+* Add new configurations to export LogBack and Log4j 2 markers [#2529](https://github.com/microsoft/ApplicationInsights-Java/pull/2529).
+
 # Version 3.4.1 GA
 
 * Fix ETW dll [#2534](https://github.com/microsoft/ApplicationInsights-Java/pull/2534).
