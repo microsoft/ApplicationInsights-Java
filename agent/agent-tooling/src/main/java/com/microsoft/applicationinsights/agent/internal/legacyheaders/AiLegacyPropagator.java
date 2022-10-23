@@ -3,7 +3,6 @@
 
 package com.microsoft.applicationinsights.agent.internal.legacyheaders;
 
-import com.microsoft.applicationinsights.agent.bootstrap.AiAppId;
 import com.microsoft.applicationinsights.agent.internal.legacyheaders.AiLegacyHeaderSpanProcessor.LegacyIds;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.opentelemetry.api.trace.Span;
@@ -44,10 +43,6 @@ public class AiLegacyPropagator implements TextMapPropagator {
       return;
     }
     setter.set(carrier, "Request-Id", getRequestId(spanContext));
-    String appId = AiAppId.getAppId();
-    if (!appId.isEmpty()) {
-      setter.set(carrier, "Request-Context", "appId=" + appId);
-    }
   }
 
   @Override

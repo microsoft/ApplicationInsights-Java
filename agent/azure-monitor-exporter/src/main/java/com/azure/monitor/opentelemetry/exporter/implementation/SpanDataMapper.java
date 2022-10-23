@@ -38,7 +38,6 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 import reactor.util.annotation.Nullable;
 
 public final class SpanDataMapper {
@@ -93,17 +92,14 @@ public final class SpanDataMapper {
   private final boolean captureHttpServer4xxAsError;
   private final BiConsumer<AbstractTelemetryBuilder, Resource> telemetryInitializer;
   private final BiPredicate<EventData, String> eventSuppressor;
-  private final Supplier<String> appIdSupplier;
 
   public SpanDataMapper(
       boolean captureHttpServer4xxAsError,
       BiConsumer<AbstractTelemetryBuilder, Resource> telemetryInitializer,
-      BiPredicate<EventData, String> eventSuppressor,
-      Supplier<String> appIdSupplier) {
+      BiPredicate<EventData, String> eventSuppressor) {
     this.captureHttpServer4xxAsError = captureHttpServer4xxAsError;
     this.telemetryInitializer = telemetryInitializer;
     this.eventSuppressor = eventSuppressor;
-    this.appIdSupplier = appIdSupplier;
   }
 
   public TelemetryItem map(SpanData span) {
@@ -209,7 +205,7 @@ public final class SpanDataMapper {
     return path.isEmpty() ? method + " /" : method + " " + path;
   }
 
-  private void applySemanticConventions(
+  private static void applySemanticConventions(
       RemoteDependencyTelemetryBuilder telemetryBuilder, SpanData span) {
     Attributes attributes = span.getAttributes();
     String httpMethod = attributes.get(SemanticAttributes.HTTP_METHOD);
@@ -290,25 +286,14 @@ public final class SpanDataMapper {
     telemetryBuilder.addTag(ContextTagKeys.AI_OPERATION_NAME.toString(), operationName);
   }
 
-  private void applyHttpClientSpan(
+  private static void applyHttpClientSpan(
       RemoteDependencyTelemetryBuilder telemetryBuilder, Attributes attributes) {
 
     int defaultPort = getDefaultPortForHttpUrl(attributes.get(SemanticAttributes.HTTP_URL));
     String target = getTargetOrDefault(attributes, defaultPort, "Http");
 
-    String targetAppId = getTargetAppId(attributes);
-
-    if (targetAppId == null || targetAppId.equals(appIdSupplier.get())) {
-      telemetryBuilder.setType("Http");
-      telemetryBuilder.setTarget(target);
-    } else {
-      // using "Http (tracked component)" is important for dependencies that go cross-component
-      // (have an appId in their target field)
-      // if you use just HTTP, Breeze will remove appid from the target
-      // TODO (trask) remove this once confirmed by zakima that it is no longer needed
-      telemetryBuilder.setType("Http (tracked component)");
-      telemetryBuilder.setTarget(target + " | " + targetAppId);
-    }
+    telemetryBuilder.setType("Http");
+    telemetryBuilder.setTarget(target);
 
     Long httpStatusCode = attributes.get(SemanticAttributes.HTTP_STATUS_CODE);
     if (httpStatusCode != null) {
@@ -317,20 +302,6 @@ public final class SpanDataMapper {
 
     String url = attributes.get(SemanticAttributes.HTTP_URL);
     telemetryBuilder.setData(url);
-  }
-
-  @Nullable
-  private static String getTargetAppId(Attributes attributes) {
-    List<String> requestContextList = attributes.get(AiSemanticAttributes.REQUEST_CONTEXT);
-    if (requestContextList == null || requestContextList.isEmpty()) {
-      return null;
-    }
-    String requestContext = requestContextList.get(0);
-    int index = requestContext.indexOf('=');
-    if (index == -1) {
-      return null;
-    }
-    return requestContext.substring(index + 1);
   }
 
   private static void applyRpcClientSpan(
@@ -533,7 +504,7 @@ public final class SpanDataMapper {
       telemetryBuilder.addTag(ContextTagKeys.AI_LOCATION_IP.toString(), locationIp);
     }
 
-    telemetryBuilder.setSource(getSource(attributes, span.getSpanContext()));
+    telemetryBuilder.setSource(getSource(attributes));
 
     String sessionId = attributes.get(AiSemanticAttributes.SESSION_ID);
     if (sessionId != null) {
@@ -623,17 +594,11 @@ public final class SpanDataMapper {
   }
 
   @Nullable
-  private String getSource(Attributes attributes, @Nullable SpanContext spanContext) {
+  private static String getSource(Attributes attributes) {
     // this is only used by the 2.x web interop bridge
     // for ThreadContext.getRequestTelemetryContext().getHttpRequestTelemetry().setSource()
     String source = attributes.get(AiSemanticAttributes.SPAN_SOURCE);
     if (source != null) {
-      return source;
-    }
-    if (spanContext != null) {
-      source = spanContext.getTraceState().get("az");
-    }
-    if (source != null && !source.equals(appIdSupplier.get())) {
       return source;
     }
     return getMessagingTargetSource(attributes);

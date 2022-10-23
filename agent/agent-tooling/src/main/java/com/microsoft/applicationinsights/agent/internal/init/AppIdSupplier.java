@@ -14,7 +14,6 @@ import com.azure.monitor.opentelemetry.exporter.implementation.configuration.Con
 import com.azure.monitor.opentelemetry.exporter.implementation.logging.NetworkFriendlyExceptions;
 import com.azure.monitor.opentelemetry.exporter.implementation.logging.OperationLogger;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.ThreadPoolUtils;
-import com.microsoft.applicationinsights.agent.bootstrap.AiAppId;
 import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import java.net.MalformedURLException;
@@ -26,7 +25,7 @@ import javax.annotation.Nullable;
 import org.slf4j.MDC;
 
 // note: app id is used by distributed trace headers and (soon) jfr profiling
-public class AppIdSupplier implements AiAppId.Supplier {
+public class AppIdSupplier {
 
   private static final ClientLogger logger = new ClientLogger(AppIdSupplier.class);
 
@@ -91,7 +90,6 @@ public class AppIdSupplier implements AiAppId.Supplier {
         "api/profiles/" + connectionString.getInstrumentationKey() + "/appId");
   }
 
-  @Override
   public String get() {
     // it's possible the appId returned is null (e.g. async task is still pending or has failed). In
     // this case, just return and let the next request resolve the ikey.
