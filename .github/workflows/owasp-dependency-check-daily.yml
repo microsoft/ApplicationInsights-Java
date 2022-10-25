@@ -21,3 +21,9 @@ jobs:
       - uses: gradle/gradle-build-action@v2
         with:
           arguments: ":agent:agent:dependencyCheckAnalyze"
+
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          path: agent/agent/build/reports
