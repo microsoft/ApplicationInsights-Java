@@ -438,16 +438,9 @@ public class ConfigurationBuilder {
       return getConfigurationFromEnvVar(configurationContent);
     }
 
-    String configPathStr = getConfigPath();
-    if (configPathStr != null) {
-      Path configPath = agentJarPath.resolveSibling(configPathStr);
-      if (Files.exists(configPath)) {
-        return loadJsonConfigFile(configPath);
-      } else {
-        // fail fast any time configuration is invalid
-        throw new ConfigurationException(
-            "could not find requested configuration file: " + configPathStr);
-      }
+    Configuration configFromProperty = extractConfigFromProperty(agentJarPath);
+    if (configFromProperty != null) {
+      return configFromProperty;
     }
 
     String runtimeAttachedConfigurationContent =
@@ -464,18 +457,40 @@ public class ConfigurationBuilder {
       return new Configuration();
     }
 
-    Path configPath = agentJarPath.resolveSibling("applicationinsights.json");
-    if (Files.exists(configPath)) {
-      return loadJsonConfigFile(configPath);
-    }
-
-    if (Files.exists(agentJarPath.resolveSibling("ApplicationInsights.json"))) {
-      throw new ConfigurationException(
-          "found ApplicationInsights.json, but it should be lowercase: applicationinsights.json");
+    Configuration configFromJsonNextToAgent = extractConfigFromJsonNextToAgentJar(agentJarPath);
+    if (configFromJsonNextToAgent != null) {
+      return configFromJsonNextToAgent;
     }
 
     // json configuration file is not required, ok to configure via env var alone
     return new Configuration();
+  }
+
+  private static Configuration extractConfigFromProperty(Path agentJarPath) {
+    String configPathStr = getConfigPath();
+    if (configPathStr != null) {
+      Path configPath = agentJarPath.resolveSibling(configPathStr);
+      if (Files.exists(configPath)) {
+        return loadJsonConfigFile(configPath);
+      } else {
+        // fail fast any time configuration is invalid
+        throw new ConfigurationException(
+            "could not find requested configuration file: " + configPathStr);
+      }
+    }
+    return null;
+  }
+
+  private static Configuration extractConfigFromJsonNextToAgentJar(Path agentJarPath) {
+    Path configPath = agentJarPath.resolveSibling("applicationinsights.json");
+    if (Files.exists(configPath)) {
+      return loadJsonConfigFile(configPath);
+    }
+    if (Files.exists(agentJarPath.resolveSibling("ApplicationInsights.json"))) {
+      throw new ConfigurationException(
+          "found ApplicationInsights.json, but it should be lowercase: applicationinsights.json");
+    }
+    return null;
   }
 
   // cannot use logger before loading configuration, so need to store any messages locally until
