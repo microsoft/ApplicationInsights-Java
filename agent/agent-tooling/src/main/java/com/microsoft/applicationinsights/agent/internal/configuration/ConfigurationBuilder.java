@@ -466,6 +466,7 @@ public class ConfigurationBuilder {
     return new Configuration();
   }
 
+  @Nullable
   private static Configuration extractConfigFromProperty(Path agentJarPath) {
     String configPathStr = getConfigPath();
     if (configPathStr != null) {
@@ -481,6 +482,7 @@ public class ConfigurationBuilder {
     return null;
   }
 
+  @Nullable
   private static Configuration extractConfigFromJsonNextToAgentJar(Path agentJarPath) {
     Path configPath = agentJarPath.resolveSibling("applicationinsights.json");
     if (Files.exists(configPath)) {
