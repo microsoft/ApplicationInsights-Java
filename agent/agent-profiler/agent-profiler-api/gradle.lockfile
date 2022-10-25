@@ -3,13 +3,13 @@
 # This file is expected to be part of source control.
 com.azure:azure-core:1.32.0=runtimeClasspath
 com.azure:azure-sdk-bom:1.2.6=runtimeClasspath
-com.fasterxml.jackson.core:jackson-annotations:2.13.3=runtimeClasspath
-com.fasterxml.jackson.core:jackson-core:2.13.3=runtimeClasspath
-com.fasterxml.jackson.core:jackson-databind:2.13.3=runtimeClasspath
-com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.13.3=runtimeClasspath
-com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.13.3=runtimeClasspath
-com.fasterxml.jackson:jackson-bom:2.13.3=runtimeClasspath
-com.fasterxml.woodstox:woodstox-core:6.2.7=runtimeClasspath
+com.fasterxml.jackson.core:jackson-annotations:2.13.4=runtimeClasspath
+com.fasterxml.jackson.core:jackson-core:2.13.4=runtimeClasspath
+com.fasterxml.jackson.core:jackson-databind:2.13.4.2=runtimeClasspath
+com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.13.4=runtimeClasspath
+com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.13.4=runtimeClasspath
+com.fasterxml.jackson:jackson-bom:2.13.4.20221013=runtimeClasspath
+com.fasterxml.woodstox:woodstox-core:6.3.1=runtimeClasspath
 com.google.guava:guava-bom:31.1-jre=runtimeClasspath
 com.squareup.moshi:moshi:1.11.0=runtimeClasspath
 com.squareup.okio:okio:1.17.5=runtimeClasspath
