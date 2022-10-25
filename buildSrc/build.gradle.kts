@@ -44,7 +44,7 @@ dependencies {
   implementation("io.opentelemetry.instrumentation:gradle-plugins:1.17.0-alpha")
 
   // we need to use byte buddy variant that does not shade asm
-  implementation("net.bytebuddy:byte-buddy-gradle-plugin:1.12.10") {
+  implementation("net.bytebuddy:byte-buddy-gradle-plugin:1.12.18") {
     exclude(group = "net.bytebuddy", module = "byte-buddy")
   }
   implementation("net.bytebuddy:byte-buddy-dep:1.12.10")
