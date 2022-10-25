@@ -438,12 +438,6 @@ public class ConfigurationBuilder {
       return getConfigurationFromEnvVar(configurationContent);
     }
 
-    String runtimeAttachedConfigurationContent =
-        getSystemProperty(APPLICATIONINSIGHTS_RUNTIME_ATTACHED_CONFIGURATION_CONTENT);
-    if (runtimeAttachedConfigurationContent != null) {
-      return getConfiguration(runtimeAttachedConfigurationContent, JsonOrigin.RUNTIME_ATTACHED);
-    }
-
     String configPathStr = getConfigPath();
     if (configPathStr != null) {
       Path configPath = agentJarPath.resolveSibling(configPathStr);
@@ -454,6 +448,12 @@ public class ConfigurationBuilder {
         throw new ConfigurationException(
             "could not find requested configuration file: " + configPathStr);
       }
+    }
+
+    String runtimeAttachedConfigurationContent =
+        getSystemProperty(APPLICATIONINSIGHTS_RUNTIME_ATTACHED_CONFIGURATION_CONTENT);
+    if (runtimeAttachedConfigurationContent != null) {
+      return getConfiguration(runtimeAttachedConfigurationContent, JsonOrigin.RUNTIME_ATTACHED);
     }
 
     if (DiagnosticsHelper.isRpIntegration()) {
