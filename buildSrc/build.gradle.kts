@@ -50,7 +50,7 @@ dependencies {
   implementation("net.bytebuddy:byte-buddy-dep:1.12.10")
 
   implementation("net.ltgt.gradle:gradle-errorprone-plugin:2.0.2")
-  implementation("net.ltgt.gradle:gradle-nullaway-plugin:1.1.0")
+  implementation("net.ltgt.gradle:gradle-nullaway-plugin:1.4.0")
 
   implementation("gradle.plugin.io.morethan.jmhreport:gradle-jmh-report:0.9.0")
   implementation("me.champeau.jmh:jmh-gradle-plugin:0.6.5")
