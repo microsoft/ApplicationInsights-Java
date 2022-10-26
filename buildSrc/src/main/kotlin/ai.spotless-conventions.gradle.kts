@@ -9,7 +9,7 @@ spotless {
     target("src/**/*.java")
   }
   kotlinGradle {
-    ktlint().userData(mapOf("indent_size" to "2", "continuation_indent_size" to "2", "disabled_rules" to "no-wildcard-imports"))
+    ktlint().editorConfigOverride(mapOf("indent_size" to "2", "continuation_indent_size" to "2", "disabled_rules" to "no-wildcard-imports"))
   }
   format("misc") {
     // not using "**/..." to help keep spotless fast
