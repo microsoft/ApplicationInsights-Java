@@ -145,5 +145,7 @@ checkstyle {
 }
 
 dependencyCheck {
+  skipConfigurations.add("errorprone")
+  skipConfigurations.add("annotationProcessor")
   failBuildOnCVSS = 7f
 }
