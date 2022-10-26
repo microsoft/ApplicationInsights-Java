@@ -18,4 +18,6 @@ aiSmokeTest.testAppArtifactFilename.set(project.name + ".war")
 
 dependencies {
   compileOnly("javax.servlet:javax.servlet-api:3.0.1")
+
+  implementation(platform("org.springframework.boot:spring-boot-dependencies:2.2.0.RELEASE"))
 }
