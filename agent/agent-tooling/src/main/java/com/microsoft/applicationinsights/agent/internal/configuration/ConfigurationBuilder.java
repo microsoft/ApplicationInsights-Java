@@ -438,12 +438,35 @@ public class ConfigurationBuilder {
       return getConfigurationFromEnvVar(configurationContent);
     }
 
+    Configuration configFromProperty = extractConfigFromProperty(agentJarPath);
+    if (configFromProperty != null) {
+      return configFromProperty;
+    }
+
     String runtimeAttachedConfigurationContent =
         getSystemProperty(APPLICATIONINSIGHTS_RUNTIME_ATTACHED_CONFIGURATION_CONTENT);
     if (runtimeAttachedConfigurationContent != null) {
       return getConfiguration(runtimeAttachedConfigurationContent, JsonOrigin.RUNTIME_ATTACHED);
     }
 
+    if (DiagnosticsHelper.isRpIntegration()) {
+      // users do not have write access to agent directory in rp integrations
+      // and rp integrations should not use applicationinsights.json because that makes it difficult
+      // to merge rp intent and user intent
+      return new Configuration();
+    }
+
+    Configuration configFromJsonNextToAgent = extractConfigFromJsonNextToAgentJar(agentJarPath);
+    if (configFromJsonNextToAgent != null) {
+      return configFromJsonNextToAgent;
+    }
+
+    // json configuration file is not required, ok to configure via env var alone
+    return new Configuration();
+  }
+
+  @Nullable
+  private static Configuration extractConfigFromProperty(Path agentJarPath) {
     String configPathStr = getConfigPath();
     if (configPathStr != null) {
       Path configPath = agentJarPath.resolveSibling(configPathStr);
@@ -455,27 +478,20 @@ public class ConfigurationBuilder {
             "could not find requested configuration file: " + configPathStr);
       }
     }
+    return null;
+  }
 
-    if (DiagnosticsHelper.isRpIntegration()) {
-      // users do not have write access to agent directory in rp integrations
-      // and rp integrations should not use applicationinsights.json because that makes it difficult
-      // to merge
-      // rp intent and user intent
-      return new Configuration();
-    }
-
+  @Nullable
+  private static Configuration extractConfigFromJsonNextToAgentJar(Path agentJarPath) {
     Path configPath = agentJarPath.resolveSibling("applicationinsights.json");
     if (Files.exists(configPath)) {
       return loadJsonConfigFile(configPath);
     }
-
     if (Files.exists(agentJarPath.resolveSibling("ApplicationInsights.json"))) {
       throw new ConfigurationException(
           "found ApplicationInsights.json, but it should be lowercase: applicationinsights.json");
     }
-
-    // json configuration file is not required, ok to configure via env var alone
-    return new Configuration();
+    return null;
   }
 
   // cannot use logger before loading configuration, so need to store any messages locally until
