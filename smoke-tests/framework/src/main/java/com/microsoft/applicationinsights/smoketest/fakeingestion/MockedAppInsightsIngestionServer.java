@@ -98,8 +98,9 @@ public class MockedAppInsightsIngestionServer {
     return getTelemetryDataByType(type, true);
   }
 
-  public <T extends Domain> List<T> getMessageDataInRequest() {
-    List<Envelope> items = getItemsEnvelopeDataType("MessageData");
+  public <T extends Domain> List<T> getMessageDataInRequest(int numItems)
+      throws ExecutionException, InterruptedException, TimeoutException {
+    List<Envelope> items = waitForItems("MessageData", numItems);
     List<T> dataItems = new ArrayList<>();
     for (Envelope e : items) {
       if (e.getTags().containsKey("ai.operation.id")) {
