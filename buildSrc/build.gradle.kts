@@ -55,5 +55,6 @@ dependencies {
   implementation("gradle.plugin.io.morethan.jmhreport:gradle-jmh-report:0.9.0")
   implementation("me.champeau.jmh:jmh-gradle-plugin:0.6.8")
 
+  // used by smoke tests
   implementation("org.springframework.boot:spring-boot-gradle-plugin:2.2.0.RELEASE")
 }

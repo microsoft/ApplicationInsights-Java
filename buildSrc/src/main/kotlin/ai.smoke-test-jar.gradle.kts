@@ -5,6 +5,8 @@ plugins {
   id("org.springframework.boot")
 }
 
+apply(plugin = "io.spring.dependency-management")
+
 val aiSmokeTest = extensions.getByType(AiSmokeTestExtension::class)
 
 aiSmokeTest.testAppArtifactDir.set(tasks.jar.get().destinationDirectory.get())

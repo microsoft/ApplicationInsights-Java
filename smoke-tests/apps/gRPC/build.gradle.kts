@@ -31,7 +31,7 @@ protobuf {
 }
 
 dependencies {
-  implementation("org.springframework.boot:spring-boot-starter-web:2.1.7.RELEASE")
+  implementation("org.springframework.boot:spring-boot-starter-web")
 
   implementation("io.grpc:grpc-core:$grpcVersion")
   implementation("io.grpc:grpc-netty:$grpcVersion")

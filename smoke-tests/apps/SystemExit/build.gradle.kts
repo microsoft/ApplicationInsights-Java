@@ -3,6 +3,6 @@ plugins {
 }
 
 dependencies {
-  implementation("org.springframework.boot:spring-boot-starter-web:2.1.7.RELEASE")
+  implementation("org.springframework.boot:spring-boot-starter-web")
   implementation("io.opentelemetry:opentelemetry-api:1.12.0")
 }

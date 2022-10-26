@@ -3,5 +3,5 @@ plugins {
 }
 
 dependencies {
-  implementation("org.springframework.boot:spring-boot-starter-webflux:2.1.7.RELEASE")
+  implementation("org.springframework.boot:spring-boot-starter-webflux")
 }

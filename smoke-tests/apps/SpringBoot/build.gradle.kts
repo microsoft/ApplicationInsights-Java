@@ -5,7 +5,7 @@ plugins {
 dependencies {
   implementation("com.microsoft.azure:applicationinsights-spring-boot-starter:2.6.4")
 
-  implementation("org.springframework.boot:spring-boot-starter-web:2.1.7.RELEASE") {
+  implementation("org.springframework.boot:spring-boot-starter-web") {
     exclude("org.springframework.boot", "spring-boot-starter-tomcat")
   }
 
