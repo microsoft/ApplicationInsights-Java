@@ -1,3 +1,5 @@
+# the benefit of this over dependabot is that this also analyzes transitive dependencies
+# while dependabot (at least currently) only analyzes top-level dependencies
 name: OWASP dependency check (daily)
 
 on:
@@ -21,3 +23,9 @@ jobs:
       - uses: gradle/gradle-build-action@v2
         with:
           arguments: ":agent:agent:dependencyCheckAnalyze"
+
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          path: agent/agent/build/reports

@@ -145,5 +145,6 @@ checkstyle {
 }
 
 dependencyCheck {
+  skipConfigurations = listOf("errorprone", "checkstyle", "annotationProcessor")
   failBuildOnCVSS = 7f
 }
