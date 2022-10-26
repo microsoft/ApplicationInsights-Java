@@ -55,7 +55,7 @@ abstract class TraceLogBackTest {
 
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
 
-    List<MessageData> logs = testing.mockedIngestion.getMessageDataInRequest();
+    List<MessageData> logs = testing.mockedIngestion.getMessageDataInRequest(3);
     logs.sort(Comparator.comparing(MessageData::getSeverityLevel));
 
     MessageData md1 = logs.get(0);
