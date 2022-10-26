@@ -145,7 +145,6 @@ checkstyle {
 }
 
 dependencyCheck {
-  skipConfigurations.add("errorprone")
-  skipConfigurations.add("annotationProcessor")
+  skipConfigurations = listOf("errorprone", "checkstyle", "annotationProcessor")
   failBuildOnCVSS = 7f
 }
