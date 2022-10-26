@@ -180,10 +180,30 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
               telemetryClient, SecondEntryPoint.agentLogExporter, appIdSupplier));
     }
 
+    QuickPulse quickPulse;
+    if (configuration.preview.liveMetrics.enabled) {
+      quickPulse =
+              QuickPulse.create(
+                      LazyHttpClient.newHttpPipeLineWithDefaultRedirect(
+                              configuration.preview.authentication),
+                      () -> {
+                        ConnectionString connectionString = telemetryClient.getConnectionString();
+                        return connectionString == null ? null : connectionString.getLiveEndpoint();
+                      },
+                      telemetryClient::getInstrumentationKey,
+                      telemetryClient.getRoleName(),
+                      telemetryClient.getRoleInstance(),
+                      configuration.preview.useNormalizedValueForNonNormalizedCpuPercentage,
+                      FirstEntryPoint.getAgentVersion());
+    } else {
+      quickPulse = null;
+    }
+    telemetryClient.setQuickPulse(quickPulse);
+
     RpConfiguration rpConfiguration = FirstEntryPoint.getRpConfiguration();
     if (rpConfiguration != null) {
       RpConfigurationPolling.startPolling(
-          rpConfiguration, configuration, telemetryClient, appIdSupplier);
+          rpConfiguration, configuration, telemetryClient, appIdSupplier, quickPulse);
     }
 
     // initialize StatsbeatModule
@@ -193,26 +213,6 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
 
     // TODO (trask) add this method to AutoConfigurationCustomizer upstream?
     ((AutoConfiguredOpenTelemetrySdkBuilder) autoConfiguration).registerShutdownHook(false);
-
-    QuickPulse quickPulse;
-    if (configuration.preview.liveMetrics.enabled) {
-      quickPulse =
-          QuickPulse.create(
-              LazyHttpClient.newHttpPipeLineWithDefaultRedirect(
-                  configuration.preview.authentication),
-              () -> {
-                ConnectionString connectionString = telemetryClient.getConnectionString();
-                return connectionString == null ? null : connectionString.getLiveEndpoint();
-              },
-              telemetryClient::getInstrumentationKey,
-              telemetryClient.getRoleName(),
-              telemetryClient.getRoleInstance(),
-              configuration.preview.useNormalizedValueForNonNormalizedCpuPercentage,
-              FirstEntryPoint.getAgentVersion());
-    } else {
-      quickPulse = null;
-    }
-    telemetryClient.setQuickPulse(quickPulse);
 
     autoConfiguration
         .addPropertiesCustomizer(new AiConfigCustomizer())
@@ -297,7 +297,7 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
                 configuration.preview.additionalPropagators,
                 configuration.preview.legacyRequestIdPropagation.enabled);
       }
-      DelegatingSampler.getInstance().setDelegate(Samplers.getSampler(configuration));
+      DelegatingSampler.getInstance().setDelegate(Samplers.getSampler(configuration, quickPulse));
     } else {
       // in Azure Functions, we configure later on, once we know user has opted in to tracing
       // (note: the default for DelegatingPropagator is to not propagate anything

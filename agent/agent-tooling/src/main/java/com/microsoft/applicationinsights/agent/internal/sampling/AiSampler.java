@@ -3,9 +3,12 @@
 
 package com.microsoft.applicationinsights.agent.internal.sampling;
 
+import com.azure.core.util.logging.ClientLogger;
 import com.azure.monitor.opentelemetry.exporter.implementation.AiSemanticAttributes;
+import com.azure.monitor.opentelemetry.exporter.implementation.LogDataMapper;
 import com.azure.monitor.opentelemetry.exporter.implementation.RequestChecker;
 import com.azure.monitor.opentelemetry.exporter.implementation.SamplingScoreGeneratorV2;
+import com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.QuickPulse;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
@@ -18,6 +21,7 @@ import io.opentelemetry.sdk.trace.samplers.Sampler;
 import io.opentelemetry.sdk.trace.samplers.SamplingDecision;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 import java.util.List;
+import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
 // this sampler does two things:
@@ -27,25 +31,30 @@ import javax.annotation.Nullable;
 // * adds item count to span attribute if it is sampled
 public class AiSampler implements Sampler {
 
+  private static final ClientLogger logger = new ClientLogger(AiSampler.class);
   private final boolean localParentBased;
   private final SamplingPercentage requestSamplingPercentage;
   // when localParentBased=false, then this applies to all dependencies, not only parentless
   private final SamplingPercentage parentlessDependencySamplingPercentage;
   private final Cache<Long, SamplingResult> recordAndSampleWithItemCountMap = Cache.bounded(100);
+  private final QuickPulse quickPulse;
 
   public AiSampler(
-      SamplingPercentage requestSamplingPercentage,
-      SamplingPercentage parentlessDependencySamplingPercentage) {
-    this(requestSamplingPercentage, parentlessDependencySamplingPercentage, true);
+          SamplingPercentage requestSamplingPercentage,
+          SamplingPercentage parentlessDependencySamplingPercentage,
+          QuickPulse quickPulse) {
+    this(requestSamplingPercentage, parentlessDependencySamplingPercentage, true, quickPulse);
   }
 
   public AiSampler(
       SamplingPercentage requestSamplingPercentage,
       SamplingPercentage parentlessDependencySamplingPercentage,
-      boolean localParentBased) {
+      boolean localParentBased,
+      QuickPulse quickPulse) {
     this.requestSamplingPercentage = requestSamplingPercentage;
     this.parentlessDependencySamplingPercentage = parentlessDependencySamplingPercentage;
     this.localParentBased = localParentBased;
+    this.quickPulse = quickPulse;
   }
 
   @Override
@@ -58,7 +67,7 @@ public class AiSampler implements Sampler {
       List<LinkData> parentLinks) {
 
     if (localParentBased) {
-      SamplingResult samplingResult = useLocalParentDecisionIfPossible(parentContext);
+      SamplingResult samplingResult = useLocalParentDecisionIfPossible(parentContext, quickPulse);
       if (samplingResult != null) {
         return samplingResult;
       }
@@ -90,14 +99,14 @@ public class AiSampler implements Sampler {
     long itemCount = Math.round(100.0 / sp);
     SamplingResult samplingResult = recordAndSampleWithItemCountMap.get(itemCount);
     if (samplingResult == null) {
-      samplingResult = new RecordAndSampleWithItemCount(itemCount);
+      samplingResult = new RecordAndSampleWithItemCount(itemCount, quickPulse);
       recordAndSampleWithItemCountMap.put(itemCount, samplingResult);
     }
     return samplingResult;
   }
 
   @Nullable
-  private static SamplingResult useLocalParentDecisionIfPossible(Context parentContext) {
+  private static SamplingResult useLocalParentDecisionIfPossible(Context parentContext, QuickPulse quickPulse) {
     // remote parent-based sampling messes up item counts since item count is not propagated in
     // tracestate (yet), but local parent-based sampling doesn't have this issue since we are
     // propagating item count locally
@@ -112,7 +121,7 @@ public class AiSampler implements Sampler {
     if (parentSpan instanceof ReadableSpan) {
       Long itemCount = ((ReadableSpan) parentSpan).getAttribute(AiSemanticAttributes.ITEM_COUNT);
       if (itemCount != null) {
-        return new RecordAndSampleWithItemCount(itemCount);
+        return new RecordAndSampleWithItemCount(itemCount, quickPulse);
       }
     }
     return null;
@@ -138,13 +147,20 @@ public class AiSampler implements Sampler {
   private static class RecordAndSampleWithItemCount implements SamplingResult {
 
     private final Attributes attributes;
+    private final QuickPulse quickPulse;
 
-    RecordAndSampleWithItemCount(long itemCount) {
+    RecordAndSampleWithItemCount(long itemCount, QuickPulse quickPulse) {
       attributes = Attributes.builder().put(AiSemanticAttributes.ITEM_COUNT, itemCount).build();
+      this.quickPulse = quickPulse;
     }
 
     @Override
     public SamplingDecision getDecision() {
+      if (quickPulse.isEnabled()) {
+        logger.verbose("########################## live metric is enabled and return RECORD_ONLY");
+        return SamplingDecision.RECORD_ONLY;
+      }
+      logger.verbose("############################ live metric is not enabled so return RECORD_AND_SAMPLE.");
       return SamplingDecision.RECORD_AND_SAMPLE;
     }
 

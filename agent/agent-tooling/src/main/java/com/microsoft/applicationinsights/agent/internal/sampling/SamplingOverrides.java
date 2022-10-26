@@ -4,6 +4,7 @@
 package com.microsoft.applicationinsights.agent.internal.sampling;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.SpanDataMapper;
+import com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.QuickPulse;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.MatchType;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.SamplingOverride;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.SamplingOverrideAttribute;
@@ -21,10 +22,10 @@ public class SamplingOverrides {
 
   private final List<MatcherGroup> matcherGroups;
 
-  public SamplingOverrides(List<SamplingOverride> overrides) {
+  public SamplingOverrides(List<SamplingOverride> overrides, QuickPulse quickPulse) {
     matcherGroups = new ArrayList<>();
     for (SamplingOverride override : overrides) {
-      matcherGroups.add(new MatcherGroup(override));
+      matcherGroups.add(new MatcherGroup(override, quickPulse));
     }
   }
 
@@ -57,13 +58,13 @@ public class SamplingOverrides {
     // rate-limited sampling
     private final SamplingPercentage samplingPercentage;
 
-    private MatcherGroup(SamplingOverride override) {
+    private MatcherGroup(SamplingOverride override, QuickPulse quickPulse) {
       predicates = new ArrayList<>();
       for (SamplingOverrideAttribute attribute : override.attributes) {
         predicates.add(toPredicate(attribute));
       }
       samplingPercentage = SamplingPercentage.fixed(override.percentage);
-      sampler = new AiSampler(samplingPercentage, samplingPercentage, false);
+      sampler = new AiSampler(samplingPercentage, samplingPercentage, false, quickPulse);
     }
 
     Sampler getSampler() {
