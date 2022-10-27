@@ -256,7 +256,7 @@ abstract class CoreAndFilter3xUsingOld3xAgentTest {
 
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
 
-    List<MessageData> messages = testing.mockedIngestion.getMessageDataInRequest();
+    List<MessageData> messages = testing.mockedIngestion.getMessageDataInRequest(3);
 
     assertThat(messages)
         .anySatisfy(m -> assertThat(m.getMessage()).isEqualTo("This is first trace message."));

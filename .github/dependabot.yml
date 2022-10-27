@@ -12,7 +12,7 @@ updates:
       interval: "daily"
 
   - package-ecosystem: "gradle"
-    directory: "/dependencyManagement"
+    directory: "dependencyManagement"
     ignore:
       - dependency-name: "org.slf4j:*"
         # moving to 2.0 is problematic because the SPI mechanism in 2.0 doesn't work in the
@@ -30,6 +30,18 @@ updates:
       - dependency-name: "io.opentelemetry.instrumentation:*"
         # OpenTelemetry version updates are handled manually after each upstream release
         versions: [ "(,)" ]
+    schedule:
+      interval: "daily"
+    open-pull-requests-limit: 10
+
+  - package-ecosystem: "gradle"
+    directory: "buildSrc"
+    schedule:
+      interval: "daily"
+    open-pull-requests-limit: 10
+
+  - package-ecosystem: "gradle"
+    directory: ".github/project-root-duplicates"
     schedule:
       interval: "daily"
     open-pull-requests-limit: 10

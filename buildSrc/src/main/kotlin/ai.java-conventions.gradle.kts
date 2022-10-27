@@ -11,6 +11,7 @@ plugins {
   id("ai.errorprone-conventions")
   id("ai.spotless-conventions")
   id("ai.spotbugs-conventions")
+  id("org.owasp.dependencycheck")
 }
 
 repositories {
@@ -141,4 +142,9 @@ checkstyle {
   // this version should match the version of google_checks.xml used as basis for above configuration
   toolVersion = "8.37"
   maxWarnings = 0
+}
+
+dependencyCheck {
+  skipConfigurations = listOf("errorprone", "checkstyle", "annotationProcessor")
+  failBuildOnCVSS = 7f
 }

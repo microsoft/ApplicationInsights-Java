@@ -22,12 +22,13 @@ rootProject.extra["otelInstrumentationAlphaVersion"] = otelInstrumentationAlphaV
 rootProject.extra["otelContribAlphaVersion"] = otelContribAlphaVersion
 
 val DEPENDENCY_BOMS = listOf(
+  "com.fasterxml.jackson:jackson-bom:2.13.4.20221013",
   "com.google.guava:guava-bom:31.1-jre",
   "io.opentelemetry:opentelemetry-bom:${otelVersion}",
   "io.opentelemetry:opentelemetry-bom-alpha:${otelVersion}-alpha",
   "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:${otelInstrumentationVersion}",
   "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${otelInstrumentationAlphaVersion}",
-  "com.azure:azure-sdk-bom:1.2.6",
+  "com.azure:azure-sdk-bom:1.2.7",
   "org.junit:junit-bom:5.9.1",
   "org.testcontainers:testcontainers-bom:1.17.5",
 )
@@ -44,7 +45,7 @@ val CORE_DEPENDENCIES = listOf(
   "com.google.errorprone:error_prone_core:2.16",
   "org.openjdk.jmh:jmh-core:1.35",
   "org.openjdk.jmh:jmh-generator-bytecode:1.35",
-  "org.mockito:mockito-core:4.8.0",
+  "org.mockito:mockito-core:4.8.1",
   "org.mockito:mockito-junit-jupiter:4.8.1",
   "org.mockito:mockito-inline:4.8.1",
   // moving to 2.0 is problematic because the SPI mechanism in 2.0 doesn't work in the
@@ -71,7 +72,7 @@ val DEPENDENCIES = listOf(
   "com.uber.nullaway:nullaway:0.10.2",
   "commons-codec:commons-codec:1.15",
   "org.apache.commons:commons-text:1.10.0",
-  "com.google.code.gson:gson:2.9.1",
+  "com.google.code.gson:gson:2.10",
   "com.azure:azure-core-test:1.12.1", // this is not included in azure-sdk-bom
   "com.github.oshi:oshi-core:6.2.2",
   "org.assertj:assertj-core:3.23.1",

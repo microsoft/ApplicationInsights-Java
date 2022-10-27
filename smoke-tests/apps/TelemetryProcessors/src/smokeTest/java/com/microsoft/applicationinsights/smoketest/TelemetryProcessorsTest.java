@@ -39,7 +39,7 @@ abstract class TelemetryProcessorsTest {
         .containsEntry("_MS.ProcessedByMetricExtractors", "True");
     assertThat(telemetry.rd.getSuccess()).isTrue();
     // Log processor test
-    List<MessageData> logs = testing.mockedIngestion.getMessageDataInRequest();
+    List<MessageData> logs = testing.mockedIngestion.getMessageDataInRequest(1);
     MessageData md1 = logs.get(0);
     assertThat(md1.getMessage()).isEqualTo("testValue1::testValue2");
   }

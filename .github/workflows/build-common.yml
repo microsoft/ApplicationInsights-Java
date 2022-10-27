@@ -1,0 +1,197 @@
+name: Build (common)
+
+on:
+  workflow_call:
+    inputs:
+      no-build-cache:
+        type: boolean
+        required: false
+
+jobs:
+  spotless:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up JDK for running Gradle
+        uses: actions/setup-java@v3
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Spotless
+        uses: gradle/gradle-build-action@v2
+        with:
+          arguments: spotlessCheck ${{ inputs.no-build-cache && '--no-build-cache' || '' }}
+
+  gradle-wrapper-validation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: gradle/wrapper-validation-action@v1.0.5
+
+  license-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up JDK for running Gradle
+        uses: actions/setup-java@v3
+        with:
+          distribution: temurin
+          java-version: 11
+
+      - name: Generate license report
+        uses: gradle/gradle-build-action@v2
+        with:
+          # ignore inputs.no-build-cache and always run with --no-build-cache
+          # see https://github.com/jk1/Gradle-License-Report/issues/231
+          arguments: generateLicenseReport --no-build-cache
+
+      - name: Check licenses
+        run: |
+          # add any untracked folders that may have been added by generateLicenseReport
+          git add licenses
+          # there's always going to one line difference due to the timestamp included in the report
+          if [[ $(git diff --cached --shortstat licenses) == " 1 file changed, 1 insertion(+), 1 deletion(-)" ]]
+          then
+            echo "Licenses are up-to-date."
+          else
+            echo "Licenses are not up-to-date, please run './gradlew generateLicenseReport' locally and commit."
+            echo
+            echo "$(git diff --cached --stat licenses)"
+            echo
+            echo "$(git diff --cached licenses)"
+            exit 1
+          fi
+
+  project-root-duplicates-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Check project-root-duplicates
+        run: |
+          if cmp build.gradle.kts .github/project-root-duplicates/build.gradle.kts
+          then
+            echo "project-root-duplicates are up-to-date."
+          else
+            echo "project-root-duplicates are not up-to-date, please run 'cp build.gradle.kts .github/project-root-duplicates/' and locally and commit."
+            exit 1
+          fi
+          if cmp settings.gradle.kts .github/project-root-duplicates/settings.gradle.kts
+          then
+            echo "project-root-duplicates are up-to-date."
+          else
+            echo "project-root-duplicates are not up-to-date, please run 'cp settings.gradle.kts .github/project-root-duplicates/' and locally and commit."
+            exit 1
+          fi
+
+  assemble:
+    # running (and uploading artifact) from windows since only that build includes etw
+    runs-on: windows-2019
+    steps:
+      - name: Support long paths
+        run: git config --system core.longpaths true
+
+      - uses: actions/checkout@v3
+
+      - name: Set up JDK for running Gradle
+        uses: actions/setup-java@v3
+        with:
+          distribution: temurin
+          java-version: 11
+
+      - name: Assemble
+        uses: gradle/gradle-build-action@v2
+        with:
+          # javadoc task fails sporadically fetching https://docs.oracle.com/javase/8/docs/api/
+          arguments: assemble -Dai.etw.native.build=release -x javadoc ${{ inputs.no-build-cache && '--no-build-cache' || '' }}
+
+      - name: Upload snapshot
+        uses: actions/upload-artifact@v3
+        with:
+          path: agent/agent/build/libs/applicationinsights-agent-*-SNAPSHOT.jar
+
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        test-java-version:
+          - 8
+          - 11
+          - 17
+          - 18
+        vm:
+          - hotspot
+          # TODO (trask) enable once profiler supports OpenJ9
+          # - openj9
+        os:
+          - windows-2019
+          - ubuntu-latest
+      fail-fast: false
+    steps:
+      - name: Support long paths
+        run: git config --system core.longpaths true
+        if: matrix.os == 'windows-2019'
+
+      - uses: actions/checkout@v3
+
+      - id: setup-test-java
+        name: Set up JDK ${{ matrix.test-java-version }}-${{ matrix.vm }} for running tests
+        uses: actions/setup-java@v3
+        with:
+          distribution: ${{ matrix.vm == 'hotspot' && 'temurin' || 'adopt-openj9'}}
+          java-version: ${{ matrix.test-java-version }}
+
+      - name: Set up JDK for running Gradle
+        uses: actions/setup-java@v3
+        with:
+          distribution: temurin
+          java-version: 11
+
+      - name: Test
+        uses: gradle/gradle-build-action@v2
+        with:
+          # spotless is checked separately since it's a common source of failure
+          arguments: >
+            check
+            -x spotlessCheck
+            -PtestJavaVersion=${{ matrix.test-java-version }}
+            -PtestJavaVM=${{ matrix.vm }}
+            -Porg.gradle.java.installations.paths=${{ steps.setup-test-java.outputs.path }}
+            -Porg.gradle.java.installations.auto-download=false ${{ inputs.no-build-cache && ' --no-build-cache' || '' }}
+
+  setup-smoke-test-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - id: set-matrix
+        run: |
+          modules=$(ls -d smoke-tests/apps/* | sed 's/\/$//' | sed 's/\//:/g' | sed 's/^/:/')
+          inner_json=$(echo $modules | xargs echo | sed 's/ /","/g')
+          echo "::set-output name=matrix::{\"module\":[\"$inner_json\"]}"
+
+  smoke-test:
+    needs: setup-smoke-test-matrix
+    runs-on: ubuntu-latest
+    strategy:
+      matrix: ${{fromJson(needs.setup-smoke-test-matrix.outputs.matrix)}}
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Java 11
+        uses: actions/setup-java@v3
+        with:
+          distribution: temurin
+          java-version: 11
+
+      - name: Test
+        uses: gradle/gradle-build-action@v2
+        with:
+          arguments: ${{ matrix.module }}:smokeTest
