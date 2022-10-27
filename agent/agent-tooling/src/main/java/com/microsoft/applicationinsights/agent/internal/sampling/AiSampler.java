@@ -5,7 +5,6 @@ package com.microsoft.applicationinsights.agent.internal.sampling;
 
 import com.azure.core.util.logging.ClientLogger;
 import com.azure.monitor.opentelemetry.exporter.implementation.AiSemanticAttributes;
-import com.azure.monitor.opentelemetry.exporter.implementation.LogDataMapper;
 import com.azure.monitor.opentelemetry.exporter.implementation.RequestChecker;
 import com.azure.monitor.opentelemetry.exporter.implementation.SamplingScoreGeneratorV2;
 import com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.QuickPulse;
@@ -21,7 +20,6 @@ import io.opentelemetry.sdk.trace.samplers.Sampler;
 import io.opentelemetry.sdk.trace.samplers.SamplingDecision;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 import java.util.List;
-import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
 // this sampler does two things:

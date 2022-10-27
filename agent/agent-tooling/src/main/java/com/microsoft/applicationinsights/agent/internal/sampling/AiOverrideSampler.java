@@ -21,17 +21,15 @@ class AiOverrideSampler implements Sampler {
   private final SamplingOverrides requestSamplingOverrides;
   private final SamplingOverrides dependencySamplingOverrides;
   private final Sampler delegate;
-  private final QuickPulse quickPulse;
 
   AiOverrideSampler(
       List<SamplingOverride> requestSamplingOverrides,
       List<SamplingOverride> dependencySamplingOverrides,
       Sampler delegate,
       QuickPulse quickPulse) {
-    this.requestSamplingOverrides = new SamplingOverrides(requestSamplingOverrides);
-    this.dependencySamplingOverrides = new SamplingOverrides(dependencySamplingOverrides);
+    this.requestSamplingOverrides = new SamplingOverrides(requestSamplingOverrides, quickPulse);
+    this.dependencySamplingOverrides = new SamplingOverrides(dependencySamplingOverrides, quickPulse);
     this.delegate = delegate;
-    this.quickPulse = quickPulse;
   }
 
   @Override

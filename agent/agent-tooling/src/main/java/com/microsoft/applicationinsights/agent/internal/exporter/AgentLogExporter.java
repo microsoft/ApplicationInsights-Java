@@ -52,8 +52,8 @@ public class AgentLogExporter implements LogRecordExporter {
       @Nullable QuickPulse quickPulse,
       BatchItemProcessor batchItemProcessor) {
     this.severityThreshold = severityThreshold;
-    this.logSamplingOverrides = new SamplingOverrides(logSamplingOverrides);
-    this.exceptionSamplingOverrides = new SamplingOverrides(exceptionSamplingOverrides);
+    this.logSamplingOverrides = new SamplingOverrides(logSamplingOverrides, quickPulse);
+    this.exceptionSamplingOverrides = new SamplingOverrides(exceptionSamplingOverrides, quickPulse);
     this.mapper = mapper;
     telemetryItemConsumer =
         telemetryItem -> {

@@ -32,6 +32,7 @@ public class RpConfigurationPolling implements Runnable {
   private final Configuration configuration;
   private final TelemetryClient telemetryClient;
   private final AppIdSupplier appIdSupplier;
+  private final QuickPulse quickPulse;
 
   public static void startPolling(
       RpConfiguration rpConfiguration,
@@ -116,7 +117,7 @@ public class RpConfigurationPolling implements Runnable {
         if (changed) {
           configuration.sampling.percentage = newRpConfiguration.sampling.percentage;
           configuration.sampling.requestsPerSecond = newRpConfiguration.sampling.requestsPerSecond;
-          DelegatingSampler.getInstance().setDelegate(Samplers.getSampler(configuration));
+          DelegatingSampler.getInstance().setDelegate(Samplers.getSampler(configuration, quickPulse));
           if (configuration.sampling.percentage != null) {
             BytecodeUtilImpl.samplingPercentage = configuration.sampling.percentage.floatValue();
           } else {
