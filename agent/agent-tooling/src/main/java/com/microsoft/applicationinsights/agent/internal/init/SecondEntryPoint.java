@@ -6,6 +6,7 @@ package com.microsoft.applicationinsights.agent.internal.init;
 import static java.util.concurrent.TimeUnit.MINUTES;
 
 import com.azure.core.util.logging.ClientLogger;
+import com.azure.monitor.opentelemetry.exporter.implementation.livemetrics.LiveMetricsSpanProcessor;
 import com.azure.monitor.opentelemetry.exporter.implementation.LogDataMapper;
 import com.azure.monitor.opentelemetry.exporter.implementation.MetricDataMapper;
 import com.azure.monitor.opentelemetry.exporter.implementation.SpanDataMapper;
