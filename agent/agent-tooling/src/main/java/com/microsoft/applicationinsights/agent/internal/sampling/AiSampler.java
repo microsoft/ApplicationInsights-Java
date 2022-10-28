@@ -35,12 +35,12 @@ public class AiSampler implements Sampler {
   // when localParentBased=false, then this applies to all dependencies, not only parentless
   private final SamplingPercentage parentlessDependencySamplingPercentage;
   private final Cache<Long, SamplingResult> recordAndSampleWithItemCountMap = Cache.bounded(100);
-  private final QuickPulse quickPulse;
+  @Nullable private final QuickPulse quickPulse;
 
   public AiSampler(
       SamplingPercentage requestSamplingPercentage,
       SamplingPercentage parentlessDependencySamplingPercentage,
-      QuickPulse quickPulse) {
+      @Nullable QuickPulse quickPulse) {
     this(requestSamplingPercentage, parentlessDependencySamplingPercentage, true, quickPulse);
   }
 
@@ -48,7 +48,7 @@ public class AiSampler implements Sampler {
       SamplingPercentage requestSamplingPercentage,
       SamplingPercentage parentlessDependencySamplingPercentage,
       boolean localParentBased,
-      QuickPulse quickPulse) {
+      @Nullable QuickPulse quickPulse) {
     this.requestSamplingPercentage = requestSamplingPercentage;
     this.parentlessDependencySamplingPercentage = parentlessDependencySamplingPercentage;
     this.localParentBased = localParentBased;
@@ -105,7 +105,7 @@ public class AiSampler implements Sampler {
 
   @Nullable
   private static SamplingResult useLocalParentDecisionIfPossible(
-      Context parentContext, QuickPulse quickPulse) {
+      Context parentContext, @Nullable QuickPulse quickPulse) {
     // remote parent-based sampling messes up item counts since item count is not propagated in
     // tracestate (yet), but local parent-based sampling doesn't have this issue since we are
     // propagating item count locally
@@ -146,19 +146,21 @@ public class AiSampler implements Sampler {
   private static class RecordAndSampleWithItemCount implements SamplingResult {
 
     private final Attributes attributes;
-    private final QuickPulse quickPulse;
+    @Nullable private final QuickPulse quickPulse;
 
-    RecordAndSampleWithItemCount(long itemCount, QuickPulse quickPulse) {
+    RecordAndSampleWithItemCount(long itemCount, @Nullable QuickPulse quickPulse) {
       attributes = Attributes.builder().put(AiSemanticAttributes.ITEM_COUNT, itemCount).build();
       this.quickPulse = quickPulse;
     }
 
     @Override
     public SamplingDecision getDecision() {
-      if (quickPulse.isEnabled()) {
+      if (quickPulse != null && quickPulse.isEnabled()) {
+        // TODO (heya) to be removed after done testing
         logger.verbose("########################## live metric is enabled and return RECORD_ONLY");
         return SamplingDecision.RECORD_ONLY;
       }
+      // TODO (heya) to be removed after done testing
       logger.verbose(
           "############################ live metric is not enabled so return RECORD_AND_SAMPLE.");
       return SamplingDecision.RECORD_AND_SAMPLE;

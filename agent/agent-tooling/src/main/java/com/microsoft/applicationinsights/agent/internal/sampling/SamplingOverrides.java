@@ -22,7 +22,7 @@ public class SamplingOverrides {
 
   private final List<MatcherGroup> matcherGroups;
 
-  public SamplingOverrides(List<SamplingOverride> overrides, QuickPulse quickPulse) {
+  public SamplingOverrides(List<SamplingOverride> overrides, @Nullable QuickPulse quickPulse) {
     matcherGroups = new ArrayList<>();
     for (SamplingOverride override : overrides) {
       matcherGroups.add(new MatcherGroup(override, quickPulse));
@@ -58,7 +58,7 @@ public class SamplingOverrides {
     // rate-limited sampling
     private final SamplingPercentage samplingPercentage;
 
-    private MatcherGroup(SamplingOverride override, QuickPulse quickPulse) {
+    private MatcherGroup(SamplingOverride override, @Nullable QuickPulse quickPulse) {
       predicates = new ArrayList<>();
       for (SamplingOverrideAttribute attribute : override.attributes) {
         predicates.add(toPredicate(attribute));

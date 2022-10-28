@@ -9,10 +9,11 @@ import com.microsoft.applicationinsights.agent.internal.configuration.Configurat
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.util.List;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 
 public class Samplers {
 
-  public static Sampler getSampler(Configuration config, QuickPulse quickPulse) {
+  public static Sampler getSampler(Configuration config, @Nullable QuickPulse quickPulse) {
     Sampler sampler;
     if (config.sampling.requestsPerSecond != null) {
       SamplingPercentage requestSamplingPercentage =

@@ -331,7 +331,9 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
     // live metrics span processor is used to add spans to quick pulse
     SpanDataMapper mapper =
         createSpanDataMapper(telemetryClient, configuration.preview.captureHttpServer4xxAsError);
-    tracerProvider.addSpanProcessor(new LiveMetricsSpanProcessor(mapper, quickPulse));
+    if (quickPulse != null) {
+      tracerProvider.addSpanProcessor(new LiveMetricsSpanProcessor(mapper, quickPulse));
+    }
 
     String tracesExporter = otelConfig.getString("otel.traces.exporter");
     if ("none".equals(tracesExporter)) { // "none" is the default set in AiConfigCustomizer
@@ -457,7 +459,9 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
     LogDataMapper mapper =
         createLogDataMapper(
             telemetryClient, configuration.preview.captureLoggingLevelAsCustomDimension);
-    builder.addLogRecordProcessor(new LiveMetricsLogProcessor(mapper, quickPulse));
+    if (quickPulse != null) {
+      builder.addLogRecordProcessor(new LiveMetricsLogProcessor(mapper, quickPulse));
+    }
 
     String logsExporter = otelConfig.getString("otel.logs.exporter");
     if ("none".equals(logsExporter)) { // "none" is the default set in AiConfigCustomizer
