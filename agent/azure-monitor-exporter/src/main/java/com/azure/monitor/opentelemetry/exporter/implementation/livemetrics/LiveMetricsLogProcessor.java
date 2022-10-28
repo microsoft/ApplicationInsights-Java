@@ -3,6 +3,7 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation.livemetrics;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.AiSemanticAttributes;
 import com.azure.monitor.opentelemetry.exporter.implementation.LogDataMapper;
 import com.azure.monitor.opentelemetry.exporter.implementation.SemanticAttributes;
 import com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.QuickPulse;
@@ -24,8 +25,9 @@ public class LiveMetricsLogProcessor implements LogRecordProcessor {
   public void onEmit(ReadWriteLogRecord logRecord) {
     LogRecordData log = (LogRecordData) logRecord;
     String stack = log.getAttributes().get(SemanticAttributes.EXCEPTION_STACKTRACE);
+    Long itemCount = log.getAttributes().get(AiSemanticAttributes.ITEM_COUNT);
     if (quickPulse.isEnabled()) {
-      quickPulse.add(mapper.map(logRecord.toLogRecordData(), stack, null));
+      quickPulse.add(mapper.map(logRecord.toLogRecordData(), stack, itemCount));
     }
   }
 }
