@@ -146,24 +146,25 @@ public class AiSampler implements Sampler {
   private static class RecordAndSampleWithItemCount implements SamplingResult {
 
     private final Attributes attributes;
-    @Nullable private final QuickPulse quickPulse;
+    @Nullable private final SamplingDecision decision;
 
     RecordAndSampleWithItemCount(long itemCount, @Nullable QuickPulse quickPulse) {
       attributes = Attributes.builder().put(AiSemanticAttributes.ITEM_COUNT, itemCount).build();
-      this.quickPulse = quickPulse;
+      if (quickPulse != null && quickPulse.isEnabled()) {
+        // TODO (heya) to be removed after done testing
+        logger.verbose("########################## live metric is enabled and return RECORD_ONLY");
+        decision = SamplingDecision.RECORD_ONLY;
+      } else {
+        // TODO (heya) to be removed after done testing
+        logger.verbose(
+            "############################ live metric is not enabled so return RECORD_AND_SAMPLE.");
+        decision = SamplingDecision.RECORD_AND_SAMPLE;
+      }
     }
 
     @Override
     public SamplingDecision getDecision() {
-      if (quickPulse != null && quickPulse.isEnabled()) {
-        // TODO (heya) to be removed after done testing
-        logger.verbose("########################## live metric is enabled and return RECORD_ONLY");
-        return SamplingDecision.RECORD_ONLY;
-      }
-      // TODO (heya) to be removed after done testing
-      logger.verbose(
-          "############################ live metric is not enabled so return RECORD_AND_SAMPLE.");
-      return SamplingDecision.RECORD_AND_SAMPLE;
+      return decision;
     }
 
     @Override
