@@ -11,6 +11,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.MetricDataMapper;
 import com.azure.monitor.opentelemetry.exporter.implementation.SpanDataMapper;
 import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
 import com.azure.monitor.opentelemetry.exporter.implementation.heartbeat.HeartbeatExporter;
+import com.azure.monitor.opentelemetry.exporter.implementation.livemetrics.LiveMetricsLogProcessor;
 import com.azure.monitor.opentelemetry.exporter.implementation.livemetrics.LiveMetricsSpanProcessor;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.QuickPulse;
@@ -337,7 +338,6 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
       SpanExporter spanExporter =
           createSpanExporter(
               mapper,
-              quickPulse,
               telemetryClient.getGeneralBatchItemProcessor(),
               telemetryClient.getStatsbeatModule());
       spanExporter = wrapSpanExporter(spanExporter, configuration);
@@ -379,7 +379,6 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
 
   private static SpanExporter createSpanExporter(
       SpanDataMapper mapper,
-      @Nullable QuickPulse quickPulse,
       BatchItemProcessor batchItemProcessor,
       StatsbeatModule statsbeatModule) {
     return new StatsbeatSpanExporter(
@@ -454,9 +453,17 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
     // "ai.preview.service_name" being set programmatically on CONSUMER spans
     builder.addLogRecordProcessor(new InheritedRoleNameLogProcessor());
 
+    // live metrics log processor is used to add logs to quick pulse when it's enabled
+    LogDataMapper mapper =
+        createLogDataMapper(
+            telemetryClient, configuration.preview.captureLoggingLevelAsCustomDimension);
+    builder.addLogRecordProcessor(new LiveMetricsLogProcessor(mapper, quickPulse));
+
     String logsExporter = otelConfig.getString("otel.logs.exporter");
     if ("none".equals(logsExporter)) { // "none" is the default set in AiConfigCustomizer
-      LogRecordExporter logExporter = createLogExporter(telemetryClient, quickPulse, configuration);
+      LogRecordExporter logExporter =
+          createLogExporter(
+              mapper, quickPulse, telemetryClient.getGeneralBatchItemProcessor(), configuration);
 
       logExporter = wrapLogExporter(logExporter, configuration);
 
@@ -472,16 +479,17 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
     return builder;
   }
 
+  private static LogDataMapper createLogDataMapper(
+      TelemetryClient telemetryClient, boolean captureLoggingLevelAsCustomDimension) {
+    return new LogDataMapper(
+        captureLoggingLevelAsCustomDimension, telemetryClient::populateDefaults);
+  }
+
   private static LogRecordExporter createLogExporter(
-      TelemetryClient telemetryClient,
+      LogDataMapper mapper,
       @Nullable QuickPulse quickPulse,
+      BatchItemProcessor batchItemProcessor,
       Configuration configuration) {
-
-    LogDataMapper mapper =
-        new LogDataMapper(
-            configuration.preview.captureLoggingLevelAsCustomDimension,
-            telemetryClient::populateDefaults);
-
     List<Configuration.SamplingOverride> logSamplingOverrides =
         configuration.preview.sampling.overrides.stream()
             .filter(override -> override.telemetryType == SamplingTelemetryType.TRACE)
@@ -498,7 +506,7 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
             exceptionSamplingOverrides,
             mapper,
             quickPulse,
-            telemetryClient.getGeneralBatchItemProcessor());
+            batchItemProcessor);
 
     return agentLogExporter;
   }

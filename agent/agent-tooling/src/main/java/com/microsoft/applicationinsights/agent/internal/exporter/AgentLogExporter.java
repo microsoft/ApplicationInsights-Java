@@ -57,9 +57,6 @@ public class AgentLogExporter implements LogRecordExporter {
     this.mapper = mapper;
     telemetryItemConsumer =
         telemetryItem -> {
-          if (quickPulse != null) {
-            quickPulse.add(telemetryItem);
-          }
           TelemetryObservers.INSTANCE
               .getObservers()
               .forEach(consumer -> consumer.accept(telemetryItem));
