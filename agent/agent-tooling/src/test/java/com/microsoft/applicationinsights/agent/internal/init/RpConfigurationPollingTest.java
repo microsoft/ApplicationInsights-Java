@@ -69,7 +69,8 @@ class RpConfigurationPollingTest {
     assertThat(getCurrentSamplingPercentage()).isEqualTo(100);
 
     // when
-    new RpConfigurationPolling(rpConfiguration, new Configuration(), telemetryClient, appIdSupplier, null)
+    new RpConfigurationPolling(
+            rpConfiguration, new Configuration(), telemetryClient, appIdSupplier, null)
         .run();
 
     // then
@@ -109,7 +110,8 @@ class RpConfigurationPollingTest {
     assertThat(getCurrentSamplingPercentage()).isEqualTo(100);
 
     // when
-    new RpConfigurationPolling(rpConfiguration, new Configuration(), telemetryClient, appIdSupplier, null)
+    new RpConfigurationPolling(
+            rpConfiguration, new Configuration(), telemetryClient, appIdSupplier, null)
         .run();
 
     // then

@@ -18,7 +18,9 @@ public class Samplers {
       SamplingPercentage requestSamplingPercentage =
           SamplingPercentage.rateLimited(config.sampling.requestsPerSecond);
       SamplingPercentage parentlessDependencySamplingPercentage = SamplingPercentage.fixed(100);
-      sampler = new AiSampler(requestSamplingPercentage, parentlessDependencySamplingPercentage, quickPulse);
+      sampler =
+          new AiSampler(
+              requestSamplingPercentage, parentlessDependencySamplingPercentage, quickPulse);
     } else if (config.sampling.percentage != null) {
       SamplingPercentage samplingPercentage = SamplingPercentage.fixed(config.sampling.percentage);
       sampler = new AiSampler(samplingPercentage, samplingPercentage, quickPulse);
@@ -39,7 +41,8 @@ public class Samplers {
 
     if (!requestSamplingOverrides.isEmpty() || !dependencySamplingOverrides.isEmpty()) {
       sampler =
-          new AiOverrideSampler(requestSamplingOverrides, dependencySamplingOverrides, sampler, quickPulse);
+          new AiOverrideSampler(
+              requestSamplingOverrides, dependencySamplingOverrides, sampler, quickPulse);
     }
 
     if (!sampling.parentBased) {

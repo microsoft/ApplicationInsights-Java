@@ -8,7 +8,6 @@ import static com.azure.monitor.opentelemetry.exporter.implementation.utils.Azur
 import com.azure.monitor.opentelemetry.exporter.implementation.SpanDataMapper;
 import com.azure.monitor.opentelemetry.exporter.implementation.logging.OperationLogger;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
-import com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.QuickPulse;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
 import com.microsoft.applicationinsights.agent.internal.telemetry.BatchItemProcessor;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
@@ -18,7 +17,6 @@ import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.Collection;
 import java.util.function.Consumer;
-import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,16 +30,10 @@ public final class AgentSpanExporter implements SpanExporter {
   private final SpanDataMapper mapper;
   private final Consumer<TelemetryItem> telemetryItemConsumer;
 
-  public AgentSpanExporter(
-      SpanDataMapper mapper,
-      @Nullable QuickPulse quickPulse,
-      BatchItemProcessor batchItemProcessor) {
+  public AgentSpanExporter(SpanDataMapper mapper, BatchItemProcessor batchItemProcessor) {
     this.mapper = mapper;
     telemetryItemConsumer =
         telemetryItem -> {
-          if (quickPulse != null) {
-            quickPulse.add(telemetryItem);
-          }
           TelemetryObservers.INSTANCE
               .getObservers()
               .forEach(consumer -> consumer.accept(telemetryItem));

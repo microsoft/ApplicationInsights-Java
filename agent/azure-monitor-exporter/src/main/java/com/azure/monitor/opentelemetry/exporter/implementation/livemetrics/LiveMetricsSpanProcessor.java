@@ -15,7 +15,7 @@ public class LiveMetricsSpanProcessor implements SpanProcessor {
   private final QuickPulse quickPulse;
   private final SpanDataMapper mapper;
 
-  public LiveMetricsSpanProcessor(QuickPulse quickPulse, SpanDataMapper mapper) {
+  public LiveMetricsSpanProcessor(SpanDataMapper mapper, QuickPulse quickPulse) {
     this.quickPulse = quickPulse;
     this.mapper = mapper;
   }

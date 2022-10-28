@@ -117,7 +117,8 @@ public class RpConfigurationPolling implements Runnable {
         if (changed) {
           configuration.sampling.percentage = newRpConfiguration.sampling.percentage;
           configuration.sampling.requestsPerSecond = newRpConfiguration.sampling.requestsPerSecond;
-          DelegatingSampler.getInstance().setDelegate(Samplers.getSampler(configuration, quickPulse));
+          DelegatingSampler.getInstance()
+              .setDelegate(Samplers.getSampler(configuration, quickPulse));
           if (configuration.sampling.percentage != null) {
             BytecodeUtilImpl.samplingPercentage = configuration.sampling.percentage.floatValue();
           } else {

@@ -38,9 +38,9 @@ public class AiSampler implements Sampler {
   private final QuickPulse quickPulse;
 
   public AiSampler(
-          SamplingPercentage requestSamplingPercentage,
-          SamplingPercentage parentlessDependencySamplingPercentage,
-          QuickPulse quickPulse) {
+      SamplingPercentage requestSamplingPercentage,
+      SamplingPercentage parentlessDependencySamplingPercentage,
+      QuickPulse quickPulse) {
     this(requestSamplingPercentage, parentlessDependencySamplingPercentage, true, quickPulse);
   }
 
@@ -104,7 +104,8 @@ public class AiSampler implements Sampler {
   }
 
   @Nullable
-  private static SamplingResult useLocalParentDecisionIfPossible(Context parentContext, QuickPulse quickPulse) {
+  private static SamplingResult useLocalParentDecisionIfPossible(
+      Context parentContext, QuickPulse quickPulse) {
     // remote parent-based sampling messes up item counts since item count is not propagated in
     // tracestate (yet), but local parent-based sampling doesn't have this issue since we are
     // propagating item count locally
@@ -158,7 +159,8 @@ public class AiSampler implements Sampler {
         logger.verbose("########################## live metric is enabled and return RECORD_ONLY");
         return SamplingDecision.RECORD_ONLY;
       }
-      logger.verbose("############################ live metric is not enabled so return RECORD_AND_SAMPLE.");
+      logger.verbose(
+          "############################ live metric is not enabled so return RECORD_AND_SAMPLE.");
       return SamplingDecision.RECORD_AND_SAMPLE;
     }
 

@@ -6,12 +6,12 @@ package com.microsoft.applicationinsights.agent.internal.init;
 import static java.util.concurrent.TimeUnit.MINUTES;
 
 import com.azure.core.util.logging.ClientLogger;
-import com.azure.monitor.opentelemetry.exporter.implementation.livemetrics.LiveMetricsSpanProcessor;
 import com.azure.monitor.opentelemetry.exporter.implementation.LogDataMapper;
 import com.azure.monitor.opentelemetry.exporter.implementation.MetricDataMapper;
 import com.azure.monitor.opentelemetry.exporter.implementation.SpanDataMapper;
 import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
 import com.azure.monitor.opentelemetry.exporter.implementation.heartbeat.HeartbeatExporter;
+import com.azure.monitor.opentelemetry.exporter.implementation.livemetrics.LiveMetricsSpanProcessor;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.QuickPulse;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
@@ -184,18 +184,18 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
     QuickPulse quickPulse;
     if (configuration.preview.liveMetrics.enabled) {
       quickPulse =
-              QuickPulse.create(
-                      LazyHttpClient.newHttpPipeLineWithDefaultRedirect(
-                              configuration.preview.authentication),
-                      () -> {
-                        ConnectionString connectionString = telemetryClient.getConnectionString();
-                        return connectionString == null ? null : connectionString.getLiveEndpoint();
-                      },
-                      telemetryClient::getInstrumentationKey,
-                      telemetryClient.getRoleName(),
-                      telemetryClient.getRoleInstance(),
-                      configuration.preview.useNormalizedValueForNonNormalizedCpuPercentage,
-                      FirstEntryPoint.getAgentVersion());
+          QuickPulse.create(
+              LazyHttpClient.newHttpPipeLineWithDefaultRedirect(
+                  configuration.preview.authentication),
+              () -> {
+                ConnectionString connectionString = telemetryClient.getConnectionString();
+                return connectionString == null ? null : connectionString.getLiveEndpoint();
+              },
+              telemetryClient::getInstrumentationKey,
+              telemetryClient.getRoleName(),
+              telemetryClient.getRoleInstance(),
+              configuration.preview.useNormalizedValueForNonNormalizedCpuPercentage,
+              FirstEntryPoint.getAgentVersion());
     } else {
       quickPulse = null;
     }
@@ -327,12 +327,19 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
       tracerProvider.addSpanProcessor(new AiLegacyHeaderSpanProcessor());
     }
 
+    // live metrics span processor is used to add spans to quick pulse
+    SpanDataMapper mapper =
+        createSpanDataMapper(telemetryClient, configuration.preview.captureHttpServer4xxAsError);
+    tracerProvider.addSpanProcessor(new LiveMetricsSpanProcessor(mapper, quickPulse));
+
     String tracesExporter = otelConfig.getString("otel.traces.exporter");
     if ("none".equals(tracesExporter)) { // "none" is the default set in AiConfigCustomizer
       SpanExporter spanExporter =
           createSpanExporter(
-              telemetryClient, quickPulse, configuration.preview.captureHttpServer4xxAsError);
-
+              mapper,
+              quickPulse,
+              telemetryClient.getGeneralBatchItemProcessor(),
+              telemetryClient.getStatsbeatModule());
       spanExporter = wrapSpanExporter(spanExporter, configuration);
 
       // using BatchSpanProcessor in order to get off of the application thread as soon as possible
@@ -347,37 +354,36 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
     return tracerProvider;
   }
 
+  private static SpanDataMapper createSpanDataMapper(
+      TelemetryClient telemetryClient, boolean captureHttpServer4xxAsError) {
+    return new SpanDataMapper(
+        captureHttpServer4xxAsError,
+        telemetryClient::populateDefaults,
+        (event, instrumentationName) -> {
+          boolean lettuce51 = instrumentationName.equals("io.opentelemetry.lettuce-5.1");
+          if (lettuce51 && event.getName().startsWith("redis.encode.")) {
+            // special case as these are noisy and come from the underlying library itself
+            return true;
+          }
+          boolean grpc16 = instrumentationName.equals("io.opentelemetry.grpc-1.6");
+          if (grpc16 && event.getName().equals("message")) {
+            // OpenTelemetry semantic conventions define semi-noisy grpc events
+            // https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/trace/semantic_conventions/rpc.md#events
+            //
+            // we want to suppress these (at least by default)
+            return true;
+          }
+          return false;
+        });
+  }
+
   private static SpanExporter createSpanExporter(
-      TelemetryClient telemetryClient,
+      SpanDataMapper mapper,
       @Nullable QuickPulse quickPulse,
-      boolean captureHttpServer4xxAsError) {
-
-    SpanDataMapper mapper =
-        new SpanDataMapper(
-            captureHttpServer4xxAsError,
-            telemetryClient::populateDefaults,
-            (event, instrumentationName) -> {
-              boolean lettuce51 = instrumentationName.equals("io.opentelemetry.lettuce-5.1");
-              if (lettuce51 && event.getName().startsWith("redis.encode.")) {
-                // special case as these are noisy and come from the underlying library itself
-                return true;
-              }
-              boolean grpc16 = instrumentationName.equals("io.opentelemetry.grpc-1.6");
-              if (grpc16 && event.getName().equals("message")) {
-                // OpenTelemetry semantic conventions define semi-noisy grpc events
-                // https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/trace/semantic_conventions/rpc.md#events
-                //
-                // we want to suppress these (at least by default)
-                return true;
-              }
-              return false;
-            });
-
-    BatchItemProcessor batchItemProcessor = telemetryClient.getGeneralBatchItemProcessor();
-
+      BatchItemProcessor batchItemProcessor,
+      StatsbeatModule statsbeatModule) {
     return new StatsbeatSpanExporter(
-        new AgentSpanExporter(mapper, quickPulse, batchItemProcessor),
-        telemetryClient.getStatsbeatModule());
+        new AgentSpanExporter(mapper, batchItemProcessor), statsbeatModule);
   }
 
   private static SpanExporter wrapSpanExporter(
