@@ -159,6 +159,8 @@ public class TelemetryClient {
       throw new AssertionError("telemetry item is missing time");
     }
 
+    // TODO (heya) once we migrate performance counters and jvm metrics to OpenTelemetry, we can
+    // remove this
     if (quickPulse != null) {
       quickPulse.add(telemetryItem);
     }
