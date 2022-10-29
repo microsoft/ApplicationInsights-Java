@@ -13,7 +13,7 @@ import com.azure.storage.blob.models.ParallelTransferOptions;
 import com.azure.storage.blob.options.BlobUploadFromFileOptions;
 import com.microsoft.applicationinsights.profiler.uploader.ServiceProfilerIndex;
 import com.microsoft.applicationinsights.profiler.uploader.UploadResult;
-import com.microsoft.applicationinsights.serviceprofilerapi.client.ProfilerFrontendClientV2;
+import com.microsoft.applicationinsights.serviceprofilerapi.client.ServiceProfilerClient;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.contract.BlobAccessPass;
 import com.microsoft.applicationinsights.serviceprofilerapi.util.TimestampContract;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -60,14 +60,14 @@ public class ServiceProfilerUploader {
   private static final boolean retainJfrFile =
       Boolean.parseBoolean(System.getProperty(RETAIN_JFR_FILE_PROPERTY_NAME, "false"));
 
-  private final ProfilerFrontendClientV2 serviceProfilerClient;
+  private final ServiceProfilerClient serviceProfilerClient;
   private final String machineName;
   private final Supplier<String> appIdSupplier;
   private final String processId;
   private final String roleName;
 
   public ServiceProfilerUploader(
-      ProfilerFrontendClientV2 serviceProfilerClient,
+      ServiceProfilerClient serviceProfilerClient,
       String machineName,
       String processId,
       Supplier<String> appIdSupplier,

@@ -10,7 +10,7 @@ import com.azure.core.http.HttpMethod;
 import com.azure.core.http.HttpPipeline;
 import com.azure.core.http.HttpPipelineBuilder;
 import com.azure.core.http.HttpRequest;
-import com.microsoft.applicationinsights.serviceprofilerapi.client.ProfilerFrontendClientV2;
+import com.microsoft.applicationinsights.serviceprofilerapi.client.ServiceProfilerClient;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.contract.ArtifactAcceptedResponse;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.contract.BlobAccessPass;
 import java.io.IOException;
@@ -24,7 +24,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Mono;
 
-class ProfilerFrontendClientV2Test {
+class ServiceProfilerClientTest {
   @Test
   void settingsPullHitsCorrectUrl() throws IOException {
 
@@ -39,12 +39,11 @@ class ProfilerFrontendClientV2Test {
                 })
             .build();
 
-    ProfilerFrontendClientV2 profilerFrontendClientV2 =
-        new ProfilerFrontendClientV2(
-            new URL("http://a-host"), "a-instrumentation-key", httpPipeline);
+    ServiceProfilerClient serviceProfilerClient =
+        new ServiceProfilerClient(new URL("http://a-host"), "a-instrumentation-key", httpPipeline);
 
     Date now = Date.from(Instant.now());
-    String settings = profilerFrontendClientV2.getSettings(now).block();
+    String settings = serviceProfilerClient.getSettings(now).block();
 
     HttpRequest request = requestHolder.get();
     String url = request.getUrl().toString();
@@ -69,12 +68,11 @@ class ProfilerFrontendClientV2Test {
                 })
             .build();
 
-    ProfilerFrontendClientV2 profilerFrontendClientV2 =
-        new ProfilerFrontendClientV2(
-            new URL("http://a-host"), "a-instrumentation-key", httpPipeline);
+    ServiceProfilerClient serviceProfilerClient =
+        new ServiceProfilerClient(new URL("http://a-host"), "a-instrumentation-key", httpPipeline);
 
     UUID id = UUID.randomUUID();
-    BlobAccessPass pass = profilerFrontendClientV2.getUploadAccess(id, "jfr").block();
+    BlobAccessPass pass = serviceProfilerClient.getUploadAccess(id, "jfr").block();
 
     HttpRequest request = requestHolder.get();
     String url = request.getUrl().toString();
@@ -116,13 +114,12 @@ class ProfilerFrontendClientV2Test {
                 })
             .build();
 
-    ProfilerFrontendClientV2 profilerFrontendClientV2 =
-        new ProfilerFrontendClientV2(
-            new URL("http://a-host"), "a-instrumentation-key", httpPipeline);
+    ServiceProfilerClient serviceProfilerClient =
+        new ServiceProfilerClient(new URL("http://a-host"), "a-instrumentation-key", httpPipeline);
 
     UUID id = UUID.randomUUID();
     ArtifactAcceptedResponse artifactAcceptedResponse =
-        profilerFrontendClientV2.reportUploadFinish(id, "jfr", "an-etag").block();
+        serviceProfilerClient.reportUploadFinish(id, "jfr", "an-etag").block();
 
     HttpRequest request = requestHolder.get();
     String url = request.getUrl().toString();

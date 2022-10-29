@@ -8,7 +8,7 @@ import com.microsoft.applicationinsights.profiler.Profiler;
 import com.microsoft.applicationinsights.profiler.ProfilerConfigurationHandler;
 import com.microsoft.applicationinsights.profiler.ProfilerService;
 import com.microsoft.applicationinsights.profiler.config.ServiceProfilerServiceConfig;
-import com.microsoft.applicationinsights.serviceprofilerapi.client.ProfilerFrontendClientV2;
+import com.microsoft.applicationinsights.serviceprofilerapi.client.ServiceProfilerClient;
 import com.microsoft.applicationinsights.serviceprofilerapi.config.ServiceProfilerConfigMonitorService;
 import com.microsoft.applicationinsights.serviceprofilerapi.profiler.JfrUploadService;
 import com.microsoft.applicationinsights.serviceprofilerapi.upload.ServiceProfilerUploader;
@@ -39,7 +39,7 @@ public class JfrProfilerService implements ProfilerService {
   private static final String APP_ID_PREFIX = "cid-v1:";
 
   private final ServiceProfilerServiceConfig config;
-  private final ProfilerFrontendClientV2 serviceProfilerClient;
+  private final ServiceProfilerClient serviceProfilerClient;
   private final ServiceProfilerUploader serviceProfilerUploader;
 
   private final Supplier<String> appIdSupplier;
@@ -59,7 +59,7 @@ public class JfrProfilerService implements ProfilerService {
       ServiceProfilerServiceConfig config,
       Profiler profiler,
       ProfilerConfigurationHandler profilerConfigurationHandler,
-      ProfilerFrontendClientV2 serviceProfilerClient,
+      ServiceProfilerClient serviceProfilerClient,
       ServiceProfilerUploader serviceProfilerUploader,
       ScheduledExecutorService serviceProfilerExecutorService) {
     this.appIdSupplier = getAppId(appIdSupplier);

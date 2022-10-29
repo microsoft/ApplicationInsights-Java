@@ -25,7 +25,7 @@ import com.microsoft.applicationinsights.profiler.ProfilerServiceFactory;
 import com.microsoft.applicationinsights.profiler.config.ServiceProfilerServiceConfig;
 import com.microsoft.applicationinsights.profiler.uploader.UploadCompleteHandler;
 import com.microsoft.applicationinsights.serviceprofilerapi.JfrProfilerService;
-import com.microsoft.applicationinsights.serviceprofilerapi.client.ProfilerFrontendClientV2;
+import com.microsoft.applicationinsights.serviceprofilerapi.client.ServiceProfilerClient;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.contract.ArtifactAcceptedResponse;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.contract.BlobAccessPass;
 import com.microsoft.applicationinsights.serviceprofilerapi.profiler.JfrProfiler;
@@ -94,7 +94,7 @@ class ProfilerServiceTest {
 
     String appId = UUID.randomUUID().toString();
 
-    ProfilerFrontendClientV2 clientV2 = stubClient(triggerNow);
+    ServiceProfilerClient clientV2 = stubClient(triggerNow);
 
     Supplier<String> appIdSupplier = () -> appId;
 
@@ -229,7 +229,7 @@ class ProfilerServiceTest {
   }
 
   private ServiceProfilerUploader getServiceProfilerJfrUpload(
-      ProfilerFrontendClientV2 clientV2, Supplier<String> appIdSupplier) {
+      ServiceProfilerClient clientV2, Supplier<String> appIdSupplier) {
     return new ServiceProfilerUploader(
         clientV2, machineName, processId, appIdSupplier, "a-role-name") {
       @Override
@@ -240,8 +240,8 @@ class ProfilerServiceTest {
     };
   }
 
-  private static ProfilerFrontendClientV2 stubClient(boolean triggerNow) {
-    return new ProfilerFrontendClientV2() {
+  private static ServiceProfilerClient stubClient(boolean triggerNow) {
+    return new ServiceProfilerClient() {
       @Override
       public Mono<BlobAccessPass> getUploadAccess(UUID profileId, String extension) {
         return Mono.just(

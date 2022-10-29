@@ -24,8 +24,9 @@ import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 
 /** Client for interacting with the Service Profiler API endpoint. */
-public class ProfilerFrontendClientV2 {
-  private static final Logger LOGGER = LoggerFactory.getLogger(ProfilerFrontendClientV2.class);
+public class ServiceProfilerClient {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(ServiceProfilerClient.class);
 
   private static final String PROFILER_API_PREFIX = "api/profileragent/v4";
 
@@ -42,7 +43,7 @@ public class ProfilerFrontendClientV2 {
   private final HttpPipeline httpPipeline;
   @Nullable private final String userAgent;
 
-  public ProfilerFrontendClientV2(
+  public ServiceProfilerClient(
       URL hostUrl,
       String instrumentationKey,
       HttpPipeline httpPipeline,
@@ -53,8 +54,7 @@ public class ProfilerFrontendClientV2 {
     this.userAgent = userAgent;
   }
 
-  public ProfilerFrontendClientV2(
-      URL hostUrl, String instrumentationKey, HttpPipeline httpPipeline) {
+  public ServiceProfilerClient(URL hostUrl, String instrumentationKey, HttpPipeline httpPipeline) {
     this(hostUrl, instrumentationKey, httpPipeline, null);
   }
 
