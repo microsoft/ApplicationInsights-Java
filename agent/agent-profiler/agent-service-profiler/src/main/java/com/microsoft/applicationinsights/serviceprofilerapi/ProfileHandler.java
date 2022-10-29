@@ -4,7 +4,7 @@
 package com.microsoft.applicationinsights.serviceprofilerapi;
 
 import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
-import com.microsoft.applicationinsights.profiler.uploader.UploadCompleteHandler;
+import com.microsoft.applicationinsights.serviceprofilerapi.upload.UploadCompleteHandler;
 import java.io.File;
 
 /**

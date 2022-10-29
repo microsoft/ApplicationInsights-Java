@@ -8,6 +8,7 @@ import com.microsoft.applicationinsights.alerting.config.AlertMetricType;
 
 /** Represents a breach of an alert threshold. */
 public class AlertBreach {
+
   private final AlertMetricType type;
 
   // Value of the telemetry at the time of the breach

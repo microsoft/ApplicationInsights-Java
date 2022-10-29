@@ -4,7 +4,6 @@
 package com.microsoft.applicationinsights.alerting.aiconfig;
 
 public class AlertingConfig {
-  private AlertingConfig() {}
 
   public enum RequestFilterType {
     NAME_REGEX
@@ -121,4 +120,6 @@ public class AlertingConfig {
       this.profileDuration = profileDuration;
     }
   }
+
+  private AlertingConfig() {}
 }

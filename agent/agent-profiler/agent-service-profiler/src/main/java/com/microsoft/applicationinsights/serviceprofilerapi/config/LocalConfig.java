@@ -4,8 +4,6 @@
 package com.microsoft.applicationinsights.serviceprofilerapi.config;
 
 import com.google.auto.value.AutoValue;
-import com.microsoft.applicationinsights.profiler.config.AutoValue_ServiceProfilerServiceConfig;
-
 import java.io.File;
 import java.net.URL;
 
@@ -42,7 +40,7 @@ public abstract class LocalConfig {
   public abstract boolean isDiagnosticsEnabled();
 
   public static LocalConfig.Builder builder() {
-    return new AutoValue_ServiceProfilerServiceConfig.Builder();
+    return new AutoValue_LocalConfig.Builder();
   }
 
   @AutoValue.Builder
