@@ -3,22 +3,26 @@
 
 package com.microsoft.applicationinsights.serviceprofilerapi.client.uploader;
 
-import com.microsoft.applicationinsights.serviceprofilerapi.client.contract.OsPlatforms;
 import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public final class OsPlatformProvider {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(OsPlatformProvider.class.getName());
+
+  private static final String WINDOWS = "Windows";
+  private static final String OSX = "OSX";
+  private static final String LINUX = "Linux";
 
   @Nullable
   public static String getOsPlatformDescription() {
     if (isWindows()) {
-      return OsPlatforms.WINDOWS;
+      return WINDOWS;
     } else if (isLinux()) {
-      return OsPlatforms.LINUX;
+      return LINUX;
     } else if (isMac()) {
-      return OsPlatforms.OSX;
+      return OSX;
     }
 
     LOGGER.warn("Type of operating system could not be determined");
