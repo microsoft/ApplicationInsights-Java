@@ -115,7 +115,7 @@ public class ProfilerServiceInitializer {
         return;
       }
 
-      if (config.enableDiagnostics()) {
+      if (config.isDiagnosticsEnabled()) {
         // Initialise diagnostic service
         startDiagnosticEngine();
       }

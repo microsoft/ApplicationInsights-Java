@@ -107,15 +107,16 @@ class AlternativeJfrConfigurations {
 
   static RecordingConfiguration getMemoryProfileConfig(ServiceProfilerServiceConfig configuration) {
     return getRecordingConfiguration(
-        configuration.memoryTriggeredSettings(), AlertMetricType.MEMORY);
+        configuration.getMemoryTriggeredSettings(), AlertMetricType.MEMORY);
   }
 
   static RecordingConfiguration getCpuProfileConfig(ServiceProfilerServiceConfig configuration) {
-    return getRecordingConfiguration(configuration.cpuTriggeredSettings(), AlertMetricType.CPU);
+    return getRecordingConfiguration(configuration.getCpuTriggeredSettings(), AlertMetricType.CPU);
   }
 
   static RecordingConfiguration getSpanProfileConfig(ServiceProfilerServiceConfig configuration) {
-    return getRecordingConfiguration(configuration.cpuTriggeredSettings(), AlertMetricType.REQUEST);
+    return getRecordingConfiguration(
+        configuration.getCpuTriggeredSettings(), AlertMetricType.REQUEST);
   }
 
   static RecordingConfiguration getManualProfileConfig(ServiceProfilerServiceConfig configuration) {

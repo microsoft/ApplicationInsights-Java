@@ -73,16 +73,17 @@ class ProfilingInitializer {
       }
     }
 
-    return new ServiceProfilerServiceConfig(
-        configuration.configPollPeriodSeconds,
-        configuration.periodicRecordingDurationSeconds,
-        configuration.periodicRecordingIntervalSeconds,
-        serviceProfilerFrontEndPoint,
-        configuration.memoryTriggeredSettings,
-        configuration.cpuTriggeredSettings,
-        configuration.manualTriggeredSettings,
-        TempDirs.getSubDir(tempDir, "profiles"),
-        configuration.enableDiagnostics);
+    return ServiceProfilerServiceConfig.builder()
+        .setConfigPollPeriod(configuration.configPollPeriodSeconds)
+        .setPeriodicRecordingDuration(configuration.periodicRecordingDurationSeconds)
+        .setPeriodicRecordingInterval(configuration.periodicRecordingIntervalSeconds)
+        .setServiceProfilerFrontEndPoint(serviceProfilerFrontEndPoint)
+        .setMemoryTriggeredSettings(configuration.memoryTriggeredSettings)
+        .setCpuTriggeredSettings(configuration.cpuTriggeredSettings)
+        .setManualTriggeredSettings(configuration.manualTriggeredSettings)
+        .setTempDirectory(TempDirs.getSubDir(tempDir, "profiles"))
+        .setDiagnosticsEnabled(configuration.enableDiagnostics)
+        .build();
   }
 
   private ProfilingInitializer() {}

@@ -3,102 +3,67 @@
 
 package com.microsoft.applicationinsights.profiler.config;
 
+import com.google.auto.value.AutoValue;
 import java.io.File;
 import java.net.URL;
 
 /** Configuration of the service profiler subsystem. */
-public class ServiceProfilerServiceConfig {
-
-  public static final int DEFAULT_CONFIG_POLL_PERIOD_IN_MS = 60000;
-  public static final int DEFAULT_PERIODIC_RECORDING_DURATION_IN_S = 120;
-  public static final int DEFAULT_PERIODIC_RECORDING_INTERVAL_IN_S = 60 * 60;
+@AutoValue
+public abstract class ServiceProfilerServiceConfig {
 
   // duration between polls for configuration changes
-  private final int configPollPeriod;
+  public abstract int getConfigPollPeriod();
 
   // default duration of periodic profiles
-  private final int periodicRecordingDuration;
+  public abstract int getPeriodicRecordingDuration();
 
   // default interval of periodic profiles
-  private final int periodicRecordingInterval;
+  public abstract int getPeriodicRecordingInterval();
 
-  private final URL serviceProfilerFrontEndPoint;
+  public abstract URL getServiceProfilerFrontEndPoint();
 
   // Either an inbuilt profile as defined in ProfileTypes, or a path to a custom JFC file to use for
   // memory profiling
-  private final String memoryTriggeredSettings;
+  public abstract String getMemoryTriggeredSettings();
 
   // Either an inbuilt profile as defined in ProfileTypes, or a path to a custom JFC file to use for
   // cpu profiling
-  private final String cpuTriggeredSettings;
+  public abstract String getCpuTriggeredSettings();
 
   // Either an inbuilt profile as defined in ProfileTypes, or a path to a custom JFC file to use for
   // manual profiling
-  private final String manualTriggeredSettings;
+  public abstract String getManualTriggeredSettings();
 
   // Location to which jfr files will be temporarily held
-  private final File tempDirectory;
+  public abstract File getTempDirectory();
 
-  private final boolean enableDiagnostics;
+  public abstract boolean isDiagnosticsEnabled();
 
-  public ServiceProfilerServiceConfig(
-      int configPollPeriod,
-      int periodicRecordingDuration,
-      int periodicRecordingInterval,
-      URL serviceProfilerFrontEndPoint,
-      String memoryTriggeredSettings,
-      String cpuTriggeredSettings,
-      String manualTriggeredSettings,
-      File tempDirectory,
-      boolean enableDiagnostics) {
-    this.configPollPeriod = configPollPeriod;
-    this.periodicRecordingDuration = periodicRecordingDuration;
-    this.periodicRecordingInterval = periodicRecordingInterval;
-    this.serviceProfilerFrontEndPoint = serviceProfilerFrontEndPoint;
-    this.memoryTriggeredSettings = memoryTriggeredSettings;
-    this.cpuTriggeredSettings = cpuTriggeredSettings;
-    this.manualTriggeredSettings = manualTriggeredSettings;
-    this.tempDirectory = tempDirectory;
-    this.enableDiagnostics = enableDiagnostics;
+  public static ServiceProfilerServiceConfig.Builder builder() {
+    return new AutoValue_ServiceProfilerServiceConfig.Builder();
   }
 
-  public int getConfigPollPeriod() {
-    return configPollPeriod != -1 ? configPollPeriod * 1000 : DEFAULT_CONFIG_POLL_PERIOD_IN_MS;
-  }
+  @AutoValue.Builder
+  public abstract static class Builder {
 
-  public long getPeriodicRecordingDuration() {
-    return periodicRecordingDuration != -1
-        ? periodicRecordingDuration
-        : DEFAULT_PERIODIC_RECORDING_DURATION_IN_S;
-  }
+    public abstract Builder setConfigPollPeriod(int configPollPeriod);
 
-  public long getPeriodicRecordingInterval() {
-    return periodicRecordingInterval != -1
-        ? periodicRecordingInterval
-        : DEFAULT_PERIODIC_RECORDING_INTERVAL_IN_S;
-  }
+    public abstract Builder setPeriodicRecordingDuration(int periodicRecordingDuration);
 
-  public URL getServiceProfilerFrontEndPoint() {
-    return serviceProfilerFrontEndPoint;
-  }
+    public abstract Builder setPeriodicRecordingInterval(int periodicRecordingInterval);
 
-  public String memoryTriggeredSettings() {
-    return memoryTriggeredSettings;
-  }
+    public abstract Builder setServiceProfilerFrontEndPoint(URL serviceProfilerFrontEndPoint);
 
-  public String cpuTriggeredSettings() {
-    return cpuTriggeredSettings;
-  }
+    public abstract Builder setMemoryTriggeredSettings(String memoryTriggeredSettings);
 
-  public String getManualTriggeredSettings() {
-    return manualTriggeredSettings;
-  }
+    public abstract Builder setCpuTriggeredSettings(String cpuTriggeredSettings);
 
-  public File tempDirectory() {
-    return tempDirectory;
-  }
+    public abstract Builder setManualTriggeredSettings(String manualTriggeredSettings);
 
-  public boolean enableDiagnostics() {
-    return enableDiagnostics;
+    public abstract Builder setTempDirectory(File tempDirectory);
+
+    public abstract Builder setDiagnosticsEnabled(boolean diagnosticsEnabled);
+
+    public abstract ServiceProfilerServiceConfig build();
   }
 }

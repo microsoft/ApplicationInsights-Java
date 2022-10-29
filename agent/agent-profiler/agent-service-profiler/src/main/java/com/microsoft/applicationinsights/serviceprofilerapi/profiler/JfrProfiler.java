@@ -18,6 +18,11 @@ import com.microsoft.jfr.Recording;
 import com.microsoft.jfr.RecordingConfiguration;
 import com.microsoft.jfr.RecordingOptions;
 import com.microsoft.jfr.dcmd.FlightRecorderDiagnosticCommandConnection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import javax.annotation.Nullable;
+import javax.management.InstanceNotFoundException;
+import javax.management.MBeanServerConnection;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -31,11 +36,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
-import javax.annotation.Nullable;
-import javax.management.InstanceNotFoundException;
-import javax.management.MBeanServerConnection;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Manages connecting JFR interaction.
@@ -86,7 +86,7 @@ public class JfrProfiler implements ProfilerConfigurationHandler, Profiler {
     spanRecordingConfiguration = AlternativeJfrConfigurations.getSpanProfileConfig(configuration);
     manualRecordingConfiguration =
         AlternativeJfrConfigurations.getManualProfileConfig(configuration);
-    temporaryDirectory = configuration.tempDirectory();
+    temporaryDirectory = configuration.getTempDirectory();
   }
 
   /**
