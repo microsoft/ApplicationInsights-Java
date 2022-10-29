@@ -6,7 +6,7 @@ package com.microsoft.applicationinsights.serviceprofilerapi.upload;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.microsoft.applicationinsights.profiler.ProfilerConfiguration;
-import com.microsoft.applicationinsights.serviceprofilerapi.client.ServiceProfilerClientV2;
+import com.microsoft.applicationinsights.serviceprofilerapi.client.ProfilerFrontendClientV2;
 import com.microsoft.applicationinsights.serviceprofilerapi.config.ServiceProfilerSettingsClient;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -18,7 +18,7 @@ class ServiceProfilerSettingsClientTest {
 
   @Test
   void badServiceResponseDoesNotProvideReturn() throws IOException, URISyntaxException {
-    ServiceProfilerClientV2 serviceProfilerClient = Mockito.mock(ServiceProfilerClientV2.class);
+    ProfilerFrontendClientV2 serviceProfilerClient = Mockito.mock(ProfilerFrontendClientV2.class);
 
     Mockito.when(serviceProfilerClient.getSettings(Mockito.any())).thenReturn(Mono.just(""));
 

@@ -24,7 +24,7 @@ import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 
 /** Client for interacting with the Service Profiler API endpoint. */
-public class ProfilerFrontendClientV2 implements ServiceProfilerClientV2 {
+public class ProfilerFrontendClientV2 {
   private static final Logger LOGGER = LoggerFactory.getLogger(ProfilerFrontendClientV2.class);
 
   private static final String PROFILER_API_PREFIX = "api/profileragent/v4";
@@ -59,7 +59,6 @@ public class ProfilerFrontendClientV2 implements ServiceProfilerClientV2 {
   }
 
   /** Obtain permission to upload a profile to service profiler. */
-  @Override
   public Mono<BlobAccessPass> getUploadAccess(UUID profileId, String extension) {
     URL requestUrl = uploadRequestUri(profileId, extension);
 
@@ -94,7 +93,6 @@ public class ProfilerFrontendClientV2 implements ServiceProfilerClientV2 {
   }
 
   /** Report to Service Profiler that the profile upload has been completed. */
-  @Override
   public Mono<ArtifactAcceptedResponse> reportUploadFinish(
       UUID profileId, String extension, String etag) {
 
@@ -138,7 +136,6 @@ public class ProfilerFrontendClientV2 implements ServiceProfilerClientV2 {
   }
 
   /** Obtain current settings that have been configured within the UI. */
-  @Override
   public Mono<String> getSettings(Date oldTimeStamp) {
 
     URL requestUrl = getSettingsPath(oldTimeStamp);

@@ -5,7 +5,7 @@ package com.microsoft.applicationinsights.serviceprofilerapi.config;
 
 import com.microsoft.applicationinsights.profiler.ProfilerConfigurationHandler;
 import com.microsoft.applicationinsights.profiler.config.ServiceProfilerServiceConfig;
-import com.microsoft.applicationinsights.serviceprofilerapi.client.ServiceProfilerClientV2;
+import com.microsoft.applicationinsights.serviceprofilerapi.client.ProfilerFrontendClientV2;
 import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -25,12 +25,12 @@ public class ServiceProfilerConfigMonitorService {
   private final int pollPeriodInMs;
   private ScheduledFuture<?> future;
 
-  private final ServiceProfilerClientV2 serviceProfilerClient;
+  private final ProfilerFrontendClientV2 serviceProfilerClient;
   private ServiceProfilerSettingsClient serviceProfilerSettingsClient;
 
   public static ServiceProfilerConfigMonitorService createServiceProfilerConfigService(
       ScheduledExecutorService serviceProfilerExecutorService,
-      ServiceProfilerClientV2 serviceProfilerClient,
+      ProfilerFrontendClientV2 serviceProfilerClient,
       List<ProfilerConfigurationHandler> configObservers,
       ServiceProfilerServiceConfig config) {
     ServiceProfilerConfigMonitorService serviceProfilerConfigMonitorService =
@@ -43,7 +43,7 @@ public class ServiceProfilerConfigMonitorService {
   public ServiceProfilerConfigMonitorService(
       ScheduledExecutorService serviceProfilerExecutorService,
       int pollPeriodInMs,
-      ServiceProfilerClientV2 serviceProfilerClient) {
+      ProfilerFrontendClientV2 serviceProfilerClient) {
 
     this.serviceProfilerExecutorService = serviceProfilerExecutorService;
     this.pollPeriodInMs = pollPeriodInMs;

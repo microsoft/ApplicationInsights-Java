@@ -10,7 +10,6 @@ import com.microsoft.applicationinsights.profiler.ProfilerService;
 import com.microsoft.applicationinsights.profiler.ProfilerServiceFactory;
 import com.microsoft.applicationinsights.profiler.config.ServiceProfilerServiceConfig;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.ProfilerFrontendClientV2;
-import com.microsoft.applicationinsights.serviceprofilerapi.client.ServiceProfilerClientV2;
 import com.microsoft.applicationinsights.serviceprofilerapi.profiler.JfrProfiler;
 import com.microsoft.applicationinsights.serviceprofilerapi.upload.ServiceProfilerUploader;
 import java.util.concurrent.Future;
@@ -36,7 +35,7 @@ public class JfrProfilerServiceFactory implements ProfilerServiceFactory {
       ScheduledExecutorService serviceProfilerExecutorService,
       String userAgent,
       String roleName) {
-    ServiceProfilerClientV2 serviceProfilerClient =
+    ProfilerFrontendClientV2 serviceProfilerClient =
         new ProfilerFrontendClientV2(
             config.getServiceProfilerFrontEndPoint(), instrumentationKey, httpPipeline, userAgent);
 

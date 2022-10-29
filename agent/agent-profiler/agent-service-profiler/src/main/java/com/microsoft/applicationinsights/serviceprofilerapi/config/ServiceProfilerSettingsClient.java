@@ -5,7 +5,7 @@ package com.microsoft.applicationinsights.serviceprofilerapi.config;
 
 import com.azure.core.exception.HttpResponseException;
 import com.microsoft.applicationinsights.profiler.ProfilerConfiguration;
-import com.microsoft.applicationinsights.serviceprofilerapi.client.ServiceProfilerClientV2;
+import com.microsoft.applicationinsights.serviceprofilerapi.client.ProfilerFrontendClientV2;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import com.squareup.moshi.adapters.Rfc3339DateJsonAdapter;
@@ -16,10 +16,10 @@ import reactor.core.publisher.Mono;
 
 /** Client that pulls setting from the service profiler endpoint and emits them if changed. */
 public class ServiceProfilerSettingsClient {
-  private final ServiceProfilerClientV2 serviceProfilerClient;
+  private final ProfilerFrontendClientV2 serviceProfilerClient;
   private Date lastModified;
 
-  public ServiceProfilerSettingsClient(ServiceProfilerClientV2 serviceProfilerClient) {
+  public ServiceProfilerSettingsClient(ProfilerFrontendClientV2 serviceProfilerClient) {
     this.serviceProfilerClient = serviceProfilerClient;
     lastModified = new Date(70, Calendar.JANUARY, 1);
   }

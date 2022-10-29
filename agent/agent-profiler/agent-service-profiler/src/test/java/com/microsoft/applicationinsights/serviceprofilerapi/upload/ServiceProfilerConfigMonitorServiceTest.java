@@ -10,7 +10,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 
 import com.microsoft.applicationinsights.profiler.ProfilerConfiguration;
-import com.microsoft.applicationinsights.serviceprofilerapi.client.ServiceProfilerClientV2;
+import com.microsoft.applicationinsights.serviceprofilerapi.client.ProfilerFrontendClientV2;
 import com.microsoft.applicationinsights.serviceprofilerapi.config.ServiceProfilerConfigMonitorService;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -32,7 +32,7 @@ class ServiceProfilerConfigMonitorServiceTest {
     AtomicReference<Runnable> job = new AtomicReference<>();
 
     ScheduledExecutorService executorService = mockScheduledExecutorService(job::set);
-    ServiceProfilerClientV2 serviceProfilerClient = mockServiceProfilerClient();
+    ProfilerFrontendClientV2 serviceProfilerClient = mockServiceProfilerClient();
 
     ServiceProfilerConfigMonitorService serviceMonitor =
         new ServiceProfilerConfigMonitorService(executorService, 100, serviceProfilerClient);
@@ -72,9 +72,9 @@ class ServiceProfilerConfigMonitorServiceTest {
     return executorService;
   }
 
-  static ServiceProfilerClientV2 mockServiceProfilerClient()
+  static ProfilerFrontendClientV2 mockServiceProfilerClient()
       throws IOException, URISyntaxException {
-    ServiceProfilerClientV2 serviceProfilerClient = Mockito.mock(ServiceProfilerClientV2.class);
+    ProfilerFrontendClientV2 serviceProfilerClient = Mockito.mock(ProfilerFrontendClientV2.class);
     when(serviceProfilerClient.getSettings(any(Date.class)))
         .thenReturn(
             Mono.just(

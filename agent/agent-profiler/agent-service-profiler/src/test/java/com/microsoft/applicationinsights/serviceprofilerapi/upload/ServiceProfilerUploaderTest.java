@@ -8,7 +8,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.azure.storage.blob.options.BlobUploadFromFileOptions;
 import com.microsoft.applicationinsights.profiler.uploader.ServiceProfilerIndex;
-import com.microsoft.applicationinsights.serviceprofilerapi.client.ServiceProfilerClientV2;
+import com.microsoft.applicationinsights.serviceprofilerapi.client.ProfilerFrontendClientV2;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.contract.ArtifactAcceptedResponse;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.contract.BlobAccessPass;
 import java.io.File;
@@ -24,7 +24,7 @@ class ServiceProfilerUploaderTest {
   @Test
   void uploadFileGoodPathReturnsExpectedResponse() throws IOException {
 
-    ServiceProfilerClientV2 serviceProfilerClient = stubServiceProfilerClient();
+    ProfilerFrontendClientV2 serviceProfilerClient = stubServiceProfilerClient();
 
     File tmpFile = createFakeJfrFile();
     UUID appId = UUID.randomUUID();
@@ -82,7 +82,7 @@ class ServiceProfilerUploaderTest {
   @Test
   void roleNameIsCorrectlyAddedToMetaData() throws IOException {
 
-    ServiceProfilerClientV2 serviceProfilerClient = stubServiceProfilerClient();
+    ProfilerFrontendClientV2 serviceProfilerClient = stubServiceProfilerClient();
 
     File tmpFile = createFakeJfrFile();
     UUID appId = UUID.randomUUID();
@@ -130,7 +130,7 @@ class ServiceProfilerUploaderTest {
   @Test
   void uploadWithoutFileThrows() {
 
-    ServiceProfilerClientV2 serviceProfilerClient = stubServiceProfilerClient();
+    ProfilerFrontendClientV2 serviceProfilerClient = stubServiceProfilerClient();
 
     UUID appId = UUID.randomUUID();
     UUID profileId = UUID.randomUUID();
@@ -160,8 +160,8 @@ class ServiceProfilerUploaderTest {
     return tmpFile;
   }
 
-  static ServiceProfilerClientV2 stubServiceProfilerClient() {
-    return new ServiceProfilerClientV2() {
+  static ProfilerFrontendClientV2 stubServiceProfilerClient() {
+    return new ProfilerFrontendClientV2() {
 
       @Override
       public Mono<BlobAccessPass> getUploadAccess(UUID profileId, String extension) {
