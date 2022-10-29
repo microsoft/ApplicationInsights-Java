@@ -16,10 +16,10 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Supplier;
 
-class JfrProfilerServiceFactory {
+class ProfilerServiceFactory {
 
   @SuppressWarnings("TooManyParameters")
-  synchronized Future<JfrProfilerService> initialize(
+  synchronized Future<ProfilerService> initialize(
       Supplier<String> appIdSupplier,
       ProfilerConfigurationHandler profilerConfigurationHandler,
       String processId,
@@ -39,11 +39,11 @@ class JfrProfilerServiceFactory {
     UploadService uploader =
         new UploadService(serviceProfilerClient, machineName, processId, appIdSupplier, roleName);
 
-    JfrProfilerService instance =
-        new JfrProfilerService(
+    ProfilerService instance =
+        new ProfilerService(
             appIdSupplier,
             config,
-            new JfrProfiler(config, tempDir),
+            new Profiler(config, tempDir),
             profilerConfigurationHandler,
             serviceProfilerClient,
             uploader,

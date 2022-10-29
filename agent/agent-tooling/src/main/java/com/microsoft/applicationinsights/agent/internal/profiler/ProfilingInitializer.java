@@ -54,7 +54,7 @@ public class ProfilingInitializer {
   private static final Logger LOGGER = LoggerFactory.getLogger(ProfilingInitializer.class);
 
   private static boolean initialized = false;
-  private static JfrProfilerService profilerService;
+  private static ProfilerService profilerService;
   private static DiagnosticEngine diagnosticEngine;
 
   public static void initialize(
@@ -125,7 +125,7 @@ public class ProfilingInitializer {
       File tempDir) {
     if (!initialized) {
       initialized = true;
-      JfrProfilerServiceFactory factory = null;
+      ProfilerServiceFactory factory = null;
 
       try {
         factory = loadProfilerServiceFactory();
@@ -148,18 +148,18 @@ public class ProfilingInitializer {
           Executors.newScheduledThreadPool(
               1,
               ThreadPoolUtils.createDaemonThreadFactory(
-                  JfrProfilerServiceFactory.class, "ServiceProfilerService"));
+                  ProfilerServiceFactory.class, "ServiceProfilerService"));
 
       ScheduledExecutorService alertServiceExecutorService =
           Executors.newScheduledThreadPool(
               2,
               ThreadPoolUtils.createDaemonThreadFactory(
-                  JfrProfilerServiceFactory.class, "ServiceProfilerAlertingService"));
+                  ProfilerServiceFactory.class, "ServiceProfilerAlertingService"));
 
       AlertingSubsystem alerting =
           createAlertMonitor(alertServiceExecutorService, telemetryClient, configuration);
 
-      Future<JfrProfilerService> future =
+      Future<ProfilerService> future =
           factory.initialize(
               appIdSupplier,
               updateAlertingConfig(alerting),
@@ -213,8 +213,8 @@ public class ProfilingInitializer {
     }
   }
 
-  private static JfrProfilerServiceFactory loadProfilerServiceFactory() {
-    return new JfrProfilerServiceFactory();
+  private static ProfilerServiceFactory loadProfilerServiceFactory() {
+    return new ProfilerServiceFactory();
   }
 
   private static DiagnosticEngineFactory loadDiagnosticEngineFactory() {

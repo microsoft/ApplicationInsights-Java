@@ -6,6 +6,7 @@ package com.microsoft.applicationinsights.agent.internal.profiler;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.profiler.config.ProfilerConfiguration;
 import com.microsoft.applicationinsights.agent.internal.profiler.upload.UploadCompleteHandler;
+import com.microsoft.applicationinsights.agent.internal.profiler.upload.UploadService;
 import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
 import com.microsoft.applicationinsights.alerting.config.AlertConfiguration;
 import com.microsoft.applicationinsights.alerting.config.AlertMetricType;
@@ -42,15 +43,15 @@ import org.slf4j.LoggerFactory;
  *   <li>Creates profiles on demand
  * </ul>
  */
-public class JfrProfiler implements ProfilerConfigurationHandler {
+public class Profiler implements ProfilerConfigurationHandler {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(JfrProfiler.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(Profiler.class);
 
   // service execution context
   private ScheduledExecutorService scheduledExecutorService;
 
   // Action to perform when a profile has been created
-  private JfrUploadService jfrUploadService;
+  private UploadService uploadService;
 
   private FlightRecorderConnection flightRecorderConnection;
   private RecordingOptions.Builder recordingOptionsBuilder;
@@ -68,7 +69,7 @@ public class JfrProfiler implements ProfilerConfigurationHandler {
 
   private final File temporaryDirectory;
 
-  public JfrProfiler(Configuration.ProfilerConfiguration config, File tempDir) {
+  public Profiler(Configuration.ProfilerConfiguration config, File tempDir) {
 
     periodicConfig =
         AlertConfiguration.builder()
@@ -94,9 +95,9 @@ public class JfrProfiler implements ProfilerConfigurationHandler {
    *     enabled.
    */
   public void initialize(
-      JfrUploadService jfrUploadService, ScheduledExecutorService scheduledExecutorService)
+      UploadService uploadService, ScheduledExecutorService scheduledExecutorService)
       throws Exception {
-    this.jfrUploadService = jfrUploadService;
+    this.uploadService = uploadService;
     this.scheduledExecutorService = scheduledExecutorService;
 
     // TODO -  allow user configuration of profile options
@@ -227,7 +228,7 @@ public class JfrProfiler implements ProfilerConfigurationHandler {
         closeRecording(activeRecording, activeRecordingFile);
 
         // upload new profile
-        jfrUploadService.upload(
+        uploadService.upload(
             alertBreach, recordingStart.toEpochMilli(), activeRecordingFile, uploadCompleteHandler);
 
       } catch (Exception e) {

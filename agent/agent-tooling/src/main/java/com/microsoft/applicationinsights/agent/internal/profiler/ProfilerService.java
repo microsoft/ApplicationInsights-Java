@@ -27,9 +27,9 @@ import org.slf4j.LoggerFactory;
  *   <li>JFR Uploader service
  * </ul>
  */
-public class JfrProfilerService {
+public class ProfilerService {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(JfrProfilerService.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(ProfilerService.class);
 
   private static final String APP_ID_PREFIX = "cid-v1:";
 
@@ -40,17 +40,17 @@ public class JfrProfilerService {
   private final Supplier<String> appIdSupplier;
 
   @SuppressWarnings("unused")
-  private final JfrProfiler profiler;
+  private final Profiler profiler;
 
   private final ScheduledExecutorService serviceProfilerExecutorService;
   private final ProfilerConfigurationHandler profilerConfigurationHandler;
 
   private final AtomicBoolean initialised = new AtomicBoolean();
 
-  public JfrProfilerService(
+  public ProfilerService(
       Supplier<String> appIdSupplier,
       Configuration.ProfilerConfiguration config,
-      JfrProfiler profiler,
+      Profiler profiler,
       ProfilerConfigurationHandler profilerConfigurationHandler,
       ServiceProfilerClient serviceProfilerClient,
       UploadService uploadService,
@@ -65,8 +65,8 @@ public class JfrProfilerService {
     this.profilerConfigurationHandler = profilerConfigurationHandler;
   }
 
-  public Future<JfrProfilerService> initialize() {
-    CompletableFuture<JfrProfilerService> result = new CompletableFuture<>();
+  public Future<ProfilerService> initialize() {
+    CompletableFuture<ProfilerService> result = new CompletableFuture<>();
     if (initialised.getAndSet(true)) {
       result.complete(this);
       return result;
@@ -74,13 +74,11 @@ public class JfrProfilerService {
 
     LOGGER.warn("INITIALISING JFR PROFILING SUBSYSTEM THIS FEATURE IS IN BETA");
 
-    JfrUploadService jfrUploadService = new JfrUploadService(uploadService, appIdSupplier);
-
     serviceProfilerExecutorService.submit(
         () -> {
           try {
             // Daemon remains alive permanently due to scheduling an update
-            profiler.initialize(jfrUploadService, serviceProfilerExecutorService);
+            profiler.initialize(uploadService, serviceProfilerExecutorService);
 
             // Monitor service remains alive permanently due to scheduling an periodic config pull
             ConfigMonitoringService.createServiceProfilerConfigService(
@@ -117,7 +115,7 @@ public class JfrProfilerService {
     };
   }
 
-  public JfrProfiler getProfiler() {
+  public Profiler getProfiler() {
     return profiler;
   }
 }

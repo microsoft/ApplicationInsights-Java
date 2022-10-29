@@ -14,6 +14,7 @@ import com.azure.storage.blob.options.BlobUploadFromFileOptions;
 import com.microsoft.applicationinsights.agent.internal.profiler.client.BlobAccessPass;
 import com.microsoft.applicationinsights.agent.internal.profiler.client.ServiceProfilerClient;
 import com.microsoft.applicationinsights.agent.internal.profiler.util.TimestampContract;
+import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.File;
 import java.io.IOException;
@@ -27,6 +28,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 import java.util.zip.GZIPOutputStream;
@@ -77,8 +79,41 @@ public class UploadService {
     this.roleName = roleName;
   }
 
+  public void upload(
+      AlertBreach alertBreach,
+      long timestamp,
+      File file,
+      UploadCompleteHandler uploadCompleteHandler) {
+
+    String appId = appIdSupplier.get();
+    if (appId == null || appId.isEmpty()) {
+      LOGGER.error("Not uploading file due to lack of app id");
+      return;
+    }
+
+    uploadJfrFile(
+            UUID.fromString(alertBreach.getProfileId()),
+            "JFR-" + alertBreach.getType().name(),
+            timestamp,
+            file,
+            alertBreach.getCpuMetric(),
+            alertBreach.getMemoryUsage())
+        .subscribe(
+            onUploadComplete(uploadCompleteHandler), e -> LOGGER.error("Failed to upload file", e));
+  }
+
+  // Notify listener that full profile and upload cycle has completed and log success
+  private static Consumer<? super UploadResult> onUploadComplete(
+      UploadCompleteHandler uploadCompleteHandler) {
+    return result -> {
+      uploadCompleteHandler.notify(result);
+      LOGGER.info("Uploading of profile complete");
+    };
+  }
+
   /** Upload a given JFR file and return associated metadata of the uploaded profile. */
-  public Mono<UploadResult> uploadJfrFile(
+  // visible for tests
+  Mono<UploadResult> uploadJfrFile(
       UUID profileId,
       String triggerName,
       long timestamp,

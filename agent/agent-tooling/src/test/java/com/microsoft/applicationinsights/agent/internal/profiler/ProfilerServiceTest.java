@@ -96,7 +96,7 @@ class ProfilerServiceTest {
 
     UploadService uploadService = getServiceProfilerJfrUpload(clientV2, appIdSupplier);
 
-    JfrProfiler jfrProfiler = getJfrDaemon(profileInvoked);
+    Profiler profiler = getJfrDaemon(profileInvoked);
 
     Object monitor = new Object();
 
@@ -122,12 +122,12 @@ class ProfilerServiceTest {
         Executors.newScheduledThreadPool(
             2,
             ThreadPoolUtils.createDaemonThreadFactory(
-                JfrProfilerServiceFactory.class, "ServiceProfilerService"));
+                ProfilerServiceFactory.class, "ServiceProfilerService"));
 
     ScheduledExecutorService alertServiceExecutorService =
         Executors.newSingleThreadScheduledExecutor(
             ThreadPoolUtils.createDaemonThreadFactory(
-                JfrProfilerServiceFactory.class, "ServiceProfilerAlertingService"));
+                ProfilerServiceFactory.class, "ServiceProfilerAlertingService"));
 
     // Callback invoked when a profile has been uploaded.
     // Sends index metadata about the uploaded profile
@@ -136,7 +136,7 @@ class ProfilerServiceTest {
 
     Configuration config = new Configuration();
 
-    AtomicReference<JfrProfilerService> service = new AtomicReference<>();
+    AtomicReference<ProfilerService> service = new AtomicReference<>();
     AlertingSubsystem alertService =
         AlertingServiceFactory.create(
             config,
@@ -146,7 +146,7 @@ class ProfilerServiceTest {
             alertServiceExecutorService);
 
     service.set(
-        new JfrProfilerService(
+        new ProfilerService(
                 () -> appId,
                 LocalConfig.builder()
                     .setConfigPollPeriod(1)
@@ -159,7 +159,7 @@ class ProfilerServiceTest {
                     .setTempDirectory(new File("."))
                     .setDiagnosticsEnabled(true)
                     .build(),
-                jfrProfiler,
+                profiler,
                 ProfilingInitializer.updateAlertingConfig(alertService),
                 clientV2,
                 uploadService,
@@ -196,7 +196,7 @@ class ProfilerServiceTest {
     assertTelemetry.accept(serviceProfilerIndex.get());
   }
 
-  private static JfrProfilerService awaitReferenceSet(AtomicReference<JfrProfilerService> service) {
+  private static ProfilerService awaitReferenceSet(AtomicReference<ProfilerService> service) {
     // Wait for up to 10 seconds
     for (int i = 0; i < 100 && service.get() == null; i++) {
       try {
@@ -208,9 +208,9 @@ class ProfilerServiceTest {
     return service.get();
   }
 
-  private JfrProfiler getJfrDaemon(AtomicBoolean profileInvoked) throws MalformedURLException {
+  private Profiler getJfrDaemon(AtomicBoolean profileInvoked) throws MalformedURLException {
 
-    return new JfrProfiler(
+    return new Profiler(
         LocalConfig.builder()
             .setConfigPollPeriod(1)
             .setPeriodicRecordingDuration(2)
