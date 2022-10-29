@@ -14,7 +14,6 @@ import com.azure.monitor.opentelemetry.exporter.implementation.utils.ThreadPoolU
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
 import com.microsoft.applicationinsights.agent.internal.profiler.config.AlertConfigParser;
-import com.microsoft.applicationinsights.agent.internal.profiler.config.LocalConfig;
 import com.microsoft.applicationinsights.agent.internal.profiler.upload.ServiceProfilerIndex;
 import com.microsoft.applicationinsights.agent.internal.profiler.upload.UploadCompleteHandler;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
@@ -23,6 +22,7 @@ import com.microsoft.applicationinsights.alerting.AlertingSubsystem;
 import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
 import com.microsoft.applicationinsights.diagnostics.DiagnosticEngine;
 import com.microsoft.applicationinsights.diagnostics.DiagnosticEngineFactory;
+import java.io.File;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -56,12 +56,12 @@ public class ProfilerServiceInitializer {
   public static synchronized void initialize(
       Supplier<String> appIdSupplier,
       String processId,
-      LocalConfig config,
       String machineName,
       String roleName,
       TelemetryClient telemetryClient,
       String userAgent,
-      Configuration configuration) {
+      Configuration configuration,
+      File tempDir) {
 
     // Cannot use default creator, as we need to add POST to the allowed redirects
     HttpPipeline httpPipeline =
@@ -77,25 +77,25 @@ public class ProfilerServiceInitializer {
     initialize(
         appIdSupplier,
         processId,
-        config,
         machineName,
         roleName,
         telemetryClient,
         userAgent,
         configuration,
-        httpPipeline);
+        httpPipeline,
+        tempDir);
   }
 
   public static synchronized void initialize(
       Supplier<String> appIdSupplier,
       String processId,
-      LocalConfig config,
       String machineName,
       String roleName,
       TelemetryClient telemetryClient,
       String userAgent,
       Configuration configuration,
-      HttpPipeline httpPipeline) {
+      HttpPipeline httpPipeline,
+      File tempDir) {
     if (!initialized) {
       initialized = true;
       JfrProfilerServiceFactory factory = null;
@@ -112,7 +112,7 @@ public class ProfilerServiceInitializer {
         return;
       }
 
-      if (config.isDiagnosticsEnabled()) {
+      if (configuration.preview.profiler.enableDiagnostics) {
         // Initialise diagnostic service
         startDiagnosticEngine();
       }
@@ -137,13 +137,14 @@ public class ProfilerServiceInitializer {
               appIdSupplier,
               updateAlertingConfig(alerting),
               processId,
-              config,
+              configuration.preview.profiler,
               machineName,
               telemetryClient.getInstrumentationKey(),
               httpPipeline,
               serviceProfilerExecutorService,
               userAgent,
-              roleName);
+              roleName,
+              tempDir);
 
       serviceProfilerExecutorService.submit(
           () -> {

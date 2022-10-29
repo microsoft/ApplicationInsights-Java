@@ -14,9 +14,9 @@ public abstract class AlertConfiguration {
 
   public abstract float getThreshold();
 
-  public abstract long getProfileDuration();
+  public abstract int getProfileDurationSeconds();
 
-  public abstract long getCooldown();
+  public abstract int getCooldownSeconds();
 
   @Nullable
   public abstract AlertingConfig.RequestTrigger getRequestTrigger();
@@ -32,9 +32,9 @@ public abstract class AlertConfiguration {
 
     public abstract Builder setThreshold(float threshold);
 
-    public abstract Builder setProfileDuration(long profileDuration);
+    public abstract Builder setProfileDurationSeconds(int profileDurationSeconds);
 
-    public abstract Builder setCooldown(long cooldown);
+    public abstract Builder setCooldownSeconds(int cooldownSeconds);
 
     public abstract Builder setType(AlertMetricType type);
 

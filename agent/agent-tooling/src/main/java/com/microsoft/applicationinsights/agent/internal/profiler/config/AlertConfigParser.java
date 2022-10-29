@@ -3,13 +3,13 @@
 
 package com.microsoft.applicationinsights.agent.internal.profiler.config;
 
+import com.microsoft.applicationinsights.agent.internal.profiler.ProfilerConfiguration;
 import com.microsoft.applicationinsights.alerting.config.AlertConfiguration;
 import com.microsoft.applicationinsights.alerting.config.AlertMetricType;
 import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration;
 import com.microsoft.applicationinsights.alerting.config.CollectionPlanConfiguration;
 import com.microsoft.applicationinsights.alerting.config.CollectionPlanConfiguration.EngineMode;
 import com.microsoft.applicationinsights.alerting.config.DefaultConfiguration;
-import com.microsoft.applicationinsights.agent.internal.profiler.ProfilerConfiguration;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -37,7 +37,7 @@ public class AlertConfigParser {
           .setSingle(false)
           .setMode(EngineMode.immediate)
           .setExpiration(Instant.ofEpochMilli(0))
-          .setImmediateProfilingDuration(0)
+          .setImmediateProfilingDurationSeconds(0)
           .setSettingsMoniker("")
           .build();
     }
@@ -56,7 +56,8 @@ public class AlertConfigParser {
     parsers.put(
         "immediate-profiling-duration",
         new ParseConfigValue<>(
-            true, (config, arg) -> config.setImmediateProfilingDuration(Long.parseLong(arg))));
+            true,
+            (config, arg) -> config.setImmediateProfilingDurationSeconds(Integer.parseInt(arg))));
     parsers.put(
         "settings-moniker",
         new ParseConfigValue<>(true, (config, arg) -> config.setSettingsMoniker(arg)));
@@ -99,8 +100,8 @@ public class AlertConfigParser {
           .setType(AlertMetricType.MEMORY)
           .setEnabled(false)
           .setThreshold(0f)
-          .setProfileDuration(0)
-          .setCooldown(0)
+          .setProfileDurationSeconds(0)
+          .setCooldownSeconds(0)
           .build();
     }
     String[] tokens = memoryConfig.split(" ");
@@ -111,11 +112,12 @@ public class AlertConfigParser {
         new ParseConfigValue<>(true, (config, arg) -> config.setThreshold(Float.parseFloat(arg))));
     parsers.put(
         "memory-trigger-cooldown",
-        new ParseConfigValue<>(true, (config, arg) -> config.setCooldown(Long.parseLong(arg))));
+        new ParseConfigValue<>(
+            true, (config, arg) -> config.setCooldownSeconds(Integer.parseInt(arg))));
     parsers.put(
         "memory-trigger-profilingDuration",
         new ParseConfigValue<>(
-            true, (config, arg) -> config.setProfileDuration(Long.parseLong(arg))));
+            true, (config, arg) -> config.setProfileDurationSeconds(Integer.parseInt(arg))));
     parsers.put(
         "memory-trigger-enabled",
         new ParseConfigValue<>(
@@ -133,8 +135,8 @@ public class AlertConfigParser {
           .setType(AlertMetricType.CPU)
           .setEnabled(false)
           .setThreshold(0f)
-          .setProfileDuration(0)
-          .setCooldown(0)
+          .setProfileDurationSeconds(0)
+          .setCooldownSeconds(0)
           .build();
     }
 
@@ -146,11 +148,12 @@ public class AlertConfigParser {
         new ParseConfigValue<>(true, (config, arg) -> config.setThreshold(Float.parseFloat(arg))));
     parsers.put(
         "cpu-trigger-cooldown",
-        new ParseConfigValue<>(true, (config, arg) -> config.setCooldown(Long.parseLong(arg))));
+        new ParseConfigValue<>(
+            true, (config, arg) -> config.setCooldownSeconds(Integer.parseInt(arg))));
     parsers.put(
         "cpu-trigger-profilingDuration",
         new ParseConfigValue<>(
-            true, (config, arg) -> config.setProfileDuration(Long.parseLong(arg))));
+            true, (config, arg) -> config.setProfileDurationSeconds(Integer.parseInt(arg))));
     parsers.put(
         "cpu-trigger-enabled",
         new ParseConfigValue<>(

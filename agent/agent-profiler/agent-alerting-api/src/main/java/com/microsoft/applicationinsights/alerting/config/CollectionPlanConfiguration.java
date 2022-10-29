@@ -15,7 +15,7 @@ public abstract class CollectionPlanConfiguration {
 
   public abstract Instant getExpiration();
 
-  public abstract long getImmediateProfilingDuration();
+  public abstract int getImmediateProfilingDurationSeconds();
 
   public abstract String getSettingsMoniker();
 
@@ -47,8 +47,8 @@ public abstract class CollectionPlanConfiguration {
 
     public abstract CollectionPlanConfiguration.Builder setExpiration(Instant expiration);
 
-    public abstract CollectionPlanConfiguration.Builder setImmediateProfilingDuration(
-        long immediateProfilingDuration);
+    public abstract CollectionPlanConfiguration.Builder setImmediateProfilingDurationSeconds(
+        int immediateProfilingDurationSeconds);
 
     public abstract CollectionPlanConfiguration.Builder setSettingsMoniker(String settingsMoniker);
 

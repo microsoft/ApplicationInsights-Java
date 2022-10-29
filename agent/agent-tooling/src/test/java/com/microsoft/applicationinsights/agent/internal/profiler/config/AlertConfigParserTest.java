@@ -11,7 +11,6 @@ import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration;
 import com.microsoft.applicationinsights.alerting.config.CollectionPlanConfiguration;
 import com.microsoft.applicationinsights.alerting.config.CollectionPlanConfiguration.EngineMode;
 import com.microsoft.applicationinsights.alerting.config.DefaultConfiguration;
-import com.microsoft.applicationinsights.agent.internal.profiler.config.AlertConfigParser;
 import org.junit.jupiter.api.Test;
 
 class AlertConfigParserTest {
@@ -41,8 +40,8 @@ class AlertConfigParserTest {
                 .setType(AlertMetricType.CPU)
                 .setEnabled(true)
                 .setThreshold((float) 80)
-                .setProfileDuration(30)
-                .setCooldown(14400)
+                .setProfileDurationSeconds(30)
+                .setCooldownSeconds(14400)
                 .build());
 
     assertThat(config.getMemoryAlert())
@@ -51,8 +50,8 @@ class AlertConfigParserTest {
                 .setType(AlertMetricType.CPU)
                 .setEnabled(true)
                 .setThreshold((float) 20)
-                .setProfileDuration(120)
-                .setCooldown(14400)
+                .setProfileDurationSeconds(120)
+                .setCooldownSeconds(14400)
                 .build());
     assertThat(config.getDefaultConfiguration())
         .isEqualTo(
@@ -67,7 +66,7 @@ class AlertConfigParserTest {
                 .setSingle(true)
                 .setMode(EngineMode.immediate)
                 .setExpiration(AlertConfigParser.parseBinaryDate(5249157885138288517L))
-                .setImmediateProfilingDuration(120)
+                .setImmediateProfilingDurationSeconds(120)
                 .setSettingsMoniker("a-settings-moniker")
                 .build());
   }

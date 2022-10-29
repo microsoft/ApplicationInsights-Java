@@ -3,8 +3,8 @@
 
 package com.microsoft.applicationinsights.agent.internal.profiler.profiler;
 
+import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.alerting.config.AlertMetricType;
-import com.microsoft.applicationinsights.agent.internal.profiler.config.LocalConfig;
 import com.microsoft.jfr.RecordingConfiguration;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.FileInputStream;
@@ -105,22 +105,19 @@ class AlternativeJfrConfigurations {
     }
   }
 
-  static RecordingConfiguration getMemoryProfileConfig(LocalConfig configuration) {
-    return getRecordingConfiguration(
-        configuration.getMemoryTriggeredSettings(), AlertMetricType.MEMORY);
+  static RecordingConfiguration getMemoryProfileConfig(Configuration.ProfilerConfiguration config) {
+    return getRecordingConfiguration(config.memoryTriggeredSettings, AlertMetricType.MEMORY);
   }
 
-  static RecordingConfiguration getCpuProfileConfig(LocalConfig configuration) {
-    return getRecordingConfiguration(configuration.getCpuTriggeredSettings(), AlertMetricType.CPU);
+  static RecordingConfiguration getCpuProfileConfig(Configuration.ProfilerConfiguration config) {
+    return getRecordingConfiguration(config.cpuTriggeredSettings, AlertMetricType.CPU);
   }
 
-  static RecordingConfiguration getSpanProfileConfig(LocalConfig configuration) {
-    return getRecordingConfiguration(
-        configuration.getCpuTriggeredSettings(), AlertMetricType.REQUEST);
+  static RecordingConfiguration getSpanProfileConfig(Configuration.ProfilerConfiguration config) {
+    return getRecordingConfiguration(config.cpuTriggeredSettings, AlertMetricType.REQUEST);
   }
 
-  static RecordingConfiguration getManualProfileConfig(LocalConfig configuration) {
-    return getRecordingConfiguration(
-        configuration.getManualTriggeredSettings(), AlertMetricType.MANUAL);
+  static RecordingConfiguration getManualProfileConfig(Configuration.ProfilerConfiguration config) {
+    return getRecordingConfiguration(config.manualTriggeredSettings, AlertMetricType.MANUAL);
   }
 }

@@ -3,14 +3,14 @@
 
 package com.microsoft.applicationinsights.agent.internal.profiler.profiler;
 
-import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
-import com.microsoft.applicationinsights.alerting.config.AlertConfiguration;
-import com.microsoft.applicationinsights.alerting.config.AlertMetricType;
+import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.profiler.ProfileHandler;
 import com.microsoft.applicationinsights.agent.internal.profiler.ProfilerConfiguration;
 import com.microsoft.applicationinsights.agent.internal.profiler.ProfilerConfigurationHandler;
-import com.microsoft.applicationinsights.agent.internal.profiler.config.LocalConfig;
 import com.microsoft.applicationinsights.agent.internal.profiler.upload.UploadCompleteHandler;
+import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
+import com.microsoft.applicationinsights.alerting.config.AlertConfiguration;
+import com.microsoft.applicationinsights.alerting.config.AlertMetricType;
 import com.microsoft.jfr.FlightRecorderConnection;
 import com.microsoft.jfr.JfrStreamingException;
 import com.microsoft.jfr.Recording;
@@ -70,24 +70,22 @@ public class JfrProfiler implements ProfilerConfigurationHandler {
 
   private final File temporaryDirectory;
 
-  public JfrProfiler(LocalConfig configuration) {
+  public JfrProfiler(Configuration.ProfilerConfiguration config, File tempDir) {
 
     periodicConfig =
         AlertConfiguration.builder()
             .setType(AlertMetricType.PERIODIC)
             .setEnabled(false)
             .setThreshold(0.0f)
-            .setProfileDuration(configuration.getPeriodicRecordingDuration())
-            .setCooldown(configuration.getPeriodicRecordingInterval())
+            .setProfileDurationSeconds(config.periodicRecordingDurationSeconds)
+            .setCooldownSeconds(config.periodicRecordingIntervalSeconds)
             .build();
 
-    memoryRecordingConfiguration =
-        AlternativeJfrConfigurations.getMemoryProfileConfig(configuration);
-    cpuRecordingConfiguration = AlternativeJfrConfigurations.getCpuProfileConfig(configuration);
-    spanRecordingConfiguration = AlternativeJfrConfigurations.getSpanProfileConfig(configuration);
-    manualRecordingConfiguration =
-        AlternativeJfrConfigurations.getManualProfileConfig(configuration);
-    temporaryDirectory = configuration.getTempDirectory();
+    memoryRecordingConfiguration = AlternativeJfrConfigurations.getMemoryProfileConfig(config);
+    cpuRecordingConfiguration = AlternativeJfrConfigurations.getCpuProfileConfig(config);
+    spanRecordingConfiguration = AlternativeJfrConfigurations.getSpanProfileConfig(config);
+    manualRecordingConfiguration = AlternativeJfrConfigurations.getManualProfileConfig(config);
+    temporaryDirectory = tempDir;
   }
 
   /**
@@ -329,7 +327,7 @@ public class JfrProfiler implements ProfilerConfigurationHandler {
             .build();
     profileAndUpload(
         breach,
-        Duration.ofSeconds(breach.getAlertConfiguration().getProfileDuration()),
+        Duration.ofSeconds(breach.getAlertConfiguration().getProfileDurationSeconds()),
         uploadCompleteHandler);
   }
 
@@ -341,7 +339,7 @@ public class JfrProfiler implements ProfilerConfigurationHandler {
     } else {
       profileAndUpload(
           alertBreach,
-          Duration.ofSeconds(alertBreach.getAlertConfiguration().getProfileDuration()),
+          Duration.ofSeconds(alertBreach.getAlertConfiguration().getProfileDurationSeconds()),
           uploadCompleteHandler);
     }
   }

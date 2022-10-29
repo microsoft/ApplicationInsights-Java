@@ -3,6 +3,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.profiler.config;
 
+import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.profiler.ProfilerConfigurationHandler;
 import com.microsoft.applicationinsights.agent.internal.profiler.client.ServiceProfilerClient;
 import java.util.List;
@@ -20,7 +21,7 @@ public class ConfigMonitoringService {
   private final ScheduledExecutorService serviceProfilerExecutorService;
 
   // period of the polling interval
-  private final int pollPeriodInMs;
+  private final int pollPeriodInSeconds;
   private ScheduledFuture<?> future;
 
   private final ServiceProfilerClient serviceProfilerClient;
@@ -30,21 +31,21 @@ public class ConfigMonitoringService {
       ScheduledExecutorService serviceProfilerExecutorService,
       ServiceProfilerClient serviceProfilerClient,
       List<ProfilerConfigurationHandler> configObservers,
-      LocalConfig config) {
+      Configuration.ProfilerConfiguration config) {
     ConfigMonitoringService configMonitoringService =
         new ConfigMonitoringService(
-            serviceProfilerExecutorService, config.getConfigPollPeriod(), serviceProfilerClient);
+            serviceProfilerExecutorService, config.configPollPeriodSeconds, serviceProfilerClient);
     configMonitoringService.initialize(configObservers);
     return configMonitoringService;
   }
 
   public ConfigMonitoringService(
       ScheduledExecutorService serviceProfilerExecutorService,
-      int pollPeriodInMs,
+      int pollPeriodInSeconds,
       ServiceProfilerClient serviceProfilerClient) {
 
     this.serviceProfilerExecutorService = serviceProfilerExecutorService;
-    this.pollPeriodInMs = pollPeriodInMs;
+    this.pollPeriodInSeconds = pollPeriodInSeconds;
     this.serviceProfilerClient = serviceProfilerClient;
   }
 
@@ -64,7 +65,7 @@ public class ConfigMonitoringService {
     // schedule regular config pull
     future =
         serviceProfilerExecutorService.scheduleAtFixedRate(
-            pull(handleSettings), 0, pollPeriodInMs, TimeUnit.MILLISECONDS);
+            pull(handleSettings), 0, pollPeriodInSeconds, TimeUnit.SECONDS);
   }
 
   // pull settings from the endpoint

@@ -3,17 +3,13 @@
 
 package com.microsoft.applicationinsights.agent.internal.init;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.TempDirs;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.SdkVersionFinder;
 import com.microsoft.applicationinsights.agent.internal.common.FriendlyException;
 import com.microsoft.applicationinsights.agent.internal.common.SystemInformation;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.profiler.ProfilerServiceInitializer;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
-import com.microsoft.applicationinsights.agent.internal.profiler.config.LocalConfig;
 import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URL;
 
 class ProfilingInitializer {
 
@@ -32,12 +28,12 @@ class ProfilingInitializer {
     ProfilerServiceInitializer.initialize(
         appIdSupplier::get,
         SystemInformation.getProcessId(),
-        formServiceProfilerConfig(config.preview.profiler, tempDir),
         config.role.instance,
         config.role.name,
         telemetryClient,
         formApplicationInsightsUserAgent(),
-        config);
+        config,
+        tempDir);
   }
 
   private static String formApplicationInsightsUserAgent() {
@@ -54,36 +50,6 @@ class ProfilingInitializer {
         + "; "
         + arch
         + ")";
-  }
-
-  private static LocalConfig formServiceProfilerConfig(
-      Configuration.ProfilerConfiguration configuration, File tempDir) {
-    URL serviceProfilerFrontEndPoint =
-        TelemetryClient.getActive().getConnectionString().getProfilerEndpoint();
-
-    // If the user has overridden their service profiler endpoint use that url
-    if (configuration.serviceProfilerFrontEndPoint != null) {
-      try {
-        serviceProfilerFrontEndPoint = new URL(configuration.serviceProfilerFrontEndPoint);
-      } catch (MalformedURLException e) {
-        throw new FriendlyException(
-            "Failed to parse url: " + configuration.serviceProfilerFrontEndPoint,
-            "Ensure that the service profiler endpoint is a valid url",
-            e);
-      }
-    }
-
-    return LocalConfig.builder()
-        .setConfigPollPeriod(configuration.configPollPeriodSeconds)
-        .setPeriodicRecordingDuration(configuration.periodicRecordingDurationSeconds)
-        .setPeriodicRecordingInterval(configuration.periodicRecordingIntervalSeconds)
-        .setServiceProfilerFrontEndPoint(serviceProfilerFrontEndPoint)
-        .setMemoryTriggeredSettings(configuration.memoryTriggeredSettings)
-        .setCpuTriggeredSettings(configuration.cpuTriggeredSettings)
-        .setManualTriggeredSettings(configuration.manualTriggeredSettings)
-        .setTempDirectory(TempDirs.getSubDir(tempDir, "profiles"))
-        .setDiagnosticsEnabled(configuration.enableDiagnostics)
-        .build();
   }
 
   private ProfilingInitializer() {}

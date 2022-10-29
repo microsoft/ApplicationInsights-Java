@@ -102,13 +102,13 @@ public class SingleAlertPipeline implements AlertPipeline, AlertPipelineMXBean {
   }
 
   @Override
-  public long getCoolDown() {
-    return alertConfiguration.getCooldown();
+  public long getCooldownSeconds() {
+    return alertConfiguration.getCooldownSeconds();
   }
 
   @Override
-  public long getProfilerDuration() {
-    return alertConfiguration.getProfileDuration();
+  public long getProfilerDurationSeconds() {
+    return alertConfiguration.getProfileDurationSeconds();
   }
 
   @Override

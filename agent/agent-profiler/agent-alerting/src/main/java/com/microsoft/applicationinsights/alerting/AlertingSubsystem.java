@@ -59,30 +59,12 @@ public class AlertingSubsystem {
     // init with disabled config
     alertingSubsystem.initialize(
         AlertingConfiguration.create(
-            AlertConfiguration.builder()
-                .setType(AlertMetricType.CPU)
-                .setEnabled(false)
-                .setThreshold(0)
-                .setProfileDuration(0)
-                .setCooldown(0)
-                .build(),
-            AlertConfiguration.builder()
-                .setType(AlertMetricType.MEMORY)
-                .setEnabled(false)
-                .setThreshold(0)
-                .setProfileDuration(0)
-                .setCooldown(0)
-                .build(),
-            DefaultConfiguration.builder()
-                .setSamplingEnabled(false)
-                .setSamplingRate(0)
-                .setSamplingProfileDuration(0)
-                .build(),
+            AlertConfiguration.builder().setType(AlertMetricType.CPU).build(),
+            AlertConfiguration.builder().setType(AlertMetricType.MEMORY).build(),
+            DefaultConfiguration.builder().build(),
             CollectionPlanConfiguration.builder()
-                .setSingle(false)
                 .setMode(EngineMode.immediate)
                 .setExpiration(Instant.now())
-                .setImmediateProfilingDuration(0)
                 .setSettingsMoniker("")
                 .build()));
     return alertingSubsystem;
@@ -156,7 +138,7 @@ public class AlertingSubsystem {
                   AlertConfiguration.builder()
                       .setType(AlertMetricType.MANUAL)
                       .setEnabled(true)
-                      .setProfileDuration(config.getImmediateProfilingDuration())
+                      .setProfileDurationSeconds(config.getImmediateProfilingDurationSeconds())
                       .build())
               .setProfileId(UUID.randomUUID().toString())
               .setCpuMetric(0)

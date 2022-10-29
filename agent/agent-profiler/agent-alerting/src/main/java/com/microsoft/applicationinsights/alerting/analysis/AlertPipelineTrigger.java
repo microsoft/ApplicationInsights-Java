@@ -48,7 +48,7 @@ public class AlertPipelineTrigger implements DoubleConsumer {
   }
 
   public boolean isOffCooldown() {
-    Instant coolDownCutOff = Instant.now().minusSeconds(alertConfig.getCooldown());
+    Instant coolDownCutOff = Instant.now().minusSeconds(alertConfig.getCooldownSeconds());
     return lastAlertTime == null || lastAlertTime.isBefore(coolDownCutOff);
   }
 

@@ -42,8 +42,8 @@ public class RequestAlertPipelineBuilder {
             .setType(AlertMetricType.REQUEST)
             .setEnabled(true)
             .setThreshold(configuration.threshold.value)
-            .setProfileDuration(configuration.profileDuration)
-            .setCooldown(configuration.throttling.value)
+            .setProfileDurationSeconds(configuration.profileDuration)
+            .setCooldownSeconds(configuration.throttling.value)
             .setRequestTrigger(requestTriggerConfiguration)
             .build();
 

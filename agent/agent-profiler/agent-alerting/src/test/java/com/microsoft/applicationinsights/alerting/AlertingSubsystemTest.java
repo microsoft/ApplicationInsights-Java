@@ -30,15 +30,15 @@ class AlertingSubsystemTest {
                 .setType(AlertMetricType.CPU)
                 .setEnabled(true)
                 .setThreshold((float) 80)
-                .setProfileDuration(30)
-                .setCooldown(14400)
+                .setProfileDurationSeconds(30)
+                .setCooldownSeconds(14400)
                 .build(),
             AlertConfiguration.builder()
                 .setType(AlertMetricType.MEMORY)
                 .setEnabled(true)
                 .setThreshold((float) 20)
-                .setProfileDuration(120)
-                .setCooldown(14400)
+                .setProfileDurationSeconds(120)
+                .setCooldownSeconds(14400)
                 .build(),
             DefaultConfiguration.builder()
                 .setSamplingEnabled(true)
@@ -49,7 +49,7 @@ class AlertingSubsystemTest {
                 .setSingle(true)
                 .setMode(EngineMode.immediate)
                 .setExpiration(Instant.now())
-                .setImmediateProfilingDuration(120)
+                .setImmediateProfilingDurationSeconds(120)
                 .setSettingsMoniker("a-settings-moniker")
                 .build()));
     return monitor;
@@ -88,15 +88,15 @@ class AlertingSubsystemTest {
                 .setType(AlertMetricType.CPU)
                 .setEnabled(true)
                 .setThreshold((float) 80)
-                .setProfileDuration(30)
-                .setCooldown(14400)
+                .setProfileDurationSeconds(30)
+                .setCooldownSeconds(14400)
                 .build(),
             AlertConfiguration.builder()
                 .setType(AlertMetricType.MEMORY)
                 .setEnabled(true)
                 .setThreshold((float) 20)
-                .setProfileDuration(120)
-                .setCooldown(14400)
+                .setProfileDurationSeconds(120)
+                .setCooldownSeconds(14400)
                 .build(),
             DefaultConfiguration.builder()
                 .setSamplingEnabled(true)
@@ -107,7 +107,7 @@ class AlertingSubsystemTest {
                 .setSingle(true)
                 .setMode(EngineMode.immediate)
                 .setExpiration(Instant.now().plus(100, ChronoUnit.SECONDS))
-                .setImmediateProfilingDuration(120)
+                .setImmediateProfilingDurationSeconds(120)
                 .setSettingsMoniker("a-settings-moniker")
                 .build()));
 
@@ -128,15 +128,15 @@ class AlertingSubsystemTest {
                 .setType(AlertMetricType.CPU)
                 .setEnabled(true)
                 .setThreshold((float) 80)
-                .setProfileDuration(30)
-                .setCooldown(14400)
+                .setProfileDurationSeconds(30)
+                .setCooldownSeconds(14400)
                 .build(),
             AlertConfiguration.builder()
                 .setType(AlertMetricType.MEMORY)
                 .setEnabled(true)
                 .setThreshold((float) 20)
-                .setProfileDuration(120)
-                .setCooldown(14400)
+                .setProfileDurationSeconds(120)
+                .setCooldownSeconds(14400)
                 .build(),
             DefaultConfiguration.builder()
                 .setSamplingEnabled(true)
@@ -147,7 +147,7 @@ class AlertingSubsystemTest {
                 .setSingle(true)
                 .setMode(EngineMode.immediate)
                 .setExpiration(Instant.now().minus(100, ChronoUnit.SECONDS))
-                .setImmediateProfilingDuration(120)
+                .setImmediateProfilingDurationSeconds(120)
                 .setSettingsMoniker("a-settings-moniker")
                 .build()));
 
