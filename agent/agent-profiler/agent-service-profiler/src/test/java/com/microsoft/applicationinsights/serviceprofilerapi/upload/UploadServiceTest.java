@@ -7,7 +7,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.azure.storage.blob.options.BlobUploadFromFileOptions;
-import com.microsoft.applicationinsights.profiler.uploader.ServiceProfilerIndex;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.ArtifactAcceptedResponse;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.BlobAccessPass;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.ServiceProfilerClient;

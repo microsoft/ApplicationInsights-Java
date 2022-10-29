@@ -3,9 +3,7 @@
 
 package com.microsoft.applicationinsights.serviceprofilerapi;
 
-import com.microsoft.applicationinsights.profiler.ProfileHandler;
-import com.microsoft.applicationinsights.profiler.ProfilerConfigurationHandler;
-import com.microsoft.applicationinsights.profiler.config.ServiceProfilerServiceConfig;
+import com.microsoft.applicationinsights.serviceprofilerapi.config.LocalConfig;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.ServiceProfilerClient;
 import com.microsoft.applicationinsights.serviceprofilerapi.config.ConfigMonitoringService;
 import com.microsoft.applicationinsights.serviceprofilerapi.profiler.JfrProfiler;
@@ -37,7 +35,7 @@ public class JfrProfilerService {
 
   private static final String APP_ID_PREFIX = "cid-v1:";
 
-  private final ServiceProfilerServiceConfig config;
+  private final LocalConfig config;
   private final ServiceProfilerClient serviceProfilerClient;
   private final UploadService uploadService;
 
@@ -55,7 +53,7 @@ public class JfrProfilerService {
 
   public JfrProfilerService(
       Supplier<String> appIdSupplier,
-      ServiceProfilerServiceConfig config,
+      LocalConfig config,
       JfrProfiler profiler,
       ProfilerConfigurationHandler profilerConfigurationHandler,
       ServiceProfilerClient serviceProfilerClient,

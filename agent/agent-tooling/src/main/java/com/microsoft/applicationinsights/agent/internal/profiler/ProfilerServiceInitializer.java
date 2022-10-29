@@ -19,11 +19,11 @@ import com.microsoft.applicationinsights.alerting.AlertingSubsystem;
 import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
 import com.microsoft.applicationinsights.diagnostics.DiagnosticEngine;
 import com.microsoft.applicationinsights.diagnostics.DiagnosticEngineFactory;
-import com.microsoft.applicationinsights.profiler.ProfilerConfigurationHandler;
-import com.microsoft.applicationinsights.profiler.config.AlertConfigParser;
-import com.microsoft.applicationinsights.profiler.config.ServiceProfilerServiceConfig;
-import com.microsoft.applicationinsights.profiler.uploader.ServiceProfilerIndex;
-import com.microsoft.applicationinsights.profiler.uploader.UploadCompleteHandler;
+import com.microsoft.applicationinsights.serviceprofilerapi.ProfilerConfigurationHandler;
+import com.microsoft.applicationinsights.serviceprofilerapi.config.AlertConfigParser;
+import com.microsoft.applicationinsights.serviceprofilerapi.config.LocalConfig;
+import com.microsoft.applicationinsights.serviceprofilerapi.upload.ServiceProfilerIndex;
+import com.microsoft.applicationinsights.serviceprofilerapi.upload.UploadCompleteHandler;
 import com.microsoft.applicationinsights.serviceprofilerapi.JfrProfilerService;
 import com.microsoft.applicationinsights.serviceprofilerapi.JfrProfilerServiceFactory;
 import java.util.Arrays;
@@ -59,7 +59,7 @@ public class ProfilerServiceInitializer {
   public static synchronized void initialize(
       Supplier<String> appIdSupplier,
       String processId,
-      ServiceProfilerServiceConfig config,
+      LocalConfig config,
       String machineName,
       String roleName,
       TelemetryClient telemetryClient,
@@ -92,7 +92,7 @@ public class ProfilerServiceInitializer {
   public static synchronized void initialize(
       Supplier<String> appIdSupplier,
       String processId,
-      ServiceProfilerServiceConfig config,
+      LocalConfig config,
       String machineName,
       String roleName,
       TelemetryClient telemetryClient,

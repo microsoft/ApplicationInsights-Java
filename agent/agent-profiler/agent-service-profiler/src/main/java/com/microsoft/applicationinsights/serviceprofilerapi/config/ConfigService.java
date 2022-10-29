@@ -4,7 +4,7 @@
 package com.microsoft.applicationinsights.serviceprofilerapi.config;
 
 import com.azure.core.exception.HttpResponseException;
-import com.microsoft.applicationinsights.profiler.ProfilerConfiguration;
+import com.microsoft.applicationinsights.serviceprofilerapi.ProfilerConfiguration;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.ServiceProfilerClient;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;

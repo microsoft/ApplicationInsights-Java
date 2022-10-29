@@ -1,15 +1,17 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-package com.microsoft.applicationinsights.profiler.config;
+package com.microsoft.applicationinsights.serviceprofilerapi.config;
 
 import com.google.auto.value.AutoValue;
+import com.microsoft.applicationinsights.profiler.config.AutoValue_ServiceProfilerServiceConfig;
+
 import java.io.File;
 import java.net.URL;
 
 /** Configuration of the service profiler subsystem. */
 @AutoValue
-public abstract class ServiceProfilerServiceConfig {
+public abstract class LocalConfig {
 
   // duration between polls for configuration changes
   public abstract int getConfigPollPeriod();
@@ -39,7 +41,7 @@ public abstract class ServiceProfilerServiceConfig {
 
   public abstract boolean isDiagnosticsEnabled();
 
-  public static ServiceProfilerServiceConfig.Builder builder() {
+  public static LocalConfig.Builder builder() {
     return new AutoValue_ServiceProfilerServiceConfig.Builder();
   }
 
@@ -64,6 +66,6 @@ public abstract class ServiceProfilerServiceConfig {
 
     public abstract Builder setDiagnosticsEnabled(boolean diagnosticsEnabled);
 
-    public abstract ServiceProfilerServiceConfig build();
+    public abstract LocalConfig build();
   }
 }

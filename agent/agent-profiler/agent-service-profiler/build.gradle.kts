@@ -7,7 +7,6 @@ dependencies {
   annotationProcessor("com.google.auto.service:auto-service")
 
   implementation(project(":agent:agent-profiler:agent-alerting-api"))
-  implementation(project(":agent:agent-profiler:agent-profiler-api"))
   implementation("com.microsoft.jfr:jfr-streaming")
   implementation("org.slf4j:slf4j-api")
   implementation("com.squareup.moshi:moshi")

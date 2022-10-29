@@ -6,11 +6,11 @@ package com.microsoft.applicationinsights.serviceprofilerapi.profiler;
 import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
 import com.microsoft.applicationinsights.alerting.config.AlertConfiguration;
 import com.microsoft.applicationinsights.alerting.config.AlertMetricType;
-import com.microsoft.applicationinsights.profiler.ProfileHandler;
-import com.microsoft.applicationinsights.profiler.ProfilerConfiguration;
-import com.microsoft.applicationinsights.profiler.ProfilerConfigurationHandler;
-import com.microsoft.applicationinsights.profiler.config.ServiceProfilerServiceConfig;
-import com.microsoft.applicationinsights.profiler.uploader.UploadCompleteHandler;
+import com.microsoft.applicationinsights.serviceprofilerapi.ProfileHandler;
+import com.microsoft.applicationinsights.serviceprofilerapi.ProfilerConfiguration;
+import com.microsoft.applicationinsights.serviceprofilerapi.ProfilerConfigurationHandler;
+import com.microsoft.applicationinsights.serviceprofilerapi.config.LocalConfig;
+import com.microsoft.applicationinsights.serviceprofilerapi.upload.UploadCompleteHandler;
 import com.microsoft.jfr.FlightRecorderConnection;
 import com.microsoft.jfr.JfrStreamingException;
 import com.microsoft.jfr.Recording;
@@ -70,7 +70,7 @@ public class JfrProfiler implements ProfilerConfigurationHandler {
 
   private final File temporaryDirectory;
 
-  public JfrProfiler(ServiceProfilerServiceConfig configuration) {
+  public JfrProfiler(LocalConfig configuration) {
     periodicConfig =
         AlertConfiguration.create(
             AlertMetricType.PERIODIC,

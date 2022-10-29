@@ -4,9 +4,9 @@
 package com.microsoft.applicationinsights.serviceprofilerapi.profiler;
 
 import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
-import com.microsoft.applicationinsights.profiler.ProfileHandler;
-import com.microsoft.applicationinsights.profiler.uploader.UploadCompleteHandler;
-import com.microsoft.applicationinsights.profiler.uploader.UploadResult;
+import com.microsoft.applicationinsights.serviceprofilerapi.ProfileHandler;
+import com.microsoft.applicationinsights.serviceprofilerapi.upload.UploadCompleteHandler;
+import com.microsoft.applicationinsights.serviceprofilerapi.upload.UploadResult;
 import com.microsoft.applicationinsights.serviceprofilerapi.upload.UploadService;
 import java.io.File;
 import java.util.UUID;

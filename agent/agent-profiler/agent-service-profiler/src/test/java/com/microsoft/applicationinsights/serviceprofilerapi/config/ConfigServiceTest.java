@@ -5,7 +5,7 @@ package com.microsoft.applicationinsights.serviceprofilerapi.config;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.microsoft.applicationinsights.profiler.ProfilerConfiguration;
+import com.microsoft.applicationinsights.serviceprofilerapi.ProfilerConfiguration;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.ServiceProfilerClient;
 import java.io.IOException;
 import java.net.URISyntaxException;

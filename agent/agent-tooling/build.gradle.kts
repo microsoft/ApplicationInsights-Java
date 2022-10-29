@@ -40,8 +40,6 @@ dependencies {
   compileOnly("ch.qos.logback:logback-classic")
   compileOnly("ch.qos.logback.contrib:logback-json-classic")
 
-  implementation(project(":agent:agent-profiler:agent-profiler-api"))
-
   implementation("com.azure:azure-core")
   implementation("com.azure:azure-identity") {
     // "This dependency can be excluded if IntelliJ Credential is not being used for authentication

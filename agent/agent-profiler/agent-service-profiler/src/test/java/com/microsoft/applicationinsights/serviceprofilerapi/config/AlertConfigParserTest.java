@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-package com.microsoft.applicationinsights.profiler.config;
+package com.microsoft.applicationinsights.serviceprofilerapi.config;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

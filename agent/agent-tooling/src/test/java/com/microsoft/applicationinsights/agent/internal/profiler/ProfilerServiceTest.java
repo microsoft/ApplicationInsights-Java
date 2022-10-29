@@ -22,8 +22,8 @@ import com.microsoft.applicationinsights.alerting.AlertingSubsystem;
 import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
 import com.microsoft.applicationinsights.profiler.ProfilerService;
 import com.microsoft.applicationinsights.profiler.ProfilerServiceFactory;
-import com.microsoft.applicationinsights.profiler.config.ServiceProfilerServiceConfig;
-import com.microsoft.applicationinsights.profiler.uploader.UploadCompleteHandler;
+import com.microsoft.applicationinsights.serviceprofilerapi.config.LocalConfig;
+import com.microsoft.applicationinsights.serviceprofilerapi.upload.UploadCompleteHandler;
 import com.microsoft.applicationinsights.serviceprofilerapi.JfrProfilerService;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.ArtifactAcceptedResponse;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.BlobAccessPass;
@@ -152,7 +152,7 @@ class ProfilerServiceTest {
     service.set(
         new JfrProfilerService(
                 () -> appId,
-                ServiceProfilerServiceConfig.builder()
+                LocalConfig.builder()
                     .setConfigPollPeriod(1)
                     .setPeriodicRecordingDuration(2)
                     .setPeriodicRecordingInterval(3)
@@ -215,7 +215,7 @@ class ProfilerServiceTest {
   private JfrProfiler getJfrDaemon(AtomicBoolean profileInvoked) throws MalformedURLException {
 
     return new JfrProfiler(
-        ServiceProfilerServiceConfig.builder()
+        LocalConfig.builder()
             .setConfigPollPeriod(1)
             .setPeriodicRecordingDuration(2)
             .setPeriodicRecordingInterval(3)

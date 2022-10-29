@@ -4,7 +4,7 @@
 package com.microsoft.applicationinsights.serviceprofilerapi.profiler;
 
 import com.microsoft.applicationinsights.alerting.config.AlertMetricType;
-import com.microsoft.applicationinsights.profiler.config.ServiceProfilerServiceConfig;
+import com.microsoft.applicationinsights.serviceprofilerapi.config.LocalConfig;
 import com.microsoft.jfr.RecordingConfiguration;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.FileInputStream;
@@ -105,21 +105,21 @@ class AlternativeJfrConfigurations {
     }
   }
 
-  static RecordingConfiguration getMemoryProfileConfig(ServiceProfilerServiceConfig configuration) {
+  static RecordingConfiguration getMemoryProfileConfig(LocalConfig configuration) {
     return getRecordingConfiguration(
         configuration.getMemoryTriggeredSettings(), AlertMetricType.MEMORY);
   }
 
-  static RecordingConfiguration getCpuProfileConfig(ServiceProfilerServiceConfig configuration) {
+  static RecordingConfiguration getCpuProfileConfig(LocalConfig configuration) {
     return getRecordingConfiguration(configuration.getCpuTriggeredSettings(), AlertMetricType.CPU);
   }
 
-  static RecordingConfiguration getSpanProfileConfig(ServiceProfilerServiceConfig configuration) {
+  static RecordingConfiguration getSpanProfileConfig(LocalConfig configuration) {
     return getRecordingConfiguration(
         configuration.getCpuTriggeredSettings(), AlertMetricType.REQUEST);
   }
 
-  static RecordingConfiguration getManualProfileConfig(ServiceProfilerServiceConfig configuration) {
+  static RecordingConfiguration getManualProfileConfig(LocalConfig configuration) {
     return getRecordingConfiguration(
         configuration.getManualTriggeredSettings(), AlertMetricType.MANUAL);
   }

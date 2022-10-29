@@ -3,8 +3,7 @@
 
 package com.microsoft.applicationinsights.serviceprofilerapi.config;
 
-import com.microsoft.applicationinsights.profiler.ProfilerConfigurationHandler;
-import com.microsoft.applicationinsights.profiler.config.ServiceProfilerServiceConfig;
+import com.microsoft.applicationinsights.serviceprofilerapi.ProfilerConfigurationHandler;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.ServiceProfilerClient;
 import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
@@ -31,7 +30,7 @@ public class ConfigMonitoringService {
       ScheduledExecutorService serviceProfilerExecutorService,
       ServiceProfilerClient serviceProfilerClient,
       List<ProfilerConfigurationHandler> configObservers,
-      ServiceProfilerServiceConfig config) {
+      LocalConfig config) {
     ConfigMonitoringService configMonitoringService =
         new ConfigMonitoringService(
             serviceProfilerExecutorService, config.getConfigPollPeriod(), serviceProfilerClient);

@@ -9,7 +9,7 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 
-import com.microsoft.applicationinsights.profiler.ProfilerConfiguration;
+import com.microsoft.applicationinsights.serviceprofilerapi.ProfilerConfiguration;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.ServiceProfilerClient;
 import com.microsoft.applicationinsights.serviceprofilerapi.config.ConfigMonitoringService;
 import java.io.IOException;

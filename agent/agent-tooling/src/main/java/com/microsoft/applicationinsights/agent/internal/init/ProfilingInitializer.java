@@ -10,7 +10,7 @@ import com.microsoft.applicationinsights.agent.internal.common.SystemInformation
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.profiler.ProfilerServiceInitializer;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
-import com.microsoft.applicationinsights.profiler.config.ServiceProfilerServiceConfig;
+import com.microsoft.applicationinsights.serviceprofilerapi.config.LocalConfig;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -56,7 +56,7 @@ class ProfilingInitializer {
         + ")";
   }
 
-  private static ServiceProfilerServiceConfig formServiceProfilerConfig(
+  private static LocalConfig formServiceProfilerConfig(
       Configuration.ProfilerConfiguration configuration, File tempDir) {
     URL serviceProfilerFrontEndPoint =
         TelemetryClient.getActive().getConnectionString().getProfilerEndpoint();
@@ -73,7 +73,7 @@ class ProfilingInitializer {
       }
     }
 
-    return ServiceProfilerServiceConfig.builder()
+    return LocalConfig.builder()
         .setConfigPollPeriod(configuration.configPollPeriodSeconds)
         .setPeriodicRecordingDuration(configuration.periodicRecordingDurationSeconds)
         .setPeriodicRecordingInterval(configuration.periodicRecordingIntervalSeconds)

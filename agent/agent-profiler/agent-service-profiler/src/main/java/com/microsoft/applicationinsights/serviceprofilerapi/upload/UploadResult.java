@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-package com.microsoft.applicationinsights.profiler.uploader;
+package com.microsoft.applicationinsights.serviceprofilerapi.upload;
 
 /** Represents the metadata produced as a result of having uploaded a profile. */
 public class UploadResult {
