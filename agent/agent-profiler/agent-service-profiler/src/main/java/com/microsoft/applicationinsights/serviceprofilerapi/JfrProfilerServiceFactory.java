@@ -4,10 +4,7 @@
 package com.microsoft.applicationinsights.serviceprofilerapi;
 
 import com.azure.core.http.HttpPipeline;
-import com.google.auto.service.AutoService;
 import com.microsoft.applicationinsights.profiler.ProfilerConfigurationHandler;
-import com.microsoft.applicationinsights.profiler.ProfilerService;
-import com.microsoft.applicationinsights.profiler.ProfilerServiceFactory;
 import com.microsoft.applicationinsights.profiler.config.ServiceProfilerServiceConfig;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.ServiceProfilerClient;
 import com.microsoft.applicationinsights.serviceprofilerapi.profiler.JfrProfiler;
@@ -20,12 +17,10 @@ import java.util.function.Supplier;
  * Default ProfilerService factory loaded by a service loader, produces a Profiler Service based on
  * JFR.
  */
-@AutoService(ProfilerServiceFactory.class)
-public class JfrProfilerServiceFactory implements ProfilerServiceFactory {
+public class JfrProfilerServiceFactory {
 
-  @Override
-  public synchronized Future<ProfilerService>
-  initialize(
+  @SuppressWarnings("TooManyParameters")
+  public synchronized Future<JfrProfilerService> initialize(
       Supplier<String> appIdSupplier,
       ProfilerConfigurationHandler profilerConfigurationHandler,
       String processId,

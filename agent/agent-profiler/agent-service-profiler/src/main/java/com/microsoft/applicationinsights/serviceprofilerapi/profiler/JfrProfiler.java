@@ -7,7 +7,6 @@ import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
 import com.microsoft.applicationinsights.alerting.config.AlertConfiguration;
 import com.microsoft.applicationinsights.alerting.config.AlertMetricType;
 import com.microsoft.applicationinsights.profiler.ProfileHandler;
-import com.microsoft.applicationinsights.profiler.Profiler;
 import com.microsoft.applicationinsights.profiler.ProfilerConfiguration;
 import com.microsoft.applicationinsights.profiler.ProfilerConfigurationHandler;
 import com.microsoft.applicationinsights.profiler.config.ServiceProfilerServiceConfig;
@@ -18,11 +17,6 @@ import com.microsoft.jfr.Recording;
 import com.microsoft.jfr.RecordingConfiguration;
 import com.microsoft.jfr.RecordingOptions;
 import com.microsoft.jfr.dcmd.FlightRecorderDiagnosticCommandConnection;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import javax.annotation.Nullable;
-import javax.management.InstanceNotFoundException;
-import javax.management.MBeanServerConnection;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -36,6 +30,11 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+import javax.annotation.Nullable;
+import javax.management.InstanceNotFoundException;
+import javax.management.MBeanServerConnection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Manages connecting JFR interaction.
@@ -45,7 +44,7 @@ import java.util.function.Consumer;
  *   <li>Creates profiles on demand
  * </ul>
  */
-public class JfrProfiler implements ProfilerConfigurationHandler, Profiler {
+public class JfrProfiler implements ProfilerConfigurationHandler {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JfrProfiler.class);
 
@@ -96,7 +95,6 @@ public class JfrProfiler implements ProfilerConfigurationHandler, Profiler {
    * @throws InstanceNotFoundException The JVM does not support JFR, or experimental option is not
    *     enabled.
    */
-  @Override
   public void initialize(
       ProfileHandler profileHandler, ScheduledExecutorService scheduledExecutorService)
       throws Exception {
@@ -328,7 +326,6 @@ public class JfrProfiler implements ProfilerConfigurationHandler, Profiler {
   }
 
   /** Dispatch alert breach event to handler. */
-  @Override
   public void accept(AlertBreach alertBreach, UploadCompleteHandler uploadCompleteHandler) {
 
     if (alertBreach.getType() == AlertMetricType.PERIODIC) {

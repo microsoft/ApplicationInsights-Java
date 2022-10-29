@@ -4,12 +4,11 @@
 package com.microsoft.applicationinsights.serviceprofilerapi;
 
 import com.microsoft.applicationinsights.profiler.ProfileHandler;
-import com.microsoft.applicationinsights.profiler.Profiler;
 import com.microsoft.applicationinsights.profiler.ProfilerConfigurationHandler;
-import com.microsoft.applicationinsights.profiler.ProfilerService;
 import com.microsoft.applicationinsights.profiler.config.ServiceProfilerServiceConfig;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.ServiceProfilerClient;
 import com.microsoft.applicationinsights.serviceprofilerapi.config.ConfigMonitoringService;
+import com.microsoft.applicationinsights.serviceprofilerapi.profiler.JfrProfiler;
 import com.microsoft.applicationinsights.serviceprofilerapi.profiler.JfrUploadService;
 import com.microsoft.applicationinsights.serviceprofilerapi.upload.UploadService;
 import java.util.Arrays;
@@ -32,7 +31,7 @@ import org.slf4j.LoggerFactory;
  *   <li>JFR Uploader service
  * </ul>
  */
-public class JfrProfilerService implements ProfilerService {
+public class JfrProfilerService {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JfrProfilerService.class);
 
@@ -45,7 +44,7 @@ public class JfrProfilerService implements ProfilerService {
   private final Supplier<String> appIdSupplier;
 
   @SuppressWarnings("unused")
-  private final Profiler profiler;
+  private final JfrProfiler profiler;
 
   private final ScheduledExecutorService serviceProfilerExecutorService;
   private final ProfilerConfigurationHandler profilerConfigurationHandler;
@@ -57,7 +56,7 @@ public class JfrProfilerService implements ProfilerService {
   public JfrProfilerService(
       Supplier<String> appIdSupplier,
       ServiceProfilerServiceConfig config,
-      Profiler profiler,
+      JfrProfiler profiler,
       ProfilerConfigurationHandler profilerConfigurationHandler,
       ServiceProfilerClient serviceProfilerClient,
       UploadService uploadService,
@@ -71,8 +70,8 @@ public class JfrProfilerService implements ProfilerService {
     this.profilerConfigurationHandler = profilerConfigurationHandler;
   }
 
-  public Future<ProfilerService> initialize() {
-    CompletableFuture<ProfilerService> result = new CompletableFuture<>();
+  public Future<JfrProfilerService> initialize() {
+    CompletableFuture<JfrProfilerService> result = new CompletableFuture<>();
     if (initialised.getAndSet(true)) {
       result.complete(this);
       return result;
@@ -123,8 +122,7 @@ public class JfrProfilerService implements ProfilerService {
     };
   }
 
-  @Override
-  public Profiler getProfiler() {
+  public JfrProfiler getProfiler() {
     return profiler;
   }
 }

@@ -20,12 +20,12 @@ import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
 import com.microsoft.applicationinsights.diagnostics.DiagnosticEngine;
 import com.microsoft.applicationinsights.diagnostics.DiagnosticEngineFactory;
 import com.microsoft.applicationinsights.profiler.ProfilerConfigurationHandler;
-import com.microsoft.applicationinsights.profiler.ProfilerService;
-import com.microsoft.applicationinsights.profiler.ProfilerServiceFactory;
 import com.microsoft.applicationinsights.profiler.config.AlertConfigParser;
 import com.microsoft.applicationinsights.profiler.config.ServiceProfilerServiceConfig;
 import com.microsoft.applicationinsights.profiler.uploader.ServiceProfilerIndex;
 import com.microsoft.applicationinsights.profiler.uploader.UploadCompleteHandler;
+import com.microsoft.applicationinsights.serviceprofilerapi.JfrProfilerService;
+import com.microsoft.applicationinsights.serviceprofilerapi.JfrProfilerServiceFactory;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -53,7 +53,7 @@ public class ProfilerServiceInitializer {
   private static final Logger LOGGER = LoggerFactory.getLogger(ProfilerServiceInitializer.class);
 
   private static boolean initialized = false;
-  private static ProfilerService profilerService;
+  private static JfrProfilerService profilerService;
   private static DiagnosticEngine diagnosticEngine;
 
   public static synchronized void initialize(
@@ -101,7 +101,7 @@ public class ProfilerServiceInitializer {
       HttpPipeline httpPipeline) {
     if (!initialized) {
       initialized = true;
-      ProfilerServiceFactory factory = null;
+      JfrProfilerServiceFactory factory = null;
 
       try {
         factory = loadProfilerServiceFactory();
@@ -124,18 +124,18 @@ public class ProfilerServiceInitializer {
           Executors.newScheduledThreadPool(
               1,
               ThreadPoolUtils.createDaemonThreadFactory(
-                  ProfilerServiceFactory.class, "ServiceProfilerService"));
+                  JfrProfilerServiceFactory.class, "ServiceProfilerService"));
 
       ScheduledExecutorService alertServiceExecutorService =
           Executors.newScheduledThreadPool(
               2,
               ThreadPoolUtils.createDaemonThreadFactory(
-                  ProfilerServiceFactory.class, "ServiceProfilerAlertingService"));
+                  JfrProfilerServiceFactory.class, "ServiceProfilerAlertingService"));
 
       AlertingSubsystem alerting =
           createAlertMonitor(alertServiceExecutorService, telemetryClient, configuration);
 
-      Future<ProfilerService> future =
+      Future<JfrProfilerService> future =
           factory.initialize(
               appIdSupplier,
               updateAlertingConfig(alerting),
@@ -188,8 +188,8 @@ public class ProfilerServiceInitializer {
     }
   }
 
-  private static ProfilerServiceFactory loadProfilerServiceFactory() {
-    return findServiceLoader(ProfilerServiceFactory.class);
+  private static JfrProfilerServiceFactory loadProfilerServiceFactory() {
+    return new JfrProfilerServiceFactory();
   }
 
   private static DiagnosticEngineFactory loadDiagnosticEngineFactory() {
