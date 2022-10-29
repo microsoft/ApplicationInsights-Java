@@ -9,9 +9,9 @@ import com.microsoft.applicationinsights.profiler.ProfilerConfigurationHandler;
 import com.microsoft.applicationinsights.profiler.ProfilerService;
 import com.microsoft.applicationinsights.profiler.config.ServiceProfilerServiceConfig;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.ServiceProfilerClient;
-import com.microsoft.applicationinsights.serviceprofilerapi.config.ServiceProfilerConfigMonitorService;
+import com.microsoft.applicationinsights.serviceprofilerapi.config.ConfigMonitoringService;
 import com.microsoft.applicationinsights.serviceprofilerapi.profiler.JfrUploadService;
-import com.microsoft.applicationinsights.serviceprofilerapi.upload.ServiceProfilerUploader;
+import com.microsoft.applicationinsights.serviceprofilerapi.upload.UploadService;
 import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
@@ -40,7 +40,7 @@ public class JfrProfilerService implements ProfilerService {
 
   private final ServiceProfilerServiceConfig config;
   private final ServiceProfilerClient serviceProfilerClient;
-  private final ServiceProfilerUploader serviceProfilerUploader;
+  private final UploadService uploadService;
 
   private final Supplier<String> appIdSupplier;
 
@@ -60,13 +60,13 @@ public class JfrProfilerService implements ProfilerService {
       Profiler profiler,
       ProfilerConfigurationHandler profilerConfigurationHandler,
       ServiceProfilerClient serviceProfilerClient,
-      ServiceProfilerUploader serviceProfilerUploader,
+      UploadService uploadService,
       ScheduledExecutorService serviceProfilerExecutorService) {
     this.appIdSupplier = getAppId(appIdSupplier);
     this.config = config;
     this.profiler = profiler;
     this.serviceProfilerClient = serviceProfilerClient;
-    this.serviceProfilerUploader = serviceProfilerUploader;
+    this.uploadService = uploadService;
     this.serviceProfilerExecutorService = serviceProfilerExecutorService;
     this.profilerConfigurationHandler = profilerConfigurationHandler;
   }
@@ -80,7 +80,7 @@ public class JfrProfilerService implements ProfilerService {
 
     LOGGER.warn("INITIALISING JFR PROFILING SUBSYSTEM THIS FEATURE IS IN BETA");
 
-    profileHandler = new JfrUploadService(serviceProfilerUploader, appIdSupplier);
+    profileHandler = new JfrUploadService(uploadService, appIdSupplier);
 
     serviceProfilerExecutorService.submit(
         () -> {
@@ -89,7 +89,7 @@ public class JfrProfilerService implements ProfilerService {
             profiler.initialize(profileHandler, serviceProfilerExecutorService);
 
             // Monitor service remains alive permanently due to scheduling an periodic config pull
-            ServiceProfilerConfigMonitorService.createServiceProfilerConfigService(
+            ConfigMonitoringService.createServiceProfilerConfigService(
                 serviceProfilerExecutorService,
                 serviceProfilerClient,
                 Arrays.asList(profilerConfigurationHandler, profiler),

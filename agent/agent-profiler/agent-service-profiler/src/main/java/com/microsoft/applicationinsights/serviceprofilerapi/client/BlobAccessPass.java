@@ -12,6 +12,7 @@ import com.squareup.moshi.Json;
  * <p>This class is intended for internal Java profiler use.
  */
 public class BlobAccessPass extends StampBlobUri {
+
   @Json(name = "uriWithSASToken")
   private final String uriWithSasToken;
 

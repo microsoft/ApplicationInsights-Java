@@ -15,17 +15,17 @@ import java.util.Date;
 import reactor.core.publisher.Mono;
 
 /** Client that pulls setting from the service profiler endpoint and emits them if changed. */
-public class ServiceProfilerSettingsClient {
+class ConfigService {
   private final ServiceProfilerClient serviceProfilerClient;
   private Date lastModified;
 
-  public ServiceProfilerSettingsClient(ServiceProfilerClient serviceProfilerClient) {
+  ConfigService(ServiceProfilerClient serviceProfilerClient) {
     this.serviceProfilerClient = serviceProfilerClient;
     lastModified = new Date(70, Calendar.JANUARY, 1);
   }
 
   /** Pulls the latest settings. If they have not been modified empty is returned. */
-  public Mono<ProfilerConfiguration> pullSettings() {
+  Mono<ProfilerConfiguration> pullSettings() {
     return serviceProfilerClient
         .getSettings(lastModified)
         .flatMap(

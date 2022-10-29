@@ -12,6 +12,7 @@ import com.squareup.moshi.Json;
  * <p>This class is intended for internal Java profiler use.
  */
 public class StampBlobUri {
+
   @Json(name = "blobUri")
   private final String blobUri;
 

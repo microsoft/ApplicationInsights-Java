@@ -16,7 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /** Allows loading alternative jfc configuration files. */
-public class AlternativeJfrConfigurations {
+class AlternativeJfrConfigurations {
   private static final Logger LOGGER = LoggerFactory.getLogger(AlternativeJfrConfigurations.class);
 
   public static final String REDUCED_MEMORY_PROFILE = "reduced-memory-profile.jfc";
@@ -81,20 +81,20 @@ public class AlternativeJfrConfigurations {
     return RecordingConfiguration.PROFILE_CONFIGURATION;
   }
 
-  public static RecordingConfiguration getCpu(ProfileTypes profile) {
+  static RecordingConfiguration getCpu(ProfileTypes profile) {
     return getRecordingConfiguration(profile, REDUCED_CPU_PROFILE, DIAGNOSTIC_CPU_PROFILE);
   }
 
-  public static RecordingConfiguration getMemory(ProfileTypes profile) {
+  static RecordingConfiguration getMemory(ProfileTypes profile) {
     return getRecordingConfiguration(profile, REDUCED_MEMORY_PROFILE, DIAGNOSTIC_MEMORY_PROFILE);
   }
 
-  public static RecordingConfiguration getRequestConfiguration(ProfileTypes profile) {
+  static RecordingConfiguration getRequestConfiguration(ProfileTypes profile) {
     // Reusing the cpu profile as the most likely profile type required for a span trigger
     return getRecordingConfiguration(profile, REDUCED_CPU_PROFILE, DIAGNOSTIC_CPU_PROFILE);
   }
 
-  public static RecordingConfiguration get(ProfileTypes profile, AlertMetricType type) {
+  static RecordingConfiguration get(ProfileTypes profile, AlertMetricType type) {
     switch (type) {
       case MEMORY:
         return getMemory(profile);
@@ -105,24 +105,20 @@ public class AlternativeJfrConfigurations {
     }
   }
 
-  public static RecordingConfiguration getMemoryProfileConfig(
-      ServiceProfilerServiceConfig configuration) {
+  static RecordingConfiguration getMemoryProfileConfig(ServiceProfilerServiceConfig configuration) {
     return getRecordingConfiguration(
         configuration.memoryTriggeredSettings(), AlertMetricType.MEMORY);
   }
 
-  public static RecordingConfiguration getCpuProfileConfig(
-      ServiceProfilerServiceConfig configuration) {
+  static RecordingConfiguration getCpuProfileConfig(ServiceProfilerServiceConfig configuration) {
     return getRecordingConfiguration(configuration.cpuTriggeredSettings(), AlertMetricType.CPU);
   }
 
-  public static RecordingConfiguration getSpanProfileConfig(
-      ServiceProfilerServiceConfig configuration) {
+  static RecordingConfiguration getSpanProfileConfig(ServiceProfilerServiceConfig configuration) {
     return getRecordingConfiguration(configuration.cpuTriggeredSettings(), AlertMetricType.REQUEST);
   }
 
-  public static RecordingConfiguration getManualProfileConfig(
-      ServiceProfilerServiceConfig configuration) {
+  static RecordingConfiguration getManualProfileConfig(ServiceProfilerServiceConfig configuration) {
     return getRecordingConfiguration(
         configuration.getManualTriggeredSettings(), AlertMetricType.MANUAL);
   }

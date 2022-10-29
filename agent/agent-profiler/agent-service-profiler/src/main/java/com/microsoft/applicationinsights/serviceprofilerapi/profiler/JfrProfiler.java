@@ -46,6 +46,7 @@ import org.slf4j.LoggerFactory;
  * </ul>
  */
 public class JfrProfiler implements ProfilerConfigurationHandler, Profiler {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(JfrProfiler.class);
 
   // service execution context
@@ -123,7 +124,7 @@ public class JfrProfiler implements ProfilerConfigurationHandler, Profiler {
     // TODO update periodic profile configuration
   }
 
-  protected void profileAndUpload(
+  void profileAndUpload(
       AlertBreach alertBreach, Duration duration, UploadCompleteHandler uploadCompleteHandler) {
     Instant recordingStart = Instant.now();
     executeProfile(
@@ -133,7 +134,7 @@ public class JfrProfiler implements ProfilerConfigurationHandler, Profiler {
   }
 
   @Nullable
-  protected Recording startRecording(AlertMetricType alertType, Duration duration) {
+  Recording startRecording(AlertMetricType alertType, Duration duration) {
     synchronized (activeRecordingLock) {
       if (activeRecording != null) {
         LOGGER.warn("Alert received, however a profile is already in progress, ignoring request.");
@@ -176,14 +177,13 @@ public class JfrProfiler implements ProfilerConfigurationHandler, Profiler {
     }
   }
 
-  protected Recording createRecording(
+  Recording createRecording(
       RecordingOptions recordingOptions, RecordingConfiguration recordingConfiguration) {
     return flightRecorderConnection.newRecording(recordingOptions, recordingConfiguration);
   }
 
   /** Perform a profile and notify the handler. */
-  protected void executeProfile(
-      AlertMetricType alertType, Duration duration, Consumer<Recording> handler) {
+  void executeProfile(AlertMetricType alertType, Duration duration, Consumer<Recording> handler) {
 
     LOGGER.info("Received " + alertType + " alert, Starting profile");
 
@@ -218,7 +218,7 @@ public class JfrProfiler implements ProfilerConfigurationHandler, Profiler {
 
   /** When a profile has been created, upload it to service profiler. */
   @SuppressWarnings("CatchingUnchecked")
-  protected Consumer<Recording> uploadNewRecording(
+  Consumer<Recording> uploadNewRecording(
       AlertBreach alertBreach,
       Instant recordingStart,
       UploadCompleteHandler uploadCompleteHandler) {
@@ -300,7 +300,7 @@ public class JfrProfiler implements ProfilerConfigurationHandler, Profiler {
   }
 
   /** Dump JFR profile to file. */
-  protected File createJfrFile(Duration duration) throws IOException {
+  File createJfrFile(Duration duration) throws IOException {
     if (!temporaryDirectory.exists()) {
       if (!temporaryDirectory.mkdirs()) {
         throw new IOException(

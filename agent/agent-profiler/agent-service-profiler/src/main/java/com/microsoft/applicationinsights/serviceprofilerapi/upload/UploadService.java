@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 
 /** Uploads profiles to the service profiler endpoint. */
-public class ServiceProfilerUploader {
+public class UploadService {
 
   private static final String DATA_CUBE_META_NAME = "spDataCube";
   private static final String MACHINE_NAME_META_NAME = "spMachineName";
@@ -49,7 +49,7 @@ public class ServiceProfilerUploader {
   // Visible for testing
   static final String ROLE_NAME_META_NAME = "RoleName";
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(ServiceProfilerUploader.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(UploadService.class);
 
   private static final long UPLOAD_BLOCK_LENGTH = 8 * 1024 * 1024;
 
@@ -66,7 +66,7 @@ public class ServiceProfilerUploader {
   private final String processId;
   private final String roleName;
 
-  public ServiceProfilerUploader(
+  public UploadService(
       ServiceProfilerClient serviceProfilerClient,
       String machineName,
       String processId,

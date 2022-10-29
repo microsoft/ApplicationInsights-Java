@@ -29,9 +29,9 @@ import com.microsoft.applicationinsights.serviceprofilerapi.client.ArtifactAccep
 import com.microsoft.applicationinsights.serviceprofilerapi.client.BlobAccessPass;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.ServiceProfilerClient;
 import com.microsoft.applicationinsights.serviceprofilerapi.profiler.JfrProfiler;
-import com.microsoft.applicationinsights.serviceprofilerapi.upload.ServiceProfilerUploader;
 import com.microsoft.applicationinsights.serviceprofilerapi.upload.UploadContext;
 import com.microsoft.applicationinsights.serviceprofilerapi.upload.UploadFinishArgs;
+import com.microsoft.applicationinsights.serviceprofilerapi.upload.UploadService;
 import com.microsoft.jfr.Recording;
 import com.microsoft.jfr.RecordingConfiguration;
 import com.microsoft.jfr.RecordingOptions;
@@ -98,8 +98,7 @@ class ProfilerServiceTest {
 
     Supplier<String> appIdSupplier = () -> appId;
 
-    ServiceProfilerUploader serviceProfilerUploader =
-        getServiceProfilerJfrUpload(clientV2, appIdSupplier);
+    UploadService uploadService = getServiceProfilerJfrUpload(clientV2, appIdSupplier);
 
     JfrProfiler jfrProfiler = getJfrDaemon(profileInvoked);
 
@@ -158,7 +157,7 @@ class ProfilerServiceTest {
                 jfrProfiler,
                 ProfilerServiceInitializer.updateAlertingConfig(alertService),
                 clientV2,
-                serviceProfilerUploader,
+                uploadService,
                 serviceProfilerExecutorService)
             .initialize()
             .get());
@@ -228,10 +227,9 @@ class ProfilerServiceTest {
     };
   }
 
-  private ServiceProfilerUploader getServiceProfilerJfrUpload(
+  private UploadService getServiceProfilerJfrUpload(
       ServiceProfilerClient clientV2, Supplier<String> appIdSupplier) {
-    return new ServiceProfilerUploader(
-        clientV2, machineName, processId, appIdSupplier, "a-role-name") {
+    return new UploadService(clientV2, machineName, processId, appIdSupplier, "a-role-name") {
       @Override
       protected Mono<UploadFinishArgs> performUpload(
           UploadContext uploadContext, BlobAccessPass uploadPass, File file) {

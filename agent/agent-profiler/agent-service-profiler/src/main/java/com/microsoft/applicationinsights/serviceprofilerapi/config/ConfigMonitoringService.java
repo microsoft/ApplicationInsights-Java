@@ -14,9 +14,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /** Monitors the Service Profiler endpoint for changes to configuration. */
-public class ServiceProfilerConfigMonitorService {
-  private static final Logger LOGGER =
-      LoggerFactory.getLogger(ServiceProfilerConfigMonitorService.class);
+public class ConfigMonitoringService {
+  private static final Logger LOGGER = LoggerFactory.getLogger(ConfigMonitoringService.class);
 
   // Execution context for the monitoring
   private final ScheduledExecutorService serviceProfilerExecutorService;
@@ -26,21 +25,21 @@ public class ServiceProfilerConfigMonitorService {
   private ScheduledFuture<?> future;
 
   private final ServiceProfilerClient serviceProfilerClient;
-  private ServiceProfilerSettingsClient serviceProfilerSettingsClient;
+  private ConfigService configService;
 
-  public static ServiceProfilerConfigMonitorService createServiceProfilerConfigService(
+  public static ConfigMonitoringService createServiceProfilerConfigService(
       ScheduledExecutorService serviceProfilerExecutorService,
       ServiceProfilerClient serviceProfilerClient,
       List<ProfilerConfigurationHandler> configObservers,
       ServiceProfilerServiceConfig config) {
-    ServiceProfilerConfigMonitorService serviceProfilerConfigMonitorService =
-        new ServiceProfilerConfigMonitorService(
+    ConfigMonitoringService configMonitoringService =
+        new ConfigMonitoringService(
             serviceProfilerExecutorService, config.getConfigPollPeriod(), serviceProfilerClient);
-    serviceProfilerConfigMonitorService.initialize(configObservers);
-    return serviceProfilerConfigMonitorService;
+    configMonitoringService.initialize(configObservers);
+    return configMonitoringService;
   }
 
-  public ServiceProfilerConfigMonitorService(
+  public ConfigMonitoringService(
       ScheduledExecutorService serviceProfilerExecutorService,
       int pollPeriodInMs,
       ServiceProfilerClient serviceProfilerClient) {
@@ -61,7 +60,7 @@ public class ServiceProfilerConfigMonitorService {
       throw new IllegalStateException("Service already initialized");
     }
 
-    serviceProfilerSettingsClient = new ServiceProfilerSettingsClient(serviceProfilerClient);
+    configService = new ConfigService(serviceProfilerClient);
 
     // schedule regular config pull
     future =
@@ -73,7 +72,7 @@ public class ServiceProfilerConfigMonitorService {
   private Runnable pull(ProfilerConfigurationHandler handleSettings) {
     return () -> {
       try {
-        serviceProfilerSettingsClient
+        configService
             .pullSettings()
             .doOnError(
                 e -> {

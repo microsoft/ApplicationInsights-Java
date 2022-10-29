@@ -20,7 +20,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Mono;
 
-class ServiceProfilerUploaderTest {
+class UploadServiceTest {
   @Test
   void uploadFileGoodPathReturnsExpectedResponse() throws IOException {
 
@@ -30,8 +30,8 @@ class ServiceProfilerUploaderTest {
     UUID appId = UUID.randomUUID();
     UUID profileId = UUID.randomUUID();
 
-    ServiceProfilerUploader serviceProfilerUploader =
-        new ServiceProfilerUploader(
+    UploadService uploadService =
+        new UploadService(
             serviceProfilerClient,
             "a-machine-name",
             "a-process-id",
@@ -44,7 +44,7 @@ class ServiceProfilerUploaderTest {
           }
         };
 
-    serviceProfilerUploader
+    uploadService
         .uploadJfrFile(profileId, "a-trigger", 321, tmpFile, 0.0, 0.0)
         .subscribe(
             result -> {
@@ -88,7 +88,7 @@ class ServiceProfilerUploaderTest {
     UUID appId = UUID.randomUUID();
 
     BlobUploadFromFileOptions blobOptions =
-        new ServiceProfilerUploader(
+        new UploadService(
                 serviceProfilerClient,
                 "a-machine-name",
                 "a-process-id",
@@ -106,11 +106,11 @@ class ServiceProfilerUploaderTest {
                     "jfr"));
 
     // Role name is set correctly
-    assertThat(blobOptions.getMetadata().get(ServiceProfilerUploader.ROLE_NAME_META_NAME))
+    assertThat(blobOptions.getMetadata().get(UploadService.ROLE_NAME_META_NAME))
         .isEqualTo("a-role-name");
 
     blobOptions =
-        new ServiceProfilerUploader(
+        new UploadService(
                 serviceProfilerClient, "a-machine-name", "a-process-id", appId::toString, null)
             .createBlockBlobOptions(
                 tmpFile,
@@ -124,7 +124,7 @@ class ServiceProfilerUploaderTest {
                     "jfr"));
 
     // Null role name tag is not added
-    assertThat(blobOptions.getMetadata().get(ServiceProfilerUploader.ROLE_NAME_META_NAME)).isNull();
+    assertThat(blobOptions.getMetadata().get(UploadService.ROLE_NAME_META_NAME)).isNull();
   }
 
   @Test
@@ -135,8 +135,8 @@ class ServiceProfilerUploaderTest {
     UUID appId = UUID.randomUUID();
     UUID profileId = UUID.randomUUID();
 
-    ServiceProfilerUploader serviceProfilerUploader =
-        new ServiceProfilerUploader(
+    UploadService uploadService =
+        new UploadService(
             serviceProfilerClient,
             "a-machine-name",
             "a-process-id",
@@ -144,7 +144,7 @@ class ServiceProfilerUploaderTest {
             "a-role-name");
 
     AtomicBoolean threw = new AtomicBoolean(false);
-    serviceProfilerUploader
+    uploadService
         .uploadJfrFile(profileId, "a-trigger", 321, new File("not-a-file"), 0.0, 0.0)
         .subscribe(result -> {}, e -> threw.set(true));
 

@@ -11,7 +11,7 @@ import static org.mockito.Mockito.when;
 
 import com.microsoft.applicationinsights.profiler.ProfilerConfiguration;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.ServiceProfilerClient;
-import com.microsoft.applicationinsights.serviceprofilerapi.config.ServiceProfilerConfigMonitorService;
+import com.microsoft.applicationinsights.serviceprofilerapi.config.ConfigMonitoringService;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Collections;
@@ -24,7 +24,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import reactor.core.publisher.Mono;
 
-class ServiceProfilerConfigMonitorServiceTest {
+class ConfigMonitoringServiceTest {
 
   @Test
   void pullsConfig() throws IOException, URISyntaxException {
@@ -34,8 +34,8 @@ class ServiceProfilerConfigMonitorServiceTest {
     ScheduledExecutorService executorService = mockScheduledExecutorService(job::set);
     ServiceProfilerClient serviceProfilerClient = mockServiceProfilerClient();
 
-    ServiceProfilerConfigMonitorService serviceMonitor =
-        new ServiceProfilerConfigMonitorService(executorService, 100, serviceProfilerClient);
+    ConfigMonitoringService serviceMonitor =
+        new ConfigMonitoringService(executorService, 100, serviceProfilerClient);
 
     AtomicReference<ProfilerConfiguration> config = new AtomicReference<>();
     serviceMonitor.initialize(Collections.singletonList(config::set));
