@@ -47,7 +47,7 @@ class AlertConfigParserTest {
     assertThat(config.getMemoryAlert())
         .isEqualTo(
             AlertConfiguration.builder()
-                .setType(AlertMetricType.CPU)
+                .setType(AlertMetricType.MEMORY)
                 .setEnabled(true)
                 .setThreshold((float) 20)
                 .setProfileDurationSeconds(120)

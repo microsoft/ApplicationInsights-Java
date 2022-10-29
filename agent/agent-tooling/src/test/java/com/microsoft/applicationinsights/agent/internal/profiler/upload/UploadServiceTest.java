@@ -5,21 +5,18 @@ package com.microsoft.applicationinsights.agent.internal.profiler.upload;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import com.azure.storage.blob.options.BlobUploadFromFileOptions;
-import com.microsoft.applicationinsights.agent.internal.profiler.client.ArtifactAcceptedResponse;
 import com.microsoft.applicationinsights.agent.internal.profiler.client.BlobAccessPass;
 import com.microsoft.applicationinsights.agent.internal.profiler.client.ServiceProfilerClient;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Date;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
-import com.microsoft.applicationinsights.agent.internal.profiler.upload.ServiceProfilerIndex;
-import com.microsoft.applicationinsights.agent.internal.profiler.upload.UploadContext;
-import com.microsoft.applicationinsights.agent.internal.profiler.upload.UploadFinishArgs;
-import com.microsoft.applicationinsights.agent.internal.profiler.upload.UploadService;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Mono;
 
@@ -167,25 +164,13 @@ class UploadServiceTest {
     return tmpFile;
   }
 
-  static ServiceProfilerClient stubServiceProfilerClient() {
-    return new ServiceProfilerClient() {
+  private static ServiceProfilerClient stubServiceProfilerClient() {
+    ServiceProfilerClient mock = mock(ServiceProfilerClient.class);
+    when(mock.getUploadAccess(any(UUID.class), any(String.class)))
+        .thenReturn(
+            Mono.just(
+                new BlobAccessPass("https://localhost:99999/a-blob-uri", null, "a-sas-token")));
 
-      @Override
-      public Mono<BlobAccessPass> getUploadAccess(UUID profileId, String extension) {
-        return Mono.just(
-            new BlobAccessPass("https://localhost:99999/a-blob-uri", null, "a-sas-token"));
-      }
-
-      @Override
-      public Mono<ArtifactAcceptedResponse> reportUploadFinish(
-          UUID profileId, String extension, String etag) {
-        return Mono.just(null);
-      }
-
-      @Override
-      public Mono<String> getSettings(Date oldTimeStamp) {
-        return Mono.just(null);
-      }
-    };
+    return mock;
   }
 }

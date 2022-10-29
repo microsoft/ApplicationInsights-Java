@@ -175,7 +175,8 @@ public class Profiler implements ProfilerConfigurationHandler {
     }
   }
 
-  private Recording createRecording(
+  // visible for tests
+  protected Recording createRecording(
       RecordingOptions recordingOptions, RecordingConfiguration recordingConfiguration) {
     return flightRecorderConnection.newRecording(recordingOptions, recordingConfiguration);
   }
@@ -299,7 +300,8 @@ public class Profiler implements ProfilerConfigurationHandler {
   }
 
   /** Dump JFR profile to file. */
-  private File createJfrFile(Duration duration) throws IOException {
+  // visible for testing
+  protected File createJfrFile(Duration duration) throws IOException {
     if (!temporaryDirectory.exists()) {
       if (!temporaryDirectory.mkdirs()) {
         throw new IOException(

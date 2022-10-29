@@ -22,7 +22,12 @@ public abstract class AlertConfiguration {
   public abstract AlertingConfig.RequestTrigger getRequestTrigger();
 
   public static Builder builder() {
-    return new AutoValue_AlertConfiguration.Builder();
+    // TODO (trask) which of these is really required?
+    return new AutoValue_AlertConfiguration.Builder()
+        .setEnabled(false)
+        .setThreshold(0)
+        .setProfileDurationSeconds(0)
+        .setCooldownSeconds(0);
   }
 
   @AutoValue.Builder

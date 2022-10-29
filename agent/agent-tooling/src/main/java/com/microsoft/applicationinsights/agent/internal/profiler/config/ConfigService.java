@@ -15,8 +15,10 @@ import reactor.core.publisher.Mono;
 
 /** Client that pulls setting from the service profiler endpoint and emits them if changed. */
 class ConfigService {
+
   private final ServiceProfilerClient serviceProfilerClient;
-  private Date lastModified;
+
+  private volatile Date lastModified;
 
   ConfigService(ServiceProfilerClient serviceProfilerClient) {
     this.serviceProfilerClient = serviceProfilerClient;

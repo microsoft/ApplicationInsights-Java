@@ -54,7 +54,7 @@ public class ProfilingInitializer {
   private static final Logger LOGGER = LoggerFactory.getLogger(ProfilingInitializer.class);
 
   private static boolean initialized = false;
-  private static ProfilerInitialization profilerInitialization;
+  private static ProfilingInitializerHelper profilingInitializerHelper;
   private static DiagnosticEngine diagnosticEngine;
 
   public static void initialize(
@@ -146,8 +146,8 @@ public class ProfilingInitializer {
       AlertingSubsystem alerting =
           createAlertMonitor(alertServiceExecutorService, telemetryClient, configuration);
 
-      Future<ProfilerInitialization> future =
-          ProfilerInitialization.initialize(
+      Future<ProfilingInitializerHelper> future =
+          ProfilingInitializerHelper.initialize(
               appIdSupplier,
               updateAlertingConfig(alerting),
               processId,
@@ -163,7 +163,7 @@ public class ProfilingInitializer {
       serviceProfilerExecutorService.submit(
           () -> {
             try {
-              profilerInitialization = future.get();
+              profilingInitializerHelper = future.get();
             } catch (InterruptedException e) {
               Thread.currentThread().interrupt();
             } catch (Exception e) {
@@ -256,12 +256,12 @@ public class ProfilingInitializer {
 
   private static Consumer<AlertBreach> alertAction(TelemetryClient telemetryClient) {
     return alert -> {
-      if (profilerInitialization != null) {
+      if (profilingInitializerHelper != null) {
         // This is an event that the backend specifically looks for to track when a profile is
         // started
         sendMessageTelemetry(telemetryClient, "StartProfiler triggered.");
 
-        profilerInitialization
+        profilingInitializerHelper
             .getProfiler()
             .accept(alert, sendServiceProfilerIndex(telemetryClient));
 

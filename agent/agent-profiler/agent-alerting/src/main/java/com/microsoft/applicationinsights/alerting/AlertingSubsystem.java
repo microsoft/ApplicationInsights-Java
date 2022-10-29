@@ -63,8 +63,10 @@ public class AlertingSubsystem {
             AlertConfiguration.builder().setType(AlertMetricType.MEMORY).build(),
             DefaultConfiguration.builder().build(),
             CollectionPlanConfiguration.builder()
+                .setSingle(false)
                 .setMode(EngineMode.immediate)
                 .setExpiration(Instant.now())
+                .setImmediateProfilingDurationSeconds(0)
                 .setSettingsMoniker("")
                 .build()));
     return alertingSubsystem;

@@ -15,16 +15,21 @@ public abstract class DefaultConfiguration {
   public abstract long getSamplingProfileDuration();
 
   public static Builder builder() {
-    return new AutoValue_DefaultConfiguration.Builder();
+    // TODO (trask) which of these is really required?
+    return new AutoValue_DefaultConfiguration.Builder()
+        .setSamplingEnabled(false)
+        .setSamplingRate(0)
+        .setSamplingProfileDuration(0);
   }
 
   @AutoValue.Builder
   public abstract static class Builder {
+
+    public abstract Builder setSamplingEnabled(boolean samplingEnabled);
+
     public abstract Builder setSamplingRate(double samplingRate);
 
     public abstract Builder setSamplingProfileDuration(long samplingProfileDuration);
-
-    public abstract Builder setSamplingEnabled(boolean samplingEnabled);
 
     public abstract DefaultConfiguration build();
   }

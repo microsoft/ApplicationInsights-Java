@@ -8,7 +8,9 @@ import static com.microsoft.applicationinsights.agent.internal.perfcounter.Metri
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.MetricTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MonitorDomain;
@@ -16,10 +18,8 @@ import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryE
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.ThreadPoolUtils;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
-import com.microsoft.applicationinsights.agent.internal.profiler.client.ArtifactAcceptedResponse;
 import com.microsoft.applicationinsights.agent.internal.profiler.client.BlobAccessPass;
 import com.microsoft.applicationinsights.agent.internal.profiler.client.ServiceProfilerClient;
-import com.microsoft.applicationinsights.agent.internal.profiler.config.LocalConfig;
 import com.microsoft.applicationinsights.agent.internal.profiler.upload.UploadCompleteHandler;
 import com.microsoft.applicationinsights.agent.internal.profiler.upload.UploadContext;
 import com.microsoft.applicationinsights.agent.internal.profiler.upload.UploadFinishArgs;
@@ -33,8 +33,6 @@ import com.microsoft.jfr.RecordingConfiguration;
 import com.microsoft.jfr.RecordingOptions;
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.time.Duration;
 import java.util.Date;
 import java.util.UUID;
@@ -48,7 +46,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import reactor.core.publisher.Mono;
 
-class ProfilerInitializationTest {
+class ProfilingInitializerHelperTest {
 
   final String timeStamp = "a-timestamp";
   final String machineName = "a-machine-name";
@@ -122,12 +120,12 @@ class ProfilerInitializationTest {
         Executors.newScheduledThreadPool(
             2,
             ThreadPoolUtils.createDaemonThreadFactory(
-                ProfilerServiceFactory.class, "ServiceProfilerService"));
+                ProfilingInitializerHelperTest.class, "ServiceProfilerService"));
 
     ScheduledExecutorService alertServiceExecutorService =
         Executors.newSingleThreadScheduledExecutor(
             ThreadPoolUtils.createDaemonThreadFactory(
-                ProfilerServiceFactory.class, "ServiceProfilerAlertingService"));
+                ProfilingInitializerHelperTest.class, "ServiceProfilerAlertingService"));
 
     // Callback invoked when a profile has been uploaded.
     // Sends index metadata about the uploaded profile
@@ -136,7 +134,7 @@ class ProfilerInitializationTest {
 
     Configuration config = new Configuration();
 
-    AtomicReference<ProfilerInitialization> service = new AtomicReference<>();
+    AtomicReference<ProfilingInitializerHelper> service = new AtomicReference<>();
     AlertingSubsystem alertService =
         AlertingServiceFactory.create(
             config,
@@ -146,24 +144,27 @@ class ProfilerInitializationTest {
             alertServiceExecutorService);
 
     service.set(
-        new ProfilerInitialization(
-                LocalConfig.builder()
-                    .setConfigPollPeriod(1)
-                    .setPeriodicRecordingDuration(2)
-                    .setPeriodicRecordingInterval(3)
-                    .setServiceProfilerFrontEndPoint(new URL("http://localhost"))
-                    .setMemoryTriggeredSettings(null)
-                    .setCpuTriggeredSettings(null)
-                    .setManualTriggeredSettings(null)
-                    .setTempDirectory(new File("."))
-                    .setDiagnosticsEnabled(true)
-                    .build(),
+
+        //        LocalConfig.builder()
+        //            .setConfigPollPeriod(1)
+        //            .setPeriodicRecordingDuration(2)
+        //            .setPeriodicRecordingInterval(3)
+        //            .setServiceProfilerFrontEndPoint(new URL("http://localhost"))
+        //            .setMemoryTriggeredSettings(null)
+        //            .setCpuTriggeredSettings(null)
+        //            .setManualTriggeredSettings(null)
+        //            .setTempDirectory(new File("."))
+        //            .setDiagnosticsEnabled(true)
+        //            .build(),
+
+        new ProfilingInitializerHelper(
+                config.preview.profiler,
                 profiler,
                 ProfilingInitializer.updateAlertingConfig(alertService),
                 clientV2,
                 uploadService,
                 serviceProfilerExecutorService)
-            .initialize()
+            .innerInitialize()
             .get());
 
     // Wait up to 10 seconds
@@ -195,8 +196,8 @@ class ProfilerInitializationTest {
     assertTelemetry.accept(serviceProfilerIndex.get());
   }
 
-  private static ProfilerInitialization awaitReferenceSet(
-      AtomicReference<ProfilerInitialization> service) {
+  private static ProfilingInitializerHelper awaitReferenceSet(
+      AtomicReference<ProfilingInitializerHelper> service) {
     // Wait for up to 10 seconds
     for (int i = 0; i < 100 && service.get() == null; i++) {
       try {
@@ -208,17 +209,16 @@ class ProfilerInitializationTest {
     return service.get();
   }
 
-  private Profiler getJfrDaemon(AtomicBoolean profileInvoked) throws MalformedURLException {
+  private Profiler getJfrDaemon(AtomicBoolean profileInvoked) {
 
-    return new Profiler(
-        LocalConfig.builder()
-            .setConfigPollPeriod(1)
-            .setPeriodicRecordingDuration(2)
-            .setPeriodicRecordingInterval(3)
-            .setServiceProfilerFrontEndPoint(new URL("http://localhost"))
-            .setTempDirectory(new File("."))
-            .setDiagnosticsEnabled(true)
-            .build()) {
+    Configuration.ProfilerConfiguration config = new Configuration.ProfilerConfiguration();
+    config.configPollPeriodSeconds = 1;
+    config.periodicRecordingDurationSeconds = 2;
+    config.periodicRecordingIntervalSeconds = 3;
+    config.serviceProfilerFrontEndPoint = "http://localhost";
+    config.enableDiagnostics = true;
+
+    return new Profiler(config, new File(".")) {
       @Override
       protected void profileAndUpload(
           AlertBreach alertBreach, Duration duration, UploadCompleteHandler uploadCompleteHandler) {
@@ -251,33 +251,26 @@ class ProfilerInitializationTest {
   }
 
   private static ServiceProfilerClient stubClient(boolean triggerNow) {
-    return new ServiceProfilerClient() {
-      @Override
-      public Mono<BlobAccessPass> getUploadAccess(UUID profileId, String extension) {
-        return Mono.just(
-            new BlobAccessPass("https://localhost:99999/a-blob-uri", null, "a-sas-token"));
-      }
+    ServiceProfilerClient mock = mock(ServiceProfilerClient.class);
+    when(mock.getUploadAccess(any(UUID.class), any(String.class)))
+        .thenReturn(
+            Mono.just(
+                new BlobAccessPass("https://localhost:99999/a-blob-uri", null, "a-sas-token")));
 
-      @Override
-      public Mono<ArtifactAcceptedResponse> reportUploadFinish(
-          UUID profileId, String extension, String etag) {
-        return Mono.just(null);
-      }
+    String expiration = triggerNow ? "999999999999999999" : "5249157885138288517";
 
-      @Override
-      public Mono<String> getSettings(Date oldTimeStamp) {
-        String expiration = triggerNow ? "999999999999999999" : "5249157885138288517";
+    when(mock.getSettings(any(Date.class)))
+        .thenReturn(
+            Mono.just(
+                "{\"id\":\"8929ed2e-24da-4ad4-8a8b-5a5ebc03abb4\",\"lastModified\":\"2021-01-25T15:46:11"
+                    + ".0900613+00:00\",\"enabledLastModified\":\"0001-01-01T00:00:00+00:00\",\"enabled\":true,\"collectionPlan\":\"--single --mode immediate --immediate-profiling-duration 120  "
+                    + "--expiration "
+                    + expiration
+                    + " --settings-moniker a-settings-moniker\",\"cpuTriggerConfiguration\":\"--cpu-trigger-enabled true --cpu-threshold 80 "
+                    + "--cpu-trigger-profilingDuration 30 --cpu-trigger-cooldown 14400\",\"memoryTriggerConfiguration\":\"--memory-trigger-enabled true --memory-threshold 20 "
+                    + "--memory-trigger-profilingDuration 120 --memory-trigger-cooldown 14400\",\"defaultConfiguration\":\"--sampling-enabled true --sampling-rate 5 --sampling-profiling-duration "
+                    + "120\",\"geoOverride\":null}"));
 
-        return Mono.just(
-            "{\"id\":\"8929ed2e-24da-4ad4-8a8b-5a5ebc03abb4\",\"lastModified\":\"2021-01-25T15:46:11"
-                + ".0900613+00:00\",\"enabledLastModified\":\"0001-01-01T00:00:00+00:00\",\"enabled\":true,\"collectionPlan\":\"--single --mode immediate --immediate-profiling-duration 120  "
-                + "--expiration "
-                + expiration
-                + " --settings-moniker a-settings-moniker\",\"cpuTriggerConfiguration\":\"--cpu-trigger-enabled true --cpu-threshold 80 "
-                + "--cpu-trigger-profilingDuration 30 --cpu-trigger-cooldown 14400\",\"memoryTriggerConfiguration\":\"--memory-trigger-enabled true --memory-threshold 20 "
-                + "--memory-trigger-profilingDuration 120 --memory-trigger-cooldown 14400\",\"defaultConfiguration\":\"--sampling-enabled true --sampling-rate 5 --sampling-profiling-duration "
-                + "120\",\"geoOverride\":null}");
-      }
-    };
+    return mock;
   }
 }

@@ -128,8 +128,8 @@ public class AlertConfigParser {
   }
 
   public static AlertConfiguration parseFromCpu(@Nullable String cpuConfig) {
-    if (cpuConfig == null) {
 
+    if (cpuConfig == null) {
       return AlertConfiguration.builder()
           .setType(AlertMetricType.CPU)
           .setEnabled(false)

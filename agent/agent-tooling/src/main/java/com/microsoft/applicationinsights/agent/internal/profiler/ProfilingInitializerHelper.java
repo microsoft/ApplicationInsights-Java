@@ -33,12 +33,12 @@ import org.slf4j.LoggerFactory;
  *   <li>JFR Uploader service
  * </ul>
  */
-class ProfilerInitialization {
+class ProfilingInitializerHelper {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(ProfilerInitialization.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(ProfilingInitializerHelper.class);
 
   @SuppressWarnings("TooManyParameters")
-  static Future<ProfilerInitialization> initialize(
+  static Future<ProfilingInitializerHelper> initialize(
       Supplier<String> appIdSupplier,
       ProfilerConfigurationHandler profilerConfigurationHandler,
       String processId,
@@ -58,8 +58,8 @@ class ProfilerInitialization {
     UploadService uploader =
         new UploadService(serviceProfilerClient, machineName, processId, appIdSupplier, roleName);
 
-    ProfilerInitialization instance =
-        new ProfilerInitialization(
+    ProfilingInitializerHelper instance =
+        new ProfilingInitializerHelper(
             config,
             new Profiler(config, tempDir),
             profilerConfigurationHandler,
@@ -67,7 +67,7 @@ class ProfilerInitialization {
             uploader,
             serviceProfilerExecutorService);
 
-    return instance.initialize();
+    return instance.innerInitialize();
   }
 
   // visible for testing
@@ -100,7 +100,7 @@ class ProfilerInitialization {
 
   private final AtomicBoolean initialised = new AtomicBoolean();
 
-  public ProfilerInitialization(
+  public ProfilingInitializerHelper(
       Configuration.ProfilerConfiguration config,
       Profiler profiler,
       ProfilerConfigurationHandler profilerConfigurationHandler,
@@ -116,8 +116,8 @@ class ProfilerInitialization {
     this.profilerConfigurationHandler = profilerConfigurationHandler;
   }
 
-  public Future<ProfilerInitialization> initialize() {
-    CompletableFuture<ProfilerInitialization> result = new CompletableFuture<>();
+  public Future<ProfilingInitializerHelper> innerInitialize() {
+    CompletableFuture<ProfilingInitializerHelper> result = new CompletableFuture<>();
     if (initialised.getAndSet(true)) {
       result.complete(this);
       return result;

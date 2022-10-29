@@ -30,7 +30,7 @@ public abstract class AlertBreach {
   public abstract Builder toBuilder();
 
   public static AlertBreach.Builder builder() {
-    return new AutoValue_AlertBreach.Builder();
+    return new AutoValue_AlertBreach.Builder().setCpuMetric(0).setMemoryUsage(0);
   }
 
   @AutoValue.Builder
