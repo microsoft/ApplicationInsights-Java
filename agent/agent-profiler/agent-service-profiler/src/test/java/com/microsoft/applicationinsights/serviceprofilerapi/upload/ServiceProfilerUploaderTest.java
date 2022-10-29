@@ -11,7 +11,6 @@ import com.microsoft.applicationinsights.profiler.uploader.ServiceProfilerIndex;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.ServiceProfilerClientV2;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.contract.ArtifactAcceptedResponse;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.contract.BlobAccessPass;
-import com.microsoft.applicationinsights.serviceprofilerapi.client.contract.BlobMetadataConstants;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.uploader.UploadContext;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.uploader.UploadFinishArgs;
 import java.io.File;
@@ -109,7 +108,7 @@ class ServiceProfilerUploaderTest {
                     "jfr"));
 
     // Role name is set correctly
-    assertThat(blobOptions.getMetadata().get(BlobMetadataConstants.ROLE_NAME_META_NAME))
+    assertThat(blobOptions.getMetadata().get(ServiceProfilerUploader.ROLE_NAME_META_NAME))
         .isEqualTo("a-role-name");
 
     blobOptions =
@@ -127,7 +126,7 @@ class ServiceProfilerUploaderTest {
                     "jfr"));
 
     // Null role name tag is not added
-    assertThat(blobOptions.getMetadata().get(BlobMetadataConstants.ROLE_NAME_META_NAME)).isNull();
+    assertThat(blobOptions.getMetadata().get(ServiceProfilerUploader.ROLE_NAME_META_NAME)).isNull();
   }
 
   @Test

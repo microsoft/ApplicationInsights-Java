@@ -15,7 +15,6 @@ import com.microsoft.applicationinsights.profiler.uploader.ServiceProfilerIndex;
 import com.microsoft.applicationinsights.profiler.uploader.UploadResult;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.ServiceProfilerClientV2;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.contract.BlobAccessPass;
-import com.microsoft.applicationinsights.serviceprofilerapi.client.contract.BlobMetadataConstants;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.contract.TimestampContract;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.uploader.OsPlatformProvider;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.uploader.UploadContext;
@@ -43,6 +42,16 @@ import reactor.core.publisher.Mono;
 
 /** Uploads profiles to the service profiler endpoint. */
 public class ServiceProfilerUploader {
+
+  private static final String DATA_CUBE_META_NAME = "spDataCube";
+  private static final String MACHINE_NAME_META_NAME = "spMachineName";
+  private static final String START_TIME_META_NAME = "spTraceStartTime";
+  private static final String PROGRAMMING_LANGUAGE_META_NAME = "spProgrammingLanguage";
+  private static final String OS_PLATFORM_META_NAME = "spOSPlatform";
+  private static final String TRACE_FILE_FORMAT_META_NAME = "spTraceFileFormat";
+  // Visible for testing
+  static final String ROLE_NAME_META_NAME = "RoleName";
+
   private static final Logger LOGGER = LoggerFactory.getLogger(ServiceProfilerUploader.class);
 
   private static final long UPLOAD_BLOCK_LENGTH = 8 * 1024 * 1024;
@@ -242,20 +251,16 @@ public class ServiceProfilerUploader {
   BlobUploadFromFileOptions createBlockBlobOptions(File file, UploadContext uploadContext) {
     HashMap<String, String> metadata = new HashMap<>();
 
+    metadata.put(DATA_CUBE_META_NAME, uploadContext.getDataCube().toString().toLowerCase());
+    metadata.put(MACHINE_NAME_META_NAME, uploadContext.getMachineName());
     metadata.put(
-        BlobMetadataConstants.DATA_CUBE_META_NAME,
-        uploadContext.getDataCube().toString().toLowerCase());
-    metadata.put(BlobMetadataConstants.MACHINE_NAME_META_NAME, uploadContext.getMachineName());
-    metadata.put(
-        BlobMetadataConstants.START_TIME_META_NAME,
-        TimestampContract.timestampToString(uploadContext.getSessionId()));
-    metadata.put(BlobMetadataConstants.PROGRAMMING_LANGUAGE_META_NAME, "Java");
-    metadata.put(
-        BlobMetadataConstants.OS_PLATFORM_META_NAME, OsPlatformProvider.getOsPlatformDescription());
-    metadata.put(BlobMetadataConstants.TRACE_FILE_FORMAT_META_NAME, uploadContext.getFileFormat());
+        START_TIME_META_NAME, TimestampContract.timestampToString(uploadContext.getSessionId()));
+    metadata.put(PROGRAMMING_LANGUAGE_META_NAME, "Java");
+    metadata.put(OS_PLATFORM_META_NAME, OsPlatformProvider.getOsPlatformDescription());
+    metadata.put(TRACE_FILE_FORMAT_META_NAME, uploadContext.getFileFormat());
 
     if (roleName != null && !roleName.isEmpty()) {
-      metadata.put(BlobMetadataConstants.ROLE_NAME_META_NAME, roleName);
+      metadata.put(ROLE_NAME_META_NAME, roleName);
     }
 
     String fullFilePath = file.getAbsoluteFile().toString();
