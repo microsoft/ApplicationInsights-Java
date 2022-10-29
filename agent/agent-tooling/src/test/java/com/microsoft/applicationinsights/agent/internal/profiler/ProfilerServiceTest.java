@@ -16,22 +16,19 @@ import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryE
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.ThreadPoolUtils;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
+import com.microsoft.applicationinsights.agent.internal.profiler.client.ArtifactAcceptedResponse;
+import com.microsoft.applicationinsights.agent.internal.profiler.client.BlobAccessPass;
+import com.microsoft.applicationinsights.agent.internal.profiler.client.ServiceProfilerClient;
+import com.microsoft.applicationinsights.agent.internal.profiler.config.LocalConfig;
+import com.microsoft.applicationinsights.agent.internal.profiler.profiler.JfrProfiler;
+import com.microsoft.applicationinsights.agent.internal.profiler.upload.UploadCompleteHandler;
+import com.microsoft.applicationinsights.agent.internal.profiler.upload.UploadContext;
+import com.microsoft.applicationinsights.agent.internal.profiler.upload.UploadFinishArgs;
+import com.microsoft.applicationinsights.agent.internal.profiler.upload.UploadService;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryObservers;
 import com.microsoft.applicationinsights.alerting.AlertingSubsystem;
 import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
-import com.microsoft.applicationinsights.profiler.ProfilerService;
-import com.microsoft.applicationinsights.profiler.ProfilerServiceFactory;
-import com.microsoft.applicationinsights.serviceprofilerapi.config.LocalConfig;
-import com.microsoft.applicationinsights.serviceprofilerapi.upload.UploadCompleteHandler;
-import com.microsoft.applicationinsights.serviceprofilerapi.JfrProfilerService;
-import com.microsoft.applicationinsights.serviceprofilerapi.client.ArtifactAcceptedResponse;
-import com.microsoft.applicationinsights.serviceprofilerapi.client.BlobAccessPass;
-import com.microsoft.applicationinsights.serviceprofilerapi.client.ServiceProfilerClient;
-import com.microsoft.applicationinsights.serviceprofilerapi.profiler.JfrProfiler;
-import com.microsoft.applicationinsights.serviceprofilerapi.upload.UploadContext;
-import com.microsoft.applicationinsights.serviceprofilerapi.upload.UploadFinishArgs;
-import com.microsoft.applicationinsights.serviceprofilerapi.upload.UploadService;
 import com.microsoft.jfr.Recording;
 import com.microsoft.jfr.RecordingConfiguration;
 import com.microsoft.jfr.RecordingOptions;
@@ -126,12 +123,12 @@ class ProfilerServiceTest {
         Executors.newScheduledThreadPool(
             2,
             ThreadPoolUtils.createDaemonThreadFactory(
-                ProfilerServiceFactory.class, "ServiceProfilerService"));
+                JfrProfilerServiceFactory.class, "ServiceProfilerService"));
 
     ScheduledExecutorService alertServiceExecutorService =
         Executors.newSingleThreadScheduledExecutor(
             ThreadPoolUtils.createDaemonThreadFactory(
-                ProfilerServiceFactory.class, "ServiceProfilerAlertingService"));
+                JfrProfilerServiceFactory.class, "ServiceProfilerAlertingService"));
 
     // Callback invoked when a profile has been uploaded.
     // Sends index metadata about the uploaded profile
@@ -140,7 +137,7 @@ class ProfilerServiceTest {
 
     Configuration config = new Configuration();
 
-    AtomicReference<ProfilerService> service = new AtomicReference<>();
+    AtomicReference<JfrProfilerService> service = new AtomicReference<>();
     AlertingSubsystem alertService =
         AlertingServiceFactory.create(
             config,
@@ -200,7 +197,7 @@ class ProfilerServiceTest {
     assertTelemetry.accept(serviceProfilerIndex.get());
   }
 
-  private static ProfilerService awaitReferenceSet(AtomicReference<ProfilerService> service) {
+  private static JfrProfilerService awaitReferenceSet(AtomicReference<JfrProfilerService> service) {
     // Wait for up to 10 seconds
     for (int i = 0; i < 100 && service.get() == null; i++) {
       try {

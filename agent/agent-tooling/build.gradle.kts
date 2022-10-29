@@ -10,7 +10,11 @@ dependencies {
   compileOnly("com.google.auto.value:auto-value-annotations")
   annotationProcessor("com.google.auto.value:auto-value")
 
-  implementation(project(":agent:agent-profiler:agent-service-profiler"))
+  implementation("com.microsoft.jfr:jfr-streaming")
+  implementation("com.azure:azure-storage-blob")
+  implementation("com.squareup.moshi:moshi")
+  implementation("com.squareup.moshi:moshi-adapters")
+
   implementation(project(":agent:agent-profiler:agent-alerting-api"))
   implementation(project(":agent:agent-profiler:agent-alerting"))
   implementation(project(":agent:agent-gc-monitor:gc-monitor-api"))
@@ -90,7 +94,4 @@ dependencies {
   testImplementation("org.mockito:mockito-core")
   testImplementation("uk.org.webcompere:system-stubs-jupiter:2.0.1")
   testImplementation("io.github.hakky54:logcaptor")
-
-  testImplementation("com.microsoft.jfr:jfr-streaming")
-  testImplementation("com.azure:azure-storage-blob")
 }

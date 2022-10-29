@@ -10,7 +10,7 @@ import com.microsoft.applicationinsights.agent.internal.common.SystemInformation
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.profiler.ProfilerServiceInitializer;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
-import com.microsoft.applicationinsights.serviceprofilerapi.config.LocalConfig;
+import com.microsoft.applicationinsights.agent.internal.profiler.config.LocalConfig;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
