@@ -35,9 +35,24 @@ class AlertConfigParserTest {
             "--single --mode immediate --immediate-profiling-duration 120  --expiration 5249157885138288517 --settings-moniker a-settings-moniker");
 
     assertThat(config.getCpuAlert())
-        .isEqualTo(AlertConfiguration.create(AlertMetricType.CPU, true, 80, 30, 14400));
+        .isEqualTo(
+            AlertConfiguration.builder()
+                .setType(AlertMetricType.CPU)
+                .setEnabled(true)
+                .setThreshold((float) 80)
+                .setProfileDuration(30)
+                .setCooldown(14400)
+                .build());
+
     assertThat(config.getMemoryAlert())
-        .isEqualTo(AlertConfiguration.create(AlertMetricType.CPU, true, 20, 120, 14400));
+        .isEqualTo(
+            AlertConfiguration.builder()
+                .setType(AlertMetricType.CPU)
+                .setEnabled(true)
+                .setThreshold((float) 20)
+                .setProfileDuration(120)
+                .setCooldown(14400)
+                .build());
     assertThat(config.getDefaultConfiguration())
         .isEqualTo(
             DefaultConfiguration.builder()

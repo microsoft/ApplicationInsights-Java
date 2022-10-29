@@ -8,36 +8,6 @@ import javax.annotation.Nullable;
 @AutoValue
 public abstract class AlertConfiguration {
 
-  public static AlertConfiguration create(
-      AlertMetricType type, boolean enabled, float threshold, long profileDuration, long cooldown) {
-
-    return builder()
-        .setType(type)
-        .setEnabled(enabled)
-        .setThreshold(threshold)
-        .setProfileDuration(profileDuration)
-        .setCooldown(cooldown)
-        .build();
-  }
-
-  public static AlertConfiguration create(
-      AlertMetricType type,
-      boolean enabled,
-      float threshold,
-      long profileDuration,
-      long cooldown,
-      @Nullable AlertingConfig.RequestTrigger requestTrigger) {
-
-    return builder()
-        .setType(type)
-        .setEnabled(enabled)
-        .setThreshold(threshold)
-        .setProfileDuration(profileDuration)
-        .setCooldown(cooldown)
-        .setRequestTrigger(requestTrigger)
-        .build();
-  }
-
   public abstract AlertMetricType getType();
 
   public abstract boolean isEnabled();

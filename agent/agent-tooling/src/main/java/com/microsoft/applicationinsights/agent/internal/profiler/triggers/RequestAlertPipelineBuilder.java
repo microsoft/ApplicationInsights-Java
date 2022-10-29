@@ -36,14 +36,16 @@ public class RequestAlertPipelineBuilder {
     Aggregation aggregation = getAggregation(configuration, timeSource);
 
     // TODO make threshold and throttling responsive to type argument
+
     AlertConfiguration config =
-        AlertConfiguration.create(
-            AlertMetricType.REQUEST,
-            true,
-            configuration.threshold.value,
-            configuration.profileDuration,
-            configuration.throttling.value,
-            requestTriggerConfiguration);
+        AlertConfiguration.builder()
+            .setType(AlertMetricType.REQUEST)
+            .setEnabled(true)
+            .setThreshold(configuration.threshold.value)
+            .setProfileDuration(configuration.profileDuration)
+            .setCooldown(configuration.throttling.value)
+            .setRequestTrigger(requestTriggerConfiguration)
+            .build();
 
     return SingleAlertPipeline.create(filter, aggregation, config, alertAction);
   }

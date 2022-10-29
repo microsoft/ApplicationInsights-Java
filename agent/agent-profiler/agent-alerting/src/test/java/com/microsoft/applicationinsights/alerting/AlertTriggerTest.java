@@ -17,7 +17,15 @@ class AlertTriggerTest {
 
   @Test
   void underThresholdDataDoesNotTrigger() {
-    AlertConfiguration config = AlertConfiguration.create(AlertMetricType.CPU, true, 0.5f, 1, 1000);
+
+    AlertConfiguration config =
+        AlertConfiguration.builder()
+            .setType(AlertMetricType.CPU)
+            .setEnabled(true)
+            .setThreshold(0.5f)
+            .setProfileDuration(1)
+            .setCooldown(1000)
+            .build();
     AtomicBoolean called = new AtomicBoolean(false);
     AlertPipelineTrigger trigger = getAlertTrigger(config, called);
     for (int i = 0; i < 100; i++) {
@@ -30,7 +38,14 @@ class AlertTriggerTest {
   @Test
   void overThresholdDataDoesTrigger() {
 
-    AlertConfiguration config = AlertConfiguration.create(AlertMetricType.CPU, true, 0.5f, 1, 1);
+    AlertConfiguration config =
+        AlertConfiguration.builder()
+            .setType(AlertMetricType.CPU)
+            .setEnabled(true)
+            .setThreshold(0.5f)
+            .setProfileDuration(1)
+            .setCooldown(1)
+            .build();
     AtomicBoolean called = new AtomicBoolean(false);
     AlertPipelineTrigger trigger = getAlertTrigger(config, called);
 
@@ -43,7 +58,15 @@ class AlertTriggerTest {
 
   @Test
   void doesNotReTriggerDueToCooldown() {
-    AlertConfiguration config = AlertConfiguration.create(AlertMetricType.CPU, true, 0.5f, 1, 1000);
+
+    AlertConfiguration config =
+        AlertConfiguration.builder()
+            .setType(AlertMetricType.CPU)
+            .setEnabled(true)
+            .setThreshold(0.5f)
+            .setProfileDuration(1)
+            .setCooldown(1000)
+            .build();
     AtomicBoolean called = new AtomicBoolean(false);
     AlertPipelineTrigger trigger = getAlertTrigger(config, called);
 
@@ -66,7 +89,15 @@ class AlertTriggerTest {
 
   @Test
   void doesNotReTriggerAfterCooldown() throws InterruptedException {
-    AlertConfiguration config = AlertConfiguration.create(AlertMetricType.CPU, true, 0.5f, 1, 1);
+
+    AlertConfiguration config =
+        AlertConfiguration.builder()
+            .setType(AlertMetricType.CPU)
+            .setEnabled(true)
+            .setThreshold(0.5f)
+            .setProfileDuration(1)
+            .setCooldown(1)
+            .build();
     AtomicBoolean called = new AtomicBoolean(false);
     AlertPipelineTrigger trigger = getAlertTrigger(config, called);
 

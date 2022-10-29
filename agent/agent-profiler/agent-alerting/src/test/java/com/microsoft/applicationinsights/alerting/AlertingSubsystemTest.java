@@ -26,8 +26,20 @@ class AlertingSubsystemTest {
 
     monitor.updateConfiguration(
         AlertingConfiguration.create(
-            AlertConfiguration.create(AlertMetricType.CPU, true, 80, 30, 14400),
-            AlertConfiguration.create(AlertMetricType.MEMORY, true, 20, 120, 14400),
+            AlertConfiguration.builder()
+                .setType(AlertMetricType.CPU)
+                .setEnabled(true)
+                .setThreshold((float) 80)
+                .setProfileDuration(30)
+                .setCooldown(14400)
+                .build(),
+            AlertConfiguration.builder()
+                .setType(AlertMetricType.MEMORY)
+                .setEnabled(true)
+                .setThreshold((float) 20)
+                .setProfileDuration(120)
+                .setCooldown(14400)
+                .build(),
             DefaultConfiguration.builder()
                 .setSamplingEnabled(true)
                 .setSamplingRate(5)
@@ -72,8 +84,20 @@ class AlertingSubsystemTest {
 
     service.updateConfiguration(
         AlertingConfiguration.create(
-            AlertConfiguration.create(AlertMetricType.CPU, true, 80, 30, 14400),
-            AlertConfiguration.create(AlertMetricType.MEMORY, true, 20, 120, 14400),
+            AlertConfiguration.builder()
+                .setType(AlertMetricType.CPU)
+                .setEnabled(true)
+                .setThreshold((float) 80)
+                .setProfileDuration(30)
+                .setCooldown(14400)
+                .build(),
+            AlertConfiguration.builder()
+                .setType(AlertMetricType.MEMORY)
+                .setEnabled(true)
+                .setThreshold((float) 20)
+                .setProfileDuration(120)
+                .setCooldown(14400)
+                .build(),
             DefaultConfiguration.builder()
                 .setSamplingEnabled(true)
                 .setSamplingRate(5)
@@ -100,8 +124,20 @@ class AlertingSubsystemTest {
 
     service.updateConfiguration(
         AlertingConfiguration.create(
-            AlertConfiguration.create(AlertMetricType.CPU, true, 80, 30, 14400),
-            AlertConfiguration.create(AlertMetricType.MEMORY, true, 20, 120, 14400),
+            AlertConfiguration.builder()
+                .setType(AlertMetricType.CPU)
+                .setEnabled(true)
+                .setThreshold((float) 80)
+                .setProfileDuration(30)
+                .setCooldown(14400)
+                .build(),
+            AlertConfiguration.builder()
+                .setType(AlertMetricType.MEMORY)
+                .setEnabled(true)
+                .setThreshold((float) 20)
+                .setProfileDuration(120)
+                .setCooldown(14400)
+                .build(),
             DefaultConfiguration.builder()
                 .setSamplingEnabled(true)
                 .setSamplingRate(5)

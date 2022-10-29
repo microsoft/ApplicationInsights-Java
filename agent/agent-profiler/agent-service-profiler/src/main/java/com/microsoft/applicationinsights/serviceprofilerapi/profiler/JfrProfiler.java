@@ -71,13 +71,15 @@ public class JfrProfiler implements ProfilerConfigurationHandler {
   private final File temporaryDirectory;
 
   public JfrProfiler(LocalConfig configuration) {
+
     periodicConfig =
-        AlertConfiguration.create(
-            AlertMetricType.PERIODIC,
-            false,
-            0.0f,
-            configuration.getPeriodicRecordingDuration(),
-            configuration.getPeriodicRecordingInterval());
+        AlertConfiguration.builder()
+            .setType(AlertMetricType.PERIODIC)
+            .setEnabled(false)
+            .setThreshold(0.0f)
+            .setProfileDuration(configuration.getPeriodicRecordingDuration())
+            .setCooldown(configuration.getPeriodicRecordingInterval())
+            .build();
 
     memoryRecordingConfiguration =
         AlternativeJfrConfigurations.getMemoryProfileConfig(configuration);
