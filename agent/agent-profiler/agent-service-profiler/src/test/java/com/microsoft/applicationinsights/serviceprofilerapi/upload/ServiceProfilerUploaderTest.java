@@ -8,9 +8,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.azure.storage.blob.options.BlobUploadFromFileOptions;
 import com.microsoft.applicationinsights.profiler.uploader.ServiceProfilerIndex;
+import com.microsoft.applicationinsights.serviceprofilerapi.client.ArtifactAcceptedResponse;
+import com.microsoft.applicationinsights.serviceprofilerapi.client.BlobAccessPass;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.ServiceProfilerClient;
-import com.microsoft.applicationinsights.serviceprofilerapi.client.contract.ArtifactAcceptedResponse;
-import com.microsoft.applicationinsights.serviceprofilerapi.client.contract.BlobAccessPass;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;

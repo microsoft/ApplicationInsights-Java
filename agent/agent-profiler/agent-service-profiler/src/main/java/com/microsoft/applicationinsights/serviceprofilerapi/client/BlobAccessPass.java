@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-package com.microsoft.applicationinsights.serviceprofilerapi.client.contract;
+package com.microsoft.applicationinsights.serviceprofilerapi.client;
 
 import com.azure.storage.blob.BlobUrlParts;
 import com.squareup.moshi.Json;
