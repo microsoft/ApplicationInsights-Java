@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-package com.microsoft.applicationinsights.agent.internal.profiler.profiler;
+package com.microsoft.applicationinsights.agent.internal.profiler;
 
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.alerting.config.AlertMetricType;

@@ -35,6 +35,7 @@ import com.microsoft.applicationinsights.agent.internal.processors.ExporterWithS
 import com.microsoft.applicationinsights.agent.internal.processors.LogExporterWithAttributeProcessor;
 import com.microsoft.applicationinsights.agent.internal.processors.MySpanData;
 import com.microsoft.applicationinsights.agent.internal.processors.SpanExporterWithAttributeProcessor;
+import com.microsoft.applicationinsights.agent.internal.profiler.ProfilingInitializer;
 import com.microsoft.applicationinsights.agent.internal.profiler.triggers.AlertTriggerSpanProcessor;
 import com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampler;
 import com.microsoft.applicationinsights.agent.internal.sampling.Samplers;

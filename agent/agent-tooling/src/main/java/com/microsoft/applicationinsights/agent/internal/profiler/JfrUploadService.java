@@ -1,13 +1,12 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-package com.microsoft.applicationinsights.agent.internal.profiler.profiler;
+package com.microsoft.applicationinsights.agent.internal.profiler;
 
-import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
-import com.microsoft.applicationinsights.agent.internal.profiler.ProfileHandler;
 import com.microsoft.applicationinsights.agent.internal.profiler.upload.UploadCompleteHandler;
 import com.microsoft.applicationinsights.agent.internal.profiler.upload.UploadResult;
 import com.microsoft.applicationinsights.agent.internal.profiler.upload.UploadService;
+import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
 import java.io.File;
 import java.util.UUID;
 import java.util.function.Consumer;

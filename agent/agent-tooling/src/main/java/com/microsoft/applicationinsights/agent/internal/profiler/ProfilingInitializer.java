@@ -1,19 +1,19 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-package com.microsoft.applicationinsights.agent.internal.init;
+package com.microsoft.applicationinsights.agent.internal.profiler;
 
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.SdkVersionFinder;
 import com.microsoft.applicationinsights.agent.internal.common.FriendlyException;
 import com.microsoft.applicationinsights.agent.internal.common.SystemInformation;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
-import com.microsoft.applicationinsights.agent.internal.profiler.ProfilerServiceInitializer;
+import com.microsoft.applicationinsights.agent.internal.init.AppIdSupplier;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import java.io.File;
 
-class ProfilingInitializer {
+public class ProfilingInitializer {
 
-  static void initialize(
+  public static void initialize(
       File tempDir,
       AppIdSupplier appIdSupplier,
       Configuration config,

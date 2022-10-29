@@ -20,7 +20,6 @@ import com.microsoft.applicationinsights.agent.internal.profiler.client.Artifact
 import com.microsoft.applicationinsights.agent.internal.profiler.client.BlobAccessPass;
 import com.microsoft.applicationinsights.agent.internal.profiler.client.ServiceProfilerClient;
 import com.microsoft.applicationinsights.agent.internal.profiler.config.LocalConfig;
-import com.microsoft.applicationinsights.agent.internal.profiler.profiler.JfrProfiler;
 import com.microsoft.applicationinsights.agent.internal.profiler.upload.UploadCompleteHandler;
 import com.microsoft.applicationinsights.agent.internal.profiler.upload.UploadContext;
 import com.microsoft.applicationinsights.agent.internal.profiler.upload.UploadFinishArgs;

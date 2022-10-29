@@ -7,7 +7,6 @@ import com.azure.core.http.HttpPipeline;
 import com.microsoft.applicationinsights.agent.internal.common.FriendlyException;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.profiler.client.ServiceProfilerClient;
-import com.microsoft.applicationinsights.agent.internal.profiler.profiler.JfrProfiler;
 import com.microsoft.applicationinsights.agent.internal.profiler.upload.UploadService;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import java.io.File;

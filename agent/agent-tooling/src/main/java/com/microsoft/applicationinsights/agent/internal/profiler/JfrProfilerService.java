@@ -6,8 +6,6 @@ package com.microsoft.applicationinsights.agent.internal.profiler;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.profiler.client.ServiceProfilerClient;
 import com.microsoft.applicationinsights.agent.internal.profiler.config.ConfigMonitoringService;
-import com.microsoft.applicationinsights.agent.internal.profiler.profiler.JfrProfiler;
-import com.microsoft.applicationinsights.agent.internal.profiler.profiler.JfrUploadService;
 import com.microsoft.applicationinsights.agent.internal.profiler.upload.UploadService;
 import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
