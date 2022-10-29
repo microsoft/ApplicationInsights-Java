@@ -33,8 +33,13 @@ class AlertingSubsystemTest {
                 .setSamplingRate(5)
                 .setSamplingProfileDuration(120)
                 .build(),
-            new CollectionPlanConfiguration(
-                true, EngineMode.immediate, Instant.now(), 120, "a-settings-moniker")));
+            CollectionPlanConfiguration.builder()
+                .setSingle(true)
+                .setMode(EngineMode.immediate)
+                .setExpiration(Instant.now())
+                .setImmediateProfilingDuration(120)
+                .setSettingsMoniker("a-settings-moniker")
+                .build()));
     return monitor;
   }
 
@@ -74,12 +79,13 @@ class AlertingSubsystemTest {
                 .setSamplingRate(5)
                 .setSamplingProfileDuration(120)
                 .build(),
-            new CollectionPlanConfiguration(
-                true,
-                EngineMode.immediate,
-                Instant.now().plus(100, ChronoUnit.SECONDS),
-                120,
-                "a-settings-moniker")));
+            CollectionPlanConfiguration.builder()
+                .setSingle(true)
+                .setMode(EngineMode.immediate)
+                .setExpiration(Instant.now().plus(100, ChronoUnit.SECONDS))
+                .setImmediateProfilingDuration(120)
+                .setSettingsMoniker("a-settings-moniker")
+                .build()));
 
     assertThat(called.get().getType()).isEqualTo(AlertMetricType.MANUAL);
   }
@@ -101,12 +107,13 @@ class AlertingSubsystemTest {
                 .setSamplingRate(5)
                 .setSamplingProfileDuration(120)
                 .build(),
-            new CollectionPlanConfiguration(
-                true,
-                EngineMode.immediate,
-                Instant.now().minus(100, ChronoUnit.SECONDS),
-                120,
-                "a-settings-moniker")));
+            CollectionPlanConfiguration.builder()
+                .setSingle(true)
+                .setMode(EngineMode.immediate)
+                .setExpiration(Instant.now().minus(100, ChronoUnit.SECONDS))
+                .setImmediateProfilingDuration(120)
+                .setSettingsMoniker("a-settings-moniker")
+                .build()));
 
     assertThat(called.get()).isNull();
   }

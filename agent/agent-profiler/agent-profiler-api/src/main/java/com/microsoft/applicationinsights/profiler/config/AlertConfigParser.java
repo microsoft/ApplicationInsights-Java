@@ -33,8 +33,13 @@ public class AlertConfigParser {
   // --settings-moniker Portal_b5bd7880-7406-4058-a6f8-3ea0102706b1
   private static CollectionPlanConfiguration parseCollectionPlan(@Nullable String collectionPlan) {
     if (collectionPlan == null) {
-      return new CollectionPlanConfiguration(
-          false, EngineMode.immediate, Instant.ofEpochMilli(0), 0, "");
+      return CollectionPlanConfiguration.builder()
+          .setSingle(false)
+          .setMode(EngineMode.immediate)
+          .setExpiration(Instant.ofEpochMilli(0))
+          .setImmediateProfilingDuration(0)
+          .setSettingsMoniker("")
+          .build();
     }
 
     String[] tokens = collectionPlan.split(" ");

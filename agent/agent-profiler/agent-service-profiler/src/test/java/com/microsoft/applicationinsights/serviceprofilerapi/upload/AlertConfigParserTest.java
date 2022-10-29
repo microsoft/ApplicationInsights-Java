@@ -49,11 +49,13 @@ class AlertConfigParserTest {
                 .build());
     assertThat(config.getCollectionPlanConfiguration())
         .isEqualTo(
-            new CollectionPlanConfiguration(
-                true,
-                EngineMode.immediate,
-                CollectionPlanConfigurationBuilder.parseBinaryDate(5249157885138288517L),
-                120,
-                "a-settings-moniker"));
+            CollectionPlanConfiguration.builder()
+                .setSingle(true)
+                .setMode(EngineMode.immediate)
+                .setExpiration(
+                    CollectionPlanConfigurationBuilder.parseBinaryDate(5249157885138288517L))
+                .setImmediateProfilingDuration(120)
+                .setSettingsMoniker("a-settings-moniker")
+                .build());
   }
 }
