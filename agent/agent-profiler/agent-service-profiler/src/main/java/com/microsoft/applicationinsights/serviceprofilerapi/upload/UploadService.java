@@ -119,21 +119,23 @@ public class UploadService {
               // return associated profile metadata
               String fileId = createId(9);
               String formattedTimestamp = TimestampContract.padNanos(done.getTimeStamp());
+
               return new UploadResult(
-                  new ServiceProfilerIndex(
-                      triggerName,
-                      fileId,
-                      done.getStampId(),
-                      UUID.fromString(appId),
-                      formattedTimestamp,
-                      uploadContext.getMachineName(),
-                      OsPlatformProvider.getOsPlatformDescription(),
-                      processId,
-                      artifactKind,
-                      profileId.toString(),
-                      extension,
-                      cpuUsage,
-                      memoryUsage),
+                  ServiceProfilerIndex.builder()
+                      .setTriggeredBy(triggerName)
+                      .setFileId(fileId)
+                      .setStampId(done.getStampId())
+                      .setDataCubeId(UUID.fromString(appId))
+                      .setTimeStamp(formattedTimestamp)
+                      .setMachineName(uploadContext.getMachineName())
+                      .setOs(OsPlatformProvider.getOsPlatformDescription())
+                      .setProcessId(processId)
+                      .setArtifactKind(artifactKind)
+                      .setArtifactId(profileId.toString())
+                      .setExtension(extension)
+                      .setCpuUsage(cpuUsage)
+                      .setMemoryUsage(memoryUsage)
+                      .build(),
                   timestamp);
             });
   }

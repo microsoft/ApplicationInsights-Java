@@ -52,14 +52,16 @@ class UploadServiceTest {
                       result
                           .getServiceProfilerIndex()
                           .getProperties()
-                          .get(ServiceProfilerIndex.SERVICE_PROFILER_STAMPID_PROPERTY_NAME))
+                          .get(ServiceProfilerIndex.Builder.SERVICE_PROFILER_STAMPID_PROPERTY_NAME))
                   .isEqualTo("a-stamp-id");
 
               assertThat(
                       result
                           .getServiceProfilerIndex()
                           .getProperties()
-                          .get(ServiceProfilerIndex.SERVICE_PROFILER_MACHINENAME_PROPERTY_NAME))
+                          .get(
+                              ServiceProfilerIndex.Builder
+                                  .SERVICE_PROFILER_MACHINENAME_PROPERTY_NAME))
                   .isEqualTo("a-machine-name");
 
               assertThat(
@@ -67,14 +69,16 @@ class UploadServiceTest {
                           .getServiceProfilerIndex()
                           .getProperties()
                           .get(
-                              ServiceProfilerIndex.SERVICE_PROFILER_ETLFILESESSIONID_PROPERTY_NAME))
+                              ServiceProfilerIndex.Builder
+                                  .SERVICE_PROFILER_ETLFILESESSIONID_PROPERTY_NAME))
                   .isEqualTo("a-timestamp");
 
               assertThat(
                       result
                           .getServiceProfilerIndex()
                           .getProperties()
-                          .get(ServiceProfilerIndex.SERVICE_PROFILER_DATACUBE_PROPERTY_NAME))
+                          .get(
+                              ServiceProfilerIndex.Builder.SERVICE_PROFILER_DATACUBE_PROPERTY_NAME))
                   .isEqualTo(appId.toString());
             });
   }

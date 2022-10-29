@@ -24,7 +24,8 @@ import java.util.function.Supplier;
 public class JfrProfilerServiceFactory implements ProfilerServiceFactory {
 
   @Override
-  public synchronized Future<ProfilerService> initialize(
+  public synchronized Future<ProfilerService>
+  initialize(
       Supplier<String> appIdSupplier,
       ProfilerConfigurationHandler profilerConfigurationHandler,
       String processId,
