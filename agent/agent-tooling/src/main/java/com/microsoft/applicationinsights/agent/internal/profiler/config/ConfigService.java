@@ -4,7 +4,6 @@
 package com.microsoft.applicationinsights.agent.internal.profiler.config;
 
 import com.azure.core.exception.HttpResponseException;
-import com.microsoft.applicationinsights.agent.internal.profiler.ProfilerConfiguration;
 import com.microsoft.applicationinsights.agent.internal.profiler.client.ServiceProfilerClient;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;

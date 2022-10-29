@@ -55,6 +55,7 @@ public class JfrProfilerService {
       ServiceProfilerClient serviceProfilerClient,
       UploadService uploadService,
       ScheduledExecutorService serviceProfilerExecutorService) {
+
     this.appIdSupplier = getAppId(appIdSupplier);
     this.config = config;
     this.profiler = profiler;

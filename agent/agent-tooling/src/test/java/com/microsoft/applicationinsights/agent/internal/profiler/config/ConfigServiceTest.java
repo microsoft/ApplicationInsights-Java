@@ -5,11 +5,9 @@ package com.microsoft.applicationinsights.agent.internal.profiler.config;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.microsoft.applicationinsights.agent.internal.profiler.ProfilerConfiguration;
 import com.microsoft.applicationinsights.agent.internal.profiler.client.ServiceProfilerClient;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import com.microsoft.applicationinsights.agent.internal.profiler.config.ConfigService;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import reactor.core.publisher.Mono;

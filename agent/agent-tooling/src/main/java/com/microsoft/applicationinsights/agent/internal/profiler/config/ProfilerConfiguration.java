@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-package com.microsoft.applicationinsights.agent.internal.profiler;
+package com.microsoft.applicationinsights.agent.internal.profiler.config;
 
 import com.squareup.moshi.Json;
 import java.util.Date;

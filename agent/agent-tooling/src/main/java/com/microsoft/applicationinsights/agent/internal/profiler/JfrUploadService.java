@@ -15,18 +15,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /** Receives notifications of new profiles and uploads them to Service Profiler. */
-public class JfrUploadService {
+class JfrUploadService {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(JfrUploadService.class);
 
   private final UploadService jfrUploader;
   private final Supplier<String> appIdSupplier;
 
-  public JfrUploadService(UploadService jfrUploader, Supplier<String> appIdSupplier) {
+  JfrUploadService(UploadService jfrUploader, Supplier<String> appIdSupplier) {
     this.jfrUploader = jfrUploader;
     this.appIdSupplier = appIdSupplier;
   }
 
-  public void upload(
+  void upload(
       AlertBreach alertBreach,
       long timestamp,
       File file,

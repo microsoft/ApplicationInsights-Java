@@ -3,6 +3,8 @@
 
 package com.microsoft.applicationinsights.agent.internal.profiler;
 
+import com.microsoft.applicationinsights.agent.internal.profiler.config.ProfilerConfiguration;
+
 /** A service that is able to apply profiler configuration parameters. */
 public interface ProfilerConfigurationHandler {
   void updateConfiguration(ProfilerConfiguration newConfig);

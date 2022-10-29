@@ -6,12 +6,13 @@ package com.microsoft.applicationinsights.agent.internal.profiler;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.microsoft.applicationinsights.agent.internal.configuration.GcReportingLevel;
+import com.microsoft.applicationinsights.agent.internal.profiler.config.AlertConfigParser;
+import com.microsoft.applicationinsights.agent.internal.profiler.testutil.TestTimeSource;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import com.microsoft.applicationinsights.alerting.AlertingSubsystem;
 import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
 import com.microsoft.applicationinsights.alerting.analysis.TimeSource;
 import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration;
-import com.microsoft.applicationinsights.agent.internal.profiler.config.AlertConfigParser;
 import com.microsoft.gcmonitor.GcCollectionEvent;
 import com.microsoft.gcmonitor.GcEventConsumer;
 import com.microsoft.gcmonitor.GcMonitorFactory;

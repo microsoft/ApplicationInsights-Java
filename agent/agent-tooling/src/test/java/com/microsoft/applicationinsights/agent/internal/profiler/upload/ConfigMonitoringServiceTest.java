@@ -9,9 +9,9 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 
-import com.microsoft.applicationinsights.agent.internal.profiler.ProfilerConfiguration;
 import com.microsoft.applicationinsights.agent.internal.profiler.client.ServiceProfilerClient;
 import com.microsoft.applicationinsights.agent.internal.profiler.config.ConfigMonitoringService;
+import com.microsoft.applicationinsights.agent.internal.profiler.config.ProfilerConfiguration;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Collections;

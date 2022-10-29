@@ -50,7 +50,8 @@ public class RequestAlertPipelineBuilder {
     return SingleAlertPipeline.create(filter, aggregation, config, alertAction);
   }
 
-  public static AlertingConfig.RequestTrigger buildRequestTriggerConfiguration(
+  // visible for tests
+  static AlertingConfig.RequestTrigger buildRequestTriggerConfiguration(
       Configuration.RequestTrigger configuration) {
 
     AlertingConfig.RequestTriggerType type =

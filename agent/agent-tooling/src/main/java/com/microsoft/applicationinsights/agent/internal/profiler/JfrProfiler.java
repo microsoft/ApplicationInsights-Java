@@ -4,6 +4,7 @@
 package com.microsoft.applicationinsights.agent.internal.profiler;
 
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
+import com.microsoft.applicationinsights.agent.internal.profiler.config.ProfilerConfiguration;
 import com.microsoft.applicationinsights.agent.internal.profiler.upload.UploadCompleteHandler;
 import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
 import com.microsoft.applicationinsights.alerting.config.AlertConfiguration;
@@ -119,6 +120,7 @@ public class JfrProfiler implements ProfilerConfigurationHandler {
     // TODO update periodic profile configuration
   }
 
+  // visible for tests
   void profileAndUpload(
       AlertBreach alertBreach, Duration duration, UploadCompleteHandler uploadCompleteHandler) {
     Instant recordingStart = Instant.now();
@@ -129,7 +131,7 @@ public class JfrProfiler implements ProfilerConfigurationHandler {
   }
 
   @Nullable
-  Recording startRecording(AlertMetricType alertType, Duration duration) {
+  private Recording startRecording(AlertMetricType alertType, Duration duration) {
     synchronized (activeRecordingLock) {
       if (activeRecording != null) {
         LOGGER.warn("Alert received, however a profile is already in progress, ignoring request.");
@@ -172,13 +174,14 @@ public class JfrProfiler implements ProfilerConfigurationHandler {
     }
   }
 
-  Recording createRecording(
+  private Recording createRecording(
       RecordingOptions recordingOptions, RecordingConfiguration recordingConfiguration) {
     return flightRecorderConnection.newRecording(recordingOptions, recordingConfiguration);
   }
 
   /** Perform a profile and notify the handler. */
-  void executeProfile(AlertMetricType alertType, Duration duration, Consumer<Recording> handler) {
+  private void executeProfile(
+      AlertMetricType alertType, Duration duration, Consumer<Recording> handler) {
 
     LOGGER.info("Received " + alertType + " alert, Starting profile");
 
@@ -213,7 +216,7 @@ public class JfrProfiler implements ProfilerConfigurationHandler {
 
   /** When a profile has been created, upload it to service profiler. */
   @SuppressWarnings("CatchingUnchecked")
-  Consumer<Recording> uploadNewRecording(
+  private Consumer<Recording> uploadNewRecording(
       AlertBreach alertBreach,
       Instant recordingStart,
       UploadCompleteHandler uploadCompleteHandler) {
@@ -223,7 +226,7 @@ public class JfrProfiler implements ProfilerConfigurationHandler {
         // dump profile to file
         closeRecording(activeRecording, activeRecordingFile);
 
-        // notify handler of a new profile
+        // upload new profile
         jfrUploadService.upload(
             alertBreach, recordingStart.toEpochMilli(), activeRecordingFile, uploadCompleteHandler);
 
@@ -295,7 +298,7 @@ public class JfrProfiler implements ProfilerConfigurationHandler {
   }
 
   /** Dump JFR profile to file. */
-  File createJfrFile(Duration duration) throws IOException {
+  private File createJfrFile(Duration duration) throws IOException {
     if (!temporaryDirectory.exists()) {
       if (!temporaryDirectory.mkdirs()) {
         throw new IOException(
@@ -312,7 +315,7 @@ public class JfrProfiler implements ProfilerConfigurationHandler {
   }
 
   /** Action to be performed on a periodic profile request. */
-  public void performPeriodicProfile(UploadCompleteHandler uploadCompleteHandler) {
+  private void performPeriodicProfile(UploadCompleteHandler uploadCompleteHandler) {
     LOGGER.info("Received periodic profile request");
 
     AlertBreach breach =
@@ -329,7 +332,8 @@ public class JfrProfiler implements ProfilerConfigurationHandler {
   }
 
   /** Dispatch alert breach event to handler. */
-  public void accept(AlertBreach alertBreach, UploadCompleteHandler uploadCompleteHandler) {
+  // visible for tests
+  void accept(AlertBreach alertBreach, UploadCompleteHandler uploadCompleteHandler) {
 
     if (alertBreach.getType() == AlertMetricType.PERIODIC) {
       performPeriodicProfile(uploadCompleteHandler);

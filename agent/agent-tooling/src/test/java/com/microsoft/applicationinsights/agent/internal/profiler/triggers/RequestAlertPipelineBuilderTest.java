@@ -1,12 +1,12 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-package com.microsoft.applicationinsights.agent.internal.profiler;
+package com.microsoft.applicationinsights.agent.internal.profiler.triggers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
-import com.microsoft.applicationinsights.agent.internal.profiler.triggers.RequestAlertPipelineBuilder;
+import com.microsoft.applicationinsights.agent.internal.profiler.testutil.TestTimeSource;
 import com.microsoft.applicationinsights.alerting.aiconfig.AlertingConfig;
 import java.time.Instant;
 import org.junit.jupiter.api.Assertions;

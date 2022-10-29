@@ -52,7 +52,7 @@ class JfrProfilerServiceFactory {
     return instance.initialize();
   }
 
-  private static URL getServiceProfilerFrontEndPoint(Configuration.ProfilerConfiguration config) {
+  public static URL getServiceProfilerFrontEndPoint(Configuration.ProfilerConfiguration config) {
 
     // If the user has overridden their service profiler endpoint use that url
     if (config.serviceProfilerFrontEndPoint != null) {

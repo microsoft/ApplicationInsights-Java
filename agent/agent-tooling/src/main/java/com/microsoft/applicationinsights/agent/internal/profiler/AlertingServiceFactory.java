@@ -27,9 +27,11 @@ import java.util.stream.Collectors;
 
 /** Creates AlertMonitor and wires it up to observe telemetry. */
 public class AlertingServiceFactory {
-  private static AlertingSubsystem alertingSubsystem;
 
-  public static AlertingSubsystem create(
+  // TODO (trask) inject instead of using global
+  private static volatile AlertingSubsystem alertingSubsystem;
+
+  static AlertingSubsystem create(
       Configuration configuration,
       Consumer<AlertBreach> alertAction,
       TelemetryObservers telemetryObservers,
@@ -100,9 +102,9 @@ public class AlertingServiceFactory {
         });
   }
 
-  private AlertingServiceFactory() {}
-
   public static AlertingSubsystem getAlertingSubsystem() {
     return alertingSubsystem;
   }
+
+  private AlertingServiceFactory() {}
 }
