@@ -48,7 +48,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import reactor.core.publisher.Mono;
 
-class ProfilerServiceTest {
+class ProfilerInitializationTest {
 
   final String timeStamp = "a-timestamp";
   final String machineName = "a-machine-name";
@@ -136,7 +136,7 @@ class ProfilerServiceTest {
 
     Configuration config = new Configuration();
 
-    AtomicReference<ProfilerService> service = new AtomicReference<>();
+    AtomicReference<ProfilerInitialization> service = new AtomicReference<>();
     AlertingSubsystem alertService =
         AlertingServiceFactory.create(
             config,
@@ -146,8 +146,7 @@ class ProfilerServiceTest {
             alertServiceExecutorService);
 
     service.set(
-        new ProfilerService(
-                () -> appId,
+        new ProfilerInitialization(
                 LocalConfig.builder()
                     .setConfigPollPeriod(1)
                     .setPeriodicRecordingDuration(2)
@@ -196,7 +195,8 @@ class ProfilerServiceTest {
     assertTelemetry.accept(serviceProfilerIndex.get());
   }
 
-  private static ProfilerService awaitReferenceSet(AtomicReference<ProfilerService> service) {
+  private static ProfilerInitialization awaitReferenceSet(
+      AtomicReference<ProfilerInitialization> service) {
     // Wait for up to 10 seconds
     for (int i = 0; i < 100 && service.get() == null; i++) {
       try {

@@ -12,7 +12,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,17 +26,13 @@ import org.slf4j.LoggerFactory;
  *   <li>JFR Uploader service
  * </ul>
  */
-public class ProfilerService {
+public class ProfilerInitialization {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(ProfilerService.class);
-
-  private static final String APP_ID_PREFIX = "cid-v1:";
+  private static final Logger LOGGER = LoggerFactory.getLogger(ProfilerInitialization.class);
 
   private final Configuration.ProfilerConfiguration config;
   private final ServiceProfilerClient serviceProfilerClient;
   private final UploadService uploadService;
-
-  private final Supplier<String> appIdSupplier;
 
   @SuppressWarnings("unused")
   private final Profiler profiler;
@@ -47,8 +42,7 @@ public class ProfilerService {
 
   private final AtomicBoolean initialised = new AtomicBoolean();
 
-  public ProfilerService(
-      Supplier<String> appIdSupplier,
+  public ProfilerInitialization(
       Configuration.ProfilerConfiguration config,
       Profiler profiler,
       ProfilerConfigurationHandler profilerConfigurationHandler,
@@ -56,7 +50,6 @@ public class ProfilerService {
       UploadService uploadService,
       ScheduledExecutorService serviceProfilerExecutorService) {
 
-    this.appIdSupplier = getAppId(appIdSupplier);
     this.config = config;
     this.profiler = profiler;
     this.serviceProfilerClient = serviceProfilerClient;
@@ -65,8 +58,8 @@ public class ProfilerService {
     this.profilerConfigurationHandler = profilerConfigurationHandler;
   }
 
-  public Future<ProfilerService> initialize() {
-    CompletableFuture<ProfilerService> result = new CompletableFuture<>();
+  public Future<ProfilerInitialization> initialize() {
+    CompletableFuture<ProfilerInitialization> result = new CompletableFuture<>();
     if (initialised.getAndSet(true)) {
       result.complete(this);
       return result;
@@ -98,21 +91,6 @@ public class ProfilerService {
           }
         });
     return result;
-  }
-
-  private static Supplier<String> getAppId(Supplier<String> supplier) {
-    return () -> {
-      String appId = supplier.get();
-
-      if (appId == null || appId.isEmpty()) {
-        return null;
-      }
-
-      if (appId.startsWith(APP_ID_PREFIX)) {
-        appId = appId.substring(APP_ID_PREFIX.length());
-      }
-      return appId;
-    };
   }
 
   public Profiler getProfiler() {

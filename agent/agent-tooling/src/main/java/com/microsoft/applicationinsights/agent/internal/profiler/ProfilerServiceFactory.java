@@ -19,7 +19,7 @@ import java.util.function.Supplier;
 class ProfilerServiceFactory {
 
   @SuppressWarnings("TooManyParameters")
-  synchronized Future<ProfilerService> initialize(
+  synchronized Future<ProfilerInitialization> initialize(
       Supplier<String> appIdSupplier,
       ProfilerConfigurationHandler profilerConfigurationHandler,
       String processId,
@@ -39,9 +39,8 @@ class ProfilerServiceFactory {
     UploadService uploader =
         new UploadService(serviceProfilerClient, machineName, processId, appIdSupplier, roleName);
 
-    ProfilerService instance =
-        new ProfilerService(
-            appIdSupplier,
+    ProfilerInitialization instance =
+        new ProfilerInitialization(
             config,
             new Profiler(config, tempDir),
             profilerConfigurationHandler,
