@@ -35,8 +35,14 @@ public class AlertPipelineTrigger implements DoubleConsumer {
       if (isOffCooldown()) {
         lastAlertTime = Instant.now();
         UUID profileId = UUID.randomUUID();
+
         action.accept(
-            new AlertBreach(alertConfig.getType(), telemetry, alertConfig, profileId.toString()));
+            AlertBreach.builder()
+                .setType(alertConfig.getType())
+                .setAlertValue(telemetry)
+                .setAlertConfiguration(alertConfig)
+                .setProfileId(profileId.toString())
+                .build());
       }
     }
   }

@@ -42,7 +42,7 @@ public class JfrUploadService implements ProfileHandler {
     jfrUploader
         .uploadJfrFile(
             UUID.fromString(alertBreach.getProfileId()),
-            alertBreach.getTriggerName(),
+            "JFR-" + alertBreach.getType().name(),
             timestamp,
             file,
             alertBreach.getCpuMetric(),

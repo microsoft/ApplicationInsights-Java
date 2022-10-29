@@ -317,8 +317,14 @@ public class JfrProfiler implements ProfilerConfigurationHandler {
   /** Action to be performed on a periodic profile request. */
   public void performPeriodicProfile(UploadCompleteHandler uploadCompleteHandler) {
     LOGGER.info("Received periodic profile request");
+
     AlertBreach breach =
-        new AlertBreach(AlertMetricType.PERIODIC, 0, periodicConfig, UUID.randomUUID().toString());
+        AlertBreach.builder()
+            .setType(AlertMetricType.PERIODIC)
+            .setAlertValue(0)
+            .setAlertConfiguration(periodicConfig)
+            .setProfileId(UUID.randomUUID().toString())
+            .build();
     profileAndUpload(
         breach,
         Duration.ofSeconds(breach.getAlertConfiguration().getProfileDuration()),

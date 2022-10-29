@@ -35,8 +35,14 @@ public class AlertTrigger implements Consumer<Double> {
       if (lastAlertTime == null || lastAlertTime.isBefore(coolDownCutOff)) {
         lastAlertTime = Instant.now();
         UUID profileId = UUID.randomUUID();
+
         action.accept(
-            new AlertBreach(alertConfig.getType(), telemetry, alertConfig, profileId.toString()));
+            AlertBreach.builder()
+                .setType(alertConfig.getType())
+                .setAlertValue(telemetry)
+                .setAlertConfiguration(alertConfig)
+                .setProfileId(profileId.toString())
+                .build());
       }
     }
   }

@@ -147,18 +147,21 @@ public class AlertingSubsystem {
 
     if (shouldTrigger) {
       manualTriggersExecuted.add(config.getSettingsMoniker());
+
       AlertBreach alertBreach =
-          new AlertBreach(
-              AlertMetricType.MANUAL,
-              0.0,
-              AlertConfiguration.builder()
-                  .setType(AlertMetricType.MANUAL)
-                  .setEnabled(true)
-                  .setProfileDuration(config.getImmediateProfilingDuration())
-                  .setThreshold(0.0f)
-                  .setCooldown(0)
-                  .build(),
-              UUID.randomUUID().toString());
+          AlertBreach.builder()
+              .setType(AlertMetricType.MANUAL)
+              .setAlertValue(0.0)
+              .setAlertConfiguration(
+                  AlertConfiguration.builder()
+                      .setType(AlertMetricType.MANUAL)
+                      .setEnabled(true)
+                      .setProfileDuration(config.getImmediateProfilingDuration())
+                      .build())
+              .setProfileId(UUID.randomUUID().toString())
+              .setCpuMetric(0)
+              .setMemoryUsage(0)
+              .build();
       alertHandler.accept(alertBreach);
     }
   }

@@ -3,84 +3,51 @@
 
 package com.microsoft.applicationinsights.alerting.alert;
 
+import com.google.auto.value.AutoValue;
 import com.microsoft.applicationinsights.alerting.config.AlertConfiguration;
 import com.microsoft.applicationinsights.alerting.config.AlertMetricType;
 
 /** Represents a breach of an alert threshold. */
-public class AlertBreach {
+@AutoValue
+public abstract class AlertBreach {
 
-  private final AlertMetricType type;
+  public abstract AlertMetricType getType();
 
   // Value of the telemetry at the time of the breach
-  private final double alertValue;
+  public abstract double getAlertValue();
 
-  private final AlertConfiguration alertConfiguration;
+  public abstract AlertConfiguration getAlertConfiguration();
 
   // CPU usage at the time of the breach
-  private final double cpuUsage;
+  public abstract double getCpuMetric();
 
   // MEMORY usage at the time of the breach
-  private final double memoryUsage;
+  public abstract double getMemoryUsage();
 
   // Unique ID for profile/breach
-  private final String profileId;
+  public abstract String getProfileId();
 
-  public AlertBreach(
-      AlertMetricType type,
-      double alertValue,
-      AlertConfiguration alertConfiguration,
-      String profileId) {
-    this(type, alertValue, alertConfiguration, profileId, 0, 0);
+  public abstract Builder toBuilder();
+
+  public static AlertBreach.Builder builder() {
+    return new AutoValue_AlertBreach.Builder();
   }
 
-  public AlertBreach(
-      AlertMetricType type,
-      double alertValue,
-      AlertConfiguration alertConfiguration,
-      String profileId,
-      double cpuUsage,
-      double memoryUsage) {
-    this.type = type;
-    this.alertValue = alertValue;
-    this.alertConfiguration = alertConfiguration;
-    this.cpuUsage = cpuUsage;
-    this.memoryUsage = memoryUsage;
-    this.profileId = profileId;
-  }
+  @AutoValue.Builder
+  public abstract static class Builder {
 
-  public AlertConfiguration getAlertConfiguration() {
-    return alertConfiguration;
-  }
+    public abstract Builder setType(AlertMetricType type);
 
-  public double getAlertValue() {
-    return alertValue;
-  }
+    public abstract Builder setAlertValue(double alertValue);
 
-  public AlertMetricType getType() {
-    return type;
-  }
+    public abstract Builder setAlertConfiguration(AlertConfiguration alertConfiguration);
 
-  public AlertBreach withCpuMetric(double cpuUsage) {
-    return new AlertBreach(type, alertValue, alertConfiguration, profileId, cpuUsage, memoryUsage);
-  }
+    public abstract Builder setCpuMetric(double cpuMetric);
 
-  public AlertBreach withMemoryMetric(double memoryUsage) {
-    return new AlertBreach(type, alertValue, alertConfiguration, profileId, cpuUsage, memoryUsage);
-  }
+    public abstract Builder setMemoryUsage(double memoryUsage);
 
-  public String getTriggerName() {
-    return "JFR-" + type.name();
-  }
+    public abstract Builder setProfileId(String profileId);
 
-  public double getCpuMetric() {
-    return cpuUsage;
-  }
-
-  public double getMemoryUsage() {
-    return memoryUsage;
-  }
-
-  public String getProfileId() {
-    return profileId;
+    public abstract AlertBreach build();
   }
 }
