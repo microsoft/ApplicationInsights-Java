@@ -125,19 +125,6 @@ public class ProfilingInitializer {
       File tempDir) {
     if (!initialized) {
       initialized = true;
-      ProfilerServiceFactory factory = null;
-
-      try {
-        factory = loadProfilerServiceFactory();
-      } catch (RuntimeException e) {
-        LOGGER.error("Failed to load profiler factory", e);
-      }
-
-      if (factory == null) {
-        LOGGER.error(
-            "Profiling has been enabled however no profiler implementation was provided. Please install an ApplicationInsights agent which provides a profiler.");
-        return;
-      }
 
       if (configuration.preview.profiler.enableDiagnostics) {
         // Initialise diagnostic service
@@ -148,19 +135,19 @@ public class ProfilingInitializer {
           Executors.newScheduledThreadPool(
               1,
               ThreadPoolUtils.createDaemonThreadFactory(
-                  ProfilerServiceFactory.class, "ServiceProfilerService"));
+                  ProfilingInitializer.class, "ServiceProfilerService"));
 
       ScheduledExecutorService alertServiceExecutorService =
           Executors.newScheduledThreadPool(
               2,
               ThreadPoolUtils.createDaemonThreadFactory(
-                  ProfilerServiceFactory.class, "ServiceProfilerAlertingService"));
+                  ProfilingInitializer.class, "ServiceProfilerAlertingService"));
 
       AlertingSubsystem alerting =
           createAlertMonitor(alertServiceExecutorService, telemetryClient, configuration);
 
       Future<ProfilerInitialization> future =
-          factory.initialize(
+          ProfilerInitialization.initialize(
               appIdSupplier,
               updateAlertingConfig(alerting),
               processId,
@@ -211,10 +198,6 @@ public class ProfilingInitializer {
     } catch (RuntimeException e) {
       LOGGER.error("Failed to load profiler factory", e);
     }
-  }
-
-  private static ProfilerServiceFactory loadProfilerServiceFactory() {
-    return new ProfilerServiceFactory();
   }
 
   private static DiagnosticEngineFactory loadDiagnosticEngineFactory() {
