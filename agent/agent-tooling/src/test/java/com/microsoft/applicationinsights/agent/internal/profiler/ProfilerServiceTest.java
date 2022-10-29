@@ -132,7 +132,7 @@ class ProfilerServiceTest {
     // Callback invoked when a profile has been uploaded.
     // Sends index metadata about the uploaded profile
     UploadCompleteHandler uploadCompleteHandler =
-        ProfilerServiceInitializer.sendServiceProfilerIndex(client);
+        ProfilingInitializer.sendServiceProfilerIndex(client);
 
     Configuration config = new Configuration();
 
@@ -160,7 +160,7 @@ class ProfilerServiceTest {
                     .setDiagnosticsEnabled(true)
                     .build(),
                 jfrProfiler,
-                ProfilerServiceInitializer.updateAlertingConfig(alertService),
+                ProfilingInitializer.updateAlertingConfig(alertService),
                 clientV2,
                 uploadService,
                 serviceProfilerExecutorService)

@@ -51,7 +51,7 @@ public class GcEventMonitor {
       ExecutorService executorService,
       GcEventMonitorConfiguration gcEventMonitorConfiguration) {
     GcMonitorFactory gcMonitorFactory =
-        ProfilerServiceInitializer.findServiceLoader(GcMonitorFactory.class);
+        ProfilingInitializer.findServiceLoader(GcMonitorFactory.class);
 
     if (gcMonitorFactory != null) {
       init(

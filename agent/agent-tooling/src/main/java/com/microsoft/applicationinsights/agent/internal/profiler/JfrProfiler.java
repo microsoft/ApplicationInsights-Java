@@ -49,7 +49,7 @@ public class JfrProfiler implements ProfilerConfigurationHandler {
   private ScheduledExecutorService scheduledExecutorService;
 
   // Action to perform when a profile has been created
-  private ProfileHandler profileHandler;
+  private JfrUploadService jfrUploadService;
 
   private FlightRecorderConnection flightRecorderConnection;
   private RecordingOptions.Builder recordingOptionsBuilder;
@@ -93,9 +93,9 @@ public class JfrProfiler implements ProfilerConfigurationHandler {
    *     enabled.
    */
   public void initialize(
-      ProfileHandler profileHandler, ScheduledExecutorService scheduledExecutorService)
+      JfrUploadService jfrUploadService, ScheduledExecutorService scheduledExecutorService)
       throws Exception {
-    this.profileHandler = profileHandler;
+    this.jfrUploadService = jfrUploadService;
     this.scheduledExecutorService = scheduledExecutorService;
 
     // TODO -  allow user configuration of profile options
@@ -224,7 +224,7 @@ public class JfrProfiler implements ProfilerConfigurationHandler {
         closeRecording(activeRecording, activeRecordingFile);
 
         // notify handler of a new profile
-        profileHandler.receive(
+        jfrUploadService.upload(
             alertBreach, recordingStart.toEpochMilli(), activeRecordingFile, uploadCompleteHandler);
 
       } catch (Exception e) {

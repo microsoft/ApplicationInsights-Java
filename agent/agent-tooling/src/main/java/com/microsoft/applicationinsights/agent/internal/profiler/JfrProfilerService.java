@@ -47,8 +47,6 @@ public class JfrProfilerService {
 
   private final AtomicBoolean initialised = new AtomicBoolean();
 
-  private ProfileHandler profileHandler;
-
   public JfrProfilerService(
       Supplier<String> appIdSupplier,
       Configuration.ProfilerConfiguration config,
@@ -75,13 +73,13 @@ public class JfrProfilerService {
 
     LOGGER.warn("INITIALISING JFR PROFILING SUBSYSTEM THIS FEATURE IS IN BETA");
 
-    profileHandler = new JfrUploadService(uploadService, appIdSupplier);
+    JfrUploadService jfrUploadService = new JfrUploadService(uploadService, appIdSupplier);
 
     serviceProfilerExecutorService.submit(
         () -> {
           try {
             // Daemon remains alive permanently due to scheduling an update
-            profiler.initialize(profileHandler, serviceProfilerExecutorService);
+            profiler.initialize(jfrUploadService, serviceProfilerExecutorService);
 
             // Monitor service remains alive permanently due to scheduling an periodic config pull
             ConfigMonitoringService.createServiceProfilerConfigService(

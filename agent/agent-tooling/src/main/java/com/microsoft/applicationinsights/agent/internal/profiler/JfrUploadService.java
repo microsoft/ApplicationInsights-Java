@@ -15,7 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /** Receives notifications of new profiles and uploads them to Service Profiler. */
-public class JfrUploadService implements ProfileHandler {
+public class JfrUploadService {
   private static final Logger LOGGER = LoggerFactory.getLogger(JfrUploadService.class);
 
   private final UploadService jfrUploader;
@@ -26,8 +26,7 @@ public class JfrUploadService implements ProfileHandler {
     this.appIdSupplier = appIdSupplier;
   }
 
-  @Override
-  public void receive(
+  public void upload(
       AlertBreach alertBreach,
       long timestamp,
       File file,
