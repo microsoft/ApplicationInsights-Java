@@ -74,7 +74,11 @@ public class AlertingSubsystem {
                 .setProfileDuration(0)
                 .setCooldown(0)
                 .createAlertConfiguration(),
-            new DefaultConfiguration(false, 0, 0),
+            DefaultConfiguration.builder()
+                .setSamplingEnabled(false)
+                .setSamplingRate(0)
+                .setSamplingProfileDuration(0)
+                .build(),
             new CollectionPlanConfiguration(false, EngineMode.immediate, Instant.now(), 0, "")));
     return alertingSubsystem;
   }

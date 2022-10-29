@@ -40,7 +40,13 @@ class AlertConfigParserTest {
         .isEqualTo(new AlertConfiguration(AlertMetricType.CPU, true, 80, 30, 14400));
     assertThat(config.getMemoryAlert())
         .isEqualTo(new AlertConfiguration(AlertMetricType.CPU, true, 20, 120, 14400));
-    assertThat(config.getDefaultConfiguration()).isEqualTo(new DefaultConfiguration(true, 5, 120));
+    assertThat(config.getDefaultConfiguration())
+        .isEqualTo(
+            DefaultConfiguration.builder()
+                .setSamplingEnabled(true)
+                .setSamplingRate(5)
+                .setSamplingProfileDuration(120)
+                .build());
     assertThat(config.getCollectionPlanConfiguration())
         .isEqualTo(
             new CollectionPlanConfiguration(

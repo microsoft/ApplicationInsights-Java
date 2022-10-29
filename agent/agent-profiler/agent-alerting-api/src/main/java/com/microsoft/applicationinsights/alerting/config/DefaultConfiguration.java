@@ -3,50 +3,29 @@
 
 package com.microsoft.applicationinsights.alerting.config;
 
-import java.util.Objects;
-import javax.annotation.Nullable;
+import com.google.auto.value.AutoValue;
 
-public class DefaultConfiguration {
+@AutoValue
+public abstract class DefaultConfiguration {
 
-  private final boolean samplingEnabled;
-  private final double samplingRate;
-  private final long samplingProfileDuration;
+  public abstract boolean getSamplingEnabled();
 
-  public DefaultConfiguration(
-      boolean samplingEnabled, double samplingRate, long samplingProfileDuration) {
-    this.samplingEnabled = samplingEnabled;
-    this.samplingRate = samplingRate;
-    this.samplingProfileDuration = samplingProfileDuration;
+  public abstract double getSamplingRate();
+
+  public abstract long getSamplingProfileDuration();
+
+  public static Builder builder() {
+    return new AutoValue_DefaultConfiguration.Builder();
   }
 
-  @Override
-  public boolean equals(@Nullable Object obj) {
-    if (obj == this) {
-      return true;
-    }
-    if (!(obj instanceof DefaultConfiguration)) {
-      return false;
-    }
-    DefaultConfiguration that = (DefaultConfiguration) obj;
-    return samplingEnabled == that.samplingEnabled
-        && samplingRate == that.samplingRate
-        && samplingProfileDuration == that.samplingProfileDuration;
-  }
+  @AutoValue.Builder
+  public abstract static class Builder {
+    public abstract Builder setSamplingRate(double samplingRate);
 
-  @Override
-  public int hashCode() {
-    return Objects.hash(samplingEnabled, samplingRate, samplingProfileDuration);
-  }
+    public abstract Builder setSamplingProfileDuration(long samplingProfileDuration);
 
-  public double getSamplingRate() {
-    return samplingRate;
-  }
+    public abstract Builder setSamplingEnabled(boolean samplingEnabled);
 
-  public long getSamplingProfileDuration() {
-    return samplingProfileDuration;
-  }
-
-  public boolean getSamplingEnabled() {
-    return samplingEnabled;
+    public abstract DefaultConfiguration build();
   }
 }

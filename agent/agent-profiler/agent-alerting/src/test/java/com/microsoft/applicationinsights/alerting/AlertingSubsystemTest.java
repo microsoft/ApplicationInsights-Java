@@ -28,7 +28,11 @@ class AlertingSubsystemTest {
         new AlertingConfiguration(
             new AlertConfiguration(AlertMetricType.CPU, true, 80, 30, 14400),
             new AlertConfiguration(AlertMetricType.MEMORY, true, 20, 120, 14400),
-            new DefaultConfiguration(true, 5, 120),
+            DefaultConfiguration.builder()
+                .setSamplingEnabled(true)
+                .setSamplingRate(5)
+                .setSamplingProfileDuration(120)
+                .build(),
             new CollectionPlanConfiguration(
                 true, EngineMode.immediate, Instant.now(), 120, "a-settings-moniker")));
     return monitor;
@@ -65,7 +69,11 @@ class AlertingSubsystemTest {
         new AlertingConfiguration(
             new AlertConfiguration(AlertMetricType.CPU, true, 80, 30, 14400),
             new AlertConfiguration(AlertMetricType.MEMORY, true, 20, 120, 14400),
-            new DefaultConfiguration(true, 5, 120),
+            DefaultConfiguration.builder()
+                .setSamplingEnabled(true)
+                .setSamplingRate(5)
+                .setSamplingProfileDuration(120)
+                .build(),
             new CollectionPlanConfiguration(
                 true,
                 EngineMode.immediate,
@@ -88,7 +96,11 @@ class AlertingSubsystemTest {
         new AlertingConfiguration(
             new AlertConfiguration(AlertMetricType.CPU, true, 80, 30, 14400),
             new AlertConfiguration(AlertMetricType.MEMORY, true, 20, 120, 14400),
-            new DefaultConfiguration(true, 5, 120),
+            DefaultConfiguration.builder()
+                .setSamplingEnabled(true)
+                .setSamplingRate(5)
+                .setSamplingProfileDuration(120)
+                .build(),
             new CollectionPlanConfiguration(
                 true,
                 EngineMode.immediate,

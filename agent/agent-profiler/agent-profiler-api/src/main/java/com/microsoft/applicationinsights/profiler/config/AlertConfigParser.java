@@ -11,7 +11,6 @@ import com.microsoft.applicationinsights.alerting.config.CollectionPlanConfigura
 import com.microsoft.applicationinsights.alerting.config.CollectionPlanConfiguration.EngineMode;
 import com.microsoft.applicationinsights.alerting.config.CollectionPlanConfigurationBuilder;
 import com.microsoft.applicationinsights.alerting.config.DefaultConfiguration;
-import com.microsoft.applicationinsights.alerting.config.DefaultConfigurationBuilder;
 import com.microsoft.applicationinsights.profiler.ProfilerConfiguration;
 import java.time.Instant;
 import java.util.HashMap;
@@ -64,12 +63,16 @@ public class AlertConfigParser {
 
   public static DefaultConfiguration parseDefaultConfiguration(@Nullable String defaultConfig) {
     if (defaultConfig == null) {
-      return new DefaultConfiguration(false, 0, 0);
+      return DefaultConfiguration.builder()
+          .setSamplingEnabled(false)
+          .setSamplingRate(0)
+          .setSamplingProfileDuration(0)
+          .build();
     }
 
     String[] tokens = defaultConfig.split(" ");
 
-    Map<String, ParseConfigValue<DefaultConfigurationBuilder>> parsers = new HashMap<>();
+    Map<String, ParseConfigValue<DefaultConfiguration.Builder>> parsers = new HashMap<>();
     parsers.put(
         "sampling-profiling-duration",
         new ParseConfigValue<>(
@@ -83,8 +86,7 @@ public class AlertConfigParser {
         new ParseConfigValue<>(
             true, (config, arg) -> config.setSamplingEnabled(Boolean.parseBoolean(arg))));
 
-    return parseConfig(new DefaultConfigurationBuilder(), tokens, parsers)
-        .createDefaultConfiguration();
+    return parseConfig(DefaultConfiguration.builder(), tokens, parsers).build();
   }
 
   public static AlertConfiguration parseFromMemory(@Nullable String memoryConfig) {
