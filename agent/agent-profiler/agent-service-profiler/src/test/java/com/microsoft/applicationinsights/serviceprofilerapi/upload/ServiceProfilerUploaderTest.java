@@ -11,8 +11,6 @@ import com.microsoft.applicationinsights.profiler.uploader.ServiceProfilerIndex;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.ServiceProfilerClientV2;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.contract.ArtifactAcceptedResponse;
 import com.microsoft.applicationinsights.serviceprofilerapi.client.contract.BlobAccessPass;
-import com.microsoft.applicationinsights.serviceprofilerapi.client.uploader.UploadContext;
-import com.microsoft.applicationinsights.serviceprofilerapi.client.uploader.UploadFinishArgs;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;

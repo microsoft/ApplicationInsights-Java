@@ -3,12 +3,12 @@
 
 package com.microsoft.applicationinsights.serviceprofilerapi.upload;
 
-public class UploadFailedException extends Exception {
-  public UploadFailedException(Exception cause) {
+class UploadFailedException extends Exception {
+  UploadFailedException(Exception cause) {
     super(cause);
   }
 
-  public UploadFailedException(String message) {
+  UploadFailedException(String message) {
     super(message);
   }
 }

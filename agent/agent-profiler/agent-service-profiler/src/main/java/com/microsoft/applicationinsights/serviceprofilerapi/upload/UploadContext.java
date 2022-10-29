@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-package com.microsoft.applicationinsights.serviceprofilerapi.client.uploader;
+package com.microsoft.applicationinsights.serviceprofilerapi.upload;
 
 import java.io.File;
 import java.util.UUID;
@@ -11,7 +11,7 @@ import java.util.UUID;
  *
  * <p>This class is intended for internal Java profiler use.
  */
-public class UploadContext {
+class UploadContext {
   private final UUID dataCube;
   private final long sessionId;
   private final File traceFile;
@@ -20,7 +20,7 @@ public class UploadContext {
   private final String fileFormat;
   private final String extension;
 
-  public UploadContext(
+  UploadContext(
       String machineName,
       UUID dataCube,
       long sessionId,
@@ -37,31 +37,31 @@ public class UploadContext {
     this.extension = extension;
   }
 
-  public String getMachineName() {
+  String getMachineName() {
     return machineName;
   }
 
-  public File getTraceFile() {
+  File getTraceFile() {
     return traceFile;
   }
 
-  public long getSessionId() {
+  long getSessionId() {
     return sessionId;
   }
 
-  public UUID getDataCube() {
+  UUID getDataCube() {
     return dataCube;
   }
 
-  public UUID getProfileId() {
+  UUID getProfileId() {
     return profileId;
   }
 
-  public String getFileFormat() {
+  String getFileFormat() {
     return fileFormat;
   }
 
-  public String getExtension() {
+  String getExtension() {
     return extension;
   }
 }

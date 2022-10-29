@@ -26,7 +26,7 @@ public final class TimestampContract {
 
   private static final Pattern TIMESTAMP_PATTERN = Pattern.compile(".*\\.([0-9]+)Z$");
 
-  public static String timestampToString(OffsetDateTime timestamp) {
+  private static String timestampToString(OffsetDateTime timestamp) {
     // This will give you an ISO 8601 compliant format and the use of UTC will
     // ensure that there are no issues with time zones etc.
     ZonedDateTime utc = timestamp.atZoneSameInstant(ZoneOffset.UTC);
@@ -41,7 +41,7 @@ public final class TimestampContract {
     return timestampToString(dateToOffsetDateTime(timestamp));
   }
 
-  public static OffsetDateTime timestampToOffsetDateTime(long timestamp) {
+  private static OffsetDateTime timestampToOffsetDateTime(long timestamp) {
     return OffsetDateTime.ofInstant(Instant.ofEpochMilli(timestamp), ZoneId.systemDefault());
   }
 

@@ -3,7 +3,7 @@
 
 package com.microsoft.applicationinsights.serviceprofilerapi.profiler;
 
-public enum ProfileTypes {
+enum ProfileTypes {
   PROFILE,
 
   // Same as profile with some potentially sensitive data removed, such as environment variables
