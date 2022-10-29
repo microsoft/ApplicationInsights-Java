@@ -4,7 +4,7 @@
 package com.microsoft.applicationinsights.alerting.analysis;
 
 import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
-import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration.AlertConfiguration;
+import com.microsoft.applicationinsights.alerting.config.AlertConfiguration;
 import java.time.Instant;
 import java.util.UUID;
 import java.util.function.Consumer;

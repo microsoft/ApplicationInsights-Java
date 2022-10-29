@@ -8,7 +8,7 @@ import com.microsoft.applicationinsights.alerting.analysis.AlertPipelineTrigger;
 import com.microsoft.applicationinsights.alerting.analysis.aggregations.Aggregation;
 import com.microsoft.applicationinsights.alerting.analysis.data.TelemetryDataPoint;
 import com.microsoft.applicationinsights.alerting.analysis.filter.AlertRequestFilter;
-import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration.AlertConfiguration;
+import com.microsoft.applicationinsights.alerting.config.AlertConfiguration;
 import java.lang.management.ManagementFactory;
 import java.time.format.DateTimeFormatter;
 import java.util.OptionalDouble;

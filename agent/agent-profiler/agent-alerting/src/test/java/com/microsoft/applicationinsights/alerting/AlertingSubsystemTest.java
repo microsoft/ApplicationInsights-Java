@@ -6,9 +6,9 @@ package com.microsoft.applicationinsights.alerting;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
+import com.microsoft.applicationinsights.alerting.config.AlertConfiguration;
 import com.microsoft.applicationinsights.alerting.config.AlertMetricType;
 import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration;
-import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration.AlertConfiguration;
 import com.microsoft.applicationinsights.alerting.config.CollectionPlanConfiguration;
 import com.microsoft.applicationinsights.alerting.config.CollectionPlanConfiguration.EngineMode;
 import com.microsoft.applicationinsights.alerting.config.DefaultConfiguration;
@@ -25,9 +25,9 @@ class AlertingSubsystemTest {
     AlertingSubsystem monitor = AlertingSubsystem.create(consumer, timeSource);
 
     monitor.updateConfiguration(
-        new AlertingConfiguration(
-            new AlertConfiguration(AlertMetricType.CPU, true, 80, 30, 14400),
-            new AlertConfiguration(AlertMetricType.MEMORY, true, 20, 120, 14400),
+        AlertingConfiguration.create(
+            AlertConfiguration.create(AlertMetricType.CPU, true, 80, 30, 14400),
+            AlertConfiguration.create(AlertMetricType.MEMORY, true, 20, 120, 14400),
             DefaultConfiguration.builder()
                 .setSamplingEnabled(true)
                 .setSamplingRate(5)
@@ -71,9 +71,9 @@ class AlertingSubsystemTest {
     AlertingSubsystem service = AlertingSubsystem.create(consumer, timeSource);
 
     service.updateConfiguration(
-        new AlertingConfiguration(
-            new AlertConfiguration(AlertMetricType.CPU, true, 80, 30, 14400),
-            new AlertConfiguration(AlertMetricType.MEMORY, true, 20, 120, 14400),
+        AlertingConfiguration.create(
+            AlertConfiguration.create(AlertMetricType.CPU, true, 80, 30, 14400),
+            AlertConfiguration.create(AlertMetricType.MEMORY, true, 20, 120, 14400),
             DefaultConfiguration.builder()
                 .setSamplingEnabled(true)
                 .setSamplingRate(5)
@@ -99,9 +99,9 @@ class AlertingSubsystemTest {
     AlertingSubsystem service = AlertingSubsystem.create(consumer, timeSource);
 
     service.updateConfiguration(
-        new AlertingConfiguration(
-            new AlertConfiguration(AlertMetricType.CPU, true, 80, 30, 14400),
-            new AlertConfiguration(AlertMetricType.MEMORY, true, 20, 120, 14400),
+        AlertingConfiguration.create(
+            AlertConfiguration.create(AlertMetricType.CPU, true, 80, 30, 14400),
+            AlertConfiguration.create(AlertMetricType.MEMORY, true, 20, 120, 14400),
             DefaultConfiguration.builder()
                 .setSamplingEnabled(true)
                 .setSamplingRate(5)

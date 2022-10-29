@@ -7,4 +7,6 @@ dependencies {
   implementation("com.azure:azure-core")
   implementation("com.squareup.moshi:moshi")
   implementation("org.slf4j:slf4j-api")
+
+  testImplementation("org.assertj:assertj-core")
 }

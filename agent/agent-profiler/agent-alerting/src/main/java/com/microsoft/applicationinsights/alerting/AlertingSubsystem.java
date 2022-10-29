@@ -8,10 +8,9 @@ import com.microsoft.applicationinsights.alerting.analysis.TimeSource;
 import com.microsoft.applicationinsights.alerting.analysis.data.TelemetryDataPoint;
 import com.microsoft.applicationinsights.alerting.analysis.pipelines.AlertPipeline;
 import com.microsoft.applicationinsights.alerting.analysis.pipelines.AlertPipelines;
+import com.microsoft.applicationinsights.alerting.config.AlertConfiguration;
 import com.microsoft.applicationinsights.alerting.config.AlertMetricType;
 import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration;
-import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration.AlertConfiguration;
-import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration.AlertConfigurationBuilder;
 import com.microsoft.applicationinsights.alerting.config.CollectionPlanConfiguration;
 import com.microsoft.applicationinsights.alerting.config.CollectionPlanConfiguration.EngineMode;
 import com.microsoft.applicationinsights.alerting.config.DefaultConfiguration;
@@ -59,21 +58,21 @@ public class AlertingSubsystem {
     AlertingSubsystem alertingSubsystem = new AlertingSubsystem(alertHandler, timeSource);
     // init with disabled config
     alertingSubsystem.initialize(
-        new AlertingConfiguration(
-            new AlertConfigurationBuilder()
+        AlertingConfiguration.create(
+            AlertConfiguration.builder()
                 .setType(AlertMetricType.CPU)
                 .setEnabled(false)
                 .setThreshold(0)
                 .setProfileDuration(0)
                 .setCooldown(0)
-                .createAlertConfiguration(),
-            new AlertConfigurationBuilder()
+                .build(),
+            AlertConfiguration.builder()
                 .setType(AlertMetricType.MEMORY)
                 .setEnabled(false)
                 .setThreshold(0)
                 .setProfileDuration(0)
                 .setCooldown(0)
-                .createAlertConfiguration(),
+                .build(),
             DefaultConfiguration.builder()
                 .setSamplingEnabled(false)
                 .setSamplingRate(0)
@@ -152,13 +151,13 @@ public class AlertingSubsystem {
           new AlertBreach(
               AlertMetricType.MANUAL,
               0.0,
-              new AlertConfigurationBuilder()
+              AlertConfiguration.builder()
                   .setType(AlertMetricType.MANUAL)
                   .setEnabled(true)
                   .setProfileDuration(config.getImmediateProfilingDuration())
                   .setThreshold(0.0f)
                   .setCooldown(0)
-                  .createAlertConfiguration(),
+                  .build(),
               UUID.randomUUID().toString());
       alertHandler.accept(alertBreach);
     }

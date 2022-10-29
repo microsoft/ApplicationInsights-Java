@@ -4,7 +4,7 @@
 package com.microsoft.applicationinsights.alerting.analysis.pipelines;
 
 import com.microsoft.applicationinsights.alerting.analysis.data.TelemetryDataPoint;
-import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration;
+import com.microsoft.applicationinsights.alerting.config.AlertConfiguration;
 import java.util.List;
 import java.util.OptionalDouble;
 
@@ -23,7 +23,7 @@ public class AlertPipelineMultiplexer implements AlertPipeline {
   }
 
   @Override
-  public void updateConfig(AlertingConfiguration.AlertConfiguration newAlertConfig) {}
+  public void updateConfig(AlertConfiguration newAlertConfig) {}
 
   @Override
   public void track(TelemetryDataPoint telemetryDataPoint) {

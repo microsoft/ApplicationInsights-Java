@@ -4,8 +4,8 @@
 package com.microsoft.applicationinsights.serviceprofilerapi.profiler;
 
 import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
+import com.microsoft.applicationinsights.alerting.config.AlertConfiguration;
 import com.microsoft.applicationinsights.alerting.config.AlertMetricType;
-import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration.AlertConfiguration;
 import com.microsoft.applicationinsights.profiler.ProfileHandler;
 import com.microsoft.applicationinsights.profiler.Profiler;
 import com.microsoft.applicationinsights.profiler.ProfilerConfiguration;
@@ -73,7 +73,7 @@ public class JfrProfiler implements ProfilerConfigurationHandler, Profiler {
 
   public JfrProfiler(ServiceProfilerServiceConfig configuration) {
     periodicConfig =
-        new AlertConfiguration(
+        AlertConfiguration.create(
             AlertMetricType.PERIODIC,
             false,
             0.0f,

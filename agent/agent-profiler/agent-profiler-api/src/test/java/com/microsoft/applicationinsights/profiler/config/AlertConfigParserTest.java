@@ -1,18 +1,16 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-package com.microsoft.applicationinsights.serviceprofilerapi.upload;
+package com.microsoft.applicationinsights.profiler.config;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.microsoft.applicationinsights.alerting.config.AlertConfiguration;
 import com.microsoft.applicationinsights.alerting.config.AlertMetricType;
 import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration;
-import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration.AlertConfiguration;
 import com.microsoft.applicationinsights.alerting.config.CollectionPlanConfiguration;
 import com.microsoft.applicationinsights.alerting.config.CollectionPlanConfiguration.EngineMode;
-import com.microsoft.applicationinsights.alerting.config.CollectionPlanConfigurationBuilder;
 import com.microsoft.applicationinsights.alerting.config.DefaultConfiguration;
-import com.microsoft.applicationinsights.profiler.config.AlertConfigParser;
 import org.junit.jupiter.api.Test;
 
 class AlertConfigParserTest {
@@ -37,9 +35,9 @@ class AlertConfigParserTest {
             "--single --mode immediate --immediate-profiling-duration 120  --expiration 5249157885138288517 --settings-moniker a-settings-moniker");
 
     assertThat(config.getCpuAlert())
-        .isEqualTo(new AlertConfiguration(AlertMetricType.CPU, true, 80, 30, 14400));
+        .isEqualTo(AlertConfiguration.create(AlertMetricType.CPU, true, 80, 30, 14400));
     assertThat(config.getMemoryAlert())
-        .isEqualTo(new AlertConfiguration(AlertMetricType.CPU, true, 20, 120, 14400));
+        .isEqualTo(AlertConfiguration.create(AlertMetricType.CPU, true, 20, 120, 14400));
     assertThat(config.getDefaultConfiguration())
         .isEqualTo(
             DefaultConfiguration.builder()
@@ -52,8 +50,7 @@ class AlertConfigParserTest {
             CollectionPlanConfiguration.builder()
                 .setSingle(true)
                 .setMode(EngineMode.immediate)
-                .setExpiration(
-                    CollectionPlanConfigurationBuilder.parseBinaryDate(5249157885138288517L))
+                .setExpiration(AlertConfigParser.parseBinaryDate(5249157885138288517L))
                 .setImmediateProfilingDuration(120)
                 .setSettingsMoniker("a-settings-moniker")
                 .build());

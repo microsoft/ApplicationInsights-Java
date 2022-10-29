@@ -3,16 +3,16 @@
 
 package com.microsoft.applicationinsights.profiler.config;
 
+import com.microsoft.applicationinsights.alerting.config.AlertConfiguration;
 import com.microsoft.applicationinsights.alerting.config.AlertMetricType;
 import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration;
-import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration.AlertConfiguration;
-import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration.AlertConfigurationBuilder;
 import com.microsoft.applicationinsights.alerting.config.CollectionPlanConfiguration;
 import com.microsoft.applicationinsights.alerting.config.CollectionPlanConfiguration.EngineMode;
-import com.microsoft.applicationinsights.alerting.config.CollectionPlanConfigurationBuilder;
 import com.microsoft.applicationinsights.alerting.config.DefaultConfiguration;
 import com.microsoft.applicationinsights.profiler.ProfilerConfiguration;
 import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nullable;
@@ -22,7 +22,7 @@ public class AlertConfigParser {
 
   public static AlertingConfiguration parse(
       String cpuConfig, String memoryConfig, String defaultConfig, String collectionPlan) {
-    return new AlertingConfiguration(
+    return AlertingConfiguration.create(
         parseFromCpu(cpuConfig),
         parseFromMemory(memoryConfig),
         parseDefaultConfiguration(defaultConfig),
@@ -44,16 +44,15 @@ public class AlertConfigParser {
 
     String[] tokens = collectionPlan.split(" ");
 
-    Map<String, ParseConfigValue<CollectionPlanConfigurationBuilder>> parsers = new HashMap<>();
-    parsers.put(
-        "single",
-        new ParseConfigValue<>(false, (config, arg) -> config.setCollectionPlanSingle(true)));
+    Map<String, ParseConfigValue<CollectionPlanConfiguration.Builder>> parsers = new HashMap<>();
+    parsers.put("single", new ParseConfigValue<>(false, (config, arg) -> config.setSingle(true)));
     parsers.put(
         "mode",
         new ParseConfigValue<>(true, (config, arg) -> config.setMode(EngineMode.parse(arg))));
     parsers.put(
         "expiration",
-        new ParseConfigValue<>(true, (config, arg) -> config.setExpiration(Long.parseLong(arg))));
+        new ParseConfigValue<>(
+            true, (config, arg) -> config.setExpiration(parseBinaryDate(Long.parseLong(arg)))));
     parsers.put(
         "immediate-profiling-duration",
         new ParseConfigValue<>(
@@ -62,8 +61,7 @@ public class AlertConfigParser {
         "settings-moniker",
         new ParseConfigValue<>(true, (config, arg) -> config.setSettingsMoniker(arg)));
 
-    return parseConfig(new CollectionPlanConfigurationBuilder(), tokens, parsers)
-        .createDefaultConfiguration();
+    return parseConfig(CollectionPlanConfiguration.builder(), tokens, parsers).build();
   }
 
   public static DefaultConfiguration parseDefaultConfiguration(@Nullable String defaultConfig) {
@@ -96,11 +94,18 @@ public class AlertConfigParser {
 
   public static AlertConfiguration parseFromMemory(@Nullable String memoryConfig) {
     if (memoryConfig == null) {
-      return new AlertConfiguration(AlertMetricType.MEMORY, false, 0f, 0, 0);
+
+      return AlertConfiguration.builder()
+          .setType(AlertMetricType.MEMORY)
+          .setEnabled(false)
+          .setThreshold(0f)
+          .setProfileDuration(0)
+          .setCooldown(0)
+          .build();
     }
     String[] tokens = memoryConfig.split(" ");
 
-    Map<String, ParseConfigValue<AlertConfigurationBuilder>> parsers = new HashMap<>();
+    Map<String, ParseConfigValue<AlertConfiguration.Builder>> parsers = new HashMap<>();
     parsers.put(
         "memory-threshold",
         new ParseConfigValue<>(true, (config, arg) -> config.setThreshold(Float.parseFloat(arg))));
@@ -116,19 +121,26 @@ public class AlertConfigParser {
         new ParseConfigValue<>(
             true, (config, arg) -> config.setEnabled(Boolean.parseBoolean(arg))));
 
-    return parseConfig(new AlertConfigurationBuilder(), tokens, parsers)
+    return parseConfig(AlertConfiguration.builder(), tokens, parsers)
         .setType(AlertMetricType.MEMORY)
-        .createAlertConfiguration();
+        .build();
   }
 
   public static AlertConfiguration parseFromCpu(@Nullable String cpuConfig) {
     if (cpuConfig == null) {
-      return new AlertConfiguration(AlertMetricType.CPU, false, 0f, 0, 0);
+
+      return AlertConfiguration.builder()
+          .setType(AlertMetricType.CPU)
+          .setEnabled(false)
+          .setThreshold(0f)
+          .setProfileDuration(0)
+          .setCooldown(0)
+          .build();
     }
 
     String[] tokens = cpuConfig.split(" ");
 
-    Map<String, ParseConfigValue<AlertConfigurationBuilder>> parsers = new HashMap<>();
+    Map<String, ParseConfigValue<AlertConfiguration.Builder>> parsers = new HashMap<>();
     parsers.put(
         "cpu-threshold",
         new ParseConfigValue<>(true, (config, arg) -> config.setThreshold(Float.parseFloat(arg))));
@@ -144,9 +156,9 @@ public class AlertConfigParser {
         new ParseConfigValue<>(
             true, (config, arg) -> config.setEnabled(Boolean.parseBoolean(arg))));
 
-    return parseConfig(new AlertConfigurationBuilder(), tokens, parsers)
+    return parseConfig(AlertConfiguration.builder(), tokens, parsers)
         .setType(AlertMetricType.CPU)
-        .createAlertConfiguration();
+        .build();
   }
 
   private interface ConfigParser<T> {
@@ -189,6 +201,15 @@ public class AlertConfigParser {
         profilerConfiguration.getMemoryTriggerConfiguration(),
         profilerConfiguration.getDefaultConfiguration(),
         profilerConfiguration.getCollectionPlan());
+  }
+
+  // visible for testing
+  static Instant parseBinaryDate(long expiration) {
+    long ticks = expiration & 0x3fffffffffffffffL;
+    long seconds = ticks / 10000000L;
+    long nanos = (ticks % 10000000L) * 100L;
+    long offset = OffsetDateTime.of(1, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC).toEpochSecond();
+    return Instant.ofEpochSecond(seconds + offset, nanos);
   }
 
   private AlertConfigParser() {}

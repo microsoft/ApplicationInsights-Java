@@ -3,7 +3,7 @@
 
 package com.microsoft.applicationinsights.alerting.alert;
 
-import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration.AlertConfiguration;
+import com.microsoft.applicationinsights.alerting.config.AlertConfiguration;
 import java.time.Instant;
 import java.util.UUID;
 import java.util.function.Consumer;

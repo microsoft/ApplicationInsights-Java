@@ -12,8 +12,8 @@ import com.microsoft.applicationinsights.alerting.analysis.aggregations.Threshol
 import com.microsoft.applicationinsights.alerting.analysis.filter.AlertRequestFilter;
 import com.microsoft.applicationinsights.alerting.analysis.pipelines.AlertPipeline;
 import com.microsoft.applicationinsights.alerting.analysis.pipelines.SingleAlertPipeline;
+import com.microsoft.applicationinsights.alerting.config.AlertConfiguration;
 import com.microsoft.applicationinsights.alerting.config.AlertMetricType;
-import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
 
@@ -36,8 +36,8 @@ public class RequestAlertPipelineBuilder {
     Aggregation aggregation = getAggregation(configuration, timeSource);
 
     // TODO make threshold and throttling responsive to type argument
-    AlertingConfiguration.AlertConfiguration config =
-        new AlertingConfiguration.AlertConfiguration(
+    AlertConfiguration config =
+        AlertConfiguration.create(
             AlertMetricType.REQUEST,
             true,
             configuration.threshold.value,
