@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 
 /** Allows loading alternative jfc configuration files. */
 class AlternativeJfrConfigurations {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(AlternativeJfrConfigurations.class);
 
   public static final String REDUCED_MEMORY_PROFILE = "reduced-memory-profile.jfc";

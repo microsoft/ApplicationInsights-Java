@@ -13,6 +13,7 @@ import com.azure.storage.blob.models.ParallelTransferOptions;
 import com.azure.storage.blob.options.BlobUploadFromFileOptions;
 import com.microsoft.applicationinsights.agent.internal.profiler.service.BlobAccessPass;
 import com.microsoft.applicationinsights.agent.internal.profiler.service.ServiceProfilerClient;
+import com.microsoft.applicationinsights.agent.internal.profiler.util.OsPlatformProvider;
 import com.microsoft.applicationinsights.agent.internal.profiler.util.TimestampContract;
 import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -103,7 +104,7 @@ public class UploadService {
   }
 
   // Notify listener that full profile and upload cycle has completed and log success
-  private static Consumer<? super UploadResult> onUploadComplete(
+  private static Consumer<? super ServiceProfilerIndex> onUploadComplete(
       UploadCompleteHandler uploadCompleteHandler) {
     return result -> {
       uploadCompleteHandler.notify(result);
@@ -113,7 +114,7 @@ public class UploadService {
 
   /** Upload a given JFR file and return associated metadata of the uploaded profile. */
   // visible for tests
-  Mono<UploadResult> uploadJfrFile(
+  Mono<ServiceProfilerIndex> uploadJfrFile(
       UUID profileId,
       String triggerName,
       long timestamp,
@@ -125,7 +126,7 @@ public class UploadService {
         triggerName, timestamp, profileId, file, cpuUsage, memoryUsage, "Profile", "jfr", "jfr");
   }
 
-  public Mono<UploadResult> uploadFile(
+  public Mono<ServiceProfilerIndex> uploadFile(
       String triggerName,
       long timestamp,
       UUID profileId,
@@ -150,40 +151,38 @@ public class UploadService {
         .map(
             done -> {
               // return associated profile metadata
-              String fileId = createId(9);
+              String fileId = createId();
               String formattedTimestamp = TimestampContract.padNanos(done.getTimeStamp());
 
-              return new UploadResult(
-                  ServiceProfilerIndex.builder()
-                      .setTriggeredBy(triggerName)
-                      .setFileId(fileId)
-                      .setStampId(done.getStampId())
-                      .setDataCubeId(UUID.fromString(appId))
-                      .setTimeStamp(formattedTimestamp)
-                      .setMachineName(uploadContext.getMachineName())
-                      .setOs(OsPlatformProvider.getOsPlatformDescription())
-                      .setProcessId(processId)
-                      .setArtifactKind(artifactKind)
-                      .setArtifactId(profileId.toString())
-                      .setExtension(extension)
-                      .setCpuUsage(cpuUsage)
-                      .setMemoryUsage(memoryUsage)
-                      .build(),
-                  timestamp);
+              return ServiceProfilerIndex.builder()
+                  .setTriggeredBy(triggerName)
+                  .setFileId(fileId)
+                  .setStampId(done.getStampId())
+                  .setDataCubeId(UUID.fromString(appId))
+                  .setTimeStamp(formattedTimestamp)
+                  .setMachineName(uploadContext.getMachineName())
+                  .setOs(OsPlatformProvider.getOsPlatformDescription())
+                  .setProcessId(processId)
+                  .setArtifactKind(artifactKind)
+                  .setArtifactId(profileId.toString())
+                  .setExtension(extension)
+                  .setCpuUsage(cpuUsage)
+                  .setMemoryUsage(memoryUsage)
+                  .build();
             });
   }
 
   @SuppressFBWarnings(
       value = "SECPR", // Predictable pseudorandom number generator
       justification = "Predictable random is ok for file id")
-  private static String createId(int length) {
-    byte[] bytes = new byte[length];
+  private static String createId() {
+    byte[] bytes = new byte[9];
     ThreadLocalRandom.current().nextBytes(bytes);
     return Base64.getEncoder().encodeToString(bytes);
   }
 
   /** Upload profile to service profiler. */
-  public Mono<UploadFinishArgs> uploadTrace(UploadContext uploadContext) {
+  private Mono<UploadFinishArgs> uploadTrace(UploadContext uploadContext) {
 
     File zippedTraceFile = null;
 

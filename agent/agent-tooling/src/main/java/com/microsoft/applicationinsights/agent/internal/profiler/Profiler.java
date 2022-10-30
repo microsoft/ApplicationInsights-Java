@@ -5,6 +5,7 @@ package com.microsoft.applicationinsights.agent.internal.profiler;
 
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.profiler.config.ProfilerConfiguration;
+import com.microsoft.applicationinsights.agent.internal.profiler.config.ProfilerConfigurationHandler;
 import com.microsoft.applicationinsights.agent.internal.profiler.upload.UploadCompleteHandler;
 import com.microsoft.applicationinsights.agent.internal.profiler.upload.UploadService;
 import com.microsoft.applicationinsights.alerting.alert.AlertBreach;

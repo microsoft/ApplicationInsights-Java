@@ -1,13 +1,13 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-package com.microsoft.applicationinsights.agent.internal.profiler.upload;
+package com.microsoft.applicationinsights.agent.internal.profiler.util;
 
 import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-final class OsPlatformProvider {
+public final class OsPlatformProvider {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(OsPlatformProvider.class.getName());
 
@@ -16,7 +16,7 @@ final class OsPlatformProvider {
   private static final String LINUX = "Linux";
 
   @Nullable
-  static String getOsPlatformDescription() {
+  public static String getOsPlatformDescription() {
     if (isWindows()) {
       return WINDOWS;
     } else if (isLinux()) {

@@ -4,5 +4,5 @@
 package com.microsoft.applicationinsights.agent.internal.profiler.upload;
 
 public interface UploadCompleteHandler {
-  void notify(UploadResult done);
+  void notify(ServiceProfilerIndex serviceProfilerIndex);
 }

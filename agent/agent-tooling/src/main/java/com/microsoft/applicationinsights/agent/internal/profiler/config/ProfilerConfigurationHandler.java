@@ -1,9 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-package com.microsoft.applicationinsights.agent.internal.profiler;
-
-import com.microsoft.applicationinsights.agent.internal.profiler.config.ProfilerConfiguration;
+package com.microsoft.applicationinsights.agent.internal.profiler.config;
 
 /** A service that is able to apply profiler configuration parameters. */
 public interface ProfilerConfigurationHandler {

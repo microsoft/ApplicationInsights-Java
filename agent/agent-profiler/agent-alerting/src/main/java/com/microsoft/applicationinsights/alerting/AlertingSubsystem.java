@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
  * necessary issue an alert.
  */
 public class AlertingSubsystem {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(AlertingSubsystem.class);
 
   // Downstream observer of alerts produced by the alerting system
@@ -97,6 +98,7 @@ public class AlertingSubsystem {
 
   /** Apply given configuration to the alerting pipelines. */
   public void updateConfiguration(AlertingConfiguration alertingConfig) {
+
     if (this.alertConfig == null || !this.alertConfig.equals(alertingConfig)) {
       AlertConfiguration oldCpuConfig =
           this.alertConfig == null ? null : this.alertConfig.getCpuAlert();

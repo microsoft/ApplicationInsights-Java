@@ -16,4 +16,6 @@ public class ServiceLoaderUtil {
     }
     return null;
   }
+
+  private ServiceLoaderUtil() {}
 }

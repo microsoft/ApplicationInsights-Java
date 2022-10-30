@@ -11,7 +11,8 @@ import java.util.UUID;
  *
  * <p>This class is intended for internal Java profiler use.
  */
-public class UploadContext {
+class UploadContext {
+
   private final UUID dataCube;
   private final long sessionId;
   private final File traceFile;

@@ -14,8 +14,8 @@ import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedTi
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.configuration.GcReportingLevel;
 import com.microsoft.applicationinsights.agent.internal.profiler.Profiler;
+import com.microsoft.applicationinsights.agent.internal.profiler.config.ProfilerConfiguration;
 import com.microsoft.applicationinsights.agent.internal.profiler.upload.ServiceProfilerIndex;
-import com.microsoft.applicationinsights.agent.internal.profiler.upload.UploadCompleteHandler;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryObservers;
 import com.microsoft.applicationinsights.alerting.AlertingSubsystem;
@@ -39,7 +39,7 @@ public class AlertingSubsystemInit {
   // TODO (trask) inject instead of using global
   private static volatile AlertingSubsystem alertingSubsystem;
 
-  static AlertingSubsystem create(
+  public static AlertingSubsystem create(
       Configuration configuration,
       TelemetryObservers telemetryObservers,
       AtomicReference<Profiler> profilerHolder,
@@ -73,6 +73,11 @@ public class AlertingSubsystemInit {
         fromGcEventMonitorConfiguration(configuration.preview));
 
     return alertingSubsystem;
+  }
+
+  public static void updateAlertingConfig(
+      AlertingSubsystem alertingSubsystem, ProfilerConfiguration config) {
+    alertingSubsystem.updateConfiguration(AlertConfigParser.toAlertingConfig(config));
   }
 
   private static GcEventInit.GcEventMonitorConfiguration fromGcEventMonitorConfiguration(
@@ -114,12 +119,15 @@ public class AlertingSubsystemInit {
       Profiler profiler,
       DiagnosticEngine diagnosticEngine,
       TelemetryClient telemetryClient) {
+
     if (profiler != null) {
       // This is an event that the backend specifically looks for to track when a profile is
       // started
       sendMessageTelemetry(telemetryClient, "StartProfiler triggered.");
 
-      profiler.accept(alert, sendServiceProfilerIndex(telemetryClient));
+      profiler.accept(
+          alert,
+          serviceProfilerIndex -> sendServiceProfilerIndex(serviceProfilerIndex, telemetryClient));
 
       if (diagnosticEngine != null) {
         diagnosticEngine.performDiagnosis(alert);
@@ -127,28 +135,27 @@ public class AlertingSubsystemInit {
     }
   }
 
-  static UploadCompleteHandler sendServiceProfilerIndex(TelemetryClient telemetryClient) {
-    return done -> {
-      EventTelemetryBuilder telemetryBuilder = telemetryClient.newEventTelemetryBuilder();
+  private static void sendServiceProfilerIndex(
+      ServiceProfilerIndex serviceProfilerIndex, TelemetryClient telemetryClient) {
 
-      telemetryBuilder.setName("ServiceProfilerIndex");
+    EventTelemetryBuilder telemetryBuilder = telemetryClient.newEventTelemetryBuilder();
 
-      ServiceProfilerIndex serviceProfilerIndex = done.getServiceProfilerIndex();
-      for (Map.Entry<String, String> entry : serviceProfilerIndex.getProperties().entrySet()) {
-        telemetryBuilder.addProperty(entry.getKey(), entry.getValue());
-      }
-      for (Map.Entry<String, Double> entry : serviceProfilerIndex.getMetrics().entrySet()) {
-        telemetryBuilder.addMeasurement(entry.getKey(), entry.getValue());
-      }
+    telemetryBuilder.setName("ServiceProfilerIndex");
 
-      telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromNow());
+    for (Map.Entry<String, String> entry : serviceProfilerIndex.getProperties().entrySet()) {
+      telemetryBuilder.addProperty(entry.getKey(), entry.getValue());
+    }
+    for (Map.Entry<String, Double> entry : serviceProfilerIndex.getMetrics().entrySet()) {
+      telemetryBuilder.addMeasurement(entry.getKey(), entry.getValue());
+    }
 
-      telemetryClient.trackAsync(telemetryBuilder.build());
+    telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromNow());
 
-      // This is an event that the backend specifically looks for to track when a profile is
-      // complete
-      sendMessageTelemetry(telemetryClient, "StopProfiler succeeded.");
-    };
+    telemetryClient.trackAsync(telemetryBuilder.build());
+
+    // This is an event that the backend specifically looks for to track when a profile is
+    // complete
+    sendMessageTelemetry(telemetryClient, "StopProfiler succeeded.");
   }
 
   private static void sendMessageTelemetry(TelemetryClient telemetryClient, String message) {

@@ -14,8 +14,7 @@ import com.microsoft.applicationinsights.agent.internal.common.SystemInformation
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
 import com.microsoft.applicationinsights.agent.internal.init.AppIdSupplier;
-import com.microsoft.applicationinsights.agent.internal.profiler.config.AlertConfigParser;
-import com.microsoft.applicationinsights.agent.internal.profiler.config.ConfigPolling;
+import com.microsoft.applicationinsights.agent.internal.profiler.config.ConfigPollingInit;
 import com.microsoft.applicationinsights.agent.internal.profiler.service.ServiceProfilerClient;
 import com.microsoft.applicationinsights.agent.internal.profiler.triggers.AlertingSubsystemInit;
 import com.microsoft.applicationinsights.agent.internal.profiler.upload.UploadService;
@@ -153,10 +152,12 @@ public class ProfilingInitializer {
             profiler.initialize(uploadService, serviceProfilerExecutorService);
 
             // Monitor service remains alive permanently due to scheduling an periodic config pull
-            ConfigPolling.startPollingForConfigUpdates(
+            ConfigPollingInit.startPollingForConfigUpdates(
                 serviceProfilerExecutorService,
                 serviceProfilerClient,
-                Arrays.asList(updateAlertingConfig(alerting), profiler),
+                Arrays.asList(
+                    config -> AlertingSubsystemInit.updateAlertingConfig(alerting, config),
+                    profiler),
                 configuration.preview.profiler.configPollPeriodSeconds);
 
             profilerHolder.set(profiler);
@@ -173,6 +174,7 @@ public class ProfilingInitializer {
         });
   }
 
+  @Nullable
   private static DiagnosticEngine startDiagnosticEngine() {
     try {
       DiagnosticEngineFactory diagnosticEngineFactory = loadDiagnosticEngineFactory();
@@ -201,11 +203,6 @@ public class ProfilingInitializer {
 
   private static DiagnosticEngineFactory loadDiagnosticEngineFactory() {
     return ServiceLoaderUtil.findServiceLoader(DiagnosticEngineFactory.class);
-  }
-
-  static ProfilerConfigurationHandler updateAlertingConfig(AlertingSubsystem alertingSubsystem) {
-    return config ->
-        alertingSubsystem.updateConfiguration(AlertConfigParser.toAlertingConfig(config));
   }
 
   // visible for testing

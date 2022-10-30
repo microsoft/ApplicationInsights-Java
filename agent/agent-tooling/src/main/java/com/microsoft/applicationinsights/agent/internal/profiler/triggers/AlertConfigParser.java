@@ -1,8 +1,9 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-package com.microsoft.applicationinsights.agent.internal.profiler.config;
+package com.microsoft.applicationinsights.agent.internal.profiler.triggers;
 
+import com.microsoft.applicationinsights.agent.internal.profiler.config.ProfilerConfiguration;
 import com.microsoft.applicationinsights.alerting.config.AlertConfiguration;
 import com.microsoft.applicationinsights.alerting.config.AlertMetricType;
 import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration;
@@ -17,9 +18,9 @@ import java.util.Map;
 import javax.annotation.Nullable;
 
 /** Parses the configuration from the service profiler endpoint. */
-public class AlertConfigParser {
+class AlertConfigParser {
 
-  public static AlertingConfiguration parse(
+  static AlertingConfiguration parse(
       String cpuConfig, String memoryConfig, String defaultConfig, String collectionPlan) {
     return AlertingConfiguration.create(
         parseFromCpu(cpuConfig),
@@ -64,7 +65,7 @@ public class AlertConfigParser {
     return parseConfig(CollectionPlanConfiguration.builder(), tokens, parsers).build();
   }
 
-  public static DefaultConfiguration parseDefaultConfiguration(@Nullable String defaultConfig) {
+  static DefaultConfiguration parseDefaultConfiguration(@Nullable String defaultConfig) {
     if (defaultConfig == null) {
       return DefaultConfiguration.builder()
           .setSamplingEnabled(false)
@@ -92,7 +93,7 @@ public class AlertConfigParser {
     return parseConfig(DefaultConfiguration.builder(), tokens, parsers).build();
   }
 
-  public static AlertConfiguration parseFromMemory(@Nullable String memoryConfig) {
+  static AlertConfiguration parseFromMemory(@Nullable String memoryConfig) {
     if (memoryConfig == null) {
 
       return AlertConfiguration.builder()
@@ -127,7 +128,7 @@ public class AlertConfigParser {
         .build();
   }
 
-  public static AlertConfiguration parseFromCpu(@Nullable String cpuConfig) {
+  static AlertConfiguration parseFromCpu(@Nullable String cpuConfig) {
 
     if (cpuConfig == null) {
       return AlertConfiguration.builder()
@@ -164,7 +165,7 @@ public class AlertConfigParser {
   }
 
   private interface ConfigParser<T> {
-    T parse(T config, @Nullable String arg);
+    void parse(T config, @Nullable String arg);
   }
 
   private static class ParseConfigValue<T> {
@@ -196,8 +197,7 @@ public class AlertConfigParser {
     return builder;
   }
 
-  public static AlertingConfiguration toAlertingConfig(
-      ProfilerConfiguration profilerConfiguration) {
+  static AlertingConfiguration toAlertingConfig(ProfilerConfiguration profilerConfiguration) {
     return AlertConfigParser.parse(
         profilerConfiguration.getCpuTriggerConfiguration(),
         profilerConfiguration.getMemoryTriggerConfiguration(),
