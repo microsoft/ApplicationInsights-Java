@@ -139,8 +139,15 @@ public class UploadService {
     }
 
     UploadContext uploadContext =
-        new UploadContext(
-            machineName, UUID.fromString(appId), timestamp, file, profileId, fileFormat, extension);
+        UploadContext.builder()
+            .setMachineName(machineName)
+            .setDataCube(UUID.fromString(appId))
+            .setSessionId(timestamp)
+            .setTraceFile(file)
+            .setProfileId(profileId)
+            .setFileFormat(fileFormat)
+            .setExtension(extension)
+            .build();
 
     // upload trace to service profiler
     return uploadTrace(uploadContext)

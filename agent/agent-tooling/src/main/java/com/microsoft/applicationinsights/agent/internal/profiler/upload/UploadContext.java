@@ -3,6 +3,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.profiler.upload;
 
+import com.google.auto.value.AutoValue;
 import java.io.File;
 import java.util.UUID;
 
@@ -11,58 +12,44 @@ import java.util.UUID;
  *
  * <p>This class is intended for internal Java profiler use.
  */
-class UploadContext {
+@AutoValue
+abstract class UploadContext {
 
-  private final UUID dataCube;
-  private final long sessionId;
-  private final File traceFile;
-  private final UUID profileId;
-  private final String machineName;
-  private final String fileFormat;
-  private final String extension;
+  abstract String getMachineName();
 
-  UploadContext(
-      String machineName,
-      UUID dataCube,
-      long sessionId,
-      File traceFile,
-      UUID profileId,
-      String fileFormat,
-      String extension) {
-    this.machineName = machineName;
-    this.dataCube = dataCube;
-    this.sessionId = sessionId;
-    this.traceFile = traceFile;
-    this.profileId = profileId;
-    this.fileFormat = fileFormat;
-    this.extension = extension;
+  abstract File getTraceFile();
+
+  abstract long getSessionId();
+
+  abstract UUID getDataCube();
+
+  abstract UUID getProfileId();
+
+  abstract String getFileFormat();
+
+  abstract String getExtension();
+
+  static Builder builder() {
+    return new AutoValue_UploadContext.Builder();
   }
 
-  String getMachineName() {
-    return machineName;
-  }
+  @AutoValue.Builder
+  abstract static class Builder {
 
-  File getTraceFile() {
-    return traceFile;
-  }
+    abstract Builder setMachineName(String machineName);
 
-  long getSessionId() {
-    return sessionId;
-  }
+    abstract Builder setTraceFile(File traceFile);
 
-  UUID getDataCube() {
-    return dataCube;
-  }
+    abstract Builder setSessionId(long sessionId);
 
-  UUID getProfileId() {
-    return profileId;
-  }
+    abstract Builder setDataCube(UUID dataCube);
 
-  String getFileFormat() {
-    return fileFormat;
-  }
+    abstract Builder setProfileId(UUID profileId);
 
-  String getExtension() {
-    return extension;
+    abstract Builder setFileFormat(String fileFormat);
+
+    abstract Builder setExtension(String extension);
+
+    abstract UploadContext build();
   }
 }
