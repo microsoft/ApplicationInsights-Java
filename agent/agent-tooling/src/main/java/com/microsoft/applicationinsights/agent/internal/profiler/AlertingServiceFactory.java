@@ -5,12 +5,17 @@ package com.microsoft.applicationinsights.agent.internal.profiler;
 
 import static com.microsoft.applicationinsights.agent.internal.perfcounter.MetricNames.TOTAL_CPU_PERCENTAGE;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.builders.EventTelemetryBuilder;
+import com.azure.monitor.opentelemetry.exporter.implementation.builders.MessageTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricDataPoint;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricsData;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MonitorDomain;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedTime;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.configuration.GcReportingLevel;
 import com.microsoft.applicationinsights.agent.internal.profiler.triggers.RequestAlertPipelineBuilder;
+import com.microsoft.applicationinsights.agent.internal.profiler.upload.ServiceProfilerIndex;
+import com.microsoft.applicationinsights.agent.internal.profiler.upload.UploadCompleteHandler;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryObservers;
 import com.microsoft.applicationinsights.alerting.AlertingSubsystem;
@@ -19,9 +24,12 @@ import com.microsoft.applicationinsights.alerting.analysis.TimeSource;
 import com.microsoft.applicationinsights.alerting.analysis.pipelines.AlertPipeline;
 import com.microsoft.applicationinsights.alerting.analysis.pipelines.AlertPipelineMultiplexer;
 import com.microsoft.applicationinsights.alerting.config.AlertMetricType;
+import com.microsoft.applicationinsights.diagnostics.DiagnosticEngine;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -33,10 +41,17 @@ public class AlertingServiceFactory {
 
   static AlertingSubsystem create(
       Configuration configuration,
-      Consumer<AlertBreach> alertAction,
       TelemetryObservers telemetryObservers,
+      AtomicReference<Profiler> profilerHolder,
       TelemetryClient telemetryClient,
+      DiagnosticEngine diagnosticEngine,
       ExecutorService executorService) {
+
+    // TODO (trask) delay creation of AlertingSubsystem until after Profiler is created and
+    // initialized?
+    Consumer<AlertBreach> alertAction =
+        alert -> alertAction(alert, profilerHolder.get(), diagnosticEngine, telemetryClient);
+
     alertingSubsystem = AlertingSubsystem.create(alertAction, TimeSource.DEFAULT);
 
     if (configuration.preview.profiler.enableRequestTriggering) {
@@ -51,15 +66,16 @@ public class AlertingServiceFactory {
 
     addObserver(alertingSubsystem, telemetryObservers);
 
-    monitorGcActivity(
+    GcEventMonitor.init(
         alertingSubsystem,
         telemetryClient,
         executorService,
-        formGcEventMonitorConfiguration(configuration.preview));
+        fromGcEventMonitorConfiguration(configuration.preview));
+
     return alertingSubsystem;
   }
 
-  private static GcEventMonitor.GcEventMonitorConfiguration formGcEventMonitorConfiguration(
+  private static GcEventMonitor.GcEventMonitorConfiguration fromGcEventMonitorConfiguration(
       Configuration.PreviewConfiguration configuration) {
     if (configuration.gcEvents.reportingLevel != null) {
       return new GcEventMonitor.GcEventMonitorConfiguration(configuration.gcEvents.reportingLevel);
@@ -71,15 +87,6 @@ public class AlertingServiceFactory {
     }
 
     return new GcEventMonitor.GcEventMonitorConfiguration(GcReportingLevel.NONE);
-  }
-
-  private static void monitorGcActivity(
-      AlertingSubsystem alertingSubsystem,
-      TelemetryClient telemetryClient,
-      ExecutorService executorService,
-      GcEventMonitor.GcEventMonitorConfiguration gcEventMonitorConfiguration) {
-    GcEventMonitor.init(
-        alertingSubsystem, telemetryClient, executorService, gcEventMonitorConfiguration);
   }
 
   private static void addObserver(
@@ -101,6 +108,59 @@ public class AlertingServiceFactory {
           }
         });
   }
+
+  private static void alertAction(
+      AlertBreach alert,
+      Profiler profiler,
+      DiagnosticEngine diagnosticEngine,
+      TelemetryClient telemetryClient) {
+    if (profiler != null) {
+      // This is an event that the backend specifically looks for to track when a profile is
+      // started
+      sendMessageTelemetry(telemetryClient, "StartProfiler triggered.");
+
+      profiler.accept(alert, sendServiceProfilerIndex(telemetryClient));
+
+      if (diagnosticEngine != null) {
+        diagnosticEngine.performDiagnosis(alert);
+      }
+    }
+  }
+
+  static UploadCompleteHandler sendServiceProfilerIndex(TelemetryClient telemetryClient) {
+    return done -> {
+      EventTelemetryBuilder telemetryBuilder = telemetryClient.newEventTelemetryBuilder();
+
+      telemetryBuilder.setName("ServiceProfilerIndex");
+
+      ServiceProfilerIndex serviceProfilerIndex = done.getServiceProfilerIndex();
+      for (Map.Entry<String, String> entry : serviceProfilerIndex.getProperties().entrySet()) {
+        telemetryBuilder.addProperty(entry.getKey(), entry.getValue());
+      }
+      for (Map.Entry<String, Double> entry : serviceProfilerIndex.getMetrics().entrySet()) {
+        telemetryBuilder.addMeasurement(entry.getKey(), entry.getValue());
+      }
+
+      telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromNow());
+
+      telemetryClient.trackAsync(telemetryBuilder.build());
+
+      // This is an event that the backend specifically looks for to track when a profile is
+      // complete
+      sendMessageTelemetry(telemetryClient, "StopProfiler succeeded.");
+    };
+  }
+
+  private static void sendMessageTelemetry(TelemetryClient telemetryClient, String message) {
+    MessageTelemetryBuilder telemetryBuilder = telemetryClient.newMessageTelemetryBuilder();
+
+    telemetryBuilder.setMessage(message);
+    telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromNow());
+
+    telemetryClient.trackAsync(telemetryBuilder.build());
+  }
+
+  // Invokes the diagnostic engine while a profile is in progress
 
   public static AlertingSubsystem getAlertingSubsystem() {
     return alertingSubsystem;

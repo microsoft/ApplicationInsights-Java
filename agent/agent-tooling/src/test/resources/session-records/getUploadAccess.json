@@ -1,0 +1,22 @@
+{
+  "networkCallRecords" : [ {
+    "Method" : "POST",
+    "Uri" : "https://REDACTED.azureserviceprofiler.net/api/apps/afbcd285-0b88-4a9b-b6cf-7399d9ed28e8/artifactkinds/profile/artifacts/f16d1bd8-116f-42db-bd2d-7549aad09e3f?iKey=afbcd285-0b88-4a9b-b6cf-7399d9ed28e8&extension=jfr&api-version=2020-10-14-preview&action=gettoken",
+    "Headers" : { },
+    "Response" : {
+      "X-Frame-Options" : "DENY",
+      "content-length" : "0",
+      "Strict-Transport-Security" : "max-age=31536000; includeSubDomains",
+      "Server" : "Kestrel",
+      "x-content-type-options" : "nosniff",
+      "retry-after" : "0",
+      "X-XSS-Protection" : "1; mode=block",
+      "StatusCode" : "201",
+      "Date" : "Sat, 29 Oct 2022 18:11:04 GMT",
+      "Location" : "https://spey2ahqc2dsyvq.blob.core.windows.net/etl/77/776dc79b-a1c0-415e-aaf0-e0c69d050f22/f1/f16d1bd8116f42dbbd2d7549aad09e3f.jfr?skoid=05f44359-099e-4ecd-bd6c-8a3783d7a402&sktid=33e01921-4d64-4f8c-a055-5bdaffd5e33d&skt=2022-10-29T17%3A42%3A33Z&ske=2022-10-30T01%3A42%3A33Z&sks=b&skv=2020-10-02&sv=2020-08-04&se=2022-10-29T18%3A41%3A05Z&sr=b&sp=cw&sig=X5STTN7mLrYgIeWzWt3BTHG%2FWXs2iBeG7UOnGeMJbaI%3D",
+      "Request-Context" : "appId=cid-v1:ec713804-e1e8-4b91-a3a5-f28b89ecb89e"
+    },
+    "Exception" : null
+  } ],
+  "variables" : [ ]
+}

@@ -1,0 +1,23 @@
+{
+  "networkCallRecords" : [ {
+    "Method" : "POST",
+    "Uri" : "https://REDACTED.azureserviceprofiler.net/api/apps/00000000-0000-0000-0000-000000000000/artifactkinds/profile/artifacts/463516e8-ecc0-4e21-aced-7f4c6af74c87?iKey=00000000-0000-0000-0000-000000000000&extension=jfr&api-version=2020-10-14-preview&action=commit&etag=\"an-etag\"",
+    "Headers" : { },
+    "Response" : {
+      "Transfer-Encoding" : "chunked",
+      "X-Frame-Options" : "DENY",
+      "Strict-Transport-Security" : "max-age=31536000; includeSubDomains",
+      "Server" : "Kestrel",
+      "x-content-type-options" : "nosniff",
+      "retry-after" : "0",
+      "X-XSS-Protection" : "1; mode=block",
+      "StatusCode" : "401",
+      "Body" : "{\"error\":{\"code\":\"NotFound\",\"message\":\"The given instrumentation key does not correspond to a valid Application Insights resource.\"}}",
+      "Date" : "Sat, 29 Oct 2022 18:09:05 GMT",
+      "Content-Type" : "application/json; charset=utf-8",
+      "Request-Context" : "appId=cid-v1:ec713804-e1e8-4b91-a3a5-f28b89ecb89e"
+    },
+    "Exception" : null
+  } ],
+  "variables" : [ ]
+}

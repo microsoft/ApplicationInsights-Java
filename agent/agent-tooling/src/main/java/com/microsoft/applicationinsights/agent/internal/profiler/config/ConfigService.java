@@ -3,13 +3,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.profiler.config;
 
-import com.azure.core.exception.HttpResponseException;
 import com.microsoft.applicationinsights.agent.internal.profiler.client.ServiceProfilerClient;
-import com.squareup.moshi.JsonAdapter;
-import com.squareup.moshi.Moshi;
-import com.squareup.moshi.adapters.Rfc3339DateJsonAdapter;
-import java.io.IOException;
-import java.util.Calendar;
 import java.util.Date;
 import reactor.core.publisher.Mono;
 
@@ -22,7 +16,7 @@ class ConfigService {
 
   ConfigService(ServiceProfilerClient serviceProfilerClient) {
     this.serviceProfilerClient = serviceProfilerClient;
-    lastModified = new Date(70, Calendar.JANUARY, 1);
+    lastModified = new Date(0); // January 1, 1970, 00:00:00 GMT
   }
 
   /** Pulls the latest settings. If they have not been modified empty is returned. */
@@ -31,33 +25,11 @@ class ConfigService {
         .getSettings(lastModified)
         .flatMap(
             config -> {
-              try {
-                ProfilerConfiguration serviceProfilerConfiguration =
-                    toServiceProfilerConfiguration(config);
-                if (serviceProfilerConfiguration != null
-                    && serviceProfilerConfiguration.getLastModified().getTime()
-                        != lastModified.getTime()) {
-                  lastModified = serviceProfilerConfiguration.getLastModified();
-                  return Mono.just(serviceProfilerConfiguration);
-                }
-                return Mono.empty();
-              } catch (HttpResponseException e) {
-                if (e.getResponse().getStatusCode() == 304) {
-                  return Mono.empty();
-                } else {
-                  return Mono.error(e);
-                }
-              } catch (Exception e) {
-                return Mono.error(e);
+              if (config != null && config.getLastModified().getTime() != lastModified.getTime()) {
+                lastModified = config.getLastModified();
+                return Mono.just(config);
               }
+              return Mono.empty();
             });
-  }
-
-  private static ProfilerConfiguration toServiceProfilerConfiguration(String config)
-      throws IOException {
-    Moshi moshi = new Moshi.Builder().add(Date.class, new Rfc3339DateJsonAdapter()).build();
-    JsonAdapter<ProfilerConfiguration> jsonAdapter = moshi.adapter(ProfilerConfiguration.class);
-
-    return jsonAdapter.fromJson(config);
   }
 }

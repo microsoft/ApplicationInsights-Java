@@ -8,9 +8,11 @@ import com.azure.core.http.HttpMethod;
 import com.azure.core.http.HttpPipeline;
 import com.azure.core.http.HttpRequest;
 import com.azure.core.http.HttpResponse;
+import com.microsoft.applicationinsights.agent.internal.profiler.config.ProfilerConfiguration;
 import com.microsoft.applicationinsights.agent.internal.profiler.util.TimestampContract;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
+import com.squareup.moshi.adapters.Rfc3339DateJsonAdapter;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -134,7 +136,7 @@ public class ServiceProfilerClient {
   }
 
   /** Obtain current settings that have been configured within the UI. */
-  public Mono<String> getSettings(Date oldTimeStamp) {
+  public Mono<ProfilerConfiguration> getSettings(Date oldTimeStamp) {
 
     URL requestUrl = getSettingsPath(oldTimeStamp);
     LOGGER.debug("Settings pull request: {}", requestUrl);
@@ -145,15 +147,28 @@ public class ServiceProfilerClient {
         .send(request)
         .flatMap(
             response -> {
-              if (response == null) {
-                // this shouldn't happen, the mono should complete with a response or a failure
-                return Mono.error(new AssertionError("http response mono returned empty"));
-              }
               if (response.getStatusCode() >= 300) {
                 return Mono.error(new HttpResponseException(response));
               }
-              return response.getBodyAsString();
+              return response
+                  .getBodyAsString()
+                  .flatMap(
+                      body -> {
+                        try {
+                          return Mono.just(toServiceProfilerConfiguration(body));
+                        } catch (IOException e) {
+                          return Mono.error(e);
+                        }
+                      });
             });
+  }
+
+  private static ProfilerConfiguration toServiceProfilerConfiguration(String config)
+      throws IOException {
+
+    Moshi moshi = new Moshi.Builder().add(Date.class, new Rfc3339DateJsonAdapter()).build();
+    JsonAdapter<ProfilerConfiguration> jsonAdapter = moshi.adapter(ProfilerConfiguration.class);
+    return jsonAdapter.fromJson(config);
   }
 
   // api/profileragent/v4/settings?ikey=xyz&featureVersion=1.0.0&oldTimestamp=123

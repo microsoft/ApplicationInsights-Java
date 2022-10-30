@@ -46,7 +46,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import reactor.core.publisher.Mono;
 
-class ProfilingInitializerHelperTest {
+class ProfilerInitializerTest {
 
   final String timeStamp = "a-timestamp";
   final String machineName = "a-machine-name";
@@ -120,12 +120,12 @@ class ProfilingInitializerHelperTest {
         Executors.newScheduledThreadPool(
             2,
             ThreadPoolUtils.createDaemonThreadFactory(
-                ProfilingInitializerHelperTest.class, "ServiceProfilerService"));
+                ProfilerInitializerTest.class, "ServiceProfilerService"));
 
     ScheduledExecutorService alertServiceExecutorService =
         Executors.newSingleThreadScheduledExecutor(
             ThreadPoolUtils.createDaemonThreadFactory(
-                ProfilingInitializerHelperTest.class, "ServiceProfilerAlertingService"));
+                ProfilerInitializerTest.class, "ServiceProfilerAlertingService"));
 
     // Callback invoked when a profile has been uploaded.
     // Sends index metadata about the uploaded profile
@@ -134,7 +134,7 @@ class ProfilingInitializerHelperTest {
 
     Configuration config = new Configuration();
 
-    AtomicReference<ProfilingInitializerHelper> service = new AtomicReference<>();
+    AtomicReference<ProfilerInitializer> service = new AtomicReference<>();
     AlertingSubsystem alertService =
         AlertingServiceFactory.create(
             config,
@@ -157,7 +157,7 @@ class ProfilingInitializerHelperTest {
         //            .setDiagnosticsEnabled(true)
         //            .build(),
 
-        new ProfilingInitializerHelper(
+        new ProfilerInitializer(
                 config.preview.profiler,
                 profiler,
                 ProfilingInitializer.updateAlertingConfig(alertService),
@@ -196,8 +196,8 @@ class ProfilingInitializerHelperTest {
     assertTelemetry.accept(serviceProfilerIndex.get());
   }
 
-  private static ProfilingInitializerHelper awaitReferenceSet(
-      AtomicReference<ProfilingInitializerHelper> service) {
+  private static ProfilerInitializer awaitReferenceSet(
+      AtomicReference<ProfilerInitializer> service) {
     // Wait for up to 10 seconds
     for (int i = 0; i < 100 && service.get() == null; i++) {
       try {
