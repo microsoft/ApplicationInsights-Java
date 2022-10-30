@@ -11,7 +11,10 @@ import com.squareup.moshi.Json;
  *
  * <p>This class is intended for internal Java profiler use.
  */
-public class BlobAccessPass extends StampBlobUri {
+public class BlobAccessPass {
+
+  @Json(name = "blobUri")
+  private final String blobUri;
 
   @Json(name = "uriWithSASToken")
   private final String uriWithSasToken;
@@ -20,7 +23,7 @@ public class BlobAccessPass extends StampBlobUri {
   private final String sasToken;
 
   public BlobAccessPass(String blobUri, String uriWithSasToken, String sasToken) {
-    super(blobUri);
+    this.blobUri = blobUri;
     this.uriWithSasToken = uriWithSasToken;
     this.sasToken = sasToken;
   }
@@ -29,7 +32,7 @@ public class BlobAccessPass extends StampBlobUri {
     if (uriWithSasToken != null) {
       return uriWithSasToken;
     }
-    return getBlobUri() + sasToken;
+    return blobUri + sasToken;
   }
 
   public String getBlobName() {
