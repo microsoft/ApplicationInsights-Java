@@ -23,8 +23,8 @@ class AlertTriggerTest {
             .setType(AlertMetricType.CPU)
             .setEnabled(true)
             .setThreshold(0.5f)
-            .setProfileDuration(1)
-            .setCooldown(1000)
+            .setProfileDurationSeconds(1)
+            .setCooldownSeconds(1000)
             .build();
     AtomicBoolean called = new AtomicBoolean(false);
     AlertPipelineTrigger trigger = getAlertTrigger(config, called);
@@ -43,8 +43,8 @@ class AlertTriggerTest {
             .setType(AlertMetricType.CPU)
             .setEnabled(true)
             .setThreshold(0.5f)
-            .setProfileDuration(1)
-            .setCooldown(1)
+            .setProfileDurationSeconds(1)
+            .setCooldownSeconds(1)
             .build();
     AtomicBoolean called = new AtomicBoolean(false);
     AlertPipelineTrigger trigger = getAlertTrigger(config, called);
@@ -64,8 +64,8 @@ class AlertTriggerTest {
             .setType(AlertMetricType.CPU)
             .setEnabled(true)
             .setThreshold(0.5f)
-            .setProfileDuration(1)
-            .setCooldown(1000)
+            .setProfileDurationSeconds(1)
+            .setCooldownSeconds(1000)
             .build();
     AtomicBoolean called = new AtomicBoolean(false);
     AlertPipelineTrigger trigger = getAlertTrigger(config, called);
@@ -95,8 +95,8 @@ class AlertTriggerTest {
             .setType(AlertMetricType.CPU)
             .setEnabled(true)
             .setThreshold(0.5f)
-            .setProfileDuration(1)
-            .setCooldown(1)
+            .setProfileDurationSeconds(1)
+            .setCooldownSeconds(1)
             .build();
     AtomicBoolean called = new AtomicBoolean(false);
     AlertPipelineTrigger trigger = getAlertTrigger(config, called);
