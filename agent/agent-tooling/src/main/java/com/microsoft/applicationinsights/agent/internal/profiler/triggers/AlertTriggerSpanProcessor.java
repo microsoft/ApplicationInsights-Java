@@ -4,7 +4,6 @@
 package com.microsoft.applicationinsights.agent.internal.profiler.triggers;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.RequestChecker;
-import com.microsoft.applicationinsights.agent.internal.profiler.AlertingServiceFactory;
 import com.microsoft.applicationinsights.alerting.AlertingSubsystem;
 import com.microsoft.applicationinsights.alerting.analysis.TimeSource;
 import com.microsoft.applicationinsights.alerting.analysis.data.TelemetryDataPoint;
@@ -24,7 +23,7 @@ public class AlertTriggerSpanProcessor implements SpanProcessor {
   private final Supplier<AlertingSubsystem> alertingSubsystemSupplier;
 
   public AlertTriggerSpanProcessor() {
-    this(AlertingServiceFactory::getAlertingSubsystem);
+    this(AlertingSubsystemInit::getAlertingSubsystem);
   }
 
   public AlertTriggerSpanProcessor(Supplier<AlertingSubsystem> alertingSubsystemSupplier) {

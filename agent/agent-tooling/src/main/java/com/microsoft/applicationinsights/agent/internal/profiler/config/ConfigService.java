@@ -3,7 +3,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.profiler.config;
 
-import com.microsoft.applicationinsights.agent.internal.profiler.client.ServiceProfilerClient;
+import com.microsoft.applicationinsights.agent.internal.profiler.service.ServiceProfilerClient;
 import java.util.Date;
 import reactor.core.publisher.Mono;
 

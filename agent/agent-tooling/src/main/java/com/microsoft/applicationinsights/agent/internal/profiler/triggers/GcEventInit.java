@@ -1,11 +1,12 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-package com.microsoft.applicationinsights.agent.internal.profiler;
+package com.microsoft.applicationinsights.agent.internal.profiler.triggers;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.EventTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedTime;
 import com.microsoft.applicationinsights.agent.internal.configuration.GcReportingLevel;
+import com.microsoft.applicationinsights.agent.internal.profiler.util.ServiceLoaderUtil;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import com.microsoft.applicationinsights.alerting.AlertingSubsystem;
 import com.microsoft.applicationinsights.alerting.config.AlertMetricType;
@@ -26,9 +27,9 @@ import org.slf4j.LoggerFactory;
  *
  * <p>If reportAllGcEvents configuration setting is set, reports GC event to Application Insights
  */
-public class GcEventMonitor {
+class GcEventInit {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(GcEventMonitor.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(GcEventInit.class);
 
   // a unique jvm_instance_id is needed for every restart as the gc starts again from scratch every
   // time the JVM is restarted, and we need to analyze single JVM execution
@@ -36,22 +37,23 @@ public class GcEventMonitor {
   // here
   private static final String JVM_INSTANCE_UID = UUID.randomUUID().toString();
 
-  public static class GcEventMonitorConfiguration {
-    public final GcReportingLevel reportingLevel;
+  static class GcEventMonitorConfiguration {
 
-    public GcEventMonitorConfiguration(GcReportingLevel reportingLevel) {
+    final GcReportingLevel reportingLevel;
+
+    GcEventMonitorConfiguration(GcReportingLevel reportingLevel) {
       this.reportingLevel = reportingLevel;
     }
   }
 
   /** Initialise GC monitoring. */
-  public static void init(
+  static void init(
       AlertingSubsystem alertingSubsystem,
       TelemetryClient telemetryClient,
       ExecutorService executorService,
       GcEventMonitorConfiguration gcEventMonitorConfiguration) {
-    GcMonitorFactory gcMonitorFactory =
-        ProfilingInitializer.findServiceLoader(GcMonitorFactory.class);
+
+    GcMonitorFactory gcMonitorFactory = ServiceLoaderUtil.findServiceLoader(GcMonitorFactory.class);
 
     if (gcMonitorFactory != null) {
       init(
@@ -63,7 +65,7 @@ public class GcEventMonitor {
     }
   }
 
-  public static void init(
+  static void init(
       AlertingSubsystem alertingSubsystem,
       TelemetryClient telemetryClient,
       ExecutorService executorService,
@@ -165,5 +167,5 @@ public class GcEventMonitor {
     telemetryBuilder.addMeasurement(poolName + "_max", (double) memory.getMax());
   }
 
-  private GcEventMonitor() {}
+  private GcEventInit() {}
 }

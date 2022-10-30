@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-package com.microsoft.applicationinsights.agent.internal.profiler;
+package com.microsoft.applicationinsights.agent.internal.profiler.triggers;
 
 import static com.microsoft.applicationinsights.agent.internal.perfcounter.MetricNames.TOTAL_CPU_PERCENTAGE;
 
@@ -13,7 +13,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.models.MonitorDom
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedTime;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.configuration.GcReportingLevel;
-import com.microsoft.applicationinsights.agent.internal.profiler.triggers.RequestAlertPipelineBuilder;
+import com.microsoft.applicationinsights.agent.internal.profiler.Profiler;
 import com.microsoft.applicationinsights.agent.internal.profiler.upload.ServiceProfilerIndex;
 import com.microsoft.applicationinsights.agent.internal.profiler.upload.UploadCompleteHandler;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
@@ -34,7 +34,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /** Creates AlertMonitor and wires it up to observe telemetry. */
-public class AlertingServiceFactory {
+public class AlertingSubsystemInit {
 
   // TODO (trask) inject instead of using global
   private static volatile AlertingSubsystem alertingSubsystem;
@@ -66,7 +66,7 @@ public class AlertingServiceFactory {
 
     addObserver(alertingSubsystem, telemetryObservers);
 
-    GcEventMonitor.init(
+    GcEventInit.init(
         alertingSubsystem,
         telemetryClient,
         executorService,
@@ -75,18 +75,18 @@ public class AlertingServiceFactory {
     return alertingSubsystem;
   }
 
-  private static GcEventMonitor.GcEventMonitorConfiguration fromGcEventMonitorConfiguration(
+  private static GcEventInit.GcEventMonitorConfiguration fromGcEventMonitorConfiguration(
       Configuration.PreviewConfiguration configuration) {
     if (configuration.gcEvents.reportingLevel != null) {
-      return new GcEventMonitor.GcEventMonitorConfiguration(configuration.gcEvents.reportingLevel);
+      return new GcEventInit.GcEventMonitorConfiguration(configuration.gcEvents.reportingLevel);
     }
 
     // The memory monitoring requires observing gc events
     if (configuration.profiler.enabled) {
-      return new GcEventMonitor.GcEventMonitorConfiguration(GcReportingLevel.TENURED_ONLY);
+      return new GcEventInit.GcEventMonitorConfiguration(GcReportingLevel.TENURED_ONLY);
     }
 
-    return new GcEventMonitor.GcEventMonitorConfiguration(GcReportingLevel.NONE);
+    return new GcEventInit.GcEventMonitorConfiguration(GcReportingLevel.NONE);
   }
 
   private static void addObserver(
@@ -160,11 +160,9 @@ public class AlertingServiceFactory {
     telemetryClient.trackAsync(telemetryBuilder.build());
   }
 
-  // Invokes the diagnostic engine while a profile is in progress
-
-  public static AlertingSubsystem getAlertingSubsystem() {
+  static AlertingSubsystem getAlertingSubsystem() {
     return alertingSubsystem;
   }
 
-  private AlertingServiceFactory() {}
+  private AlertingSubsystemInit() {}
 }

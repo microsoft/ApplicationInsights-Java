@@ -336,7 +336,7 @@ public class Profiler implements ProfilerConfigurationHandler {
 
   /** Dispatch alert breach event to handler. */
   // visible for tests
-  void accept(AlertBreach alertBreach, UploadCompleteHandler uploadCompleteHandler) {
+  public void accept(AlertBreach alertBreach, UploadCompleteHandler uploadCompleteHandler) {
 
     if (alertBreach.getType() == AlertMetricType.PERIODIC) {
       performPeriodicProfile(uploadCompleteHandler);

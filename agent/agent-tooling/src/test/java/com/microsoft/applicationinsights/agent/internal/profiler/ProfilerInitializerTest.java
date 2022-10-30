@@ -18,8 +18,9 @@ import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryE
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.ThreadPoolUtils;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
-import com.microsoft.applicationinsights.agent.internal.profiler.client.BlobAccessPass;
-import com.microsoft.applicationinsights.agent.internal.profiler.client.ServiceProfilerClient;
+import com.microsoft.applicationinsights.agent.internal.profiler.service.BlobAccessPass;
+import com.microsoft.applicationinsights.agent.internal.profiler.service.ServiceProfilerClient;
+import com.microsoft.applicationinsights.agent.internal.profiler.triggers.AlertingSubsystemInit;
 import com.microsoft.applicationinsights.agent.internal.profiler.upload.UploadCompleteHandler;
 import com.microsoft.applicationinsights.agent.internal.profiler.upload.UploadContext;
 import com.microsoft.applicationinsights.agent.internal.profiler.upload.UploadFinishArgs;
@@ -136,7 +137,7 @@ class ProfilerInitializerTest {
 
     AtomicReference<ProfilerInitializer> service = new AtomicReference<>();
     AlertingSubsystem alertService =
-        AlertingServiceFactory.create(
+        AlertingSubsystemInit.create(
             config,
             alert -> awaitReferenceSet(service).getProfiler().accept(alert, uploadCompleteHandler),
             TelemetryObservers.INSTANCE,

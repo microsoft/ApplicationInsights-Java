@@ -10,8 +10,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.azure.storage.blob.options.BlobUploadFromFileOptions;
-import com.microsoft.applicationinsights.agent.internal.profiler.client.BlobAccessPass;
-import com.microsoft.applicationinsights.agent.internal.profiler.client.ServiceProfilerClient;
+import com.microsoft.applicationinsights.agent.internal.profiler.service.BlobAccessPass;
+import com.microsoft.applicationinsights.agent.internal.profiler.service.ServiceProfilerClient;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;

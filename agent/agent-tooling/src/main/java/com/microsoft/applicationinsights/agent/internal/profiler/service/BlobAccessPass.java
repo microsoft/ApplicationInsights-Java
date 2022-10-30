@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-package com.microsoft.applicationinsights.agent.internal.profiler.client;
+package com.microsoft.applicationinsights.agent.internal.profiler.service;
 
 import com.azure.storage.blob.BlobUrlParts;
 import com.squareup.moshi.Json;

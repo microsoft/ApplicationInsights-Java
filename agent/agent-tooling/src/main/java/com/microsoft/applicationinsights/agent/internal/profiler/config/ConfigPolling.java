@@ -4,7 +4,7 @@
 package com.microsoft.applicationinsights.agent.internal.profiler.config;
 
 import com.microsoft.applicationinsights.agent.internal.profiler.ProfilerConfigurationHandler;
-import com.microsoft.applicationinsights.agent.internal.profiler.client.ServiceProfilerClient;
+import com.microsoft.applicationinsights.agent.internal.profiler.service.ServiceProfilerClient;
 import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;

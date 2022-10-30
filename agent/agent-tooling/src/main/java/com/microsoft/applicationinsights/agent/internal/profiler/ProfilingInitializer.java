@@ -14,10 +14,12 @@ import com.microsoft.applicationinsights.agent.internal.common.SystemInformation
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
 import com.microsoft.applicationinsights.agent.internal.init.AppIdSupplier;
-import com.microsoft.applicationinsights.agent.internal.profiler.client.ServiceProfilerClient;
 import com.microsoft.applicationinsights.agent.internal.profiler.config.AlertConfigParser;
 import com.microsoft.applicationinsights.agent.internal.profiler.config.ConfigPolling;
+import com.microsoft.applicationinsights.agent.internal.profiler.service.ServiceProfilerClient;
+import com.microsoft.applicationinsights.agent.internal.profiler.triggers.AlertingSubsystemInit;
 import com.microsoft.applicationinsights.agent.internal.profiler.upload.UploadService;
+import com.microsoft.applicationinsights.agent.internal.profiler.util.ServiceLoaderUtil;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryObservers;
 import com.microsoft.applicationinsights.alerting.AlertingSubsystem;
@@ -28,8 +30,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.ServiceLoader;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -124,7 +124,7 @@ public class ProfilingInitializer {
     AtomicReference<Profiler> profilerHolder = new AtomicReference<>();
 
     AlertingSubsystem alerting =
-        AlertingServiceFactory.create(
+        AlertingSubsystemInit.create(
             configuration,
             TelemetryObservers.INSTANCE,
             profilerHolder,
@@ -200,16 +200,7 @@ public class ProfilingInitializer {
   }
 
   private static DiagnosticEngineFactory loadDiagnosticEngineFactory() {
-    return findServiceLoader(DiagnosticEngineFactory.class);
-  }
-
-  protected static <T> T findServiceLoader(Class<T> clazz) {
-    ServiceLoader<T> factory = ServiceLoader.load(clazz);
-    Iterator<T> iterator = factory.iterator();
-    if (iterator.hasNext()) {
-      return iterator.next();
-    }
-    return null;
+    return ServiceLoaderUtil.findServiceLoader(DiagnosticEngineFactory.class);
   }
 
   static ProfilerConfigurationHandler updateAlertingConfig(AlertingSubsystem alertingSubsystem) {

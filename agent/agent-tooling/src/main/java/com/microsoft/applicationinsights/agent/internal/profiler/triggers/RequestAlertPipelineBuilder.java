@@ -18,12 +18,12 @@ import java.util.function.Consumer;
 import javax.annotation.Nullable;
 
 /** Constructs an AlertPipeline for processing span telemetry data. */
-public class RequestAlertPipelineBuilder {
+class RequestAlertPipelineBuilder {
 
   private RequestAlertPipelineBuilder() {}
 
   /** Form a single trigger context from configuration. */
-  public static AlertPipeline build(
+  static AlertPipeline build(
       Configuration.RequestTrigger configuration,
       Consumer<AlertBreach> alertAction,
       TimeSource timeSource) {

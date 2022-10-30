@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-package com.microsoft.applicationinsights.agent.internal.profiler;
+package com.microsoft.applicationinsights.agent.internal.profiler.triggers;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -31,7 +31,7 @@ import javax.management.MBeanServerConnection;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-class GcEventMonitorTest {
+class GcEventInitTest {
 
   @Test
   void endToEndAlertIsTriggered()
@@ -59,11 +59,11 @@ class GcEventMonitorTest {
           }
         };
 
-    GcEventMonitor.init(
+    GcEventInit.init(
         alertingSubsystem,
         TelemetryClient.createForTest(),
         Executors.newSingleThreadExecutor(),
-        new GcEventMonitor.GcEventMonitorConfiguration(GcReportingLevel.NONE),
+        new GcEventInit.GcEventMonitorConfiguration(GcReportingLevel.NONE),
         factory);
 
     AlertBreach alert = alertFuture.get(10, TimeUnit.SECONDS);
