@@ -155,9 +155,10 @@ public class ProfilingInitializer {
             ConfigPollingInit.startPollingForConfigUpdates(
                 serviceProfilerExecutorService,
                 serviceProfilerClient,
-                Arrays.asList(
-                    config -> AlertingSubsystemInit.updateAlertingConfig(alerting, config),
-                    profiler),
+                config -> {
+                  AlertingSubsystemInit.updateAlertingConfig(alerting, config);
+                  profiler.updateConfiguration(config);
+                },
                 configuration.preview.profiler.configPollPeriodSeconds);
 
             profilerHolder.set(profiler);

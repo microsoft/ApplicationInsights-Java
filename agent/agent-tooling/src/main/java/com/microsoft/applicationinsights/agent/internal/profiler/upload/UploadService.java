@@ -81,10 +81,7 @@ public class UploadService {
   }
 
   public void upload(
-      AlertBreach alertBreach,
-      long timestamp,
-      File file,
-      UploadCompleteHandler uploadCompleteHandler) {
+      AlertBreach alertBreach, long timestamp, File file, UploadListener uploadListener) {
 
     String appId = appIdSupplier.get();
     if (appId == null || appId.isEmpty()) {
@@ -99,15 +96,14 @@ public class UploadService {
             file,
             alertBreach.getCpuMetric(),
             alertBreach.getMemoryUsage())
-        .subscribe(
-            onUploadComplete(uploadCompleteHandler), e -> logger.error("Failed to upload file", e));
+        .subscribe(onUploadComplete(uploadListener), e -> logger.error("Failed to upload file", e));
   }
 
   // Notify listener that full profile and upload cycle has completed and log success
   private static Consumer<? super ServiceProfilerIndex> onUploadComplete(
-      UploadCompleteHandler uploadCompleteHandler) {
+      UploadListener uploadListener) {
     return result -> {
-      uploadCompleteHandler.notify(result);
+      uploadListener.onUpload(result);
       logger.info("Uploading of profile complete");
     };
   }

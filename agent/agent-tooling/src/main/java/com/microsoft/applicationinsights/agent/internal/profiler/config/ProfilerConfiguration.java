@@ -3,65 +3,47 @@
 
 package com.microsoft.applicationinsights.agent.internal.profiler.config;
 
-import com.squareup.moshi.Json;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.auto.value.AutoValue;
 import java.util.Date;
 
-public class ProfilerConfiguration {
+@AutoValue
+public abstract class ProfilerConfiguration {
 
-  @Json(name = "lastModified")
-  private final Date lastModified;
+  @JsonCreator
+  public static ProfilerConfiguration create(
+      @JsonProperty("lastModified") Date lastModified,
+      @JsonProperty("enabled") boolean enabled,
+      @JsonProperty("collectionPlan") String collectionPlan,
+      @JsonProperty("cpuTriggerConfiguration") String cpuTriggerConfiguration,
+      @JsonProperty("memoryTriggerConfiguration") String memoryTriggerConfiguration,
+      @JsonProperty("defaultConfiguration") String defaultConfiguration) {
 
-  @Json(name = "enabled")
-  private final boolean enabled;
-
-  @Json(name = "cpuTriggerConfiguration")
-  private final String cpuTriggerConfiguration;
-
-  @Json(name = "memoryTriggerConfiguration")
-  private final String memoryTriggerConfiguration;
-
-  @Json(name = "collectionPlan")
-  private final String collectionPlan;
-
-  @Json(name = "defaultConfiguration")
-  private final String defaultConfiguration;
-
-  public ProfilerConfiguration(
-      Date lastModified,
-      boolean enabled,
-      String collectionPlan,
-      String cpuTriggerConfiguration,
-      String memoryTriggerConfiguration,
-      String defaultConfiguration) {
-    this.lastModified = new Date(lastModified.getTime());
-    this.enabled = enabled;
-    this.collectionPlan = collectionPlan;
-    this.cpuTriggerConfiguration = cpuTriggerConfiguration;
-    this.memoryTriggerConfiguration = memoryTriggerConfiguration;
-    this.defaultConfiguration = defaultConfiguration;
+    return new AutoValue_ProfilerConfiguration(
+        lastModified,
+        enabled,
+        collectionPlan,
+        cpuTriggerConfiguration,
+        memoryTriggerConfiguration,
+        defaultConfiguration);
+    //    this.lastModified = new Date(lastModified.getTime());
+    //    this.enabled = enabled;
+    //    this.collectionPlan = collectionPlan;
+    //    this.cpuTriggerConfiguration = cpuTriggerConfiguration;
+    //    this.memoryTriggerConfiguration = memoryTriggerConfiguration;
+    //    this.defaultConfiguration = defaultConfiguration;
   }
 
-  public Date getLastModified() {
-    return new Date(lastModified.getTime());
-  }
+  public abstract Date getLastModified();
 
-  public String getCollectionPlan() {
-    return collectionPlan;
-  }
+  public abstract boolean isEnabled();
 
-  public String getCpuTriggerConfiguration() {
-    return cpuTriggerConfiguration;
-  }
+  public abstract String getCollectionPlan();
 
-  public String getMemoryTriggerConfiguration() {
-    return memoryTriggerConfiguration;
-  }
+  public abstract String getCpuTriggerConfiguration();
 
-  public boolean isEnabled() {
-    return enabled;
-  }
+  public abstract String getMemoryTriggerConfiguration();
 
-  public String getDefaultConfiguration() {
-    return defaultConfiguration;
-  }
+  public abstract String getDefaultConfiguration();
 }

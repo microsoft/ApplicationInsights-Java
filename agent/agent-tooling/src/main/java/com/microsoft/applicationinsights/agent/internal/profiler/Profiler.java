@@ -5,8 +5,7 @@ package com.microsoft.applicationinsights.agent.internal.profiler;
 
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.profiler.config.ProfilerConfiguration;
-import com.microsoft.applicationinsights.agent.internal.profiler.config.ProfilerConfigurationHandler;
-import com.microsoft.applicationinsights.agent.internal.profiler.upload.UploadCompleteHandler;
+import com.microsoft.applicationinsights.agent.internal.profiler.upload.UploadListener;
 import com.microsoft.applicationinsights.agent.internal.profiler.upload.UploadService;
 import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
 import com.microsoft.applicationinsights.alerting.config.AlertConfiguration;
@@ -44,7 +43,7 @@ import org.slf4j.LoggerFactory;
  *   <li>Creates profiles on demand
  * </ul>
  */
-public class Profiler implements ProfilerConfigurationHandler {
+public class Profiler {
 
   private static final Logger logger = LoggerFactory.getLogger(Profiler.class);
 
@@ -115,7 +114,6 @@ public class Profiler implements ProfilerConfigurationHandler {
   }
 
   /** Apply new configuration settings obtained from Service Profiler. */
-  @Override
   public void updateConfiguration(ProfilerConfiguration newConfig) {
     logger.debug("Received config {}", newConfig.getLastModified());
 
@@ -123,13 +121,12 @@ public class Profiler implements ProfilerConfigurationHandler {
   }
 
   // visible for tests
-  void profileAndUpload(
-      AlertBreach alertBreach, Duration duration, UploadCompleteHandler uploadCompleteHandler) {
+  void profileAndUpload(AlertBreach alertBreach, Duration duration, UploadListener uploadListener) {
     Instant recordingStart = Instant.now();
     executeProfile(
         alertBreach.getType(),
         duration,
-        uploadNewRecording(alertBreach, recordingStart, uploadCompleteHandler));
+        uploadNewRecording(alertBreach, recordingStart, uploadListener));
   }
 
   @Nullable
@@ -220,9 +217,7 @@ public class Profiler implements ProfilerConfigurationHandler {
   /** When a profile has been created, upload it to service profiler. */
   @SuppressWarnings("CatchingUnchecked")
   private Consumer<Recording> uploadNewRecording(
-      AlertBreach alertBreach,
-      Instant recordingStart,
-      UploadCompleteHandler uploadCompleteHandler) {
+      AlertBreach alertBreach, Instant recordingStart, UploadListener uploadListener) {
     return recording -> {
       logger.info("Closing and uploading recording");
       try {
@@ -231,7 +226,7 @@ public class Profiler implements ProfilerConfigurationHandler {
 
         // upload new profile
         uploadService.upload(
-            alertBreach, recordingStart.toEpochMilli(), activeRecordingFile, uploadCompleteHandler);
+            alertBreach, recordingStart.toEpochMilli(), activeRecordingFile, uploadListener);
 
       } catch (Exception e) {
         logger.error("Failed to upload recording", e);
@@ -319,7 +314,7 @@ public class Profiler implements ProfilerConfigurationHandler {
   }
 
   /** Action to be performed on a periodic profile request. */
-  private void performPeriodicProfile(UploadCompleteHandler uploadCompleteHandler) {
+  private void performPeriodicProfile(UploadListener uploadListener) {
     logger.info("Received periodic profile request");
 
     AlertBreach breach =
@@ -332,20 +327,20 @@ public class Profiler implements ProfilerConfigurationHandler {
     profileAndUpload(
         breach,
         Duration.ofSeconds(breach.getAlertConfiguration().getProfileDurationSeconds()),
-        uploadCompleteHandler);
+        uploadListener);
   }
 
   /** Dispatch alert breach event to handler. */
   // visible for tests
-  public void accept(AlertBreach alertBreach, UploadCompleteHandler uploadCompleteHandler) {
+  public void accept(AlertBreach alertBreach, UploadListener uploadListener) {
 
     if (alertBreach.getType() == AlertMetricType.PERIODIC) {
-      performPeriodicProfile(uploadCompleteHandler);
+      performPeriodicProfile(uploadListener);
     } else {
       profileAndUpload(
           alertBreach,
           Duration.ofSeconds(alertBreach.getAlertConfiguration().getProfileDurationSeconds()),
-          uploadCompleteHandler);
+          uploadListener);
     }
   }
 }

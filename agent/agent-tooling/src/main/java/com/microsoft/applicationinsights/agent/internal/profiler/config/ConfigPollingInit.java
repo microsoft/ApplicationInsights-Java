@@ -4,7 +4,6 @@
 package com.microsoft.applicationinsights.agent.internal.profiler.config;
 
 import com.microsoft.applicationinsights.agent.internal.profiler.service.ServiceProfilerClient;
-import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -14,12 +13,15 @@ public class ConfigPollingInit {
   public static void startPollingForConfigUpdates(
       ScheduledExecutorService scheduledExecutorService,
       ServiceProfilerClient serviceProfilerClient,
-      List<ProfilerConfigurationHandler> handlers,
+      ProfilerConfigurationUpdateListener updateListener,
       int pollPeriodSeconds) {
 
     ConfigService configService = new ConfigService(serviceProfilerClient);
     scheduledExecutorService.scheduleAtFixedRate(
-        () -> configService.pollForConfigUpdates(handlers), 5, pollPeriodSeconds, TimeUnit.SECONDS);
+        () -> configService.pollForConfigUpdates(updateListener),
+        5,
+        pollPeriodSeconds,
+        TimeUnit.SECONDS);
   }
 
   private ConfigPollingInit() {}

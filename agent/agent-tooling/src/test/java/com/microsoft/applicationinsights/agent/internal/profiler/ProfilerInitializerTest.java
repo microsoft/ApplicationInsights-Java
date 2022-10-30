@@ -21,9 +21,9 @@ import com.microsoft.applicationinsights.agent.internal.configuration.Configurat
 import com.microsoft.applicationinsights.agent.internal.profiler.service.BlobAccessPass;
 import com.microsoft.applicationinsights.agent.internal.profiler.service.ServiceProfilerClient;
 import com.microsoft.applicationinsights.agent.internal.profiler.triggers.AlertingSubsystemInit;
-import com.microsoft.applicationinsights.agent.internal.profiler.upload.UploadCompleteHandler;
 import com.microsoft.applicationinsights.agent.internal.profiler.upload.UploadContext;
 import com.microsoft.applicationinsights.agent.internal.profiler.upload.UploadFinishArgs;
+import com.microsoft.applicationinsights.agent.internal.profiler.upload.UploadListener;
 import com.microsoft.applicationinsights.agent.internal.profiler.upload.UploadService;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryObservers;
@@ -130,8 +130,7 @@ class ProfilerInitializerTest {
 
     // Callback invoked when a profile has been uploaded.
     // Sends index metadata about the uploaded profile
-    UploadCompleteHandler uploadCompleteHandler =
-        ProfilingInitializer.sendServiceProfilerIndex(client);
+    UploadListener uploadListener = ProfilingInitializer.sendServiceProfilerIndex(client);
 
     Configuration config = new Configuration();
 
@@ -139,7 +138,7 @@ class ProfilerInitializerTest {
     AlertingSubsystem alertService =
         AlertingSubsystemInit.create(
             config,
-            alert -> awaitReferenceSet(service).getProfiler().accept(alert, uploadCompleteHandler),
+            alert -> awaitReferenceSet(service).getProfiler().accept(alert, uploadListener),
             TelemetryObservers.INSTANCE,
             client,
             alertServiceExecutorService);
@@ -222,9 +221,9 @@ class ProfilerInitializerTest {
     return new Profiler(config, new File(".")) {
       @Override
       protected void profileAndUpload(
-          AlertBreach alertBreach, Duration duration, UploadCompleteHandler uploadCompleteHandler) {
+          AlertBreach alertBreach, Duration duration, UploadListener uploadListener) {
         profileInvoked.set(true);
-        super.profileAndUpload(alertBreach, Duration.ofSeconds(1), uploadCompleteHandler);
+        super.profileAndUpload(alertBreach, Duration.ofSeconds(1), uploadListener);
       }
 
       @Override

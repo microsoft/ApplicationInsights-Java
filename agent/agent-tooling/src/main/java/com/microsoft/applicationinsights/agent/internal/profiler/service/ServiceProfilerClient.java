@@ -8,11 +8,11 @@ import com.azure.core.http.HttpMethod;
 import com.azure.core.http.HttpPipeline;
 import com.azure.core.http.HttpRequest;
 import com.azure.core.http.HttpResponse;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.applicationinsights.agent.internal.profiler.config.ProfilerConfiguration;
 import com.microsoft.applicationinsights.agent.internal.profiler.util.TimestampContract;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
-import com.squareup.moshi.adapters.Rfc3339DateJsonAdapter;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -163,12 +163,15 @@ public class ServiceProfilerClient {
             });
   }
 
+  private static final ObjectMapper mapper = new ObjectMapper();
+
   private static ProfilerConfiguration toServiceProfilerConfiguration(String config)
       throws IOException {
 
-    Moshi moshi = new Moshi.Builder().add(Date.class, new Rfc3339DateJsonAdapter()).build();
-    JsonAdapter<ProfilerConfiguration> jsonAdapter = moshi.adapter(ProfilerConfiguration.class);
-    return jsonAdapter.fromJson(config);
+    // TODO (trask) ????
+    // Moshi moshi = new Moshi.Builder().add(Date.class, new Rfc3339DateJsonAdapter()).build();
+
+    return mapper.readValue(config, ProfilerConfiguration.class);
   }
 
   // api/profileragent/v4/settings?ikey=xyz&featureVersion=1.0.0&oldTimestamp=123

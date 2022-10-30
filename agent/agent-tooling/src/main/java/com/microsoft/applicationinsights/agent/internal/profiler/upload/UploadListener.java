@@ -3,6 +3,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.profiler.upload;
 
-public interface UploadCompleteHandler {
-  void notify(ServiceProfilerIndex serviceProfilerIndex);
+@FunctionalInterface
+public interface UploadListener {
+  void onUpload(ServiceProfilerIndex serviceProfilerIndex);
 }
