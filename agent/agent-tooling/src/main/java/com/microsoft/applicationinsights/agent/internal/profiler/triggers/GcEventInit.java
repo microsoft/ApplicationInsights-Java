@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory;
  */
 class GcEventInit {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(GcEventInit.class);
+  private static final Logger logger = LoggerFactory.getLogger(GcEventInit.class);
 
   // a unique jvm_instance_id is needed for every restart as the gc starts again from scratch every
   // time the JVM is restarted, and we need to analyze single JVM execution
@@ -76,7 +76,7 @@ class GcEventInit {
           executorService,
           process(alertingSubsystem, telemetryClient, gcEventMonitorConfiguration));
     } catch (UnableToMonitorMemoryException e) {
-      LOGGER.error("Failed to monitor gc mxbeans");
+      logger.error("Failed to monitor gc mxbeans");
     }
   }
 

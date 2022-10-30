@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 
 public final class OsPlatformProvider {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(OsPlatformProvider.class.getName());
+  private static final Logger logger = LoggerFactory.getLogger(OsPlatformProvider.class.getName());
 
   private static final String WINDOWS = "Windows";
   private static final String OSX = "OSX";
@@ -25,7 +25,7 @@ public final class OsPlatformProvider {
       return OSX;
     }
 
-    LOGGER.warn("Type of operating system could not be determined");
+    logger.warn("Type of operating system could not be determined");
     return null;
   }
 

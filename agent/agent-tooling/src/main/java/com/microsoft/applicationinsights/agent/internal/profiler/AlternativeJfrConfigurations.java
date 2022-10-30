@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory;
 /** Allows loading alternative jfc configuration files. */
 class AlternativeJfrConfigurations {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(AlternativeJfrConfigurations.class);
+  private static final Logger logger = LoggerFactory.getLogger(AlternativeJfrConfigurations.class);
 
   public static final String REDUCED_MEMORY_PROFILE = "reduced-memory-profile.jfc";
   public static final String REDUCED_CPU_PROFILE = "reduced-cpu-profile.jfc";
@@ -75,7 +75,7 @@ class AlternativeJfrConfigurations {
 
         return AlternativeJfrConfigurations.get(profile, type);
       } catch (IllegalArgumentException e) {
-        LOGGER.error("Failed to find JFC configuration " + triggeredSettings);
+        logger.error("Failed to find JFC configuration " + triggeredSettings);
       }
     }
 

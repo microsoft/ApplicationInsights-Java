@@ -46,7 +46,7 @@ import org.slf4j.LoggerFactory;
  */
 public class Profiler implements ProfilerConfigurationHandler {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(Profiler.class);
+  private static final Logger logger = LoggerFactory.getLogger(Profiler.class);
 
   // service execution context
   private ScheduledExecutorService scheduledExecutorService;
@@ -117,7 +117,7 @@ public class Profiler implements ProfilerConfigurationHandler {
   /** Apply new configuration settings obtained from Service Profiler. */
   @Override
   public void updateConfiguration(ProfilerConfiguration newConfig) {
-    LOGGER.debug("Received config {}", newConfig.getLastModified());
+    logger.debug("Received config {}", newConfig.getLastModified());
 
     // TODO update periodic profile configuration
   }
@@ -136,7 +136,7 @@ public class Profiler implements ProfilerConfigurationHandler {
   private Recording startRecording(AlertMetricType alertType, Duration duration) {
     synchronized (activeRecordingLock) {
       if (activeRecording != null) {
-        LOGGER.warn("Alert received, however a profile is already in progress, ignoring request.");
+        logger.warn("Alert received, however a profile is already in progress, ignoring request.");
         return null;
       }
 
@@ -170,7 +170,7 @@ public class Profiler implements ProfilerConfigurationHandler {
 
         return activeRecording;
       } catch (IOException e) {
-        LOGGER.error("Failed to create jfr file", e);
+        logger.error("Failed to create jfr file", e);
         return null;
       }
     }
@@ -186,10 +186,10 @@ public class Profiler implements ProfilerConfigurationHandler {
   private void executeProfile(
       AlertMetricType alertType, Duration duration, Consumer<Recording> handler) {
 
-    LOGGER.info("Received " + alertType + " alert, Starting profile");
+    logger.info("Received " + alertType + " alert, Starting profile");
 
     if (flightRecorderConnection == null) {
-      LOGGER.error("Flight recorder not initialised");
+      logger.error("Flight recorder not initialised");
       return;
     }
 
@@ -207,11 +207,11 @@ public class Profiler implements ProfilerConfigurationHandler {
           () -> handler.accept(newRecording), duration.getSeconds(), TimeUnit.SECONDS);
 
     } catch (IOException ioException) {
-      LOGGER.error("Failed to start JFR recording", ioException);
+      logger.error("Failed to start JFR recording", ioException);
       CompletableFuture<?> future = new CompletableFuture<>();
       future.completeExceptionally(ioException);
     } catch (JfrStreamingException internalError) {
-      LOGGER.error("Internal JFR Error", internalError);
+      logger.error("Internal JFR Error", internalError);
       CompletableFuture<?> future = new CompletableFuture<>();
       future.completeExceptionally(internalError);
     }
@@ -224,7 +224,7 @@ public class Profiler implements ProfilerConfigurationHandler {
       Instant recordingStart,
       UploadCompleteHandler uploadCompleteHandler) {
     return recording -> {
-      LOGGER.info("Closing and uploading recording");
+      logger.info("Closing and uploading recording");
       try {
         // dump profile to file
         closeRecording(activeRecording, activeRecordingFile);
@@ -234,10 +234,10 @@ public class Profiler implements ProfilerConfigurationHandler {
             alertBreach, recordingStart.toEpochMilli(), activeRecordingFile, uploadCompleteHandler);
 
       } catch (Exception e) {
-        LOGGER.error("Failed to upload recording", e);
+        logger.error("Failed to upload recording", e);
       } catch (Error e) {
         // rethrow errors
-        LOGGER.error("Failed to upload recording", e);
+        logger.error("Failed to upload recording", e);
         throw e;
       } finally {
         clearActiveRecording();
@@ -250,21 +250,21 @@ public class Profiler implements ProfilerConfigurationHandler {
       // close recording
       recording.dump(recordingFile.getAbsolutePath());
     } catch (IOException e) {
-      LOGGER.error("Failed to close recording", e);
+      logger.error("Failed to close recording", e);
     } catch (JfrStreamingException internalError) {
       // Sometimes the  mbean dump fails...Try alternative of streaming data out
       try {
         writeFileFromStream(recording, recordingFile);
       } catch (IOException e) {
-        LOGGER.error("Failed to close recording", e);
+        logger.error("Failed to close recording", e);
       } catch (JfrStreamingException e) {
-        LOGGER.error("Internal JFR Error", e);
+        logger.error("Internal JFR Error", e);
       }
     } finally {
       try {
         recording.close();
       } catch (IOException e) {
-        LOGGER.error("Failed to close recording", e);
+        logger.error("Failed to close recording", e);
       }
     }
   }
@@ -293,7 +293,7 @@ public class Profiler implements ProfilerConfigurationHandler {
       // delete uploaded profile
       if (activeRecordingFile != null && activeRecordingFile.exists()) {
         if (!activeRecordingFile.delete()) {
-          LOGGER.error("Failed to remove file " + activeRecordingFile.getAbsolutePath());
+          logger.error("Failed to remove file " + activeRecordingFile.getAbsolutePath());
         }
       }
       activeRecordingFile = null;
@@ -320,7 +320,7 @@ public class Profiler implements ProfilerConfigurationHandler {
 
   /** Action to be performed on a periodic profile request. */
   private void performPeriodicProfile(UploadCompleteHandler uploadCompleteHandler) {
-    LOGGER.info("Received periodic profile request");
+    logger.info("Received periodic profile request");
 
     AlertBreach breach =
         AlertBreach.builder()

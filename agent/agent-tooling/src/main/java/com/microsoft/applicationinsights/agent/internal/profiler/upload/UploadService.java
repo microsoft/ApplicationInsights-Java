@@ -50,7 +50,7 @@ public class UploadService {
   // Visible for testing
   static final String ROLE_NAME_META_NAME = "RoleName";
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(UploadService.class);
+  private static final Logger logger = LoggerFactory.getLogger(UploadService.class);
 
   private static final long UPLOAD_BLOCK_LENGTH = 8 * 1024 * 1024;
 
@@ -88,7 +88,7 @@ public class UploadService {
 
     String appId = appIdSupplier.get();
     if (appId == null || appId.isEmpty()) {
-      LOGGER.error("Not uploading file due to lack of app id");
+      logger.error("Not uploading file due to lack of app id");
       return;
     }
 
@@ -100,7 +100,7 @@ public class UploadService {
             alertBreach.getCpuMetric(),
             alertBreach.getMemoryUsage())
         .subscribe(
-            onUploadComplete(uploadCompleteHandler), e -> LOGGER.error("Failed to upload file", e));
+            onUploadComplete(uploadCompleteHandler), e -> logger.error("Failed to upload file", e));
   }
 
   // Notify listener that full profile and upload cycle has completed and log success
@@ -108,7 +108,7 @@ public class UploadService {
       UploadCompleteHandler uploadCompleteHandler) {
     return result -> {
       uploadCompleteHandler.notify(result);
-      LOGGER.info("Uploading of profile complete");
+      logger.info("Uploading of profile complete");
     };
   }
 
@@ -138,7 +138,7 @@ public class UploadService {
       String fileFormat) {
     String appId = appIdSupplier.get();
     if (appId == null || appId.isEmpty()) {
-      LOGGER.error("Failed to upload due to lack of appId");
+      logger.error("Failed to upload due to lack of appId");
       return Mono.error(new UploadFailedException("Failed to upload due to lack of appId"));
     }
 
@@ -207,7 +207,7 @@ public class UploadService {
                     .doFinally((signal) -> close(finalZippedTraceFile1));
               });
     } catch (Exception e) {
-      LOGGER.error("Upload of the trace file failed", e);
+      logger.error("Upload of the trace file failed", e);
       if (zippedTraceFile != null) {
         close(zippedTraceFile);
       }
@@ -234,7 +234,7 @@ public class UploadService {
       BlobAsyncClient blobClient = blobContainerClient.getBlobAsyncClient(uploadPass.getBlobName());
       return blobClient
           .uploadFromFileWithResponse(options)
-          .doFinally((done) -> LOGGER.info("upload done"));
+          .doFinally((done) -> logger.info("upload done"));
     } catch (MalformedURLException e) {
       throw new IllegalArgumentException("Malformed url", e);
     }
@@ -244,7 +244,7 @@ public class UploadService {
     try {
       deletePathRecursive(zippedTraceFile);
     } catch (Exception e) {
-      LOGGER.warn("An error occurred when closing the zipped trace file", e);
+      logger.warn("An error occurred when closing the zipped trace file", e);
     }
   }
 
@@ -262,7 +262,7 @@ public class UploadService {
               response.getValue().getETag())
           .flatMap(
               uploadResponse -> {
-                LOGGER.debug("Completed upload request: {}", statusCode);
+                logger.debug("Completed upload request: {}", statusCode);
                 if (uploadResponse != null) {
                   return Mono.just(
                       new UploadFinishArgs(
@@ -273,7 +273,7 @@ public class UploadService {
               });
 
     } else {
-      LOGGER.error("Upload of the trace file to block BLOB failed: {}", statusCode);
+      logger.error("Upload of the trace file to block BLOB failed: {}", statusCode);
       return Mono.error(
           new UploadFailedException("Upload of the trace file to block BLOB failed " + statusCode));
     }
@@ -310,7 +310,7 @@ public class UploadService {
           "The constructed file path cannot be controlled by an end user of the instrumented application")
   private static File createZippedTraceFile(UploadContext uploadContext) throws IOException {
     File traceFile = uploadContext.getTraceFile();
-    LOGGER.debug("Trace file: {}", traceFile.toString());
+    logger.debug("Trace file: {}", traceFile.toString());
 
     File targetFile =
         Files.createTempFile(traceFile.getParentFile().toPath(), traceFile.getName(), ".gz")
@@ -330,7 +330,7 @@ public class UploadService {
   private static void deletePathRecursive(@Nullable File fileToDelete) throws IOException {
     if (fileToDelete != null && fileToDelete.exists()) {
       if (retainJfrFile) {
-        LOGGER.info("JFR file retained at: {}", fileToDelete.getAbsolutePath());
+        logger.info("JFR file retained at: {}", fileToDelete.getAbsolutePath());
       } else {
         deletePathRecursive(fileToDelete.toPath());
       }
@@ -346,7 +346,7 @@ public class UploadService {
           .forEach(
               file -> {
                 if (!file.delete()) {
-                  LOGGER.error("Failed to delete " + file.getAbsolutePath());
+                  logger.error("Failed to delete " + file.getAbsolutePath());
                 }
               });
     }

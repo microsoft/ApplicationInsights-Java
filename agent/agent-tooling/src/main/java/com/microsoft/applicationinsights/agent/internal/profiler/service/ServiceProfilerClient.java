@@ -26,7 +26,7 @@ import reactor.core.publisher.Mono;
 /** Client for interacting with the Service Profiler API endpoint. */
 public class ServiceProfilerClient {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(ServiceProfilerClient.class);
+  private static final Logger logger = LoggerFactory.getLogger(ServiceProfilerClient.class);
 
   private static final String PROFILER_API_PREFIX = "api/profileragent/v4";
 
@@ -108,7 +108,7 @@ public class ServiceProfilerClient {
 
               int statusCode = response.getStatusCode();
               if (statusCode != 201 && statusCode != 202) {
-                LOGGER.error("Trace upload failed: {}", statusCode);
+                logger.error("Trace upload failed: {}", statusCode);
                 return Mono.error(new AssertionError("http request failed"));
               }
 
@@ -139,7 +139,7 @@ public class ServiceProfilerClient {
   public Mono<ProfilerConfiguration> getSettings(Date oldTimeStamp) {
 
     URL requestUrl = getSettingsPath(oldTimeStamp);
-    LOGGER.debug("Settings pull request: {}", requestUrl);
+    logger.debug("Settings pull request: {}", requestUrl);
 
     HttpRequest request = new HttpRequest(HttpMethod.GET, requestUrl);
 

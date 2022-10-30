@@ -49,7 +49,7 @@ import org.slf4j.LoggerFactory;
  */
 public class ProfilingInitializer {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(ProfilingInitializer.class);
+  private static final Logger logger = LoggerFactory.getLogger(ProfilingInitializer.class);
 
   // TODO (trask) is this needed?
   private static final AtomicBoolean initialized = new AtomicBoolean();
@@ -143,7 +143,7 @@ public class ProfilingInitializer {
 
     Profiler profiler = new Profiler(configuration.preview.profiler, tempDir);
 
-    LOGGER.warn("INITIALISING JFR PROFILING SUBSYSTEM THIS FEATURE IS IN BETA");
+    logger.warn("INITIALISING JFR PROFILING SUBSYSTEM THIS FEATURE IS IN BETA");
 
     serviceProfilerExecutorService.submit(
         () -> {
@@ -163,7 +163,7 @@ public class ProfilingInitializer {
             profilerHolder.set(profiler);
 
           } catch (Throwable t) {
-            LOGGER.error(
+            logger.error(
                 "Failed to initialise profiler service",
                 new RuntimeException(
                     "Unable to obtain JFR connection, this may indicate that your JVM does not"
@@ -193,10 +193,10 @@ public class ProfilingInitializer {
         }
         return diagnosticEngine;
       } else {
-        LOGGER.warn("No diagnostic engine implementation provided");
+        logger.warn("No diagnostic engine implementation provided");
       }
     } catch (RuntimeException e) {
-      LOGGER.error("Failed to load profiler factory", e);
+      logger.error("Failed to load profiler factory", e);
     }
     return null;
   }
