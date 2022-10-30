@@ -4,7 +4,6 @@
 package com.microsoft.applicationinsights.agent.internal.profiler.service;
 
 import com.azure.storage.blob.BlobUrlParts;
-import com.squareup.moshi.Json;
 
 /**
  * {@code BlobAccessPass} class represents information necessary to use an Azure Storage blob.
@@ -13,13 +12,8 @@ import com.squareup.moshi.Json;
  */
 public class BlobAccessPass {
 
-  @Json(name = "blobUri")
   private final String blobUri;
-
-  @Json(name = "uriWithSASToken")
   private final String uriWithSasToken;
-
-  @Json(name = "sasToken")
   private final String sasToken;
 
   public BlobAccessPass(String blobUri, String uriWithSasToken, String sasToken) {

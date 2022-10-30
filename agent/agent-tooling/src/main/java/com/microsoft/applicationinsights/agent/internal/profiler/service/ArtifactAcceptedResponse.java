@@ -3,44 +3,29 @@
 
 package com.microsoft.applicationinsights.agent.internal.profiler.service;
 
-import com.squareup.moshi.Json;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.auto.value.AutoValue;
 
 /** Result of uploading an artifact to service profiler. */
-public class ArtifactAcceptedResponse {
+@AutoValue
+public abstract class ArtifactAcceptedResponse {
 
-  @Json(name = "acceptedTime")
-  private final String acceptedTime;
+  @JsonCreator
+  public static ArtifactAcceptedResponse create(
+      @JsonProperty("acceptedTime") String acceptedTime,
+      @JsonProperty("blobUri") String blobUri,
+      @JsonProperty("correlationId") String correlationId,
+      @JsonProperty("stampId") String stampId) {
 
-  @Json(name = "blobUri")
-  private final String blobUri;
-
-  @Json(name = "correlationId")
-  private final String correlationId;
-
-  @Json(name = "stampId")
-  private final String stampId;
-
-  public ArtifactAcceptedResponse(
-      String acceptedTime, String blobUri, String correlationId, String stampId) {
-    this.acceptedTime = acceptedTime;
-    this.blobUri = blobUri;
-    this.correlationId = correlationId;
-    this.stampId = stampId;
+    return new AutoValue_ArtifactAcceptedResponse(acceptedTime, stampId, correlationId, blobUri);
   }
 
-  public String getAcceptedTime() {
-    return acceptedTime;
-  }
+  public abstract String getAcceptedTime();
 
-  public String getStampId() {
-    return stampId;
-  }
+  public abstract String getStampId();
 
-  public String getCorrelationId() {
-    return correlationId;
-  }
+  public abstract String getCorrelationId();
 
-  public String getBlobUri() {
-    return blobUri;
-  }
+  public abstract String getBlobUri();
 }

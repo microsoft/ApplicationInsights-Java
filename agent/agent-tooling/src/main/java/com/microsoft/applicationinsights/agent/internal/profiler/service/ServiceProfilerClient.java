@@ -11,8 +11,6 @@ import com.azure.core.http.HttpResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.applicationinsights.agent.internal.profiler.config.ProfilerConfiguration;
 import com.microsoft.applicationinsights.agent.internal.profiler.util.TimestampContract;
-import com.squareup.moshi.JsonAdapter;
-import com.squareup.moshi.Moshi;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -27,6 +25,8 @@ import reactor.core.publisher.Mono;
 public class ServiceProfilerClient {
 
   private static final Logger logger = LoggerFactory.getLogger(ServiceProfilerClient.class);
+
+  private static final ObjectMapper mapper = new ObjectMapper();
 
   private static final String PROFILER_API_PREFIX = "api/profileragent/v4";
 
@@ -121,10 +121,8 @@ public class ServiceProfilerClient {
                 return Mono.error(new AssertionError("response body mono returned empty"));
               }
               try {
-                JsonAdapter<ArtifactAcceptedResponse> builder =
-                    new Moshi.Builder().build().adapter(ArtifactAcceptedResponse.class);
-
-                ArtifactAcceptedResponse data = builder.fromJson(json);
+                ArtifactAcceptedResponse data =
+                    mapper.readValue(json, ArtifactAcceptedResponse.class);
                 if (data == null) {
                   return Mono.error(new IllegalStateException("Failed to deserialize response"));
                 }
@@ -162,8 +160,6 @@ public class ServiceProfilerClient {
                       });
             });
   }
-
-  private static final ObjectMapper mapper = new ObjectMapper();
 
   private static ProfilerConfiguration toServiceProfilerConfiguration(String config)
       throws IOException {
