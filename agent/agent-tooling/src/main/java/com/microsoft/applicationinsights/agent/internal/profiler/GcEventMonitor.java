@@ -31,8 +31,7 @@ public class GcEventMonitor {
   private static final Logger LOGGER = LoggerFactory.getLogger(GcEventMonitor.class);
 
   // a unique jvm_instance_id is needed for every restart as the gc starts again from scratch every
-  // time
-  // the JVM is restarted, and we need to analyze single JVM execution
+  // time the JVM is restarted, and we need to analyze single JVM execution
   // TODO if/when Application Insights adds a unique ID that represents a single JVM, pull that ID
   // here
   private static final String JVM_INSTANCE_UID = UUID.randomUUID().toString();
