@@ -204,7 +204,6 @@ public class UploadService {
           .getUploadAccess(uploadContext.getProfileId(), uploadContext.getExtension())
           .flatMap(
               uploadPass -> {
-                System.out.println(uploadPass);
                 if (uploadPass == null) {
                   close(finalZippedTraceFile1);
                   return Mono.error(new UploadFailedException("Failed to obtain upload pass"));
