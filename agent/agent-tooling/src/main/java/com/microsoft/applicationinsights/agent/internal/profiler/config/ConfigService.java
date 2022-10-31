@@ -5,6 +5,7 @@ package com.microsoft.applicationinsights.agent.internal.profiler.config;
 
 import com.microsoft.applicationinsights.agent.internal.profiler.service.ServiceProfilerClient;
 import java.util.Date;
+import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
@@ -23,11 +24,11 @@ class ConfigService {
     lastModified = new Date(0); // January 1, 1970, 00:00:00 GMT
   }
 
-  void pollForConfigUpdates(ProfilerConfigurationUpdateListener updateListener) {
+  void pollForConfigUpdates(Consumer<ProfilerConfiguration> updateListener) {
     try {
       pullSettings()
           .doOnError(e -> logger.error("Error pulling service profiler settings", e))
-          .subscribe(config -> updateListener.onUpdate(config));
+          .subscribe(config -> updateListener.accept(config));
     } catch (Throwable t) {
       logger.error("Error pulling service profiler settings", t);
     }
