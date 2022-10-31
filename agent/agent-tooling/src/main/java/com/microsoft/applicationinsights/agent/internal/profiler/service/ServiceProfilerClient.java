@@ -8,6 +8,7 @@ import com.azure.core.http.HttpMethod;
 import com.azure.core.http.HttpPipeline;
 import com.azure.core.http.HttpRequest;
 import com.azure.core.http.HttpResponse;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.applicationinsights.agent.internal.profiler.config.ProfilerConfiguration;
 import com.microsoft.applicationinsights.agent.internal.profiler.util.TimestampContract;
@@ -26,7 +27,8 @@ public class ServiceProfilerClient {
 
   private static final Logger logger = LoggerFactory.getLogger(ServiceProfilerClient.class);
 
-  private static final ObjectMapper mapper = new ObjectMapper();
+  private static final ObjectMapper mapper =
+      new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
   private static final String PROFILER_API_PREFIX = "api/profileragent/v4";
 
@@ -65,15 +67,9 @@ public class ServiceProfilerClient {
     return executePostWithRedirect(requestUrl)
         .map(
             response -> {
-              if (response == null) {
-                // this shouldn't happen, the mono should complete with a response or a failure
-                throw new AssertionError("http response mono returned empty");
-              }
-
               if (response.getStatusCode() >= 300) {
                 throw new HttpResponseException(response);
               }
-
               String location = response.getHeaderValue("Location");
               if (location == null || location.isEmpty()) {
                 throw new AssertionError("response did not have a location");
@@ -88,7 +84,6 @@ public class ServiceProfilerClient {
     if (userAgent != null) {
       request.setHeader("User-Agent", userAgent);
     }
-
     return httpPipeline.send(request);
   }
 

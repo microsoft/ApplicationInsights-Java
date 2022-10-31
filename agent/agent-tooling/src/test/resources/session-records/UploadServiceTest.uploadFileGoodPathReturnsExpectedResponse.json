@@ -1,0 +1,66 @@
+{
+  "networkCallRecords" : [ {
+    "Method" : "POST",
+    "Uri" : "https://REDACTED.azureserviceprofiler.net/api/apps/00000000-0000-0000-0000-000000000000/artifactkinds/profile/artifacts/11111111-1111-1111-1111-111111111111?iKey=00000000-0000-0000-0000-000000000000&extension=jfr&api-version=2020-10-14-preview&action=gettoken",
+    "Headers" : { },
+    "Response" : {
+      "X-Frame-Options" : "DENY",
+      "content-length" : "0",
+      "Strict-Transport-Security" : "max-age=31536000; includeSubDomains",
+      "Server" : "Kestrel",
+      "x-content-type-options" : "nosniff",
+      "retry-after" : "0",
+      "X-XSS-Protection" : "1; mode=block",
+      "StatusCode" : "201",
+      "Date" : "Mon, 31 Oct 2022 02:35:32 GMT",
+      "Location" : "https://REDACTED.blob.core.windows.net/etl/77/55555555-5555-5555-5555-555555555555/93/44444444444444444444444444444444.jfr?skoid=REDACTED&sktid=REDACTED&skt=2022-10-30T19%3A58%3A07Z&ske=2022-10-31T03%3A58%3A07Z&sks=b&skv=2020-10-02&sv=2020-08-04&se=2022-10-31T03%3A05%3A33Z&sr=b&sp=cw&sig=%2FeJ95LGXHdkth7LlAomtMbPxBnUMgrd6DfNtT4xkuXY%3D",
+      "Request-Context" : "appId=cid-v1:REDACTED"
+    },
+    "Exception" : null
+  }, {
+    "Method" : "PUT",
+    "Uri" : "https://REDACTED.blob.core.windows.net/etl/77%2F55555555-5555-5555-5555-555555555555%2F93%2F44444444444444444444444444444444.jfr?sv=2020-08-04&se=2022-10-31T03%3A05%3A33Z&sp=cw&sig=REDACTED&skoid=REDACTED&sktid=REDACTED&skt=2022-10-30T19%3A58%3A07Z&ske=2022-10-31T03%3A58%3A07Z&sks=b&skv=2020-10-02&sr=b",
+    "Headers" : {
+      "x-ms-version" : "2021-10-04",
+      "User-Agent" : "azsdk-java-azure-storage-blob/12.20.0 (11.0.12; Windows 10; 10.0)",
+      "x-ms-client-request-id" : "99999999-9999-9999-9999-999999999999",
+      "Content-Type" : "application/octet-stream"
+    },
+    "Response" : {
+      "content-length" : "0",
+      "x-ms-version" : "2021-10-04",
+      "Server" : "Windows-Azure-Blob/1.0 Microsoft-HTTPAPI/2.0",
+      "x-ms-content-crc64" : "6lKqMm0Fph8=",
+      "Last-Modified" : "Mon, 31 Oct 2022 02:35:33 GMT",
+      "retry-after" : "0",
+      "StatusCode" : "201",
+      "x-ms-request-server-encrypted" : "true",
+      "Date" : "Mon, 31 Oct 2022 02:35:33 GMT",
+      "Content-MD5" : "3vVWpjquf3rPE89r4eFUKw==",
+      "eTag" : "0x888888888888888",
+      "x-ms-request-id" : "88888888-8888-8888-8888-888888888888",
+      "x-ms-client-request-id" : "99999999-9999-9999-9999-999999999999"
+    },
+    "Exception" : null
+  }, {
+    "Method" : "POST",
+    "Uri" : "https://REDACTED.azureserviceprofiler.net/api/apps/00000000-0000-0000-0000-000000000000/artifactkinds/profile/artifacts/11111111-1111-1111-1111-111111111111?iKey=00000000-0000-0000-0000-000000000000&extension=jfr&api-version=2020-10-14-preview&action=commit&etag=\"0x888888888888888\"",
+    "Headers" : { },
+    "Response" : {
+      "Transfer-Encoding" : "chunked",
+      "X-Frame-Options" : "DENY",
+      "Strict-Transport-Security" : "max-age=31536000; includeSubDomains",
+      "Server" : "Kestrel",
+      "x-content-type-options" : "nosniff",
+      "retry-after" : "0",
+      "X-XSS-Protection" : "1; mode=block",
+      "StatusCode" : "202",
+      "Body" : "{\"acceptedTime\":\"2022-10-31T02:35:34.033766Z\",\"blobUri\":\"https://REDACTED.blob.core.windows.net/etl/77/55555555-5555-5555-5555-555555555555/93/44444444444444444444444444444444.jfr\",\"correlationId\":\"5211bc5c7dad8640\",\"stampId\":\"westus2-ey2ahqc2dsyvq\",\"artifactLocationId\":\"v2|westus2-ey2ahqc2dsyvq|55555555-5555-5555-5555-555555555555|Profile|44444444444444444444444444444444|jfr\"}",
+      "Date" : "Mon, 31 Oct 2022 02:35:33 GMT",
+      "Content-Type" : "application/json; charset=utf-8",
+      "Request-Context" : "appId=cid-v1:REDACTED"
+    },
+    "Exception" : null
+  } ],
+  "variables" : [ ]
+}

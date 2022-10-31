@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 import java.util.Date;
+import javax.annotation.Nullable;
 
 @AutoValue
 public abstract class ProfilerConfiguration {
@@ -45,5 +46,6 @@ public abstract class ProfilerConfiguration {
 
   public abstract String getMemoryTriggerConfiguration();
 
+  @Nullable
   public abstract String getDefaultConfiguration();
 }

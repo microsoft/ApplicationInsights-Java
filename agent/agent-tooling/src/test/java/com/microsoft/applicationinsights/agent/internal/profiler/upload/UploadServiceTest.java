@@ -5,88 +5,87 @@ package com.microsoft.applicationinsights.agent.internal.profiler.upload;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.azure.core.http.HttpClient;
+import com.azure.core.http.HttpPipeline;
+import com.azure.core.http.HttpPipelineBuilder;
+import com.azure.core.test.TestBase;
+import com.azure.core.test.TestMode;
+import com.azure.storage.blob.BlobContainerClientBuilder;
 import com.azure.storage.blob.options.BlobUploadFromFileOptions;
-import com.microsoft.applicationinsights.agent.internal.profiler.service.BlobAccessPass;
 import com.microsoft.applicationinsights.agent.internal.profiler.service.ServiceProfilerClient;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.file.NoSuchFileException;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.jupiter.api.Test;
-import reactor.core.publisher.Mono;
 
-class UploadServiceTest {
+class UploadServiceTest extends TestBase {
+
   @Test
   void uploadFileGoodPathReturnsExpectedResponse() throws IOException {
 
-    ServiceProfilerClient serviceProfilerClient = stubServiceProfilerClient();
+    HttpPipeline httpPipeline = getHttpPipeline();
+    ServiceProfilerClient serviceProfilerClient =
+        new ServiceProfilerClient(
+            new URL("https://agent.azureserviceprofiler.net/"),
+            "00000000-0000-0000-0000-000000000000",
+            httpPipeline);
 
     File tmpFile = createFakeJfrFile();
     UUID appId = UUID.randomUUID();
-    UUID profileId = UUID.randomUUID();
+    UUID profileId = UUID.fromString("11111111-1111-1111-1111-111111111111");
 
     UploadService uploadService =
         new UploadService(
             serviceProfilerClient,
+            blobContainerClientBuilder -> customize(blobContainerClientBuilder),
             "a-machine-name",
             "a-process-id",
             appId::toString,
-            "a-role-name") {
-          @Override
-          protected Mono<UploadFinishArgs> performUpload(
-              UploadContext uploadContext, BlobAccessPass uploadPass, File file) {
-            return Mono.just(new UploadFinishArgs("a-stamp-id", "a-timestamp"));
-          }
-        };
+            "a-role-name");
 
-    uploadService
-        .uploadJfrFile(profileId, "a-trigger", 321, tmpFile, 0.0, 0.0)
-        .subscribe(
-            result -> {
-              assertThat(
-                      result
-                          .getServiceProfilerIndex()
-                          .getProperties()
-                          .get(ServiceProfilerIndex.Builder.SERVICE_PROFILER_STAMPID_PROPERTY_NAME))
-                  .isEqualTo("a-stamp-id");
+    ServiceProfilerIndex serviceProfilerIndex =
+        uploadService.uploadJfrFile(profileId, "a-trigger", 321, tmpFile, 0.0, 0.0).block();
 
-              assertThat(
-                      result
-                          .getServiceProfilerIndex()
-                          .getProperties()
-                          .get(
-                              ServiceProfilerIndex.Builder
-                                  .SERVICE_PROFILER_MACHINENAME_PROPERTY_NAME))
-                  .isEqualTo("a-machine-name");
+    assertThat(
+            serviceProfilerIndex
+                .getProperties()
+                .get(ServiceProfilerIndex.Builder.SERVICE_PROFILER_STAMPID_PROPERTY_NAME))
+        .isEqualTo("westus2-ey2ahqc2dsyvq");
 
-              assertThat(
-                      result
-                          .getServiceProfilerIndex()
-                          .getProperties()
-                          .get(
-                              ServiceProfilerIndex.Builder
-                                  .SERVICE_PROFILER_ETLFILESESSIONID_PROPERTY_NAME))
-                  .isEqualTo("a-timestamp");
+    assertThat(
+            serviceProfilerIndex
+                .getProperties()
+                .get(ServiceProfilerIndex.Builder.SERVICE_PROFILER_MACHINENAME_PROPERTY_NAME))
+        .isEqualTo("a-machine-name");
 
-              assertThat(
-                      result
-                          .getServiceProfilerIndex()
-                          .getProperties()
-                          .get(
-                              ServiceProfilerIndex.Builder.SERVICE_PROFILER_DATACUBE_PROPERTY_NAME))
-                  .isEqualTo(appId.toString());
-            });
+    assertThat(
+            serviceProfilerIndex
+                .getProperties()
+                .get(ServiceProfilerIndex.Builder.SERVICE_PROFILER_ETLFILESESSIONID_PROPERTY_NAME))
+        .isEqualTo("2022-10-31T02:35:34.0337660Z");
+
+    assertThat(
+            serviceProfilerIndex
+                .getProperties()
+                .get(ServiceProfilerIndex.Builder.SERVICE_PROFILER_DATACUBE_PROPERTY_NAME))
+        .isEqualTo(appId.toString());
   }
 
   @Test
   void roleNameIsCorrectlyAddedToMetaData() throws IOException {
 
-    ServiceProfilerClient serviceProfilerClient = stubServiceProfilerClient();
+    HttpPipeline httpPipeline = getHttpPipeline();
+    ServiceProfilerClient serviceProfilerClient =
+        new ServiceProfilerClient(
+            new URL("https://agent.azureserviceprofiler.net/"),
+            "00000000-0000-0000-0000-000000000000",
+            httpPipeline);
 
     File tmpFile = createFakeJfrFile();
     UUID appId = UUID.randomUUID();
@@ -94,20 +93,22 @@ class UploadServiceTest {
     BlobUploadFromFileOptions blobOptions =
         new UploadService(
                 serviceProfilerClient,
+                blobContainerClientBuilder -> customize(blobContainerClientBuilder),
                 "a-machine-name",
                 "a-process-id",
                 appId::toString,
                 "a-role-name")
             .createBlockBlobOptions(
                 tmpFile,
-                new UploadContext(
-                    "a-machine-name",
-                    UUID.randomUUID(),
-                    1,
-                    tmpFile,
-                    UUID.randomUUID(),
-                    "jfr",
-                    "jfr"));
+                UploadContext.builder()
+                    .setMachineName("a-machine-name")
+                    .setDataCube(UUID.randomUUID())
+                    .setSessionId(1)
+                    .setTraceFile(tmpFile)
+                    .setProfileId(UUID.randomUUID())
+                    .setFileFormat("jfr")
+                    .setExtension("jfr")
+                    .build());
 
     // Role name is set correctly
     assertThat(blobOptions.getMetadata().get(UploadService.ROLE_NAME_META_NAME))
@@ -115,26 +116,37 @@ class UploadServiceTest {
 
     blobOptions =
         new UploadService(
-                serviceProfilerClient, "a-machine-name", "a-process-id", appId::toString, null)
+                serviceProfilerClient,
+                blobContainerClientBuilder -> customize(blobContainerClientBuilder),
+                "a-machine-name",
+                "a-process-id",
+                appId::toString,
+                null)
             .createBlockBlobOptions(
                 tmpFile,
-                new UploadContext(
-                    "a-machine-name",
-                    UUID.randomUUID(),
-                    1,
-                    tmpFile,
-                    UUID.randomUUID(),
-                    "jfr",
-                    "jfr"));
+                UploadContext.builder()
+                    .setMachineName("a-machine-name")
+                    .setDataCube(UUID.randomUUID())
+                    .setSessionId(1)
+                    .setTraceFile(tmpFile)
+                    .setProfileId(UUID.randomUUID())
+                    .setFileFormat("jfr")
+                    .setExtension("jfr")
+                    .build());
 
     // Null role name tag is not added
     assertThat(blobOptions.getMetadata().get(UploadService.ROLE_NAME_META_NAME)).isNull();
   }
 
   @Test
-  void uploadWithoutFileThrows() {
+  void uploadWithoutFileThrows() throws MalformedURLException {
 
-    ServiceProfilerClient serviceProfilerClient = stubServiceProfilerClient();
+    HttpPipeline httpPipeline = getHttpPipeline();
+    ServiceProfilerClient serviceProfilerClient =
+        new ServiceProfilerClient(
+            new URL("https://agent.azureserviceprofiler.net/"),
+            "00000000-0000-0000-0000-000000000000",
+            httpPipeline);
 
     UUID appId = UUID.randomUUID();
     UUID profileId = UUID.randomUUID();
@@ -142,17 +154,18 @@ class UploadServiceTest {
     UploadService uploadService =
         new UploadService(
             serviceProfilerClient,
+            blobContainerClientBuilder -> customize(blobContainerClientBuilder),
             "a-machine-name",
             "a-process-id",
             appId::toString,
             "a-role-name");
 
-    AtomicBoolean threw = new AtomicBoolean(false);
-    uploadService
-        .uploadJfrFile(profileId, "a-trigger", 321, new File("not-a-file"), 0.0, 0.0)
-        .subscribe(result -> {}, e -> threw.set(true));
-
-    assertThat(threw.get()).isTrue();
+    assertThatThrownBy(
+            () ->
+                uploadService
+                    .uploadJfrFile(profileId, "a-trigger", 321, new File("./not-a-file"), 0.0, 0.0)
+                    .block())
+        .hasRootCauseInstanceOf(NoSuchFileException.class);
   }
 
   private static File createFakeJfrFile() throws IOException {
@@ -164,13 +177,22 @@ class UploadServiceTest {
     return tmpFile;
   }
 
-  private static ServiceProfilerClient stubServiceProfilerClient() {
-    ServiceProfilerClient mock = mock(ServiceProfilerClient.class);
-    when(mock.getUploadAccess(any(UUID.class), any(String.class)))
-        .thenReturn(
-            Mono.just(
-                new BlobAccessPass("https://localhost:99999/a-blob-uri", null, "a-sas-token")));
+  private HttpPipeline getHttpPipeline() {
+    if (getTestMode() == TestMode.RECORD || getTestMode() == TestMode.LIVE) {
+      return new HttpPipelineBuilder()
+          .httpClient(HttpClient.createDefault())
+          .policies(interceptorManager.getRecordPolicy())
+          .build();
+    } else {
+      return new HttpPipelineBuilder().httpClient(interceptorManager.getPlaybackClient()).build();
+    }
+  }
 
-    return mock;
+  private void customize(BlobContainerClientBuilder blobContainerClientBuilder) {
+    if (getTestMode() == TestMode.RECORD || getTestMode() == TestMode.LIVE) {
+      blobContainerClientBuilder.addPolicy(interceptorManager.getRecordPolicy());
+    } else {
+      blobContainerClientBuilder.httpClient(interceptorManager.getPlaybackClient());
+    }
   }
 }

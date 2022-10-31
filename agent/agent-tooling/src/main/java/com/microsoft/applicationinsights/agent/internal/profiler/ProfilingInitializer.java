@@ -139,7 +139,8 @@ public class ProfilingInitializer {
             userAgent);
 
     UploadService uploadService =
-        new UploadService(serviceProfilerClient, machineName, processId, appIdSupplier, roleName);
+        new UploadService(
+            serviceProfilerClient, builder -> {}, machineName, processId, appIdSupplier, roleName);
 
     Profiler profiler = new Profiler(configuration.preview.profiler, tempDir);
 

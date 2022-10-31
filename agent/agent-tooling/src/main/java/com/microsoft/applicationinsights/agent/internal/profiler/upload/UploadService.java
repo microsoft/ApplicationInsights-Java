@@ -62,6 +62,8 @@ public class UploadService {
       Boolean.parseBoolean(System.getProperty(RETAIN_JFR_FILE_PROPERTY_NAME, "false"));
 
   private final ServiceProfilerClient serviceProfilerClient;
+  // only used by tests
+  private final Consumer<BlobContainerClientBuilder> blobContainerClientCustomizer;
   private final String machineName;
   private final Supplier<String> appIdSupplier;
   private final String processId;
@@ -69,14 +71,16 @@ public class UploadService {
 
   public UploadService(
       ServiceProfilerClient serviceProfilerClient,
+      Consumer<BlobContainerClientBuilder> blobContainerClientCustomizer,
       String machineName,
       String processId,
       Supplier<String> appIdSupplier,
       String roleName) {
-    this.appIdSupplier = appIdSupplier;
-    this.machineName = machineName;
     this.serviceProfilerClient = serviceProfilerClient;
+    this.blobContainerClientCustomizer = blobContainerClientCustomizer;
+    this.machineName = machineName;
     this.processId = processId;
+    this.appIdSupplier = appIdSupplier;
     this.roleName = roleName;
   }
 
@@ -200,6 +204,7 @@ public class UploadService {
           .getUploadAccess(uploadContext.getProfileId(), uploadContext.getExtension())
           .flatMap(
               uploadPass -> {
+                System.out.println(uploadPass);
                 if (uploadPass == null) {
                   close(finalZippedTraceFile1);
                   return Mono.error(new UploadFailedException("Failed to obtain upload pass"));
@@ -231,8 +236,10 @@ public class UploadService {
       URL sasUrl = new URL(uploadPass.getUriWithSasToken());
 
       BlobUploadFromFileOptions options = createBlockBlobOptions(file, uploadContext);
-      BlobContainerAsyncClient blobContainerClient =
-          new BlobContainerClientBuilder().endpoint(sasUrl.toString()).buildAsyncClient();
+      BlobContainerClientBuilder builder =
+          new BlobContainerClientBuilder().endpoint(sasUrl.toString());
+      blobContainerClientCustomizer.accept(builder);
+      BlobContainerAsyncClient blobContainerClient = builder.buildAsyncClient();
 
       BlobAsyncClient blobClient = blobContainerClient.getBlobAsyncClient(uploadPass.getBlobName());
       return blobClient
