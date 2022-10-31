@@ -235,6 +235,7 @@ public class UploadService {
       URL sasUrl = new URL(uploadPass.getUriWithSasToken());
 
       BlobUploadFromFileOptions options = createBlockBlobOptions(file, uploadContext);
+      // TODO (trask) should we be injecting our HttpClient into the blob container client?
       BlobContainerClientBuilder builder =
           new BlobContainerClientBuilder().endpoint(sasUrl.toString());
       blobContainerClientCustomizer.accept(builder);
