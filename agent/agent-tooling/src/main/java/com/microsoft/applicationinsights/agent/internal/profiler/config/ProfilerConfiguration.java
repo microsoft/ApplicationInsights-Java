@@ -28,12 +28,6 @@ public abstract class ProfilerConfiguration {
         cpuTriggerConfiguration,
         memoryTriggerConfiguration,
         defaultConfiguration);
-    //    this.lastModified = new Date(lastModified.getTime());
-    //    this.enabled = enabled;
-    //    this.collectionPlan = collectionPlan;
-    //    this.cpuTriggerConfiguration = cpuTriggerConfiguration;
-    //    this.memoryTriggerConfiguration = memoryTriggerConfiguration;
-    //    this.defaultConfiguration = defaultConfiguration;
   }
 
   public abstract Date getLastModified();

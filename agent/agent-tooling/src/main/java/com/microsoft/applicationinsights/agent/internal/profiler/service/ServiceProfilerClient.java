@@ -148,21 +148,12 @@ public class ServiceProfilerClient {
                   .flatMap(
                       body -> {
                         try {
-                          return Mono.just(toServiceProfilerConfiguration(body));
+                          return Mono.just(mapper.readValue(body, ProfilerConfiguration.class));
                         } catch (IOException e) {
                           return Mono.error(e);
                         }
                       });
             });
-  }
-
-  private static ProfilerConfiguration toServiceProfilerConfiguration(String config)
-      throws IOException {
-
-    // TODO (trask) ????
-    // Moshi moshi = new Moshi.Builder().add(Date.class, new Rfc3339DateJsonAdapter()).build();
-
-    return mapper.readValue(config, ProfilerConfiguration.class);
   }
 
   // api/profileragent/v4/settings?ikey=xyz&featureVersion=1.0.0&oldTimestamp=123
