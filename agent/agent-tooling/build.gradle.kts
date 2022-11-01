@@ -38,10 +38,7 @@ dependencies {
 
   implementation(project(":agent:agent-profiler:agent-profiler-api"))
 
-  implementation("com.azure:azure-core") {
-    // excluding unused dependency for size (~1.8mb)
-    exclude("com.fasterxml.jackson.dataformat", "jackson-dataformat-xml")
-  }
+  implementation("com.azure:azure-core")
   implementation("com.azure:azure-identity") {
     exclude("org.ow2.asm", "asm")
   }
@@ -90,4 +87,11 @@ dependencies {
 
   testImplementation("com.microsoft.jfr:jfr-streaming")
   testImplementation("com.azure:azure-storage-blob")
+}
+
+configurations {
+  all {
+    // excluding unused dependency for size (~1.8mb)
+    exclude("com.fasterxml.jackson.dataformat", "jackson-dataformat-xml")
+  }
 }

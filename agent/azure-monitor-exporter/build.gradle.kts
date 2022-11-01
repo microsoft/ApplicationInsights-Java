@@ -16,10 +16,7 @@ dependencies {
   compileOnly("com.google.auto.value:auto-value-annotations")
   annotationProcessor("com.google.auto.value:auto-value")
 
-  implementation("com.azure:azure-core") {
-    // excluding unused dependency for size (~1.8mb)
-    exclude("com.fasterxml.jackson.dataformat", "jackson-dataformat-xml")
-  }
+  implementation("com.azure:azure-core")
   implementation("com.azure:azure-identity")
 
   compileOnly("io.opentelemetry:opentelemetry-sdk")
@@ -45,4 +42,11 @@ dependencies {
 
   testCompileOnly("com.google.code.findbugs:jsr305")
   testCompileOnly("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
+}
+
+configurations {
+  all {
+    // excluding unused dependency for size (~1.8mb)
+    exclude("com.fasterxml.jackson.dataformat", "jackson-dataformat-xml")
+  }
 }
