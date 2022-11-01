@@ -178,8 +178,6 @@ public class Configuration {
     // sampled)
     //
     // future goal: make parentBased sampling the default if item count is received via tracestate
-    //
-    // IMPORTANT if changing this default, we need to keep it at least on Azure Functions
     public boolean parentBased;
 
     public List<SamplingOverride> overrides = new ArrayList<>();

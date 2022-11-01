@@ -10,9 +10,11 @@ import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 
 import com.microsoft.applicationinsights.agent.bootstrap.AzureFunctions;
 import com.microsoft.applicationinsights.agent.bootstrap.AzureFunctionsCustomDimensions;
+import com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
@@ -63,6 +65,19 @@ class InvocationInstrumentation implements TypeInstrumentation {
               .getTextMapPropagator()
               .extract(Context.root(), traceContext, GETTER);
       SpanContext spanContext = Span.fromContext(extractedContext).getSpanContext();
+
+      // recreate SpanContext to override the trace flags since the host currently always sends "00"
+      TraceFlags traceFlags =
+          BytecodeUtil.shouldSample(spanContext.getTraceId())
+              ? TraceFlags.getSampled()
+              : TraceFlags.getDefault();
+      spanContext =
+          SpanContext.createFromRemoteParent(
+              spanContext.getTraceId(),
+              spanContext.getSpanId(),
+              traceFlags,
+              spanContext.getTraceState());
+
       return Context.current()
           .with(Span.wrap(spanContext))
           .with(generateCustomDimensions(request, traceContext))
