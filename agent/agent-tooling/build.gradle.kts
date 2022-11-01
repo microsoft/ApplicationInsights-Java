@@ -23,11 +23,7 @@ dependencies {
   compileOnly("io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap")
   compileOnly("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling")
 
-  testImplementation("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling") {
-    // excluded temporarily while hosting azure-monitor-opentelemetry-exporter in this repo
-    // because it causes problems for those unit tests
-    exclude("io.opentelemetry", "opentelemetry-extension-noop-api")
-  }
+  testImplementation("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling")
 
   compileOnly("io.opentelemetry.javaagent:opentelemetry-javaagent-extension-api")
 
@@ -42,12 +38,11 @@ dependencies {
 
   implementation(project(":agent:agent-profiler:agent-profiler-api"))
 
-  implementation("com.azure:azure-core")
+  implementation("com.azure:azure-core") {
+    // excluding unused dependency for size (~1.8mb)
+    exclude("com.fasterxml.jackson.dataformat", "jackson-dataformat-xml")
+  }
   implementation("com.azure:azure-identity") {
-    // "This dependency can be excluded if IntelliJ Credential is not being used for authentication
-    //  via `IntelliJCredential` or `DefaultAzureCredential`"
-    // NOTE this exclusion saves 6.5 mb !!!!
-    exclude("org.linguafranca.pwdb", "KeePassJava2")
     exclude("org.ow2.asm", "asm")
   }
 

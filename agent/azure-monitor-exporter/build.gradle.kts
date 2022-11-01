@@ -16,13 +16,11 @@ dependencies {
   compileOnly("com.google.auto.value:auto-value-annotations")
   annotationProcessor("com.google.auto.value:auto-value")
 
-  implementation("com.azure:azure-core")
-  implementation("com.azure:azure-identity") {
-    // "This dependency can be excluded if IntelliJ Credential is not being used for authentication
-    //  via `IntelliJCredential` or `DefaultAzureCredential`"
-    // NOTE this exclusion saves 6.5 mb !!!!
-    exclude("org.linguafranca.pwdb", "KeePassJava2")
+  implementation("com.azure:azure-core") {
+    // excluding unused dependency for size (~1.8mb)
+    exclude("com.fasterxml.jackson.dataformat", "jackson-dataformat-xml")
   }
+  implementation("com.azure:azure-identity")
 
   compileOnly("io.opentelemetry:opentelemetry-sdk")
   compileOnly("io.opentelemetry:opentelemetry-sdk-metrics")
