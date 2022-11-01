@@ -69,7 +69,7 @@ val DEPENDENCIES = listOf(
   "ch.qos.logback:logback-classic:1.2.11",
   "ch.qos.logback.contrib:logback-json-classic:0.1.5",
   "com.google.auto.service:auto-service:1.0.1",
-  "com.uber.nullaway:nullaway:0.10.2",
+  "com.uber.nullaway:nullaway:0.10.3",
   "commons-codec:commons-codec:1.15",
   "org.apache.commons:commons-text:1.10.0",
   "com.google.code.gson:gson:2.10",
