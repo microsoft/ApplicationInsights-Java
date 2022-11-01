@@ -1,7 +1,7 @@
 
 #agent
 ##Dependency License Report
-_2022-11-01 13:22:42 PDT_
+_2022-11-01 14:38:37 PDT_
 ## Apache License, Version 2.0
 
 **1** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-annotations` **Version:** `2.13.4` 
@@ -37,11 +37,11 @@ _2022-11-01 13:22:42 PDT_
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
 > - **Embedded license files**: [jackson-datatype-jsr310-2.13.4.jar/META-INF/LICENSE](jackson-datatype-jsr310-2.13.4.jar/META-INF/LICENSE)
 
-**6** **Group:** `com.fasterxml.woodstox` **Name:** `woodstox-core` **Version:** `6.4.0` 
+**6** **Group:** `com.fasterxml.woodstox` **Name:** `woodstox-core` **Version:** `6.3.1` 
 > - **Project URL**: [https://github.com/FasterXML/woodstox](https://github.com/FasterXML/woodstox)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
-> - **Embedded license files**: [woodstox-core-6.4.0.jar/META-INF/LICENSE](woodstox-core-6.4.0.jar/META-INF/LICENSE)
+> - **Embedded license files**: [woodstox-core-6.3.1.jar/META-INF/LICENSE](woodstox-core-6.3.1.jar/META-INF/LICENSE)
 
 **7** **Group:** `com.github.stephenc.jcip` **Name:** `jcip-annotations` **Version:** `1.0-1` 
 > - **POM Project URL**: [http://stephenc.github.com/jcip-annotations](http://stephenc.github.com/jcip-annotations)
