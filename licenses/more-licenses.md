@@ -1,7 +1,7 @@
 
 #agent
 ##Dependency License Report
-_2022-10-25 21:19:17 PDT_
+_2022-11-01 13:22:42 PDT_
 ## Apache License, Version 2.0
 
 **1** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-annotations` **Version:** `2.13.4` 
@@ -37,11 +37,11 @@ _2022-10-25 21:19:17 PDT_
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
 > - **Embedded license files**: [jackson-datatype-jsr310-2.13.4.jar/META-INF/LICENSE](jackson-datatype-jsr310-2.13.4.jar/META-INF/LICENSE)
 
-**6** **Group:** `com.fasterxml.woodstox` **Name:** `woodstox-core` **Version:** `6.3.1` 
+**6** **Group:** `com.fasterxml.woodstox` **Name:** `woodstox-core` **Version:** `6.4.0` 
 > - **Project URL**: [https://github.com/FasterXML/woodstox](https://github.com/FasterXML/woodstox)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
-> - **Embedded license files**: [woodstox-core-6.3.1.jar/META-INF/LICENSE](woodstox-core-6.3.1.jar/META-INF/LICENSE)
+> - **Embedded license files**: [woodstox-core-6.4.0.jar/META-INF/LICENSE](woodstox-core-6.4.0.jar/META-INF/LICENSE)
 
 **7** **Group:** `com.github.stephenc.jcip` **Name:** `jcip-annotations` **Version:** `1.0-1` 
 > - **POM Project URL**: [http://stephenc.github.com/jcip-annotations](http://stephenc.github.com/jcip-annotations)
@@ -102,7 +102,7 @@ _2022-10-25 21:19:17 PDT_
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
 
-**19** **Group:** `io.netty` **Name:** `netty-codec-dns` **Version:** `4.1.81.Final` 
+**19** **Group:** `io.netty` **Name:** `netty-codec-dns` **Version:** `4.1.82.Final` 
 > - **Manifest Project URL**: [https://netty.io/](https://netty.io/)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
@@ -142,17 +142,17 @@ _2022-10-25 21:19:17 PDT_
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
 
-**27** **Group:** `io.netty` **Name:** `netty-resolver-dns` **Version:** `4.1.81.Final` 
+**27** **Group:** `io.netty` **Name:** `netty-resolver-dns` **Version:** `4.1.82.Final` 
 > - **Manifest Project URL**: [https://netty.io/](https://netty.io/)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
 
-**28** **Group:** `io.netty` **Name:** `netty-resolver-dns-classes-macos` **Version:** `4.1.81.Final` 
+**28** **Group:** `io.netty` **Name:** `netty-resolver-dns-classes-macos` **Version:** `4.1.82.Final` 
 > - **Manifest Project URL**: [https://netty.io/](https://netty.io/)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
 
-**29** **Group:** `io.netty` **Name:** `netty-resolver-dns-native-macos` **Version:** `4.1.81.Final` 
+**29** **Group:** `io.netty` **Name:** `netty-resolver-dns-native-macos` **Version:** `4.1.82.Final` 
 > - **Manifest Project URL**: [https://netty.io/](https://netty.io/)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
@@ -198,11 +198,11 @@ _2022-10-25 21:19:17 PDT_
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
 
-**38** **Group:** `io.projectreactor` **Name:** `reactor-core` **Version:** `3.4.23` 
+**38** **Group:** `io.projectreactor` **Name:** `reactor-core` **Version:** `3.4.24` 
 > - **POM Project URL**: [https://github.com/reactor/reactor-core](https://github.com/reactor/reactor-core)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
 
-**39** **Group:** `io.projectreactor.netty` **Name:** `reactor-netty-core` **Version:** `1.0.23` 
+**39** **Group:** `io.projectreactor.netty` **Name:** `reactor-netty-core` **Version:** `1.0.24` 
 > - **POM Project URL**: [https://github.com/reactor/reactor-netty](https://github.com/reactor/reactor-netty)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
