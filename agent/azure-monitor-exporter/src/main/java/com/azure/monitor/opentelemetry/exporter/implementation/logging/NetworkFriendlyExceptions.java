@@ -10,6 +10,8 @@ import com.azure.core.util.logging.ClientLogger;
 import io.netty.handler.ssl.SslHandshakeTimeoutException;
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.net.UnknownHostException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -58,7 +60,9 @@ public class NetworkFriendlyExceptions {
       if (detector.detect(error)) {
         if (!alreadySeen.getAndSet(true)) {
           try (MDC.MDCCloseable ignored = FRIENDLY_NETWORK_ERROR.makeActive()) {
-            logger.error(detector.message(url));
+            // using a placeholder because otherwise Azure Core ClientLogger removes newlines from
+            // the message
+            logger.error("{}", detector.message(url));
           }
         }
         return true;
@@ -169,18 +173,26 @@ public class NetworkFriendlyExceptions {
       String customJavaKeyStorePath = getCustomJavaKeystorePath();
       if (customJavaKeyStorePath != null) {
         return "Please import the SSL certificate from "
-            + url
+            + getHostOnly(url)
             + ", into your custom java key store located at:\n"
             + customJavaKeyStorePath
             + "\n"
             + "Learn more about importing the certificate here: https://go.microsoft.com/fwlink/?linkid=2151450";
       }
       return "Please import the SSL certificate from "
-          + url
+          + getHostOnly(url)
           + ", into the default java key store located at:\n"
           + getJavaCacertsPath()
           + "\n"
           + "Learn more about importing the certificate here: https://go.microsoft.com/fwlink/?linkid=2151450";
+    }
+
+    private static String getHostOnly(String url) {
+      try {
+        return "https://" + new URL(url).getHost();
+      } catch (MalformedURLException e) {
+        return url;
+      }
     }
   }
 
