@@ -86,9 +86,6 @@ tasks {
       exclude(dependency("io.opentelemetry:opentelemetry-context"))
       exclude(dependency("io.opentelemetry:opentelemetry-semconv"))
 
-      // TODO (trask) Azure SDK: why is this included in azure-core?
-      exclude(dependency("io.netty:netty-tcnative-boringssl-static"))
-
       // these are excluded for size ~1.8mb, and to avoid CVEs
       exclude(dependency("com.fasterxml.woodstox:woodstox-core"))
       exclude(dependency("org.codehaus.woodstox:stax2-api"))
