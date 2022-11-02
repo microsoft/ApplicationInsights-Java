@@ -62,14 +62,16 @@ val CORE_DEPENDENCIES = listOf(
   "com.squareup.moshi:moshi-adapters:1.11.0",
   "io.opentelemetry.javaagent:opentelemetry-javaagent-extension-api:otelInstrumentationAlphaVersion",
   "io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap:otelInstrumentationAlphaVersion",
-  "io.opentelemetry.javaagent:opentelemetry-javaagent-tooling:otelInstrumentationAlphaVersion"
+  "io.opentelemetry.javaagent:opentelemetry-javaagent-tooling:otelInstrumentationAlphaVersion",
+  // temporarily overriding transitive dependency from azure-core until the next azure-core release
+  "io.projectreactor.netty:reactor-netty-core:1.0.24"
 )
 
 val DEPENDENCIES = listOf(
   "ch.qos.logback:logback-classic:1.2.11",
   "ch.qos.logback.contrib:logback-json-classic:0.1.5",
   "com.google.auto.service:auto-service:1.0.1",
-  "com.uber.nullaway:nullaway:0.10.2",
+  "com.uber.nullaway:nullaway:0.10.3",
   "commons-codec:commons-codec:1.15",
   "org.apache.commons:commons-text:1.10.0",
   "com.google.code.gson:gson:2.10",
