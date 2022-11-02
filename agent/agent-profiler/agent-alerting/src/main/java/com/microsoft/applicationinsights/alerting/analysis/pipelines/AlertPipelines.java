@@ -8,8 +8,8 @@ import com.microsoft.applicationinsights.alerting.analysis.TimeSource;
 import com.microsoft.applicationinsights.alerting.analysis.aggregations.RollingAverage;
 import com.microsoft.applicationinsights.alerting.analysis.data.TelemetryDataPoint;
 import com.microsoft.applicationinsights.alerting.analysis.filter.AlertRequestFilter;
+import com.microsoft.applicationinsights.alerting.config.AlertConfiguration;
 import com.microsoft.applicationinsights.alerting.config.AlertMetricType;
-import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration.AlertConfiguration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.OptionalDouble;
@@ -73,14 +73,14 @@ public class AlertPipelines {
     if (alert.getMemoryUsage() == 0.0) {
       OptionalDouble memory = getAverage(AlertMetricType.MEMORY);
       if (memory.isPresent()) {
-        alert = alert.withMemoryMetric(memory.getAsDouble());
+        alert = alert.toBuilder().setMemoryUsage(memory.getAsDouble()).build();
       }
     }
 
     if (alert.getCpuMetric() == 0.0) {
       OptionalDouble cpu = getAverage(AlertMetricType.CPU);
       if (cpu.isPresent()) {
-        alert = alert.withCpuMetric(cpu.getAsDouble());
+        alert = alert.toBuilder().setCpuMetric(cpu.getAsDouble()).build();
       }
     }
     return alert;

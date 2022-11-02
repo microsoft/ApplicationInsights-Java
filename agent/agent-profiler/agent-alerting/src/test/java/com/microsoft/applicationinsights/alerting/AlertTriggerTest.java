@@ -7,8 +7,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
 import com.microsoft.applicationinsights.alerting.analysis.AlertPipelineTrigger;
+import com.microsoft.applicationinsights.alerting.config.AlertConfiguration;
 import com.microsoft.applicationinsights.alerting.config.AlertMetricType;
-import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration.AlertConfiguration;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import org.junit.jupiter.api.Test;
@@ -17,7 +17,15 @@ class AlertTriggerTest {
 
   @Test
   void underThresholdDataDoesNotTrigger() {
-    AlertConfiguration config = new AlertConfiguration(AlertMetricType.CPU, true, 0.5f, 1, 1000);
+
+    AlertConfiguration config =
+        AlertConfiguration.builder()
+            .setType(AlertMetricType.CPU)
+            .setEnabled(true)
+            .setThreshold(0.5f)
+            .setProfileDurationSeconds(1)
+            .setCooldownSeconds(1000)
+            .build();
     AtomicBoolean called = new AtomicBoolean(false);
     AlertPipelineTrigger trigger = getAlertTrigger(config, called);
     for (int i = 0; i < 100; i++) {
@@ -30,7 +38,14 @@ class AlertTriggerTest {
   @Test
   void overThresholdDataDoesTrigger() {
 
-    AlertConfiguration config = new AlertConfiguration(AlertMetricType.CPU, true, 0.5f, 1, 1);
+    AlertConfiguration config =
+        AlertConfiguration.builder()
+            .setType(AlertMetricType.CPU)
+            .setEnabled(true)
+            .setThreshold(0.5f)
+            .setProfileDurationSeconds(1)
+            .setCooldownSeconds(1)
+            .build();
     AtomicBoolean called = new AtomicBoolean(false);
     AlertPipelineTrigger trigger = getAlertTrigger(config, called);
 
@@ -43,7 +58,15 @@ class AlertTriggerTest {
 
   @Test
   void doesNotReTriggerDueToCooldown() {
-    AlertConfiguration config = new AlertConfiguration(AlertMetricType.CPU, true, 0.5f, 1, 1000);
+
+    AlertConfiguration config =
+        AlertConfiguration.builder()
+            .setType(AlertMetricType.CPU)
+            .setEnabled(true)
+            .setThreshold(0.5f)
+            .setProfileDurationSeconds(1)
+            .setCooldownSeconds(1000)
+            .build();
     AtomicBoolean called = new AtomicBoolean(false);
     AlertPipelineTrigger trigger = getAlertTrigger(config, called);
 
@@ -66,7 +89,15 @@ class AlertTriggerTest {
 
   @Test
   void doesNotReTriggerAfterCooldown() throws InterruptedException {
-    AlertConfiguration config = new AlertConfiguration(AlertMetricType.CPU, true, 0.5f, 1, 1);
+
+    AlertConfiguration config =
+        AlertConfiguration.builder()
+            .setType(AlertMetricType.CPU)
+            .setEnabled(true)
+            .setThreshold(0.5f)
+            .setProfileDurationSeconds(1)
+            .setCooldownSeconds(1)
+            .build();
     AtomicBoolean called = new AtomicBoolean(false);
     AlertPipelineTrigger trigger = getAlertTrigger(config, called);
 

@@ -12,18 +12,18 @@ import com.microsoft.applicationinsights.alerting.analysis.aggregations.Threshol
 import com.microsoft.applicationinsights.alerting.analysis.filter.AlertRequestFilter;
 import com.microsoft.applicationinsights.alerting.analysis.pipelines.AlertPipeline;
 import com.microsoft.applicationinsights.alerting.analysis.pipelines.SingleAlertPipeline;
+import com.microsoft.applicationinsights.alerting.config.AlertConfiguration;
 import com.microsoft.applicationinsights.alerting.config.AlertMetricType;
-import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
 
 /** Constructs an AlertPipeline for processing span telemetry data. */
-public class RequestAlertPipelineBuilder {
+class RequestAlertPipelineBuilder {
 
   private RequestAlertPipelineBuilder() {}
 
   /** Form a single trigger context from configuration. */
-  public static AlertPipeline build(
+  static AlertPipeline build(
       Configuration.RequestTrigger configuration,
       Consumer<AlertBreach> alertAction,
       TimeSource timeSource) {
@@ -36,19 +36,22 @@ public class RequestAlertPipelineBuilder {
     Aggregation aggregation = getAggregation(configuration, timeSource);
 
     // TODO make threshold and throttling responsive to type argument
-    AlertingConfiguration.AlertConfiguration config =
-        new AlertingConfiguration.AlertConfiguration(
-            AlertMetricType.REQUEST,
-            true,
-            configuration.threshold.value,
-            configuration.profileDuration,
-            configuration.throttling.value,
-            requestTriggerConfiguration);
+
+    AlertConfiguration config =
+        AlertConfiguration.builder()
+            .setType(AlertMetricType.REQUEST)
+            .setEnabled(true)
+            .setThreshold(configuration.threshold.value)
+            .setProfileDurationSeconds(configuration.profileDuration)
+            .setCooldownSeconds(configuration.throttling.value)
+            .setRequestTrigger(requestTriggerConfiguration)
+            .build();
 
     return SingleAlertPipeline.create(filter, aggregation, config, alertAction);
   }
 
-  public static AlertingConfig.RequestTrigger buildRequestTriggerConfiguration(
+  // visible for tests
+  static AlertingConfig.RequestTrigger buildRequestTriggerConfiguration(
       Configuration.RequestTrigger configuration) {
 
     AlertingConfig.RequestTriggerType type =

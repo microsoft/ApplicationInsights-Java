@@ -1371,7 +1371,7 @@ public class Configuration {
 
   public static class RequestTriggerThrottling {
     public RequestTriggerThrottlingType type = RequestTriggerThrottlingType.FIXED_DURATION_COOLDOWN;
-    public long value = 60; // in seconds
+    public int value = 60; // in seconds
   }
 
   public enum RequestTriggerType {
@@ -1385,7 +1385,7 @@ public class Configuration {
     public RequestAggregation aggregation = new RequestAggregation();
     public RequestTriggerThreshold threshold = new RequestTriggerThreshold();
     public RequestTriggerThrottling throttling = new RequestTriggerThrottling();
-    public long profileDuration = 30; // in s
+    public int profileDuration = 30; // in s
   }
 
   public static class ProfilerConfiguration {

@@ -3,83 +3,81 @@
 
 package com.microsoft.applicationinsights.alerting.alert;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.auto.value.AutoValue;
+import com.microsoft.applicationinsights.alerting.config.AlertConfiguration;
 import com.microsoft.applicationinsights.alerting.config.AlertMetricType;
-import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration.AlertConfiguration;
+import java.util.UUID;
 
 /** Represents a breach of an alert threshold. */
-public class AlertBreach {
-  private final AlertMetricType type;
+@AutoValue
+@JsonSerialize(as = AlertBreach.class)
+@JsonDeserialize(builder = AlertBreach.Builder.class)
+@JsonIgnoreProperties(ignoreUnknown = true)
+public abstract class AlertBreach {
+
+  @JsonProperty("type")
+  public abstract AlertMetricType getType();
 
   // Value of the telemetry at the time of the breach
-  private final double alertValue;
+  @JsonProperty("alertValue")
+  public abstract double getAlertValue();
 
-  private final AlertConfiguration alertConfiguration;
+  @JsonProperty("alertConfiguration")
+  public abstract AlertConfiguration getAlertConfiguration();
 
   // CPU usage at the time of the breach
-  private final double cpuUsage;
+  @JsonProperty(value = "cpuMetric")
+  public abstract double getCpuMetric();
 
   // MEMORY usage at the time of the breach
-  private final double memoryUsage;
+  @JsonProperty(value = "memoryUsage")
+  public abstract double getMemoryUsage();
 
   // Unique ID for profile/breach
-  private final String profileId;
+  @JsonProperty("profileId")
+  public abstract String getProfileId();
 
-  public AlertBreach(
-      AlertMetricType type,
-      double alertValue,
-      AlertConfiguration alertConfiguration,
-      String profileId) {
-    this(type, alertValue, alertConfiguration, profileId, 0, 0);
+  public abstract Builder toBuilder();
+
+  public static AlertBreach.Builder builder() {
+    return new AutoValue_AlertBreach.Builder()
+        .setCpuMetric(0)
+        .setMemoryUsage(0)
+        .setProfileId(UUID.randomUUID().toString());
   }
 
-  public AlertBreach(
-      AlertMetricType type,
-      double alertValue,
-      AlertConfiguration alertConfiguration,
-      String profileId,
-      double cpuUsage,
-      double memoryUsage) {
-    this.type = type;
-    this.alertValue = alertValue;
-    this.alertConfiguration = alertConfiguration;
-    this.cpuUsage = cpuUsage;
-    this.memoryUsage = memoryUsage;
-    this.profileId = profileId;
-  }
+  @AutoValue.Builder
+  @JsonIgnoreProperties(ignoreUnknown = true)
+  public abstract static class Builder {
 
-  public AlertConfiguration getAlertConfiguration() {
-    return alertConfiguration;
-  }
+    @JsonCreator
+    public static Builder builder() {
+      return AlertBreach.builder();
+    }
 
-  public double getAlertValue() {
-    return alertValue;
-  }
+    @JsonProperty("type")
+    public abstract Builder setType(AlertMetricType type);
 
-  public AlertMetricType getType() {
-    return type;
-  }
+    @JsonProperty("alertValue")
+    public abstract Builder setAlertValue(double alertValue);
 
-  public AlertBreach withCpuMetric(double cpuUsage) {
-    return new AlertBreach(type, alertValue, alertConfiguration, profileId, cpuUsage, memoryUsage);
-  }
+    @JsonProperty("alertConfiguration")
+    public abstract Builder setAlertConfiguration(AlertConfiguration alertConfiguration);
 
-  public AlertBreach withMemoryMetric(double memoryUsage) {
-    return new AlertBreach(type, alertValue, alertConfiguration, profileId, cpuUsage, memoryUsage);
-  }
+    @JsonProperty(value = "cpuMetric")
+    public abstract Builder setCpuMetric(double cpuMetric);
 
-  public String getTriggerName() {
-    return "JFR-" + type.name();
-  }
+    @JsonProperty(value = "memoryUsage")
+    public abstract Builder setMemoryUsage(double memoryUsage);
 
-  public double getCpuMetric() {
-    return cpuUsage;
-  }
+    @JsonProperty("profileId")
+    public abstract Builder setProfileId(String profileId);
 
-  public double getMemoryUsage() {
-    return memoryUsage;
-  }
-
-  public String getProfileId() {
-    return profileId;
+    public abstract AlertBreach build();
   }
 }

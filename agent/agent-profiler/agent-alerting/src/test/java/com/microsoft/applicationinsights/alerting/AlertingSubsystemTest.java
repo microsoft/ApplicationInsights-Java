@@ -6,9 +6,9 @@ package com.microsoft.applicationinsights.alerting;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
+import com.microsoft.applicationinsights.alerting.config.AlertConfiguration;
 import com.microsoft.applicationinsights.alerting.config.AlertMetricType;
 import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration;
-import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration.AlertConfiguration;
 import com.microsoft.applicationinsights.alerting.config.CollectionPlanConfiguration;
 import com.microsoft.applicationinsights.alerting.config.CollectionPlanConfiguration.EngineMode;
 import com.microsoft.applicationinsights.alerting.config.DefaultConfiguration;
@@ -25,12 +25,33 @@ class AlertingSubsystemTest {
     AlertingSubsystem monitor = AlertingSubsystem.create(consumer, timeSource);
 
     monitor.updateConfiguration(
-        new AlertingConfiguration(
-            new AlertConfiguration(AlertMetricType.CPU, true, 80, 30, 14400),
-            new AlertConfiguration(AlertMetricType.MEMORY, true, 20, 120, 14400),
-            new DefaultConfiguration(true, 5, 120),
-            new CollectionPlanConfiguration(
-                true, EngineMode.immediate, Instant.now(), 120, "a-settings-moniker")));
+        AlertingConfiguration.create(
+            AlertConfiguration.builder()
+                .setType(AlertMetricType.CPU)
+                .setEnabled(true)
+                .setThreshold((float) 80)
+                .setProfileDurationSeconds(30)
+                .setCooldownSeconds(14400)
+                .build(),
+            AlertConfiguration.builder()
+                .setType(AlertMetricType.MEMORY)
+                .setEnabled(true)
+                .setThreshold((float) 20)
+                .setProfileDurationSeconds(120)
+                .setCooldownSeconds(14400)
+                .build(),
+            DefaultConfiguration.builder()
+                .setSamplingEnabled(true)
+                .setSamplingRate(5)
+                .setSamplingProfileDuration(120)
+                .build(),
+            CollectionPlanConfiguration.builder()
+                .setSingle(true)
+                .setMode(EngineMode.immediate)
+                .setExpiration(Instant.now())
+                .setImmediateProfilingDurationSeconds(120)
+                .setSettingsMoniker("a-settings-moniker")
+                .build()));
     return monitor;
   }
 
@@ -62,16 +83,33 @@ class AlertingSubsystemTest {
     AlertingSubsystem service = AlertingSubsystem.create(consumer, timeSource);
 
     service.updateConfiguration(
-        new AlertingConfiguration(
-            new AlertConfiguration(AlertMetricType.CPU, true, 80, 30, 14400),
-            new AlertConfiguration(AlertMetricType.MEMORY, true, 20, 120, 14400),
-            new DefaultConfiguration(true, 5, 120),
-            new CollectionPlanConfiguration(
-                true,
-                EngineMode.immediate,
-                Instant.now().plus(100, ChronoUnit.SECONDS),
-                120,
-                "a-settings-moniker")));
+        AlertingConfiguration.create(
+            AlertConfiguration.builder()
+                .setType(AlertMetricType.CPU)
+                .setEnabled(true)
+                .setThreshold((float) 80)
+                .setProfileDurationSeconds(30)
+                .setCooldownSeconds(14400)
+                .build(),
+            AlertConfiguration.builder()
+                .setType(AlertMetricType.MEMORY)
+                .setEnabled(true)
+                .setThreshold((float) 20)
+                .setProfileDurationSeconds(120)
+                .setCooldownSeconds(14400)
+                .build(),
+            DefaultConfiguration.builder()
+                .setSamplingEnabled(true)
+                .setSamplingRate(5)
+                .setSamplingProfileDuration(120)
+                .build(),
+            CollectionPlanConfiguration.builder()
+                .setSingle(true)
+                .setMode(EngineMode.immediate)
+                .setExpiration(Instant.now().plus(100, ChronoUnit.SECONDS))
+                .setImmediateProfilingDurationSeconds(120)
+                .setSettingsMoniker("a-settings-moniker")
+                .build()));
 
     assertThat(called.get().getType()).isEqualTo(AlertMetricType.MANUAL);
   }
@@ -85,16 +123,33 @@ class AlertingSubsystemTest {
     AlertingSubsystem service = AlertingSubsystem.create(consumer, timeSource);
 
     service.updateConfiguration(
-        new AlertingConfiguration(
-            new AlertConfiguration(AlertMetricType.CPU, true, 80, 30, 14400),
-            new AlertConfiguration(AlertMetricType.MEMORY, true, 20, 120, 14400),
-            new DefaultConfiguration(true, 5, 120),
-            new CollectionPlanConfiguration(
-                true,
-                EngineMode.immediate,
-                Instant.now().minus(100, ChronoUnit.SECONDS),
-                120,
-                "a-settings-moniker")));
+        AlertingConfiguration.create(
+            AlertConfiguration.builder()
+                .setType(AlertMetricType.CPU)
+                .setEnabled(true)
+                .setThreshold((float) 80)
+                .setProfileDurationSeconds(30)
+                .setCooldownSeconds(14400)
+                .build(),
+            AlertConfiguration.builder()
+                .setType(AlertMetricType.MEMORY)
+                .setEnabled(true)
+                .setThreshold((float) 20)
+                .setProfileDurationSeconds(120)
+                .setCooldownSeconds(14400)
+                .build(),
+            DefaultConfiguration.builder()
+                .setSamplingEnabled(true)
+                .setSamplingRate(5)
+                .setSamplingProfileDuration(120)
+                .build(),
+            CollectionPlanConfiguration.builder()
+                .setSingle(true)
+                .setMode(EngineMode.immediate)
+                .setExpiration(Instant.now().minus(100, ChronoUnit.SECONDS))
+                .setImmediateProfilingDurationSeconds(120)
+                .setSettingsMoniker("a-settings-moniker")
+                .build()));
 
     assertThat(called.get()).isNull();
   }

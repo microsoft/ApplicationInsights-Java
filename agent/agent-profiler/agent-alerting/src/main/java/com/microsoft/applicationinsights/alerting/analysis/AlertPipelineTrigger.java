@@ -4,7 +4,7 @@
 package com.microsoft.applicationinsights.alerting.analysis;
 
 import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
-import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration.AlertConfiguration;
+import com.microsoft.applicationinsights.alerting.config.AlertConfiguration;
 import java.time.Instant;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -35,14 +35,20 @@ public class AlertPipelineTrigger implements DoubleConsumer {
       if (isOffCooldown()) {
         lastAlertTime = Instant.now();
         UUID profileId = UUID.randomUUID();
+
         action.accept(
-            new AlertBreach(alertConfig.getType(), telemetry, alertConfig, profileId.toString()));
+            AlertBreach.builder()
+                .setType(alertConfig.getType())
+                .setAlertValue(telemetry)
+                .setAlertConfiguration(alertConfig)
+                .setProfileId(profileId.toString())
+                .build());
       }
     }
   }
 
   public boolean isOffCooldown() {
-    Instant coolDownCutOff = Instant.now().minusSeconds(alertConfig.getCooldown());
+    Instant coolDownCutOff = Instant.now().minusSeconds(alertConfig.getCooldownSeconds());
     return lastAlertTime == null || lastAlertTime.isBefore(coolDownCutOff);
   }
 
