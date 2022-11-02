@@ -18,3 +18,10 @@ dependencies {
   testImplementation("org.assertj:assertj-core")
   testImplementation("org.mockito:mockito-core")
 }
+
+configurations {
+  all {
+    // excluding unused dependency for size (~1.8mb)
+    exclude("com.fasterxml.jackson.dataformat", "jackson-dataformat-xml")
+  }
+}

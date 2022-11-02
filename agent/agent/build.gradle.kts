@@ -85,9 +85,6 @@ tasks {
       exclude(dependency("io.opentelemetry:opentelemetry-api-metrics"))
       exclude(dependency("io.opentelemetry:opentelemetry-context"))
       exclude(dependency("io.opentelemetry:opentelemetry-semconv"))
-
-      // TODO (trask) Azure SDK: why is this included in azure-core?
-      exclude(dependency("io.netty:netty-tcnative-boringssl-static"))
     }
   }
 
