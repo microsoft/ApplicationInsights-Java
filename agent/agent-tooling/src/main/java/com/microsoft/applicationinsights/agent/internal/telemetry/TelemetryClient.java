@@ -411,6 +411,9 @@ public class TelemetryClient {
       this.statsbeatConnectionString =
           StatsbeatConnectionString.create(
               this.connectionString, statsbeatInstrumentationKey, statsbeatEndpoint);
+      if (this.statsbeatConnectionString == null) {
+        statsbeatModule.shutdown();
+      }
     }
   }
 
@@ -515,6 +518,9 @@ public class TelemetryClient {
         this.statsbeatConnectionString =
             StatsbeatConnectionString.create(
                 this.connectionString, statsbeatInstrumentationKey, statsbeatEndpoint);
+        if (this.statsbeatConnectionString == null) {
+          statsbeatModule.shutdown();
+        }
       }
       return this;
     }
