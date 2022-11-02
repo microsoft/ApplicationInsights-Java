@@ -1,7 +1,7 @@
 
 #agent
 ##Dependency License Report
-_2022-11-01 15:12:17 PDT_
+_2022-11-02 14:57:36 PDT_
 ## Apache License, Version 2.0
 
 **1** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-annotations` **Version:** `2.13.4` 
@@ -193,7 +193,7 @@ _2022-11-01 15:12:17 PDT_
 > - **POM Project URL**: [https://github.com/reactor/reactor-netty](https://github.com/reactor/reactor-netty)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
-**38** **Group:** `io.projectreactor.netty` **Name:** `reactor-netty-http` **Version:** `1.0.23` 
+**38** **Group:** `io.projectreactor.netty` **Name:** `reactor-netty-http` **Version:** `1.0.24` 
 > - **POM Project URL**: [https://github.com/reactor/reactor-netty](https://github.com/reactor/reactor-netty)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
