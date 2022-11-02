@@ -92,7 +92,8 @@ public final class StatsbeatConnectionString {
           StatsbeatConnectionString.getInstrumentationKeyAndEndpointPair(
               connectionString.getIngestionEndpoint());
 
-      // regions are not found in our known non-EU and EU lists.
+      // Statsbeat will not get collected when customer's stamp specific region is not found in our
+      // known non-EU and EU lists
       if (pair == null) {
         return null;
       }
