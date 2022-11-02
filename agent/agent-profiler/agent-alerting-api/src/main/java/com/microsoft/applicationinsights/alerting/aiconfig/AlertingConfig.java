@@ -3,6 +3,9 @@
 
 package com.microsoft.applicationinsights.alerting.aiconfig;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class AlertingConfig {
 
   public enum RequestFilterType {
@@ -13,7 +16,9 @@ public class AlertingConfig {
     public final RequestFilterType type;
     public final String value;
 
-    public RequestFilter(RequestFilterType type, String value) {
+    @JsonCreator
+    public RequestFilter(
+        @JsonProperty("type") RequestFilterType type, @JsonProperty("value") String value) {
       this.type = type;
       this.value = value;
     }
@@ -29,7 +34,10 @@ public class AlertingConfig {
     // produce data. Avoids volatile aggregation output on small sample sizes.
     public final int minimumSamples;
 
-    public RequestAggregationConfig(int thresholdMillis, int minimumSamples) {
+    @JsonCreator
+    public RequestAggregationConfig(
+        @JsonProperty("thresholdMillis") int thresholdMillis,
+        @JsonProperty("minimumSamples") int minimumSamples) {
       this.thresholdMillis = thresholdMillis;
       this.minimumSamples = minimumSamples;
     }
@@ -44,10 +52,11 @@ public class AlertingConfig {
     public final long windowSizeMillis; // in ms
     public final RequestAggregationConfig configuration;
 
+    @JsonCreator
     public RequestAggregation(
-        RequestAggregationType type,
-        long windowSizeMillis,
-        RequestAggregationConfig configuration) {
+        @JsonProperty("type") RequestAggregationType type,
+        @JsonProperty("windowSizeMillis") long windowSizeMillis,
+        @JsonProperty("configuration") RequestAggregationConfig configuration) {
       this.type = type;
       this.windowSizeMillis = windowSizeMillis;
       this.configuration = configuration;
@@ -70,7 +79,10 @@ public class AlertingConfig {
     //      breaches 0.75ms
     public final float value;
 
-    public RequestTriggerThreshold(RequestTriggerThresholdType type, float value) {
+    @JsonCreator
+    public RequestTriggerThreshold(
+        @JsonProperty("type") RequestTriggerThresholdType type,
+        @JsonProperty("value") float value) {
       this.type = type;
       this.value = value;
     }
@@ -84,7 +96,10 @@ public class AlertingConfig {
     public final RequestTriggerThrottlingType type;
     public final long value; // in seconds
 
-    public RequestTriggerThrottling(RequestTriggerThrottlingType type, long value) {
+    @JsonCreator
+    public RequestTriggerThrottling(
+        @JsonProperty("type") RequestTriggerThrottlingType type,
+        @JsonProperty("value") long value) {
       this.type = type;
       this.value = value;
     }
@@ -103,14 +118,15 @@ public class AlertingConfig {
     public final RequestTriggerThrottling throttling;
     public final long profileDuration;
 
+    @JsonCreator
     public RequestTrigger(
-        String name,
-        RequestTriggerType type,
-        RequestFilter filter,
-        RequestAggregation aggregation,
-        RequestTriggerThreshold threshold,
-        RequestTriggerThrottling throttling,
-        long profileDuration) {
+        @JsonProperty("name") String name,
+        @JsonProperty("type") RequestTriggerType type,
+        @JsonProperty("filter") RequestFilter filter,
+        @JsonProperty("aggregation") RequestAggregation aggregation,
+        @JsonProperty("threshold") RequestTriggerThreshold threshold,
+        @JsonProperty("throttling") RequestTriggerThrottling throttling,
+        @JsonProperty("profileDuration") long profileDuration) {
       this.name = name;
       this.type = type;
       this.filter = filter;
