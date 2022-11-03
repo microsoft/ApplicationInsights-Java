@@ -47,6 +47,11 @@ public class StatsbeatModule {
   }
 
   public void start(TelemetryClient telemetryClient, Configuration config) {
+    if (telemetryClient.getStatsbeatConnectionString() == null) {
+      logger.debug("Don't start StatsbeatModule when statsbeat connection string is null.");
+      return;
+    }
+
     if (started.getAndSet(true)) {
       throw new IllegalStateException("initialize already called");
     }
