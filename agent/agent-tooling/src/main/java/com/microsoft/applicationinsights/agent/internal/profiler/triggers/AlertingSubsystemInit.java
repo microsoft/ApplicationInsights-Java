@@ -86,11 +86,6 @@ public class AlertingSubsystemInit {
       return new GcEventInit.GcEventMonitorConfiguration(configuration.gcEvents.reportingLevel);
     }
 
-    // The memory monitoring requires observing gc events
-    if (configuration.profiler.enabled) {
-      return new GcEventInit.GcEventMonitorConfiguration(GcReportingLevel.TENURED_ONLY);
-    }
-
     return new GcEventInit.GcEventMonitorConfiguration(GcReportingLevel.NONE);
   }
 

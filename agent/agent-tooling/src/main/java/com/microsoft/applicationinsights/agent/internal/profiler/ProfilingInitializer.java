@@ -33,7 +33,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,6 +52,7 @@ public class ProfilingInitializer {
 
   // TODO (trask) is this needed?
   private static final AtomicBoolean initialized = new AtomicBoolean();
+  public static final int PERCENTAGE_OF_USERS_TO_ENABLE = 0;
 
   public static void initialize(
       @Nullable File tempDir,
@@ -71,7 +71,7 @@ public class ProfilingInitializer {
     }
 
     ProfilingInitializer.initialize(
-        appIdSupplier::get,
+        appIdSupplier,
         SystemInformation.getProcessId(),
         config.role.instance,
         config.role.name,
@@ -82,7 +82,7 @@ public class ProfilingInitializer {
   }
 
   private static synchronized void initialize(
-      Supplier<String> appIdSupplier,
+      AppIdSupplier appIdSupplier,
       String processId,
       String machineName,
       String roleName,
@@ -91,6 +91,42 @@ public class ProfilingInitializer {
       Configuration configuration,
       File tempDir) {
 
+    String ikey = TelemetryClient.getActive().getInstrumentationKey();
+
+    boolean userEnabled = Boolean.TRUE.equals(configuration.preview.profiler.enabled);
+
+    boolean randomlyEnable =
+        configuration.preview.profiler.enabled == null
+            && ikey != null
+            && Math.abs(TelemetryClient.getActive().getInstrumentationKey().hashCode() % 100)
+                < PERCENTAGE_OF_USERS_TO_ENABLE;
+
+    if (!userEnabled && randomlyEnable) {
+      logger.info("This account has been selected to be part of the profiling beta");
+    }
+
+    if (userEnabled || randomlyEnable) {
+      performInit(
+          appIdSupplier,
+          processId,
+          machineName,
+          roleName,
+          telemetryClient,
+          userAgent,
+          configuration,
+          tempDir);
+    }
+  }
+
+  private static void performInit(
+      AppIdSupplier appIdSupplier,
+      String processId,
+      String machineName,
+      String roleName,
+      TelemetryClient telemetryClient,
+      String userAgent,
+      Configuration configuration,
+      File tempDir) {
     // Cannot use default creator, as we need to add POST to the allowed redirects
     HttpPipeline httpPipeline =
         LazyHttpClient.newHttpPipeLine(
@@ -140,7 +176,12 @@ public class ProfilingInitializer {
 
     UploadService uploadService =
         new UploadService(
-            serviceProfilerClient, builder -> {}, machineName, processId, appIdSupplier, roleName);
+            serviceProfilerClient,
+            builder -> {},
+            machineName,
+            processId,
+            appIdSupplier::get,
+            roleName);
 
     Profiler profiler = new Profiler(configuration.preview.profiler, tempDir);
 
@@ -204,6 +245,7 @@ public class ProfilingInitializer {
   }
 
   private static DiagnosticEngineFactory loadDiagnosticEngineFactory() {
+    logger.info("loading DiagnosticEngineFactory");
     return ServiceLoaderUtil.findServiceLoader(DiagnosticEngineFactory.class);
   }
 
