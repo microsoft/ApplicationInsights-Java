@@ -608,10 +608,11 @@ public class Configuration {
         }
         return DEFAULT_NAME; // this will be relative to the directory where agent jar is located
       }
-      if (DiagnosticsHelper.useAppSvcRpIntegrationLogging()) {
+      if (DiagnosticsHelper.useAppSvcRpIntegrationLogging()
+          || DiagnosticsHelper.useFunctionsRpIntegrationLogging()) {
         return StatusFile.getLogDir() + "/" + DEFAULT_NAME;
       }
-      // azure functions and azure spring cloud
+      // azure spring cloud
       return DEFAULT_NAME;
     }
   }
