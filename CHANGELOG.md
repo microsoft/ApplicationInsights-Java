@@ -2,9 +2,14 @@
 
 ## Version 3.4.3 GA
 
-* Fix runtime attach configuration file property [#2619](https://github.com/microsoft/ApplicationInsights-Java/pull/2619).
-* Fix sampling for Azure Functions [#2652](https://github.com/microsoft/ApplicationInsights-Java/pull/2652).
-* Fix default log directory for Azure Functions [#2660](https://github.com/microsoft/ApplicationInsights-Java/pull/2660).
+Bug fixes:
+
+* Fix runtime attach configuration file property
+  ([#2619](https://github.com/microsoft/ApplicationInsights-Java/pull/2619))
+* Fix sampling for Azure Functions
+  ([#2652](https://github.com/microsoft/ApplicationInsights-Java/pull/2652))
+* Fix default log directory for Azure Functions
+  ([#2660](https://github.com/microsoft/ApplicationInsights-Java/pull/2660))
 
 ## Version 3.4.2 GA
 
