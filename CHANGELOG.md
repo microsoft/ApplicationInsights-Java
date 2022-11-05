@@ -13,24 +13,47 @@ Bug fixes:
 
 ## Version 3.4.2 GA
 
-* Update to OpenTelemetry 1.19.0 [#2596](https://github.com/microsoft/ApplicationInsights-Java/pull/2596).
-* Add a new configuration for runtime attach configuration file [#2581](https://github.com/microsoft/ApplicationInsights-Java/pull/2581).
-* Fix duplicate Azure Functions logs [#2579](https://github.com/microsoft/ApplicationInsights-Java/pull/2579).
-* Fix OFF logging threshold [#2592](https://github.com/microsoft/ApplicationInsights-Java/pull/2592).
-* Add new configurations to export LogBack and Log4j 2 markers [#2529](https://github.com/microsoft/ApplicationInsights-Java/pull/2529).
+Enhancements:
+
+* Update to OpenTelemetry 1.19.0
+  ([#2596](https://github.com/microsoft/ApplicationInsights-Java/pull/2596))
+* Add a new configuration for runtime attach configuration file
+  ([#2581](https://github.com/microsoft/ApplicationInsights-Java/pull/2581))
+* Add new configurations to export LogBack and Log4j 2 markers
+  ([#2529](https://github.com/microsoft/ApplicationInsights-Java/pull/2529))
+
+Bug fixes:
+
+* Fix duplicate Azure Functions logs
+  ([#2579](https://github.com/microsoft/ApplicationInsights-Java/pull/2579))
+* Fix OFF logging threshold
+  ([#2592](https://github.com/microsoft/ApplicationInsights-Java/pull/2592))
 
 ## Version 3.4.1 GA
 
-* Fix ETW dll [#2534](https://github.com/microsoft/ApplicationInsights-Java/pull/2534).
-* Rename TelemetryKind to TelemetryType [#2535](https://github.com/microsoft/ApplicationInsights-Java/pull/2535).
-* Make classic SDKs work with older 3.2.x Agent versions [#2531](https://github.com/microsoft/ApplicationInsights-Java/pull/2531).
+Enhancements:
+
+* Rename TelemetryKind to TelemetryType
+  ([#2535](https://github.com/microsoft/ApplicationInsights-Java/pull/2535))
+* Make classic SDKs work with older 3.2.x Agent versions
+  ([#2531](https://github.com/microsoft/ApplicationInsights-Java/pull/2531))
+
+Bug fixes:
+
+* Fix ETW dll
+  ([#2534](https://github.com/microsoft/ApplicationInsights-Java/pull/2534))
 
 ## Version 3.4.0 GA
 
+Enhancements:
+
 * Introduce a new preview feature: Java Profiler for Azure Monitor Application Insights
-* Update OpenTelemetry to 1.18.0 [2509](https://github.com/microsoft/ApplicationInsights-Java/pull/2509).
-* Remove limit on filtering default metrics [2490](https://github.com/microsoft/ApplicationInsights-Java/pull/2490).
-* Add a new config to export logback code attributes [2518](https://github.com/microsoft/ApplicationInsights-Java/pull/2518).
+* Update OpenTelemetry to 1.18.0
+  ([2509](https://github.com/microsoft/ApplicationInsights-Java/pull/2509))
+* Remove limit on filtering default metrics
+  ([2490](https://github.com/microsoft/ApplicationInsights-Java/pull/2490))
+* Add a new config to export logback code attributes
+  ([2518](https://github.com/microsoft/ApplicationInsights-Java/pull/2518))
 
 ## Version 3.4.0-BETA.2
 
