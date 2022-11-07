@@ -9,7 +9,7 @@ echo "### Bug fixes"
 echo
 
 git log --reverse \
-        --author='^(?!dependabot\[bot\] ).*$' \
+        --author='^(?!dependabot\[bot\] )' \
         --perl-regexp \
         --pretty=format:"- %s" \
         $prior_version..HEAD \
