@@ -141,6 +141,8 @@ tasks {
 
     from(zipTree(shadowJarWithDuplicates.get().archiveFile))
 
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
     manifest {
       attributes(shadowJarWithDuplicates.get().manifest.attributes)
     }
