@@ -23,13 +23,15 @@ jobs:
 
       - name: Download artifact from maven central
         run: |
-          # the artifact can take time to show up on maven central so retry every minute for 3 hours
-          curl --retry-delay 60 \
-               --retry 180 \
-               --retry-all-errors \
-               --fail \
-               -o applicationinsights-agent-$VERSION.jar \
-               https://repo1.maven.org/maven2/com/microsoft/azure/applicationinsights-agent/$VERSION/applicationinsights-agent-$VERSION.jar
+          # the artifact can take time to show up on maven central so keep retrying
+          until curl --silent \
+                     --show-error \
+                     --fail \
+                     -o applicationinsights-agent-$VERSION.jar \
+                     https://repo1.maven.org/maven2/com/microsoft/azure/applicationinsights-agent/$VERSION/applicationinsights-agent-$VERSION.jar
+          do
+            sleep 60
+          done
 
       - name: Create GitHub release
         env:
