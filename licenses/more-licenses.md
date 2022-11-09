@@ -1,34 +1,34 @@
 
 #agent
 ##Dependency License Report
-_2022-11-09 10:45:22 PST_
+_2022-11-09 11:52:39 PST_
 ## Apache License, Version 2.0
 
-**1** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-annotations` **Version:** `2.13.4` 
-> - **Project URL**: [http://github.com/FasterXML/jackson](http://github.com/FasterXML/jackson)
+**1** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-annotations` **Version:** `2.14.0` 
+> - **Project URL**: [https://github.com/FasterXML/jackson](https://github.com/FasterXML/jackson)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
-> - **Embedded license files**: [jackson-annotations-2.13.4.jar/META-INF/LICENSE](jackson-annotations-2.13.4.jar/META-INF/LICENSE)
+> - **Embedded license files**: [jackson-annotations-2.14.0.jar/META-INF/LICENSE](jackson-annotations-2.14.0.jar/META-INF/LICENSE)
 
-**2** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-core` **Version:** `2.13.4` 
+**2** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-core` **Version:** `2.14.0` 
 > - **Project URL**: [https://github.com/FasterXML/jackson-core](https://github.com/FasterXML/jackson-core)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
-> - **Embedded license files**: [jackson-core-2.13.4.jar/META-INF/LICENSE](jackson-core-2.13.4.jar/META-INF/LICENSE) 
-    - [jackson-core-2.13.4.jar/META-INF/NOTICE](jackson-core-2.13.4.jar/META-INF/NOTICE)
+> - **Embedded license files**: [jackson-core-2.14.0.jar/META-INF/LICENSE](jackson-core-2.14.0.jar/META-INF/LICENSE) 
+    - [jackson-core-2.14.0.jar/META-INF/NOTICE](jackson-core-2.14.0.jar/META-INF/NOTICE)
 
-**3** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-databind` **Version:** `2.13.4.2` 
-> - **Project URL**: [http://github.com/FasterXML/jackson](http://github.com/FasterXML/jackson)
+**3** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-databind` **Version:** `2.14.0` 
+> - **Project URL**: [https://github.com/FasterXML/jackson](https://github.com/FasterXML/jackson)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
-> - **Embedded license files**: [jackson-databind-2.13.4.2.jar/META-INF/LICENSE](jackson-databind-2.13.4.2.jar/META-INF/LICENSE) 
-    - [jackson-databind-2.13.4.2.jar/META-INF/NOTICE](jackson-databind-2.13.4.2.jar/META-INF/NOTICE)
+> - **Embedded license files**: [jackson-databind-2.14.0.jar/META-INF/LICENSE](jackson-databind-2.14.0.jar/META-INF/LICENSE) 
+    - [jackson-databind-2.14.0.jar/META-INF/NOTICE](jackson-databind-2.14.0.jar/META-INF/NOTICE)
 
-**4** **Group:** `com.fasterxml.jackson.datatype` **Name:** `jackson-datatype-jsr310` **Version:** `2.13.4` 
+**4** **Group:** `com.fasterxml.jackson.datatype` **Name:** `jackson-datatype-jsr310` **Version:** `2.14.0` 
 > - **Manifest Project URL**: [https://github.com/FasterXML/jackson-modules-java8/jackson-datatype-jsr310](https://github.com/FasterXML/jackson-modules-java8/jackson-datatype-jsr310)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
-> - **Embedded license files**: [jackson-datatype-jsr310-2.13.4.jar/META-INF/LICENSE](jackson-datatype-jsr310-2.13.4.jar/META-INF/LICENSE)
+> - **Embedded license files**: [jackson-datatype-jsr310-2.14.0.jar/META-INF/LICENSE](jackson-datatype-jsr310-2.14.0.jar/META-INF/LICENSE)
 
 **5** **Group:** `com.github.stephenc.jcip` **Name:** `jcip-annotations` **Version:** `1.0-1` 
 > - **POM Project URL**: [http://stephenc.github.com/jcip-annotations](http://stephenc.github.com/jcip-annotations)
