@@ -241,7 +241,6 @@ public class NetworkStatsbeat extends BaseStatsbeat {
       StatsbeatTelemetryBuilder telemetryBuilder, IntervalMetricsKey key) {
     telemetryBuilder.addProperty("endpoint", BREEZE_ENDPOINT);
     telemetryBuilder.addProperty("cikey", key.getIkey());
-
     telemetryBuilder.addProperty("host", shorten(key.getHost()));
     String causeFieldName = key.getCauseFieldName();
     Object cause = key.getCauseValue();
