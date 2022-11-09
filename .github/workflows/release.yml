@@ -37,14 +37,17 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          if [[ $VERSION != *-BETA* ]]
+          if [[ $VERSION =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
           then
-            GA=" (GA)"
+            opt_ga=" (GA)"
+          else
+            opt_prerelease="--prerelease"
           fi
           # TODO (trask) remove --draft after the first successful release using this script
           gh release create --target main \
-                            --title "Version $VERSION$GA" \
+                            --title "Version $VERSION$opt_ga" \
                             --notes-file /tmp/release-notes.txt \
+                            $opt_prerelease \
                             --draft \
                             $VERSION \
                             applicationinsights-agent-$VERSION.jar
