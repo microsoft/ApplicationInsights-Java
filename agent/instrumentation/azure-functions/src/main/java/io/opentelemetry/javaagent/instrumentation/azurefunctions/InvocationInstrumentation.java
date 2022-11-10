@@ -11,6 +11,8 @@ import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 import com.microsoft.applicationinsights.agent.bootstrap.AzureFunctions;
 import com.microsoft.applicationinsights.agent.bootstrap.AzureFunctionsCustomDimensions;
 import com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil;
+import com.microsoft.azure.functions.rpc.messages.InvocationRequest;
+import com.microsoft.azure.functions.rpc.messages.RpcTraceContext;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
@@ -43,23 +45,17 @@ class InvocationInstrumentation implements TypeInstrumentation {
         InvocationInstrumentation.class.getName() + "$ExecuteAdvice");
   }
 
-  @SuppressWarnings({
-    "unused",
-    "PrivateConstructorForUtilityClass",
-    "MustBeClosedChecker",
-    "unchecked"
-  })
+  @SuppressWarnings({"unused", "PrivateConstructorForUtilityClass", "MustBeClosedChecker"})
   public static class ExecuteAdvice {
     @Nullable
     @Advice.OnMethodEnter(suppress = Throwable.class)
-    public static Scope methodEnter(@Advice.Argument(0) Object request)
-        throws ReflectiveOperationException {
+    public static Scope methodEnter(@Advice.Argument(0) InvocationRequest request) {
 
       if (!AzureFunctions.hasConnectionString()) {
         return null;
       }
 
-      Object traceContext = InvocationRequestExtractAdapter.getTraceContextMethod.invoke(request);
+      RpcTraceContext traceContext = request.getTraceContext();
       Context extractedContext =
           GlobalOpenTelemetry.getPropagators()
               .getTextMapPropagator()
@@ -92,12 +88,10 @@ class InvocationInstrumentation implements TypeInstrumentation {
     }
 
     private static AzureFunctionsCustomDimensions generateCustomDimensions(
-        Object request, Object traceContext) throws ReflectiveOperationException {
-      String invocationId =
-          (String) InvocationRequestExtractAdapter.getInvocationId.invoke(request);
-      Map<String, String> attributesMap =
-          (Map<String, String>)
-              InvocationRequestExtractAdapter.getAttributesMap.invoke(traceContext);
+        InvocationRequest request, RpcTraceContext traceContext) {
+
+      String invocationId = request.getInvocationId();
+      Map<String, String> attributesMap = traceContext.getAttributesMap();
       return new AzureFunctionsCustomDimensions(
           invocationId,
           attributesMap.get("ProcessId"),
