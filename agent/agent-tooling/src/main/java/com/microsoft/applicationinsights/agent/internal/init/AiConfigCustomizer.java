@@ -267,10 +267,12 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
     if (config.preview.instrumentation.akka.enabled) {
       properties.put("otel.instrumentation.akka-actor.enabled", "true");
       properties.put("otel.instrumentation.akka-http.enabled", "true");
+      properties.put("otel.instrumentation.scala-fork-join.enabled", "true");
     }
     if (config.preview.instrumentation.play.enabled) {
       properties.put("otel.instrumentation.play-mvc.enabled", "true");
       properties.put("otel.instrumentation.play-ws.enabled", "true");
+      properties.put("otel.instrumentation.scala-fork-join.enabled", "true");
     }
     if (config.preview.instrumentation.apacheCamel.enabled) {
       properties.put("otel.instrumentation.apache-camel.enabled", "true");
