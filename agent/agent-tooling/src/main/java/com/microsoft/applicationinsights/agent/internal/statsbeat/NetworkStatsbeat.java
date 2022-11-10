@@ -241,7 +241,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
       StatsbeatTelemetryBuilder telemetryBuilder, IntervalMetricsKey key) {
     telemetryBuilder.addProperty("endpoint", BREEZE_ENDPOINT);
     telemetryBuilder.addProperty("cikey", key.getIkey());
-    telemetryBuilder.addProperty("host", key.getHost());
+    telemetryBuilder.addProperty("host", shorten(key.getHost()));
     String causeFieldName = key.getCauseFieldName();
     Object cause = key.getCauseValue();
     if (causeFieldName != null && cause != null) {
@@ -300,7 +300,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
    * e.g. endpointUrl 'https://westus-0.in.applicationinsights.azure.com/v2.1/track' host will
    * return 'westus-0'
    */
-  static String getHost(String endpointUrl) {
+  static String shorten(String endpointUrl) {
     Matcher matcher = hostPattern.matcher(endpointUrl);
 
     if (matcher.find()) {
