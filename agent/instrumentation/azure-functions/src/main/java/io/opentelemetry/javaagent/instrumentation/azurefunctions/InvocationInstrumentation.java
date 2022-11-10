@@ -74,10 +74,17 @@ class InvocationInstrumentation implements TypeInstrumentation {
               traceFlags,
               spanContext.getTraceState());
 
-      return Context.current()
-          .with(Span.wrap(spanContext))
-          .with(generateCustomDimensions(request, traceContext))
-          .makeCurrent();
+      Map<String, String> attributesMap = traceContext.getAttributesMap();
+      AzureFunctionsCustomDimensions customDimensions =
+          new AzureFunctionsCustomDimensions(
+              request.getInvocationId(),
+              attributesMap.get("ProcessId"),
+              attributesMap.get("LogLevel"),
+              attributesMap.get("Category"),
+              attributesMap.get("HostInstanceId"),
+              attributesMap.get("#AzFuncLiveLogsSessionId"));
+
+      return Context.current().with(Span.wrap(spanContext)).with(customDimensions).makeCurrent();
     }
 
     @Advice.OnMethodExit(onThrowable = Throwable.class, suppress = Throwable.class)
@@ -85,20 +92,6 @@ class InvocationInstrumentation implements TypeInstrumentation {
       if (scope != null) {
         scope.close();
       }
-    }
-
-    private static AzureFunctionsCustomDimensions generateCustomDimensions(
-        InvocationRequest request, RpcTraceContext traceContext) {
-
-      String invocationId = request.getInvocationId();
-      Map<String, String> attributesMap = traceContext.getAttributesMap();
-      return new AzureFunctionsCustomDimensions(
-          invocationId,
-          attributesMap.get("ProcessId"),
-          attributesMap.get("LogLevel"),
-          attributesMap.get("Category"),
-          attributesMap.get("HostInstanceId"),
-          attributesMap.get("#AzFuncLiveLogsSessionId"));
     }
   }
 }
