@@ -145,6 +145,6 @@ checkstyle {
 }
 
 dependencyCheck {
-  skipConfigurations = listOf("errorprone", "checkstyle", "annotationProcessor")
+  skipConfigurations = listOf("errorprone", "spotbugs", "checkstyle", "annotationProcessor")
   failBuildOnCVSS = 0f // fail on any reported CVE
 }
