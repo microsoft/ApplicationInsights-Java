@@ -1,3 +1,5 @@
 #!/bin/bash -e
 
-sed -i "s/version=.*/version=$1/" gradle.properties
+version=$1
+
+sed -i "s/version=.*/version=$version/" gradle.properties
