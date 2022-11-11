@@ -9,7 +9,7 @@ Enhancements:
 
 Bug Fixes:
 
-* Fix Azure Function instrumentation
+* Fix Azure Function instrumentation (bug introduced in 3.4.2)
   [#2684](https://github.com/microsoft/ApplicationInsights-Java/pull/2684)
 
 ## Version 3.4.3 GA
