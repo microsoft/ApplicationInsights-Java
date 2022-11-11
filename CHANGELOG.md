@@ -4,7 +4,7 @@
 
 Enhancements:
 
-* Add scala instrumentation 
+* Add scala instrumentation when play or akka instrumentation are enabled
   [#2677](https://github.com/microsoft/ApplicationInsights-Java/pull/2677)
 
 Bug Fixes:
