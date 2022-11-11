@@ -152,9 +152,6 @@ public class AzureFunctionsInitializer implements Runnable {
     loggerList.forEach(configurator::updateLoggerLevel);
   }
 
-  // since the agent is already running at this point, this really just determines whether the
-  // telemetry is sent to the ingestion service or not (essentially behaving to the user as if the
-  // agent is not enabled)
   static boolean isAgentEnabled() {
     String enableAgent = System.getenv("APPLICATIONINSIGHTS_ENABLE_AGENT");
     boolean enableAgentDefault = Boolean.getBoolean("LazySetOptIn");
