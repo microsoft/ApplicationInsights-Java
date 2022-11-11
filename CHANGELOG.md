@@ -1,5 +1,17 @@
 # CHANGELOG
 
+## Version 3.4.4 GA
+
+Enhancements:
+
+* Add scala instrumentation 
+  [#2677](https://github.com/microsoft/ApplicationInsights-Java/pull/2677)
+
+Bug Fixes:
+
+* Fix Azure Function instrumentation
+  [#2684](https://github.com/microsoft/ApplicationInsights-Java/pull/2684)
+
 ## Version 3.4.3 GA
 
 Bug fixes:
