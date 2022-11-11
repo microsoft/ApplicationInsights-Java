@@ -1,0 +1,76 @@
+name: Reusable - Create docs pull request
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        type: string
+        required: true
+    secrets:
+      AARON_MAXWELL_TOKEN:
+        required: true
+  # to help with partial release build failures
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version"
+        required: true
+
+jobs:
+  create-docs-pull-request:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Repo sync
+        # this step avoids having to do a deep fetch of the very large upstream repo
+        # (cannot use "git fetch --depth 1 upstream main" because that leads to an error when
+        #         pushing below to the origin repo: "shallow update not allowed")
+        env:
+          VERSION: ${{ inputs.version }}
+          # this is the personal access token used for "gh repo sync" below
+          GH_TOKEN: ${{ secrets.AARON_MAXWELL_TOKEN }}
+        run: |
+          gh repo sync AaronMaxwell/azure-docs-pr \
+              --source MicrosoftDocs/azure-docs-pr
+
+      - uses: actions/checkout@v3
+        with:
+          repository: AaronMaxwell/azure-docs-pr
+          # this is the personal access token used for "git push" below
+          token: ${{ secrets.AARON_MAXWELL_TOKEN }}
+
+      - name: Update version in docs
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          grep -rl applicationinsights-agent-[0-9.]*.jar articles/azure-monitor/app \
+            | xargs sed -Ei "/applicationinsights-agent-2\./! s/applicationinsights-agent-[0-9.]+.jar/applicationinsights-agent-${VERSION}.jar/g"
+          grep -rl applicationinsights-agent-[0-9.]*.jar articles/azure-monitor/app \
+            | xargs sed -Ei "s|microsoft/ApplicationInsights-Java/releases/download/[0-9.]*/|microsoft/ApplicationInsights-Java/releases/download/${VERSION}/|g"
+
+      - name: Create pull request against azure-docs-pr
+        env:
+          VERSION: ${{ inputs.version }}
+          # this is the personal access token used for "gh pr create" below
+          GH_TOKEN: ${{ secrets.AARON_MAXWELL_TOKEN }}
+        run: |
+          message="Update the applicationinsights-java version to $VERSION"
+          body="Update the applicationinsights-java version to \`$VERSION\`.
+
+          cc @AaronMaxwell @heyams @jeanbisutti @mattmccleary @trask
+          "
+          branch="update-applicationinsights-java-to-${VERSION}"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git checkout -b $branch
+          git commit -a -m "$message"
+          git push --set-upstream origin $branch
+
+          # gh pr create doesn't have a way to explicitly specify different head and base
+          # repositories currently, but it will implicitly pick up the head from a different
+          # repository if you set up a tracking branch
+          gh pr create --title "$message" \
+                       --body "$body" \
+                       --repo MicrosoftDocs/azure-docs-pr \
+                       --base main

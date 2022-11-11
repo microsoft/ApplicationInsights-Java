@@ -5,6 +5,8 @@ on:
 jobs:
   release:
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.create-github-release.outputs.version }}
     steps:
       - uses: actions/checkout@v3
 
@@ -33,9 +35,10 @@ jobs:
             sleep 60
           done
 
-      - name: Create GitHub release
+      - id: create-github-release
+        name: Create GitHub release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           if [[ $VERSION =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
           then
@@ -52,41 +55,20 @@ jobs:
                             $VERSION \
                             applicationinsights-agent-$VERSION.jar
 
-  bump-version:
-    runs-on: ubuntu-latest
+          echo "::set-output name=version::$VERSION"
+
+  create-docs-pull-request:
     needs:
       - release
-    steps:
-      - uses: actions/checkout@v3
+    uses: ./.github/workflows/reusable-create-docs-pull-request.yml
+    with:
+      version: ${{ needs.release.outputs.version }}
+    secrets:
+      AARON_MAXWELL_TOKEN: ${{ secrets.AARON_MAXWELL_TOKEN }}
 
-      - name: Set environment variables
-        run: |
-          version=$(.github/scripts/get-version.sh)
-          if [[ $version =~ ^([0-9]+\.[0-9]+)\.([0-9]+)$ ]]; then
-            major_minor="${BASH_REMATCH[1]}"
-            patch="${BASH_REMATCH[2]}"
-          else
-            echo "unexpected version: $version"
-            exit 1
-          fi
-          echo "NEXT_VERSION=$major_minor.$((patch + 1))" >> $GITHUB_ENV
-
-      - name: Update version
-        run: .github/scripts/update-version.sh $NEXT_VERSION
-
-      - name: Create pull request against main
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          message="Update version to $NEXT_VERSION"
-          body="Update version to \`$NEXT_VERSION\`."
-          branch="automation/update-version-to-${NEXT_VERSION}"
-
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-
-          git checkout -b "$branch"
-          git commit -a -m "$message"
-          git push --set-upstream origin HEAD:$branch
-          gh pr create --title "$message" \
-                       --body "$body"
+  create-version-bump-pull-request:
+    needs:
+      - release
+    uses: ./.github/workflows/reusable-create-version-bump-pull-request.yml
+    with:
+      version: ${{ needs.release.outputs.version }}
