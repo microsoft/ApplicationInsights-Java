@@ -42,10 +42,12 @@ jobs:
         env:
           VERSION: ${{ inputs.version }}
         run: |
-          grep -rl applicationinsights-agent-[0-9.]*.jar articles/azure-monitor/app \
-            | xargs sed -Ei "/applicationinsights-agent-2\./! s/applicationinsights-agent-[0-9.]+.jar/applicationinsights-agent-${VERSION}.jar/g"
-          grep -rl applicationinsights-agent-[0-9.]*.jar articles/azure-monitor/app \
-            | xargs sed -Ei "s|microsoft/ApplicationInsights-Java/releases/download/[0-9.]*/|microsoft/ApplicationInsights-Java/releases/download/${VERSION}/|g"
+          date=$(date "+%m/%d/%Y")
+          files=$(grep -rl applicationinsights-agent-[0-9.]*.jar articles/azure-monitor/app \
+                    | grep -v java-2x-agent.md)
+          echo "$files" | xargs sed -Ei "s/applicationinsights-agent-[0-9.]+.jar/applicationinsights-agent-${VERSION}.jar/g"
+          echo "$files" | xargs sed -Ei "s|microsoft/ApplicationInsights-Java/releases/download/[0-9.]*/|microsoft/ApplicationInsights-Java/releases/download/${VERSION}/|g"
+          echo "$files" | xargs sed -Ei "s|^ms.date: .*|ms.date: $date|"
 
       - name: Create pull request against azure-docs-pr
         env:
@@ -70,7 +72,14 @@ jobs:
           # gh pr create doesn't have a way to explicitly specify different head and base
           # repositories currently, but it will implicitly pick up the head from a different
           # repository if you set up a tracking branch
-          gh pr create --title "$message" \
-                       --body "$body" \
-                       --repo MicrosoftDocs/azure-docs-pr \
-                       --base main
+
+          echo ========================================
+          echo To create PR, go to
+          echo https://github.com/MicrosoftDocs/azure-docs-pr/compare/main...AaronMaxwell:azure-docs-pr:${branch}?expand=1
+          echo ========================================
+
+          # TODO (trask) create PR automatically
+          # gh pr create --title "$message" \
+          #              --body "$body" \
+          #              --repo MicrosoftDocs/azure-docs-pr \
+          #              --base main
