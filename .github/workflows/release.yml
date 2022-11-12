@@ -19,7 +19,7 @@ jobs:
         run: |
           # the complex perl regex is needed because markdown docs render newlines as soft wraps
           # while release notes render them as line breaks
-          sed -n "0,/^## Version $VERSION /d;/^## Application Insights Java /q;p" CHANGELOG.md \
+          sed -n "0,/^## Version $VERSION /d;/^## Version /q;p" CHANGELOG.md \
             | perl -0pe 's/(?<!\n)\n *(?!\n)(?![-*] )(?![1-9]+\. )/ /g' \
             > /tmp/release-notes.txt
 
@@ -47,7 +47,7 @@ jobs:
           fi
           # TODO (trask) remove --draft after the first successful release using this script
           gh release create --target main \
-                            --title "Version $VERSION$opt_ga" \
+                            --title "Application Insights Java $VERSION$opt_ga" \
                             --notes-file /tmp/release-notes.txt \
                             $opt_prerelease \
                             --draft \
