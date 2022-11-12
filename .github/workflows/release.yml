@@ -47,7 +47,7 @@ jobs:
           fi
           # TODO (trask) remove --draft after the first successful release using this script
           gh release create --target main \
-                            --title "Version $VERSION$opt_ga" \
+                            --title "Application Insights Java $VERSION$opt_ga" \
                             --notes-file /tmp/release-notes.txt \
                             $opt_prerelease \
                             --draft \
