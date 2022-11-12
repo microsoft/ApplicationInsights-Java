@@ -2,19 +2,19 @@
 
 ## Version 3.4.4 GA
 
-Enhancements:
+# Enhancements:
 
 * Add scala instrumentation when play or akka instrumentation are enabled
   [#2677](https://github.com/microsoft/ApplicationInsights-Java/pull/2677)
 
-Bug Fixes:
+# Bug Fixes:
 
 * Fix Azure Function instrumentation (bug introduced in 3.4.2)
   [#2684](https://github.com/microsoft/ApplicationInsights-Java/pull/2684)
 
 ## Version 3.4.3 GA
 
-Bug fixes:
+# Bug fixes:
 
 * Fix runtime attach configuration file property
   ([#2619](https://github.com/microsoft/ApplicationInsights-Java/pull/2619))
@@ -25,7 +25,7 @@ Bug fixes:
 
 ## Version 3.4.2 GA
 
-Enhancements:
+# Enhancements:
 
 * Update to OpenTelemetry 1.19.0
   ([#2596](https://github.com/microsoft/ApplicationInsights-Java/pull/2596))
@@ -34,7 +34,7 @@ Enhancements:
 * Add new configurations to export LogBack and Log4j 2 markers
   ([#2529](https://github.com/microsoft/ApplicationInsights-Java/pull/2529))
 
-Bug fixes:
+# Bug fixes:
 
 * Fix duplicate Azure Functions logs
   ([#2579](https://github.com/microsoft/ApplicationInsights-Java/pull/2579))
@@ -43,21 +43,21 @@ Bug fixes:
 
 ## Version 3.4.1 GA
 
-Enhancements:
+# Enhancements:
 
 * Rename TelemetryKind to TelemetryType
   ([#2535](https://github.com/microsoft/ApplicationInsights-Java/pull/2535))
 * Make classic SDKs work with older 3.2.x Agent versions
   ([#2531](https://github.com/microsoft/ApplicationInsights-Java/pull/2531))
 
-Bug fixes:
+# Bug fixes:
 
 * Fix ETW dll
   ([#2534](https://github.com/microsoft/ApplicationInsights-Java/pull/2534))
 
 ## Version 3.4.0 GA
 
-Enhancements:
+# Enhancements:
 
 * Introduce a new preview feature: Java Profiler for Azure Monitor Application Insights
 * Update OpenTelemetry to 1.18.0
@@ -69,19 +69,19 @@ Enhancements:
 
 ## Version 3.4.0-BETA.2
 
-Migration notes:
+# Migration notes:
 
 * If you were using Automatic naming before, you will need to update your module-info.java file.
   Change ```requires applicationinsights.runtime.attach;``` to
   ```requires com.microsoft.applicationinsights.runtime.attach;``` and everything should work.
 
-Enhancements:
+# Enhancements:
 
 * Automatic module name entry added to Runtime Attach library Jar to support Modular Java.
 
 ## Version 3.4.0-BETA
 
-Migration notes:
+# Migration notes:
 
 * Rate-limited sampling is the new default. If you have not configured a sampling percentage
   and are using the prior default behavior of 100%, you will get the new default which limits
@@ -114,7 +114,7 @@ Migration notes:
   }
   ```
 
-Enhancements:
+# Enhancements:
 
 * [Standard metrics](https://docs.microsoft.com/en-us/azure/azure-monitor/app/standard-metrics)
   for HTTP requests and HTTP dependencies are now pre-aggregated inside of the Java agent, and so
@@ -207,7 +207,7 @@ Enhancements:
 * Ingestion sampling warnings are now suppressed since those are expected
   ([#2473](https://github.com/microsoft/ApplicationInsights-Java/pull/2473)).
 
-Bug Fixes:
+# Bug Fixes:
 
 * Fix `operation_Id` and `operation_parentID` being captured as `00000000000000000000000000000000`
   for "standalone" log records (which occur outside of a request). These fields are now empty for
