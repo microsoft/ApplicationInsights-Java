@@ -42,7 +42,7 @@ jobs:
         env:
           VERSION: ${{ inputs.version }}
         run: |
-          date=$(date "+%m/%d/%Y")
+          date=$(TZ=America/Los_Angeles date "+%m/%d/%Y")
           files=$(grep -rl applicationinsights-agent-[0-9.]*.jar articles/azure-monitor/app \
                     | grep -v java-2x-agent.md)
           echo "$files" | xargs sed -Ei "s/applicationinsights-agent-[0-9.]+.jar/applicationinsights-agent-${VERSION}.jar/g"
