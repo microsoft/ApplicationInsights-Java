@@ -241,6 +241,10 @@ public class MockedAppInsightsIngestionServer {
     return items;
   }
 
+  public boolean isLiveMetricsPingReceived() {
+    return servlet.isLiveMetricsPingReceived();
+  }
+
   @SuppressWarnings("SystemOut")
   public static void main(String[] args) throws Exception {
     MockedAppInsightsIngestionServer i = new MockedAppInsightsIngestionServer();

@@ -76,6 +76,7 @@ public class SmokeTestExtension
 
   @Nullable private String currentImageName;
   @Nullable private String currentImageAppDir;
+  @Nullable private String currentImageAppFileName;
 
   @Nullable private GenericContainer<?> targetContainer;
   @Nullable private List<GenericContainer<?>> allContainers;
@@ -132,10 +133,6 @@ public class SmokeTestExtension
   private void beforeAllInternal(ExtensionContext context) throws Exception {
     Class<?> testClass = context.getRequiredTestClass();
 
-    Environment environment = testClass.getAnnotation(Environment.class);
-    String imageName = environment.value().getImageName();
-    String imageAppDir = environment.value().getImageAppDir();
-
     UseAgent ua = testClass.getAnnotation(UseAgent.class);
     if (ua != null) {
       useAgent = true;
@@ -150,7 +147,8 @@ public class SmokeTestExtension
       Collections.addAll(dependencyImages, wdc.value());
     }
 
-    prepareEnvironment(imageName, imageAppDir);
+    Environment environment = testClass.getAnnotation(Environment.class);
+    prepareEnvironment(environment);
   }
 
   @Override
@@ -162,10 +160,14 @@ public class SmokeTestExtension
     }
   }
 
-  private void prepareEnvironment(String imageName, String imageAppDir) throws Exception {
+  private void prepareEnvironment(Environment environment) throws Exception {
     System.out.println("Preparing environment...");
-    currentImageName = imageName;
-    currentImageAppDir = imageAppDir;
+    currentImageName = environment.value().getImageName();
+    currentImageAppDir = environment.value().getImageAppDir();
+    currentImageAppFileName = environment.value().getImageAppFileName();
+    if (currentImageAppFileName == null) {
+      currentImageAppFileName = appFile.getName();
+    }
     mockedIngestion.startServer();
     network = Network.newNetwork();
     allContainers = new ArrayList<>();
@@ -205,13 +207,12 @@ public class SmokeTestExtension
     }
   }
 
-  protected static String getAppContext() {
-    String appFileName = appFile.getName();
-    if (appFileName.endsWith(".jar")) {
+  protected String getAppContext() {
+    if (currentImageAppFileName.endsWith(".jar")) {
       // spring boot jar
       return "";
     } else {
-      return appFileName.replace(".war", "");
+      return currentImageAppFileName.replace(".war", "");
     }
   }
 
@@ -365,12 +366,14 @@ public class SmokeTestExtension
                 "APPLICATIONINSIGHTS_CONNECTION_STRING",
                 "InstrumentationKey=00000000-0000-0000-0000-0FEEDDADBEEF;"
                     + "IngestionEndpoint="
+                    + FAKE_INGESTION_ENDPOINT
+                    + ";LiveEndpoint="
                     + FAKE_INGESTION_ENDPOINT)
             .withNetwork(network)
             .withExposedPorts(8080)
             .withFileSystemBind(
                 appFile.getAbsolutePath(),
-                currentImageAppDir + "/" + appFile.getName(),
+                currentImageAppDir + "/" + currentImageAppFileName,
                 BindMode.READ_ONLY);
 
     List<String> javaToolOptions = new ArrayList<>();
