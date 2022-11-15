@@ -33,36 +33,42 @@ val DEPENDENCY_BOMS = listOf(
   "org.testcontainers:testcontainers-bom:1.17.5",
 )
 
-// TODO consolidate to just one json library
-// TODO remove dependencies on apache commons
+val autoServiceVersion = "1.0.1"
+val autoValueVersion = "1.10"
+val errorProneVersion = "2.16"
+val byteBuddyVersion = "1.12.18"
+val jmhVersion = "1.36"
+val mockitoVersion = "4.9.0"
+// moving to 2.0 is problematic because the SPI mechanism in 2.0 doesn't work in the
+// bootstrap class loader because, while we add the agent jar to the bootstrap class loader
+// via Instrumentation.appendToBootstrapClassLoaderSearch(), there's nothing similar for
+// resources (which is a known problem in the java agent world), and so the META-INF/services
+// resource is not found
+val slf4jVersion = "1.7.36"
+// 1.12.0 and above use okio 2.x which pulls in kotlin libs
+val moshiVersion = "1.11.0"
 
 val CORE_DEPENDENCIES = listOf(
-  "com.google.auto.service:auto-service:1.0.1",
-  "com.google.auto.service:auto-service-annotations:1.0.1",
-  "com.google.auto.value:auto-value:1.10",
-  "com.google.auto.value:auto-value-annotations:1.10",
-  "com.google.errorprone:error_prone_annotations:2.16",
-  "com.google.errorprone:error_prone_core:2.16",
-  "org.openjdk.jmh:jmh-core:1.35",
-  "org.openjdk.jmh:jmh-generator-bytecode:1.36",
-  "org.mockito:mockito-core:4.8.1",
-  "org.mockito:mockito-junit-jupiter:4.9.0",
-  "org.mockito:mockito-inline:4.8.1",
-  // moving to 2.0 is problematic because the SPI mechanism in 2.0 doesn't work in the
-  // bootstrap class loader because, while we add the agent jar to the bootstrap class loader
-  // via Instrumentation.appendToBootstrapClassLoaderSearch(), there's nothing similar for
-  // resources (which is a known problem in the java agent world), and so the META-INF/services
-  // resource is not found
-  "org.slf4j:slf4j-api:1.7.36",
-  "org.slf4j:log4j-over-slf4j:1.7.36",
-  "org.slf4j:jcl-over-slf4j:1.7.36",
-  "org.slf4j:jul-to-slf4j:1.7.36",
-  // 1.12.0 and above use okio 2.x which pulls in kotlin libs
-  "com.squareup.moshi:moshi:1.11.0",
-  "com.squareup.moshi:moshi-adapters:1.11.0",
-  "io.opentelemetry.javaagent:opentelemetry-javaagent-extension-api:otelInstrumentationAlphaVersion",
-  "io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap:otelInstrumentationAlphaVersion",
-  "io.opentelemetry.javaagent:opentelemetry-javaagent-tooling:otelInstrumentationAlphaVersion",
+  "com.google.auto.service:auto-service:${autoServiceVersion}",
+  "com.google.auto.service:auto-service-annotations:${autoServiceVersion}",
+  "com.google.auto.value:auto-value:${autoValueVersion}",
+  "com.google.auto.value:auto-value-annotations:${autoValueVersion}",
+  "com.google.errorprone:error_prone_annotations:${errorProneVersion}",
+  "com.google.errorprone:error_prone_core:${errorProneVersion}",
+  "org.openjdk.jmh:jmh-core:${jmhVersion}",
+  "org.openjdk.jmh:jmh-generator-bytecode:${jmhVersion}",
+  "org.mockito:mockito-core:${mockitoVersion}",
+  "org.mockito:mockito-junit-jupiter:${mockitoVersion}",
+  "org.mockito:mockito-inline:${mockitoVersion}",
+  "org.slf4j:slf4j-api:${slf4jVersion}",
+  "org.slf4j:log4j-over-slf4j:${slf4jVersion}",
+  "org.slf4j:jcl-over-slf4j:${slf4jVersion}",
+  "org.slf4j:jul-to-slf4j:${slf4jVersion}",
+  "com.squareup.moshi:moshi:${moshiVersion}",
+  "com.squareup.moshi:moshi-adapters:${moshiVersion}",
+  "io.opentelemetry.javaagent:opentelemetry-javaagent-extension-api:${otelInstrumentationAlphaVersion}",
+  "io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap:${otelInstrumentationAlphaVersion}",
+  "io.opentelemetry.javaagent:opentelemetry-javaagent-tooling:${otelInstrumentationAlphaVersion}",
   // temporarily overriding transitive dependency from azure-core until next azure-core release
   "io.projectreactor.netty:reactor-netty-http:1.1.0"
 )
@@ -70,7 +76,6 @@ val CORE_DEPENDENCIES = listOf(
 val DEPENDENCIES = listOf(
   "ch.qos.logback:logback-classic:1.2.11",
   "ch.qos.logback.contrib:logback-json-classic:0.1.5",
-  "com.google.auto.service:auto-service:1.0.1",
   "com.uber.nullaway:nullaway:0.10.4",
   "commons-codec:commons-codec:1.15",
   "org.apache.commons:commons-text:1.10.0",
