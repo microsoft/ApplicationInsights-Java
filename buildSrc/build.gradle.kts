@@ -41,7 +41,7 @@ dependencies {
 
   implementation("org.owasp:dependency-check-gradle:7.3.0")
 
-  implementation("io.opentelemetry.instrumentation:gradle-plugins:1.19.2-alpha")
+  implementation("io.opentelemetry.instrumentation:gradle-plugins:1.20.0-alpha")
 
   // we need to use byte buddy variant that does not shade asm
   implementation("net.bytebuddy:byte-buddy-gradle-plugin:1.12.18") {
