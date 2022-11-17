@@ -54,5 +54,5 @@ org.junit:junit-bom:5.9.1=runtimeClasspath
 org.ow2.asm:asm:9.1=runtimeClasspath
 org.reactivestreams:reactive-streams:1.0.4=runtimeClasspath
 org.slf4j:slf4j-api:1.7.36=runtimeClasspath
-org.testcontainers:testcontainers-bom:1.17.5=runtimeClasspath
+org.testcontainers:testcontainers-bom:1.17.6=runtimeClasspath
 empty=
