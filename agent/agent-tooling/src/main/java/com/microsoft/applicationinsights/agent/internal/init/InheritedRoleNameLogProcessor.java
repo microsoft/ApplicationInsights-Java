@@ -11,8 +11,7 @@ import io.opentelemetry.sdk.logs.ReadWriteLogRecord;
 public final class InheritedRoleNameLogProcessor implements LogRecordProcessor {
 
   @Override
-  public void onEmit(ReadWriteLogRecord logRecord) {
-    Context context = Context.current();
+  public void onEmit(Context context, ReadWriteLogRecord logRecord) {
     String roleName = context.get(AiContextKeys.ROLE_NAME);
     if (roleName != null) {
       logRecord.setAttribute(AiSemanticAttributes.INTERNAL_ROLE_NAME, roleName);
