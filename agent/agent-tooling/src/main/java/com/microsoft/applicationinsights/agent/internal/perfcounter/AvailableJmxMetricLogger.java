@@ -32,6 +32,8 @@ class AvailableJmxMetricLogger {
 
   private static final Logger logger = LoggerFactory.getLogger(AvailableJmxMetricLogger.class);
 
+  private static final String NEWLINE = System.getProperty("line.separator");
+
   @GuardedBy("lock")
   private Map<String, Set<String>> priorAttributeMap = new HashMap<>();
 
@@ -50,19 +52,22 @@ class AvailableJmxMetricLogger {
       Map<String, Set<String>> currentAvailableJmxAttributes) {
     if (priorAvailableJmxAttributes.isEmpty()) {
       // first time
-      logger.info("available jmx metrics:\n{}", toString(currentAvailableJmxAttributes));
+      logger.info("available jmx metrics:{}{}", NEWLINE, toString(currentAvailableJmxAttributes));
       return;
     }
     Map<String, Set<String>> newlyAvailable =
         difference(currentAvailableJmxAttributes, priorAvailableJmxAttributes);
     if (!newlyAvailable.isEmpty()) {
-      logger.info("newly available jmx metrics since last output:\n{}", toString(newlyAvailable));
+      logger.info(
+          "newly available jmx metrics since last output:{}{}", NEWLINE, toString(newlyAvailable));
     }
     Map<String, Set<String>> noLongerAvailable =
         difference(priorAvailableJmxAttributes, currentAvailableJmxAttributes);
     if (!noLongerAvailable.isEmpty()) {
       logger.info(
-          "no longer available jmx metrics since last output:\n{}", toString(noLongerAvailable));
+          "no longer available jmx metrics since last output:{}{}",
+          NEWLINE,
+          toString(noLongerAvailable));
     }
   }
 
@@ -71,10 +76,10 @@ class AvailableJmxMetricLogger {
     for (Map.Entry<String, Set<String>> entry : jmxAttributes.entrySet()) {
       sb.append("  - object name:        ")
           .append(entry.getKey())
-          .append("\n")
+          .append(NEWLINE)
           .append("    attributes: ")
           .append(entry.getValue().stream().sorted().collect(Collectors.joining(", ")))
-          .append("\n");
+          .append(NEWLINE);
     }
     return sb.toString();
   }
