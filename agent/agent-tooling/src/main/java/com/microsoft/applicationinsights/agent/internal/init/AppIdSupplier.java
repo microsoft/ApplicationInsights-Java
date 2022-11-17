@@ -29,6 +29,8 @@ public class AppIdSupplier {
 
   private static final ClientLogger logger = new ClientLogger(AppIdSupplier.class);
 
+  private static final String NEWLINE = System.getProperty("line.separator");
+
   private final ScheduledExecutorService scheduledExecutor =
       Executors.newSingleThreadScheduledExecutor(
           ThreadPoolUtils.createDaemonThreadFactory(AppIdSupplier.class));
@@ -141,7 +143,7 @@ public class AppIdSupplier {
       int statusCode = response.getStatusCode();
       if (statusCode != 200) {
         operationLogger.recordFailure(
-            "received " + statusCode + " from " + url + "\nfull response:\n" + body,
+            "received " + statusCode + " from " + url + NEWLINE + "full response:" + NEWLINE + body,
             null,
             APP_ID_ERROR);
         backOff();

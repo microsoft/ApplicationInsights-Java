@@ -29,6 +29,8 @@ public class NetworkFriendlyExceptions {
   private static final List<FriendlyExceptionDetector> DETECTORS;
   private static final ClientLogger logger = new ClientLogger(NetworkFriendlyExceptions.class);
 
+  private static final String NEWLINE = System.getProperty("line.separator");
+
   static {
     DETECTORS = new ArrayList<>();
     // Note this order is important to determine the right exception!
@@ -174,16 +176,18 @@ public class NetworkFriendlyExceptions {
       if (customJavaKeyStorePath != null) {
         return "Please import the SSL certificate from "
             + getHostOnly(url)
-            + ", into your custom java key store located at:\n"
+            + ", into your custom java key store located at:"
+            + NEWLINE
             + customJavaKeyStorePath
-            + "\n"
+            + NEWLINE
             + "Learn more about importing the certificate here: https://go.microsoft.com/fwlink/?linkid=2151450";
       }
       return "Please import the SSL certificate from "
           + getHostOnly(url)
-          + ", into the default java key store located at:\n"
+          + ", into the default java key store located at:"
+          + NEWLINE
           + getJavaCacertsPath()
-          + "\n"
+          + NEWLINE
           + "Learn more about importing the certificate here: https://go.microsoft.com/fwlink/?linkid=2151450";
     }
 
@@ -219,7 +223,8 @@ public class NetworkFriendlyExceptions {
     private static String getUnknownHostFriendlyExceptionAction(String url) {
       return "Please update your network configuration so that the host in this url can be resolved: "
           + url
-          + "\nLearn more about troubleshooting unknown host exception here: https://go.microsoft.com/fwlink/?linkid=2185830";
+          + NEWLINE
+          + "Learn more about troubleshooting unknown host exception here: https://go.microsoft.com/fwlink/?linkid=2185830";
     }
   }
 
@@ -286,29 +291,35 @@ public class NetworkFriendlyExceptions {
           .append(
               "Investigate why the security providers in your Java distribution's"
                   + " java.security configuration file differ from a standard Java distribution.")
-          .append("\n\n");
+          .append(NEWLINE)
+          .append(NEWLINE);
       for (String missingCipher : EXPECTED_CIPHERS) {
-        actionBuilder.append("    ").append(missingCipher).append("\n");
+        actionBuilder.append("    ").append(missingCipher).append(NEWLINE);
       }
-      actionBuilder.append(
-          "\nHere are the cipher suites that the JVM does have, in case this is"
-              + " helpful in identifying why the ones above are missing:\n");
+      actionBuilder
+          .append(NEWLINE)
+          .append(
+              "Here are the cipher suites that the JVM does have, in case this is"
+                  + " helpful in identifying why the ones above are missing:")
+          .append(NEWLINE);
       for (String foundCipher : cipherSuitesFromJvm) {
-        actionBuilder.append(foundCipher).append("\n");
+        actionBuilder.append(foundCipher).append(NEWLINE);
       }
       // even though we log this info at startup, this info is particularly important for this error
       // so we duplicate it here to make sure we get it as quickly and as easily as possible
-      actionBuilder.append(
-          "\nJava version:"
-              + System.getProperty("java.version")
-              + ", vendor: "
-              + System.getProperty("java.vendor")
-              + ", home: "
-              + System.getProperty("java.home"));
-      actionBuilder.append(
-          "\nLearn more about troubleshooting this network issue related to cipher suites here:"
-              + " https://go.microsoft.com/fwlink/?linkid=2185426");
-      return actionBuilder.toString();
+      return actionBuilder
+          .append(NEWLINE)
+          .append("Java version:")
+          .append(System.getProperty("java.version"))
+          .append(", vendor: ")
+          .append(System.getProperty("java.vendor"))
+          .append(", home: ")
+          .append(System.getProperty("java.home"))
+          .append(NEWLINE)
+          .append(
+              "Learn more about troubleshooting this network issue related to cipher suites here:"
+                  + " https://go.microsoft.com/fwlink/?linkid=2185426")
+          .toString();
     }
   }
 

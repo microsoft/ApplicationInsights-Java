@@ -898,14 +898,14 @@ public class ConfigurationBuilder {
     if (message != null && !message.isEmpty()) {
       return message;
     }
-    return "The configuration " + location + " contains malformed JSON\n";
+    return "The configuration " + location + " contains malformed JSON";
   }
 
   static String getJsonEncodingExceptionMessage(String message, JsonOrigin jsonOrigin) {
     if (message != null && !message.isEmpty()) {
       return message;
     }
-    return "The configuration " + jsonOrigin + " contains malformed JSON\n";
+    return "The configuration " + jsonOrigin + " contains malformed JSON";
   }
 
   // this is for external callers, where logging is ok

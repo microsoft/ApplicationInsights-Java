@@ -17,8 +17,6 @@ public class ApplicationInsightsCsvLayout extends PatternLayout {
 
   private static final String PREFIX = "LanguageWorkerConsoleLogMS_APPLICATION_INSIGHTS_LOGS";
 
-  private static final String LINE_SEPARATOR = System.getProperty("line.separator");
-
   private static final ApplicationMetadataFactory applicationMetadataFactory =
       DiagnosticsHelper.getMetadataFactory();
   private final String qualifiedSdkVersion;
@@ -69,6 +67,7 @@ public class ApplicationInsightsCsvLayout extends PatternLayout {
   }
 
   private static String formatForCsv(String str) {
-    return str.replace(LINE_SEPARATOR, " ").replace('\"', '\'');
+    // convert both windows and linux newlines just to be safe
+    return str.replace("\r\n", " ").replace("\n", " ").replace('\"', '\'');
   }
 }
