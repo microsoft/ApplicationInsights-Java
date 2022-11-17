@@ -11,7 +11,10 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 class MessageAggregatorTest {
+
   private static OperationLogger networkExceptionStats;
+
+  private static final String NEWLINE = System.getProperty("line.separator");
 
   @BeforeAll
   static void setUp() {
@@ -37,8 +40,10 @@ class MessageAggregatorTest {
             "intro: Test Message (future warnings will be aggregated and logged once every 0 minutes)");
     assertThat(logCaptor.getWarnLogs().get(1))
         .contains(
-            "In the last 0 minutes, the following operation has failed 3 times (out of 4): intro:\n"
-                + " * Test Message2 (2 times)\n"
+            "In the last 0 minutes, the following operation has failed 3 times (out of 4): intro:"
+                + NEWLINE
+                + " * Test Message2 (2 times)"
+                + NEWLINE
                 + " * Test Message3 (1 times)");
   }
 }
