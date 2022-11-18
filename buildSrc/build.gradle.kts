@@ -47,7 +47,7 @@ dependencies {
   implementation("net.bytebuddy:byte-buddy-gradle-plugin:1.12.18") {
     exclude(group = "net.bytebuddy", module = "byte-buddy")
   }
-  implementation("net.bytebuddy:byte-buddy-dep:1.12.18")
+  implementation("net.bytebuddy:byte-buddy-dep:1.12.19")
 
   implementation("net.ltgt.gradle:gradle-errorprone-plugin:3.0.1")
   implementation("net.ltgt.gradle:gradle-nullaway-plugin:1.5.0")
