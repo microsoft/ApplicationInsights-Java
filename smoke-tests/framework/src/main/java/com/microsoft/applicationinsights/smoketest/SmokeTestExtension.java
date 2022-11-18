@@ -57,7 +57,7 @@ public class SmokeTestExtension
         AfterEachCallback,
         TestWatcher {
 
-  // use -PsmokeTestRemoteDebug=true at gradle command line to enable (see ai.smoke-test.gradle.kts)
+  // add -PsmokeTestRemoteDebug=true to the gradle args to enable (see ai.smoke-test.gradle.kts)
   private static final boolean REMOTE_DEBUG = Boolean.getBoolean("ai.smoke-test.remote-debug");
 
   private static final int TELEMETRY_RECEIVE_TIMEOUT_SECONDS = 60;
