@@ -172,9 +172,12 @@ public class NetworkFriendlyExceptions {
     }
 
     private static String getSslFriendlyExceptionAction(String url) {
+      if (!url.contains("profiles")) { // ../api/profiles/../appId
+        return "";
+      }
       String customJavaKeyStorePath = getCustomJavaKeystorePath();
       if (customJavaKeyStorePath != null) {
-        return "Please import the SSL certificate from "
+        return "Please import the ROOT SSL certificate from "
             + getHostOnly(url)
             + ", into your custom java key store located at:"
             + NEWLINE
@@ -182,7 +185,7 @@ public class NetworkFriendlyExceptions {
             + NEWLINE
             + "Learn more about importing the certificate here: https://go.microsoft.com/fwlink/?linkid=2151450";
       }
-      return "Please import the SSL certificate from "
+      return "Please import the ROOT SSL certificate from "
           + getHostOnly(url)
           + ", into the default java key store located at:"
           + NEWLINE
