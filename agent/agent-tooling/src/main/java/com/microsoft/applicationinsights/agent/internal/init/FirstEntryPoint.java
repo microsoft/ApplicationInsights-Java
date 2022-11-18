@@ -114,14 +114,14 @@ public class FirstEntryPoint implements LoggingCustomizer {
     startupLogger.debug("Classpath: " + System.getProperty("java.class.path"));
     startupLogger.debug(
         "Input arguments: " + ManagementFactory.getRuntimeMXBean().getInputArguments());
-    String javaOpts = System.getenv("JAVA_OPTS");
-    if (javaOpts != null) {
-      startupLogger.debug("JAVA_OPTS: " + javaOpts);
-    }
-    String javaToolOptions = System.getenv("JAVA_TOOL_OPTIONS");
-    if (javaToolOptions != null) {
-      startupLogger.debug("JAVA_TOOL_OPTIONS: " + javaToolOptions);
-    }
+    startupLogger.debug(
+        "JAVA_OPTS: "
+            + System.getenv("JAVA_OPTS")
+            + ", _JAVA_OPTIONS: "
+            + System.getenv("_JAVA_OPTIONS")
+            + ", JAVA_OPTIONS: "
+            + System.getenv("JAVA_OPTIONS"));
+    startupLogger.debug("JAVA_TOOL_OPTIONS: " + System.getenv("JAVA_TOOL_OPTIONS"));
   }
 
   @Override
