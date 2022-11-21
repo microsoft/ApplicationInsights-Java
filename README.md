@@ -4,38 +4,9 @@
 
 See documentation at https://docs.microsoft.com/en-us/azure/azure-monitor/app/java-in-process-agent.
 
-## If you need to build locally
+## If you need to build locally or want to contribute
 
-Download the main repo and submodule:
-
-```
-git clone https://github.com/microsoft/ApplicationInsights-Java
-cd ApplicationInsights-Java
-```
-
-Build the agent jar file:
-
-```
-./gradlew :agent:agent:shadowJar
-```
-
-The agent jar file should now be available under `agent/agent/build/libs`.
-
-## If you are contributing...
-
-We follow the same
-[style guidelines](https://github.com/open-telemetry/opentelemetry-java-instrumentation/blob/main/docs/contributing/style-guideline.md)
-and
-[recommended Intellij setup](https://github.com/open-telemetry/opentelemetry-java-instrumentation/blob/main/docs/contributing/intellij-setup.md)
-as the OpenTelemetry Java Instrumentation repo.
-
-While developing, if you find errorprone is getting in your way (e.g. it won't let you add
-`System.out.println` to your code), you can disable it by adding the following to your
-`~/.gradle/gradle.properties`:
-
-```
-disableErrorProne=true
-```
+See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Microsoft Open Source Code of Conduct
 
