@@ -103,6 +103,7 @@ public class FirstEntryPoint implements LoggingCustomizer {
       if (startupLogger.isDebugEnabled()) {
         startupLogger.debug("OS: " + System.getProperty("os.name"));
         logJavaInfo();
+        startupLogger.debug("Netty versions: " + NettyVersions.extract());
       }
 
     } catch (Exception e) {
