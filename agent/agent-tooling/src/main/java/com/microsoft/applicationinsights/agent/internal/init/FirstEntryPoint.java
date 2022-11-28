@@ -32,6 +32,7 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.util.Properties;
 import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -104,6 +105,8 @@ public class FirstEntryPoint implements LoggingCustomizer {
         startupLogger.debug("OS: " + System.getProperty("os.name"));
         logJavaInfo();
         startupLogger.debug("Netty versions: " + NettyVersions.extract());
+        startupLogger.debug("Env: " + System.getenv());
+        startupLogger.debug("System properties: " + findSystemProperties());
       }
 
     } catch (Exception e) {
@@ -117,6 +120,20 @@ public class FirstEntryPoint implements LoggingCustomizer {
         "Input arguments: " + ManagementFactory.getRuntimeMXBean().getInputArguments());
     startupLogger.debug("_JAVA_OPTIONS: " + System.getenv("_JAVA_OPTIONS"));
     startupLogger.debug("JAVA_TOOL_OPTIONS: " + System.getenv("JAVA_TOOL_OPTIONS"));
+  }
+
+  private static String findSystemProperties() {
+    Properties properties = System.getProperties();
+    StringBuilder propsBuilder = new StringBuilder();
+    properties.forEach(
+        (key, value) -> {
+          boolean firstProperty = propsBuilder.length() == 0;
+          if (!firstProperty) {
+            propsBuilder.append(", ");
+          }
+          propsBuilder.append("(" + key + "=" + value + ")");
+        });
+    return propsBuilder.toString();
   }
 
   @Override
