@@ -15,9 +15,9 @@ public final class AzureFunctionsLogProcessor implements LogRecordProcessor {
   private static final ClientLogger logger = new ClientLogger(AzureFunctionsLogProcessor.class);
 
   @Override
-  public void onEmit(ReadWriteLogRecord logRecord) {
+  public void onEmit(Context context, ReadWriteLogRecord logRecord) {
     AzureFunctionsCustomDimensions customDimensions =
-        AzureFunctionsCustomDimensions.fromContext(Context.current());
+        AzureFunctionsCustomDimensions.fromContext(context);
     if (customDimensions == null) {
       logger.verbose("'ai-functions-custom-dimensions' is missing from the context");
       return;

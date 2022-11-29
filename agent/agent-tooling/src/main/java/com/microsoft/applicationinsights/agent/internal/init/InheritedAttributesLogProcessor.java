@@ -6,6 +6,7 @@ package com.microsoft.applicationinsights.agent.internal.init;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.logs.LogRecordProcessor;
 import io.opentelemetry.sdk.logs.ReadWriteLogRecord;
 import io.opentelemetry.sdk.trace.ReadableSpan;
@@ -26,8 +27,8 @@ public final class InheritedAttributesLogProcessor implements LogRecordProcessor
 
   @Override
   @SuppressWarnings("unchecked")
-  public void onEmit(ReadWriteLogRecord logRecord) {
-    Span currentSpan = Span.current();
+  public void onEmit(Context context, ReadWriteLogRecord logRecord) {
+    Span currentSpan = Span.fromContext(context);
     if (!(currentSpan instanceof ReadableSpan)) {
       return;
     }

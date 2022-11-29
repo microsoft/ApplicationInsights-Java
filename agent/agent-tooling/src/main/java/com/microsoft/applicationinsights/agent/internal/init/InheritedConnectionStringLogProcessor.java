@@ -11,8 +11,7 @@ import io.opentelemetry.sdk.logs.ReadWriteLogRecord;
 public final class InheritedConnectionStringLogProcessor implements LogRecordProcessor {
 
   @Override
-  public void onEmit(ReadWriteLogRecord logRecord) {
-    Context context = Context.current();
+  public void onEmit(Context context, ReadWriteLogRecord logRecord) {
     String connectionString = context.get(AiContextKeys.CONNECTION_STRING);
     if (connectionString != null) {
       logRecord.setAttribute(AiSemanticAttributes.INTERNAL_CONNECTION_STRING, connectionString);
