@@ -19,7 +19,7 @@ dependencies {
   implementation("org.eclipse.jetty.aggregate:jetty-all:9.4.39.v20210325")
 
   // this is exposed in SmokeTestExtension API
-  api("org.testcontainers:testcontainers:1.17.3")
+  api("org.testcontainers:testcontainers:1.17.6")
 
   implementation("org.awaitility:awaitility:4.2.0")
 
