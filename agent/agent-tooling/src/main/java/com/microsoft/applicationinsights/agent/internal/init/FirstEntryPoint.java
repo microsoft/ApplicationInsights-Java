@@ -119,7 +119,7 @@ public class FirstEntryPoint implements LoggingCustomizer {
     startupLogger.debug(
         "Input arguments: " + ManagementFactory.getRuntimeMXBean().getInputArguments());
     startupLogger.debug("_JAVA_OPTIONS: " + System.getenv("_JAVA_OPTIONS"));
-    startupLogger.trace("JAVA_TOOL_OPTIONS: " + System.getenv("JAVA_TOOL_OPTIONS"));
+    startupLogger.debug("JAVA_TOOL_OPTIONS: " + System.getenv("JAVA_TOOL_OPTIONS"));
   }
 
   private static String findSystemProperties() {
