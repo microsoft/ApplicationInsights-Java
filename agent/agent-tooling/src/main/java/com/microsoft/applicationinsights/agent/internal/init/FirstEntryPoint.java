@@ -101,9 +101,16 @@ public class FirstEntryPoint implements LoggingCustomizer {
         JvmCompiler.disableJvmCompilerDirectives();
       }
 
-      if (startupLogger.isDebugEnabled()) {
+      if(startupLogger.isDebugEnabled()) {
+        startupLogger.debug(
+            "Input arguments: " + ManagementFactory.getRuntimeMXBean().getInputArguments());
+        startupLogger.debug("_JAVA_OPTIONS: " + System.getenv("_JAVA_OPTIONS"));
+        startupLogger.debug("JAVA_TOOL_OPTIONS: " + System.getenv("JAVA_TOOL_OPTIONS"));
+      }
+
+      if (startupLogger.isTraceEnabled()) {
         startupLogger.trace("OS: " + System.getProperty("os.name"));
-        logJavaInfo();
+        startupLogger.trace("Classpath: " + System.getProperty("java.class.path"));
         startupLogger.trace("Netty versions: " + NettyVersions.extract());
         startupLogger.trace("Env: " + System.getenv());
         startupLogger.trace("System properties: " + findSystemProperties());
@@ -112,14 +119,6 @@ public class FirstEntryPoint implements LoggingCustomizer {
     } catch (Exception e) {
       throw new IllegalStateException(e);
     }
-  }
-
-  private static void logJavaInfo() {
-    startupLogger.trace("Classpath: " + System.getProperty("java.class.path"));
-    startupLogger.debug(
-        "Input arguments: " + ManagementFactory.getRuntimeMXBean().getInputArguments());
-    startupLogger.debug("_JAVA_OPTIONS: " + System.getenv("_JAVA_OPTIONS"));
-    startupLogger.debug("JAVA_TOOL_OPTIONS: " + System.getenv("JAVA_TOOL_OPTIONS"));
   }
 
   private static String findSystemProperties() {
