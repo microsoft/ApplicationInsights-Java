@@ -102,11 +102,11 @@ public class FirstEntryPoint implements LoggingCustomizer {
       }
 
       if (startupLogger.isDebugEnabled()) {
-        startupLogger.debug("OS: " + System.getProperty("os.name"));
+        startupLogger.trace("OS: " + System.getProperty("os.name"));
         logJavaInfo();
-        startupLogger.debug("Netty versions: " + NettyVersions.extract());
-        startupLogger.debug("Env: " + System.getenv());
-        startupLogger.debug("System properties: " + findSystemProperties());
+        startupLogger.trace("Netty versions: " + NettyVersions.extract());
+        startupLogger.trace("Env: " + System.getenv());
+        startupLogger.trace("System properties: " + findSystemProperties());
       }
 
     } catch (Exception e) {
@@ -115,11 +115,11 @@ public class FirstEntryPoint implements LoggingCustomizer {
   }
 
   private static void logJavaInfo() {
-    startupLogger.debug("Classpath: " + System.getProperty("java.class.path"));
-    startupLogger.debug(
+    startupLogger.trace("Classpath: " + System.getProperty("java.class.path"));
+    startupLogger.trace(
         "Input arguments: " + ManagementFactory.getRuntimeMXBean().getInputArguments());
-    startupLogger.debug("_JAVA_OPTIONS: " + System.getenv("_JAVA_OPTIONS"));
-    startupLogger.debug("JAVA_TOOL_OPTIONS: " + System.getenv("JAVA_TOOL_OPTIONS"));
+    startupLogger.trace("_JAVA_OPTIONS: " + System.getenv("_JAVA_OPTIONS"));
+    startupLogger.trace("JAVA_TOOL_OPTIONS: " + System.getenv("JAVA_TOOL_OPTIONS"));
   }
 
   private static String findSystemProperties() {
