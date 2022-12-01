@@ -7,7 +7,7 @@ base.archivesName.set("applicationinsights-web")
 
 dependencies {
   api(project(":classic-sdk:core"))
-  compileOnly("javax.servlet:javax.servlet-api:3.0.1")
+  compileOnly("javax.servlet:javax.servlet-api:4.0.1")
 }
 
 tasks {
