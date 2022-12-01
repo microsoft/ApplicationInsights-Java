@@ -13,6 +13,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.nio.charset.Charset;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
 
 class AppInsightsCertificate {
 
@@ -62,7 +63,11 @@ class AppInsightsCertificate {
           + "-----END CERTIFICATE-----"
           + System.lineSeparator();
 
-  AppInsightsCertificate() {}
+  private final Logger startupLogger;
+
+  AppInsightsCertificate(Logger startupLogger) {
+    this.startupLogger = startupLogger;
+  }
 
   boolean isInJavaKeystore() {
     String loadedCertificates = loadCertificates();
@@ -72,22 +77,14 @@ class AppInsightsCertificate {
   @SuppressFBWarnings(
       value = "SECCI", // Command Injection
       justification = "No user data is used to construct the command below")
-  private static String loadCertificates() {
+  private String loadCertificates() {
     String keyStoreLocation = System.getProperty("java.home") + "/lib/security/cacerts";
     return executeWithoutException(
         new ProcessBuilder("keytool", "-list", "-rfc", "-keystore", keyStoreLocation));
   }
 
-  private static String executeWithoutException(ProcessBuilder processBuilder) {
-    try {
-      return execute(processBuilder);
-    } catch (RuntimeException e) {
-      logger.error(e.getMessage(), e);
-    }
-  }
+  private String executeWithoutException(ProcessBuilder processBuilder) {
 
-  private static String execute(ProcessBuilder processBuilder) {
-    String result;
     try {
       Process process = processBuilder.start();
       OutputStream outputStream = process.getOutputStream();
@@ -98,14 +95,14 @@ class AppInsightsCertificate {
       writer.close();
 
       InputStream inputStream = process.getInputStream();
-      result = toString(inputStream);
+      String result = toString(inputStream);
 
       process.destroy();
+      return result;
     } catch (Exception e) {
-      throw new IllegalStateException(
-          "Error related to the execution of " + processBuilder.command() + ".", e);
+      startupLogger.error("Error related to the execution of " + processBuilder.command(), e);
+      return "";
     }
-    return result;
   }
 
   private static String toString(InputStream inputStream) throws IOException {

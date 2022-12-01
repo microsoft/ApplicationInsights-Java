@@ -117,7 +117,7 @@ public class FirstEntryPoint implements LoggingCustomizer {
       }
 
       if (startupLogger.isTraceEnabled()) {
-        AppInsightsCertificate appInsightsCertificate = new AppInsightsCertificate();
+        AppInsightsCertificate appInsightsCertificate = new AppInsightsCertificate(startupLogger);
         startupLogger.trace(
             "Application Insights root certificate in the Java keystore: "
                 + appInsightsCertificate.isInJavaKeystore());
