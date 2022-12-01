@@ -101,7 +101,7 @@ public class FirstEntryPoint implements LoggingCustomizer {
         JvmCompiler.disableJvmCompilerDirectives();
       }
 
-      if(startupLogger.isDebugEnabled()) {
+      if (startupLogger.isDebugEnabled()) {
         startupLogger.debug(
             "Input arguments: " + ManagementFactory.getRuntimeMXBean().getInputArguments());
         startupLogger.debug("_JAVA_OPTIONS: " + System.getenv("_JAVA_OPTIONS"));
