@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 
 class AppInsightsCertificate {
 
+  // DigiCert Global Root G2
   private static final String APP_INSIGHT_ROOT_CERTIFICATE =
       "-----BEGIN CERTIFICATE-----"
           + System.lineSeparator()
