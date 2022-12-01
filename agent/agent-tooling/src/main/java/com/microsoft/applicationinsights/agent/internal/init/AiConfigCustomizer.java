@@ -228,9 +228,6 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
       properties.put("otel.instrumentation.quartz.enabled", "true");
       // this is needed for the job.system attribute in order to map those spans to requests
       properties.put("otel.instrumentation.quartz.experimental-span-attributes", "true");
-      // TODO (trask) this line is temporary until 1.19.0, see
-      // https://github.com/open-telemetry/opentelemetry-java-instrumentation/pull/6633
-      System.setProperty("otel.instrumentation.quartz.experimental-span-attributes", "true");
     }
     if (config.instrumentation.rabbitmq.enabled) {
       properties.put("otel.instrumentation.rabbitmq.enabled", "true");
@@ -244,10 +241,6 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
       properties.put("otel.instrumentation.spring-scheduling.enabled", "true");
       // this is needed for the job.system attribute in order to map those spans to requests
       properties.put("otel.instrumentation.spring-scheduling.experimental-span-attributes", "true");
-      // TODO (trask) this line is temporary until 1.19.0, see
-      // https://github.com/open-telemetry/opentelemetry-java-instrumentation/pull/6633
-      System.setProperty(
-          "otel.instrumentation.spring-scheduling.experimental-span-attributes", "true");
     }
     if (config.preview.captureLogbackCodeAttributes) {
       properties.put(

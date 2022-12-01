@@ -11,9 +11,9 @@ data class DependencySet(val group: String, val version: String, val modules: Li
 val dependencyVersions = hashMapOf<String, String>()
 rootProject.extra["versions"] = dependencyVersions
 
-val otelVersion = "1.19.0"
-val otelInstrumentationVersion = "1.19.1"
-val otelInstrumentationAlphaVersion = "1.19.1-alpha"
+val otelVersion = "1.20.1"
+val otelInstrumentationVersion = "1.20.2"
+val otelInstrumentationAlphaVersion = "1.20.2-alpha"
 val otelContribAlphaVersion = "1.18.0-alpha"
 
 rootProject.extra["otelVersion"] = otelVersion
@@ -22,7 +22,7 @@ rootProject.extra["otelInstrumentationAlphaVersion"] = otelInstrumentationAlphaV
 rootProject.extra["otelContribAlphaVersion"] = otelContribAlphaVersion
 
 val DEPENDENCY_BOMS = listOf(
-  "com.fasterxml.jackson:jackson-bom:2.14.0",
+  "com.fasterxml.jackson:jackson-bom:2.14.1",
   "com.google.guava:guava-bom:31.1-jre",
   "io.opentelemetry:opentelemetry-bom:${otelVersion}",
   "io.opentelemetry:opentelemetry-bom-alpha:${otelVersion}-alpha",
@@ -77,7 +77,7 @@ val CORE_DEPENDENCIES = listOf(
 val DEPENDENCIES = listOf(
   "ch.qos.logback:logback-classic:1.2.11",
   "ch.qos.logback.contrib:logback-json-classic:0.1.5",
-  "com.uber.nullaway:nullaway:0.10.4",
+  "com.uber.nullaway:nullaway:0.10.5",
   "commons-codec:commons-codec:1.15",
   "org.apache.commons:commons-text:1.10.0",
   "com.google.code.gson:gson:2.10",

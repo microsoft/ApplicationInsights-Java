@@ -16,10 +16,10 @@ dependencies {
   implementation("com.google.code.gson:gson")
   implementation("org.apache.httpcomponents:httpclient:4.5.13")
 
-  implementation("org.eclipse.jetty.aggregate:jetty-all:9.4.39.v20210325")
+  implementation("org.eclipse.jetty:jetty-servlet:9.4.39.v20210325")
 
   // this is exposed in SmokeTestExtension API
-  api("org.testcontainers:testcontainers:1.17.3")
+  api("org.testcontainers:testcontainers:1.17.6")
 
   implementation("org.awaitility:awaitility:4.2.0")
 

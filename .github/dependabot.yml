@@ -12,7 +12,9 @@ updates:
       interval: "daily"
 
   - package-ecosystem: "gradle"
-    directory: "dependencyManagement"
+    directory: "/"
+    registries:
+      - gradle-plugin-portal
     ignore:
       - dependency-name: "org.slf4j:*"
         # moving to 2.0 is problematic because the SPI mechanism in 2.0 doesn't work in the
@@ -33,24 +35,3 @@ updates:
     schedule:
       interval: "daily"
     open-pull-requests-limit: 10
-
-  - package-ecosystem: "gradle"
-    directory: "buildSrc"
-    schedule:
-      interval: "daily"
-    open-pull-requests-limit: 10
-
-  - package-ecosystem: "gradle"
-    directory: ".github/project-root-duplicates"
-    schedule:
-      interval: "daily"
-    open-pull-requests-limit: 10
-
-  - package-ecosystem: "gradle"
-    directory: "/"
-    allow:
-      - dependency-name: "com.gradle*"
-    registries:
-      - gradle-plugin-portal
-    schedule:
-      interval: "daily"
