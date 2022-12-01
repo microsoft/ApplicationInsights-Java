@@ -82,11 +82,7 @@ class AppInsightsCertificate {
     try {
       return execute(processBuilder);
     } catch (RuntimeException e) {
-      String header = "Error when executing command " + processBuilder.command() + ": ";
-      if (e.getSuppressed().length == 1) {
-        return header + e.getMessage() + " (Suppressed: " + e.getSuppressed()[0] + ")";
-      }
-      return header + e.getMessage();
+      logger.error(e.getMessage(), e);
     }
   }
 
