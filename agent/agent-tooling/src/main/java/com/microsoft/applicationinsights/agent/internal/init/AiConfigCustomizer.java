@@ -35,11 +35,6 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
     properties.put("otel.instrumentation.common.experimental.view-telemetry.enabled", "false");
     properties.put(
         "otel.instrumentation.messaging.experimental.receive-telemetry.enabled", "false");
-    // this is needed to capture kafka.record.queue_time_ms
-    properties.put("otel.instrumentation.kafka.experimental-span-attributes", "true");
-
-    // kafka metrics are enabled by default
-    properties.put("otel.instrumentation.kafka.metric-reporter.enabled", "false");
 
     setHttpHeaderConfiguration(
         properties,
@@ -218,7 +213,9 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
     if (config.instrumentation.kafka.enabled) {
       properties.put("otel.instrumentation.kafka.enabled", "true");
       properties.put("otel.instrumentation.spring-kafka.enabled", "true");
-      // TODO (trask) add to smoke test to ensure these metrics are not reported
+      // this is needed to capture kafka.record.queue_time_ms
+      properties.put("otel.instrumentation.kafka.experimental-span-attributes", "true");
+      // kafka metrics are enabled by default
       properties.put("otel.instrumentation.kafka.metric-reporter.enabled", "false");
     }
     if (config.instrumentation.mongo.enabled) {
