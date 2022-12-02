@@ -29,9 +29,12 @@ updates:
       - dependency-name: "com.squareup.moshi:*"
         # 1.12.0 and above use okio 2.x which pulls in kotlin libs (which are large)
         versions: [ "[1.12,)" ]
-      - dependency-name: "io.opentelemetry.instrumentation:*"
-        # OpenTelemetry version updates are handled manually after each upstream release
-        versions: [ "(,)" ]
+      - dependency-name: "org.springframework.boot:spring-boot-gradle-plugin"
+        # this is used for smoke tests, and spring boot 3 is not supported upstream yet
+        versions: [ "(3,)" ]
+      - dependency-name: "javax.servlet:javax.servlet-api"
+        # applicationinsights-web (classic sdk) is intentionally compiled and against Servlet 3.0
+        versions: [ "[3.1,)" ]
     schedule:
       interval: "daily"
     open-pull-requests-limit: 10
