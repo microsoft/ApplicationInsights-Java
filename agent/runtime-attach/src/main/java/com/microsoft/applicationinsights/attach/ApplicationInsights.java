@@ -11,6 +11,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -50,15 +51,19 @@ public final class ApplicationInsights {
 
     System.setProperty(RUNTIME_ATTACHED_ENABLED_PROPERTY, "true");
 
-    Optional<String> jsonConfig = findJsonConfig();
-    if (jsonConfig.isPresent()) {
-      System.setProperty(RUNTIME_ATTACHED_JSON_PROPERTY, jsonConfig.get());
+    try {
+      Optional<String> jsonConfig = findJsonConfig();
+      if (jsonConfig.isPresent()) {
+        System.setProperty(RUNTIME_ATTACHED_JSON_PROPERTY, jsonConfig.get());
+      }
+
+      String appInsightResourceName = findAppInsightResourceName();
+      CoreRuntimeAttach runtimeAttach = new CoreRuntimeAttach(appInsightResourceName);
+
+      runtimeAttach.attachJavaagentToCurrentJVM();
+    } catch (Exception e) {
+      logger.log(Level.WARNING, "Fail to runtime attach Application Insights", e);
     }
-
-    String appInsightResourceName = findAppInsightResourceName();
-    CoreRuntimeAttach runtimeAttach = new CoreRuntimeAttach(appInsightResourceName);
-
-    runtimeAttach.attachJavaagentToCurrentJVM();
   }
 
   private static Optional<String> findJsonConfig() {
