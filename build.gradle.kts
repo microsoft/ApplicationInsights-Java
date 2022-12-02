@@ -16,26 +16,3 @@ subprojects {
 }
 
 extra["isRelease"] = (System.getProperty("isRelease") ?: "false").toBoolean()
-
-allprojects {
-
-  if (!path.startsWith(":smoke-tests")) {
-    configurations.configureEach {
-      if (name.toLowerCase().endsWith("runtimeclasspath")) {
-        resolutionStrategy.activateDependencyLocking()
-      }
-    }
-  }
-
-  tasks.register("generateLockfiles") {
-    doFirst {
-      // you must run with --write-locks parameter
-      require(gradle.startParameter.isWriteDependencyLocks)
-    }
-    doLast {
-      if (configurations.findByName("runtimeClasspath") != null) {
-        configurations.named("runtimeClasspath").get().resolve()
-      }
-    }
-  }
-}
