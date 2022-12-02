@@ -46,6 +46,15 @@ jobs:
         with:
           cache-read-only: true
 
+      - name: Set git user
+        if: |
+          env.COMMAND == 'spotless' ||
+          env.COMMAND == 'license' ||
+          env.COMMAND == 'lockfile'
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email github-action[bot]@users.noreply.github.com
+
       - name: Run command
         env:
           NUMBER: ${{ github.event.issue.number }}
