@@ -101,6 +101,8 @@ public class FirstEntryPoint implements LoggingCustomizer {
         JvmCompiler.disableJvmCompilerDirectives();
       }
 
+      checkTlsConnectionsToVirtualServersEnabled();
+
       if (startupLogger.isDebugEnabled()) {
         startupLogger.debug(
             "Input arguments: " + ManagementFactory.getRuntimeMXBean().getInputArguments());
@@ -125,6 +127,15 @@ public class FirstEntryPoint implements LoggingCustomizer {
 
     } catch (Exception e) {
       throw new IllegalStateException(e);
+    }
+  }
+
+  private static void checkTlsConnectionsToVirtualServersEnabled() {
+    String tlsConnectionsToVirtualServersProp = "jsse.enableSNIExtension";
+    String propValue = System.getProperty(tlsConnectionsToVirtualServersProp);
+    if ("false".equals(propValue)) {
+      startupLogger.warn(
+          "Please configure your application without -Djsse.enableSNIExtension=false. You may have connection issues with Application Insights.");
     }
   }
 
