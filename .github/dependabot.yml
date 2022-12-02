@@ -35,6 +35,9 @@ updates:
       - dependency-name: "javax.servlet:javax.servlet-api"
         # applicationinsights-web (classic sdk) is intentionally compiled and against Servlet 3.0
         versions: [ "[3.1,)" ]
+      - dependency-name: "org.eclipse.jetty:jetty-servlet"
+        # smoke test framework intentionally uses javax servlet (as opposed to jakarta servlet)
+        versions: [ "[11,)" ]
     schedule:
       interval: "daily"
     open-pull-requests-limit: 10
