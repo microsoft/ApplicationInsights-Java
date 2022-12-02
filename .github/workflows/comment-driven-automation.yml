@@ -63,7 +63,7 @@ jobs:
           available_commands="Available commands:
             * \`/spotless\` - runs \`./gradlew spotlessApply\`
             * \`/license\` - runs \`./gradlew generateLicenseReport\`
-            * \`/lockfile\` - runs \`./gradlew generateLockfiles --write-locks\`
+            * \`/lockfile\` - runs \`./gradlew resolveAndLockAll --write-locks\`
             * \`/help\` - displays available commands
           "
           # TODO add thumbs up on triggering comment
@@ -87,13 +87,13 @@ jobs:
             git commit -m "./gradlew generateLicenseReport"
             git push
           elif [[ "$COMMAND" == "lockfile" ]]; then
-            ./gradlew generateLockfiles --write-locks
+            ./gradlew resolveAndLockAll --write-locks
             git add "*.lockfile"
             if git diff --cached --quiet; then
               gh pr comment $NUMBER --body "Already up-to-date"
               exit 0 # success
             fi
-            git commit -m "./gradlew generateLockfiles --write-locks"
+            git commit -m "./gradlew resolveAndLockAll --write-locks"
             git push
           elif [[ "$COMMAND" == "help" ]]; then
             gh pr comment $NUMBER --body "$available_commands"

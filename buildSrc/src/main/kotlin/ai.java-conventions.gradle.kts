@@ -148,3 +148,23 @@ dependencyCheck {
   skipConfigurations = listOf("errorprone", "spotbugs", "checkstyle", "annotationProcessor")
   failBuildOnCVSS = 0f // fail on any reported CVE
 }
+
+if (!path.startsWith(":smoke-tests")) {
+  configurations.configureEach {
+    if (name.toLowerCase().endsWith("runtimeclasspath")) {
+      resolutionStrategy.activateDependencyLocking()
+    }
+  }
+}
+
+// see https://docs.gradle.org/current/userguide/dependency_locking.html#lock_all_configurations_in_one_build_execution
+tasks.register("resolveAndLockAll") {
+  doFirst {
+    require(gradle.startParameter.isWriteDependencyLocks)
+  }
+  doLast {
+    if (configurations.findByName("runtimeClasspath") != null) {
+      configurations.named("runtimeClasspath").get().resolve()
+    }
+  }
+}
