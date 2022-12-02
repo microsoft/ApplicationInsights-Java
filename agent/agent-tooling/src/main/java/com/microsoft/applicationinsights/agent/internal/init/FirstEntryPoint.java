@@ -135,7 +135,7 @@ public class FirstEntryPoint implements LoggingCustomizer {
     String propValue = System.getProperty(tlsConnectionsToVirtualServersProp);
     if ("false".equals(propValue)) {
       startupLogger.warn(
-          "Please configure your application without -Djsse.enableSNIExtension=false. You may have connection issues with Application Insights.");
+          "System property -Djsse.enableSNIExtension=false is detected. If you have connection issues with Application Insights, please remove this.");
     }
   }
 
