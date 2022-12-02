@@ -62,7 +62,7 @@ public final class ApplicationInsights {
 
       runtimeAttach.attachJavaagentToCurrentJVM();
     } catch (Throwable t) {
-      logger.log(Level.WARNING, "Fail to runtime attach Application Insights", e);
+      logger.log(Level.WARNING, "Fail to runtime attach Application Insights", t);
     }
   }
 
