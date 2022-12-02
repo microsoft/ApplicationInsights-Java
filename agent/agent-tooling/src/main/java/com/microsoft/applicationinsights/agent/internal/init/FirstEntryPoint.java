@@ -116,6 +116,13 @@ public class FirstEntryPoint implements LoggingCustomizer {
         startupLogger.trace("System properties: " + findSystemProperties());
       }
 
+      if (startupLogger.isTraceEnabled()) {
+        AppInsightsCertificate appInsightsCertificate = new AppInsightsCertificate(startupLogger);
+        startupLogger.trace(
+            "Application Insights root certificate in the Java keystore: "
+                + appInsightsCertificate.isInJavaKeystore());
+      }
+
     } catch (Exception e) {
       throw new IllegalStateException(e);
     }
