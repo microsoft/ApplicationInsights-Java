@@ -1,5 +1,19 @@
 # CHANGELOG
 
+## Version 3.4.5 GA
+
+### Enhancements:
+
+* Update to OpenTelemetry Java Instrumentation 1.20
+  ([#2712](https://github.com/microsoft/ApplicationInsights-Java/pull/2712))
+* Additional self-diagnostics
+  ([#2709](https://github.com/microsoft/ApplicationInsights-Java/pull/2709),
+   [#2719](https://github.com/microsoft/ApplicationInsights-Java/pull/2719),
+   [#2717](https://github.com/microsoft/ApplicationInsights-Java/pull/2717),
+   [#2716](https://github.com/microsoft/ApplicationInsights-Java/pull/2716),
+   [#2737](https://github.com/microsoft/ApplicationInsights-Java/pull/2737),
+   [#2756](https://github.com/microsoft/ApplicationInsights-Java/pull/2756))
+
 ## Version 3.4.4 GA
 
 ### Enhancements:
