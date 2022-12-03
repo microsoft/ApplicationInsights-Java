@@ -46,7 +46,8 @@ dependencies {
 
 configurations {
   all {
-    // excluding unused dependency for size (~1.8mb)
+    // excluding unused dependencies for size (~1.8mb)
     exclude("com.fasterxml.jackson.dataformat", "jackson-dataformat-xml")
+    exclude("com.fasterxml.woodstox", "woodstox-core")
   }
 }
