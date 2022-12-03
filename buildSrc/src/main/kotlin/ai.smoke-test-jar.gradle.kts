@@ -1,4 +1,5 @@
 import com.microsoft.applicationinsights.gradle.AiSmokeTestExtension
+import org.springframework.boot.gradle.tasks.bundling.BootJar
 
 plugins {
   id("ai.smoke-test")
@@ -7,5 +8,5 @@ plugins {
 
 val aiSmokeTest = extensions.getByType(AiSmokeTestExtension::class)
 
-aiSmokeTest.testAppArtifactDir.set(tasks.jar.get().destinationDirectory.get())
-aiSmokeTest.testAppArtifactFilename.set(tasks.jar.get().archiveFileName.get())
+aiSmokeTest.testAppArtifactDir.set(tasks.named<BootJar>("bootJar").get().destinationDirectory.get())
+aiSmokeTest.testAppArtifactFilename.set(tasks.named<BootJar>("bootJar").get().archiveFileName.get())

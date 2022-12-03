@@ -41,5 +41,5 @@ dependencies {
   implementation("gradle.plugin.io.morethan.jmhreport:gradle-jmh-report:0.9.0")
   implementation("me.champeau.jmh:jmh-gradle-plugin:0.6.8")
 
-  implementation("org.springframework.boot:spring-boot-gradle-plugin:2.4.0")
+  implementation("org.springframework.boot:spring-boot-gradle-plugin:2.7.6")
 }
