@@ -74,7 +74,7 @@ public final class AzureMonitorExporterBuilder {
   private RetryPolicy retryPolicy;
   private final List<HttpPipelinePolicy> httpPipelinePolicies = new ArrayList<>();
 
-  private Configuration configuration;
+  private Configuration configuration = Configuration.getGlobalConfiguration();
   private ClientOptions clientOptions;
 
   /** Creates an instance of {@link AzureMonitorExporterBuilder}. */
@@ -250,17 +250,17 @@ public final class AzureMonitorExporterBuilder {
    * @throws NullPointerException if the connection string is not set on this builder or if the
    *     environment variable "APPLICATIONINSIGHTS_CONNECTION_STRING" is not set.
    */
-  public LogRecordExporter buildLogExporter() {
+  public LogRecordExporter buildLogRecordExporter() {
     return new AzureMonitorLogRecordExporter(
         new LogDataMapper(true, this::populateDefaults), initExporterBuilder());
   }
 
   private TelemetryItemExporter initExporterBuilder() {
-    if (this.connectionString == null) {
-      // if connection string is not set, try loading from configuration
-      Configuration buildConfiguration =
-          (configuration == null) ? Configuration.getGlobalConfiguration() : configuration;
-      connectionString(buildConfiguration.get(APPLICATIONINSIGHTS_CONNECTION_STRING));
+    String connectionStringOverride = configuration.get(APPLICATIONINSIGHTS_CONNECTION_STRING);
+    if (connectionStringOverride != null) {
+      // APPLICATIONINSIGHTS_CONNECTION_STRING environment variable should take precedence over
+      // programmatically calling connectionString()
+      connectionString = ConnectionString.parse(connectionStringOverride);
     }
 
     if (this.credential != null) {
@@ -331,6 +331,6 @@ public final class AzureMonitorExporterBuilder {
     builder.setConnectionString(connectionString);
     builder.addTag(
         ContextTagKeys.AI_INTERNAL_SDK_VERSION.toString(), VersionGenerator.getSdkVersion());
-    ResourceParser.updateRoleNameAndInstance(builder, resource);
+    ResourceParser.updateRoleNameAndInstance(builder, resource, configuration);
   }
 }
