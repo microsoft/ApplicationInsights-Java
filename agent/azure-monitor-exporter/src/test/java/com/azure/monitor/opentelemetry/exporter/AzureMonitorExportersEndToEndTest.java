@@ -4,7 +4,7 @@
 package com.azure.monitor.opentelemetry.exporter;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.data.MapEntry.entry;
+import static org.assertj.core.api.Assertions.entry;
 
 import com.azure.core.http.HttpPipelineCallContext;
 import com.azure.core.http.HttpPipelineNextPolicy;
@@ -30,10 +30,11 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.zip.GZIPInputStream;
@@ -52,13 +53,18 @@ public class AzureMonitorExportersEndToEndTest extends MonitorExporterClientTest
   @SystemStub EnvironmentVariables envVars = new EnvironmentVariables();
 
   private static final String TRACE_CONNECTION_STRING =
-      "InstrumentationKey=00000000-0000-0000-0000-000000000000";
+      "InstrumentationKey=00000000-0000-0000-0000-000000000000;"
+          + "IngestionEndpoint=https://test.in.applicationinsights.azure.com/;"
+          + "LiveEndpoint=https://test.livediagnostics.monitor.azure.com/";
+  private static final String TRACE_CONNECTION_STRING_OVERRIDE =
+      "InstrumentationKey=00000000-0000-0000-0000-0FEEDDADBEEF;"
+          + "IngestionEndpoint=https://test.in.applicationinsights.azure.com/;"
+          + "LiveEndpoint=https://test.livediagnostics.monitor.azure.com/";
   private static final String INSTRUMENTATION_KEY = "00000000-0000-0000-0000-0FEEDDADBEEF";
 
   @BeforeEach
   public void setup() {
-    envVars.set(
-        "APPLICATIONINSIGHTS_CONNECTION_STRING", "InstrumentationKey=" + INSTRUMENTATION_KEY);
+    envVars.set("APPLICATIONINSIGHTS_CONNECTION_STRING", TRACE_CONNECTION_STRING_OVERRIDE);
   }
 
   @Test
@@ -144,6 +150,8 @@ public class AzureMonitorExportersEndToEndTest extends MonitorExporterClientTest
       span.end();
     }
     traceExporterCountDown.await(10, TimeUnit.SECONDS);
+    assertThat(customValidationPolicy.url)
+        .isEqualTo(new URL("https://test.in.applicationinsights.azure.com/v2.1/track"));
     return customValidationPolicy.actualTelemetryItems;
   }
 
@@ -158,13 +166,16 @@ public class AzureMonitorExportersEndToEndTest extends MonitorExporterClientTest
         Attributes.of(
             AttributeKey.stringKey("name"), "apple", AttributeKey.stringKey("color"), "red"));
     metricExporterCountDown.await(10, TimeUnit.SECONDS);
+    assertThat(customValidationPolicy.url)
+        .isEqualTo(new URL("https://test.in.applicationinsights.azure.com/v2.1/track"));
     return customValidationPolicy.actualTelemetryItems;
   }
 
   private static class CustomValidationPolicy implements HttpPipelinePolicy {
 
     private final CountDownLatch countDown;
-    private final List<TelemetryItem> actualTelemetryItems = new ArrayList<>();
+    private volatile URL url;
+    private final List<TelemetryItem> actualTelemetryItems = new CopyOnWriteArrayList<>();
 
     CustomValidationPolicy(CountDownLatch countDown) {
       this.countDown = countDown;
@@ -173,6 +184,7 @@ public class AzureMonitorExportersEndToEndTest extends MonitorExporterClientTest
     @Override
     public Mono<HttpResponse> process(
         HttpPipelineCallContext context, HttpPipelineNextPolicy next) {
+      url = context.getHttpRequest().getUrl();
       Mono<String> asyncBytes =
           FluxUtil.collectBytesInByteBufferStream(context.getHttpRequest().getBody())
               .map(CustomValidationPolicy::ungzip);

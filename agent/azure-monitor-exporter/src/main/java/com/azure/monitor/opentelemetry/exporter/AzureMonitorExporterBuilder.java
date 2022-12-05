@@ -61,8 +61,7 @@ public final class AzureMonitorExporterBuilder {
   private static final Map<String, String> PROPERTIES =
       CoreUtils.getProperties("azure-monitor-opentelemetry-exporter.properties");
 
-  private String instrumentationKey;
-  private String connectionString;
+  private ConnectionString connectionString;
   private TokenCredential credential;
 
   // suppress warnings is needed in ApplicationInsights-Java repo, can be removed when upstreaming
@@ -182,9 +181,7 @@ public final class AzureMonitorExporterBuilder {
    * @throws IllegalArgumentException If the connection string is invalid.
    */
   public AzureMonitorExporterBuilder connectionString(String connectionString) {
-    this.connectionString = connectionString;
-    ConnectionString connectionStringObj = ConnectionString.parse(connectionString);
-    this.instrumentationKey = connectionStringObj.getInstrumentationKey();
+    this.connectionString = ConnectionString.parse(connectionString);
     return this;
   }
 
@@ -261,13 +258,10 @@ public final class AzureMonitorExporterBuilder {
   private TelemetryItemExporter initExporterBuilder() {
     if (this.connectionString == null) {
       // if connection string is not set, try loading from configuration
-      Configuration configuration = Configuration.getGlobalConfiguration();
-      connectionString(configuration.get(APPLICATIONINSIGHTS_CONNECTION_STRING));
+      Configuration buildConfiguration =
+          (configuration == null) ? Configuration.getGlobalConfiguration() : configuration;
+      connectionString(buildConfiguration.get(APPLICATIONINSIGHTS_CONNECTION_STRING));
     }
-
-    // instrumentationKey is extracted from connectionString, so, if instrumentationKey is null
-    // then the error message should read "connectionString cannot be null".
-    Objects.requireNonNull(instrumentationKey, "'connectionString' cannot be null");
 
     if (this.credential != null) {
       // Add authentication policy to HttpPipeline
@@ -334,7 +328,7 @@ public final class AzureMonitorExporterBuilder {
   }
 
   void populateDefaults(AbstractTelemetryBuilder builder, Resource resource) {
-    builder.setConnectionString(ConnectionString.parse("InstrumentationKey=" + instrumentationKey));
+    builder.setConnectionString(connectionString);
     builder.addTag(
         ContextTagKeys.AI_INTERNAL_SDK_VERSION.toString(), VersionGenerator.getSdkVersion());
     ResourceParser.updateRoleNameAndInstance(builder, resource);
