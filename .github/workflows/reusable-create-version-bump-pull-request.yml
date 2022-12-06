@@ -42,7 +42,7 @@ jobs:
           message="Update version to $NEXT_VERSION"
           body="Update version to \`$NEXT_VERSION\`.
           
-          Since this PR was created using the default `GITHUB_TOKEN`, it will need to be
+          Since this PR was created using the default \`GITHUB_TOKEN\`, it will need to be
           closed and re-opened in order to trigger the normal pull request workflows.
           "
           branch="automation/update-version-to-${NEXT_VERSION}"
