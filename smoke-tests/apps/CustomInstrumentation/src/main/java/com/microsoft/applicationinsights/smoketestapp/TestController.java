@@ -18,11 +18,17 @@ public class TestController {
     return "OK";
   }
 
-  @GetMapping("/test")
-  public String test() {
+  @GetMapping("/server-span")
+  public String serverSpan() {
     // spin off separate thread to simulate a top-level (request) instrumentation captured on the
     // run() method
     new Thread(this::run).start();
+    return "OK!";
+  }
+
+  @GetMapping("/internal-span")
+  public String internalSpan() {
+    run();
     return "OK!";
   }
 
