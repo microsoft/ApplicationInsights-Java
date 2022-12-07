@@ -13,6 +13,7 @@ public class SmokeTestExtensionBuilder {
   private boolean skipHealthCheck;
   private boolean readOnly;
   private boolean useOld3xAgent;
+  private String selfDiagnosticsLevel = "info";
 
   public SmokeTestExtensionBuilder setDependencyContainer(
       String envVarName, GenericContainer<?> container) {
@@ -41,6 +42,11 @@ public class SmokeTestExtensionBuilder {
     return this;
   }
 
+  public SmokeTestExtensionBuilder setSelfDiagnosticsLevel(String selfDiagnosticsLevel) {
+    this.selfDiagnosticsLevel = selfDiagnosticsLevel;
+    return this;
+  }
+
   public SmokeTestExtension build() {
     return new SmokeTestExtension(
         dependencyContainer,
@@ -48,6 +54,7 @@ public class SmokeTestExtensionBuilder {
         usesGlobalIngestionEndpoint,
         skipHealthCheck,
         readOnly,
-        useOld3xAgent);
+        useOld3xAgent,
+        selfDiagnosticsLevel);
   }
 }
