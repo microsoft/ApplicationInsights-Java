@@ -369,6 +369,7 @@ public class SmokeTestExtension
                     + FAKE_INGESTION_ENDPOINT
                     + ";LiveEndpoint="
                     + FAKE_INGESTION_ENDPOINT)
+            .withEnv("APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_LEVEL", "trace")
             .withNetwork(network)
             .withExposedPorts(8080)
             .withFileSystemBind(
