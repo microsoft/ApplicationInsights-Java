@@ -50,7 +50,11 @@ public final class MethodSingletons {
     public SpanKind extract(ClassAndMethod classAndMethod) {
       // we emit SERVER spans instead of INTERNAL spans when there is no parent, so that it works
       // well with Application Insights' customInstrumentations feature
-      return Span.current().getSpanContext().isValid() ? SpanKind.INTERNAL : SpanKind.SERVER;
+      return willHaveParentSpan() ? SpanKind.INTERNAL : SpanKind.SERVER;
+    }
+
+    private static boolean willHaveParentSpan() {
+      return Span.current().getSpanContext().isValid();
     }
   }
   // END APPLICATION INSIGHTS MODIFICATIONS
