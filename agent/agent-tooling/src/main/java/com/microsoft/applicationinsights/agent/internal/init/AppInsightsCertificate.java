@@ -87,6 +87,12 @@ class AppInsightsCertificate {
   private String executeWithoutException(ProcessBuilder processBuilder) {
 
     try {
+      // to make sure the javaagent is not re-applied to the keytool process, which then creates
+      // a recursive hanging
+      // also helps to ensure other JVM args are not passed along
+      processBuilder.environment().put("JAVA_TOOL_OPTIONS", "");
+      processBuilder.environment().put("_JAVA_OPTIONS", "");
+
       Process process = processBuilder.start();
       OutputStream outputStream = process.getOutputStream();
       PrintWriter writer =

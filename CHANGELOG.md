@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## Version 3.4.6 GA
+
+### Bug fixes:
+
+* Fix self-diagnostics trace level logging can hang
+  ([#2778](https://github.com/microsoft/ApplicationInsights-Java/pull/2778))
+
 ## Version 3.4.5 GA
 
 ### Enhancements:
@@ -21,7 +28,7 @@
 * Add scala instrumentation when play or akka instrumentation are enabled
   ([#2677](https://github.com/microsoft/ApplicationInsights-Java/pull/2677))
 
-### Bug Fixes:
+### Bug fixes:
 
 * Fix Azure Function instrumentation (bug introduced in 3.4.2)
   ([#2684](https://github.com/microsoft/ApplicationInsights-Java/pull/2684))
