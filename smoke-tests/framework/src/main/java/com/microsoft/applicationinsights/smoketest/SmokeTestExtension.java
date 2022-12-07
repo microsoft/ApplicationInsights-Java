@@ -91,6 +91,7 @@ public class SmokeTestExtension
   private final boolean readOnly;
   private final boolean usesGlobalIngestionEndpoint;
   private final boolean useOld3xAgent;
+  private final String selfDiagnosticsLevel;
   private final File javaagentFile;
 
   public static SmokeTestExtension create() {
@@ -107,13 +108,15 @@ public class SmokeTestExtension
       boolean usesGlobalIngestionEndpoint,
       boolean skipHealthCheck,
       boolean readOnly,
-      boolean useOld3xAgent) {
+      boolean useOld3xAgent,
+      String selfDiagnosticsLevel) {
     this.skipHealthCheck = skipHealthCheck;
     this.readOnly = readOnly;
     this.dependencyContainer = dependencyContainer;
     this.dependencyContainerEnvVarName = dependencyContainerEnvVarName;
     this.usesGlobalIngestionEndpoint = usesGlobalIngestionEndpoint;
     this.useOld3xAgent = useOld3xAgent;
+    this.selfDiagnosticsLevel = selfDiagnosticsLevel;
 
     String javaagentPathSystemProperty =
         useOld3xAgent ? "ai.smoke-test.old-3x-javaagent-file" : "ai.smoke-test.javaagent-file";
@@ -369,6 +372,7 @@ public class SmokeTestExtension
                     + FAKE_INGESTION_ENDPOINT
                     + ";LiveEndpoint="
                     + FAKE_INGESTION_ENDPOINT)
+            .withEnv("APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_LEVEL", selfDiagnosticsLevel)
             .withNetwork(network)
             .withExposedPorts(8080)
             .withFileSystemBind(
