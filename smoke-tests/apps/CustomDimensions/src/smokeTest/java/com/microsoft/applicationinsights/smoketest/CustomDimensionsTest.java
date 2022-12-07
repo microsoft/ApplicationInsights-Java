@@ -20,7 +20,11 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 @UseAgent
 abstract class CustomDimensionsTest {
 
-  @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.create();
+  // TODO (trask) find a better(?) place to test self-diagnostics trace level
+  //  instead of this seemingly ad-hoc location
+  @RegisterExtension
+  static final SmokeTestExtension testing =
+      SmokeTestExtension.builder().setSelfDiagnosticsLevel("trace").build();
 
   @Test
   @TargetUri("/test")
