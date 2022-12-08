@@ -45,12 +45,10 @@ jobs:
           else
             opt_prerelease="--prerelease"
           fi
-          # TODO (trask) remove --draft after the first successful release using this script
           gh release create --target main \
                             --title "Application Insights Java $VERSION$opt_ga" \
                             --notes-file /tmp/release-notes.txt \
                             $opt_prerelease \
-                            --draft \
                             $VERSION \
                             applicationinsights-agent-$VERSION.jar
 
