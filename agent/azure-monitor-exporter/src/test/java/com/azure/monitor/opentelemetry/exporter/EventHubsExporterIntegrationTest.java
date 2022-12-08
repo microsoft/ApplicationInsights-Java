@@ -5,7 +5,7 @@ package com.azure.monitor.opentelemetry.exporter;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.azure.core.test.TestBase;
+import com.azure.core.http.policy.HttpPipelinePolicy;
 import com.azure.core.test.TestMode;
 import com.azure.core.util.FluxUtil;
 import com.azure.messaging.eventhubs.EventData;
@@ -34,7 +34,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 import reactor.core.publisher.Mono;
 
-public class EventHubsExporterIntegrationTest extends TestBase {
+public class EventHubsExporterIntegrationTest extends MonitorExporterClientTestBase {
 
   private static final String CONNECTION_STRING =
       System.getenv("AZURE_EVENTHUBS_CONNECTION_STRING");
@@ -58,23 +58,23 @@ public class EventHubsExporterIntegrationTest extends TestBase {
   public void producerTest() throws InterruptedException {
     CountDownLatch exporterCountDown = new CountDownLatch(2);
     String spanName = "event-hubs-producer-testing";
-    Tracer tracer =
-        TestUtils.configureAzureMonitorTraceExporter(
-            (context, next) -> {
-              Mono<String> asyncString =
-                  FluxUtil.collectBytesInByteBufferStream(context.getHttpRequest().getBody())
-                      .map(bytes -> new String(bytes, StandardCharsets.UTF_8));
-              asyncString.subscribe(
-                  value -> {
-                    if (value.contains(spanName)) {
-                      exporterCountDown.countDown();
-                    }
-                    if (value.contains("EventHubs.send")) {
-                      exporterCountDown.countDown();
-                    }
-                  });
-              return next.process();
-            });
+    HttpPipelinePolicy validationPolicy =
+        (context, next) -> {
+          Mono<String> asyncString =
+              FluxUtil.collectBytesInByteBufferStream(context.getHttpRequest().getBody())
+                  .map(bytes -> new String(bytes, StandardCharsets.UTF_8));
+          asyncString.subscribe(
+              value -> {
+                if (value.contains(spanName)) {
+                  exporterCountDown.countDown();
+                }
+                if (value.contains("EventHubs.send")) {
+                  exporterCountDown.countDown();
+                }
+              });
+          return next.process();
+        };
+    Tracer tracer = TestUtils.configureAzureMonitorTraceExporter(getHttpPipeline(validationPolicy));
     EventHubProducerAsyncClient producer =
         new EventHubClientBuilder().connectionString(CONNECTION_STRING).buildAsyncProducerClient();
     Span span = tracer.spanBuilder(spanName).startSpan();
@@ -103,29 +103,29 @@ public class EventHubsExporterIntegrationTest extends TestBase {
     EventHubProducerAsyncClient producer =
         new EventHubClientBuilder().connectionString(CONNECTION_STRING).buildAsyncProducerClient();
 
-    Tracer tracer =
-        TestUtils.configureAzureMonitorTraceExporter(
-            (context, next) -> {
-              Mono<String> asyncString =
-                  FluxUtil.collectBytesInByteBufferStream(context.getHttpRequest().getBody())
-                      .map(bytes -> new String(bytes, StandardCharsets.UTF_8));
-              asyncString.subscribe(
-                  value -> {
-                    // user span
-                    if (value.contains("event-hubs-consumer-testing")) {
-                      exporterCountDown.countDown();
-                    }
-                    // process span
-                    if (value.contains("EventHubs.process")) {
-                      exporterCountDown.countDown();
-                    }
-                    // Storage call
-                    if (value.contains("AzureBlobStorageBlobs.setMetadata")) {
-                      exporterCountDown.countDown();
-                    }
-                  });
-              return next.process();
-            });
+    HttpPipelinePolicy validationPolicy =
+        (context, next) -> {
+          Mono<String> asyncString =
+              FluxUtil.collectBytesInByteBufferStream(context.getHttpRequest().getBody())
+                  .map(bytes -> new String(bytes, StandardCharsets.UTF_8));
+          asyncString.subscribe(
+              value -> {
+                // user span
+                if (value.contains("event-hubs-consumer-testing")) {
+                  exporterCountDown.countDown();
+                }
+                // process span
+                if (value.contains("EventHubs.process")) {
+                  exporterCountDown.countDown();
+                }
+                // Storage call
+                if (value.contains("AzureBlobStorageBlobs.setMetadata")) {
+                  exporterCountDown.countDown();
+                }
+              });
+          return next.process();
+        };
+    Tracer tracer = TestUtils.configureAzureMonitorTraceExporter(getHttpPipeline(validationPolicy));
 
     CountDownLatch partitionOwned = new CountDownLatch(1);
     CountDownLatch eventCountDown = new CountDownLatch(1);

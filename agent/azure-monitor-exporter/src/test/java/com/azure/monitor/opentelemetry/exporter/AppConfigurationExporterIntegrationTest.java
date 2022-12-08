@@ -10,7 +10,6 @@ import com.azure.core.http.HttpPipelineCallContext;
 import com.azure.core.http.HttpPipelineNextPolicy;
 import com.azure.core.http.HttpResponse;
 import com.azure.core.http.policy.HttpPipelinePolicy;
-import com.azure.core.test.TestBase;
 import com.azure.core.test.TestMode;
 import com.azure.core.util.Context;
 import com.azure.core.util.FluxUtil;
@@ -35,7 +34,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 import reactor.core.publisher.Mono;
 
-public class AppConfigurationExporterIntegrationTest extends TestBase {
+public class AppConfigurationExporterIntegrationTest extends MonitorExporterClientTestBase {
 
   @Override
   @BeforeEach
@@ -54,9 +53,9 @@ public class AppConfigurationExporterIntegrationTest extends TestBase {
     CountDownLatch appConfigCountDown = new CountDownLatch(1);
     CountDownLatch exporterCountDown = new CountDownLatch(1);
 
+    ValidationPolicy validationPolicy = new ValidationPolicy(exporterCountDown, "AppConfig.setKey");
     OpenTelemetry openTelemetry =
-        TestUtils.createOpenTelemetrySdk(
-            new ValidationPolicy(exporterCountDown, "AppConfig.setKey"));
+        TestUtils.createOpenTelemetrySdk(getHttpPipeline(validationPolicy));
 
     Tracer tracer = openTelemetry.getTracer("Sample");
 
@@ -83,9 +82,10 @@ public class AppConfigurationExporterIntegrationTest extends TestBase {
     CountDownLatch appConfigCountDown = new CountDownLatch(1);
     CountDownLatch exporterCountDown = new CountDownLatch(1);
 
+    ValidationPolicy validationPolicy =
+        new ValidationPolicy(exporterCountDown, "disable-config-exporter-testing");
     OpenTelemetry openTelemetry =
-        TestUtils.createOpenTelemetrySdk(
-            new ValidationPolicy(exporterCountDown, "disable-config-exporter-testing"));
+        TestUtils.createOpenTelemetrySdk(getHttpPipeline(validationPolicy));
 
     Tracer tracer = openTelemetry.getTracer("Sample");
 

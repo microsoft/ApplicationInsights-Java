@@ -3,9 +3,11 @@
 
 package com.azure.monitor.opentelemetry.exporter;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
 
+import com.azure.core.http.HttpPipeline;
 import com.azure.core.http.HttpPipelineCallContext;
 import com.azure.core.http.HttpPipelineNextPolicy;
 import com.azure.core.http.HttpResponse;
@@ -39,7 +41,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 import java.util.zip.GZIPInputStream;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Mono;
@@ -57,14 +58,15 @@ public class AzureMonitorExportersEndToEndTest extends MonitorExporterClientTest
     // create the OpenTelemetry SDK
     CountDownLatch countDownLatch = new CountDownLatch(1);
     CustomValidationPolicy customValidationPolicy = new CustomValidationPolicy(countDownLatch);
+    HttpPipeline httpPipeline = getHttpPipeline(customValidationPolicy);
     OpenTelemetry openTelemetry =
-        TestUtils.createOpenTelemetrySdk(customValidationPolicy, getConfiguration());
+        TestUtils.createOpenTelemetrySdk(httpPipeline, getConfiguration());
 
     // generate a span
     generateSpan(openTelemetry);
 
     // wait for export
-    countDownLatch.await(10, TimeUnit.SECONDS);
+    countDownLatch.await(10, SECONDS);
     assertThat(customValidationPolicy.url)
         .isEqualTo(new URL("https://test.in.applicationinsights.azure.com/v2.1/track"));
     assertThat(customValidationPolicy.actualTelemetryItems.size()).isEqualTo(1);
@@ -79,13 +81,14 @@ public class AzureMonitorExportersEndToEndTest extends MonitorExporterClientTest
     CountDownLatch countDownLatch = new CountDownLatch(1);
     CustomValidationPolicy customValidationPolicy = new CustomValidationPolicy(countDownLatch);
     OpenTelemetry openTelemetry =
-        TestUtils.createOpenTelemetrySdk(customValidationPolicy, getConfiguration());
+        TestUtils.createOpenTelemetrySdk(
+            getHttpPipeline(customValidationPolicy), getConfiguration());
 
     // generate a metric
     generateMetric(openTelemetry);
 
     // wait for export
-    countDownLatch.await(10, TimeUnit.SECONDS);
+    countDownLatch.await(10, SECONDS);
     assertThat(customValidationPolicy.url)
         .isEqualTo(new URL("https://test.in.applicationinsights.azure.com/v2.1/track"));
     assertThat(customValidationPolicy.actualTelemetryItems.size()).isEqualTo(1);
@@ -100,13 +103,14 @@ public class AzureMonitorExportersEndToEndTest extends MonitorExporterClientTest
     CountDownLatch countDownLatch = new CountDownLatch(1);
     CustomValidationPolicy customValidationPolicy = new CustomValidationPolicy(countDownLatch);
     OpenTelemetrySdk openTelemetry =
-        TestUtils.createOpenTelemetrySdkDeprecated(customValidationPolicy, getConfiguration());
+        TestUtils.createOpenTelemetrySdkDeprecated(
+            getHttpPipeline(customValidationPolicy), getConfiguration());
 
     // generate a log
     generateLog(openTelemetry);
 
     // wait for export
-    countDownLatch.await(10, TimeUnit.SECONDS);
+    countDownLatch.await(10, SECONDS);
     assertThat(customValidationPolicy.url)
         .isEqualTo(new URL("https://test.in.applicationinsights.azure.com/v2.1/track"));
     assertThat(customValidationPolicy.actualTelemetryItems.size()).isEqualTo(1);
@@ -121,7 +125,8 @@ public class AzureMonitorExportersEndToEndTest extends MonitorExporterClientTest
     CountDownLatch countDownLatch = new CountDownLatch(3);
     CustomValidationPolicy customValidationPolicy = new CustomValidationPolicy(countDownLatch);
     OpenTelemetrySdk openTelemetry =
-        TestUtils.createOpenTelemetrySdkDeprecated(customValidationPolicy, getConfiguration());
+        TestUtils.createOpenTelemetrySdkDeprecated(
+            getHttpPipeline(customValidationPolicy), getConfiguration());
 
     // generate telemetry
     generateSpan(openTelemetry);
@@ -129,7 +134,7 @@ public class AzureMonitorExportersEndToEndTest extends MonitorExporterClientTest
     generateLog(openTelemetry);
 
     // wait for export
-    countDownLatch.await(10, TimeUnit.SECONDS);
+    countDownLatch.await(10, SECONDS);
     assertThat(customValidationPolicy.url)
         .isEqualTo(new URL("https://test.in.applicationinsights.azure.com/v2.1/track"));
     assertThat(customValidationPolicy.actualTelemetryItems.size()).isEqualTo(3);
@@ -166,6 +171,7 @@ public class AzureMonitorExportersEndToEndTest extends MonitorExporterClientTest
         .build();
   }
 
+  @SuppressWarnings("try")
   private static void generateSpan(OpenTelemetry openTelemetry) {
     Tracer tracer = openTelemetry.getTracer("Sample");
     Span span = tracer.spanBuilder("test").startSpan();
@@ -275,6 +281,9 @@ public class AzureMonitorExportersEndToEndTest extends MonitorExporterClientTest
 
     // decode gzipped request raw bytes back to original request body
     private static String ungzip(byte[] rawBytes) {
+      if (rawBytes.length == 0) {
+        return "";
+      }
       try (GZIPInputStream in = new GZIPInputStream(new ByteArrayInputStream(rawBytes))) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         byte[] data = new byte[1024];
