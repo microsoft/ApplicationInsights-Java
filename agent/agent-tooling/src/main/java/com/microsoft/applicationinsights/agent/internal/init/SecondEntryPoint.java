@@ -23,6 +23,7 @@ import com.microsoft.applicationinsights.agent.internal.common.FriendlyException
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.ProcessorConfig;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.SamplingTelemetryType;
+import com.microsoft.applicationinsights.agent.internal.configuration.ConfigurationBuilder;
 import com.microsoft.applicationinsights.agent.internal.configuration.RpConfiguration;
 import com.microsoft.applicationinsights.agent.internal.exporter.AgentLogExporter;
 import com.microsoft.applicationinsights.agent.internal.exporter.AgentMetricExporter;
@@ -97,8 +98,7 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
 
     Configuration configuration = FirstEntryPoint.getConfiguration();
     if (Strings.isNullOrEmpty(configuration.connectionString)) {
-      // TODO we can update this check after the new functions model is deployed.
-      if (!"java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME"))) {
+      if (!ConfigurationBuilder.inAzureFunctionsConsumptionWorker()) {
         throw new FriendlyException(
             "No connection string provided", "Please provide connection string.");
       }
@@ -172,9 +172,7 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
       }
     }
 
-    // this is for Azure Function Linux consumption plan support.
-    // TODO we can update this check after the new functions model is deployed.
-    if ("java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME"))) {
+    if (ConfigurationBuilder.inAzureFunctionsConsumptionWorker()) {
       AzureFunctions.setup(
           () -> telemetryClient.getConnectionString() != null,
           new AzureFunctionsInitializer(
@@ -432,7 +430,7 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
 
     builder.addLogRecordProcessor(new AzureMonitorLogProcessor());
 
-    if ("java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME"))) {
+    if (ConfigurationBuilder.inAzureFunctionsWorker()) {
       builder.addLogRecordProcessor(new AzureFunctionsLogProcessor());
     }
 
@@ -474,6 +472,7 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
     LogDataMapper mapper =
         new LogDataMapper(
             configuration.preview.captureLoggingLevelAsCustomDimension,
+            ConfigurationBuilder.inAzureFunctionsWorker(),
             telemetryClient::populateDefaults);
 
     List<Configuration.SamplingOverride> logSamplingOverrides =
