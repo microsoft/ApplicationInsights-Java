@@ -147,6 +147,7 @@ checkstyle {
 dependencyCheck {
   skipConfigurations = listOf("errorprone", "spotbugs", "checkstyle", "annotationProcessor")
   failBuildOnCVSS = 0f // fail on any reported CVE
+  suppressionFile = rootProject.file("buildscripts/dependency-check-suppressions.xml").absolutePath;
 }
 
 if (!path.startsWith(":smoke-tests")) {

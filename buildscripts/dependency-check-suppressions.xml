@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
+  <suppress>
+    <notes>commons-codec should not be matched to commons_net</notes>
+    <packageUrl regex="true">^pkg:maven/commons-codec/commons-codec@.*$</packageUrl>
+    <cpe>cpe:/a:apache:commons_net</cpe>
+  </suppress>
+  <suppress>
+    <notes>commons-text should not be matched to commons_net</notes>
+    <packageUrl regex="true">^pkg:maven/org.apache.commons/commons-text@.*$</packageUrl>
+    <cpe>cpe:/a:apache:commons_net</cpe>
+  </suppress>
+  <suppress>
+    <notes>jcl-over-slf4j should not be matched to commons_net</notes>
+    <packageUrl regex="true">^pkg:maven/org.slf4j/jcl-over-slf4j@.*$</packageUrl>
+    <cpe>cpe:/a:apache:commons_net</cpe>
+  </suppress>
+</suppressions>
