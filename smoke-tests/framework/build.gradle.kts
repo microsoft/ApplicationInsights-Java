@@ -16,7 +16,7 @@ dependencies {
   implementation("com.google.code.gson:gson")
   implementation("org.apache.httpcomponents:httpclient:4.5.14")
 
-  implementation("org.eclipse.jetty:jetty-servlet:10.0.12")
+  implementation("org.eclipse.jetty:jetty-servlet:10.0.13")
 
   // this is exposed in SmokeTestExtension API
   api("org.testcontainers:testcontainers:1.17.6")
