@@ -678,12 +678,22 @@ public class ConfigurationBuilder {
 
   private static String getWebsiteSiteNameEnvVar() {
     String websiteSiteName = getEnvVar(WEBSITE_SITE_NAME);
-    // TODO we can update this check after the new functions model is deployed.
-    if (websiteSiteName != null && "java".equals(getEnvVar("FUNCTIONS_WORKER_RUNTIME"))) {
+    if (websiteSiteName != null && inAzureFunctionsWorker()) {
       // special case for Azure Functions
       return websiteSiteName.toLowerCase(Locale.ENGLISH);
     }
     return websiteSiteName;
+  }
+
+  public static boolean inAzureFunctionsConsumptionWorker() {
+    // for now its the same, but in future should be different check
+    return inAzureFunctionsWorker();
+  }
+
+  public static boolean inAzureFunctionsWorker() {
+    // supporting both Azure Functions RP Integration, as well as bring your own agent deployments
+    // in Azure Functions
+    return "java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME"));
   }
 
   public static String overlayWithSysPropEnvVar(
