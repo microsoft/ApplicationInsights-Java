@@ -76,7 +76,7 @@ class Mappings {
     return null;
   }
 
-  private static <T> String join(List<T> values) {
+  static <T> String join(List<T> values) {
     StringBuilder sb = new StringBuilder();
     for (Object val : values) {
       if (sb.length() > 0) {

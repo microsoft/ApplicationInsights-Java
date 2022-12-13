@@ -82,15 +82,15 @@ public final class SpanDataMapper {
             .prefix(
                 "http.request.header.",
                 (telemetryBuilder, key, value) -> {
-                  if (value instanceof String) {
-                    telemetryBuilder.addProperty(key, (String) value);
+                  if (value instanceof List) {
+                    telemetryBuilder.addProperty(key, Mappings.join((List) value));
                   }
                 })
             .prefix(
                 "http.response.header.",
                 (telemetryBuilder, key, value) -> {
-                  if (value instanceof String) {
-                    telemetryBuilder.addProperty(key, (String) value);
+                  if (value instanceof List) {
+                    telemetryBuilder.addProperty(key, Mappings.join((List) value));
                   }
                 });
 
