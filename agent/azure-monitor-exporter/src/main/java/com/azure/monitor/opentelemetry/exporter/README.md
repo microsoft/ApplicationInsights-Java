@@ -3,7 +3,7 @@
 This client library provides support for exporting OpenTelemetry data to Azure Monitor. This package assumes your
  application is already instrumented with the [OpenTelemetry SDK][opentelemetry_sdk] following the [OpenTelemetry
  Specification][opentelemetry_specification].
-
+  
 [Source code][source_code] | [Package (Maven)][package_mvn] | [API reference documentation][api_reference_doc] | [Product Documentation][product_documentation] | [Samples][sample_readme]
 
 ## Getting started
@@ -23,7 +23,7 @@ For more information, please read [introduction to Application Insights][applica
 <dependency>
   <groupId>com.azure</groupId>
   <artifactId>azure-monitor-opentelemetry-exporter</artifactId>
-  <version>1.0.0-beta.5</version>
+  <version>1.0.0-beta.6</version>
 </dependency>
 ```
 [//]: # ({x-version-update-end})
@@ -33,13 +33,13 @@ For more information, please read [introduction to Application Insights][applica
 #### Get the instrumentation key from the portal
 
 In order to export telemetry data to Azure Monitor, you will need the instrumentation key to your [Application
- Insights resource][application_insights_resource]. To get your instrumentation key, go to [Azure Portal][azure_portal],
+ Insights resource][application_insights_resource]. To get your instrumentation key, go to [Azure Portal][azure_portal], 
 search for your resource. On the overview page of your resource, you will find the instrumentation key in the top
 right corner.
 
 ### Creating exporter for Azure Monitor
 ```java readme-sample-createExporter
-AzureMonitorTraceExporter azureMonitorTraceExporter = new AzureMonitorExporterBuilder()
+SpanExporter azureMonitorTraceExporter = new AzureMonitorExporterBuilder()
     .connectionString("{connection-string}")
     .buildTraceExporter();
 ```
@@ -47,13 +47,13 @@ AzureMonitorTraceExporter azureMonitorTraceExporter = new AzureMonitorExporterBu
 #### Exporting span data
 
 The following example shows how to export a trace data to Azure Monitor through the
- `AzureMonitorExporter`
+ `AzureMonitorTraceExporter`
 
 ##### Setup OpenTelemetry Tracer to work with Azure Monitor exporter
 ```java readme-sample-setupExporter
 // Create Azure Monitor exporter and configure OpenTelemetry tracer to use this exporter
 // This should be done just once when application starts up
-AzureMonitorTraceExporter exporter = new AzureMonitorExporterBuilder()
+SpanExporter exporter = new AzureMonitorExporterBuilder()
     .connectionString("{connection-string}")
     .buildTraceExporter();
 
@@ -85,24 +85,6 @@ try {
     span.end();
     scope.close();
 }
-```
-
-### Setup OpenTelemetry Tracer to generate spans with better operation names
-
-
-```
-AzureMonitorTraceExporter exporter = new AzureMonitorExporterBuilder()
-    .connectionString("{connection-string}")
-    .buildTraceExporter();
-SdkTracerProvider tracerProvider = SdkTracerProvider.builder()
-    .addSpanProcessor(new AiOperationNameSpanProcessor())
-    .addSpanProcessor(SimpleSpanProcessor.create(exporter))
-    .build();
-OpenTelemetrySdk openTelemetrySdk = OpenTelemetrySdk.builder()
-    .setTracerProvider(tracerProvider)
-    .buildAndRegisterGlobal();
-Tracer tracer = openTelemetrySdk.getTracer("Sample");
-
 ```
 
 ## Key concepts
@@ -172,7 +154,7 @@ This project has adopted the [Microsoft Open Source Code of Conduct][coc]. For m
 [application_insights_resource]: https://docs.microsoft.com/azure/azure-monitor/app/create-new-resource
 [application_insights_intro]: https://docs.microsoft.com/azure/azure-monitor/app/app-insights-overview
 [azure_portal]: https://ms.portal.azure.com/#blade/HubsExtension/BrowseResource/resourceType/microsoft.insights%2Fcomponents
-[opentelemetry_io]: https://opentelemetry.io/
+[opentelemetry_io]: https://opentelemetry.io/ 
 [span_data]: https://opentelemetry.lightstep.com/spans
 [sample_readme]: https://github.com/Azure/azure-sdk-for-java/blob/main/sdk/monitor
 [opentelemetry_spec]: https://opentelemetry.io/
@@ -182,4 +164,8 @@ This project has adopted the [Microsoft Open Source Code of Conduct][coc]. For m
 [sampler_ref]: https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/trace/sdk.md#sampling
 [trace_concept]: https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/overview.md#trace
 [samples_code]: https://github.com/Azure/azure-sdk-for-java/tree/main/sdk/monitor/azure-monitor-opentelemetry-exporter/src/samples
+[cla]: https://cla.microsoft.com
+[coc]: https://opensource.microsoft.com/codeofconduct/
+[coc_faq]: https://opensource.microsoft.com/codeofconduct/faq/
+[coc_contact]: mailto:opencode@microsoft.com
 ![Impressions](https://azure-sdk-impressions.azurewebsites.net/api/impressions/azure-sdk-for-java%2Fsdk%monitor%2Fazure-monitor-opentelemetry-exporter%2FREADME.png)
