@@ -3,27 +3,42 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation;
 
+import com.azure.core.util.logging.ClientLogger;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.AbstractTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Trie;
 import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.AttributeType;
+import io.opentelemetry.api.common.Attributes;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import reactor.util.annotation.Nullable;
 
 class Mappings {
 
+  private static final ClientLogger logger = new ClientLogger(Mappings.class);
+  private static final Set<AttributeType> unexpectedTypesLogged = ConcurrentHashMap.newKeySet();
+
   private final Map<String, MappingsBuilder.ExactMapping> exactMappings;
   private final Trie<MappingsBuilder.PrefixMapping> prefixMappings;
-  private final MappingsBuilder.DefaultMapping defaultMapping;
 
   Mappings(
       Map<String, MappingsBuilder.ExactMapping> exactMappings,
-      Trie<MappingsBuilder.PrefixMapping> prefixMappings,
-      MappingsBuilder.DefaultMapping defaultMapping) {
+      Trie<MappingsBuilder.PrefixMapping> prefixMappings) {
     this.exactMappings = exactMappings;
     this.prefixMappings = prefixMappings;
-    this.defaultMapping = defaultMapping;
   }
 
-  void map(AbstractTelemetryBuilder telemetryBuilder, AttributeKey attributeKey, Object value) {
+  void map(Attributes attributes, AbstractTelemetryBuilder telemetryBuilder) {
+    attributes.forEach(
+        (attributeKey, value) -> {
+          map(telemetryBuilder, attributeKey, value);
+        });
+  }
+
+  private void map(
+      AbstractTelemetryBuilder telemetryBuilder, AttributeKey attributeKey, Object value) {
     String key = attributeKey.getKey();
     MappingsBuilder.ExactMapping exactMapping = exactMappings.get(key);
     if (exactMapping != null) {
@@ -35,6 +50,40 @@ class Mappings {
       prefixMapping.map(telemetryBuilder, key, value);
       return;
     }
-    defaultMapping.map(telemetryBuilder, attributeKey, value);
+    String val = convertToString(value, attributeKey.getType());
+    if (val != null) {
+      telemetryBuilder.addProperty(attributeKey.getKey(), val);
+    }
+  }
+
+  @Nullable
+  private static String convertToString(Object value, AttributeType type) {
+    switch (type) {
+      case STRING:
+      case BOOLEAN:
+      case LONG:
+      case DOUBLE:
+        return String.valueOf(value);
+      case STRING_ARRAY:
+      case BOOLEAN_ARRAY:
+      case LONG_ARRAY:
+      case DOUBLE_ARRAY:
+        return join((List<?>) value);
+    }
+    if (unexpectedTypesLogged.add(type)) {
+      logger.warning("unexpected attribute type: {}", type);
+    }
+    return null;
+  }
+
+  private static <T> String join(List<T> values) {
+    StringBuilder sb = new StringBuilder();
+    for (Object val : values) {
+      if (sb.length() > 0) {
+        sb.append(", ");
+      }
+      sb.append(val);
+    }
+    return sb.toString();
   }
 }

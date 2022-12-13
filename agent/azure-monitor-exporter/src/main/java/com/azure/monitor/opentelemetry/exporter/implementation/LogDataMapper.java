@@ -12,7 +12,6 @@ import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTag
 import com.azure.monitor.opentelemetry.exporter.implementation.models.SeverityLevel;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedTime;
-import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.SpanContext;
@@ -25,16 +24,13 @@ public class LogDataMapper {
 
   private static final ClientLogger logger = new ClientLogger(LogDataMapper.class);
 
-  private static final AttributeKey<String> OTEL_LOG4J_MARKER =
-      AttributeKey.stringKey("log4j.marker");
-
-  private static final AttributeKey<String> OTEL_LOGBACK_MARKER =
-      AttributeKey.stringKey("logback.marker");
-
-  private static final String LOG4J1_2_MDC_PREFIX = "log4j.mdc.";
-  private static final String LOG4J2_CONTEXT_DATA_PREFIX = "log4j.context_data.";
+  private static final String LOG4J_MDC_PREFIX = "log4j.mdc."; // log4j 1.2
+  private static final String LOG4J_CONTEXT_DATA_PREFIX = "log4j.context_data."; // log4j 2.x
   private static final String LOGBACK_MDC_PREFIX = "logback.mdc.";
   private static final String JBOSS_LOGGING_MDC_PREFIX = "jboss-logmanager.mdc.";
+
+  private static final String LOG4J_MARKER = "log4j.marker";
+  private static final String LOGBACK_MARKER = "logback.marker";
 
   private static final Mappings MAPPINGS;
 
@@ -42,10 +38,16 @@ public class LogDataMapper {
     MappingsBuilder mappingsBuilder =
         new MappingsBuilder()
             .prefix(
-                LOG4J2_CONTEXT_DATA_PREFIX,
+                LOG4J_MDC_PREFIX,
                 (telemetryBuilder, key, value) -> {
                   telemetryBuilder.addProperty(
-                      key.substring(LOG4J2_CONTEXT_DATA_PREFIX.length()), String.valueOf(value));
+                      key.substring(LOG4J_MDC_PREFIX.length()), String.valueOf(value));
+                })
+            .prefix(
+                LOG4J_CONTEXT_DATA_PREFIX,
+                (telemetryBuilder, key, value) -> {
+                  telemetryBuilder.addProperty(
+                      key.substring(LOG4J_CONTEXT_DATA_PREFIX.length()), String.valueOf(value));
                 })
             .prefix(
                 LOGBACK_MDC_PREFIX,
@@ -53,40 +55,22 @@ public class LogDataMapper {
                   telemetryBuilder.addProperty(
                       key.substring(LOGBACK_MDC_PREFIX.length()), String.valueOf(value));
                 })
-            .exactToProperty(SemanticAttributes.CODE_FILEPATH.getKey(), "FileName")
-            .exactToProperty(SemanticAttributes.CODE_NAMESPACE.getKey(), "ClassName")
-            .exactToProperty(SemanticAttributes.CODE_FUNCTION.getKey(), "MethodName")
-            .exactToProperty(SemanticAttributes.CODE_LINENO.getKey(), "LineNumber")
-            .exactToProperty(OTEL_LOG4J_MARKER.getKey(), "Marker")
-            .exactToProperty(OTEL_LOGBACK_MARKER.getKey(), "Marker")
             .prefix(
                 JBOSS_LOGGING_MDC_PREFIX,
                 (telemetryBuilder, key, value) -> {
                   telemetryBuilder.addProperty(
                       key.substring(JBOSS_LOGGING_MDC_PREFIX.length()), String.valueOf(value));
                 })
-            .prefix(
-                LOG4J1_2_MDC_PREFIX,
-                (telemetryBuilder, key, value) -> {
-                  telemetryBuilder.addProperty(
-                      key.substring(LOG4J1_2_MDC_PREFIX.length()), String.valueOf(value));
-                });
+            .exactToProperty(SemanticAttributes.CODE_FILEPATH.getKey(), "FileName")
+            .exactToProperty(SemanticAttributes.CODE_NAMESPACE.getKey(), "ClassName")
+            .exactToProperty(SemanticAttributes.CODE_FUNCTION.getKey(), "MethodName")
+            .exactToProperty(SemanticAttributes.CODE_LINENO.getKey(), "LineNumber")
+            .exactToProperty(LOG4J_MARKER, "Marker")
+            .exactToProperty(LOGBACK_MARKER, "Marker");
 
     SpanDataMapper.applyCommonTags(mappingsBuilder);
 
-    mappingsBuilder
-        .ignorePrefix("applicationinsights.internal.")
-        .ignorePrefix("thread.")
-        .ignorePrefix("exception.");
-
-    MAPPINGS =
-        mappingsBuilder.build(
-            (telemetryBuilder, attributeKey, value) -> {
-              String val = SpanDataMapper.convertToString(value, attributeKey.getType());
-              if (val != null) {
-                telemetryBuilder.addProperty(attributeKey.getKey(), val);
-              }
-            });
+    MAPPINGS = mappingsBuilder.build();
   }
 
   private final boolean captureLoggingLevelAsCustomDimension;
@@ -125,10 +109,7 @@ public class LogDataMapper {
     if (captureAzureFunctionsAttributes) {
       setFunctionExtraTraceAttributes(telemetryBuilder, attributes);
     }
-    attributes.forEach(
-        (attributeKey, value) -> {
-          MAPPINGS.map(telemetryBuilder, attributeKey, value);
-        });
+    MAPPINGS.map(attributes, telemetryBuilder);
 
     telemetryBuilder.setSeverityLevel(toSeverityLevel(log.getSeverity()));
     telemetryBuilder.setMessage(log.getBody().asString());
@@ -155,10 +136,7 @@ public class LogDataMapper {
 
     // update tags
     Attributes attributes = log.getAttributes();
-    attributes.forEach(
-        (attributeKey, value) -> {
-          MAPPINGS.map(telemetryBuilder, attributeKey, value);
-        });
+    MAPPINGS.map(attributes, telemetryBuilder);
 
     telemetryBuilder.setExceptions(Exceptions.minimalParse(stack));
     telemetryBuilder.setSeverityLevel(toSeverityLevel(log.getSeverity()));

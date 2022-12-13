@@ -21,7 +21,6 @@ import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryI
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedDuration;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedTime;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.UrlParser;
-import io.opentelemetry.api.common.AttributeType;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
@@ -81,36 +80,26 @@ public final class SpanDataMapper {
                   if (value instanceof String) {
                     builder.addTag("ai.user.userAgent", (String) value);
                   }
+                })
+            .ignorePrefix("applicationinsights.internal.")
+            .prefix(
+                "http.request.header.",
+                (telemetryBuilder, key, value) -> {
+                  if (value instanceof String) {
+                    telemetryBuilder.addProperty(key, (String) value);
+                  }
+                })
+            .prefix(
+                "http.response.header.",
+                (telemetryBuilder, key, value) -> {
+                  if (value instanceof String) {
+                    telemetryBuilder.addProperty(key, (String) value);
+                  }
                 });
 
     applyCommonTags(mappingsBuilder);
 
-    mappingsBuilder.ignorePrefix("applicationinsights.internal.");
-
-    mappingsBuilder
-        .prefix(
-            "http.request.header.",
-            (telemetryBuilder, key, value) -> {
-              if (value instanceof String) {
-                telemetryBuilder.addProperty(key, (String) value);
-              }
-            })
-        .prefix(
-            "http.response.header.",
-            (telemetryBuilder, key, value) -> {
-              if (value instanceof String) {
-                telemetryBuilder.addProperty(key, (String) value);
-              }
-            });
-
-    MAPPINGS =
-        mappingsBuilder.build(
-            (telemetryBuilder, attributeKey, value) -> {
-              String val = convertToString(value, attributeKey.getType());
-              if (val != null) {
-                telemetryBuilder.addProperty(attributeKey.getKey(), val);
-              }
-            });
+    MAPPINGS = mappingsBuilder.build();
   }
 
   private final boolean captureHttpServer4xxAsError;
@@ -166,7 +155,7 @@ public final class SpanDataMapper {
     setItemCount(telemetryBuilder, itemCount);
 
     // update tags
-    setExtraAttributes(telemetryBuilder, span.getAttributes());
+    MAPPINGS.map(span.getAttributes(), telemetryBuilder);
 
     addLinks(telemetryBuilder, span.getLinks());
 
@@ -475,7 +464,7 @@ public final class SpanDataMapper {
     setItemCount(telemetryBuilder, itemCount);
 
     // update tags
-    setExtraAttributes(telemetryBuilder, attributes);
+    MAPPINGS.map(attributes, telemetryBuilder);
 
     addLinks(telemetryBuilder, span.getLinks());
 
@@ -725,7 +714,7 @@ public final class SpanDataMapper {
       setItemCount(telemetryBuilder, itemCount);
 
       // update tags
-      setExtraAttributes(telemetryBuilder, event.getAttributes());
+      MAPPINGS.map(event.getAttributes(), telemetryBuilder);
 
       // set message-specific properties
       telemetryBuilder.setMessage(event.getName());
@@ -750,7 +739,8 @@ public final class SpanDataMapper {
     }
     setTime(telemetryBuilder, span.getEndEpochNanos());
     setItemCount(telemetryBuilder, itemCount);
-    setExtraAttributes(telemetryBuilder, span.getAttributes());
+
+    MAPPINGS.map(span.getAttributes(), telemetryBuilder);
 
     // set exception-specific properties
     telemetryBuilder.setExceptions(Exceptions.minimalParse(errorStack));
@@ -795,33 +785,25 @@ public final class SpanDataMapper {
     telemetryBuilder.addProperty("_MS.links", sb.toString());
   }
 
-  private static void setExtraAttributes(
-      AbstractTelemetryBuilder telemetryBuilder, Attributes attributes) {
-    attributes.forEach(
-        (attributeKey, value) -> {
-          MAPPINGS.map(telemetryBuilder, attributeKey, value);
-        });
-  }
-
   static void applyCommonTags(MappingsBuilder mappingsBuilder) {
-
-    mappingsBuilder.exact(
-        SemanticAttributes.ENDUSER_ID.getKey(),
-        (telemetryBuilder, value) -> {
-          if (value instanceof String) {
-            telemetryBuilder.addTag(ContextTagKeys.AI_USER_ID.toString(), (String) value);
-          }
-        });
+    mappingsBuilder
+        .exact(
+            SemanticAttributes.ENDUSER_ID.getKey(),
+            (telemetryBuilder, value) -> {
+              if (value instanceof String) {
+                telemetryBuilder.addTag(ContextTagKeys.AI_USER_ID.toString(), (String) value);
+              }
+            })
+        .exact(
+            AiSemanticAttributes.PREVIEW_APPLICATION_VERSION.getKey(),
+            (telemetryBuilder, value) -> {
+              if (value instanceof String) {
+                telemetryBuilder.addTag(
+                    ContextTagKeys.AI_APPLICATION_VER.toString(), (String) value);
+              }
+            });
 
     applyConnectionStringAndRoleNameOverrides(mappingsBuilder);
-
-    mappingsBuilder.exact(
-        AiSemanticAttributes.PREVIEW_APPLICATION_VERSION.getKey(),
-        (telemetryBuilder, value) -> {
-          if (value instanceof String) {
-            telemetryBuilder.addTag(ContextTagKeys.AI_APPLICATION_VER.toString(), (String) value);
-          }
-        });
   }
 
   private static final WarningLogger connectionStringAttributeNoLongerSupported =
@@ -895,34 +877,5 @@ public final class SpanDataMapper {
             (telemetryBuilder, value) -> {
               instrumentationKeyAttributeNoLongerSupported.recordWarning();
             });
-  }
-
-  @Nullable
-  public static String convertToString(Object value, AttributeType type) {
-    switch (type) {
-      case STRING:
-      case BOOLEAN:
-      case LONG:
-      case DOUBLE:
-        return String.valueOf(value);
-      case STRING_ARRAY:
-      case BOOLEAN_ARRAY:
-      case LONG_ARRAY:
-      case DOUBLE_ARRAY:
-        return join((List<?>) value);
-    }
-    LOGGER.warning("unexpected attribute type: {}", type);
-    return null;
-  }
-
-  private static <T> String join(List<T> values) {
-    StringBuilder sb = new StringBuilder();
-    for (Object val : values) {
-      if (sb.length() > 0) {
-        sb.append(", ");
-      }
-      sb.append(val);
-    }
-    return sb.toString();
   }
 }

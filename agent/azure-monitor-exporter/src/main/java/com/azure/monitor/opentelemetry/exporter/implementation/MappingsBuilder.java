@@ -31,8 +31,8 @@ class MappingsBuilder {
               "thread.",
               "faas.",
               "code.",
-              "job." // proposed semantic convention which we use for job,
-              ));
+              "job.", // proposed semantic convention which we use for job,
+              "applicationinsights.internal."));
 
   private final Map<String, ExactMapping> exactMappings = new HashMap<>();
   private final Trie.Builder<PrefixMapping> prefixMappings = Trie.newBuilder();
@@ -75,8 +75,8 @@ class MappingsBuilder {
     return this;
   }
 
-  public Mappings build(DefaultMapping defaultMapping) {
-    return new Mappings(exactMappings, prefixMappings.build(), defaultMapping);
+  public Mappings build() {
+    return new Mappings(exactMappings, prefixMappings.build());
   }
 
   @FunctionalInterface

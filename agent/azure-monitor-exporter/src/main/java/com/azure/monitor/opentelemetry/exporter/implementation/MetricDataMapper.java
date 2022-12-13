@@ -39,10 +39,12 @@ import reactor.util.annotation.Nullable;
 
 public class MetricDataMapper {
 
+  private static final ClientLogger logger = new ClientLogger(MetricDataMapper.class);
+
   private static final Set<String> OTEL_PRE_AGGREGATED_STANDARD_METRIC_NAMES = new HashSet<>(4);
   private static final List<String> EXCLUDED_METRIC_NAMES = new ArrayList<>();
 
-  private static final ClientLogger logger = new ClientLogger(MetricDataMapper.class);
+  private static final Mappings MAPPINGS;
 
   private final BiConsumer<AbstractTelemetryBuilder, Resource> telemetryInitializer;
   private final boolean captureHttpServer4xxAsError;
@@ -54,6 +56,8 @@ public class MetricDataMapper {
     OTEL_PRE_AGGREGATED_STANDARD_METRIC_NAMES.add("http.client.duration"); // HttpClient
     OTEL_PRE_AGGREGATED_STANDARD_METRIC_NAMES.add("rpc.client.duration"); // gRPC
     OTEL_PRE_AGGREGATED_STANDARD_METRIC_NAMES.add("rpc.server.duration"); // gRPC
+
+    MAPPINGS = new MappingsBuilder().build();
   }
 
   public MetricDataMapper(
@@ -182,23 +186,8 @@ public class MetricDataMapper {
             metricTelemetryBuilder, statusCode, success, dependencyType, target, isSynthetic);
       }
     } else {
-      setExtraAttributes(metricTelemetryBuilder, attributes);
+      MAPPINGS.map(attributes, metricTelemetryBuilder);
     }
-  }
-
-  private static void setExtraAttributes(
-      AbstractTelemetryBuilder telemetryBuilder, Attributes attributes) {
-    attributes.forEach(
-        (key, value) -> {
-          String stringKey = key.getKey();
-          if (applyConnectionStringAndRoleNameOverrides(telemetryBuilder, value, stringKey)) {
-            return;
-          }
-          String val = SpanDataMapper.convertToString(value, key.getType());
-          if (value != null) {
-            telemetryBuilder.addProperty(key.getKey(), val);
-          }
-        });
   }
 
   static boolean applyConnectionStringAndRoleNameOverrides(
