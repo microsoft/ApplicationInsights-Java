@@ -54,17 +54,6 @@ class MappingsBuilder {
     return this;
   }
 
-  MappingsBuilder exactToProperty(String key, String property) {
-    exactMappings.put(
-        key,
-        (telemetryBuilder, value) -> {
-          if (value instanceof String) {
-            telemetryBuilder.addProperty(property, (String) value);
-          }
-        });
-    return this;
-  }
-
   MappingsBuilder exact(String key, ExactMapping mapping) {
     exactMappings.put(key, mapping);
     return this;
@@ -72,6 +61,28 @@ class MappingsBuilder {
 
   MappingsBuilder prefix(String prefix, PrefixMapping mapping) {
     prefixMappings.put(prefix, mapping);
+    return this;
+  }
+
+  MappingsBuilder exactString(AttributeKey<String> attributeKey, String propertyName) {
+    exactMappings.put(
+        attributeKey.getKey(),
+        (telemetryBuilder, value) -> {
+          if (value instanceof String) {
+            telemetryBuilder.addProperty(propertyName, (String) value);
+          }
+        });
+    return this;
+  }
+
+  MappingsBuilder exactLong(AttributeKey<Long> attributeKey, String propertyName) {
+    exactMappings.put(
+        attributeKey.getKey(),
+        (telemetryBuilder, value) -> {
+          if (value instanceof Long) {
+            telemetryBuilder.addProperty(propertyName, Long.toString((Long) value));
+          }
+        });
     return this;
   }
 

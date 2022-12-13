@@ -3,6 +3,8 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation;
 
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
+
 import com.azure.core.util.logging.ClientLogger;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.AbstractTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.ExceptionTelemetryBuilder;
@@ -12,6 +14,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTag
 import com.azure.monitor.opentelemetry.exporter.implementation.models.SeverityLevel;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedTime;
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.SpanContext;
@@ -29,8 +32,8 @@ public class LogDataMapper {
   private static final String LOGBACK_MDC_PREFIX = "logback.mdc.";
   private static final String JBOSS_LOGGING_MDC_PREFIX = "jboss-logmanager.mdc.";
 
-  private static final String LOG4J_MARKER = "log4j.marker";
-  private static final String LOGBACK_MARKER = "logback.marker";
+  private static final AttributeKey<String> LOG4J_MARKER = stringKey("log4j.marker");
+  private static final AttributeKey<String> LOGBACK_MARKER = stringKey("logback.marker");
 
   private static final Mappings MAPPINGS;
 
@@ -61,12 +64,12 @@ public class LogDataMapper {
                   telemetryBuilder.addProperty(
                       key.substring(JBOSS_LOGGING_MDC_PREFIX.length()), String.valueOf(value));
                 })
-            .exactToProperty(SemanticAttributes.CODE_FILEPATH.getKey(), "FileName")
-            .exactToProperty(SemanticAttributes.CODE_NAMESPACE.getKey(), "ClassName")
-            .exactToProperty(SemanticAttributes.CODE_FUNCTION.getKey(), "MethodName")
-            .exactToProperty(SemanticAttributes.CODE_LINENO.getKey(), "LineNumber")
-            .exactToProperty(LOG4J_MARKER, "Marker")
-            .exactToProperty(LOGBACK_MARKER, "Marker");
+            .exactString(SemanticAttributes.CODE_FILEPATH, "FileName")
+            .exactString(SemanticAttributes.CODE_NAMESPACE, "ClassName")
+            .exactString(SemanticAttributes.CODE_FUNCTION, "MethodName")
+            .exactLong(SemanticAttributes.CODE_LINENO, "LineNumber")
+            .exactString(LOG4J_MARKER, "Marker")
+            .exactString(LOGBACK_MARKER, "Marker");
 
     SpanDataMapper.applyCommonTags(mappingsBuilder);
 
