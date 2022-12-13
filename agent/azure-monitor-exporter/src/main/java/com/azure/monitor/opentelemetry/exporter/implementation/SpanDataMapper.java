@@ -3,6 +3,7 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation;
 
+import static java.util.Arrays.asList;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
@@ -19,7 +20,6 @@ import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTag
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedDuration;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedTime;
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.Trie;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.UrlParser;
 import io.opentelemetry.api.common.AttributeType;
 import io.opentelemetry.api.common.Attributes;
@@ -30,8 +30,6 @@ import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -47,46 +45,72 @@ public final class SpanDataMapper {
 
   private static final ClientLogger LOGGER = new ClientLogger(SpanDataMapper.class);
 
-  private static final Set<String> SQL_DB_SYSTEMS;
+  private static final Set<String> SQL_DB_SYSTEMS =
+      new HashSet<>(
+          asList(
+              SemanticAttributes.DbSystemValues.DB2,
+              SemanticAttributes.DbSystemValues.DERBY,
+              SemanticAttributes.DbSystemValues.MARIADB,
+              SemanticAttributes.DbSystemValues.MSSQL,
+              SemanticAttributes.DbSystemValues.MYSQL,
+              SemanticAttributes.DbSystemValues.ORACLE,
+              SemanticAttributes.DbSystemValues.POSTGRESQL,
+              SemanticAttributes.DbSystemValues.SQLITE,
+              SemanticAttributes.DbSystemValues.OTHER_SQL,
+              SemanticAttributes.DbSystemValues.HSQLDB,
+              SemanticAttributes.DbSystemValues.H2));
 
-  private static final Trie<Boolean> STANDARD_ATTRIBUTE_PREFIX_TRIE;
+  private static final Mappings MAPPINGS;
 
   // TODO (trask) add to generated ContextTagKeys class
   private static final ContextTagKeys AI_DEVICE_OS = ContextTagKeys.fromString("ai.device.os");
 
   static {
-    Set<String> dbSystems = new HashSet<>();
-    dbSystems.add(SemanticAttributes.DbSystemValues.DB2);
-    dbSystems.add(SemanticAttributes.DbSystemValues.DERBY);
-    dbSystems.add(SemanticAttributes.DbSystemValues.MARIADB);
-    dbSystems.add(SemanticAttributes.DbSystemValues.MSSQL);
-    dbSystems.add(SemanticAttributes.DbSystemValues.MYSQL);
-    dbSystems.add(SemanticAttributes.DbSystemValues.ORACLE);
-    dbSystems.add(SemanticAttributes.DbSystemValues.POSTGRESQL);
-    dbSystems.add(SemanticAttributes.DbSystemValues.SQLITE);
-    dbSystems.add(SemanticAttributes.DbSystemValues.OTHER_SQL);
-    dbSystems.add(SemanticAttributes.DbSystemValues.HSQLDB);
-    dbSystems.add(SemanticAttributes.DbSystemValues.H2);
+    MappingsBuilder mappingsBuilder =
+        new MappingsBuilder()
+            // these are from azure SDK (AZURE_SDK_PEER_ADDRESS gets filtered out automatically
+            // since it uses the otel "peer." prefix)
+            .ignoreExact(AiSemanticAttributes.AZURE_SDK_NAMESPACE.getKey())
+            .ignoreExact(AiSemanticAttributes.AZURE_SDK_MESSAGE_BUS_DESTINATION.getKey())
+            .ignoreExact(AiSemanticAttributes.AZURE_SDK_ENQUEUED_TIME.getKey())
+            .ignoreExact(AiSemanticAttributes.KAFKA_RECORD_QUEUE_TIME_MS.getKey())
+            .ignoreExact(AiSemanticAttributes.KAFKA_OFFSET.getKey())
+            .exact(
+                SemanticAttributes.HTTP_USER_AGENT.getKey(),
+                (builder, value) -> {
+                  if (value instanceof String) {
+                    builder.addTag("ai.user.userAgent", (String) value);
+                  }
+                });
 
-    SQL_DB_SYSTEMS = Collections.unmodifiableSet(dbSystems);
+    applyCommonTags(mappingsBuilder);
 
-    // TODO need to keep this list in sync as new semantic conventions are defined
-    STANDARD_ATTRIBUTE_PREFIX_TRIE =
-        Trie.<Boolean>newBuilder()
-            .put("http.", true)
-            .put("db.", true)
-            .put("message.", true)
-            .put("messaging.", true)
-            .put("rpc.", true)
-            .put("enduser.", true)
-            .put("net.", true)
-            .put("peer.", true)
-            .put("exception.", true)
-            .put("thread.", true)
-            .put("faas.", true)
-            .put("code.", true)
-            .put("job.", true) // proposed semantic convention which we use for job.system
-            .build();
+    mappingsBuilder.ignorePrefix("applicationinsights.internal.");
+
+    mappingsBuilder
+        .prefix(
+            "http.request.header.",
+            (telemetryBuilder, key, value) -> {
+              if (value instanceof String) {
+                telemetryBuilder.addProperty(key, (String) value);
+              }
+            })
+        .prefix(
+            "http.response.header.",
+            (telemetryBuilder, key, value) -> {
+              if (value instanceof String) {
+                telemetryBuilder.addProperty(key, (String) value);
+              }
+            });
+
+    MAPPINGS =
+        mappingsBuilder.build(
+            (telemetryBuilder, attributeKey, value) -> {
+              String val = convertToString(value, attributeKey.getType());
+              if (val != null) {
+                telemetryBuilder.addProperty(attributeKey.getKey(), val);
+              }
+            });
   }
 
   private final boolean captureHttpServer4xxAsError;
@@ -168,7 +192,7 @@ public final class SpanDataMapper {
 
   private static final Set<String> DEFAULT_HTTP_SPAN_NAMES =
       new HashSet<>(
-          Arrays.asList(
+          asList(
               "HTTP OPTIONS",
               "HTTP GET",
               "HTTP HEAD",
@@ -775,59 +799,29 @@ public final class SpanDataMapper {
       AbstractTelemetryBuilder telemetryBuilder, Attributes attributes) {
     attributes.forEach(
         (attributeKey, value) -> {
-          String key = attributeKey.getKey();
-          if (key.equals(AiSemanticAttributes.AZURE_SDK_NAMESPACE.getKey())
-              || key.equals(AiSemanticAttributes.AZURE_SDK_MESSAGE_BUS_DESTINATION.getKey())
-              || key.equals(AiSemanticAttributes.AZURE_SDK_ENQUEUED_TIME.getKey())) {
-            // these are from azure SDK (AZURE_SDK_PEER_ADDRESS gets filtered out automatically
-            // since it uses the otel "peer." prefix)
-            return;
-          }
-          if (key.equals(AiSemanticAttributes.KAFKA_RECORD_QUEUE_TIME_MS.getKey())
-              || key.equals(AiSemanticAttributes.KAFKA_OFFSET.getKey())) {
-            return;
-          }
-          if (key.equals(AiSemanticAttributes.REQUEST_CONTEXT.getKey())) {
-            return;
-          }
-          if (key.equals(SemanticAttributes.HTTP_USER_AGENT.getKey()) && value instanceof String) {
-            telemetryBuilder.addTag("ai.user.userAgent", (String) value);
-            return;
-          }
-          if (applyCommonTags(telemetryBuilder, key, value)) {
-            return;
-          }
-          if (key.startsWith("applicationinsights.internal.")) {
-            return;
-          }
-          if (STANDARD_ATTRIBUTE_PREFIX_TRIE.getOrDefault(key, false)
-              && !key.startsWith("http.request.header.")
-              && !key.startsWith("http.response.header.")) {
-            return;
-          }
-          String val = convertToString(value, attributeKey.getType());
-          if (value != null) {
-            telemetryBuilder.addProperty(attributeKey.getKey(), val);
-          }
+          MAPPINGS.map(telemetryBuilder, attributeKey, value);
         });
   }
 
-  static boolean applyCommonTags(
-      AbstractTelemetryBuilder telemetryBuilder, String key, Object value) {
+  static void applyCommonTags(MappingsBuilder mappingsBuilder) {
 
-    if (key.equals(SemanticAttributes.ENDUSER_ID.getKey()) && value instanceof String) {
-      telemetryBuilder.addTag(ContextTagKeys.AI_USER_ID.toString(), (String) value);
-      return true;
-    }
-    if (applyConnectionStringAndRoleNameOverrides(telemetryBuilder, value, key)) {
-      return true;
-    }
-    if (key.equals(AiSemanticAttributes.PREVIEW_APPLICATION_VERSION.getKey())
-        && value instanceof String) {
-      telemetryBuilder.addTag(ContextTagKeys.AI_APPLICATION_VER.toString(), (String) value);
-      return true;
-    }
-    return false;
+    mappingsBuilder.exact(
+        SemanticAttributes.ENDUSER_ID.getKey(),
+        (telemetryBuilder, value) -> {
+          if (value instanceof String) {
+            telemetryBuilder.addTag(ContextTagKeys.AI_USER_ID.toString(), (String) value);
+          }
+        });
+
+    applyConnectionStringAndRoleNameOverrides(mappingsBuilder);
+
+    mappingsBuilder.exact(
+        AiSemanticAttributes.PREVIEW_APPLICATION_VERSION.getKey(),
+        (telemetryBuilder, value) -> {
+          if (value instanceof String) {
+            telemetryBuilder.addTag(ContextTagKeys.AI_APPLICATION_VER.toString(), (String) value);
+          }
+        });
   }
 
   private static final WarningLogger connectionStringAttributeNoLongerSupported =
@@ -866,36 +860,41 @@ public final class SpanDataMapper {
               + " https://github.com/microsoft/ApplicationInsights-Java/issues if you have a"
               + " different use case.");
 
-  static boolean applyConnectionStringAndRoleNameOverrides(
-      AbstractTelemetryBuilder telemetryBuilder, Object value, String key) {
-    if (key.equals(AiSemanticAttributes.INTERNAL_CONNECTION_STRING.getKey())
-        && value instanceof String) {
-      // intentionally letting exceptions from parse bubble up
-      telemetryBuilder.setConnectionString(ConnectionString.parse((String) value));
-      return true;
-    }
-    if (key.equals(AiSemanticAttributes.INTERNAL_ROLE_NAME.getKey()) && value instanceof String) {
-      telemetryBuilder.addTag(ContextTagKeys.AI_CLOUD_ROLE.toString(), (String) value);
-      return true;
-    }
-    if (key.equals(AiSemanticAttributes.DEPRECATED_CONNECTION_STRING.getKey())) {
-      connectionStringAttributeNoLongerSupported.recordWarning();
-      return true;
-    }
-    if (key.equals(AiSemanticAttributes.DEPRECATED_ROLE_NAME.getKey())) {
-      roleNameAttributeNoLongerSupported.recordWarning();
-      return true;
-    }
-    if (key.equals(AiSemanticAttributes.DEPRECATED_ROLE_INSTANCE.getKey())
-        && value instanceof String) {
-      roleInstanceAttributeNoLongerSupported.recordWarning();
-      return true;
-    }
-    if (key.equals(AiSemanticAttributes.DEPRECATED_INSTRUMENTATION_KEY.getKey())) {
-      instrumentationKeyAttributeNoLongerSupported.recordWarning();
-      return true;
-    }
-    return false;
+  static void applyConnectionStringAndRoleNameOverrides(MappingsBuilder mappingsBuilder) {
+    mappingsBuilder
+        .exact(
+            AiSemanticAttributes.INTERNAL_CONNECTION_STRING.getKey(),
+            (telemetryBuilder, value) -> {
+              // intentionally letting exceptions from parse bubble up
+              telemetryBuilder.setConnectionString(ConnectionString.parse((String) value));
+            })
+        .exact(
+            AiSemanticAttributes.INTERNAL_ROLE_NAME.getKey(),
+            (telemetryBuilder, value) -> {
+              if (value instanceof String) {
+                telemetryBuilder.addTag(ContextTagKeys.AI_CLOUD_ROLE.toString(), (String) value);
+              }
+            })
+        .exact(
+            AiSemanticAttributes.DEPRECATED_CONNECTION_STRING.getKey(),
+            (telemetryBuilder, value) -> {
+              connectionStringAttributeNoLongerSupported.recordWarning();
+            })
+        .exact(
+            AiSemanticAttributes.DEPRECATED_ROLE_NAME.getKey(),
+            (telemetryBuilder, value) -> {
+              roleNameAttributeNoLongerSupported.recordWarning();
+            })
+        .exact(
+            AiSemanticAttributes.DEPRECATED_ROLE_INSTANCE.getKey(),
+            (telemetryBuilder, value) -> {
+              roleInstanceAttributeNoLongerSupported.recordWarning();
+            })
+        .exact(
+            AiSemanticAttributes.DEPRECATED_INSTRUMENTATION_KEY.getKey(),
+            (telemetryBuilder, value) -> {
+              instrumentationKeyAttributeNoLongerSupported.recordWarning();
+            });
   }
 
   @Nullable

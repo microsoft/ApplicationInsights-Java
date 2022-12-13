@@ -15,6 +15,8 @@ import com.azure.core.util.logging.ClientLogger;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.AbstractTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.MetricPointBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.MetricTelemetryBuilder;
+import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.DependencyExtractor;
 import com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.RequestExtractor;
@@ -156,7 +158,7 @@ public class MetricDataMapper {
 
       attributes.forEach(
           (key, value) ->
-              SpanDataMapper.applyConnectionStringAndRoleNameOverrides(
+              applyConnectionStringAndRoleNameOverrides(
                   metricTelemetryBuilder, value, key.getKey()));
 
       if (metricData.getName().contains(".server.")) {
@@ -189,8 +191,7 @@ public class MetricDataMapper {
     attributes.forEach(
         (key, value) -> {
           String stringKey = key.getKey();
-          if (SpanDataMapper.applyConnectionStringAndRoleNameOverrides(
-              telemetryBuilder, value, stringKey)) {
+          if (applyConnectionStringAndRoleNameOverrides(telemetryBuilder, value, stringKey)) {
             return;
           }
           String val = SpanDataMapper.convertToString(value, key.getType());
@@ -198,6 +199,21 @@ public class MetricDataMapper {
             telemetryBuilder.addProperty(key.getKey(), val);
           }
         });
+  }
+
+  static boolean applyConnectionStringAndRoleNameOverrides(
+      AbstractTelemetryBuilder telemetryBuilder, Object value, String key) {
+    if (key.equals(AiSemanticAttributes.INTERNAL_CONNECTION_STRING.getKey())
+        && value instanceof String) {
+      // intentionally letting exceptions from parse bubble up
+      telemetryBuilder.setConnectionString(ConnectionString.parse((String) value));
+      return true;
+    }
+    if (key.equals(AiSemanticAttributes.INTERNAL_ROLE_NAME.getKey()) && value instanceof String) {
+      telemetryBuilder.addTag(ContextTagKeys.AI_CLOUD_ROLE.toString(), (String) value);
+      return true;
+    }
+    return false;
   }
 
   private static int getDefaultPortForHttpScheme(@Nullable String httpScheme) {
