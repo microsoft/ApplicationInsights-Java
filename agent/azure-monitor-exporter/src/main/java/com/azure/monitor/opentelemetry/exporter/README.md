@@ -23,7 +23,7 @@ For more information, please read [introduction to Application Insights][applica
 <dependency>
   <groupId>com.azure</groupId>
   <artifactId>azure-monitor-opentelemetry-exporter</artifactId>
-  <version>1.0.0-beta.5</version>
+  <version>1.0.0-beta.6</version>
 </dependency>
 ```
 [//]: # ({x-version-update-end})
@@ -39,7 +39,7 @@ right corner.
 
 ### Creating exporter for Azure Monitor
 ```java readme-sample-createExporter
-AzureMonitorTraceExporter azureMonitorTraceExporter = new AzureMonitorExporterBuilder()
+SpanExporter azureMonitorTraceExporter = new AzureMonitorExporterBuilder()
     .connectionString("{connection-string}")
     .buildTraceExporter();
 ```
@@ -47,13 +47,13 @@ AzureMonitorTraceExporter azureMonitorTraceExporter = new AzureMonitorExporterBu
 #### Exporting span data
 
 The following example shows how to export a trace data to Azure Monitor through the
- `AzureMonitorExporter`
+ `AzureMonitorTraceExporter`
 
 ##### Setup OpenTelemetry Tracer to work with Azure Monitor exporter
 ```java readme-sample-setupExporter
 // Create Azure Monitor exporter and configure OpenTelemetry tracer to use this exporter
 // This should be done just once when application starts up
-AzureMonitorTraceExporter exporter = new AzureMonitorExporterBuilder()
+SpanExporter exporter = new AzureMonitorExporterBuilder()
     .connectionString("{connection-string}")
     .buildTraceExporter();
 
@@ -85,24 +85,6 @@ try {
     span.end();
     scope.close();
 }
-```
-
-### Setup OpenTelemetry Tracer to generate spans with better operation names
-
-
-```
-AzureMonitorTraceExporter exporter = new AzureMonitorExporterBuilder()
-    .connectionString("{connection-string}")
-    .buildTraceExporter();
-SdkTracerProvider tracerProvider = SdkTracerProvider.builder()
-    .addSpanProcessor(new AiOperationNameSpanProcessor())
-    .addSpanProcessor(SimpleSpanProcessor.create(exporter))
-    .build();
-OpenTelemetrySdk openTelemetrySdk = OpenTelemetrySdk.builder()
-    .setTracerProvider(tracerProvider)
-    .buildAndRegisterGlobal();
-Tracer tracer = openTelemetrySdk.getTracer("Sample");
-
 ```
 
 ## Key concepts
@@ -182,4 +164,8 @@ This project has adopted the [Microsoft Open Source Code of Conduct][coc]. For m
 [sampler_ref]: https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/trace/sdk.md#sampling
 [trace_concept]: https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/overview.md#trace
 [samples_code]: https://github.com/Azure/azure-sdk-for-java/tree/main/sdk/monitor/azure-monitor-opentelemetry-exporter/src/samples
+[cla]: https://cla.microsoft.com
+[coc]: https://opensource.microsoft.com/codeofconduct/
+[coc_faq]: https://opensource.microsoft.com/codeofconduct/faq/
+[coc_contact]: mailto:opencode@microsoft.com
 ![Impressions](https://azure-sdk-impressions.azurewebsites.net/api/impressions/azure-sdk-for-java%2Fsdk%monitor%2Fazure-monitor-opentelemetry-exporter%2FREADME.png)

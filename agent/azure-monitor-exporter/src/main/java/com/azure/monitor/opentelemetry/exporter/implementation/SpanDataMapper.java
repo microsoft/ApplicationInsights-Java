@@ -208,7 +208,7 @@ public final class SpanDataMapper {
       return name;
     }
 
-    String path = UrlParser.getPathFromUrl(url);
+    String path = UrlParser.getPath(url);
     if (path == null) {
       return name;
     }
@@ -299,7 +299,8 @@ public final class SpanDataMapper {
   private static void applyHttpClientSpan(
       RemoteDependencyTelemetryBuilder telemetryBuilder, Attributes attributes) {
 
-    int defaultPort = getDefaultPortForHttpUrl(attributes.get(SemanticAttributes.HTTP_URL));
+    String httpUrl = attributes.get(SemanticAttributes.HTTP_URL);
+    int defaultPort = getDefaultPortForHttpUrl(httpUrl);
     String target = getTargetOrDefault(attributes, defaultPort, "Http");
 
     telemetryBuilder.setType("Http");
@@ -310,8 +311,7 @@ public final class SpanDataMapper {
       telemetryBuilder.setResultCode(Long.toString(httpStatusCode));
     }
 
-    String url = attributes.get(SemanticAttributes.HTTP_URL);
-    telemetryBuilder.setData(url);
+    telemetryBuilder.setData(httpUrl);
   }
 
   private static void applyRpcClientSpan(
@@ -359,6 +359,12 @@ public final class SpanDataMapper {
     if (host != null) {
       Long port = attributes.get(AiSemanticAttributes.NET_SOCK_PEER_PORT);
       return getTarget(host, port, defaultPort);
+    }
+    String httpUrl = attributes.get(SemanticAttributes.HTTP_URL);
+    if (httpUrl != null) {
+      // this is needed for instrumentations which don't yet follow the latest OpenTelemetry
+      // semantic attributes (in particular Azure SDK instrumentation)
+      return UrlParser.getTarget(httpUrl);
     }
     return null;
   }
