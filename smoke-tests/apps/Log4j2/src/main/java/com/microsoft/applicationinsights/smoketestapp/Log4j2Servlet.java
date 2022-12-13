@@ -11,6 +11,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.MarkerManager;
 import org.apache.logging.log4j.ThreadContext;
+import org.apache.logging.log4j.message.StringMapMessage;
 
 @WebServlet("/test")
 public class Log4j2Servlet extends HttpServlet {
@@ -25,7 +26,10 @@ public class Log4j2Servlet extends HttpServlet {
     logger.warn("This is log4j2 warn.");
     logger.warn(MarkerManager.getMarker("aMarker"), "Warn with marker");
     ThreadContext.remove("MDC key");
-    logger.error("This is log4j2 error.");
+    StringMapMessage message = new StringMapMessage();
+    message.put("message", "This is log4j2 error.");
+    message.put("Map Message key", "Map Message value");
+    logger.error(message);
     logger.fatal("This is log4j2 fatal.");
   }
 }

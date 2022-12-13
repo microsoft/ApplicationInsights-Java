@@ -74,9 +74,10 @@ abstract class Log4j2Test {
     assertThat(md3.getMessage()).isEqualTo("This is log4j2 error.");
     assertThat(md3.getSeverityLevel()).isEqualTo(SeverityLevel.ERROR);
     assertThat(md3.getProperties()).containsEntry("SourceType", "Logger");
-    assertThat(md1.getProperties()).containsEntry("LoggerName", "smoketestapp");
-    assertThat(md1.getProperties()).containsKey("ThreadName");
-    assertThat(md3.getProperties()).hasSize(3);
+    assertThat(md3.getProperties()).containsEntry("LoggerName", "smoketestapp");
+    assertThat(md3.getProperties()).containsKey("ThreadName");
+    assertThat(md3.getProperties()).containsEntry("Map Message key", "Map Message value");
+    assertThat(md3.getProperties()).hasSize(4);
 
     assertThat(md4.getMessage()).isEqualTo("This is log4j2 fatal.");
     assertThat(md4.getSeverityLevel()).isEqualTo(SeverityLevel.CRITICAL);
