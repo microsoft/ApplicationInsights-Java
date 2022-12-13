@@ -64,7 +64,7 @@ abstract class JavaUtilLoggingTest {
     assertThat(md2.getMessage()).isEqualTo("This is jul severe.");
     assertThat(md2.getSeverityLevel()).isEqualTo(SeverityLevel.ERROR);
     assertThat(md2.getProperties()).containsEntry("SourceType", "Logger");
-    assertThat(md1.getProperties()).containsEntry("LoggerName", "smoketestapp");
+    assertThat(md2.getProperties()).containsEntry("LoggerName", "smoketestapp");
     assertThat(md2.getProperties()).containsKey("ThreadName");
     assertThat(md2.getProperties()).hasSize(3);
 
