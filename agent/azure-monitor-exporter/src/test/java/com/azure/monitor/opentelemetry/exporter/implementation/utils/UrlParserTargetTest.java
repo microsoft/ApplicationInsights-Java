@@ -218,4 +218,15 @@ public class UrlParserTargetTest {
     assertThat(UrlParser.getTarget("https:/more/path#fragment")).isNull();
     assertThat(UrlParser.getTarget("https:/more/path/#fragment")).isNull();
   }
+
+  @Test
+  public void testGetTargetFromMalformedUrl() {
+    assertThat(UrlParser.getTarget("")).isNull();
+    assertThat(UrlParser.getTarget("http:")).isNull();
+    assertThat(UrlParser.getTarget("http:/")).isNull();
+    assertThat(UrlParser.getTarget("http//")).isNull();
+    assertThat(UrlParser.getTarget("http:localhost/path")).isNull();
+    assertThat(UrlParser.getTarget("http:/localhost/path")).isNull();
+    assertThat(UrlParser.getTarget("http//localhost/path")).isNull();
+  }
 }

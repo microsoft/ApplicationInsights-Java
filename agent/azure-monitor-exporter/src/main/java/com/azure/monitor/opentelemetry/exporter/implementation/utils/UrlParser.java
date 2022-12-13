@@ -13,27 +13,6 @@ import reactor.util.annotation.Nullable;
 
 public class UrlParser {
 
-  // TODO remove this unused?
-  @Nullable
-  public static String getAuthority(String url) {
-
-    int schemeEndIndexExclusive = getSchemeEndIndexExclusive(url);
-    if (schemeEndIndexExclusive == -1) {
-      // invalid url
-      return null;
-    }
-
-    int hostEndIndexExclusive = getHostEndIndexExclusive(url, schemeEndIndexExclusive);
-    if (hostEndIndexExclusive == schemeEndIndexExclusive) {
-      // no host (or port)
-      return null;
-    }
-
-    int portEndIndexExclusive = getPortEndIndexExclusive(url, hostEndIndexExclusive);
-
-    return url.substring(schemeEndIndexExclusive, portEndIndexExclusive);
-  }
-
   @Nullable
   public static String getTarget(String url) {
 

@@ -87,4 +87,15 @@ public class UrlParserPathTest {
     assertThat(UrlParser.getPath("https://localhost:8080/more/path/#fragment"))
         .isEqualTo("/more/path/");
   }
+
+  @Test
+  public void testGetPathFromMalformedUrl() {
+    assertThat(UrlParser.getPath("")).isNull();
+    assertThat(UrlParser.getPath("http:")).isNull();
+    assertThat(UrlParser.getPath("http:/")).isNull();
+    assertThat(UrlParser.getPath("http//")).isNull();
+    assertThat(UrlParser.getPath("http:localhost/path")).isNull();
+    assertThat(UrlParser.getPath("http:/localhost/path")).isNull();
+    assertThat(UrlParser.getPath("http//localhost/path")).isNull();
+  }
 }
