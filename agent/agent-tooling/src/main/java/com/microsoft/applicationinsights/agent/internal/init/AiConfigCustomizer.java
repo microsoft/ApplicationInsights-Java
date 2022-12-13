@@ -8,7 +8,6 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.legacyheaders.DelegatingPropagatorProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -95,16 +94,6 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
     if (tracesExporter == null) {
       // this overrides the default "otlp" so the exporter can be configured later
       properties.put("otel.traces.exporter", "none");
-
-      // TODO (trask) this can go away once new indexer is rolled out to gov clouds
-      List<String> httpClientResponseHeaders = new ArrayList<>();
-      httpClientResponseHeaders.add("request-context");
-      httpClientResponseHeaders.addAll(
-          configuration.preview.captureHttpClientHeaders.responseHeaders);
-      setHttpHeaderConfiguration(
-          properties,
-          "otel.instrumentation.http.capture-headers.client.response",
-          httpClientResponseHeaders);
     }
 
     String metricsExporter = otelConfig.getString("otel.metrics.exporter");
