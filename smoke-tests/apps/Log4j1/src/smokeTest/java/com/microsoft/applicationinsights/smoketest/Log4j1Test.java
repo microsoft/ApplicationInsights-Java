@@ -84,12 +84,9 @@ abstract class Log4j1Test {
     assertThat(md3.getProperties()).containsKey("ThreadName");
     assertThat(md3.getProperties()).hasSize(3);
 
-    SmokeTestExtension.assertParentChild(
-        rd, rdEnvelope, mdEnvelope1, "GET /Log4j1/testWithException");
-    SmokeTestExtension.assertParentChild(
-        rd, rdEnvelope, mdEnvelope2, "GET /Log4j1/testWithException");
-    SmokeTestExtension.assertParentChild(
-        rd, rdEnvelope, mdEnvelope3, "GET /Log4j1/testWithException");
+    SmokeTestExtension.assertParentChild(rd, rdEnvelope, mdEnvelope1, "GET /Log4j1/test");
+    SmokeTestExtension.assertParentChild(rd, rdEnvelope, mdEnvelope2, "GET /Log4j1/test");
+    SmokeTestExtension.assertParentChild(rd, rdEnvelope, mdEnvelope3, "GET /Log4j1/test");
   }
 
   private void logDisableMessage() {
