@@ -7,7 +7,6 @@ import static java.util.Arrays.asList;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
-import com.azure.core.util.logging.ClientLogger;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.AbstractTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.ExceptionTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.Exceptions;
@@ -41,8 +40,6 @@ public final class SpanDataMapper {
 
   // visible for testing
   public static final String MS_PROCESSED_BY_METRIC_EXTRACTORS = "_MS.ProcessedByMetricExtractors";
-
-  private static final ClientLogger LOGGER = new ClientLogger(SpanDataMapper.class);
 
   private static final Set<String> SQL_DB_SYSTEMS =
       new HashSet<>(
