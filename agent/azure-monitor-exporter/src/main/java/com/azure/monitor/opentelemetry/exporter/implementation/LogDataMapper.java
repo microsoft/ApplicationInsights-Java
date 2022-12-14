@@ -32,6 +32,8 @@ public class LogDataMapper {
   private static final String LOGBACK_MDC_PREFIX = "logback.mdc.";
   private static final String JBOSS_LOGGING_MDC_PREFIX = "jboss-logmanager.mdc.";
 
+  private static final String LOG4J_MAP_MESSAGE_PREFIX = "log4j.map_message."; // log4j 2.x
+
   private static final AttributeKey<String> LOG4J_MARKER = stringKey("log4j.marker");
   private static final AttributeKey<String> LOGBACK_MARKER = stringKey("logback.marker");
 
@@ -63,6 +65,12 @@ public class LogDataMapper {
                 (telemetryBuilder, key, value) -> {
                   telemetryBuilder.addProperty(
                       key.substring(JBOSS_LOGGING_MDC_PREFIX.length()), String.valueOf(value));
+                })
+            .prefix(
+                LOG4J_MAP_MESSAGE_PREFIX,
+                (telemetryBuilder, key, value) -> {
+                  telemetryBuilder.addProperty(
+                      key.substring(LOG4J_MAP_MESSAGE_PREFIX.length()), String.valueOf(value));
                 })
             .exactString(SemanticAttributes.CODE_FILEPATH, "FileName")
             .exactString(SemanticAttributes.CODE_NAMESPACE, "ClassName")
