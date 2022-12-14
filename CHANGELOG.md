@@ -1,5 +1,19 @@
 # CHANGELOG
 
+## Version 3.4.7 GA
+
+### Enhancements:
+
+* Update to OpenTelemetry Java Instrumentation 1.21
+  ([#2796](https://github.com/microsoft/ApplicationInsights-Java/pull/2796))
+
+### Bug fixes:
+
+* Fix custom instrumentation type
+  ([#2776](https://github.com/microsoft/ApplicationInsights-Java/pull/2776))
+* Fix Azure SDK target mapping
+  ([#2787](https://github.com/microsoft/ApplicationInsights-Java/pull/2787))
+
 ## Version 3.4.6 GA
 
 ### Bug fixes:
