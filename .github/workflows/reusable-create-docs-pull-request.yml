@@ -44,7 +44,7 @@ jobs:
         run: |
           date=$(TZ=America/Los_Angeles date "+%m/%d/%Y")
           files=$(grep -rl applicationinsights-agent-[0-9.]*.jar articles/azure-monitor/app \
-                    | grep -v java-2x-agent.md)
+                    | grep -v deprecated-java-2x.md)
           echo "$files" | xargs sed -Ei "s/applicationinsights-agent-[0-9.]+.jar/applicationinsights-agent-${VERSION}.jar/g"
           echo "$files" | xargs sed -Ei "s|microsoft/ApplicationInsights-Java/releases/download/[0-9.]*/|microsoft/ApplicationInsights-Java/releases/download/${VERSION}/|g"
           echo "$files" | xargs sed -Ei "s|^ms.date: .*|ms.date: $date|"
