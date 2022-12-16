@@ -98,7 +98,7 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
 
     Configuration configuration = FirstEntryPoint.getConfiguration();
     if (Strings.isNullOrEmpty(configuration.connectionString)) {
-      if (!ConfigurationBuilder.inAzureFunctionsConsumptionWorker()) {
+      if (!configuration.startWithoutConnectionStringEnabled) {
         throw new FriendlyException(
             "No connection string provided", "Please provide connection string.");
       }
@@ -188,7 +188,9 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
     // initialize StatsbeatModule
     statsbeatModule.start(telemetryClient, configuration);
 
-    AfterAgentListener.setAppIdSupplier(appIdSupplier);
+    if (!Strings.isNullOrEmpty(configuration.connectionString)) {
+      AfterAgentListener.setAppIdSupplier(appIdSupplier);
+    }
 
     // TODO (trask) add this method to AutoConfigurationCustomizer upstream?
     ((AutoConfiguredOpenTelemetrySdkBuilder) autoConfiguration).registerShutdownHook(false);

@@ -33,6 +33,8 @@ import javax.annotation.Nullable;
 public class Configuration {
 
   public String connectionString;
+  public boolean startWithoutConnectionStringEnabled =
+      ConfigurationBuilder.inAzureFunctionsConsumptionWorker();
   public Role role = new Role();
   public Map<String, String> customDimensions = new HashMap<>();
   public Sampling sampling = new Sampling();

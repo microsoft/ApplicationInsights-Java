@@ -91,6 +91,7 @@ public class SmokeTestExtension
   private final boolean readOnly;
   private final boolean usesGlobalIngestionEndpoint;
   private final boolean useOld3xAgent;
+  private final String connectionString;
   private final String selfDiagnosticsLevel;
   private final File javaagentFile;
 
@@ -108,6 +109,7 @@ public class SmokeTestExtension
       boolean usesGlobalIngestionEndpoint,
       boolean skipHealthCheck,
       boolean readOnly,
+      boolean doNotSetConnectionString,
       boolean useOld3xAgent,
       String selfDiagnosticsLevel) {
     this.skipHealthCheck = skipHealthCheck;
@@ -116,6 +118,14 @@ public class SmokeTestExtension
     this.dependencyContainerEnvVarName = dependencyContainerEnvVarName;
     this.usesGlobalIngestionEndpoint = usesGlobalIngestionEndpoint;
     this.useOld3xAgent = useOld3xAgent;
+    connectionString =
+        doNotSetConnectionString
+            ? ""
+            : "InstrumentationKey=00000000-0000-0000-0000-0FEEDDADBEEF;"
+                + "IngestionEndpoint="
+                + FAKE_INGESTION_ENDPOINT
+                + ";LiveEndpoint="
+                + FAKE_INGESTION_ENDPOINT;
     this.selfDiagnosticsLevel = selfDiagnosticsLevel;
 
     String javaagentPathSystemProperty =
@@ -365,13 +375,7 @@ public class SmokeTestExtension
     container =
         container
             .withEnv(hostnameEnvVars)
-            .withEnv(
-                "APPLICATIONINSIGHTS_CONNECTION_STRING",
-                "InstrumentationKey=00000000-0000-0000-0000-0FEEDDADBEEF;"
-                    + "IngestionEndpoint="
-                    + FAKE_INGESTION_ENDPOINT
-                    + ";LiveEndpoint="
-                    + FAKE_INGESTION_ENDPOINT)
+            .withEnv("APPLICATIONINSIGHTS_CONNECTION_STRING", connectionString)
             .withEnv("APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_LEVEL", selfDiagnosticsLevel)
             .withNetwork(network)
             .withExposedPorts(8080)
