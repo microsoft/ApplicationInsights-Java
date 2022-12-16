@@ -18,7 +18,7 @@ import static org.assertj.core.data.MapEntry.entry;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-abstract class SpringBootAttachInMainTest {
+abstract class RuntimeAttachTest {
 
   @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.create();
 
@@ -41,29 +41,29 @@ abstract class SpringBootAttachInMainTest {
   }
 
   @Environment(JAVA_8)
-  static class Java8Test extends SpringBootAttachInMainTest {}
+  static class Java8Test extends RuntimeAttachTest {}
 
   @Environment(JAVA_8_OPENJ9)
-  static class Java8OpenJ9Test extends SpringBootAttachInMainTest {}
+  static class Java8OpenJ9Test extends RuntimeAttachTest {}
 
   @Environment(JAVA_11)
-  static class Java11Test extends SpringBootAttachInMainTest {}
+  static class Java11Test extends RuntimeAttachTest {}
 
   @Environment(JAVA_11_OPENJ9)
-  static class Java11OpenJ9Test extends SpringBootAttachInMainTest {}
+  static class Java11OpenJ9Test extends RuntimeAttachTest {}
 
   @Environment(JAVA_17)
-  static class Java17Test extends SpringBootAttachInMainTest {}
+  static class Java17Test extends RuntimeAttachTest {}
 
   @Environment(JAVA_17_OPENJ9)
-  static class Java17OpenJ9Test extends SpringBootAttachInMainTest {}
+  static class Java17OpenJ9Test extends RuntimeAttachTest {}
 
   @Environment(JAVA_19)
-  static class Java18Test extends SpringBootAttachInMainTest {}
+  static class Java18Test extends RuntimeAttachTest {}
 
   @Environment(JAVA_18_OPENJ9)
-  static class Java18OpenJ9Test extends SpringBootAttachInMainTest {}
+  static class Java18OpenJ9Test extends RuntimeAttachTest {}
 
   @Environment(JAVA_20)
-  static class Java19Test extends SpringBootAttachInMainTest {}
+  static class Java19Test extends RuntimeAttachTest {}
 }
