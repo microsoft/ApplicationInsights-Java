@@ -52,6 +52,11 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
   public static volatile FeatureStatsbeat featureStatsbeat;
 
   @Override
+  public void initConnectionString(String connectionString) {
+    TelemetryClient.getActive().updateConnectionStrings();
+  }
+
+  @Override
   public void trackEvent(
       @Nullable Date timestamp,
       String name,

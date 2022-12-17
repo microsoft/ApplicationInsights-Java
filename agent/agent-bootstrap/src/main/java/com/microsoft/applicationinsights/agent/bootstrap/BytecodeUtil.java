@@ -54,6 +54,12 @@ public class BytecodeUtil {
     }
   }
 
+  public static void initConnectionString(String connectionString) {
+    if (delegate != null) {
+      delegate.initConnectionString(connectionString);
+    }
+  }
+
   public static void trackEvent(
       @Nullable Date timestamp,
       String name,
@@ -337,6 +343,9 @@ public class BytecodeUtil {
   private BytecodeUtil() {}
 
   public interface BytecodeUtilDelegate {
+
+
+    void initConnectionString(String connectionString);
 
     void trackEvent(
         @Nullable Date timestamp,
