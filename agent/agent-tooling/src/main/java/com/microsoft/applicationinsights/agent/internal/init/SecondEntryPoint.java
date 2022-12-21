@@ -172,11 +172,13 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
       }
     }
 
+    LazyConfigurator lazyConfigurator =
+        new LazyConfigurator(telemetryClient, SecondEntryPoint.agentLogExporter, appIdSupplier);
+
     if (ConfigurationBuilder.inAzureFunctionsConsumptionWorker()) {
       AzureFunctions.setup(
           () -> telemetryClient.getConnectionString() != null,
-          new AzureFunctionsInitializer(
-              telemetryClient, SecondEntryPoint.agentLogExporter, appIdSupplier));
+          new AzureFunctionsInitializer(lazyConfigurator));
     }
 
     RpConfiguration rpConfiguration = FirstEntryPoint.getRpConfiguration();

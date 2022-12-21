@@ -29,8 +29,7 @@ public class RpConfigurationPolling implements Runnable {
 
   private volatile RpConfiguration rpConfiguration;
   private final Configuration configuration;
-  private final TelemetryClient telemetryClient;
-  private final AppIdSupplier appIdSupplier;
+  private final LazyConfigurator lazyConfigurator;
 
   public static void startPolling(
       RpConfiguration rpConfiguration,
@@ -51,12 +50,10 @@ public class RpConfigurationPolling implements Runnable {
   RpConfigurationPolling(
       RpConfiguration rpConfiguration,
       Configuration configuration,
-      TelemetryClient telemetryClient,
-      AppIdSupplier appIdSupplier) {
+      LazyConfigurator lazyConfigurator) {
     this.rpConfiguration = rpConfiguration;
     this.configuration = configuration;
-    this.telemetryClient = telemetryClient;
-    this.appIdSupplier = appIdSupplier;
+    this.lazyConfigurator = lazyConfigurator;
   }
 
   @Override
@@ -79,6 +76,13 @@ public class RpConfigurationPolling implements Runnable {
             RpConfigurationBuilder.loadJsonConfigFile(rpConfiguration.configPath);
 
         ConfigurationBuilder.overlayFromEnv(newRpConfiguration);
+
+        LazyConfiguration config = new LazyConfiguration();
+        config.connectionString = newRpConfiguration.connectionString;
+        config.sampling.requestsPerSecond = rpConfiguration.sampling.requestsPerSecond;
+        config.sampling.percentage = rpConfiguration.sampling.percentage;
+
+        lazyConfigurator.updateConfiguration(config);
 
         if (!newRpConfiguration.connectionString.equals(rpConfiguration.connectionString)) {
           logger.debug(

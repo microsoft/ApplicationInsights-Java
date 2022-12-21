@@ -16,11 +16,9 @@ public class RpConfiguration {
 
   public String connectionString;
 
-  // intentionally null, so that we can tell if rp is providing or not
   public Sampling sampling = new Sampling();
 
   // this is needed in Azure Spring Cloud because it will set the role name to application name
   // on behalf of customers by default.
-  // Note the role doesn't support hot load due to unnecessary currently.
   public Role role = new Role();
 }
