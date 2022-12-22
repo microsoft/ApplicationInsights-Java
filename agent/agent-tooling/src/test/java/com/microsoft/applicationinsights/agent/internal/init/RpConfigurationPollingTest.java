@@ -4,13 +4,11 @@
 package com.microsoft.applicationinsights.agent.internal.init;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
 
 import com.microsoft.applicationinsights.agent.internal.SamplingTestUtil;
 import com.microsoft.applicationinsights.agent.internal.classicsdk.BytecodeUtilImpl;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.configuration.RpConfiguration;
-import com.microsoft.applicationinsights.agent.internal.exporter.AgentLogExporter;
 import com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampler;
 import com.microsoft.applicationinsights.agent.internal.sampling.Samplers;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
@@ -51,6 +49,15 @@ class RpConfigurationPollingTest {
   @Test
   void shouldUpdate() throws URISyntaxException {
     // given
+    Configuration config = new Configuration();
+    config.sampling.percentage = 100.0;
+
+    BytecodeUtilImpl.samplingPercentage = 100;
+
+    TelemetryClient telemetryClient = TelemetryClient.createForTest();
+    telemetryClient.updateConnectionStrings(
+        "InstrumentationKey=00000000-0000-0000-0000-000000000000", null, null);
+
     RpConfiguration rpConfiguration = new RpConfiguration();
     rpConfiguration.connectionString = "InstrumentationKey=11111111-1111-1111-1111-111111111111";
     rpConfiguration.sampling.percentage = 90.0;
@@ -58,12 +65,6 @@ class RpConfigurationPollingTest {
         Paths.get(
             RpConfigurationPollingTest.class.getResource("/applicationinsights-rp.json").toURI());
     rpConfiguration.lastModifiedTime = 0;
-
-    TelemetryClient telemetryClient = TelemetryClient.createForTest();
-    telemetryClient.updateConnectionStrings(
-        "InstrumentationKey=00000000-0000-0000-0000-000000000000", null, null);
-
-    BytecodeUtilImpl.samplingPercentage = 100;
 
     // pre-check
     assertThat(telemetryClient.getInstrumentationKey())
@@ -73,7 +74,7 @@ class RpConfigurationPollingTest {
 
     // when
     DynamicConfigurator dynamicConfigurator =
-        new DynamicConfigurator(telemetryClient, mock(AgentLogExporter.class), new Configuration());
+        new DynamicConfigurator(telemetryClient, () -> null, config);
     new RpConfigurationPolling(rpConfiguration, dynamicConfigurator).run();
 
     // then
@@ -86,6 +87,15 @@ class RpConfigurationPollingTest {
   @Test
   void shouldBePopulatedByEnvVars() throws URISyntaxException {
     // given
+    Configuration config = new Configuration();
+    config.sampling.percentage = 100.0;
+
+    BytecodeUtilImpl.samplingPercentage = 100;
+
+    TelemetryClient telemetryClient = TelemetryClient.createForTest();
+    telemetryClient.updateConnectionStrings(
+        "InstrumentationKey=00000000-0000-0000-0000-000000000000", null, null);
+
     RpConfiguration rpConfiguration = new RpConfiguration();
     rpConfiguration.connectionString = "InstrumentationKey=11111111-1111-1111-1111-111111111111";
     rpConfiguration.sampling.percentage = 90.0;
@@ -93,12 +103,6 @@ class RpConfigurationPollingTest {
         Paths.get(
             RpConfigurationPollingTest.class.getResource("/applicationinsights-rp.json").toURI());
     rpConfiguration.lastModifiedTime = 0;
-
-    TelemetryClient telemetryClient = TelemetryClient.createForTest();
-    telemetryClient.updateConnectionStrings(
-        "InstrumentationKey=00000000-0000-0000-0000-000000000000", null, null);
-
-    BytecodeUtilImpl.samplingPercentage = 100;
 
     envVars.set(
         "APPLICATIONINSIGHTS_CONNECTION_STRING",
@@ -113,7 +117,7 @@ class RpConfigurationPollingTest {
 
     // when
     DynamicConfigurator dynamicConfigurator =
-        new DynamicConfigurator(telemetryClient, mock(AgentLogExporter.class), new Configuration());
+        new DynamicConfigurator(telemetryClient, () -> null, config);
     new RpConfigurationPolling(rpConfiguration, dynamicConfigurator).run();
 
     // then

@@ -15,21 +15,22 @@ import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClien
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-class DynamicConfigurator {
+public class DynamicConfigurator {
 
   private static final Logger logger = LoggerFactory.getLogger(DynamicConfigurator.class);
 
   private final TelemetryClient telemetryClient;
-  private final AgentLogExporter agentLogExporter;
+  private final Supplier<AgentLogExporter> agentLogExporter;
   private volatile DynamicConfiguration currentConfig;
 
   DynamicConfigurator(
       TelemetryClient telemetryClient,
-      AgentLogExporter agentLogExporter,
+      Supplier<AgentLogExporter> agentLogExporter,
       Configuration initialConfig) {
     this.telemetryClient = telemetryClient;
     this.agentLogExporter = agentLogExporter;
@@ -85,13 +86,10 @@ class DynamicConfigurator {
     return copy(currentConfig);
   }
 
-  // updates config
-  void applyDynamicConfiguration(DynamicConfiguration dynamicConfig) {
-    // TODO (trask) log new config at debug level
-
-    // TODO (trask) only update appId if connection string really changes
+  public void applyDynamicConfiguration(DynamicConfiguration dynamicConfig) {
 
     boolean enabled = !Strings.isNullOrEmpty(dynamicConfig.connectionString);
+    boolean currentEnabled = !Strings.isNullOrEmpty(currentConfig.connectionString);
 
     updateConnectionString(dynamicConfig.connectionString);
     updateRoleName(dynamicConfig.role.name);
@@ -105,7 +103,8 @@ class DynamicConfigurator {
 
     // don't update sampling if it hasn't changed, since that will wipe out state of any
     // rate-limited samplers
-    if (!Objects.equals(dynamicConfig.sampling.percentage, currentConfig.sampling.percentage)
+    if (enabled != currentEnabled
+        || !Objects.equals(dynamicConfig.sampling.percentage, currentConfig.sampling.percentage)
         || !Objects.equals(
             dynamicConfig.sampling.requestsPerSecond, currentConfig.sampling.requestsPerSecond)) {
       updateSampling(enabled, dynamicConfig.sampling, dynamicConfig.samplingPreview);
@@ -167,8 +166,11 @@ class DynamicConfigurator {
 
   private void updateInstrumentationLoggingLevel(String instrumentationLoggingLevel) {
     if (instrumentationLoggingLevel != null) {
-      agentLogExporter.setSeverityThreshold(
-          Configuration.LoggingInstrumentation.getSeverityThreshold(instrumentationLoggingLevel));
+      AgentLogExporter exporter = agentLogExporter.get();
+      if (exporter != null) {
+        exporter.setSeverityThreshold(
+            Configuration.LoggingInstrumentation.getSeverityThreshold(instrumentationLoggingLevel));
+      }
     }
   }
 

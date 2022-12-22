@@ -151,12 +151,16 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
 
     TelemetryClient.setActive(telemetryClient);
 
+    DynamicConfigurator dynamicConfigurator =
+        new DynamicConfigurator(telemetryClient, () -> agentLogExporter, configuration);
+
     if (configuration.sampling.percentage != null) {
       BytecodeUtilImpl.samplingPercentage = configuration.sampling.percentage.floatValue();
     } else {
       BytecodeUtilImpl.samplingPercentage = 100;
     }
     BytecodeUtilImpl.featureStatsbeat = statsbeatModule.getFeatureStatsbeat();
+    BytecodeUtilImpl.dynamicConfigurator = dynamicConfigurator;
 
     if (configuration.preview.profiler.enabled) {
       try {
@@ -165,9 +169,6 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
         startupLogger.warning("Failed to initialize profiler", e);
       }
     }
-
-    DynamicConfigurator dynamicConfigurator =
-        new DynamicConfigurator(telemetryClient, SecondEntryPoint.agentLogExporter, configuration);
 
     if (ConfigurationBuilder.inAzureFunctionsConsumptionWorker()) {
       AzureFunctions.setup(

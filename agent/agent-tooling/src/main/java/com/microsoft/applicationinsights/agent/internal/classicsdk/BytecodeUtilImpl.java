@@ -25,6 +25,8 @@ import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedDu
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedTime;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
 import com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil.BytecodeUtilDelegate;
+import com.microsoft.applicationinsights.agent.internal.init.DynamicConfiguration;
+import com.microsoft.applicationinsights.agent.internal.init.DynamicConfigurator;
 import com.microsoft.applicationinsights.agent.internal.legacyheaders.AiLegacyPropagator;
 import com.microsoft.applicationinsights.agent.internal.statsbeat.FeatureStatsbeat;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
@@ -52,9 +54,15 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
 
   public static volatile FeatureStatsbeat featureStatsbeat;
 
+  public static volatile DynamicConfigurator dynamicConfigurator;
+
   @Override
   public void initConnectionString(String connectionString) {
-    TelemetryClient.getActive().updateConnectionStrings(connectionString, null, null);
+    if (dynamicConfigurator != null) {
+      DynamicConfiguration dynamicConfig = dynamicConfigurator.getCurrentConfigCopy();
+      dynamicConfig.connectionString = connectionString;
+      dynamicConfigurator.applyDynamicConfiguration(dynamicConfig);
+    }
   }
 
   @Override
