@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
+import java.util.Objects;
 import java.util.concurrent.Executors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,11 +61,19 @@ public class RpConfigurationPolling implements Runnable {
         ConfigurationBuilder.overlayFromEnv(newRpConfiguration);
 
         DynamicConfiguration config = dynamicConfigurator.getCurrentConfigCopy();
-        config.connectionString = newRpConfiguration.connectionString;
-        config.role.name = newRpConfiguration.role.name;
-        config.role.instance = newRpConfiguration.role.instance;
-        config.sampling.percentage = newRpConfiguration.sampling.percentage;
-        config.sampling.requestsPerSecond = newRpConfiguration.sampling.requestsPerSecond;
+
+        if (!newRpConfiguration.connectionString.equals(rpConfiguration.connectionString)) {
+          config.connectionString = newRpConfiguration.connectionString;
+        }
+        if (!Objects.equals(
+            rpConfiguration.sampling.percentage, newRpConfiguration.sampling.percentage)) {
+          config.sampling.percentage = newRpConfiguration.sampling.percentage;
+        }
+        if (!Objects.equals(
+            rpConfiguration.sampling.requestsPerSecond,
+            newRpConfiguration.sampling.requestsPerSecond)) {
+          config.sampling.requestsPerSecond = newRpConfiguration.sampling.requestsPerSecond;
+        }
 
         dynamicConfigurator.applyDynamicConfiguration(config);
 
