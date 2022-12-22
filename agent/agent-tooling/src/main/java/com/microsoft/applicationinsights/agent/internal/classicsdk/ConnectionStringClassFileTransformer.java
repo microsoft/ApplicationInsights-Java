@@ -72,7 +72,6 @@ public class ConnectionStringClassFileTransformer implements ClassFileTransforme
         @Nullable String[] exceptions) {
       MethodVisitor mv = cw.visitMethod(access, name, descriptor, signature, exceptions);
       if (name.equals("init") && descriptor.equals("(Ljava/lang/String;)V")) {
-        // no-op the initialize() method
         mv.visitCode();
         mv.visitVarInsn(ALOAD, 0);
         mv.visitMethodInsn(
