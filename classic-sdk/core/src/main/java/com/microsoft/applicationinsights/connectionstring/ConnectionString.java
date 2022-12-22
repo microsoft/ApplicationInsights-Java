@@ -7,12 +7,12 @@ public final class ConnectionString {
 
   /**
    * When using this method to initialize the connection string after startup, you will need to set
-   * {@code allowInitWithoutConnectionString} to {@code true} inside of the {@code
+   * {@code startWithoutConnectionString} to {@code true} inside of the {@code
    * applicationinsights.json} configuration file, e.g.
    *
    * <pre>
    *   {
-   *     "startWithoutConnectionStringEnabled": true
+   *     "startWithoutConnectionString": true
    *   }
    * </pre>
    */

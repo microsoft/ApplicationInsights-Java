@@ -95,7 +95,7 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
 
     Configuration configuration = FirstEntryPoint.getConfiguration();
     if (Strings.isNullOrEmpty(configuration.connectionString)) {
-      if (!configuration.allowInitWithoutConnectionString) {
+      if (!configuration.startWithoutConnectionString) {
         throw new FriendlyException(
             "No connection string provided", "Please provide connection string.");
       }

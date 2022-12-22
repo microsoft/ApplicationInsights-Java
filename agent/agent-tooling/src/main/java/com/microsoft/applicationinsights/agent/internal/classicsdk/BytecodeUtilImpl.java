@@ -58,6 +58,10 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
 
   @Override
   public void initConnectionString(String connectionString) {
+    if (TelemetryClient.getActive().getConnectionString() != null) {
+      logger.warn("Connection string is already set");
+      return;
+    }
     if (dynamicConfigurator != null) {
       DynamicConfiguration dynamicConfig = dynamicConfigurator.getCurrentConfigCopy();
       dynamicConfig.connectionString = connectionString;

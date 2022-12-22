@@ -1,5 +1,5 @@
 {
-  "allowInitWithoutConnectionString": true,
+  "startWithoutConnectionString": true,
   "role": {
     "name": "testrolename",
     "instance": "testroleinstance"
