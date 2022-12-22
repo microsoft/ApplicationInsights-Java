@@ -4,6 +4,7 @@
 package com.microsoft.applicationinsights.agent.internal.init;
 
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
+import java.util.ArrayList;
 import java.util.List;
 
 public class DynamicConfiguration {
@@ -15,7 +16,7 @@ public class DynamicConfiguration {
   public Configuration.SamplingPreview samplingPreview = new Configuration.SamplingPreview();
 
   public boolean propagationDisabled;
-  public List<String> additionalPropagators;
+  public List<String> additionalPropagators = new ArrayList<>();
   public boolean legacyRequestIdPropagationEnabled;
 
   public String instrumentationLoggingLevel;

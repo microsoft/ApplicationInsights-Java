@@ -13,7 +13,7 @@ public class AfterAgentListener implements AgentListener {
 
   @Override
   public void afterAgent(AutoConfiguredOpenTelemetrySdk autoConfiguredOpenTelemetrySdk) {
-    // only safe now to perform HTTPS because Java SSL classes
+    // only safe now to make HTTPS calls because Java SSL classes
     // trigger loading of java.util.logging (starting with Java 8u231)
     // and JBoss/Wildfly need to install their own JUL manager before JUL is initialized.
     LazyHttpClient.safeToInitLatch.countDown();

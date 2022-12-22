@@ -3,6 +3,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.init;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import io.opentelemetry.javaagent.bootstrap.ClassFileTransformerHolder;
 import io.opentelemetry.javaagent.bootstrap.InstrumentationHolder;
@@ -46,34 +47,6 @@ public class AzureFunctionsInitializer implements Runnable {
     }
   }
 
-  private void initialize() {
-    DynamicConfiguration config = new DynamicConfiguration();
-
-    config.connectionString = getAndLogAtDebug("APPLICATIONINSIGHTS_CONNECTION_STRING");
-    if (config.connectionString == null) {
-      // if the instrumentation key is neither null nor empty , we will create a default
-      // connection string based on APPINSIGHTS_INSTRUMENTATIONKEY.
-      // this is to support Azure Functions that were created prior to the introduction of
-      // connection strings
-      String instrumentationKey = getAndLogAtDebug("APPINSIGHTS_INSTRUMENTATIONKEY");
-      if (instrumentationKey != null && !instrumentationKey.isEmpty()) {
-        config.connectionString = "InstrumentationKey=" + instrumentationKey;
-      }
-    }
-    config.role.name = getAndLogAtDebug("WEBSITE_SITE_NAME");
-    config.instrumentationLoggingLevel =
-        getAndLogAtDebug("APPLICATIONINSIGHTS_INSTRUMENTATION_LOGGING_LEVEL");
-    config.selfDiagnosticsLevel = getAndLogAtDebug("APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_LEVEL");
-
-    dynamicConfigurator.applyDynamicConfiguration(config);
-  }
-
-  private static String getAndLogAtDebug(String envVarName) {
-    String value = System.getenv(envVarName);
-    logger.debug("{}: {}", envVarName, value);
-    return value;
-  }
-
   private static void disableBytecodeInstrumentation() {
     Instrumentation instrumentation = InstrumentationHolder.getInstrumentation();
     ClassFileTransformer transformer = ClassFileTransformerHolder.getClassFileTransformer();
@@ -85,13 +58,32 @@ public class AzureFunctionsInitializer implements Runnable {
     }
   }
 
-  void setConnectionString(
-      @Nullable String connectionString, @Nullable String instrumentationKey) {}
+  private void initialize() {
+    DynamicConfiguration dynamicConfig = dynamicConfigurator.getCurrentConfigCopy();
+
+    dynamicConfig.connectionString = getAndLogAtDebug("APPLICATIONINSIGHTS_CONNECTION_STRING");
+    if (dynamicConfig.connectionString == null) {
+      // if the instrumentation key is neither null nor empty, we build the connection string based
+      // on APPINSIGHTS_INSTRUMENTATIONKEY.
+      // this is to support Azure Functions that were created prior to the introduction of
+      // connection strings
+      String instrumentationKey = getAndLogAtDebug("APPINSIGHTS_INSTRUMENTATIONKEY");
+      if (!Strings.isNullOrEmpty(instrumentationKey)) {
+        dynamicConfig.connectionString = "InstrumentationKey=" + instrumentationKey;
+      }
+    }
+    dynamicConfig.role.name = getAndLogAtDebug("WEBSITE_SITE_NAME");
+    dynamicConfig.instrumentationLoggingLevel =
+        getAndLogAtDebug("APPLICATIONINSIGHTS_INSTRUMENTATION_LOGGING_LEVEL");
+    dynamicConfig.selfDiagnosticsLevel =
+        getAndLogAtDebug("APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_LEVEL");
+
+    dynamicConfigurator.applyDynamicConfiguration(dynamicConfig);
+  }
 
   static boolean isAgentEnabled() {
     String enableAgent = getAndLogAtDebug("APPLICATIONINSIGHTS_ENABLE_AGENT");
     boolean enableAgentDefault = Boolean.getBoolean("LazySetOptIn");
-    logger.debug("APPLICATIONINSIGHTS_ENABLE_AGENT: {}", enableAgent);
     logger.debug("LazySetOptIn: {}", enableAgentDefault);
     return isAgentEnabled(enableAgent, enableAgentDefault);
   }
@@ -103,5 +95,14 @@ public class AzureFunctionsInitializer implements Runnable {
       return defaultValue;
     }
     return Boolean.parseBoolean(enableAgent);
+  }
+
+  @Nullable
+  private static String getAndLogAtDebug(String envVarName) {
+    String value = Strings.trimAndEmptyToNull(System.getenv(envVarName));
+    if (value != null) {
+      logger.debug("read environment variable: {}={}", envVarName, value);
+    }
+    return value;
   }
 }

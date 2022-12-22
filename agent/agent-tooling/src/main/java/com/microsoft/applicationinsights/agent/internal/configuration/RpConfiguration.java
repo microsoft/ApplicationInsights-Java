@@ -20,5 +20,6 @@ public class RpConfiguration {
 
   // this is needed in Azure Spring Cloud because it will set the role name to application name
   // on behalf of customers by default.
+  // Note the role doesn't support hot load currently.
   public Role role = new Role();
 }
