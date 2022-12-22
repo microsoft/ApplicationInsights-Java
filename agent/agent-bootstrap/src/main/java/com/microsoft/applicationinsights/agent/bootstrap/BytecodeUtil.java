@@ -344,7 +344,6 @@ public class BytecodeUtil {
 
   public interface BytecodeUtilDelegate {
 
-
     void initConnectionString(String connectionString);
 
     void trackEvent(
