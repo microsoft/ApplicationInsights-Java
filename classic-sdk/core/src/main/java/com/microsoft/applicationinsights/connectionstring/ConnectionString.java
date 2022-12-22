@@ -15,6 +15,8 @@ public final class ConnectionString {
    *     "startWithoutConnectionString": true
    *   }
    * </pre>
+   *
+   * If the connection string has already been set then this method logs a warning and does nothing.
    */
   public static void init(String connectionString) {
     // this methods is implemented by the Application Insights Java agent
