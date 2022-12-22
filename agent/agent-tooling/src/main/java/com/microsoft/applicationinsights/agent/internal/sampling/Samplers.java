@@ -11,28 +11,28 @@ import java.util.stream.Collectors;
 
 public class Samplers {
 
-  public static Sampler getSampler(Configuration config) {
+  public static Sampler getSampler(
+      Configuration.Sampling sampling, Configuration.SamplingPreview samplingPreview) {
+
     Sampler sampler;
-    if (config.sampling.requestsPerSecond != null) {
+    if (sampling.requestsPerSecond != null) {
       SamplingPercentage requestSamplingPercentage =
-          SamplingPercentage.rateLimited(config.sampling.requestsPerSecond);
+          SamplingPercentage.rateLimited(sampling.requestsPerSecond);
       SamplingPercentage parentlessDependencySamplingPercentage = SamplingPercentage.fixed(100);
       sampler = new AiSampler(requestSamplingPercentage, parentlessDependencySamplingPercentage);
-    } else if (config.sampling.percentage != null) {
-      SamplingPercentage samplingPercentage = SamplingPercentage.fixed(config.sampling.percentage);
+    } else if (sampling.percentage != null) {
+      SamplingPercentage samplingPercentage = SamplingPercentage.fixed(sampling.percentage);
       sampler = new AiSampler(samplingPercentage, samplingPercentage);
     } else {
       throw new AssertionError("ConfigurationBuilder should have set the default sampling");
     }
 
-    Configuration.SamplingPreview sampling = config.preview.sampling;
-
     List<SamplingOverride> requestSamplingOverrides =
-        config.preview.sampling.overrides.stream()
+        samplingPreview.overrides.stream()
             .filter(SamplingOverride::isForRequestTelemetry)
             .collect(Collectors.toList());
     List<SamplingOverride> dependencySamplingOverrides =
-        config.preview.sampling.overrides.stream()
+        samplingPreview.overrides.stream()
             .filter(SamplingOverride::isForDependencyTelemetry)
             .collect(Collectors.toList());
 
@@ -41,7 +41,7 @@ public class Samplers {
           new AiOverrideSampler(requestSamplingOverrides, dependencySamplingOverrides, sampler);
     }
 
-    if (!sampling.parentBased) {
+    if (!samplingPreview.parentBased) {
       return sampler;
     }
 

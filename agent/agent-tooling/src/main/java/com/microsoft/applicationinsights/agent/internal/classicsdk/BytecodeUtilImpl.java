@@ -47,13 +47,14 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
 
   private static final AtomicBoolean alreadyLoggedError = new AtomicBoolean();
 
-  public static volatile float samplingPercentage = 100;
+  // in Azure Functions consumption pool, we don't know at startup whether to enable or not
+  public static volatile float samplingPercentage = 0;
 
   public static volatile FeatureStatsbeat featureStatsbeat;
 
   @Override
   public void initConnectionString(String connectionString) {
-    TelemetryClient.getActive().updateConnectionStrings();
+    TelemetryClient.getActive().updateConnectionStrings(connectionString, null, null);
   }
 
   @Override

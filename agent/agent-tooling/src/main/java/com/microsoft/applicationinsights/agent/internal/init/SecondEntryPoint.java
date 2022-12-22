@@ -30,7 +30,6 @@ import com.microsoft.applicationinsights.agent.internal.exporter.AgentMetricExpo
 import com.microsoft.applicationinsights.agent.internal.exporter.AgentSpanExporter;
 import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
 import com.microsoft.applicationinsights.agent.internal.legacyheaders.AiLegacyHeaderSpanProcessor;
-import com.microsoft.applicationinsights.agent.internal.legacyheaders.DelegatingPropagator;
 import com.microsoft.applicationinsights.agent.internal.processors.ExporterWithLogProcessor;
 import com.microsoft.applicationinsights.agent.internal.processors.ExporterWithSpanProcessor;
 import com.microsoft.applicationinsights.agent.internal.processors.LogExporterWithAttributeProcessor;
@@ -38,8 +37,6 @@ import com.microsoft.applicationinsights.agent.internal.processors.MySpanData;
 import com.microsoft.applicationinsights.agent.internal.processors.SpanExporterWithAttributeProcessor;
 import com.microsoft.applicationinsights.agent.internal.profiler.ProfilingInitializer;
 import com.microsoft.applicationinsights.agent.internal.profiler.triggers.AlertTriggerSpanProcessor;
-import com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampler;
-import com.microsoft.applicationinsights.agent.internal.sampling.Samplers;
 import com.microsoft.applicationinsights.agent.internal.statsbeat.StatsbeatModule;
 import com.microsoft.applicationinsights.agent.internal.telemetry.BatchItemProcessor;
 import com.microsoft.applicationinsights.agent.internal.telemetry.MetricFilter;
@@ -161,38 +158,30 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
     }
     BytecodeUtilImpl.featureStatsbeat = statsbeatModule.getFeatureStatsbeat();
 
-    // appId is still used by the profiling service
-    AppIdSupplier appIdSupplier = new AppIdSupplier(telemetryClient);
-
     if (configuration.preview.profiler.enabled) {
       try {
-        ProfilingInitializer.initialize(tempDir, appIdSupplier, configuration, telemetryClient);
+        ProfilingInitializer.initialize(tempDir, configuration, telemetryClient);
       } catch (RuntimeException e) {
         startupLogger.warning("Failed to initialize profiler", e);
       }
     }
 
-    LazyConfigurator lazyConfigurator =
-        new LazyConfigurator(telemetryClient, SecondEntryPoint.agentLogExporter, appIdSupplier);
+    DynamicConfigurator dynamicConfigurator =
+        new DynamicConfigurator(telemetryClient, SecondEntryPoint.agentLogExporter, configuration);
 
     if (ConfigurationBuilder.inAzureFunctionsConsumptionWorker()) {
       AzureFunctions.setup(
           () -> telemetryClient.getConnectionString() != null,
-          new AzureFunctionsInitializer(lazyConfigurator));
+          new AzureFunctionsInitializer(dynamicConfigurator));
     }
 
     RpConfiguration rpConfiguration = FirstEntryPoint.getRpConfiguration();
     if (rpConfiguration != null) {
-      RpConfigurationPolling.startPolling(
-          rpConfiguration, configuration, telemetryClient, appIdSupplier);
+      RpConfigurationPolling.startPolling(rpConfiguration, dynamicConfigurator);
     }
 
     // initialize StatsbeatModule
     statsbeatModule.start(telemetryClient, configuration);
-
-    if (!Strings.isNullOrEmpty(configuration.connectionString)) {
-      AfterAgentListener.setAppIdSupplier(appIdSupplier);
-    }
 
     // TODO (trask) add this method to AutoConfigurationCustomizer upstream?
     ((AutoConfiguredOpenTelemetrySdkBuilder) autoConfiguration).registerShutdownHook(false);
@@ -293,19 +282,13 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
       ConfigProperties otelConfig,
       Configuration configuration) {
 
-    if (configuration.connectionString != null) {
-      if (!configuration.preview.disablePropagation) {
-        DelegatingPropagator.getInstance()
-            .setUpStandardDelegate(
-                configuration.preview.additionalPropagators,
-                configuration.preview.legacyRequestIdPropagation.enabled);
-      }
-      DelegatingSampler.getInstance().setDelegate(Samplers.getSampler(configuration));
-    } else {
-      // in Azure Functions, we configure later on, once we know user has opted in to tracing
-      // (note: the default for DelegatingPropagator is to not propagate anything
-      // and the default for DelegatingSampler is to not sample anything)
-    }
+    boolean enabled = !Strings.isNullOrEmpty(configuration.connectionString);
+    DynamicConfigurator.updatePropagation(
+        !configuration.preview.disablePropagation && enabled,
+        configuration.preview.additionalPropagators,
+        configuration.preview.legacyRequestIdPropagation.enabled);
+    DynamicConfigurator.updateSampling(
+        enabled, configuration.sampling, configuration.preview.sampling);
 
     tracerProvider.addSpanProcessor(new AzureMonitorSpanProcessor());
     if (!configuration.preview.inheritedAttributes.isEmpty()) {

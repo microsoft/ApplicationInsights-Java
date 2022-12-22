@@ -4,14 +4,19 @@
 package com.microsoft.applicationinsights.agent.internal.init;
 
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
+import java.util.List;
 
-public class LazyConfiguration {
+public class DynamicConfiguration {
 
   public String connectionString;
+  public Configuration.Role role = new Configuration.Role();
 
   public Configuration.Sampling sampling = new Configuration.Sampling();
+  public Configuration.SamplingPreview samplingPreview = new Configuration.SamplingPreview();
 
-  public Configuration.Role role = new Configuration.Role();
+  public boolean propagationDisabled;
+  public List<String> additionalPropagators;
+  public boolean legacyRequestIdPropagationEnabled;
 
   public String instrumentationLoggingLevel;
 

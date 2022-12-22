@@ -19,10 +19,10 @@ public class AzureFunctionsInitializer implements Runnable {
   private static final Logger diagnosticLogger =
       LoggerFactory.getLogger(DiagnosticsHelper.DIAGNOSTICS_LOGGER_NAME);
 
-  private final LazyConfigurator lazyConfigurator;
+  private final DynamicConfigurator dynamicConfigurator;
 
-  public AzureFunctionsInitializer(LazyConfigurator lazyConfigurator) {
-    this.lazyConfigurator = lazyConfigurator;
+  public AzureFunctionsInitializer(DynamicConfigurator dynamicConfigurator) {
+    this.dynamicConfigurator = dynamicConfigurator;
   }
 
   @Override
@@ -47,7 +47,7 @@ public class AzureFunctionsInitializer implements Runnable {
   }
 
   private void initialize() {
-    LazyConfiguration config = new LazyConfiguration();
+    DynamicConfiguration config = new DynamicConfiguration();
 
     config.connectionString = getAndLogAtDebug("APPLICATIONINSIGHTS_CONNECTION_STRING");
     if (config.connectionString == null) {
@@ -65,7 +65,7 @@ public class AzureFunctionsInitializer implements Runnable {
         getAndLogAtDebug("APPLICATIONINSIGHTS_INSTRUMENTATION_LOGGING_LEVEL");
     config.selfDiagnosticsLevel = getAndLogAtDebug("APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_LEVEL");
 
-    lazyConfigurator.updateConfiguration(config);
+    dynamicConfigurator.applyDynamicConfiguration(config);
   }
 
   private static String getAndLogAtDebug(String envVarName) {
@@ -84,6 +84,9 @@ public class AzureFunctionsInitializer implements Runnable {
       ClassFileTransformerHolder.setClassFileTransformer(null);
     }
   }
+
+  void setConnectionString(
+      @Nullable String connectionString, @Nullable String instrumentationKey) {}
 
   static boolean isAgentEnabled() {
     String enableAgent = getAndLogAtDebug("APPLICATIONINSIGHTS_ENABLE_AGENT");

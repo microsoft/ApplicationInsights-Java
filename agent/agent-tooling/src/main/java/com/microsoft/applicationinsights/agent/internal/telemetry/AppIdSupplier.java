@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-package com.microsoft.applicationinsights.agent.internal.init;
+package com.microsoft.applicationinsights.agent.internal.telemetry;
 
 import static com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMsgId.APP_ID_ERROR;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -15,7 +15,6 @@ import com.azure.monitor.opentelemetry.exporter.implementation.logging.NetworkFr
 import com.azure.monitor.opentelemetry.exporter.implementation.logging.OperationLogger;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.ThreadPoolUtils;
 import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
-import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.concurrent.Executors;
@@ -24,8 +23,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.annotation.Nullable;
 import org.slf4j.MDC;
 
-// note: app id is used by distributed trace headers and (soon) jfr profiling
-public class AppIdSupplier {
+// note: app id is used by jfr profiling
+class AppIdSupplier {
 
   private static final ClientLogger logger = new ClientLogger(AppIdSupplier.class);
 
@@ -42,20 +41,15 @@ public class AppIdSupplier {
   private GetAppIdTask task;
   private final Object taskLock = new Object();
 
-  private final TelemetryClient telemetryClient;
-
   @Nullable private volatile String appId;
 
   // TODO (kryalama) do we still need this AtomicBoolean, or can we use throttling built in to the
   //  warningLogger?
   private static final AtomicBoolean friendlyExceptionThrown = new AtomicBoolean();
 
-  public AppIdSupplier(TelemetryClient telemetryClient) {
-    this.telemetryClient = telemetryClient;
-  }
+  AppIdSupplier() {}
 
-  public void updateAppId() {
-    ConnectionString connectionString = telemetryClient.getConnectionString();
+  void updateAppId(ConnectionString connectionString) {
     if (connectionString == null) {
       appId = null;
       if (task != null) {
@@ -92,7 +86,7 @@ public class AppIdSupplier {
         "api/profiles/" + connectionString.getInstrumentationKey() + "/appId");
   }
 
-  public String get() {
+  String get() {
     // it's possible the appId returned is null (e.g. async task is still pending or has failed). In
     // this case, just return and let the next request resolve the ikey.
     if (appId == null) {

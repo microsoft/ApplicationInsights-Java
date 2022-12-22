@@ -4,11 +4,13 @@
 package com.microsoft.applicationinsights.agent.internal.init;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 import com.microsoft.applicationinsights.agent.internal.SamplingTestUtil;
 import com.microsoft.applicationinsights.agent.internal.classicsdk.BytecodeUtilImpl;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.configuration.RpConfiguration;
+import com.microsoft.applicationinsights.agent.internal.exporter.AgentLogExporter;
 import com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampler;
 import com.microsoft.applicationinsights.agent.internal.sampling.Samplers;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
@@ -32,7 +34,8 @@ class RpConfigurationPollingTest {
     // default sampler at startup is "Sampler.alwaysOff()", and this test relies on real sampler
     Configuration config = new Configuration();
     config.sampling.percentage = 100.0;
-    DelegatingSampler.getInstance().setDelegate(Samplers.getSampler(config));
+    DelegatingSampler.getInstance()
+        .setDelegate(Samplers.getSampler(config.sampling, config.preview.sampling));
   }
 
   @AfterEach
@@ -41,7 +44,8 @@ class RpConfigurationPollingTest {
     // otherwise tests run after this can fail
     Configuration config = new Configuration();
     config.sampling.percentage = 100.0;
-    DelegatingSampler.getInstance().setDelegate(Samplers.getSampler(config));
+    DelegatingSampler.getInstance()
+        .setDelegate(Samplers.getSampler(config.sampling, config.preview.sampling));
   }
 
   @Test
@@ -58,7 +62,6 @@ class RpConfigurationPollingTest {
     TelemetryClient telemetryClient = TelemetryClient.createForTest();
     telemetryClient.updateConnectionStrings(
         "InstrumentationKey=00000000-0000-0000-0000-000000000000", null, null);
-    AppIdSupplier appIdSupplier = new AppIdSupplier(telemetryClient);
 
     BytecodeUtilImpl.samplingPercentage = 100;
 
@@ -69,8 +72,9 @@ class RpConfigurationPollingTest {
     assertThat(getCurrentSamplingPercentage()).isEqualTo(100);
 
     // when
-    new RpConfigurationPolling(rpConfiguration, new Configuration(), telemetryClient, appIdSupplier)
-        .run();
+    DynamicConfigurator dynamicConfigurator =
+        new DynamicConfigurator(telemetryClient, mock(AgentLogExporter.class), new Configuration());
+    new RpConfigurationPolling(rpConfiguration, dynamicConfigurator).run();
 
     // then
     assertThat(telemetryClient.getInstrumentationKey())
@@ -93,7 +97,6 @@ class RpConfigurationPollingTest {
     TelemetryClient telemetryClient = TelemetryClient.createForTest();
     telemetryClient.updateConnectionStrings(
         "InstrumentationKey=00000000-0000-0000-0000-000000000000", null, null);
-    AppIdSupplier appIdSupplier = new AppIdSupplier(telemetryClient);
 
     BytecodeUtilImpl.samplingPercentage = 100;
 
@@ -109,8 +112,9 @@ class RpConfigurationPollingTest {
     assertThat(getCurrentSamplingPercentage()).isEqualTo(100);
 
     // when
-    new RpConfigurationPolling(rpConfiguration, new Configuration(), telemetryClient, appIdSupplier)
-        .run();
+    DynamicConfigurator dynamicConfigurator =
+        new DynamicConfigurator(telemetryClient, mock(AgentLogExporter.class), new Configuration());
+    new RpConfigurationPolling(rpConfiguration, dynamicConfigurator).run();
 
     // then
     assertThat(telemetryClient.getInstrumentationKey())

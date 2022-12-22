@@ -6,19 +6,13 @@ package com.microsoft.applicationinsights.agent.internal.init;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.ThreadPoolUtils;
-import com.microsoft.applicationinsights.agent.internal.classicsdk.BytecodeUtilImpl;
-import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.configuration.ConfigurationBuilder;
 import com.microsoft.applicationinsights.agent.internal.configuration.RpConfiguration;
 import com.microsoft.applicationinsights.agent.internal.configuration.RpConfigurationBuilder;
-import com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampler;
-import com.microsoft.applicationinsights.agent.internal.sampling.Samplers;
-import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
-import java.util.Objects;
 import java.util.concurrent.Executors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,32 +22,20 @@ public class RpConfigurationPolling implements Runnable {
   private static final Logger logger = LoggerFactory.getLogger(RpConfigurationPolling.class);
 
   private volatile RpConfiguration rpConfiguration;
-  private final Configuration configuration;
-  private final LazyConfigurator lazyConfigurator;
+  private final DynamicConfigurator dynamicConfigurator;
 
   public static void startPolling(
-      RpConfiguration rpConfiguration,
-      Configuration configuration,
-      TelemetryClient telemetryClient,
-      AppIdSupplier appIdSupplier) {
+      RpConfiguration rpConfiguration, DynamicConfigurator dynamicConfigurator) {
     Executors.newSingleThreadScheduledExecutor(
             ThreadPoolUtils.createDaemonThreadFactory(RpConfigurationPolling.class))
         .scheduleWithFixedDelay(
-            new RpConfigurationPolling(
-                rpConfiguration, configuration, telemetryClient, appIdSupplier),
-            60,
-            60,
-            SECONDS);
+            new RpConfigurationPolling(rpConfiguration, dynamicConfigurator), 60, 60, SECONDS);
   }
 
   // visible for testing
-  RpConfigurationPolling(
-      RpConfiguration rpConfiguration,
-      Configuration configuration,
-      LazyConfigurator lazyConfigurator) {
+  RpConfigurationPolling(RpConfiguration rpConfiguration, DynamicConfigurator dynamicConfigurator) {
     this.rpConfiguration = rpConfiguration;
-    this.configuration = configuration;
-    this.lazyConfigurator = lazyConfigurator;
+    this.dynamicConfigurator = dynamicConfigurator;
   }
 
   @Override
@@ -77,52 +59,15 @@ public class RpConfigurationPolling implements Runnable {
 
         ConfigurationBuilder.overlayFromEnv(newRpConfiguration);
 
-        LazyConfiguration config = new LazyConfiguration();
+        DynamicConfiguration config = dynamicConfigurator.getCurrentConfigCopy();
         config.connectionString = newRpConfiguration.connectionString;
-        config.sampling.requestsPerSecond = rpConfiguration.sampling.requestsPerSecond;
-        config.sampling.percentage = rpConfiguration.sampling.percentage;
+        config.role.name = newRpConfiguration.role.name;
+        config.role.instance = newRpConfiguration.role.instance;
+        config.sampling.percentage = newRpConfiguration.sampling.percentage;
+        config.sampling.requestsPerSecond = newRpConfiguration.sampling.requestsPerSecond;
 
-        lazyConfigurator.updateConfiguration(config);
+        dynamicConfigurator.applyDynamicConfiguration(config);
 
-        if (!newRpConfiguration.connectionString.equals(rpConfiguration.connectionString)) {
-          logger.debug(
-              "Connection string from the JSON config file is overriding the previously configured connection string.");
-          configuration.connectionString = newRpConfiguration.connectionString;
-          telemetryClient.updateConnectionStrings(
-              configuration.connectionString,
-              configuration.internal.statsbeat.instrumentationKey,
-              configuration.internal.statsbeat.endpoint);
-          appIdSupplier.updateAppId();
-        }
-
-        boolean changed = false;
-        if (!Objects.equals(
-            rpConfiguration.sampling.percentage, newRpConfiguration.sampling.percentage)) {
-          logger.debug(
-              "Updating sampling percentage from {} to {}",
-              rpConfiguration.sampling.percentage,
-              newRpConfiguration.sampling.percentage);
-          changed = true;
-        }
-        if (!Objects.equals(
-            rpConfiguration.sampling.requestsPerSecond,
-            newRpConfiguration.sampling.requestsPerSecond)) {
-          logger.debug(
-              "Updating limit per second from {} to {}",
-              rpConfiguration.sampling.requestsPerSecond,
-              newRpConfiguration.sampling.requestsPerSecond);
-          changed = true;
-        }
-        if (changed) {
-          configuration.sampling.percentage = newRpConfiguration.sampling.percentage;
-          configuration.sampling.requestsPerSecond = newRpConfiguration.sampling.requestsPerSecond;
-          DelegatingSampler.getInstance().setDelegate(Samplers.getSampler(configuration));
-          if (configuration.sampling.percentage != null) {
-            BytecodeUtilImpl.samplingPercentage = configuration.sampling.percentage.floatValue();
-          } else {
-            BytecodeUtilImpl.samplingPercentage = 100;
-          }
-        }
         rpConfiguration = newRpConfiguration;
       }
     } catch (IOException e) {

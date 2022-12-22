@@ -54,8 +54,6 @@ public class ConnectionStringClassFileTransformer implements ClassFileTransforme
 
   private static class QuickPulseClassVisitor extends ClassVisitor {
 
-    private final String unshadedPrefix = UnshadedSdkPackageName.get();
-
     private final ClassWriter cw;
 
     private QuickPulseClassVisitor(ClassWriter cw) {
