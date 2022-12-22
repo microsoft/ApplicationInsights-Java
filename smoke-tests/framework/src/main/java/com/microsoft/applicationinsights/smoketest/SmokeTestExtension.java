@@ -121,8 +121,7 @@ public class SmokeTestExtension
     connectionString =
         doNotSetConnectionString
             ? ""
-            : "InstrumentationKey=00000000-0000-0000-0000-0FEEDDADBEEF;"
-                + "IngestionEndpoint="
+            : "InstrumentationKey=00000000-0000-0000-0000-0FEEDDADBEEF;IngestionEndpoint="
                 + FAKE_INGESTION_ENDPOINT
                 + ";LiveEndpoint="
                 + FAKE_INGESTION_ENDPOINT;
