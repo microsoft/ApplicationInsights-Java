@@ -21,20 +21,21 @@ public class SslOptionsUtil {
   public static final String APPLICATION_INSIGHTS_SSL_PROTOCOLS_PROPERTY =
       "applicationinsights.ssl.protocols";
 
-  private static final String[] DEFAULT_SUPPORTED_PROTOCOLS;
-  private static final String[] DEFAULT_PROTOCOLS = new String[] {"TLSv1.3", "TLSv1.2"};
+  private static final List<String> DEFAULT_SUPPORTED_PROTOCOLS;
+  private static final List<String> DEFAULT_PROTOCOLS = Arrays.asList("TLSv1.3", "TLSv1.2");
 
   static {
     DEFAULT_SUPPORTED_PROTOCOLS = filterSupportedProtocols(DEFAULT_PROTOCOLS, false);
-    if (DEFAULT_SUPPORTED_PROTOCOLS.length == 0 && logger.isErrorEnabled()) {
+    if (DEFAULT_SUPPORTED_PROTOCOLS.isEmpty() && logger.isErrorEnabled()) {
       logger.error(
           "Default protocols are not supported in this JVM: {}. System property '{}' can be used to configure supported SSL protocols.",
-          Arrays.toString(DEFAULT_PROTOCOLS),
+          DEFAULT_PROTOCOLS,
           APPLICATION_INSIGHTS_SSL_PROTOCOLS_PROPERTY);
     }
   }
 
-  private static String[] filterSupportedProtocols(String[] defaultValue, boolean reportErrors) {
+  private static List<String> filterSupportedProtocols(
+      List<String> defaultValue, boolean reportErrors) {
     List<String> supported = new ArrayList<>();
     for (String protocol : defaultValue) {
       try {
@@ -46,7 +47,7 @@ public class SslOptionsUtil {
         }
       }
     }
-    return supported.toArray(new String[0]);
+    return supported;
   }
 
   /**
@@ -62,7 +63,7 @@ public class SslOptionsUtil {
    *     are supported by this JVM
    */
   // FIXME (trask) do we need to hook this into new Azure Http Client?
-  public static String[] getAllowedProtocols() {
+  public static List<String> getAllowedProtocols() {
     String rawProp = System.getProperty(APPLICATION_INSIGHTS_SSL_PROTOCOLS_PROPERTY);
     if (rawProp == null) {
       return defaultSupportedProtocols();
@@ -73,19 +74,20 @@ public class SslOptionsUtil {
         logger.warn(
             "{} specifies no protocols; using defaults: {}",
             APPLICATION_INSIGHTS_SSL_PROTOCOLS_PROPERTY,
-            Arrays.toString(DEFAULT_SUPPORTED_PROTOCOLS));
+            DEFAULT_SUPPORTED_PROTOCOLS);
       }
       return defaultSupportedProtocols();
     }
 
-    String[] customProtocols = filterSupportedProtocols(rawProp.split(","), true);
-    if (customProtocols.length == 0) {
+    List<String> customProtocols =
+        filterSupportedProtocols(Arrays.asList(rawProp.split(",")), true);
+    if (customProtocols.isEmpty()) {
       if (logger.isErrorEnabled()) {
         logger.error(
             "{} contained no supported protocols: '{}'; using default: {}",
             APPLICATION_INSIGHTS_SSL_PROTOCOLS_PROPERTY,
             rawProp,
-            Arrays.toString(DEFAULT_SUPPORTED_PROTOCOLS));
+            DEFAULT_SUPPORTED_PROTOCOLS);
       }
       return defaultSupportedProtocols();
     }
@@ -94,17 +96,17 @@ public class SslOptionsUtil {
       logger.debug(
           "Found {}='{}'; HTTP client will allow only these protocols",
           APPLICATION_INSIGHTS_SSL_PROTOCOLS_PROPERTY,
-          Arrays.toString(customProtocols));
+          customProtocols);
     }
     return customProtocols;
   }
 
-  private static String[] defaultSupportedProtocols() {
-    if (DEFAULT_SUPPORTED_PROTOCOLS.length == 0) {
+  private static List<String> defaultSupportedProtocols() {
+    if (DEFAULT_SUPPORTED_PROTOCOLS.isEmpty()) {
       throw new NoSupportedProtocolsException(
           String.format(
               "None of the default TLS protocols are supported by this JVM: %s. Use the system property '%s' to override.",
-              Arrays.toString(DEFAULT_PROTOCOLS), APPLICATION_INSIGHTS_SSL_PROTOCOLS_PROPERTY));
+              DEFAULT_PROTOCOLS, APPLICATION_INSIGHTS_SSL_PROTOCOLS_PROPERTY));
     }
     return DEFAULT_SUPPORTED_PROTOCOLS;
   }
