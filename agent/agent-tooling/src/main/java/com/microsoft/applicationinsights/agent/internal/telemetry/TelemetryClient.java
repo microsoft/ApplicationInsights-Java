@@ -438,7 +438,7 @@ public class TelemetryClient {
 
   public void initAppIdSupplier() {
     appIdSupplier = new AppIdSupplier();
-    appIdSupplier.updateAppId(this.connectionString);
+    appIdSupplier.updateAppId(connectionString);
   }
 
   public String getAppId() {
