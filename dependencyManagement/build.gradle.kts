@@ -39,7 +39,7 @@ val autoValueVersion = "1.10.1"
 val errorProneVersion = "2.17.0"
 val byteBuddyVersion = "1.12.18"
 val jmhVersion = "1.36"
-val mockitoVersion = "4.10.0"
+val mockitoVersion = "4.11.0"
 // moving to 2.0 is problematic because the SPI mechanism in 2.0 doesn't work in the
 // bootstrap class loader because, while we add the agent jar to the bootstrap class loader
 // via Instrumentation.appendToBootstrapClassLoaderSearch(), there's nothing similar for
@@ -77,7 +77,7 @@ val CORE_DEPENDENCIES = listOf(
 val DEPENDENCIES = listOf(
   "ch.qos.logback:logback-classic:1.2.11",
   "ch.qos.logback.contrib:logback-json-classic:0.1.5",
-  "com.uber.nullaway:nullaway:0.10.5",
+  "com.uber.nullaway:nullaway:0.10.6",
   "commons-codec:commons-codec:1.15",
   "org.apache.commons:commons-text:1.10.0",
   "com.google.code.gson:gson:2.10",
