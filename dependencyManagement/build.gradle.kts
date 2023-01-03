@@ -39,7 +39,7 @@ val autoValueVersion = "1.10.1"
 val errorProneVersion = "2.16"
 val byteBuddyVersion = "1.12.18"
 val jmhVersion = "1.36"
-val mockitoVersion = "4.10.0"
+val mockitoVersion = "4.11.0"
 // moving to 2.0 is problematic because the SPI mechanism in 2.0 doesn't work in the
 // bootstrap class loader because, while we add the agent jar to the bootstrap class loader
 // via Instrumentation.appendToBootstrapClassLoaderSearch(), there's nothing similar for
