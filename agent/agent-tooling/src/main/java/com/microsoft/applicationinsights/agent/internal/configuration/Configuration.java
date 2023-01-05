@@ -180,7 +180,7 @@ public class Configuration {
     // future goal: make parentBased sampling the default if item count is received via tracestate
     public boolean parentBased;
 
-    public List<SamplingOverride> overrides = new ArrayList<>();
+    public final List<SamplingOverride> overrides = new ArrayList<>();
   }
 
   public static class JmxMetric {
@@ -289,7 +289,7 @@ public class Configuration {
 
   public static class PreviewConfiguration {
 
-    public SamplingPreview sampling = new SamplingPreview();
+    public final SamplingPreview sampling = new SamplingPreview();
     public List<ProcessorConfig> processors = new ArrayList<>();
     // this is just here to detect if using this old setting in order to give a helpful message
     @Deprecated public boolean openTelemetryApiSupport;
@@ -327,7 +327,7 @@ public class Configuration {
     // this is to support interoperability with other systems
     // intentionally not allowing the removal of w3c propagator since that is key to many Azure
     // integrated experiences
-    public List<String> additionalPropagators = new ArrayList<>();
+    public final List<String> additionalPropagators = new ArrayList<>();
 
     public List<InheritedAttribute> inheritedAttributes = new ArrayList<>();
 
@@ -340,7 +340,7 @@ public class Configuration {
     public PreviewStatsbeat statsbeat = new PreviewStatsbeat();
 
     public List<ConnectionStringOverride> connectionStringOverrides = new ArrayList<>();
-    public List<RoleNameOverride> roleNameOverrides = new ArrayList<>();
+    public final List<RoleNameOverride> roleNameOverrides = new ArrayList<>();
 
     @Deprecated
     public List<InstrumentationKeyOverride> instrumentationKeyOverrides = new ArrayList<>();
