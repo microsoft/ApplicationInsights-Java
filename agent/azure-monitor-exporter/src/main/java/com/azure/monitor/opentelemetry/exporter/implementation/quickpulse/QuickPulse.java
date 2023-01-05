@@ -12,6 +12,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.utils.ThreadPoolU
 import java.net.URL;
 import java.util.UUID;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Supplier;
 import reactor.util.annotation.Nullable;
@@ -35,24 +36,32 @@ public class QuickPulse {
 
     // initialization is delayed and performed in the background because initializing the random
     // seed via UUID.randomUUID() below can cause slowness during startup in some environments
-    Executors.newSingleThreadExecutor(ThreadPoolUtils.createDaemonThreadFactory(QuickPulse.class))
-        .execute(
-            () -> {
-              try {
-                Thread.sleep(5000);
-              } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-              }
-              quickPulse.initialize(
-                  httpPipeline,
-                  endpointUrl,
-                  instrumentationKey,
-                  roleName,
-                  roleInstance,
-                  useNormalizedValueForNonNormalizedCpuPercentage,
-                  sdkVersion);
-            });
-
+    ExecutorService executor =
+        Executors.newSingleThreadExecutor(
+            ThreadPoolUtils.createDaemonThreadFactory(QuickPulse.class));
+    executor.execute(
+        () -> {
+          try {
+            Thread.sleep(5000);
+          } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+          }
+          quickPulse.initialize(
+              httpPipeline,
+              endpointUrl,
+              instrumentationKey,
+              roleName,
+              roleInstance,
+              useNormalizedValueForNonNormalizedCpuPercentage,
+              sdkVersion);
+        });
+    if (executor.isTerminated()) {
+      // this condition will always be false, and only exists to ensure the executor can't become
+      // unreachable until after execute() method above completes which could cause the executor
+      // to be terminated and cause the above method to throw RejectedExecutionException
+      // (see https://bugs.openjdk.org/browse/JDK-8145304)
+      throw new AssertionError();
+    }
     return quickPulse;
   }
 

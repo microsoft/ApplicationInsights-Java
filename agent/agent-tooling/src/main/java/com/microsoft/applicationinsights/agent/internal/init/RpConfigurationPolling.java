@@ -20,6 +20,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
 import java.util.Objects;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,14 +38,22 @@ public class RpConfigurationPolling implements Runnable {
       Configuration configuration,
       TelemetryClient telemetryClient,
       AppIdSupplier appIdSupplier) {
-    Executors.newSingleThreadScheduledExecutor(
-            ThreadPoolUtils.createDaemonThreadFactory(RpConfigurationPolling.class))
-        .scheduleWithFixedDelay(
-            new RpConfigurationPolling(
-                rpConfiguration, configuration, telemetryClient, appIdSupplier),
-            60,
-            60,
-            SECONDS);
+
+    ScheduledExecutorService executor =
+        Executors.newSingleThreadScheduledExecutor(
+            ThreadPoolUtils.createDaemonThreadFactory(RpConfigurationPolling.class));
+    executor.scheduleWithFixedDelay(
+        new RpConfigurationPolling(rpConfiguration, configuration, telemetryClient, appIdSupplier),
+        60,
+        60,
+        SECONDS);
+    if (executor.isTerminated()) {
+      // this condition will always be false, and only exists to ensure the executor can't become
+      // unreachable until after execute() method above completes which could cause the executor
+      // to be terminated and cause the above method to throw RejectedExecutionException
+      // (see https://bugs.openjdk.org/browse/JDK-8145304)
+      throw new AssertionError();
+    }
   }
 
   // visible for testing
