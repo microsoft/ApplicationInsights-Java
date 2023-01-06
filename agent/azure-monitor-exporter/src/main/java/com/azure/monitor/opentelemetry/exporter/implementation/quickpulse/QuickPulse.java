@@ -55,11 +55,12 @@ public class QuickPulse {
               useNormalizedValueForNonNormalizedCpuPercentage,
               sdkVersion);
         });
+    // the condition below will always be false, but by referencing the executor it ensures the
+    // executor can't become unreachable in the middle of the execute() method execution above
+    // (and prior to the task being registered), which can lead to the executor being terminated and
+    // scheduleAtFixedRate throwing a RejectedExecutionException
+    // (see https://bugs.openjdk.org/browse/JDK-8145304)
     if (executor.isTerminated()) {
-      // this condition will always be false, and only exists to ensure the executor can't become
-      // unreachable until after execute() method above completes which could cause the executor
-      // to be terminated and cause the above method to throw RejectedExecutionException
-      // (see https://bugs.openjdk.org/browse/JDK-8145304)
       throw new AssertionError();
     }
     return quickPulse;
