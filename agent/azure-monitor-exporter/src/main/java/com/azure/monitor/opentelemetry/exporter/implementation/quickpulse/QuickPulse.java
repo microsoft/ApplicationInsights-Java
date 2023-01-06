@@ -12,6 +12,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.utils.ThreadPoolU
 import java.net.URL;
 import java.util.UUID;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Supplier;
 import reactor.util.annotation.Nullable;
@@ -35,24 +36,33 @@ public class QuickPulse {
 
     // initialization is delayed and performed in the background because initializing the random
     // seed via UUID.randomUUID() below can cause slowness during startup in some environments
-    Executors.newSingleThreadExecutor(ThreadPoolUtils.createDaemonThreadFactory(QuickPulse.class))
-        .execute(
-            () -> {
-              try {
-                Thread.sleep(5000);
-              } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-              }
-              quickPulse.initialize(
-                  httpPipeline,
-                  endpointUrl,
-                  instrumentationKey,
-                  roleName,
-                  roleInstance,
-                  useNormalizedValueForNonNormalizedCpuPercentage,
-                  sdkVersion);
-            });
-
+    ExecutorService executor =
+        Executors.newSingleThreadExecutor(
+            ThreadPoolUtils.createDaemonThreadFactory(QuickPulse.class));
+    executor.execute(
+        () -> {
+          try {
+            Thread.sleep(5000);
+          } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+          }
+          quickPulse.initialize(
+              httpPipeline,
+              endpointUrl,
+              instrumentationKey,
+              roleName,
+              roleInstance,
+              useNormalizedValueForNonNormalizedCpuPercentage,
+              sdkVersion);
+        });
+    // the condition below will always be false, but by referencing the executor it ensures the
+    // executor can't become unreachable in the middle of the execute() method execution above
+    // (and prior to the task being registered), which can lead to the executor being terminated and
+    // scheduleAtFixedRate throwing a RejectedExecutionException
+    // (see https://bugs.openjdk.org/browse/JDK-8145304)
+    if (executor.isTerminated()) {
+      throw new AssertionError();
+    }
     return quickPulse;
   }
 
