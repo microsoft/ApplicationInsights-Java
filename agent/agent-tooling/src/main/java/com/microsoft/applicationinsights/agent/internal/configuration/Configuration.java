@@ -13,7 +13,7 @@ import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.Diagnostics
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.status.StatusFile;
 import com.microsoft.applicationinsights.agent.internal.common.FriendlyException;
 import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.sdk.logs.data.Severity;
+import io.opentelemetry.api.logs.Severity;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -52,7 +52,7 @@ public class Configuration {
   }
 
   public void validate() {
-    instrumentation.logging.getSeverity();
+    instrumentation.logging.getSeverityThreshold();
     preview.validate();
   }
 
@@ -76,8 +76,8 @@ public class Configuration {
     }
   }
 
-  public enum SamplingTelemetryKind {
-    // restricted to telemetry kinds that are supported by SamplingOverrides
+  public enum SamplingTelemetryType {
+    // restricted to telemetry types that are supported by SamplingOverrides
     @JsonProperty("request")
     REQUEST,
     @JsonProperty("dependency")
@@ -149,8 +149,11 @@ public class Configuration {
     @Nullable public Double percentage;
 
     // default is 5 requests per second (set in ConfigurationBuilder if neither percentage nor
-    // limitPerSecond was configured)
-    @Nullable public Double limitPerSecond;
+    // requestsPerSecond was configured)
+    @Nullable public Double requestsPerSecond;
+
+    // this config option only existed in one BETA release (3.4.0-BETA)
+    @Deprecated @Nullable public Double limitPerSecond;
   }
 
   public static class SamplingPreview {
@@ -175,8 +178,6 @@ public class Configuration {
     // sampled)
     //
     // future goal: make parentBased sampling the default if item count is received via tracestate
-    //
-    // IMPORTANT if changing this default, we need to keep it at least on Azure Functions
     public boolean parentBased;
 
     public List<SamplingOverride> overrides = new ArrayList<>();
@@ -217,32 +218,33 @@ public class Configuration {
   public static class LoggingInstrumentation {
     public String level = "INFO";
 
-    public Severity getSeverity() {
-      return getSeverity(level);
+    public int getSeverityThreshold() {
+      return getSeverityThreshold(level);
     }
 
-    public static Severity getSeverity(String level) {
+    public static int getSeverityThreshold(String level) {
       switch (level.toUpperCase()) {
         case "OFF":
-          return Severity.UNDEFINED_SEVERITY_NUMBER;
+          return Integer.MAX_VALUE;
         case "FATAL":
+          return Severity.FATAL.getSeverityNumber();
         case "ERROR":
         case "SEVERE":
-          return Severity.ERROR;
+          return Severity.ERROR.getSeverityNumber();
         case "WARN":
         case "WARNING":
-          return Severity.WARN;
+          return Severity.WARN.getSeverityNumber();
         case "INFO":
-          return Severity.INFO;
+          return Severity.INFO.getSeverityNumber();
         case "CONFIG":
         case "DEBUG":
         case "FINE":
         case "FINER":
-          return Severity.DEBUG;
+          return Severity.DEBUG.getSeverityNumber();
         case "TRACE":
         case "FINEST":
         case "ALL":
-          return Severity.TRACE;
+          return Severity.TRACE.getSeverityNumber();
         default:
           throw new FriendlyException(
               "Invalid logging instrumentation level: " + level, "Please provide a valid level.");
@@ -270,6 +272,10 @@ public class Configuration {
     public String endpoint;
     public long shortIntervalSeconds = MINUTES.toSeconds(15); // default to 15 minutes
     public long longIntervalSeconds = DAYS.toSeconds(1); // default to daily
+  }
+
+  public static class PreAggregatedStandardMetricsConfiguration {
+    public boolean enabled = true; // pre-aggregated standard metrics are on by default
   }
 
   public static class Proxy {
@@ -313,6 +319,10 @@ public class Configuration {
     public boolean captureLoggingLevelAsCustomDimension;
 
     public boolean captureLogbackCodeAttributes;
+
+    public boolean captureLogbackMarker;
+
+    public boolean captureLog4jMarker;
 
     // this is to support interoperability with other systems
     // intentionally not allowing the removal of w3c propagator since that is key to many Azure
@@ -446,6 +456,8 @@ public class Configuration {
   public static class InternalConfiguration {
     // This is used for collecting internal stats
     public Statsbeat statsbeat = new Statsbeat();
+    public PreAggregatedStandardMetricsConfiguration preAggregatedStandardMetrics =
+        new PreAggregatedStandardMetricsConfiguration();
   }
 
   public static class PreviewInstrumentation {
@@ -596,10 +608,11 @@ public class Configuration {
         }
         return DEFAULT_NAME; // this will be relative to the directory where agent jar is located
       }
-      if (DiagnosticsHelper.useAppSvcRpIntegrationLogging()) {
+      if (DiagnosticsHelper.useAppSvcRpIntegrationLogging()
+          || DiagnosticsHelper.useFunctionsRpIntegrationLogging()) {
         return StatusFile.getLogDir() + "/" + DEFAULT_NAME;
       }
-      // azure functions and azure spring cloud
+      // azure spring cloud
       return DEFAULT_NAME;
     }
   }
@@ -613,11 +626,13 @@ public class Configuration {
 
     // TODO (trask) make this required when moving out of preview
     //   for now the default is both "request" and "dependency" for backwards compatibility
-    @Nullable public SamplingTelemetryKind telemetryKind;
+    @Nullable public SamplingTelemetryType telemetryType;
 
-    // TODO (trask) add test for this
-    // this is primarily useful for batch jobs
-    public boolean includingStandaloneTelemetry;
+    // this config option existed in one GA release (3.4.0), and was then replaced by telemetryType
+    @Deprecated @Nullable public SamplingTelemetryType telemetryKind;
+
+    // this config option only existed in one BETA release (3.4.0-BETA)
+    @Deprecated @Nullable public Boolean includingStandaloneTelemetry;
 
     // not using include/exclude, because you can still get exclude with this by adding a second
     // (exclude) override above it
@@ -627,15 +642,15 @@ public class Configuration {
     public String id; // optional, used for debugging purposes only
 
     public boolean isForRequestTelemetry() {
-      return telemetryKind == SamplingTelemetryKind.REQUEST
+      return telemetryType == SamplingTelemetryType.REQUEST
           // this part is for backwards compatibility:
-          || (telemetryKind == null && spanKind != SpanKind.CLIENT);
+          || (telemetryType == null && spanKind != SpanKind.CLIENT);
     }
 
     public boolean isForDependencyTelemetry() {
-      return telemetryKind == SamplingTelemetryKind.DEPENDENCY
+      return telemetryType == SamplingTelemetryType.DEPENDENCY
           // this part is for backwards compatibility:
-          || (telemetryKind == null && spanKind != SpanKind.SERVER);
+          || (telemetryType == null && spanKind != SpanKind.SERVER);
     }
 
     public void validate() {
@@ -1357,7 +1372,7 @@ public class Configuration {
 
   public static class RequestTriggerThrottling {
     public RequestTriggerThrottlingType type = RequestTriggerThrottlingType.FIXED_DURATION_COOLDOWN;
-    public long value = 60; // in seconds
+    public int value = 60; // in seconds
   }
 
   public enum RequestTriggerType {
@@ -1371,7 +1386,7 @@ public class Configuration {
     public RequestAggregation aggregation = new RequestAggregation();
     public RequestTriggerThreshold threshold = new RequestTriggerThreshold();
     public RequestTriggerThrottling throttling = new RequestTriggerThrottling();
-    public long profileDuration = 30; // in s
+    public int profileDuration = 30; // in s
   }
 
   public static class ProfilerConfiguration {

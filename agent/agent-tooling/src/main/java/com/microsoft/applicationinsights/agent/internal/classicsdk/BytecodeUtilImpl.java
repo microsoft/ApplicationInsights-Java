@@ -441,6 +441,11 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
     }
   }
 
+  @Override
+  public boolean shouldSample(String operationId) {
+    return sample(operationId, samplingPercentage);
+  }
+
   private static void track(
       AbstractTelemetryBuilder telemetryBuilder, Map<String, String> tags, boolean applySampling) {
 

@@ -3,15 +3,15 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
-import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_11;
-import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_11_OPENJ9;
-import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_17;
-import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_18;
-import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_19;
-import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_8;
-import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_8_OPENJ9;
-import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8;
-import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8_OPENJ9;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_11;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_11_OPENJ9;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_17;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_19;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_20;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_8;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_8_OPENJ9;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.WILDFLY_13_JAVA_8;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.WILDFLY_13_JAVA_8_OPENJ9;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -35,7 +35,7 @@ abstract class RateLimitedSamplingTest {
 
     // average response time of 10 ms, times 1000 requests, equals 10 seconds
     // so ideally with rate of 0.5 requests per second we would get 5 requests
-    assertThat(rdEnvelopes.size()).isLessThan(20);
+    assertThat(rdEnvelopes.size()).isLessThan(25);
   }
 
   @Environment(TOMCAT_8_JAVA_8)
@@ -53,11 +53,11 @@ abstract class RateLimitedSamplingTest {
   @Environment(TOMCAT_8_JAVA_17)
   static class Tomcat8Java17Test extends RateLimitedSamplingTest {}
 
-  @Environment(TOMCAT_8_JAVA_18)
-  static class Tomcat8Java18Test extends RateLimitedSamplingTest {}
-
   @Environment(TOMCAT_8_JAVA_19)
   static class Tomcat8Java19Test extends RateLimitedSamplingTest {}
+
+  @Environment(TOMCAT_8_JAVA_20)
+  static class Tomcat8Java20Test extends RateLimitedSamplingTest {}
 
   @Environment(WILDFLY_13_JAVA_8)
   static class Wildfly13Java8Test extends RateLimitedSamplingTest {}

@@ -8,7 +8,7 @@ import com.microsoft.applicationinsights.alerting.analysis.AlertPipelineTrigger;
 import com.microsoft.applicationinsights.alerting.analysis.aggregations.Aggregation;
 import com.microsoft.applicationinsights.alerting.analysis.data.TelemetryDataPoint;
 import com.microsoft.applicationinsights.alerting.analysis.filter.AlertRequestFilter;
-import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration.AlertConfiguration;
+import com.microsoft.applicationinsights.alerting.config.AlertConfiguration;
 import java.lang.management.ManagementFactory;
 import java.time.format.DateTimeFormatter;
 import java.util.OptionalDouble;
@@ -102,13 +102,13 @@ public class SingleAlertPipeline implements AlertPipeline, AlertPipelineMXBean {
   }
 
   @Override
-  public long getCoolDown() {
-    return alertConfiguration.getCooldown();
+  public long getCooldownSeconds() {
+    return alertConfiguration.getCooldownSeconds();
   }
 
   @Override
-  public long getProfilerDuration() {
-    return alertConfiguration.getProfileDuration();
+  public long getProfilerDurationSeconds() {
+    return alertConfiguration.getProfileDurationSeconds();
   }
 
   @Override

@@ -70,8 +70,8 @@ tasks {
           "Agent-Class" to "io.opentelemetry.javaagent.OpenTelemetryAgent",
           "Premain-Class" to "io.opentelemetry.javaagent.OpenTelemetryAgent",
           "Can-Redefine-Classes" to true,
-          "Can-Retransform-Classes" to true
-        )
+          "Can-Retransform-Classes" to true,
+        ),
       )
     }
   }

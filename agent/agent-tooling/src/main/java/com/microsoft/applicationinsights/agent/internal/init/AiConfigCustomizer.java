@@ -8,7 +8,6 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.legacyheaders.DelegatingPropagatorProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,11 +34,6 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
     properties.put("otel.instrumentation.common.experimental.view-telemetry.enabled", "false");
     properties.put(
         "otel.instrumentation.messaging.experimental.receive-telemetry.enabled", "false");
-    // this is needed to capture kafka.record.queue_time_ms
-    properties.put("otel.instrumentation.kafka.experimental-span-attributes", "true");
-
-    // kafka metrics are enabled by default
-    properties.put("otel.instrumentation.kafka.metric-reporter.enabled", "false");
 
     setHttpHeaderConfiguration(
         properties,
@@ -100,16 +94,6 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
     if (tracesExporter == null) {
       // this overrides the default "otlp" so the exporter can be configured later
       properties.put("otel.traces.exporter", "none");
-
-      // TODO (trask) this can go away once new indexer is rolled out to gov clouds
-      List<String> httpClientResponseHeaders = new ArrayList<>();
-      httpClientResponseHeaders.add("request-context");
-      httpClientResponseHeaders.addAll(
-          configuration.preview.captureHttpClientHeaders.responseHeaders);
-      setHttpHeaderConfiguration(
-          properties,
-          "otel.instrumentation.http.capture-headers.client.response",
-          httpClientResponseHeaders);
     }
 
     String metricsExporter = otelConfig.getString("otel.metrics.exporter");
@@ -218,7 +202,9 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
     if (config.instrumentation.kafka.enabled) {
       properties.put("otel.instrumentation.kafka.enabled", "true");
       properties.put("otel.instrumentation.spring-kafka.enabled", "true");
-      // TODO (trask) add to smoke test to ensure these metrics are not reported
+      // this is needed to capture kafka.record.queue_time_ms
+      properties.put("otel.instrumentation.kafka.experimental-span-attributes", "true");
+      // kafka metrics are enabled by default
       properties.put("otel.instrumentation.kafka.metric-reporter.enabled", "false");
     }
     if (config.instrumentation.mongo.enabled) {
@@ -231,9 +217,6 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
       properties.put("otel.instrumentation.quartz.enabled", "true");
       // this is needed for the job.system attribute in order to map those spans to requests
       properties.put("otel.instrumentation.quartz.experimental-span-attributes", "true");
-      // TODO (trask) this line is temporary until 1.19.0, see
-      // https://github.com/open-telemetry/opentelemetry-java-instrumentation/pull/6633
-      System.setProperty("otel.instrumentation.quartz.experimental-span-attributes", "true");
     }
     if (config.instrumentation.rabbitmq.enabled) {
       properties.put("otel.instrumentation.rabbitmq.enabled", "true");
@@ -247,22 +230,28 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
       properties.put("otel.instrumentation.spring-scheduling.enabled", "true");
       // this is needed for the job.system attribute in order to map those spans to requests
       properties.put("otel.instrumentation.spring-scheduling.experimental-span-attributes", "true");
-      // TODO (trask) this line is temporary until 1.19.0, see
-      // https://github.com/open-telemetry/opentelemetry-java-instrumentation/pull/6633
-      System.setProperty(
-          "otel.instrumentation.spring-scheduling.experimental-span-attributes", "true");
     }
     if (config.preview.captureLogbackCodeAttributes) {
       properties.put(
           "otel.instrumentation.logback-appender.experimental.capture-code-attributes", "true");
     }
+    if (config.preview.captureLogbackMarker) {
+      properties.put(
+          "otel.instrumentation.logback-appender.experimental.capture-marker-attribute", "true");
+    }
+    if (config.preview.captureLog4jMarker) {
+      properties.put(
+          "otel.instrumentation.log4j-appender.experimental.capture-marker-attribute", "true");
+    }
     if (config.preview.instrumentation.akka.enabled) {
       properties.put("otel.instrumentation.akka-actor.enabled", "true");
       properties.put("otel.instrumentation.akka-http.enabled", "true");
+      properties.put("otel.instrumentation.scala-fork-join.enabled", "true");
     }
     if (config.preview.instrumentation.play.enabled) {
       properties.put("otel.instrumentation.play-mvc.enabled", "true");
       properties.put("otel.instrumentation.play-ws.enabled", "true");
+      properties.put("otel.instrumentation.scala-fork-join.enabled", "true");
     }
     if (config.preview.instrumentation.apacheCamel.enabled) {
       properties.put("otel.instrumentation.apache-camel.enabled", "true");

@@ -24,16 +24,15 @@ sourceSets {
 
 archivesBaseName = "applicationinsights-java-etw-provider"
 
-logger.info "project ${project.path} prop: ai.etw.native.build=${project.properties['ai.etw.native.build']}"
+logger.info "project ${project.path} prop: ai.etw.native.build=${System.properties['ai.etw.native.build']}"
 
-def buildNative = System.getenv("CI") != null && Os.isFamily(Os.FAMILY_WINDOWS)
-
+def buildNative = System.properties['ai.etw.native.build'] != null && Os.isFamily(Os.FAMILY_WINDOWS)
 dependencies {
   implementation("org.slf4j:slf4j-api")
 
   if (buildNative) {
-    jni32 project(path: ":etw:native", configuration: "${project.properties['ai.etw.native.build']}X86RuntimeElements")
-    jni64 project(path: ":etw:native", configuration: "${project.properties['ai.etw.native.build']}X86-64RuntimeElements")
+    jni32 project(path: ":etw:native", configuration: "${System.properties['ai.etw.native.build']}X86RuntimeElements")
+    jni64 project(path: ":etw:native", configuration: "${System.properties['ai.etw.native.build']}X86-64RuntimeElements")
   } else {
     logger.info "Skipping build of :etw:native. EtwAppender/EtwProvider will not work because library is missing"
   }
@@ -58,7 +57,7 @@ if (hasProperty("ai.etw.native.generateHeaders")) {
 
 if (buildNative) {
   tasks.register("processNativeResources", Copy) {
-    def useReleaseBuild = project.getProperty("ai.etw.native.build").equalsIgnoreCase("release")
+    def useReleaseBuild = System.properties["ai.etw.native.build"].equalsIgnoreCase("release")
     dependsOn project(":etw:native").tasks.named("assemble${useReleaseBuild ? 'Release' : 'Debug'}X86").get()
     dependsOn project(":etw:native").tasks.named("assemble${useReleaseBuild ? 'Release' : 'Debug'}X86-64").get()
 

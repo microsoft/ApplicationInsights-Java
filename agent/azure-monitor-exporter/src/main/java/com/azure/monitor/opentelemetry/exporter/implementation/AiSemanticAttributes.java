@@ -8,7 +8,6 @@ import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
 import io.opentelemetry.api.common.AttributeKey;
-import java.util.List;
 
 public final class AiSemanticAttributes {
 
@@ -79,10 +78,6 @@ public final class AiSemanticAttributes {
   public static final AttributeKey<Long> NET_SOCK_PEER_PORT =
       AttributeKey.longKey("net.sock.peer.port");
 
-  // TODO (trask) this can go away once new indexer is rolled out to gov clouds
-  public static final AttributeKey<List<String>> REQUEST_CONTEXT =
-      AttributeKey.stringArrayKey("http.response.header.request_context");
-
   public static final AttributeKey<String> LEGACY_PARENT_ID =
       AttributeKey.stringKey("applicationinsights.internal.legacy_parent_id");
   public static final AttributeKey<String> LEGACY_ROOT_ID =
@@ -105,6 +100,23 @@ public final class AiSemanticAttributes {
 
   public static final AttributeKey<Boolean> IS_PRE_AGGREGATED =
       AttributeKey.booleanKey("applicationinsights.internal.is_pre_aggregated");
+
+  // These attributes are specific for Azure Function and are added to Application Insights traces'
+  // custom dimensions. When Azure Function host starts suppressing the same logs to Application
+  // Insights, these new attributes will provide backward compatibility for keeping the same
+  // behaviour.
+  public static final AttributeKey<String> AZ_FN_INVOCATION_ID =
+      AttributeKey.stringKey("applicationinsights.internal.invocationId");
+  public static final AttributeKey<String> AZ_FN_PROCESS_ID =
+      AttributeKey.stringKey("applicationinsights.internal.processId");
+  public static final AttributeKey<String> AZ_FN_LOG_LEVEL =
+      AttributeKey.stringKey("applicationinsights.internal.logLevel");
+  public static final AttributeKey<String> AZ_FN_CATEGORY =
+      AttributeKey.stringKey("applicationinsights.internal.category");
+  public static final AttributeKey<String> AZ_FN_HOST_INSTANCE_ID =
+      AttributeKey.stringKey("applicationinsights.internal.hostInstanceId");
+  public static final AttributeKey<String> AZ_FN_LIVE_LOGS_SESSION_ID =
+      AttributeKey.stringKey("applicationinsights.internal.azFuncLiveLogsSessionId");
 
   private AiSemanticAttributes() {}
 }

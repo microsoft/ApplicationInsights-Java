@@ -1,0 +1,18 @@
+{
+  "role": {
+    "name": "testrolename",
+    "instance": "testroleinstance"
+  },
+  "sampling": {
+    "percentage": 100
+  },
+  "instrumentation": {
+    "logging": {
+      "level": "warn"
+    }
+  },
+  "preview": {
+    "captureLogbackCodeAttributes": true,
+    "captureLogbackMarker": true
+  }
+}

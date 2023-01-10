@@ -68,7 +68,7 @@ public class ConfigurationBuilder {
   private static final String APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE =
       "APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE";
 
-  private static final String APPLICATIONINSIGHTS_SAMPLING_LIMIT_PER_SECOND =
+  private static final String APPLICATIONINSIGHTS_SAMPLING_REQUESTS_PER_SECOND =
       "APPLICATIONINSIGHTS_SAMPLING_LIMIT_PER_SECOND";
 
   private static final String APPLICATIONINSIGHTS_INSTRUMENTATION_LOGGING_LEVEL =
@@ -177,17 +177,31 @@ public class ConfigurationBuilder {
               + " so no need to enable it under preview configuration");
     }
     for (SamplingOverride override : config.preview.sampling.overrides) {
+      if (override.telemetryKind != null) {
+        configurationLogger.warn(
+            "Sampling overrides \"telemetryKind\" has been deprecated,"
+                + " and support for it will be removed in a future release, please transition from"
+                + " \"telemetryKind\" to \"telemetryType\".");
+        if (override.telemetryType == null) {
+          override.telemetryType = override.telemetryKind;
+        }
+      }
       if (override.spanKind != null) {
         configurationLogger.warn(
             "Sampling overrides \"spanKind\" has been deprecated,"
                 + " and support for it will be removed in a future release, please transition from"
-                + " \"spanKind\" to \"telemetryKind\".");
+                + " \"spanKind\" to \"telemetryType\".");
       }
-      if (override.telemetryKind == null) {
+      if (override.telemetryType == null) {
         configurationLogger.warn(
-            "Sampling overrides \"telemetryKind\" is missing,"
+            "Sampling overrides \"telemetryType\" is missing,"
                 + " and will be required in a future release, please transition to add"
-                + " \"telemetryKind\" for sampling overrides.");
+                + " \"telemetryType\" for sampling overrides.");
+      }
+      if (override.includingStandaloneTelemetry != null) {
+        configurationLogger.warn(
+            "Sampling overrides \"includingStandaloneTelemetry\" (from 3.4.0-BETA) has been"
+                + " removed in 3.4.0 (GA)");
       }
     }
     if (!config.preview.instrumentationKeyOverrides.isEmpty()) {
@@ -200,6 +214,14 @@ public class ConfigurationBuilder {
         newOverride.httpPathPrefix = override.httpPathPrefix;
         newOverride.connectionString = "InstrumentationKey=" + override.instrumentationKey;
         config.preview.connectionStringOverrides.add(newOverride);
+      }
+    }
+    if (config.sampling.limitPerSecond != null) {
+      configurationLogger.warn(
+          "\"limitPerSecond\" (from 3.4.0-BETA) has been renamed to \"requestsPerSecond\""
+              + " in 3.4.0 (GA)");
+      if (config.sampling.requestsPerSecond == null && config.sampling.percentage == null) {
+        config.sampling.requestsPerSecond = config.sampling.limitPerSecond;
       }
     }
 
@@ -220,8 +242,8 @@ public class ConfigurationBuilder {
       overlayRpConfiguration(config, rpConfiguration);
     }
     // only fall back to default sampling configuration after all overlays have been performed
-    if (config.sampling.limitPerSecond == null && config.sampling.percentage == null) {
-      config.sampling.limitPerSecond = 5.0;
+    if (config.sampling.requestsPerSecond == null && config.sampling.percentage == null) {
+      config.sampling.requestsPerSecond = 5.0;
     }
     // only set role instance to host name as a last resort
     if (config.role.instance == null) {
@@ -416,12 +438,35 @@ public class ConfigurationBuilder {
       return getConfigurationFromEnvVar(configurationContent);
     }
 
+    Configuration configFromProperty = extractConfigFromProperty(agentJarPath);
+    if (configFromProperty != null) {
+      return configFromProperty;
+    }
+
     String runtimeAttachedConfigurationContent =
         getSystemProperty(APPLICATIONINSIGHTS_RUNTIME_ATTACHED_CONFIGURATION_CONTENT);
     if (runtimeAttachedConfigurationContent != null) {
       return getConfiguration(runtimeAttachedConfigurationContent, JsonOrigin.RUNTIME_ATTACHED);
     }
 
+    if (DiagnosticsHelper.isRpIntegration()) {
+      // users do not have write access to agent directory in rp integrations
+      // and rp integrations should not use applicationinsights.json because that makes it difficult
+      // to merge rp intent and user intent
+      return new Configuration();
+    }
+
+    Configuration configFromJsonNextToAgent = extractConfigFromJsonNextToAgentJar(agentJarPath);
+    if (configFromJsonNextToAgent != null) {
+      return configFromJsonNextToAgent;
+    }
+
+    // json configuration file is not required, ok to configure via env var alone
+    return new Configuration();
+  }
+
+  @Nullable
+  private static Configuration extractConfigFromProperty(Path agentJarPath) {
     String configPathStr = getConfigPath();
     if (configPathStr != null) {
       Path configPath = agentJarPath.resolveSibling(configPathStr);
@@ -433,27 +478,20 @@ public class ConfigurationBuilder {
             "could not find requested configuration file: " + configPathStr);
       }
     }
+    return null;
+  }
 
-    if (DiagnosticsHelper.isRpIntegration()) {
-      // users do not have write access to agent directory in rp integrations
-      // and rp integrations should not use applicationinsights.json because that makes it difficult
-      // to merge
-      // rp intent and user intent
-      return new Configuration();
-    }
-
+  @Nullable
+  private static Configuration extractConfigFromJsonNextToAgentJar(Path agentJarPath) {
     Path configPath = agentJarPath.resolveSibling("applicationinsights.json");
     if (Files.exists(configPath)) {
       return loadJsonConfigFile(configPath);
     }
-
     if (Files.exists(agentJarPath.resolveSibling("ApplicationInsights.json"))) {
       throw new ConfigurationException(
           "found ApplicationInsights.json, but it should be lowercase: applicationinsights.json");
     }
-
-    // json configuration file is not required, ok to configure via env var alone
-    return new Configuration();
+    return null;
   }
 
   // cannot use logger before loading configuration, so need to store any messages locally until
@@ -494,9 +532,9 @@ public class ConfigurationBuilder {
     config.sampling.percentage =
         overlayWithEnvVar(APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE, config.sampling.percentage);
 
-    config.sampling.limitPerSecond =
+    config.sampling.requestsPerSecond =
         overlayWithEnvVar(
-            APPLICATIONINSIGHTS_SAMPLING_LIMIT_PER_SECOND, config.sampling.limitPerSecond);
+            APPLICATIONINSIGHTS_SAMPLING_REQUESTS_PER_SECOND, config.sampling.requestsPerSecond);
 
     config.proxy = overlayProxyFromEnv(config.proxy);
 
@@ -616,7 +654,7 @@ public class ConfigurationBuilder {
     }
     if (rpConfiguration.sampling != null) {
       config.sampling.percentage = rpConfiguration.sampling.percentage;
-      config.sampling.limitPerSecond = rpConfiguration.sampling.limitPerSecond;
+      config.sampling.requestsPerSecond = rpConfiguration.sampling.requestsPerSecond;
     }
     if (isTrimEmpty(config.role.name)) {
       // only use rp configuration role name as a fallback, similar to WEBSITE_SITE_NAME
@@ -640,12 +678,22 @@ public class ConfigurationBuilder {
 
   private static String getWebsiteSiteNameEnvVar() {
     String websiteSiteName = getEnvVar(WEBSITE_SITE_NAME);
-    // TODO we can update this check after the new functions model is deployed.
-    if (websiteSiteName != null && "java".equals(getEnvVar("FUNCTIONS_WORKER_RUNTIME"))) {
+    if (websiteSiteName != null && inAzureFunctionsWorker()) {
       // special case for Azure Functions
       return websiteSiteName.toLowerCase(Locale.ENGLISH);
     }
     return websiteSiteName;
+  }
+
+  public static boolean inAzureFunctionsConsumptionWorker() {
+    // for now its the same, but in future should be different check
+    return inAzureFunctionsWorker();
+  }
+
+  public static boolean inAzureFunctionsWorker() {
+    // supporting both Azure Functions RP Integration, as well as bring your own agent deployments
+    // in Azure Functions
+    return "java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME"));
   }
 
   public static String overlayWithSysPropEnvVar(
@@ -860,14 +908,14 @@ public class ConfigurationBuilder {
     if (message != null && !message.isEmpty()) {
       return message;
     }
-    return "The configuration " + location + " contains malformed JSON\n";
+    return "The configuration " + location + " contains malformed JSON";
   }
 
   static String getJsonEncodingExceptionMessage(String message, JsonOrigin jsonOrigin) {
     if (message != null && !message.isEmpty()) {
       return message;
     }
-    return "The configuration " + jsonOrigin + " contains malformed JSON\n";
+    return "The configuration " + jsonOrigin + " contains malformed JSON";
   }
 
   // this is for external callers, where logging is ok

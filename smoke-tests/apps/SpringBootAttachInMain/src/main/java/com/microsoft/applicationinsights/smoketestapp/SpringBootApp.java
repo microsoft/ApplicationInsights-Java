@@ -4,7 +4,6 @@
 package com.microsoft.applicationinsights.smoketestapp;
 
 import com.microsoft.applicationinsights.attach.ApplicationInsights;
-import java.io.IOException;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
@@ -13,7 +12,7 @@ import org.springframework.boot.web.servlet.support.SpringBootServletInitializer
 @SpringBootApplication
 public class SpringBootApp extends SpringBootServletInitializer {
 
-  public static void main(String[] args) throws IOException {
+  public static void main(String[] args) {
     ApplicationInsights.attach();
     SpringApplication.run(SpringBootApp.class, args);
   }

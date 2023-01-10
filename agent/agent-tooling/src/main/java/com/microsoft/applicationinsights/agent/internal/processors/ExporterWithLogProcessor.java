@@ -6,35 +6,35 @@ package com.microsoft.applicationinsights.agent.internal.processors;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.ProcessorConfig;
 import com.microsoft.applicationinsights.agent.internal.processors.AgentProcessor.IncludeExclude;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.logs.data.LogData;
-import io.opentelemetry.sdk.logs.export.LogExporter;
+import io.opentelemetry.sdk.logs.data.LogRecordData;
+import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public class ExporterWithLogProcessor implements LogExporter {
+public class ExporterWithLogProcessor implements LogRecordExporter {
 
-  private final LogExporter delegate;
+  private final LogRecordExporter delegate;
   private final LogProcessor logProcessor;
 
   // caller should check config.isValid before creating
-  public ExporterWithLogProcessor(ProcessorConfig config, LogExporter delegate) {
+  public ExporterWithLogProcessor(ProcessorConfig config, LogRecordExporter delegate) {
     config.validate();
     logProcessor = LogProcessor.create(config);
     this.delegate = delegate;
   }
 
   @Override
-  public CompletableResultCode export(Collection<LogData> logs) {
+  public CompletableResultCode export(Collection<LogRecordData> logs) {
     // we need to filter attributes before passing on to delegate
-    List<LogData> copy = new ArrayList<>();
-    for (LogData log : logs) {
+    List<LogRecordData> copy = new ArrayList<>();
+    for (LogRecordData log : logs) {
       copy.add(process(log));
     }
     return delegate.export(copy);
   }
 
-  private LogData process(LogData log) {
+  private LogRecordData process(LogRecordData log) {
     IncludeExclude include = logProcessor.getInclude();
     if (include != null && !include.isMatch(log.getAttributes(), log.getBody().asString())) {
       // If Not included we can skip further processing
@@ -45,7 +45,7 @@ public class ExporterWithLogProcessor implements LogExporter {
       return log;
     }
 
-    LogData updatedLog = logProcessor.processFromAttributes(log);
+    LogRecordData updatedLog = logProcessor.processFromAttributes(log);
     return logProcessor.processToAttributes(updatedLog);
   }
 

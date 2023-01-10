@@ -32,6 +32,7 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.util.Properties;
 import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -100,15 +101,56 @@ public class FirstEntryPoint implements LoggingCustomizer {
         JvmCompiler.disableJvmCompilerDirectives();
       }
 
+      checkTlsConnectionsToVirtualServersEnabled();
+
       if (startupLogger.isDebugEnabled()) {
-        startupLogger.debug("Classpath: " + System.getProperty("java.class.path"));
         startupLogger.debug(
             "Input arguments: " + ManagementFactory.getRuntimeMXBean().getInputArguments());
+        startupLogger.debug("_JAVA_OPTIONS: " + System.getenv("_JAVA_OPTIONS"));
+        startupLogger.debug("JAVA_TOOL_OPTIONS: " + System.getenv("JAVA_TOOL_OPTIONS"));
+      }
+
+      if (startupLogger.isTraceEnabled()) {
+        startupLogger.trace("OS: " + System.getProperty("os.name"));
+        startupLogger.trace("Classpath: " + System.getProperty("java.class.path"));
+        startupLogger.trace("Netty versions: " + NettyVersions.extract());
+        startupLogger.trace("Env: " + System.getenv());
+        startupLogger.trace("System properties: " + findSystemProperties());
+      }
+
+      if (startupLogger.isTraceEnabled()) {
+        AppInsightsCertificate appInsightsCertificate = new AppInsightsCertificate(startupLogger);
+        startupLogger.trace(
+            "Application Insights root certificate in the Java keystore: "
+                + appInsightsCertificate.isInJavaKeystore());
       }
 
     } catch (Exception e) {
       throw new IllegalStateException(e);
     }
+  }
+
+  private static void checkTlsConnectionsToVirtualServersEnabled() {
+    String tlsConnectionsToVirtualServersProp = "jsse.enableSNIExtension";
+    String propValue = System.getProperty(tlsConnectionsToVirtualServersProp);
+    if ("false".equals(propValue)) {
+      startupLogger.warn(
+          "System property -Djsse.enableSNIExtension=false is detected. If you have connection issues with Application Insights, please remove this.");
+    }
+  }
+
+  private static String findSystemProperties() {
+    Properties properties = System.getProperties();
+    StringBuilder propsBuilder = new StringBuilder();
+    properties.forEach(
+        (key, value) -> {
+          boolean firstProperty = propsBuilder.length() == 0;
+          if (!firstProperty) {
+            propsBuilder.append(", ");
+          }
+          propsBuilder.append("(" + key + "=" + value + ")");
+        });
+    return propsBuilder.toString();
   }
 
   @Override

@@ -59,6 +59,9 @@ tasks {
         disable("UnnecessaryDefaultInEnumSwitch")
         disable("InconsistentOverloads")
 
+        // consider enabling this after removing azure-monitor-exporter from this repo
+        disable("CanIgnoreReturnValueSuggester")
+
         if (name.contains("Jmh")) {
           disable("MemberName")
         }

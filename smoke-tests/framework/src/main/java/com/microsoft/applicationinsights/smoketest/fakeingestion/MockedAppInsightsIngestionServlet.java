@@ -32,6 +32,8 @@ class MockedAppInsightsIngestionServlet extends HttpServlet {
 
   private final Object multimapLock = new Object();
 
+  private volatile boolean liveMetricsPingReceived;
+
   private volatile boolean loggingEnabled;
 
   MockedAppInsightsIngestionServlet() {
@@ -49,6 +51,7 @@ class MockedAppInsightsIngestionServlet extends HttpServlet {
     synchronized (multimapLock) {
       type2envelope.clear();
     }
+    liveMetricsPingReceived = false;
   }
 
   boolean hasData() {
@@ -95,10 +98,16 @@ class MockedAppInsightsIngestionServlet extends HttpServlet {
     throw new TimeoutException("timed out waiting for items");
   }
 
+  boolean isLiveMetricsPingReceived() {
+    return liveMetricsPingReceived;
+  }
+
   @Override
   protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-    if (!"/v2.1/track".equals(req.getPathInfo())) {
+    if (!"/v2.1/track".equals(req.getPathInfo())
+        && !"/QuickPulseService.svc/ping".equals(req.getPathInfo())) {
       resp.sendError(404, "Unknown URI");
+      return;
     }
 
     String contentEncoding = req.getHeader("content-encoding");
@@ -114,6 +123,12 @@ class MockedAppInsightsIngestionServlet extends HttpServlet {
     String body = sw.toString();
     resp.setContentType("application/json");
     logit("raw payload:\n\n" + body + "\n");
+
+    if ("/QuickPulseService.svc/ping".equals(req.getPathInfo())) {
+      liveMetricsPingReceived = true;
+      resp.setHeader("x-ms-qps-subscribed", "false");
+      return;
+    }
 
     String[] lines = body.split("\n");
     for (String line : lines) {

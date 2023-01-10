@@ -22,6 +22,10 @@ class CommandExecutor {
     IllegalStateException exitException = null;
     String result = null;
     try {
+      // to make sure the javaagent (and other JVM args) are not applied to the process
+      processBuilder.environment().put("JAVA_TOOL_OPTIONS", "");
+      processBuilder.environment().put("_JAVA_OPTIONS", "");
+
       Process process = processBuilder.start();
       int exitValue = process.waitFor();
       exitException =

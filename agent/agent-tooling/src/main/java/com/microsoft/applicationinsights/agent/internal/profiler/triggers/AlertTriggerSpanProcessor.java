@@ -3,8 +3,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.profiler.triggers;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.SpanDataMapper;
-import com.microsoft.applicationinsights.agent.internal.profiler.AlertingServiceFactory;
+import com.azure.monitor.opentelemetry.exporter.implementation.RequestChecker;
 import com.microsoft.applicationinsights.alerting.AlertingSubsystem;
 import com.microsoft.applicationinsights.alerting.analysis.TimeSource;
 import com.microsoft.applicationinsights.alerting.analysis.data.TelemetryDataPoint;
@@ -24,7 +23,7 @@ public class AlertTriggerSpanProcessor implements SpanProcessor {
   private final Supplier<AlertingSubsystem> alertingSubsystemSupplier;
 
   public AlertTriggerSpanProcessor() {
-    this(AlertingServiceFactory::getAlertingSubsystem);
+    this(AlertingSubsystemInit::getAlertingSubsystem);
   }
 
   public AlertTriggerSpanProcessor(Supplier<AlertingSubsystem> alertingSubsystemSupplier) {
@@ -50,7 +49,7 @@ public class AlertTriggerSpanProcessor implements SpanProcessor {
   }
 
   public void processSpan(ReadableSpan span) {
-    if (SpanDataMapper.isRequest(span)) {
+    if (RequestChecker.isRequest(span)) {
       double durationInMillis = span.getLatencyNanos() / 1_000_000.0d;
       AlertingSubsystem alertingSubsystem = alertingSubsystemSupplier.get();
 

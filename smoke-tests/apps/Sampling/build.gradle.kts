@@ -3,6 +3,6 @@ plugins {
 }
 
 dependencies {
-  implementation("com.microsoft.azure:applicationinsights-core")
+  implementation(project(":classic-sdk:core"))
   implementation("org.apache.httpcomponents:httpclient:4.5.7")
 }

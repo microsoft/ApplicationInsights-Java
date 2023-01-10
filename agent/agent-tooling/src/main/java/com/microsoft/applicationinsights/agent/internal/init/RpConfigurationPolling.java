@@ -20,6 +20,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
 import java.util.Objects;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,14 +38,23 @@ public class RpConfigurationPolling implements Runnable {
       Configuration configuration,
       TelemetryClient telemetryClient,
       AppIdSupplier appIdSupplier) {
-    Executors.newSingleThreadScheduledExecutor(
-            ThreadPoolUtils.createDaemonThreadFactory(RpConfigurationPolling.class))
-        .scheduleWithFixedDelay(
-            new RpConfigurationPolling(
-                rpConfiguration, configuration, telemetryClient, appIdSupplier),
-            60,
-            60,
-            SECONDS);
+
+    ScheduledExecutorService executor =
+        Executors.newSingleThreadScheduledExecutor(
+            ThreadPoolUtils.createDaemonThreadFactory(RpConfigurationPolling.class));
+    executor.scheduleWithFixedDelay(
+        new RpConfigurationPolling(rpConfiguration, configuration, telemetryClient, appIdSupplier),
+        60,
+        60,
+        SECONDS);
+    // the condition below will always be false, but by referencing the executor it ensures the
+    // executor can't become unreachable in the middle of the scheduleWithFixedDelay() method
+    // execution above (and prior to the task being registered), which can lead to the executor
+    // being terminated and scheduleWithFixedDelay throwing a RejectedExecutionException
+    // (see https://bugs.openjdk.org/browse/JDK-8145304)
+    if (executor.isTerminated()) {
+      throw new AssertionError();
+    }
   }
 
   // visible for testing
@@ -101,16 +111,17 @@ public class RpConfigurationPolling implements Runnable {
           changed = true;
         }
         if (!Objects.equals(
-            rpConfiguration.sampling.limitPerSecond, newRpConfiguration.sampling.limitPerSecond)) {
+            rpConfiguration.sampling.requestsPerSecond,
+            newRpConfiguration.sampling.requestsPerSecond)) {
           logger.debug(
               "Updating limit per second from {} to {}",
-              rpConfiguration.sampling.limitPerSecond,
-              newRpConfiguration.sampling.limitPerSecond);
+              rpConfiguration.sampling.requestsPerSecond,
+              newRpConfiguration.sampling.requestsPerSecond);
           changed = true;
         }
         if (changed) {
           configuration.sampling.percentage = newRpConfiguration.sampling.percentage;
-          configuration.sampling.limitPerSecond = newRpConfiguration.sampling.limitPerSecond;
+          configuration.sampling.requestsPerSecond = newRpConfiguration.sampling.requestsPerSecond;
           DelegatingSampler.getInstance().setDelegate(Samplers.getSampler(configuration));
           if (configuration.sampling.percentage != null) {
             BytecodeUtilImpl.samplingPercentage = configuration.sampling.percentage.floatValue();

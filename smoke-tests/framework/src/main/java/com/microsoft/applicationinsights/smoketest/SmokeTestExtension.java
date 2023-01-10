@@ -57,7 +57,7 @@ public class SmokeTestExtension
         AfterEachCallback,
         TestWatcher {
 
-  // use -PsmokeTestRemoteDebug=true at gradle command line to enable (see ai.smoke-test.gradle.kts)
+  // add -PsmokeTestRemoteDebug=true to the gradle args to enable (see ai.smoke-test.gradle.kts)
   private static final boolean REMOTE_DEBUG = Boolean.getBoolean("ai.smoke-test.remote-debug");
 
   private static final int TELEMETRY_RECEIVE_TIMEOUT_SECONDS = 60;
@@ -65,8 +65,6 @@ public class SmokeTestExtension
   private static final String FAKE_INGESTION_ENDPOINT = "http://host.testcontainers.internal:6060/";
 
   private static final File appFile = new File(System.getProperty("ai.smoke-test.test-app-file"));
-  private static final File javaagentFile =
-      new File(System.getProperty("ai.smoke-test.javaagent-file"));
 
   // TODO (trask) make private and expose methods on AiSmokeTest(?)
   protected final MockedAppInsightsIngestionServer mockedIngestion =
@@ -78,6 +76,7 @@ public class SmokeTestExtension
 
   @Nullable private String currentImageName;
   @Nullable private String currentImageAppDir;
+  @Nullable private String currentImageAppFileName;
 
   @Nullable private GenericContainer<?> targetContainer;
   @Nullable private List<GenericContainer<?>> allContainers;
@@ -91,6 +90,9 @@ public class SmokeTestExtension
   private final boolean skipHealthCheck;
   private final boolean readOnly;
   private final boolean usesGlobalIngestionEndpoint;
+  private final boolean useOld3xAgent;
+  private final String selfDiagnosticsLevel;
+  private final File javaagentFile;
 
   public static SmokeTestExtension create() {
     return builder().build();
@@ -105,12 +107,20 @@ public class SmokeTestExtension
       @Nullable String dependencyContainerEnvVarName,
       boolean usesGlobalIngestionEndpoint,
       boolean skipHealthCheck,
-      boolean readOnly) {
+      boolean readOnly,
+      boolean useOld3xAgent,
+      String selfDiagnosticsLevel) {
     this.skipHealthCheck = skipHealthCheck;
     this.readOnly = readOnly;
     this.dependencyContainer = dependencyContainer;
     this.dependencyContainerEnvVarName = dependencyContainerEnvVarName;
     this.usesGlobalIngestionEndpoint = usesGlobalIngestionEndpoint;
+    this.useOld3xAgent = useOld3xAgent;
+    this.selfDiagnosticsLevel = selfDiagnosticsLevel;
+
+    String javaagentPathSystemProperty =
+        useOld3xAgent ? "ai.smoke-test.old-3x-javaagent-file" : "ai.smoke-test.javaagent-file";
+    javaagentFile = new File(System.getProperty(javaagentPathSystemProperty));
   }
 
   @Override
@@ -126,10 +136,6 @@ public class SmokeTestExtension
   private void beforeAllInternal(ExtensionContext context) throws Exception {
     Class<?> testClass = context.getRequiredTestClass();
 
-    Environment environment = testClass.getAnnotation(Environment.class);
-    String imageName = environment.value().getImageName();
-    String imageAppDir = environment.value().getImageAppDir();
-
     UseAgent ua = testClass.getAnnotation(UseAgent.class);
     if (ua != null) {
       useAgent = true;
@@ -144,7 +150,8 @@ public class SmokeTestExtension
       Collections.addAll(dependencyImages, wdc.value());
     }
 
-    prepareEnvironment(imageName, imageAppDir);
+    Environment environment = testClass.getAnnotation(Environment.class);
+    prepareEnvironment(environment);
   }
 
   @Override
@@ -156,10 +163,14 @@ public class SmokeTestExtension
     }
   }
 
-  private void prepareEnvironment(String imageName, String imageAppDir) throws Exception {
+  private void prepareEnvironment(Environment environment) throws Exception {
     System.out.println("Preparing environment...");
-    currentImageName = imageName;
-    currentImageAppDir = imageAppDir;
+    currentImageName = environment.value().getImageName();
+    currentImageAppDir = environment.value().getImageAppDir();
+    currentImageAppFileName = environment.value().getImageAppFileName();
+    if (currentImageAppFileName == null) {
+      currentImageAppFileName = appFile.getName();
+    }
     mockedIngestion.startServer();
     network = Network.newNetwork();
     allContainers = new ArrayList<>();
@@ -186,7 +197,7 @@ public class SmokeTestExtension
       System.out.println("calling " + url + " " + targetUri.callCount() + " times");
     }
     for (int i = 0; i < targetUri.callCount(); i++) {
-      HttpHelper.get(url);
+      HttpHelper.get(url, targetUri.userAgent());
     }
   }
 
@@ -199,13 +210,12 @@ public class SmokeTestExtension
     }
   }
 
-  protected static String getAppContext() {
-    String appFileName = appFile.getName();
-    if (appFileName.endsWith(".jar")) {
+  protected String getAppContext() {
+    if (currentImageAppFileName.endsWith(".jar")) {
       // spring boot jar
       return "";
     } else {
-      return appFileName.replace(".war", "");
+      return currentImageAppFileName.replace(".war", "");
     }
   }
 
@@ -233,17 +243,19 @@ public class SmokeTestExtension
           },
           TELEMETRY_RECEIVE_TIMEOUT_SECONDS,
           TimeUnit.SECONDS);
-      mockedIngestion.waitForItem(
-          input -> {
-            if (!"MetricData".equals(input.getData().getBaseType())) {
-              return false;
-            }
-            MetricData data = (MetricData) ((Data<?>) input.getData()).getBaseData();
-            String metricId = data.getProperties().get("_MS.MetricId");
-            return metricId != null && metricId.equals("requests/duration");
-          },
-          10, // metrics should come in pretty quickly after spans
-          TimeUnit.SECONDS);
+      if (!useOld3xAgent) {
+        mockedIngestion.waitForItem(
+            input -> {
+              if (!"MetricData".equals(input.getData().getBaseType())) {
+                return false;
+              }
+              MetricData data = (MetricData) ((Data<?>) input.getData()).getBaseData();
+              String metricId = data.getProperties().get("_MS.MetricId");
+              return metricId != null && metricId.equals("requests/duration");
+            },
+            10, // metrics should come in pretty quickly after spans
+            TimeUnit.SECONDS);
+      }
       System.out.printf(
           "Received request telemetry after %.3f seconds...%n",
           receivedTelemetryTimer.elapsed(TimeUnit.MILLISECONDS) / 1000.0);
@@ -357,12 +369,15 @@ public class SmokeTestExtension
                 "APPLICATIONINSIGHTS_CONNECTION_STRING",
                 "InstrumentationKey=00000000-0000-0000-0000-0FEEDDADBEEF;"
                     + "IngestionEndpoint="
+                    + FAKE_INGESTION_ENDPOINT
+                    + ";LiveEndpoint="
                     + FAKE_INGESTION_ENDPOINT)
+            .withEnv("APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_LEVEL", selfDiagnosticsLevel)
             .withNetwork(network)
             .withExposedPorts(8080)
             .withFileSystemBind(
                 appFile.getAbsolutePath(),
-                currentImageAppDir + "/" + appFile.getName(),
+                currentImageAppDir + "/" + currentImageAppFileName,
                 BindMode.READ_ONLY);
 
     List<String> javaToolOptions = new ArrayList<>();

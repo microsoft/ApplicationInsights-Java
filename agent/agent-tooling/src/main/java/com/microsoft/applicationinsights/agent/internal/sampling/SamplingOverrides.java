@@ -29,10 +29,10 @@ public class SamplingOverrides {
   }
 
   @Nullable
-  public Sampler getOverride(boolean isStandaloneTelemetry, Attributes attributes) {
+  public Sampler getOverride(Attributes attributes) {
     LazyHttpUrl lazyHttpUrl = new LazyHttpUrl(attributes);
     for (MatcherGroup matcherGroups : matcherGroups) {
-      if (matcherGroups.matches(isStandaloneTelemetry, attributes, lazyHttpUrl)) {
+      if (matcherGroups.matches(attributes, lazyHttpUrl)) {
         return matcherGroups.getSampler();
       }
     }
@@ -41,9 +41,9 @@ public class SamplingOverrides {
 
   // used to do sampling inside the log exporter
   @Nullable
-  public Double getOverridePercentage(boolean isStandaloneTelemetry, Attributes attributes) {
+  public Double getOverridePercentage(Attributes attributes) {
     for (MatcherGroup matcherGroups : matcherGroups) {
-      if (matcherGroups.matches(isStandaloneTelemetry, attributes, null)) {
+      if (matcherGroups.matches(attributes, null)) {
         return matcherGroups.getPercentage();
       }
     }
@@ -51,19 +51,19 @@ public class SamplingOverrides {
   }
 
   private static class MatcherGroup {
-    private final boolean includingStandaloneTelemetry;
     private final List<TempPredicate> predicates;
     private final Sampler sampler;
+    // for now only support fixed percentage, but could extend sampling overrides to support
+    // rate-limited sampling
     private final SamplingPercentage samplingPercentage;
 
     private MatcherGroup(SamplingOverride override) {
-      includingStandaloneTelemetry = override.includingStandaloneTelemetry;
       predicates = new ArrayList<>();
       for (SamplingOverrideAttribute attribute : override.attributes) {
         predicates.add(toPredicate(attribute));
       }
       samplingPercentage = SamplingPercentage.fixed(override.percentage);
-      sampler = new AiSampler(samplingPercentage, false);
+      sampler = new AiSampler(samplingPercentage, samplingPercentage, false);
     }
 
     Sampler getSampler() {
@@ -74,11 +74,7 @@ public class SamplingOverrides {
       return samplingPercentage.get();
     }
 
-    private boolean matches(
-        boolean isStandaloneTelemetry, Attributes attributes, @Nullable LazyHttpUrl lazyHttpUrl) {
-      if (isStandaloneTelemetry && !includingStandaloneTelemetry) {
-        return false;
-      }
+    private boolean matches(Attributes attributes, @Nullable LazyHttpUrl lazyHttpUrl) {
       for (TempPredicate predicate : predicates) {
         if (!predicate.test(attributes, lazyHttpUrl)) {
           return false;

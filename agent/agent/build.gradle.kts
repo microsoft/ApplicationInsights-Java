@@ -85,9 +85,6 @@ tasks {
       exclude(dependency("io.opentelemetry:opentelemetry-api-metrics"))
       exclude(dependency("io.opentelemetry:opentelemetry-context"))
       exclude(dependency("io.opentelemetry:opentelemetry-semconv"))
-
-      // TODO (trask) Azure SDK: why is this included in azure-core?
-      exclude(dependency("io.netty:netty-tcnative-boringssl-static"))
     }
   }
 
@@ -131,7 +128,7 @@ tasks {
         "Agent-Class" to "com.microsoft.applicationinsights.agent.Agent",
         "Premain-Class" to "com.microsoft.applicationinsights.agent.Agent",
         "Can-Redefine-Classes" to true,
-        "Can-Retransform-Classes" to true
+        "Can-Retransform-Classes" to true,
       )
     }
   }
@@ -143,6 +140,8 @@ tasks {
     dependsOn(shadowJarWithDuplicates)
 
     from(zipTree(shadowJarWithDuplicates.get().archiveFile))
+
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 
     manifest {
       attributes(shadowJarWithDuplicates.get().manifest.attributes)
@@ -195,12 +194,12 @@ licenseReport {
   excludeBoms = true
 
   excludeGroups = arrayOf(
-    "applicationinsights-java.*"
+    "applicationinsights-java.*",
   )
 
   excludes = arrayOf(
     "io.opentelemetry:opentelemetry-bom-alpha",
-    "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha"
+    "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha",
   )
 
   filters = arrayOf(LicenseBundleNormalizer("$projectDir/license-normalizer-bundle.json", true))

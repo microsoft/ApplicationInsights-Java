@@ -3,5 +3,5 @@ plugins {
 }
 
 dependencies {
-  implementation("com.microsoft.azure:applicationinsights-web-auto")
+  implementation("com.microsoft.azure:applicationinsights-web-auto:2.6.4")
 }

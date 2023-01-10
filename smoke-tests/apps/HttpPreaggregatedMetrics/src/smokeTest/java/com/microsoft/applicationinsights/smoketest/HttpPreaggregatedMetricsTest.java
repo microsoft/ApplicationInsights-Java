@@ -3,15 +3,15 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
-import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_11;
-import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_11_OPENJ9;
-import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_17;
-import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_18;
-import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_19;
-import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_8;
-import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_8_OPENJ9;
-import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8;
-import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8_OPENJ9;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_11;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_11_OPENJ9;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_17;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_19;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_20;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_8;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_8_OPENJ9;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.WILDFLY_13_JAVA_8;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.WILDFLY_13_JAVA_8_OPENJ9;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.data.MapEntry.entry;
 
@@ -33,6 +33,16 @@ abstract class HttpPreaggregatedMetricsTest {
   @Test
   @TargetUri("/httpUrlConnection")
   void testHttpUrlConnection() throws Exception {
+    testHttpUrlConnectionAndSynthetic(false);
+  }
+
+  @Test
+  @TargetUri(value = "/httpUrlConnection", userAgent = "AlwaysOn")
+  void testHttpUrlConnectionAndSynthetic() throws Exception {
+    testHttpUrlConnectionAndSynthetic(true);
+  }
+
+  private void testHttpUrlConnectionAndSynthetic(boolean synthetic) throws Exception {
     verifyHttpclientRequestsAndDependencies("https://mock.codes/200?q=spaces%20test");
 
     List<Envelope> clientMetrics =
@@ -41,7 +51,7 @@ abstract class HttpPreaggregatedMetricsTest {
         testing.mockedIngestion.waitForMetricItems("http.server.duration", 1);
 
     verifyHttpClientPreAggregatedMetrics(clientMetrics);
-    verifyHttpServerPreAggregatedMetrics(serverMetrics);
+    verifyHttpServerPreAggregatedMetrics(serverMetrics, synthetic);
   }
 
   private static void verifyHttpclientRequestsAndDependencies(String successUrlWithQueryString)
@@ -113,28 +123,29 @@ abstract class HttpPreaggregatedMetricsTest {
     Envelope envelope1 = metrics.get(0);
     validateTags(envelope1);
     MetricData md1 = (MetricData) ((Data<?>) envelope1.getData()).getBaseData();
-    validateMetricData("client", md1, "200");
+    validateMetricData("client", md1, "200", false);
 
     // 2nd pre-aggregated metric
     Envelope envelope2 = metrics.get(1);
     validateTags(envelope2);
     MetricData md2 = (MetricData) ((Data<?>) envelope2.getData()).getBaseData();
-    validateMetricData("client", md2, "404");
+    validateMetricData("client", md2, "404", false);
 
     // 3rd pre-aggregated metric
     Envelope envelope3 = metrics.get(2);
     validateTags(envelope3);
     MetricData md3 = (MetricData) ((Data<?>) envelope3.getData()).getBaseData();
-    validateMetricData("client", md3, "500");
+    validateMetricData("client", md3, "500", false);
   }
 
-  private static void verifyHttpServerPreAggregatedMetrics(List<Envelope> metrics) {
+  private static void verifyHttpServerPreAggregatedMetrics(
+      List<Envelope> metrics, boolean synthetic) {
     assertThat(metrics.size()).isEqualTo(1);
     // 1st pre-aggregated metric
     Envelope envelope1 = metrics.get(0);
     validateTags(envelope1);
     MetricData md1 = (MetricData) ((Data<?>) envelope1.getData()).getBaseData();
-    validateMetricData("server", md1, "200");
+    validateMetricData("server", md1, "200", synthetic);
   }
 
   private static void validateTags(Envelope envelope) {
@@ -144,7 +155,8 @@ abstract class HttpPreaggregatedMetricsTest {
     assertThat(tags).containsEntry("ai.cloud.role", "testrolename");
   }
 
-  private static void validateMetricData(String type, MetricData metricData, String resultCode) {
+  private static void validateMetricData(
+      String type, MetricData metricData, String resultCode, boolean synthetic) {
     List<DataPoint> dataPoints = metricData.getMetrics();
     assertThat(dataPoints).hasSize(1);
     DataPoint dataPoint = dataPoints.get(0);
@@ -161,13 +173,14 @@ abstract class HttpPreaggregatedMetricsTest {
       assertThat(properties.get("Dependency.Success")).isEqualTo(expectedSuccess);
       assertThat(properties.get("dependency/target")).isEqualTo("mock.codes");
       assertThat(properties.get("Dependency.Type")).isEqualTo("Http");
+      assertThat(properties.get("operation/synthetic")).isEqualTo("False");
     } else {
       assertThat(properties).hasSize(7);
       assertThat(properties.get("_MS.MetricId")).isEqualTo("requests/duration");
       assertThat(properties.get("request/resultCode")).isEqualTo(resultCode);
       assertThat(properties.get("Request.Success")).isEqualTo(expectedSuccess);
+      assertThat(properties.get("operation/synthetic")).isEqualTo(synthetic ? "True" : "False");
     }
-    assertThat(properties.get("operation/synthetic")).isEqualTo("False");
     assertThat(properties.get("cloud/roleInstance")).isEqualTo("testroleinstance");
     assertThat(properties.get("cloud/roleName")).isEqualTo("testrolename");
     assertThat(properties.get("_MS.IsAutocollected")).isEqualTo("True");
@@ -188,11 +201,11 @@ abstract class HttpPreaggregatedMetricsTest {
   @Environment(TOMCAT_8_JAVA_17)
   static class Tomcat8Java17Test extends HttpPreaggregatedMetricsTest {}
 
-  @Environment(TOMCAT_8_JAVA_18)
-  static class Tomcat8Java18Test extends HttpPreaggregatedMetricsTest {}
-
   @Environment(TOMCAT_8_JAVA_19)
   static class Tomcat8Java19Test extends HttpPreaggregatedMetricsTest {}
+
+  @Environment(TOMCAT_8_JAVA_20)
+  static class Tomcat8Java20Test extends HttpPreaggregatedMetricsTest {}
 
   @Environment(WILDFLY_13_JAVA_8)
   static class Wildfly13Java8Test extends HttpPreaggregatedMetricsTest {}

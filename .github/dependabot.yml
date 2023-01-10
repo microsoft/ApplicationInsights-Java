@@ -10,11 +10,34 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
+
   - package-ecosystem: "gradle"
     directory: "/"
-    allow:
-      - dependency-name: "com.gradle*"
     registries:
       - gradle-plugin-portal
+    ignore:
+      - dependency-name: "org.slf4j:*"
+        # moving to 2.0 is problematic because the SPI mechanism in 2.0 doesn't work in the
+        # bootstrap class loader because, while we add the agent jar to the bootstrap class loader
+        # via Instrumentation.appendToBootstrapClassLoaderSearch(), there's nothing similar for
+        # resources (which is a known problem in the java agent world), and so the META-INF/services
+        # resource is not found
+        versions: [ "[2,)" ]
+      - dependency-name: "ch.qos.logback:*"
+        # logback version is pinned to slf4j version (see above comment for slf4j version)
+        versions: [ "[1.3,)" ]
+      - dependency-name: "com.squareup.moshi:*"
+        # 1.12.0 and above use okio 2.x which pulls in kotlin libs (which are large)
+        versions: [ "[1.12,)" ]
+      - dependency-name: "org.springframework.boot:spring-boot-gradle-plugin"
+        # this is used for smoke tests, and spring boot 3 is not supported upstream yet
+        versions: [ "[3,)" ]
+      - dependency-name: "javax.servlet:javax.servlet-api"
+        # applicationinsights-web (classic sdk) is intentionally compiled and against Servlet 3.0
+        versions: [ "[3.1,)" ]
+      - dependency-name: "org.eclipse.jetty:jetty-servlet"
+        # smoke test framework intentionally uses javax servlet (as opposed to jakarta servlet)
+        versions: [ "[11,)" ]
     schedule:
-      interval: "weekly"
+      interval: "daily"
+    open-pull-requests-limit: 10

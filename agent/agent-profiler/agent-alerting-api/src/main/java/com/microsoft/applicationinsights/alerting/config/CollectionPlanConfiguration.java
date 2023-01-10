@@ -3,17 +3,25 @@
 
 package com.microsoft.applicationinsights.alerting.config;
 
+import com.google.auto.value.AutoValue;
 import java.time.Instant;
-import java.util.Objects;
-import javax.annotation.Nullable;
 
-public class CollectionPlanConfiguration {
+@AutoValue
+public abstract class CollectionPlanConfiguration {
 
-  private final boolean single;
-  private final EngineMode mode;
-  private final Instant expiration;
-  private final long immediateProfilingDuration;
-  private final String settingsMoniker;
+  public abstract boolean isSingle();
+
+  public abstract EngineMode getMode();
+
+  public abstract Instant getExpiration();
+
+  public abstract int getImmediateProfilingDurationSeconds();
+
+  public abstract String getSettingsMoniker();
+
+  public static CollectionPlanConfiguration.Builder builder() {
+    return new AutoValue_CollectionPlanConfiguration.Builder();
+  }
 
   public enum EngineMode {
     unknown,
@@ -30,57 +38,20 @@ public class CollectionPlanConfiguration {
     }
   }
 
-  public CollectionPlanConfiguration(
-      boolean single,
-      EngineMode mode,
-      Instant expiration,
-      long immediateProfilingDuration,
-      String settingsMoniker) {
-    this.single = single;
-    this.mode = mode;
-    this.expiration = expiration;
-    this.immediateProfilingDuration = immediateProfilingDuration;
-    this.settingsMoniker = settingsMoniker;
-  }
+  @AutoValue.Builder
+  public abstract static class Builder {
 
-  public boolean isSingle() {
-    return single;
-  }
+    public abstract CollectionPlanConfiguration.Builder setSingle(boolean single);
 
-  public EngineMode getMode() {
-    return mode;
-  }
+    public abstract CollectionPlanConfiguration.Builder setMode(EngineMode mode);
 
-  public Instant getExpiration() {
-    return expiration;
-  }
+    public abstract CollectionPlanConfiguration.Builder setExpiration(Instant expiration);
 
-  public long getImmediateProfilingDuration() {
-    return immediateProfilingDuration;
-  }
+    public abstract CollectionPlanConfiguration.Builder setImmediateProfilingDurationSeconds(
+        int immediateProfilingDurationSeconds);
 
-  public String getSettingsMoniker() {
-    return settingsMoniker;
-  }
+    public abstract CollectionPlanConfiguration.Builder setSettingsMoniker(String settingsMoniker);
 
-  @Override
-  public boolean equals(@Nullable Object obj) {
-    if (obj == this) {
-      return true;
-    }
-    if (!(obj instanceof CollectionPlanConfiguration)) {
-      return false;
-    }
-    CollectionPlanConfiguration that = (CollectionPlanConfiguration) obj;
-    return single == that.single
-        && expiration.equals(that.expiration)
-        && immediateProfilingDuration == that.immediateProfilingDuration
-        && Objects.equals(mode, that.mode)
-        && Objects.equals(settingsMoniker, that.settingsMoniker);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(single, mode, expiration, immediateProfilingDuration, settingsMoniker);
+    public abstract CollectionPlanConfiguration build();
   }
 }

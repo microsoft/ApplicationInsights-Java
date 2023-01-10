@@ -18,9 +18,8 @@ import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryObser
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.logs.data.LogData;
-import io.opentelemetry.sdk.logs.data.Severity;
-import io.opentelemetry.sdk.logs.export.LogExporter;
+import io.opentelemetry.sdk.logs.data.LogRecordData;
+import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.util.Collection;
 import java.util.List;
@@ -30,7 +29,7 @@ import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class AgentLogExporter implements LogExporter {
+public class AgentLogExporter implements LogRecordExporter {
 
   private static final Logger logger = LoggerFactory.getLogger(AgentLogExporter.class);
 
@@ -38,7 +37,7 @@ public class AgentLogExporter implements LogExporter {
       new OperationLogger(AgentLogExporter.class, "Exporting log");
 
   // TODO (trask) could implement this in a filtering LogExporter instead
-  private volatile Severity threshold;
+  private volatile int severityThreshold;
 
   private final SamplingOverrides logSamplingOverrides;
   private final SamplingOverrides exceptionSamplingOverrides;
@@ -46,13 +45,13 @@ public class AgentLogExporter implements LogExporter {
   private final Consumer<TelemetryItem> telemetryItemConsumer;
 
   public AgentLogExporter(
-      Severity threshold,
+      int severityThreshold,
       List<SamplingOverride> logSamplingOverrides,
       List<SamplingOverride> exceptionSamplingOverrides,
       LogDataMapper mapper,
       @Nullable QuickPulse quickPulse,
       BatchItemProcessor batchItemProcessor) {
-    this.threshold = threshold;
+    this.severityThreshold = severityThreshold;
     this.logSamplingOverrides = new SamplingOverrides(logSamplingOverrides);
     this.exceptionSamplingOverrides = new SamplingOverrides(exceptionSamplingOverrides);
     this.mapper = mapper;
@@ -68,23 +67,22 @@ public class AgentLogExporter implements LogExporter {
         };
   }
 
-  public void setThreshold(Severity threshold) {
-    this.threshold = threshold;
+  public void setSeverityThreshold(int severityThreshold) {
+    this.severityThreshold = severityThreshold;
   }
 
   @Override
-  public CompletableResultCode export(Collection<LogData> logs) {
+  public CompletableResultCode export(Collection<LogRecordData> logs) {
     if (TelemetryClient.getActive().getConnectionString() == null) {
       // Azure Functions consumption plan
       logger.debug("Instrumentation key is null or empty. Fail to export logs.");
       return CompletableResultCode.ofFailure();
     }
-    for (LogData log : logs) {
+    for (LogRecordData log : logs) {
       logger.debug("exporting log: {}", log);
       try {
-        int severity = log.getSeverity().getSeverityNumber();
-        int threshold = this.threshold.getSeverityNumber();
-        if (severity < threshold) {
+        int severityNumber = log.getSeverity().getSeverityNumber();
+        if (severityNumber < severityThreshold) {
           continue;
         }
 
@@ -95,16 +93,14 @@ public class AgentLogExporter implements LogExporter {
 
         SpanContext spanContext = log.getSpanContext();
 
-        boolean isStandaloneLog = !spanContext.isValid();
-        Double samplingPercentage =
-            samplingOverrides.getOverridePercentage(isStandaloneLog, log.getAttributes());
+        Double samplingPercentage = samplingOverrides.getOverridePercentage(log.getAttributes());
 
         if (samplingPercentage != null && !shouldSample(spanContext, samplingPercentage)) {
           continue;
         }
 
         if (samplingPercentage == null
-            && !isStandaloneLog
+            && spanContext.isValid()
             && !spanContext.getTraceFlags().isSampled()) {
           // if there is no sampling override, and the log is part of an unsampled trace, then don't
           // capture it

@@ -8,10 +8,9 @@ import com.microsoft.applicationinsights.alerting.analysis.TimeSource;
 import com.microsoft.applicationinsights.alerting.analysis.data.TelemetryDataPoint;
 import com.microsoft.applicationinsights.alerting.analysis.pipelines.AlertPipeline;
 import com.microsoft.applicationinsights.alerting.analysis.pipelines.AlertPipelines;
+import com.microsoft.applicationinsights.alerting.config.AlertConfiguration;
 import com.microsoft.applicationinsights.alerting.config.AlertMetricType;
 import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration;
-import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration.AlertConfiguration;
-import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration.AlertConfigurationBuilder;
 import com.microsoft.applicationinsights.alerting.config.CollectionPlanConfiguration;
 import com.microsoft.applicationinsights.alerting.config.CollectionPlanConfiguration.EngineMode;
 import com.microsoft.applicationinsights.alerting.config.DefaultConfiguration;
@@ -30,6 +29,7 @@ import org.slf4j.LoggerFactory;
  * necessary issue an alert.
  */
 public class AlertingSubsystem {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(AlertingSubsystem.class);
 
   // Downstream observer of alerts produced by the alerting system
@@ -59,23 +59,17 @@ public class AlertingSubsystem {
     AlertingSubsystem alertingSubsystem = new AlertingSubsystem(alertHandler, timeSource);
     // init with disabled config
     alertingSubsystem.initialize(
-        new AlertingConfiguration(
-            new AlertConfigurationBuilder()
-                .setType(AlertMetricType.CPU)
-                .setEnabled(false)
-                .setThreshold(0)
-                .setProfileDuration(0)
-                .setCooldown(0)
-                .createAlertConfiguration(),
-            new AlertConfigurationBuilder()
-                .setType(AlertMetricType.MEMORY)
-                .setEnabled(false)
-                .setThreshold(0)
-                .setProfileDuration(0)
-                .setCooldown(0)
-                .createAlertConfiguration(),
-            new DefaultConfiguration(false, 0, 0),
-            new CollectionPlanConfiguration(false, EngineMode.immediate, Instant.now(), 0, "")));
+        AlertingConfiguration.create(
+            AlertConfiguration.builder().setType(AlertMetricType.CPU).build(),
+            AlertConfiguration.builder().setType(AlertMetricType.MEMORY).build(),
+            DefaultConfiguration.builder().build(),
+            CollectionPlanConfiguration.builder()
+                .setSingle(false)
+                .setMode(EngineMode.immediate)
+                .setExpiration(Instant.now())
+                .setImmediateProfilingDurationSeconds(0)
+                .setSettingsMoniker("")
+                .build()));
     return alertingSubsystem;
   }
 
@@ -104,6 +98,7 @@ public class AlertingSubsystem {
 
   /** Apply given configuration to the alerting pipelines. */
   public void updateConfiguration(AlertingConfiguration alertingConfig) {
+
     if (this.alertConfig == null || !this.alertConfig.equals(alertingConfig)) {
       AlertConfiguration oldCpuConfig =
           this.alertConfig == null ? null : this.alertConfig.getCpuAlert();
@@ -138,18 +133,21 @@ public class AlertingSubsystem {
 
     if (shouldTrigger) {
       manualTriggersExecuted.add(config.getSettingsMoniker());
+
       AlertBreach alertBreach =
-          new AlertBreach(
-              AlertMetricType.MANUAL,
-              0.0,
-              new AlertConfigurationBuilder()
-                  .setType(AlertMetricType.MANUAL)
-                  .setEnabled(true)
-                  .setProfileDuration(config.getImmediateProfilingDuration())
-                  .setThreshold(0.0f)
-                  .setCooldown(0)
-                  .createAlertConfiguration(),
-              UUID.randomUUID().toString());
+          AlertBreach.builder()
+              .setType(AlertMetricType.MANUAL)
+              .setAlertValue(0.0)
+              .setAlertConfiguration(
+                  AlertConfiguration.builder()
+                      .setType(AlertMetricType.MANUAL)
+                      .setEnabled(true)
+                      .setProfileDurationSeconds(config.getImmediateProfilingDurationSeconds())
+                      .build())
+              .setProfileId(UUID.randomUUID().toString())
+              .setCpuMetric(0)
+              .setMemoryUsage(0)
+              .build();
       alertHandler.accept(alertBreach);
     }
   }

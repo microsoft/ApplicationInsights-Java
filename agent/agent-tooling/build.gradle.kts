@@ -10,7 +10,11 @@ dependencies {
   compileOnly("com.google.auto.value:auto-value-annotations")
   annotationProcessor("com.google.auto.value:auto-value")
 
-  implementation(project(":agent:agent-profiler:agent-service-profiler"))
+  implementation("com.microsoft.jfr:jfr-streaming")
+  implementation("com.azure:azure-storage-blob")
+  implementation("com.squareup.moshi:moshi")
+  implementation("com.squareup.moshi:moshi-adapters")
+
   implementation(project(":agent:agent-profiler:agent-alerting-api"))
   implementation(project(":agent:agent-profiler:agent-alerting"))
   implementation(project(":agent:agent-gc-monitor:gc-monitor-api"))
@@ -23,14 +27,9 @@ dependencies {
   compileOnly("io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap")
   compileOnly("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling")
 
-  testImplementation("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling") {
-    // excluded temporarily while hosting azure-monitor-opentelemetry-exporter in this repo
-    // because it causes problems for those unit tests
-    exclude("io.opentelemetry", "opentelemetry-extension-noop-api")
-  }
+  testImplementation("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling")
 
   compileOnly("io.opentelemetry.javaagent:opentelemetry-javaagent-extension-api")
-  compileOnly("net.bytebuddy:byte-buddy-dep")
 
   implementation("commons-codec:commons-codec")
   implementation("org.apache.commons:commons-text")
@@ -41,14 +40,8 @@ dependencies {
   compileOnly("ch.qos.logback:logback-classic")
   compileOnly("ch.qos.logback.contrib:logback-json-classic")
 
-  implementation(project(":agent:agent-profiler:agent-profiler-api"))
-
   implementation("com.azure:azure-core")
   implementation("com.azure:azure-identity") {
-    // "This dependency can be excluded if IntelliJ Credential is not being used for authentication
-    //  via `IntelliJCredential` or `DefaultAzureCredential`"
-    // NOTE this exclusion saves 6.5 mb !!!!
-    exclude("org.linguafranca.pwdb", "KeePassJava2")
     exclude("org.ow2.asm", "asm")
   }
 
@@ -56,7 +49,9 @@ dependencies {
   compileOnly("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure")
   compileOnly("io.opentelemetry:opentelemetry-extension-trace-propagators")
 
-  implementation("com.github.oshi:oshi-core")
+  implementation("com.github.oshi:oshi-core:6.4.0") {
+    exclude("org.slf4j", "slf4j-api")
+  }
 
   compileOnly("org.slf4j:slf4j-api")
 
@@ -68,9 +63,10 @@ dependencies {
   testImplementation("io.opentelemetry:opentelemetry-sdk-metrics")
   testImplementation("io.opentelemetry:opentelemetry-sdk-logs")
   testImplementation("io.opentelemetry:opentelemetry-sdk-testing")
+  testImplementation("io.opentelemetry:opentelemetry-sdk-logs-testing")
 
   // TODO(trask): update tests, no need to use this anymore
-  testImplementation("com.squareup.okio:okio:2.8.0")
+  testImplementation("com.squareup.okio:okio:3.3.0")
 
   compileOnly(project(":agent:agent-bootstrap"))
   compileOnly("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api")
@@ -92,7 +88,12 @@ dependencies {
   testImplementation("org.mockito:mockito-core")
   testImplementation("uk.org.webcompere:system-stubs-jupiter:2.0.1")
   testImplementation("io.github.hakky54:logcaptor")
+}
 
-  testImplementation("com.microsoft.jfr:jfr-streaming")
-  testImplementation("com.azure:azure-storage-blob")
+configurations {
+  all {
+    // excluding unused dependencies for size (~1.8mb)
+    exclude("com.fasterxml.jackson.dataformat", "jackson-dataformat-xml")
+    exclude("com.fasterxml.woodstox", "woodstox-core")
+  }
 }

@@ -11,11 +11,10 @@ data class DependencySet(val group: String, val version: String, val modules: Li
 val dependencyVersions = hashMapOf<String, String>()
 rootProject.extra["versions"] = dependencyVersions
 
-val otelVersion = "1.18.0"
-// IMPORTANT when updating opentelemetry instrumentation version, be sure to update bytebuddy version to match
-val otelInstrumentationVersion = "1.18.0"
-val otelInstrumentationAlphaVersion = "1.18.0-alpha"
-val otelContribAlphaVersion = "1.17.0-alpha"
+val otelVersion = "1.21.0"
+val otelInstrumentationVersion = "1.21.0"
+val otelInstrumentationAlphaVersion = "1.21.0-alpha"
+val otelContribAlphaVersion = "1.18.0-alpha"
 
 rootProject.extra["otelVersion"] = otelVersion
 rootProject.extra["otelInstrumentationVersion"] = otelInstrumentationVersion
@@ -23,99 +22,72 @@ rootProject.extra["otelInstrumentationAlphaVersion"] = otelInstrumentationAlphaV
 rootProject.extra["otelContribAlphaVersion"] = otelContribAlphaVersion
 
 val DEPENDENCY_BOMS = listOf(
+  "com.fasterxml.jackson:jackson-bom:2.14.1",
   "com.google.guava:guava-bom:31.1-jre",
   "io.opentelemetry:opentelemetry-bom:${otelVersion}",
   "io.opentelemetry:opentelemetry-bom-alpha:${otelVersion}-alpha",
   "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:${otelInstrumentationVersion}",
   "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${otelInstrumentationAlphaVersion}",
-  "com.azure:azure-sdk-bom:1.2.5",
-  "org.junit:junit-bom:5.8.2"
+  "com.azure:azure-sdk-bom:1.2.8",
+  "io.netty:netty-bom:4.1.86.Final",
+  "org.junit:junit-bom:5.9.1",
+  "org.testcontainers:testcontainers-bom:1.17.6",
 )
 
-// TODO consolidate to just one json library
-// TODO remove dependencies on apache commons
+val autoServiceVersion = "1.0.1"
+val autoValueVersion = "1.10.1"
+val errorProneVersion = "2.17.0"
+val byteBuddyVersion = "1.12.18"
+val jmhVersion = "1.36"
+val mockitoVersion = "4.11.0"
+// moving to 2.0 is problematic because the SPI mechanism in 2.0 doesn't work in the
+// bootstrap class loader because, while we add the agent jar to the bootstrap class loader
+// via Instrumentation.appendToBootstrapClassLoaderSearch(), there's nothing similar for
+// resources (which is a known problem in the java agent world), and so the META-INF/services
+// resource is not found
+val slf4jVersion = "1.7.36"
+// 1.12.0 and above use okio 2.x which pulls in kotlin libs
+val moshiVersion = "1.11.0"
 
-val DEPENDENCY_SETS = listOf(
-  DependencySet(
-    "com.google.auto.value",
-    "1.9",
-    listOf("auto-value", "auto-value-annotations")
-  ),
-  DependencySet(
-    "com.google.errorprone",
-    "2.14.0",
-    listOf("error_prone_annotations", "error_prone_core")
-  ),
-  DependencySet(
-    "net.bytebuddy",
-    // When updating, also update buildSrc/build.gradle.kts
-    "1.12.10",
-    listOf("byte-buddy", "byte-buddy-dep", "byte-buddy-agent", "byte-buddy-gradle-plugin")
-  ),
-  DependencySet(
-    "org.mockito",
-    "4.6.1",
-    listOf("mockito-core", "mockito-junit-jupiter")
-  ),
-  DependencySet(
-    "org.slf4j",
-    // moving to 2.0 is problematic because the SPI mechanism doesn't work in the bootstrap class
-    // loader because while we add the agent jar to the bootstrap class loader via
-    // Instrumentation.appendToBootstrapClassLoaderSearch(), there's nothing similar for resources
-    // (which is a known problem in the java agent world) and so the META-INF/services resource is
-    // not found
-    "1.7.36",
-    listOf("slf4j-api", "slf4j-simple", "log4j-over-slf4j", "jcl-over-slf4j", "jul-to-slf4j")
-  ),
-  DependencySet(
-    "org.testcontainers",
-    "1.17.3",
-    listOf("testcontainers", "junit-jupiter")
-  ),
-  DependencySet(
-    "com.squareup.moshi",
-    "1.11.0", // 1.12.0 and above use okio 2.x which pulls in kotlin libs
-    listOf("moshi", "moshi-adapters")
-  ),
-  DependencySet(
-    "io.opentelemetry.javaagent",
-    otelInstrumentationAlphaVersion,
-    listOf(
-      "opentelemetry-javaagent-extension-api",
-      "opentelemetry-javaagent-bootstrap",
-      "opentelemetry-javaagent-tooling",
-      "opentelemetry-javaagent-extension-api")
-  ),
-  DependencySet(
-    "com.microsoft.azure",
-    "2.6.4", // need the latest version for Java 16+ support without having to use --illegal-access=permit
-    listOf(
-      "applicationinsights-core",
-      "applicationinsights-logging-log4j1_2",
-      "applicationinsights-logging-log4j2",
-      "applicationinsights-logging-logback",
-      "applicationinsights-web",
-      "applicationinsights-web-auto",
-      "applicationinsights-spring-boot-starter")
-  )
+val CORE_DEPENDENCIES = listOf(
+  "com.google.auto.service:auto-service:${autoServiceVersion}",
+  "com.google.auto.service:auto-service-annotations:${autoServiceVersion}",
+  "com.google.auto.value:auto-value:${autoValueVersion}",
+  "com.google.auto.value:auto-value-annotations:${autoValueVersion}",
+  "com.google.errorprone:error_prone_annotations:${errorProneVersion}",
+  "com.google.errorprone:error_prone_core:${errorProneVersion}",
+  "org.openjdk.jmh:jmh-core:${jmhVersion}",
+  "org.openjdk.jmh:jmh-generator-bytecode:${jmhVersion}",
+  "org.mockito:mockito-core:${mockitoVersion}",
+  "org.mockito:mockito-junit-jupiter:${mockitoVersion}",
+  "org.mockito:mockito-inline:${mockitoVersion}",
+  "org.slf4j:slf4j-api:${slf4jVersion}",
+  "org.slf4j:log4j-over-slf4j:${slf4jVersion}",
+  "org.slf4j:jcl-over-slf4j:${slf4jVersion}",
+  "org.slf4j:jul-to-slf4j:${slf4jVersion}",
+  "com.squareup.moshi:moshi:${moshiVersion}",
+  "com.squareup.moshi:moshi-adapters:${moshiVersion}",
+  "io.opentelemetry.javaagent:opentelemetry-javaagent-extension-api:${otelInstrumentationAlphaVersion}",
+  "io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap:${otelInstrumentationAlphaVersion}",
+  "io.opentelemetry.javaagent:opentelemetry-javaagent-tooling:${otelInstrumentationAlphaVersion}",
+  // temporarily overriding transitive dependency from azure-core until next azure-core release
+  "io.projectreactor.netty:reactor-netty-http:1.1.1"
 )
 
 val DEPENDENCIES = listOf(
   "ch.qos.logback:logback-classic:1.2.11",
   "ch.qos.logback.contrib:logback-json-classic:0.1.5",
-  "com.google.auto.service:auto-service:1.0.1",
-  "com.uber.nullaway:nullaway:0.9.8",
+  "com.uber.nullaway:nullaway:0.10.7",
   "commons-codec:commons-codec:1.15",
-  "org.apache.commons:commons-text:1.9",
-  "com.google.code.gson:gson:2.8.2",
-  "com.azure:azure-core-test:1.9.1",
-  "com.github.oshi:oshi-core:6.2.0",
-  "org.assertj:assertj-core:3.23.1",
+  "org.apache.commons:commons-text:1.10.0",
+  "com.google.code.gson:gson:2.10.1",
+  "com.azure:azure-core-test:1.14.0", // this is not included in azure-sdk-bom
+  "org.assertj:assertj-core:3.24.1",
   "org.awaitility:awaitility:4.2.0",
-  "io.github.hakky54:logcaptor:2.7.9",
+  "io.github.hakky54:logcaptor:2.7.10",
   "com.microsoft.jfr:jfr-streaming:1.2.0",
   "com.google.code.findbugs:jsr305:3.0.2",
-  "com.github.spotbugs:spotbugs-annotations:4.7.1"
+  "com.github.spotbugs:spotbugs-annotations:4.7.3"
 )
 
 javaPlatform {
@@ -129,11 +101,10 @@ dependencies {
     dependencyVersions[split[0]] = split[2]
   }
   constraints {
-    for (set in DEPENDENCY_SETS) {
-      for (module in set.modules) {
-        api("${set.group}:${module}:${set.version}")
-        dependencyVersions[set.group] = set.version
-      }
+    for (dependency in CORE_DEPENDENCIES) {
+      api(dependency)
+      val split = dependency.split(':')
+      dependencyVersions[split[0]] = split[2]
     }
     for (dependency in DEPENDENCIES) {
       api(dependency)

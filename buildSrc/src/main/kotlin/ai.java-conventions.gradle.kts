@@ -1,3 +1,4 @@
+import com.gradle.enterprise.gradleplugin.testretry.retry
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import java.time.Duration
 
@@ -6,11 +7,10 @@ plugins {
   checkstyle
   idea
 
-  id("org.gradle.test-retry")
-
   id("ai.errorprone-conventions")
   id("ai.spotless-conventions")
   id("ai.spotbugs-conventions")
+  id("org.owasp.dependencycheck")
 }
 
 repositories {
@@ -52,6 +52,7 @@ dependencies {
   dependencyManagement(platform(project(":dependencyManagement")))
 
   compileOnly("com.google.code.findbugs:jsr305")
+  compileOnly("com.google.errorprone:error_prone_annotations")
   compileOnly("com.github.spotbugs:spotbugs-annotations")
 
   testImplementation("org.junit.jupiter:junit-jupiter-api")
@@ -106,7 +107,9 @@ tasks.withType<Test>().configureEach {
 
   retry {
     // You can see tests that were retried by this mechanism in the collected test reports and build scans.
-    maxRetries.set(if (System.getenv("CI") != null) 5 else 0)
+    if (System.getenv().containsKey("CI")) {
+      maxRetries.set(5)
+    }
   }
 
   reports {
@@ -140,4 +143,30 @@ checkstyle {
   // this version should match the version of google_checks.xml used as basis for above configuration
   toolVersion = "8.37"
   maxWarnings = 0
+}
+
+dependencyCheck {
+  skipConfigurations = listOf("errorprone", "spotbugs", "checkstyle", "annotationProcessor")
+  failBuildOnCVSS = 0f // fail on any reported CVE
+  suppressionFile = rootProject.file("buildscripts/dependency-check-suppressions.xml").absolutePath;
+}
+
+if (!path.startsWith(":smoke-tests")) {
+  configurations.configureEach {
+    if (name.toLowerCase().endsWith("runtimeclasspath")) {
+      resolutionStrategy.activateDependencyLocking()
+    }
+  }
+}
+
+// see https://docs.gradle.org/current/userguide/dependency_locking.html#lock_all_configurations_in_one_build_execution
+tasks.register("resolveAndLockAll") {
+  doFirst {
+    require(gradle.startParameter.isWriteDependencyLocks)
+  }
+  doLast {
+    if (configurations.findByName("runtimeClasspath") != null) {
+      configurations.named("runtimeClasspath").get().resolve()
+    }
+  }
 }

@@ -8,7 +8,7 @@ import com.microsoft.applicationinsights.agent.internal.configuration.Configurat
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
-import io.opentelemetry.sdk.logs.data.LogData;
+import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -48,9 +48,9 @@ public class AttributeProcessor extends AgentProcessor {
     return result;
   }
 
-  // Process actions on LogData
-  public LogData processActions(LogData log) {
-    LogData result = log;
+  // Process actions on LogRecordData
+  public LogRecordData processActions(LogRecordData log) {
+    LogRecordData result = log;
     for (ProcessorAction actionObj : actions) {
       result = new MyLogData(result, processAction(result.getAttributes(), actionObj));
     }

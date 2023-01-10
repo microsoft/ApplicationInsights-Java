@@ -4,20 +4,20 @@ plugins {
   id("base")
 }
 
-clean {
-  dependsOn(":etw:java:clean")
-  def buildNative = System.getenv("CI") != null && Os.isFamily(Os.FAMILY_WINDOWS)
-  if (buildNative) {
-    dependsOn ":etw:native:clean"
-  }
-}
-
 /**
  * Configures the native build variant.
  * Values:  release|debug
  * Default: debug
  */
 final def NATIVE_BUILD_VARIANT_PROPERTY = "ai.etw.native.build"
+
+clean {
+  dependsOn(":etw:java:clean")
+  def buildNative = System.properties[NATIVE_BUILD_VARIANT_PROPERTY] != null && Os.isFamily(Os.FAMILY_WINDOWS)
+  if (buildNative) {
+    dependsOn ":etw:native:clean"
+  }
+}
 
 /**
  * Configures the verbosity of debug output.
@@ -31,14 +31,13 @@ subprojects {
   ext["NATIVE_BUILD_VARIANT_PROPERTY"] = NATIVE_BUILD_VARIANT_PROPERTY
   ext["NATIVE_VERBOSE_OUTPUT_PROPERTY"] = NATIVE_VERBOSE_OUTPUT_PROPERTY
 
+  String buildNativeProperty = System.properties[NATIVE_BUILD_VARIANT_PROPERTY]
   // if prop does not exist, use isRelease value, otherwise override isRelease value.
-  if (!project.hasProperty(NATIVE_BUILD_VARIANT_PROPERTY)) {
-    if (System.getProperty(NATIVE_BUILD_VARIANT_PROPERTY) == null) {
-      ext[NATIVE_BUILD_VARIANT_PROPERTY] = isRelease ? "release" : "debug"
-      logger.info "setting ai.etw.native.build for ${project.name}: ${ext[NATIVE_BUILD_VARIANT_PROPERTY]}"
-    } else {
-      ext[NATIVE_BUILD_VARIANT_PROPERTY] = System.getProperty(NATIVE_BUILD_VARIANT_PROPERTY)
-    }
+  if (buildNativeProperty == null) {
+    ext[NATIVE_BUILD_VARIANT_PROPERTY] = isRelease ? "release" : "debug"
+    logger.info "setting ai.etw.native.build for ${project.name}: ${ext[NATIVE_BUILD_VARIANT_PROPERTY]}"
+  } else {
+    ext[NATIVE_BUILD_VARIANT_PROPERTY] = buildNativeProperty
   }
 
   if (!project.hasProperty(NATIVE_VERBOSE_OUTPUT_PROPERTY)) {
@@ -47,7 +46,7 @@ subprojects {
     }
   }
 
-  if (project.hasProperty(NATIVE_VERBOSE_OUTPUT_PROPERTY) && project.hasProperty(NATIVE_BUILD_VARIANT_PROPERTY)) {
+  if (project.hasProperty(NATIVE_VERBOSE_OUTPUT_PROPERTY) && buildNativeProperty != null) {
     // verbose=true is not allowed for release builds
     if ("true".equalsIgnoreCase(ext[NATIVE_VERBOSE_OUTPUT_PROPERTY]) && "release".equalsIgnoreCase(ext[NATIVE_BUILD_VARIANT_PROPERTY])) {
       logger.warn "$NATIVE_VERBOSE_OUTPUT_PROPERTY cannot be true when $NATIVE_BUILD_VARIANT_PROPERTY=relese."

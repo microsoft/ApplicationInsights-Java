@@ -6,13 +6,14 @@ package com.microsoft.applicationinsights.agent.internal.init;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.sdk.logs.LogProcessor;
+import io.opentelemetry.context.Context;
+import io.opentelemetry.sdk.logs.LogRecordProcessor;
 import io.opentelemetry.sdk.logs.ReadWriteLogRecord;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public final class InheritedAttributesLogProcessor implements LogProcessor {
+public final class InheritedAttributesLogProcessor implements LogRecordProcessor {
 
   private final List<AttributeKey<?>> inheritedAttributes;
 
@@ -26,8 +27,8 @@ public final class InheritedAttributesLogProcessor implements LogProcessor {
 
   @Override
   @SuppressWarnings("unchecked")
-  public void onEmit(ReadWriteLogRecord logRecord) {
-    Span currentSpan = Span.current();
+  public void onEmit(Context context, ReadWriteLogRecord logRecord) {
+    Span currentSpan = Span.fromContext(context);
     if (!(currentSpan instanceof ReadableSpan)) {
       return;
     }

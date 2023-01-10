@@ -35,7 +35,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.Telemetr
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipelineListener;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.TempDirs;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.VersionGenerator;
-import io.opentelemetry.sdk.logs.export.LogExporter;
+import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
@@ -61,8 +61,7 @@ public final class AzureMonitorExporterBuilder {
   private static final Map<String, String> PROPERTIES =
       CoreUtils.getProperties("azure-monitor-opentelemetry-exporter.properties");
 
-  private String instrumentationKey;
-  private String connectionString;
+  private ConnectionString connectionString;
   private TokenCredential credential;
 
   // suppress warnings is needed in ApplicationInsights-Java repo, can be removed when upstreaming
@@ -75,7 +74,7 @@ public final class AzureMonitorExporterBuilder {
   private RetryPolicy retryPolicy;
   private final List<HttpPipelinePolicy> httpPipelinePolicies = new ArrayList<>();
 
-  private Configuration configuration;
+  private Configuration configuration = Configuration.getGlobalConfiguration();
   private ClientOptions clientOptions;
 
   /** Creates an instance of {@link AzureMonitorExporterBuilder}. */
@@ -182,9 +181,7 @@ public final class AzureMonitorExporterBuilder {
    * @throws IllegalArgumentException If the connection string is invalid.
    */
   public AzureMonitorExporterBuilder connectionString(String connectionString) {
-    this.connectionString = connectionString;
-    ConnectionString connectionStringObj = ConnectionString.parse(connectionString);
-    this.instrumentationKey = connectionStringObj.getInstrumentationKey();
+    this.connectionString = ConnectionString.parse(connectionString);
     return this;
   }
 
@@ -221,8 +218,7 @@ public final class AzureMonitorExporterBuilder {
    */
   public SpanExporter buildTraceExporter() {
     SpanDataMapper mapper =
-        new SpanDataMapper(
-            true, this::populateDefaults, (event, instrumentationName) -> false, () -> null);
+        new SpanDataMapper(true, this::populateDefaults, (event, instrumentationName) -> false);
 
     return new AzureMonitorTraceExporter(mapper, initExporterBuilder());
   }
@@ -247,28 +243,26 @@ public final class AzureMonitorExporterBuilder {
   }
 
   /**
-   * Creates an {@link AzureMonitorLogExporter} based on the options set in the builder. This
-   * exporter is an implementation of OpenTelemetry {@link LogExporter}.
+   * Creates an {@link AzureMonitorLogRecordExporter} based on the options set in the builder. This
+   * exporter is an implementation of OpenTelemetry {@link LogRecordExporter}.
    *
-   * @return An instance of {@link AzureMonitorLogExporter}.
+   * @return An instance of {@link AzureMonitorLogRecordExporter}.
    * @throws NullPointerException if the connection string is not set on this builder or if the
    *     environment variable "APPLICATIONINSIGHTS_CONNECTION_STRING" is not set.
    */
-  public LogExporter buildLogExporter() {
-    return new AzureMonitorLogExporter(
-        new LogDataMapper(true, this::populateDefaults), initExporterBuilder());
+  public LogRecordExporter buildLogRecordExporter() {
+    return new AzureMonitorLogRecordExporter(
+        new LogDataMapper(true, false, this::populateDefaults), initExporterBuilder());
   }
 
   private TelemetryItemExporter initExporterBuilder() {
-    if (this.connectionString == null) {
+    if (connectionString == null) {
       // if connection string is not set, try loading from configuration
       Configuration configuration = Configuration.getGlobalConfiguration();
       connectionString(configuration.get(APPLICATIONINSIGHTS_CONNECTION_STRING));
     }
 
-    // instrumentationKey is extracted from connectionString, so, if instrumentationKey is null
-    // then the error message should read "connectionString cannot be null".
-    Objects.requireNonNull(instrumentationKey, "'connectionString' cannot be null");
+    Objects.requireNonNull(connectionString, "'connectionString' cannot be null");
 
     if (this.credential != null) {
       // Add authentication policy to HttpPipeline
@@ -335,9 +329,9 @@ public final class AzureMonitorExporterBuilder {
   }
 
   void populateDefaults(AbstractTelemetryBuilder builder, Resource resource) {
-    builder.setConnectionString(ConnectionString.parse("InstrumentationKey=" + instrumentationKey));
+    builder.setConnectionString(connectionString);
     builder.addTag(
         ContextTagKeys.AI_INTERNAL_SDK_VERSION.toString(), VersionGenerator.getSdkVersion());
-    ResourceParser.updateRoleNameAndInstance(builder, resource);
+    ResourceParser.updateRoleNameAndInstance(builder, resource, configuration);
   }
 }

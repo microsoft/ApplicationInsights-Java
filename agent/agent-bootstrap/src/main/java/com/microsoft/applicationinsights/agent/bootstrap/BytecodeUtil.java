@@ -272,6 +272,10 @@ public class BytecodeUtil {
     }
   }
 
+  public static boolean shouldSample(String operationId) {
+    return delegate != null && delegate.shouldSample(operationId);
+  }
+
   public static long getTotalMilliseconds(
       long days, int hours, int minutes, int seconds, int milliseconds) {
     return DAYS.toMillis(days)
@@ -435,5 +439,7 @@ public class BytecodeUtil {
     void flush();
 
     void logErrorOnce(Throwable t);
+
+    boolean shouldSample(String shouldSample);
   }
 }

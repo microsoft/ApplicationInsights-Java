@@ -11,7 +11,7 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.sdk.logs.data.Body;
-import io.opentelemetry.sdk.logs.data.LogData;
+import io.opentelemetry.sdk.logs.data.LogRecordData;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -71,7 +71,7 @@ public class LogProcessor extends AgentProcessor {
 
   // fromAttributes represents the attribute keys to pull the values from to generate the new log
   // body.
-  public LogData processFromAttributes(LogData log) {
+  public LogRecordData processFromAttributes(LogRecordData log) {
     if (logHasAllFromAttributeKeys(log, fromAttributes)) {
       StringBuilder updatedLogBuffer = new StringBuilder();
       Attributes existingLogAttributes = log.getAttributes();
@@ -92,7 +92,7 @@ public class LogProcessor extends AgentProcessor {
 
   // The following function extracts attributes from log name and replaces extracted parts with
   // attribute names
-  public LogData processToAttributes(LogData log) {
+  public LogRecordData processToAttributes(LogRecordData log) {
     if (toAttributeRulePatterns.isEmpty()) {
       return log;
     }
@@ -111,7 +111,7 @@ public class LogProcessor extends AgentProcessor {
   }
 
   public static boolean logHasAllFromAttributeKeys(
-      LogData log, List<AttributeKey<?>> fromAttributes) {
+      LogRecordData log, List<AttributeKey<?>> fromAttributes) {
     if (fromAttributes.isEmpty()) {
       return false;
     }

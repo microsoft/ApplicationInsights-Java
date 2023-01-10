@@ -42,6 +42,12 @@ public final class ExceptionTelemetry extends BaseTelemetry {
     return throwable;
   }
 
+  // this is required for interop with versions of the Java agent prior to 3.4.0
+  @Nullable
+  public Exception getException() {
+    return throwable instanceof Exception ? (Exception) throwable : null;
+  }
+
   public void setException(Throwable throwable) {
     setException(throwable, Integer.MAX_VALUE);
   }

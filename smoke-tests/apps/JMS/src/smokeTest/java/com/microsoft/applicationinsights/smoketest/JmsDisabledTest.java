@@ -3,7 +3,7 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
-import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_8;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_8;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.data.MapEntry.entry;
 

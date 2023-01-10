@@ -9,8 +9,8 @@
 
 package io.opentelemetry.javaagent.instrumentation.methods.ai;
 
+import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
-import static java.util.Collections.singletonList;
 
 import com.google.auto.service.AutoService;
 import io.opentelemetry.javaagent.bootstrap.internal.InstrumentationConfig;
@@ -49,7 +49,9 @@ public class MethodInstrumentationModule extends InstrumentationModule {
   public List<String> getAdditionalHelperClassNames() {
     return typeInstrumentations.isEmpty()
         ? emptyList()
-        : singletonList("io.opentelemetry.javaagent.instrumentation.methods.ai.MethodSingletons");
+        : asList(
+            "io.opentelemetry.javaagent.instrumentation.methods.ai.MethodSingletons",
+            "io.opentelemetry.javaagent.instrumentation.methods.ai.MethodSingletons$MethodSpanKindExtractor");
   }
 
   @Override

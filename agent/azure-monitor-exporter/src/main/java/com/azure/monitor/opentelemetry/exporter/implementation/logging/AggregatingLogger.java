@@ -168,7 +168,8 @@ class AggregatingLogger {
             .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
             .forEach(
                 entry -> {
-                  message.append("\n * ");
+                  message.append(System.lineSeparator());
+                  message.append(" * ");
                   message.append(entry.getKey());
                   message.append(" (");
                   message.append(entry.getValue().value);

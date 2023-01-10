@@ -8,9 +8,9 @@ package com.microsoft.applicationinsights.alerting.analysis.pipelines;
 public interface AlertPipelineMXBean {
 
   // Attributes
-  long getCoolDown();
+  long getCooldownSeconds();
 
-  long getProfilerDuration();
+  long getProfilerDurationSeconds();
 
   float getThreshold();
 

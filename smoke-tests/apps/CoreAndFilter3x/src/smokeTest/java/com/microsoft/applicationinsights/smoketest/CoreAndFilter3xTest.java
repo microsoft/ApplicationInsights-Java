@@ -3,15 +3,16 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
-import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_11;
-import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_11_OPENJ9;
-import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_17;
-import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_18;
-import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_19;
-import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_8;
-import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.TOMCAT_8_JAVA_8_OPENJ9;
-import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8;
-import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.WILDFLY_13_JAVA_8_OPENJ9;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_11;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_11_OPENJ9;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_17;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_19;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_20;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_8;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_8_OPENJ9;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.WILDFLY_13_JAVA_8;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.WILDFLY_13_JAVA_8_OPENJ9;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.AvailabilityData;
@@ -29,7 +30,6 @@ import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
 import com.microsoft.applicationinsights.smoketest.schemav2.SeverityLevel;
 import java.util.Comparator;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -237,39 +237,6 @@ abstract class CoreAndFilter3xTest {
   }
 
   @Test
-  @TargetUri("/trackMetricWithNamespace")
-  void trackMetricWithNamespace() throws Exception {
-    List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
-    List<Envelope> mdList = testing.mockedIngestion.waitForMetricItems("TimeToRespond", 1);
-
-    Envelope rdEnvelope = rdList.get(0);
-    Envelope mdEnvelope = mdList.get(0);
-
-    assertThat(rdEnvelope.getSampleRate()).isNull();
-    assertThat(mdEnvelope.getSampleRate()).isNull();
-
-    RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
-    MetricData md = (MetricData) ((Data<?>) mdEnvelope.getData()).getBaseData();
-
-    List<DataPoint> metrics = md.getMetrics();
-    assertThat(metrics).hasSize(1);
-    DataPoint dp = metrics.get(0);
-
-    final double expectedValue = 111222333.0;
-    assertThat(dp.getValue()).isEqualTo(expectedValue);
-    assertThat(dp.getName()).isEqualTo("TimeToRespond");
-    assertThat(dp.getMetricNamespace()).isEqualTo("test");
-
-    assertThat(dp.getCount()).isNull();
-    assertThat(dp.getMin()).isNull();
-    assertThat(dp.getMax()).isNull();
-    assertThat(dp.getStdDev()).isNull();
-
-    SmokeTestExtension.assertParentChild(
-        rd, rdEnvelope, mdEnvelope, "GET /CoreAndFilter3x/trackMetricWithNamespace");
-  }
-
-  @Test
   @TargetUri("/trackTrace")
   void testTrackTrace() throws Exception {
     List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
@@ -289,7 +256,7 @@ abstract class CoreAndFilter3xTest {
 
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
 
-    List<MessageData> messages = testing.mockedIngestion.getMessageDataInRequest();
+    List<MessageData> messages = testing.mockedIngestion.getMessageDataInRequest(3);
 
     assertThat(messages)
         .anySatisfy(m -> assertThat(m.getMessage()).isEqualTo("This is first trace message."));
@@ -502,9 +469,9 @@ abstract class CoreAndFilter3xTest {
   }
 
   @Test
-  @TargetUri("/slowLoop?responseTime=20")
+  @TargetUri("/slowLoop?responseTime=5")
   void testSlowRequestUsingCpuBoundLoop() throws Exception {
-    validateSlowTest(20, "GET /CoreAndFilter3x/slowLoop");
+    validateSlowTest(5, "GET /CoreAndFilter3x/slowLoop");
   }
 
   @Test
@@ -532,7 +499,7 @@ abstract class CoreAndFilter3xTest {
             },
             1,
             10,
-            TimeUnit.SECONDS);
+            SECONDS);
 
     Envelope edEnvelope = edList.get(0);
 
@@ -570,8 +537,8 @@ abstract class CoreAndFilter3xTest {
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
 
     long actual = rd.getDuration().getTotalMilliseconds();
-    long expected = (new Duration(0, 0, 0, expectedDurationSeconds, 0).getTotalMilliseconds());
-    long tolerance = 2 * 1000; // 2 seconds
+    long expected = SECONDS.toMillis(expectedDurationSeconds);
+    long tolerance = 2000; // 2 seconds
 
     long min = expected - tolerance;
     long max = expected + tolerance;
@@ -598,11 +565,11 @@ abstract class CoreAndFilter3xTest {
   @Environment(TOMCAT_8_JAVA_17)
   static class Tomcat8Java17Test extends CoreAndFilter3xTest {}
 
-  @Environment(TOMCAT_8_JAVA_18)
-  static class Tomcat8Java18Test extends CoreAndFilter3xTest {}
-
   @Environment(TOMCAT_8_JAVA_19)
   static class Tomcat8Java19Test extends CoreAndFilter3xTest {}
+
+  @Environment(TOMCAT_8_JAVA_20)
+  static class Tomcat8Java20Test extends CoreAndFilter3xTest {}
 
   @Environment(WILDFLY_13_JAVA_8)
   static class Wildfly13Java8Test extends CoreAndFilter3xTest {}

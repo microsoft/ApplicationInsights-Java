@@ -3,20 +3,22 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
-import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_11;
-import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_11_OPENJ9;
-import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_17;
-import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_17_OPENJ9;
-import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_18;
-import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_18_OPENJ9;
-import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_19;
-import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_8;
-import static com.microsoft.applicationinsights.smoketest.WarEnvironmentValue.JAVA_8_OPENJ9;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_11;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_11_OPENJ9;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_17;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_17_OPENJ9;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_18_OPENJ9;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_19;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_20;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_8;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_8_OPENJ9;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.data.MapEntry.entry;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
+import com.microsoft.applicationinsights.smoketest.schemav2.MetricData;
 import com.microsoft.applicationinsights.smoketest.schemav2.RemoteDependencyData;
 import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
 import java.util.List;
@@ -45,6 +47,14 @@ abstract class KafkaTest {
     List<Envelope> rddList =
         testing.mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 2, operationId);
     assertThat(testing.mockedIngestion.getCountForType("EventData")).isZero();
+
+    SECONDS.sleep(10);
+    List<Envelope> mdList = testing.mockedIngestion.getItemsEnvelopeDataType("MetricData");
+    for (Envelope mdItem : mdList) {
+      MetricData md = (MetricData) ((Data<?>) mdItem.getData()).getBaseData();
+      String name = md.getMetrics().get(0).getName();
+      assertThat(name).doesNotContain("kafka");
+    }
 
     Envelope rdEnvelope2 = getRequestEnvelope(rdList, "mytopic process");
     Envelope rddEnvelope1 = getDependencyEnvelope(rddList, "mytopic send");
@@ -134,12 +144,12 @@ abstract class KafkaTest {
   @Environment(JAVA_17_OPENJ9)
   static class Java17OpenJ9Test extends KafkaTest {}
 
-  @Environment(JAVA_18)
+  @Environment(JAVA_19)
   static class Java18Test extends KafkaTest {}
 
   @Environment(JAVA_18_OPENJ9)
   static class Java18OpenJ9Test extends KafkaTest {}
 
-  @Environment(JAVA_19)
+  @Environment(JAVA_20)
   static class Java19Test extends KafkaTest {}
 }
