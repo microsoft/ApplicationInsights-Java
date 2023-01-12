@@ -20,15 +20,15 @@ import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DynamicConfigurator {
+public class RuntimeConfigurator {
 
-  private static final Logger logger = LoggerFactory.getLogger(DynamicConfigurator.class);
+  private static final Logger logger = LoggerFactory.getLogger(RuntimeConfigurator.class);
 
   private final TelemetryClient telemetryClient;
   private final Supplier<AgentLogExporter> agentLogExporter;
-  private volatile DynamicConfiguration currentConfig;
+  private volatile RuntimeConfiguration currentConfig;
 
-  DynamicConfigurator(
+  RuntimeConfigurator(
       TelemetryClient telemetryClient,
       Supplier<AgentLogExporter> agentLogExporter,
       Configuration initialConfig) {
@@ -37,8 +37,8 @@ public class DynamicConfigurator {
     currentConfig = captureInitialConfig(initialConfig);
   }
 
-  private static DynamicConfiguration captureInitialConfig(Configuration initialConfig) {
-    DynamicConfiguration dynamicConfig = new DynamicConfiguration();
+  private static RuntimeConfiguration captureInitialConfig(Configuration initialConfig) {
+    RuntimeConfiguration dynamicConfig = new RuntimeConfiguration();
     dynamicConfig.connectionString = initialConfig.connectionString;
     dynamicConfig.role.name = initialConfig.role.name;
     dynamicConfig.role.instance = initialConfig.role.instance;
@@ -61,8 +61,8 @@ public class DynamicConfigurator {
     return dynamicConfig;
   }
 
-  private static DynamicConfiguration copy(DynamicConfiguration config) {
-    DynamicConfiguration copy = new DynamicConfiguration();
+  private static RuntimeConfiguration copy(RuntimeConfiguration config) {
+    RuntimeConfiguration copy = new RuntimeConfiguration();
     copy.connectionString = config.connectionString;
     copy.role.name = config.role.name;
     copy.role.instance = config.role.instance;
@@ -82,11 +82,11 @@ public class DynamicConfigurator {
     return copy;
   }
 
-  public DynamicConfiguration getCurrentConfigCopy() {
+  public RuntimeConfiguration getCurrentConfigCopy() {
     return copy(currentConfig);
   }
 
-  public void applyDynamicConfiguration(DynamicConfiguration dynamicConfig) {
+  public void apply(RuntimeConfiguration dynamicConfig) {
 
     boolean enabled = !Strings.isNullOrEmpty(dynamicConfig.connectionString);
     boolean currentEnabled = !Strings.isNullOrEmpty(currentConfig.connectionString);

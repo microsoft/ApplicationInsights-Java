@@ -25,8 +25,8 @@ import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedDu
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedTime;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
 import com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil.BytecodeUtilDelegate;
-import com.microsoft.applicationinsights.agent.internal.init.DynamicConfiguration;
-import com.microsoft.applicationinsights.agent.internal.init.DynamicConfigurator;
+import com.microsoft.applicationinsights.agent.internal.init.RuntimeConfiguration;
+import com.microsoft.applicationinsights.agent.internal.init.RuntimeConfigurator;
 import com.microsoft.applicationinsights.agent.internal.legacyheaders.AiLegacyPropagator;
 import com.microsoft.applicationinsights.agent.internal.statsbeat.FeatureStatsbeat;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
@@ -54,7 +54,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
 
   public static volatile FeatureStatsbeat featureStatsbeat;
 
-  public static volatile DynamicConfigurator dynamicConfigurator;
+  public static volatile RuntimeConfigurator runtimeConfigurator;
 
   @Override
   public void initConnectionString(String connectionString) {
@@ -62,10 +62,10 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
       logger.warn("Connection string is already set");
       return;
     }
-    if (dynamicConfigurator != null) {
-      DynamicConfiguration dynamicConfig = dynamicConfigurator.getCurrentConfigCopy();
+    if (runtimeConfigurator != null) {
+      RuntimeConfiguration dynamicConfig = runtimeConfigurator.getCurrentConfigCopy();
       dynamicConfig.connectionString = connectionString;
-      dynamicConfigurator.applyDynamicConfiguration(dynamicConfig);
+      runtimeConfigurator.apply(dynamicConfig);
     }
   }
 

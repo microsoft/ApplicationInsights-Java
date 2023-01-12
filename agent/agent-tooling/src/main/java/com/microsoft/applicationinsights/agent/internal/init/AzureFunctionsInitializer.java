@@ -20,10 +20,10 @@ public class AzureFunctionsInitializer implements Runnable {
   private static final Logger diagnosticLogger =
       LoggerFactory.getLogger(DiagnosticsHelper.DIAGNOSTICS_LOGGER_NAME);
 
-  private final DynamicConfigurator dynamicConfigurator;
+  private final RuntimeConfigurator runtimeConfigurator;
 
-  public AzureFunctionsInitializer(DynamicConfigurator dynamicConfigurator) {
-    this.dynamicConfigurator = dynamicConfigurator;
+  public AzureFunctionsInitializer(RuntimeConfigurator runtimeConfigurator) {
+    this.runtimeConfigurator = runtimeConfigurator;
   }
 
   @Override
@@ -59,7 +59,7 @@ public class AzureFunctionsInitializer implements Runnable {
   }
 
   private void initialize() {
-    DynamicConfiguration dynamicConfig = dynamicConfigurator.getCurrentConfigCopy();
+    RuntimeConfiguration dynamicConfig = runtimeConfigurator.getCurrentConfigCopy();
 
     dynamicConfig.connectionString = getAndLogAtDebug("APPLICATIONINSIGHTS_CONNECTION_STRING");
     if (dynamicConfig.connectionString == null) {
@@ -78,7 +78,7 @@ public class AzureFunctionsInitializer implements Runnable {
     dynamicConfig.selfDiagnosticsLevel =
         getAndLogAtDebug("APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_LEVEL");
 
-    dynamicConfigurator.applyDynamicConfiguration(dynamicConfig);
+    runtimeConfigurator.apply(dynamicConfig);
   }
 
   static boolean isAgentEnabled() {

@@ -7,7 +7,7 @@ import com.microsoft.applicationinsights.agent.internal.configuration.Configurat
 import java.util.ArrayList;
 import java.util.List;
 
-public class DynamicConfiguration {
+public class RuntimeConfiguration {
 
   public String connectionString;
   public Configuration.Role role = new Configuration.Role();

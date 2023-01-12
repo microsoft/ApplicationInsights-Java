@@ -73,9 +73,9 @@ class RpConfigurationPollingTest {
     assertThat(getCurrentSamplingPercentage()).isEqualTo(100);
 
     // when
-    DynamicConfigurator dynamicConfigurator =
-        new DynamicConfigurator(telemetryClient, () -> null, config);
-    new RpConfigurationPolling(rpConfiguration, dynamicConfigurator).run();
+    RuntimeConfigurator runtimeConfigurator =
+        new RuntimeConfigurator(telemetryClient, () -> null, config);
+    new RpConfigurationPolling(rpConfiguration, runtimeConfigurator).run();
 
     // then
     assertThat(telemetryClient.getInstrumentationKey())
@@ -116,9 +116,9 @@ class RpConfigurationPollingTest {
     assertThat(getCurrentSamplingPercentage()).isEqualTo(100);
 
     // when
-    DynamicConfigurator dynamicConfigurator =
-        new DynamicConfigurator(telemetryClient, () -> null, config);
-    new RpConfigurationPolling(rpConfiguration, dynamicConfigurator).run();
+    RuntimeConfigurator runtimeConfigurator =
+        new RuntimeConfigurator(telemetryClient, () -> null, config);
+    new RpConfigurationPolling(rpConfiguration, runtimeConfigurator).run();
 
     // then
     assertThat(telemetryClient.getInstrumentationKey())

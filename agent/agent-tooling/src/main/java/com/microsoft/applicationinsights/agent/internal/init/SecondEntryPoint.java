@@ -151,8 +151,8 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
 
     TelemetryClient.setActive(telemetryClient);
 
-    DynamicConfigurator dynamicConfigurator =
-        new DynamicConfigurator(telemetryClient, () -> agentLogExporter, configuration);
+    RuntimeConfigurator runtimeConfigurator =
+        new RuntimeConfigurator(telemetryClient, () -> agentLogExporter, configuration);
 
     if (configuration.sampling.percentage != null) {
       BytecodeUtilImpl.samplingPercentage = configuration.sampling.percentage.floatValue();
@@ -160,7 +160,7 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
       BytecodeUtilImpl.samplingPercentage = 100;
     }
     BytecodeUtilImpl.featureStatsbeat = statsbeatModule.getFeatureStatsbeat();
-    BytecodeUtilImpl.dynamicConfigurator = dynamicConfigurator;
+    BytecodeUtilImpl.runtimeConfigurator = runtimeConfigurator;
 
     if (configuration.preview.profiler.enabled) {
       try {
@@ -173,12 +173,12 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
     if (ConfigurationBuilder.inAzureFunctionsConsumptionWorker()) {
       AzureFunctions.setup(
           () -> telemetryClient.getConnectionString() != null,
-          new AzureFunctionsInitializer(dynamicConfigurator));
+          new AzureFunctionsInitializer(runtimeConfigurator));
     }
 
     RpConfiguration rpConfiguration = FirstEntryPoint.getRpConfiguration();
     if (rpConfiguration != null) {
-      RpConfigurationPolling.startPolling(rpConfiguration, dynamicConfigurator);
+      RpConfigurationPolling.startPolling(rpConfiguration, runtimeConfigurator);
     }
 
     // initialize StatsbeatModule
@@ -284,11 +284,11 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
       Configuration configuration) {
 
     boolean enabled = !Strings.isNullOrEmpty(configuration.connectionString);
-    DynamicConfigurator.updatePropagation(
+    RuntimeConfigurator.updatePropagation(
         !configuration.preview.disablePropagation && enabled,
         configuration.preview.additionalPropagators,
         configuration.preview.legacyRequestIdPropagation.enabled);
-    DynamicConfigurator.updateSampling(
+    RuntimeConfigurator.updateSampling(
         enabled, configuration.sampling, configuration.preview.sampling);
 
     tracerProvider.addSpanProcessor(new AzureMonitorSpanProcessor());

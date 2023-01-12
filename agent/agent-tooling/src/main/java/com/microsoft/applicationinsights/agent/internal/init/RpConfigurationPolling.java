@@ -24,16 +24,16 @@ public class RpConfigurationPolling implements Runnable {
   private static final Logger logger = LoggerFactory.getLogger(RpConfigurationPolling.class);
 
   private volatile RpConfiguration rpConfiguration;
-  private final DynamicConfigurator dynamicConfigurator;
+  private final RuntimeConfigurator runtimeConfigurator;
 
   public static void startPolling(
-      RpConfiguration rpConfiguration, DynamicConfigurator dynamicConfigurator) {
+      RpConfiguration rpConfiguration, RuntimeConfigurator runtimeConfigurator) {
 
     ScheduledExecutorService executor =
         Executors.newSingleThreadScheduledExecutor(
             ThreadPoolUtils.createDaemonThreadFactory(RpConfigurationPolling.class));
     executor.scheduleWithFixedDelay(
-        new RpConfigurationPolling(rpConfiguration, dynamicConfigurator), 60, 60, SECONDS);
+        new RpConfigurationPolling(rpConfiguration, runtimeConfigurator), 60, 60, SECONDS);
     // the condition below will always be false, but by referencing the executor it ensures the
     // executor can't become unreachable in the middle of the scheduleWithFixedDelay() method
     // execution above (and prior to the task being registered), which can lead to the executor
@@ -45,9 +45,9 @@ public class RpConfigurationPolling implements Runnable {
   }
 
   // visible for testing
-  RpConfigurationPolling(RpConfiguration rpConfiguration, DynamicConfigurator dynamicConfigurator) {
+  RpConfigurationPolling(RpConfiguration rpConfiguration, RuntimeConfigurator runtimeConfigurator) {
     this.rpConfiguration = rpConfiguration;
-    this.dynamicConfigurator = dynamicConfigurator;
+    this.runtimeConfigurator = runtimeConfigurator;
   }
 
   @Override
@@ -71,7 +71,7 @@ public class RpConfigurationPolling implements Runnable {
 
         ConfigurationBuilder.overlayFromEnv(newRpConfiguration);
 
-        DynamicConfiguration config = dynamicConfigurator.getCurrentConfigCopy();
+        RuntimeConfiguration config = runtimeConfigurator.getCurrentConfigCopy();
 
         if (!newRpConfiguration.connectionString.equals(rpConfiguration.connectionString)) {
           config.connectionString = newRpConfiguration.connectionString;
@@ -86,7 +86,7 @@ public class RpConfigurationPolling implements Runnable {
           config.sampling.requestsPerSecond = newRpConfiguration.sampling.requestsPerSecond;
         }
 
-        dynamicConfigurator.applyDynamicConfiguration(config);
+        runtimeConfigurator.apply(config);
 
         rpConfiguration = newRpConfiguration;
       }
