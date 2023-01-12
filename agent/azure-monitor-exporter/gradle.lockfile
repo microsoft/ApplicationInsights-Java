@@ -44,9 +44,9 @@ io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:1.21.0-
 io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:1.21.0=runtimeClasspath
 io.opentelemetry:opentelemetry-bom-alpha:1.21.0-alpha=runtimeClasspath
 io.opentelemetry:opentelemetry-bom:1.21.0=runtimeClasspath
-io.projectreactor.netty:reactor-netty-core:1.1.1=runtimeClasspath
-io.projectreactor.netty:reactor-netty-http:1.1.1=runtimeClasspath
-io.projectreactor:reactor-core:3.5.1=runtimeClasspath
+io.projectreactor.netty:reactor-netty-core:1.1.2=runtimeClasspath
+io.projectreactor.netty:reactor-netty-http:1.1.2=runtimeClasspath
+io.projectreactor:reactor-core:3.5.2=runtimeClasspath
 net.java.dev.jna:jna-platform:5.6.0=runtimeClasspath
 net.java.dev.jna:jna:5.6.0=runtimeClasspath
 net.minidev:accessors-smart:2.4.8=runtimeClasspath

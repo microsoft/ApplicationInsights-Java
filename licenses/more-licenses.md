@@ -1,7 +1,7 @@
 
 #agent
 ##Dependency License Report
-_2023-01-03 10:54:38 PST_
+_2023-01-12 11:44:20 PST_
 ## Apache License, Version 2.0
 
 **1** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-annotations` **Version:** `2.14.1` 
@@ -185,15 +185,15 @@ _2023-01-03 10:54:38 PST_
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
 
-**36** **Group:** `io.projectreactor` **Name:** `reactor-core` **Version:** `3.5.1` 
+**36** **Group:** `io.projectreactor` **Name:** `reactor-core` **Version:** `3.5.2` 
 > - **POM Project URL**: [https://github.com/reactor/reactor-core](https://github.com/reactor/reactor-core)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
 
-**37** **Group:** `io.projectreactor.netty` **Name:** `reactor-netty-core` **Version:** `1.1.1` 
+**37** **Group:** `io.projectreactor.netty` **Name:** `reactor-netty-core` **Version:** `1.1.2` 
 > - **POM Project URL**: [https://github.com/reactor/reactor-netty](https://github.com/reactor/reactor-netty)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
-**38** **Group:** `io.projectreactor.netty` **Name:** `reactor-netty-http` **Version:** `1.1.1` 
+**38** **Group:** `io.projectreactor.netty` **Name:** `reactor-netty-http` **Version:** `1.1.2` 
 > - **POM Project URL**: [https://github.com/reactor/reactor-netty](https://github.com/reactor/reactor-netty)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
