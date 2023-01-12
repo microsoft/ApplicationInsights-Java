@@ -1,3 +1,4 @@
+import com.gradle.enterprise.gradleplugin.testretry.retry
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import java.time.Duration
 
@@ -5,8 +6,6 @@ plugins {
   `java-library`
   checkstyle
   idea
-
-  id("org.gradle.test-retry")
 
   id("ai.errorprone-conventions")
   id("ai.spotless-conventions")
@@ -108,7 +107,9 @@ tasks.withType<Test>().configureEach {
 
   retry {
     // You can see tests that were retried by this mechanism in the collected test reports and build scans.
-    maxRetries.set(if (System.getenv("CI") != null) 5 else 0)
+    if (System.getenv().containsKey("CI")) {
+      maxRetries.set(5)
+    }
   }
 
   reports {

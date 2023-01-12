@@ -202,7 +202,7 @@ public class ProfilingInitializer {
   }
 
   private static DiagnosticEngineFactory loadDiagnosticEngineFactory() {
-    return ServiceLoaderUtil.findServiceLoader(DiagnosticEngineFactory.class);
+    return ServiceLoaderUtil.findServiceLoader(DiagnosticEngineFactory.class, true);
   }
 
   // visible for testing

@@ -30,7 +30,7 @@ val DEPENDENCY_BOMS = listOf(
   "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${otelInstrumentationAlphaVersion}",
   "com.azure:azure-sdk-bom:1.2.8",
   "io.netty:netty-bom:4.1.86.Final",
-  "org.junit:junit-bom:5.9.1",
+  "org.junit:junit-bom:5.9.2",
   "org.testcontainers:testcontainers-bom:1.17.6",
 )
 
@@ -70,8 +70,9 @@ val CORE_DEPENDENCIES = listOf(
   "io.opentelemetry.javaagent:opentelemetry-javaagent-extension-api:${otelInstrumentationAlphaVersion}",
   "io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap:${otelInstrumentationAlphaVersion}",
   "io.opentelemetry.javaagent:opentelemetry-javaagent-tooling:${otelInstrumentationAlphaVersion}",
-  // temporarily overriding transitive dependency from azure-core until next azure-core release
-  "io.projectreactor.netty:reactor-netty-http:1.1.1"
+  // temporarily overriding transitive dependency from azure-core until next azure-bom release
+  // which targets at least reactor-netty-http:1.1.1
+  "io.projectreactor.netty:reactor-netty-http:1.1.2"
 )
 
 val DEPENDENCIES = listOf(
@@ -80,9 +81,9 @@ val DEPENDENCIES = listOf(
   "com.uber.nullaway:nullaway:0.10.7",
   "commons-codec:commons-codec:1.15",
   "org.apache.commons:commons-text:1.10.0",
-  "com.google.code.gson:gson:2.10",
-  "com.azure:azure-core-test:1.13.0", // this is not included in azure-sdk-bom
-  "org.assertj:assertj-core:3.23.1",
+  "com.google.code.gson:gson:2.10.1",
+  "com.azure:azure-core-test:1.14.0", // this is not included in azure-sdk-bom
+  "org.assertj:assertj-core:3.24.1",
   "org.awaitility:awaitility:4.2.0",
   "io.github.hakky54:logcaptor:2.7.10",
   "com.microsoft.jfr:jfr-streaming:1.2.0",

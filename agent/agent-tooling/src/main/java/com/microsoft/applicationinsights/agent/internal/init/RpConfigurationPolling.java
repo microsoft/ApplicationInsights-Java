@@ -15,6 +15,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
 import java.util.Objects;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,10 +28,20 @@ public class RpConfigurationPolling implements Runnable {
 
   public static void startPolling(
       RpConfiguration rpConfiguration, DynamicConfigurator dynamicConfigurator) {
-    Executors.newSingleThreadScheduledExecutor(
-            ThreadPoolUtils.createDaemonThreadFactory(RpConfigurationPolling.class))
-        .scheduleWithFixedDelay(
-            new RpConfigurationPolling(rpConfiguration, dynamicConfigurator), 60, 60, SECONDS);
+
+    ScheduledExecutorService executor =
+        Executors.newSingleThreadScheduledExecutor(
+            ThreadPoolUtils.createDaemonThreadFactory(RpConfigurationPolling.class));
+    executor.scheduleWithFixedDelay(
+        new RpConfigurationPolling(rpConfiguration, dynamicConfigurator), 60, 60, SECONDS);
+    // the condition below will always be false, but by referencing the executor it ensures the
+    // executor can't become unreachable in the middle of the scheduleWithFixedDelay() method
+    // execution above (and prior to the task being registered), which can lead to the executor
+    // being terminated and scheduleWithFixedDelay throwing a RejectedExecutionException
+    // (see https://bugs.openjdk.org/browse/JDK-8145304)
+    if (executor.isTerminated()) {
+      throw new AssertionError();
+    }
   }
 
   // visible for testing
