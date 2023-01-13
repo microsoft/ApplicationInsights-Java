@@ -106,7 +106,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
       telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromNow());
     }
     selectivelySetTags(telemetryBuilder, tags);
-    setConnectionString(telemetryBuilder, connectionString, instrumentationKey);
+    setConnectionStringOnTelemetry(telemetryBuilder, connectionString, instrumentationKey);
 
     track(telemetryBuilder, tags, true);
   }
@@ -153,7 +153,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
       telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromNow());
     }
     selectivelySetTags(telemetryBuilder, tags);
-    setConnectionString(telemetryBuilder, connectionString, instrumentationKey);
+    setConnectionStringOnTelemetry(telemetryBuilder, connectionString, instrumentationKey);
 
     track(telemetryBuilder, tags, false);
   }
@@ -208,7 +208,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
       telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromNow());
     }
     selectivelySetTags(telemetryBuilder, tags);
-    setConnectionString(telemetryBuilder, connectionString, instrumentationKey);
+    setConnectionStringOnTelemetry(telemetryBuilder, connectionString, instrumentationKey);
 
     track(telemetryBuilder, tags, true);
   }
@@ -249,7 +249,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
       telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromNow());
     }
     selectivelySetTags(telemetryBuilder, tags);
-    setConnectionString(telemetryBuilder, connectionString, instrumentationKey);
+    setConnectionStringOnTelemetry(telemetryBuilder, connectionString, instrumentationKey);
 
     track(telemetryBuilder, tags, true);
   }
@@ -284,7 +284,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
       telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromNow());
     }
     selectivelySetTags(telemetryBuilder, tags);
-    setConnectionString(telemetryBuilder, connectionString, instrumentationKey);
+    setConnectionStringOnTelemetry(telemetryBuilder, connectionString, instrumentationKey);
 
     track(telemetryBuilder, tags, true);
   }
@@ -338,7 +338,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
       telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromNow());
     }
     selectivelySetTags(telemetryBuilder, tags);
-    setConnectionString(telemetryBuilder, connectionString, instrumentationKey);
+    setConnectionStringOnTelemetry(telemetryBuilder, connectionString, instrumentationKey);
 
     track(telemetryBuilder, tags, true);
   }
@@ -378,7 +378,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
       telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromNow());
     }
     selectivelySetTags(telemetryBuilder, tags);
-    setConnectionString(telemetryBuilder, connectionString, instrumentationKey);
+    setConnectionStringOnTelemetry(telemetryBuilder, connectionString, instrumentationKey);
 
     track(telemetryBuilder, tags, true);
   }
@@ -429,7 +429,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
       telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromNow());
     }
     selectivelySetTags(telemetryBuilder, tags);
-    setConnectionString(telemetryBuilder, connectionString, instrumentationKey);
+    setConnectionStringOnTelemetry(telemetryBuilder, connectionString, instrumentationKey);
 
     track(telemetryBuilder, tags, false);
   }
@@ -549,7 +549,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
     }
   }
 
-  private static void setConnectionString(
+  private static void setConnectionStringOnTelemetry(
       AbstractTelemetryBuilder telemetryBuilder,
       @Nullable String connectionString,
       @Nullable String instrumentationKey) {
