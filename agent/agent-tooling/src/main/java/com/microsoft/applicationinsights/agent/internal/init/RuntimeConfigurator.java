@@ -38,27 +38,27 @@ public class RuntimeConfigurator {
   }
 
   private static RuntimeConfiguration captureInitialConfig(Configuration initialConfig) {
-    RuntimeConfiguration dynamicConfig = new RuntimeConfiguration();
-    dynamicConfig.connectionString = initialConfig.connectionString;
-    dynamicConfig.role.name = initialConfig.role.name;
-    dynamicConfig.role.instance = initialConfig.role.instance;
+    RuntimeConfiguration runtimeConfig = new RuntimeConfiguration();
+    runtimeConfig.connectionString = initialConfig.connectionString;
+    runtimeConfig.role.name = initialConfig.role.name;
+    runtimeConfig.role.instance = initialConfig.role.instance;
 
-    dynamicConfig.sampling.percentage = initialConfig.sampling.percentage;
-    dynamicConfig.sampling.requestsPerSecond = initialConfig.sampling.requestsPerSecond;
-    dynamicConfig.samplingPreview.parentBased = initialConfig.preview.sampling.parentBased;
+    runtimeConfig.sampling.percentage = initialConfig.sampling.percentage;
+    runtimeConfig.sampling.requestsPerSecond = initialConfig.sampling.requestsPerSecond;
+    runtimeConfig.samplingPreview.parentBased = initialConfig.preview.sampling.parentBased;
     // TODO (trask) make deep copies? (not needed currently)
-    dynamicConfig.samplingPreview.overrides =
+    runtimeConfig.samplingPreview.overrides =
         new ArrayList<>(initialConfig.preview.sampling.overrides);
 
-    dynamicConfig.propagationDisabled = initialConfig.preview.disablePropagation;
-    dynamicConfig.additionalPropagators =
+    runtimeConfig.propagationDisabled = initialConfig.preview.disablePropagation;
+    runtimeConfig.additionalPropagators =
         new ArrayList<>(initialConfig.preview.additionalPropagators);
-    dynamicConfig.legacyRequestIdPropagationEnabled =
+    runtimeConfig.legacyRequestIdPropagationEnabled =
         initialConfig.preview.legacyRequestIdPropagation.enabled;
 
-    dynamicConfig.instrumentationLoggingLevel = initialConfig.instrumentation.logging.level;
-    dynamicConfig.selfDiagnosticsLevel = initialConfig.selfDiagnostics.level;
-    return dynamicConfig;
+    runtimeConfig.instrumentationLoggingLevel = initialConfig.instrumentation.logging.level;
+    runtimeConfig.selfDiagnosticsLevel = initialConfig.selfDiagnostics.level;
+    return runtimeConfig;
   }
 
   private static RuntimeConfiguration copy(RuntimeConfiguration config) {
@@ -86,34 +86,36 @@ public class RuntimeConfigurator {
     return copy(currentConfig);
   }
 
-  public void apply(RuntimeConfiguration dynamicConfig) {
+  public void apply(RuntimeConfiguration runtimeConfig) {
 
-    boolean enabled = !Strings.isNullOrEmpty(dynamicConfig.connectionString);
+    logger.debug("Applying runtime configuration");
+
+    boolean enabled = !Strings.isNullOrEmpty(runtimeConfig.connectionString);
     boolean currentEnabled = !Strings.isNullOrEmpty(currentConfig.connectionString);
 
-    updateConnectionString(dynamicConfig.connectionString);
-    updateRoleName(dynamicConfig.role.name);
-    updateRoleInstance(dynamicConfig.role.instance);
+    updateConnectionString(runtimeConfig.connectionString);
+    updateRoleName(runtimeConfig.role.name);
+    updateRoleInstance(runtimeConfig.role.instance);
 
     // ok to update propagation if it hasn't changed
     updatePropagation(
-        !dynamicConfig.propagationDisabled && enabled,
-        dynamicConfig.additionalPropagators,
-        dynamicConfig.legacyRequestIdPropagationEnabled);
+        !runtimeConfig.propagationDisabled && enabled,
+        runtimeConfig.additionalPropagators,
+        runtimeConfig.legacyRequestIdPropagationEnabled);
 
     // don't update sampling if it hasn't changed, since that will wipe out state of any
     // rate-limited samplers
     if (enabled != currentEnabled
-        || !Objects.equals(dynamicConfig.sampling.percentage, currentConfig.sampling.percentage)
+        || !Objects.equals(runtimeConfig.sampling.percentage, currentConfig.sampling.percentage)
         || !Objects.equals(
-            dynamicConfig.sampling.requestsPerSecond, currentConfig.sampling.requestsPerSecond)) {
-      updateSampling(enabled, dynamicConfig.sampling, dynamicConfig.samplingPreview);
+            runtimeConfig.sampling.requestsPerSecond, currentConfig.sampling.requestsPerSecond)) {
+      updateSampling(enabled, runtimeConfig.sampling, runtimeConfig.samplingPreview);
     }
 
-    updateInstrumentationLoggingLevel(dynamicConfig.instrumentationLoggingLevel);
-    updateSelfDiagnosticsLevel(dynamicConfig.selfDiagnosticsLevel);
+    updateInstrumentationLoggingLevel(runtimeConfig.instrumentationLoggingLevel);
+    updateSelfDiagnosticsLevel(runtimeConfig.selfDiagnosticsLevel);
 
-    currentConfig = dynamicConfig;
+    currentConfig = runtimeConfig;
   }
 
   static void updatePropagation(

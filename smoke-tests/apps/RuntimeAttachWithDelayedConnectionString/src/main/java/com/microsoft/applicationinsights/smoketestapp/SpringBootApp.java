@@ -17,7 +17,7 @@ public class SpringBootApp extends SpringBootServletInitializer {
 
   public static void main(String[] args) {
     ApplicationInsights.attach();
-    ConnectionString.init(
+    ConnectionString.configure(
         "InstrumentationKey=00000000-0000-0000-0000-0FEEDDADBEEF;IngestionEndpoint="
             + FAKE_INGESTION_ENDPOINT
             + ";LiveEndpoint="

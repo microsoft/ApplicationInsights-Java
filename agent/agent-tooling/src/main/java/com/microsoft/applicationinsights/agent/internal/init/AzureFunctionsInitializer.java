@@ -59,26 +59,26 @@ public class AzureFunctionsInitializer implements Runnable {
   }
 
   private void initialize() {
-    RuntimeConfiguration dynamicConfig = runtimeConfigurator.getCurrentConfigCopy();
+    RuntimeConfiguration runtimeConfig = runtimeConfigurator.getCurrentConfigCopy();
 
-    dynamicConfig.connectionString = getAndLogAtDebug("APPLICATIONINSIGHTS_CONNECTION_STRING");
-    if (dynamicConfig.connectionString == null) {
+    runtimeConfig.connectionString = getAndLogAtDebug("APPLICATIONINSIGHTS_CONNECTION_STRING");
+    if (runtimeConfig.connectionString == null) {
       // if the instrumentation key is neither null nor empty, we build the connection string based
       // on APPINSIGHTS_INSTRUMENTATIONKEY.
       // this is to support Azure Functions that were created prior to the introduction of
       // connection strings
       String instrumentationKey = getAndLogAtDebug("APPINSIGHTS_INSTRUMENTATIONKEY");
       if (!Strings.isNullOrEmpty(instrumentationKey)) {
-        dynamicConfig.connectionString = "InstrumentationKey=" + instrumentationKey;
+        runtimeConfig.connectionString = "InstrumentationKey=" + instrumentationKey;
       }
     }
-    dynamicConfig.role.name = getAndLogAtDebug("WEBSITE_SITE_NAME");
-    dynamicConfig.instrumentationLoggingLevel =
+    runtimeConfig.role.name = getAndLogAtDebug("WEBSITE_SITE_NAME");
+    runtimeConfig.instrumentationLoggingLevel =
         getAndLogAtDebug("APPLICATIONINSIGHTS_INSTRUMENTATION_LOGGING_LEVEL");
-    dynamicConfig.selfDiagnosticsLevel =
+    runtimeConfig.selfDiagnosticsLevel =
         getAndLogAtDebug("APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_LEVEL");
 
-    runtimeConfigurator.apply(dynamicConfig);
+    runtimeConfigurator.apply(runtimeConfig);
   }
 
   static boolean isAgentEnabled() {

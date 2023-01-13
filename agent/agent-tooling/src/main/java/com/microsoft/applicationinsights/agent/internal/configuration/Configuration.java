@@ -33,7 +33,10 @@ import javax.annotation.Nullable;
 public class Configuration {
 
   public String connectionString;
-  public boolean startWithoutConnectionString =
+  // missing connection string will cause the agent to not start up, unless this is set,
+  // in which case the agent will start, but it won't begin capturing any telemetry until the
+  // connection string is configured later on
+  public boolean connectionStringConfiguredAtRuntime =
       ConfigurationBuilder.inAzureFunctionsConsumptionWorker();
   public Role role = new Role();
   public Map<String, String> customDimensions = new HashMap<>();

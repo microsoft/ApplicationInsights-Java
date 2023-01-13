@@ -55,17 +55,25 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
   public static volatile FeatureStatsbeat featureStatsbeat;
 
   public static volatile RuntimeConfigurator runtimeConfigurator;
+  public static volatile boolean startWithoutConnectionString;
 
   @Override
-  public void initConnectionString(String connectionString) {
+  public void setConnectionString(String connectionString) {
+    if (!startWithoutConnectionString) {
+      logger.warn(
+          "Using com.microsoft.applicationinsights.connectionstring.ConnectionString.configure()"
+              + " requires setting the json configuration property"
+              + " \"connectionStringConfiguredAtRuntime\" to true");
+      return;
+    }
     if (TelemetryClient.getActive().getConnectionString() != null) {
       logger.warn("Connection string is already set");
       return;
     }
     if (runtimeConfigurator != null) {
-      RuntimeConfiguration dynamicConfig = runtimeConfigurator.getCurrentConfigCopy();
-      dynamicConfig.connectionString = connectionString;
-      runtimeConfigurator.apply(dynamicConfig);
+      RuntimeConfiguration runtimeConfig = runtimeConfigurator.getCurrentConfigCopy();
+      runtimeConfig.connectionString = connectionString;
+      runtimeConfigurator.apply(runtimeConfig);
     }
   }
 

@@ -95,7 +95,7 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
 
     Configuration configuration = FirstEntryPoint.getConfiguration();
     if (Strings.isNullOrEmpty(configuration.connectionString)) {
-      if (!configuration.startWithoutConnectionString) {
+      if (!configuration.connectionStringConfiguredAtRuntime) {
         throw new FriendlyException(
             "No connection string provided", "Please provide connection string.");
       }
@@ -161,6 +161,8 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
     }
     BytecodeUtilImpl.featureStatsbeat = statsbeatModule.getFeatureStatsbeat();
     BytecodeUtilImpl.runtimeConfigurator = runtimeConfigurator;
+    BytecodeUtilImpl.startWithoutConnectionString =
+        configuration.connectionStringConfiguredAtRuntime;
 
     if (configuration.preview.profiler.enabled) {
       try {

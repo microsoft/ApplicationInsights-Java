@@ -71,13 +71,13 @@ public class ConnectionStringClassFileTransformer implements ClassFileTransforme
         @Nullable String signature,
         @Nullable String[] exceptions) {
       MethodVisitor mv = cw.visitMethod(access, name, descriptor, signature, exceptions);
-      if (name.equals("init") && descriptor.equals("(Ljava/lang/String;)V")) {
+      if (name.equals("configure") && descriptor.equals("(Ljava/lang/String;)V")) {
         mv.visitCode();
         mv.visitVarInsn(ALOAD, 0);
         mv.visitMethodInsn(
             INVOKESTATIC,
             BYTECODE_UTIL_INTERNAL_NAME,
-            "initConnectionString",
+            "setConnectionString",
             "(Ljava/lang/String;)V",
             false);
         mv.visitInsn(RETURN);

@@ -54,9 +54,9 @@ public class BytecodeUtil {
     }
   }
 
-  public static void initConnectionString(String connectionString) {
+  public static void setConnectionString(String connectionString) {
     if (delegate != null) {
-      delegate.initConnectionString(connectionString);
+      delegate.setConnectionString(connectionString);
     }
   }
 
@@ -344,7 +344,7 @@ public class BytecodeUtil {
 
   public interface BytecodeUtilDelegate {
 
-    void initConnectionString(String connectionString);
+    void setConnectionString(String connectionString);
 
     void trackEvent(
         @Nullable Date timestamp,
