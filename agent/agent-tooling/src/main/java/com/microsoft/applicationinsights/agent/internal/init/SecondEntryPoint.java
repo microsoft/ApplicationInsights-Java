@@ -161,7 +161,7 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
     }
     BytecodeUtilImpl.featureStatsbeat = statsbeatModule.getFeatureStatsbeat();
     BytecodeUtilImpl.runtimeConfigurator = runtimeConfigurator;
-    BytecodeUtilImpl.startWithoutConnectionString =
+    BytecodeUtilImpl.connectionStringConfiguredAtRuntime =
         configuration.connectionStringConfiguredAtRuntime;
 
     if (configuration.preview.profiler.enabled) {

@@ -55,11 +55,11 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
   public static volatile FeatureStatsbeat featureStatsbeat;
 
   public static volatile RuntimeConfigurator runtimeConfigurator;
-  public static volatile boolean startWithoutConnectionString;
+  public static volatile boolean connectionStringConfiguredAtRuntime;
 
   @Override
   public void setConnectionString(String connectionString) {
-    if (!startWithoutConnectionString) {
+    if (!connectionStringConfiguredAtRuntime) {
       logger.warn(
           "Using com.microsoft.applicationinsights.connectionstring.ConnectionString.configure()"
               + " requires setting the json configuration property"
