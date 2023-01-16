@@ -2,7 +2,7 @@ plugins {
   `java-gradle-plugin`
   `kotlin-dsl`
   // When updating, update below in dependencies too
-  id("com.diffplug.spotless") version "6.12.1"
+  id("com.diffplug.spotless") version "6.13.0"
 }
 
 spotless {
