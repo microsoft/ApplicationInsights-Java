@@ -62,6 +62,10 @@ tasks {
         // consider enabling this after removing azure-monitor-exporter from this repo
         disable("CanIgnoreReturnValueSuggester")
 
+        // YodaConditions may improve safety in some cases. The argument of increased
+        // cognitive load is dubious.
+        disable("YodaCondition")
+
         if (name.contains("Jmh")) {
           disable("MemberName")
         }
