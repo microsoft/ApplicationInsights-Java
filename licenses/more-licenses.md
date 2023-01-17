@@ -1,7 +1,7 @@
 
 #agent
 ##Dependency License Report
-_2023-01-13 09:50:50 PST_
+_2023-01-17 14:14:25 PST_
 ## Apache License, Version 2.0
 
 **1** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-annotations` **Version:** `2.14.1` 
@@ -34,7 +34,7 @@ _2023-01-13 09:50:50 PST_
 > - **POM Project URL**: [http://stephenc.github.com/jcip-annotations](http://stephenc.github.com/jcip-annotations)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
 
-**6** **Group:** `com.google.errorprone` **Name:** `error_prone_annotations` **Version:** `2.17.0` 
+**6** **Group:** `com.google.errorprone` **Name:** `error_prone_annotations` **Version:** `2.18.0` 
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
 **7** **Group:** `com.nimbusds` **Name:** `content-type` **Version:** `2.2` 
