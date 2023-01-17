@@ -8,6 +8,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
 import com.google.common.base.Stopwatch;
+import com.microsoft.applicationinsights.smoketest.annotations.AdditionalFile;
+import com.microsoft.applicationinsights.smoketest.annotations.JvmArgs;
 import com.microsoft.applicationinsights.smoketest.fakeingestion.MockedAppInsightsIngestionServer;
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.Domain;
@@ -93,6 +95,8 @@ public class SmokeTestExtension
   private final boolean useOld3xAgent;
   private final String selfDiagnosticsLevel;
   private final File javaagentFile;
+  private AdditionalFile additionalFile;
+  private String[] jvmArgs;
 
   public static SmokeTestExtension create() {
     return builder().build();
@@ -148,6 +152,16 @@ public class SmokeTestExtension
     dependencyImages = new ArrayList<>();
     if (wdc != null) {
       Collections.addAll(dependencyImages, wdc.value());
+    }
+
+    AdditionalFile additionalFile = testClass.getAnnotation(AdditionalFile.class);
+    if (additionalFile != null) {
+      this.additionalFile = additionalFile;
+    }
+
+    JvmArgs jvmArgs = testClass.getAnnotation(JvmArgs.class);
+    if (jvmArgs != null) {
+      this.jvmArgs = jvmArgs.args();
     }
 
     Environment environment = testClass.getAnnotation(Environment.class);
@@ -395,6 +409,8 @@ public class SmokeTestExtension
     }
     container.withEnv("JAVA_TOOL_OPTIONS", String.join(" ", javaToolOptions));
 
+    container = addAdditionalFiles(container);
+
     if (useAgent) {
       container =
           container.withFileSystemBind(
@@ -418,8 +434,13 @@ public class SmokeTestExtension
               json.getAbsolutePath(), "/applicationinsights.json", BindMode.READ_ONLY);
     }
 
+    String additionalJvmArgs = "";
+    if (jvmArgs != null) {
+      additionalJvmArgs = String.join(" ", jvmArgs);
+    }
+
     if (appFile.getName().endsWith(".jar")) {
-      container = container.withCommand("java -jar " + appFile.getName());
+      container = container.withCommand("java " + additionalJvmArgs + " -jar " + appFile.getName());
     }
 
     if (readOnly) {
@@ -437,6 +458,16 @@ public class SmokeTestExtension
 
     targetContainer = container;
     allContainers.add(container);
+  }
+
+  private GenericContainer<?> addAdditionalFiles(GenericContainer<?> container) {
+    if (additionalFile != null) {
+      return container.withFileSystemBind(
+          new File(additionalFile.testFile()).getAbsolutePath(),
+          additionalFile.targetFile(),
+          BindMode.READ_ONLY);
+    }
+    return container;
   }
 
   @Override
