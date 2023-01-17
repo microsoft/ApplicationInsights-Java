@@ -3,6 +3,7 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
+import java.io.File;
 import org.testcontainers.containers.GenericContainer;
 
 public class SmokeTestExtensionBuilder {
@@ -14,6 +15,7 @@ public class SmokeTestExtensionBuilder {
   private boolean readOnly;
   private boolean useOld3xAgent;
   private String selfDiagnosticsLevel = "info";
+  private File agentExtensionFile;
 
   public SmokeTestExtensionBuilder setDependencyContainer(
       String envVarName, GenericContainer<?> container) {
@@ -55,6 +57,12 @@ public class SmokeTestExtensionBuilder {
         skipHealthCheck,
         readOnly,
         useOld3xAgent,
-        selfDiagnosticsLevel);
+        selfDiagnosticsLevel,
+        agentExtensionFile);
+  }
+
+  public SmokeTestExtensionBuilder addAgentExtensionfile(File file) {
+    this.agentExtensionFile = file;
+    return this;
   }
 }

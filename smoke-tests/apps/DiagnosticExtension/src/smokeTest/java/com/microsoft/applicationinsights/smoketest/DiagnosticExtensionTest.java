@@ -5,15 +5,18 @@ package com.microsoft.applicationinsights.smoketest;
 
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_17;
 
-import com.microsoft.applicationinsights.smoketest.annotations.AdditionalFile;
-import com.microsoft.applicationinsights.smoketest.annotations.JvmArgs;
+import java.io.File;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-
+@UseAgent
 abstract class DiagnosticExtensionTest {
-  @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.create();
+  @RegisterExtension
+  static final SmokeTestExtension testing =
+      SmokeTestExtension.builder()
+          .addAgentExtensionfile(new File("MockExtension/build/libs/extension.jar"))
+          .build();
 
   @Test
   @TargetUri("/")
@@ -25,8 +28,5 @@ abstract class DiagnosticExtensionTest {
   }
 
   @Environment(JAVA_17)
-  @UseAgent("applicationinsights.json")
-  @JvmArgs(args = {"-Dotel.javaagent.extensions=/extension.jar"})
-  @AdditionalFile(testFile = "MockExtension/build/libs/extension.jar", targetFile = "/extension.jar")
   static class Java17Test extends DiagnosticExtensionTest {}
 }

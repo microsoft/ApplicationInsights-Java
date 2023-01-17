@@ -8,8 +8,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
 import com.google.common.base.Stopwatch;
-import com.microsoft.applicationinsights.smoketest.annotations.AdditionalFile;
-import com.microsoft.applicationinsights.smoketest.annotations.JvmArgs;
 import com.microsoft.applicationinsights.smoketest.fakeingestion.MockedAppInsightsIngestionServer;
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.Domain;
@@ -95,8 +93,7 @@ public class SmokeTestExtension
   private final boolean useOld3xAgent;
   private final String selfDiagnosticsLevel;
   private final File javaagentFile;
-  private AdditionalFile additionalFile;
-  private String[] jvmArgs;
+  private final File agentExtensionFile;
 
   public static SmokeTestExtension create() {
     return builder().build();
@@ -113,7 +110,8 @@ public class SmokeTestExtension
       boolean skipHealthCheck,
       boolean readOnly,
       boolean useOld3xAgent,
-      String selfDiagnosticsLevel) {
+      String selfDiagnosticsLevel,
+      File agentExtensionFile) {
     this.skipHealthCheck = skipHealthCheck;
     this.readOnly = readOnly;
     this.dependencyContainer = dependencyContainer;
@@ -121,6 +119,7 @@ public class SmokeTestExtension
     this.usesGlobalIngestionEndpoint = usesGlobalIngestionEndpoint;
     this.useOld3xAgent = useOld3xAgent;
     this.selfDiagnosticsLevel = selfDiagnosticsLevel;
+    this.agentExtensionFile = agentExtensionFile;
 
     String javaagentPathSystemProperty =
         useOld3xAgent ? "ai.smoke-test.old-3x-javaagent-file" : "ai.smoke-test.javaagent-file";
@@ -152,16 +151,6 @@ public class SmokeTestExtension
     dependencyImages = new ArrayList<>();
     if (wdc != null) {
       Collections.addAll(dependencyImages, wdc.value());
-    }
-
-    AdditionalFile additionalFile = testClass.getAnnotation(AdditionalFile.class);
-    if (additionalFile != null) {
-      this.additionalFile = additionalFile;
-    }
-
-    JvmArgs jvmArgs = testClass.getAnnotation(JvmArgs.class);
-    if (jvmArgs != null) {
-      this.jvmArgs = jvmArgs.args();
     }
 
     Environment environment = testClass.getAnnotation(Environment.class);
@@ -397,6 +386,9 @@ public class SmokeTestExtension
     List<String> javaToolOptions = new ArrayList<>();
     javaToolOptions.add("-Dapplicationinsights.testing.batch-schedule-delay-millis=500");
     javaToolOptions.add("-Dapplicationinsights.testing.metric-reader-interval-millis=500");
+    if (agentExtensionFile != null) {
+      javaToolOptions.add("-Dotel.javaagent.extensions=/" + agentExtensionFile.getName());
+    }
     if (usesGlobalIngestionEndpoint) {
       javaToolOptions.add(
           "-Dapplicationinsights.testing.global-ingestion-endpoint=" + FAKE_INGESTION_ENDPOINT);
@@ -409,7 +401,7 @@ public class SmokeTestExtension
     }
     container.withEnv("JAVA_TOOL_OPTIONS", String.join(" ", javaToolOptions));
 
-    container = addAdditionalFiles(container);
+    container = addAdditionalFile(container);
 
     if (useAgent) {
       container =
@@ -434,13 +426,8 @@ public class SmokeTestExtension
               json.getAbsolutePath(), "/applicationinsights.json", BindMode.READ_ONLY);
     }
 
-    String additionalJvmArgs = "";
-    if (jvmArgs != null) {
-      additionalJvmArgs = String.join(" ", jvmArgs);
-    }
-
     if (appFile.getName().endsWith(".jar")) {
-      container = container.withCommand("java " + additionalJvmArgs + " -jar " + appFile.getName());
+      container = container.withCommand("java -jar " + appFile.getName());
     }
 
     if (readOnly) {
@@ -460,11 +447,11 @@ public class SmokeTestExtension
     allContainers.add(container);
   }
 
-  private GenericContainer<?> addAdditionalFiles(GenericContainer<?> container) {
-    if (additionalFile != null) {
+  private GenericContainer<?> addAdditionalFile(GenericContainer<?> container) {
+    if (agentExtensionFile != null) {
       return container.withFileSystemBind(
-          new File(additionalFile.testFile()).getAbsolutePath(),
-          additionalFile.targetFile(),
+          agentExtensionFile.getAbsolutePath(),
+          "/" + agentExtensionFile.getName(),
           BindMode.READ_ONLY);
     }
     return container;
