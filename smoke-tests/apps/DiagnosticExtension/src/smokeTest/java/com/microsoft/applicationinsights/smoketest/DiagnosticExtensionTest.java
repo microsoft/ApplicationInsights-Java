@@ -3,7 +3,11 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_11;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_17;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_19;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_20;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_8;
 
 import java.io.File;
 import org.junit.jupiter.api.Assertions;
@@ -15,7 +19,7 @@ abstract class DiagnosticExtensionTest {
   @RegisterExtension
   static final SmokeTestExtension testing =
       SmokeTestExtension.builder()
-          .addAgentExtensionfile(new File("MockExtension/build/libs/extension.jar"))
+          .setAgentExtensionFile(new File("MockExtension/build/libs/extension.jar"))
           .build();
 
   @Test
@@ -27,6 +31,18 @@ abstract class DiagnosticExtensionTest {
     Assertions.assertTrue(Boolean.parseBoolean(response));
   }
 
+  @Environment(JAVA_8)
+  static class Java8Test extends DiagnosticExtensionTest {}
+
+  @Environment(JAVA_11)
+  static class Java11Test extends DiagnosticExtensionTest {}
+
   @Environment(JAVA_17)
   static class Java17Test extends DiagnosticExtensionTest {}
+
+  @Environment(JAVA_19)
+  static class Java18Test extends DiagnosticExtensionTest {}
+
+  @Environment(JAVA_20)
+  static class Java19Test extends DiagnosticExtensionTest {}
 }

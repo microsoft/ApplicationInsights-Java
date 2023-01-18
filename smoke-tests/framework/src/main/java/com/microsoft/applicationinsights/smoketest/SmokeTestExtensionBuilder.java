@@ -61,7 +61,7 @@ public class SmokeTestExtensionBuilder {
         agentExtensionFile);
   }
 
-  public SmokeTestExtensionBuilder addAgentExtensionfile(File file) {
+  public SmokeTestExtensionBuilder setAgentExtensionFile(File file) {
     this.agentExtensionFile = file;
     return this;
   }
