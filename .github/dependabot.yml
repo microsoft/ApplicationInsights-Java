@@ -40,7 +40,7 @@ updates:
         versions: [ "[11,)" ]
       - dependency-name: "org.mockito:*"
         # mockito 5 requires Java 11
-        versions: [ "[5,)]" ]
+        versions: [ "[5,)" ]
     schedule:
       interval: "daily"
     open-pull-requests-limit: 10
