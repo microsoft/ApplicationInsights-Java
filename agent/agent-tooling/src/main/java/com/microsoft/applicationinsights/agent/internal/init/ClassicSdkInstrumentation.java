@@ -6,6 +6,7 @@ package com.microsoft.applicationinsights.agent.internal.init;
 import com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil;
 import com.microsoft.applicationinsights.agent.internal.classicsdk.ApplicationInsightsAppenderClassFileTransformer;
 import com.microsoft.applicationinsights.agent.internal.classicsdk.BytecodeUtilImpl;
+import com.microsoft.applicationinsights.agent.internal.classicsdk.ConnectionStringClassFileTransformer;
 import com.microsoft.applicationinsights.agent.internal.classicsdk.DependencyTelemetryClassFileTransformer;
 import com.microsoft.applicationinsights.agent.internal.classicsdk.ExceptionTelemetryClassFileTransformer;
 import com.microsoft.applicationinsights.agent.internal.classicsdk.HeartBeatModuleClassFileTransformer;
@@ -39,6 +40,7 @@ class ClassicSdkInstrumentation {
     instrumentation.addTransformer(new WebRequestTrackingFilterClassFileTransformer());
     instrumentation.addTransformer(new RequestNameHandlerClassFileTransformer());
     instrumentation.addTransformer(new DuplicateAgentClassFileTransformer());
+    instrumentation.addTransformer(new ConnectionStringClassFileTransformer());
 
     // this is currently used by Micrometer instrumentation in addition to 2.x SDK
     BytecodeUtil.setDelegate(new BytecodeUtilImpl());

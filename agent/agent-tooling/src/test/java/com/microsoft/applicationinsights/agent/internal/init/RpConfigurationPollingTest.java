@@ -32,7 +32,8 @@ class RpConfigurationPollingTest {
     // default sampler at startup is "Sampler.alwaysOff()", and this test relies on real sampler
     Configuration config = new Configuration();
     config.sampling.percentage = 100.0;
-    DelegatingSampler.getInstance().setDelegate(Samplers.getSampler(config));
+    DelegatingSampler.getInstance()
+        .setDelegate(Samplers.getSampler(config.sampling, config.preview.sampling));
   }
 
   @AfterEach
@@ -41,12 +42,22 @@ class RpConfigurationPollingTest {
     // otherwise tests run after this can fail
     Configuration config = new Configuration();
     config.sampling.percentage = 100.0;
-    DelegatingSampler.getInstance().setDelegate(Samplers.getSampler(config));
+    DelegatingSampler.getInstance()
+        .setDelegate(Samplers.getSampler(config.sampling, config.preview.sampling));
   }
 
   @Test
   void shouldUpdate() throws URISyntaxException {
     // given
+    Configuration config = new Configuration();
+    config.sampling.percentage = 100.0;
+
+    BytecodeUtilImpl.samplingPercentage = 100;
+
+    TelemetryClient telemetryClient = TelemetryClient.createForTest();
+    telemetryClient.updateConnectionStrings(
+        "InstrumentationKey=00000000-0000-0000-0000-000000000000", null, null);
+
     RpConfiguration rpConfiguration = new RpConfiguration();
     rpConfiguration.connectionString = "InstrumentationKey=11111111-1111-1111-1111-111111111111";
     rpConfiguration.sampling.percentage = 90.0;
@@ -55,13 +66,6 @@ class RpConfigurationPollingTest {
             RpConfigurationPollingTest.class.getResource("/applicationinsights-rp.json").toURI());
     rpConfiguration.lastModifiedTime = 0;
 
-    TelemetryClient telemetryClient = TelemetryClient.createForTest();
-    telemetryClient.updateConnectionStrings(
-        "InstrumentationKey=00000000-0000-0000-0000-000000000000", null, null);
-    AppIdSupplier appIdSupplier = new AppIdSupplier(telemetryClient);
-
-    BytecodeUtilImpl.samplingPercentage = 100;
-
     // pre-check
     assertThat(telemetryClient.getInstrumentationKey())
         .isEqualTo("00000000-0000-0000-0000-000000000000");
@@ -69,8 +73,9 @@ class RpConfigurationPollingTest {
     assertThat(getCurrentSamplingPercentage()).isEqualTo(100);
 
     // when
-    new RpConfigurationPolling(rpConfiguration, new Configuration(), telemetryClient, appIdSupplier)
-        .run();
+    RuntimeConfigurator runtimeConfigurator =
+        new RuntimeConfigurator(telemetryClient, () -> null, config);
+    new RpConfigurationPolling(rpConfiguration, runtimeConfigurator).run();
 
     // then
     assertThat(telemetryClient.getInstrumentationKey())
@@ -82,6 +87,15 @@ class RpConfigurationPollingTest {
   @Test
   void shouldBePopulatedByEnvVars() throws URISyntaxException {
     // given
+    Configuration config = new Configuration();
+    config.sampling.percentage = 100.0;
+
+    BytecodeUtilImpl.samplingPercentage = 100;
+
+    TelemetryClient telemetryClient = TelemetryClient.createForTest();
+    telemetryClient.updateConnectionStrings(
+        "InstrumentationKey=00000000-0000-0000-0000-000000000000", null, null);
+
     RpConfiguration rpConfiguration = new RpConfiguration();
     rpConfiguration.connectionString = "InstrumentationKey=11111111-1111-1111-1111-111111111111";
     rpConfiguration.sampling.percentage = 90.0;
@@ -89,13 +103,6 @@ class RpConfigurationPollingTest {
         Paths.get(
             RpConfigurationPollingTest.class.getResource("/applicationinsights-rp.json").toURI());
     rpConfiguration.lastModifiedTime = 0;
-
-    TelemetryClient telemetryClient = TelemetryClient.createForTest();
-    telemetryClient.updateConnectionStrings(
-        "InstrumentationKey=00000000-0000-0000-0000-000000000000", null, null);
-    AppIdSupplier appIdSupplier = new AppIdSupplier(telemetryClient);
-
-    BytecodeUtilImpl.samplingPercentage = 100;
 
     envVars.set(
         "APPLICATIONINSIGHTS_CONNECTION_STRING",
@@ -109,8 +116,9 @@ class RpConfigurationPollingTest {
     assertThat(getCurrentSamplingPercentage()).isEqualTo(100);
 
     // when
-    new RpConfigurationPolling(rpConfiguration, new Configuration(), telemetryClient, appIdSupplier)
-        .run();
+    RuntimeConfigurator runtimeConfigurator =
+        new RuntimeConfigurator(telemetryClient, () -> null, config);
+    new RpConfigurationPolling(rpConfiguration, runtimeConfigurator).run();
 
     // then
     assertThat(telemetryClient.getInstrumentationKey())

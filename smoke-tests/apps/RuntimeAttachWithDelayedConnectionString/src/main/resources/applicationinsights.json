@@ -1,0 +1,10 @@
+{
+  "connectionStringConfiguredAtRuntime": true,
+  "role": {
+    "name": "testrolename",
+    "instance": "testroleinstance"
+  },
+  "sampling": {
+    "percentage": 100
+  }
+}

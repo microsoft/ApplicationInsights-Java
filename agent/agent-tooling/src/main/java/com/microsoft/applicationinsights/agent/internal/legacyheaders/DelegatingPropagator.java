@@ -56,6 +56,10 @@ public class DelegatingPropagator implements TextMapPropagator {
     delegate = TextMapPropagator.composite(propagators);
   }
 
+  public void reset() {
+    delegate = TextMapPropagator.noop();
+  }
+
   @Override
   public Collection<String> fields() {
     return delegate.fields();

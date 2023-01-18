@@ -13,7 +13,6 @@ import com.microsoft.applicationinsights.agent.internal.common.FriendlyException
 import com.microsoft.applicationinsights.agent.internal.common.SystemInformation;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
-import com.microsoft.applicationinsights.agent.internal.init.AppIdSupplier;
 import com.microsoft.applicationinsights.agent.internal.profiler.config.ConfigPollingInit;
 import com.microsoft.applicationinsights.agent.internal.profiler.service.ServiceProfilerClient;
 import com.microsoft.applicationinsights.agent.internal.profiler.triggers.AlertingSubsystemInit;
@@ -33,7 +32,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,10 +53,7 @@ public class ProfilingInitializer {
   private static final AtomicBoolean initialized = new AtomicBoolean();
 
   public static void initialize(
-      @Nullable File tempDir,
-      AppIdSupplier appIdSupplier,
-      Configuration config,
-      TelemetryClient telemetryClient) {
+      @Nullable File tempDir, Configuration config, TelemetryClient telemetryClient) {
 
     if (tempDir == null) {
       throw new FriendlyException(
@@ -71,7 +66,6 @@ public class ProfilingInitializer {
     }
 
     ProfilingInitializer.initialize(
-        appIdSupplier::get,
         SystemInformation.getProcessId(),
         config.role.instance,
         config.role.name,
@@ -82,7 +76,6 @@ public class ProfilingInitializer {
   }
 
   private static synchronized void initialize(
-      Supplier<String> appIdSupplier,
       String processId,
       String machineName,
       String roleName,
@@ -140,7 +133,12 @@ public class ProfilingInitializer {
 
     UploadService uploadService =
         new UploadService(
-            serviceProfilerClient, builder -> {}, machineName, processId, appIdSupplier, roleName);
+            serviceProfilerClient,
+            builder -> {},
+            machineName,
+            processId,
+            telemetryClient::getAppId,
+            roleName);
 
     Profiler profiler = new Profiler(configuration.preview.profiler, tempDir);
 

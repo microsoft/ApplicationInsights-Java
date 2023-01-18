@@ -12,6 +12,7 @@ public class SmokeTestExtensionBuilder {
   private boolean usesGlobalIngestionEndpoint;
   private boolean skipHealthCheck;
   private boolean readOnly;
+  private boolean doNotSetConnectionString;
   private boolean useOld3xAgent;
   private String selfDiagnosticsLevel = "info";
 
@@ -37,6 +38,11 @@ public class SmokeTestExtensionBuilder {
     return this;
   }
 
+  public SmokeTestExtensionBuilder doNotSetConnectionString() {
+    this.doNotSetConnectionString = true;
+    return this;
+  }
+
   public SmokeTestExtensionBuilder useOld3xAgent() {
     useOld3xAgent = true;
     return this;
@@ -54,6 +60,7 @@ public class SmokeTestExtensionBuilder {
         usesGlobalIngestionEndpoint,
         skipHealthCheck,
         readOnly,
+        doNotSetConnectionString,
         useOld3xAgent,
         selfDiagnosticsLevel);
   }
