@@ -47,6 +47,7 @@ jobs:
                     | grep -v deprecated-java-2x.md)
           echo "$files" | xargs sed -Ei "s/applicationinsights-agent-[0-9.]+.jar/applicationinsights-agent-${VERSION}.jar/g"
           echo "$files" | xargs sed -Ei "s|microsoft/ApplicationInsights-Java/releases/download/[0-9.]*/|microsoft/ApplicationInsights-Java/releases/download/${VERSION}/|g"
+          echo "$files" | xargs sed -Ei "/<artifactId>applicationinsights-.*<\/artifactId>/{n;s|<version>.*</version>|<version>${VERSION}</version>|;}"
           echo "$files" | xargs sed -Ei "s|^ms.date: .*|ms.date: $date|"
 
       - name: Create pull request against azure-docs-pr
