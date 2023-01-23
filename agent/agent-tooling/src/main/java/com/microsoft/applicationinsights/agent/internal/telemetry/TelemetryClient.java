@@ -53,7 +53,7 @@ public class TelemetryClient {
 
   @Nullable private static volatile TelemetryClient active;
 
-  @Nullable private volatile AppIdSupplier appIdSupplier;
+  private final AppIdSupplier appIdSupplier = new AppIdSupplier();
 
   @Nullable private volatile ConnectionString connectionString;
   @Nullable private volatile StatsbeatConnectionString statsbeatConnectionString;
@@ -406,17 +406,13 @@ public class TelemetryClient {
 
     if (Strings.isNullOrEmpty(connectionString)) {
       this.connectionString = null;
-      if (appIdSupplier != null) {
-        appIdSupplier.updateAppId(null);
-      }
+      appIdSupplier.updateAppId(null);
       this.statsbeatConnectionString = null;
       return;
     }
 
     this.connectionString = ConnectionString.parse(connectionString);
-    if (appIdSupplier != null) {
-      appIdSupplier.updateAppId(this.connectionString);
-    }
+    appIdSupplier.updateAppId(this.connectionString);
 
     this.statsbeatConnectionString =
         StatsbeatConnectionString.create(
@@ -434,11 +430,6 @@ public class TelemetryClient {
   public void updateRoleInstance(String roleInstance) {
     this.roleInstance = roleInstance;
     globalTags.put(ContextTagKeys.AI_CLOUD_ROLE_INSTANCE.toString(), roleInstance);
-  }
-
-  public void initAppIdSupplier() {
-    appIdSupplier = new AppIdSupplier();
-    appIdSupplier.updateAppId(connectionString);
   }
 
   public String getAppId() {
