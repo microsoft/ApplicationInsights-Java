@@ -53,7 +53,7 @@ public class TelemetryClient {
 
   @Nullable private static volatile TelemetryClient active;
 
-  private final AppIdSupplier appIdSupplier = new AppIdSupplier();
+  private final AppIdSupplier appIdSupplier;
 
   @Nullable private volatile ConnectionString connectionString;
   @Nullable private volatile StatsbeatConnectionString statsbeatConnectionString;
@@ -114,6 +114,11 @@ public class TelemetryClient {
     this.roleName = builder.roleName;
     this.roleInstance = builder.roleInstance;
     this.diskPersistenceMaxSizeMb = builder.diskPersistenceMaxSizeMb;
+
+    appIdSupplier = new AppIdSupplier();
+    if (this.connectionString != null) {
+      appIdSupplier.updateAppId(this.connectionString);
+    }
   }
 
   public static TelemetryClient getActive() {
