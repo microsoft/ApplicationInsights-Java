@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## Version 3.4.8 GA
+
+### Enhancements:
+
+* Update to OpenTelemetry Java Instrumentation 1.22.1
+  ([#2840](https://github.com/microsoft/ApplicationInsights-Java/pull/2840))
+* Add support for configuring connection string at runtime
+  ([#2809](https://github.com/microsoft/ApplicationInsights-Java/pull/2809))
+
 ## Version 3.4.7 GA
 
 ### Enhancements:

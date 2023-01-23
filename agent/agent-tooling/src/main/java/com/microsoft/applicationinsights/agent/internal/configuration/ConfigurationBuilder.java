@@ -96,6 +96,9 @@ public class ConfigurationBuilder {
   private static final String APPLICATIONINSIGHTS_PREVIEW_PROFILER_ENABLED =
       "APPLICATIONINSIGHTS_PREVIEW_PROFILER_ENABLED";
 
+  private static final String APPLICATIONINSIGHTS_PREVIEW_PROFILER_ENABLEDIAGNOSTICS =
+      "APPLICATIONINSIGHTS_PREVIEW_PROFILER_ENABLEDIAGNOSTICS";
+
   private static final String APPLICATIONINSIGHTS_PREVIEW_METRIC_INTERVAL_SECONDS =
       "APPLICATIONINSIGHTS_PREVIEW_METRIC_INTERVAL_SECONDS";
 
@@ -303,6 +306,12 @@ public class ConfigurationBuilder {
           "Profiler is not supported for an OpenJ9 JVM. Instead, please use an OpenJDK JVM.");
       config.preview.profiler.enabled = false;
     }
+
+    config.preview.profiler.enableDiagnostics =
+        Boolean.parseBoolean(
+            overlayWithEnvVar(
+                APPLICATIONINSIGHTS_PREVIEW_PROFILER_ENABLEDIAGNOSTICS,
+                Boolean.toString(config.preview.profiler.enableDiagnostics)));
   }
 
   private static boolean isOpenJ9Jvm() {

@@ -25,6 +25,8 @@ import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedDu
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedTime;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
 import com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil.BytecodeUtilDelegate;
+import com.microsoft.applicationinsights.agent.internal.init.RuntimeConfiguration;
+import com.microsoft.applicationinsights.agent.internal.init.RuntimeConfigurator;
 import com.microsoft.applicationinsights.agent.internal.legacyheaders.AiLegacyPropagator;
 import com.microsoft.applicationinsights.agent.internal.statsbeat.FeatureStatsbeat;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
@@ -47,9 +49,33 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
 
   private static final AtomicBoolean alreadyLoggedError = new AtomicBoolean();
 
-  public static volatile float samplingPercentage = 100;
+  // in Azure Functions consumption pool, we don't know at startup whether to enable or not
+  public static volatile float samplingPercentage = 0;
 
   public static volatile FeatureStatsbeat featureStatsbeat;
+
+  public static volatile RuntimeConfigurator runtimeConfigurator;
+  public static volatile boolean connectionStringConfiguredAtRuntime;
+
+  @Override
+  public void setConnectionString(String connectionString) {
+    if (!connectionStringConfiguredAtRuntime) {
+      logger.warn(
+          "Using com.microsoft.applicationinsights.connectionstring.ConnectionString.configure()"
+              + " requires setting the json configuration property"
+              + " \"connectionStringConfiguredAtRuntime\" to true");
+      return;
+    }
+    if (TelemetryClient.getActive().getConnectionString() != null) {
+      logger.warn("Connection string is already set");
+      return;
+    }
+    if (runtimeConfigurator != null) {
+      RuntimeConfiguration runtimeConfig = runtimeConfigurator.getCurrentConfigCopy();
+      runtimeConfig.connectionString = connectionString;
+      runtimeConfigurator.apply(runtimeConfig);
+    }
+  }
 
   @Override
   public void trackEvent(
@@ -80,7 +106,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
       telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromNow());
     }
     selectivelySetTags(telemetryBuilder, tags);
-    setConnectionString(telemetryBuilder, connectionString, instrumentationKey);
+    setConnectionStringOnTelemetry(telemetryBuilder, connectionString, instrumentationKey);
 
     track(telemetryBuilder, tags, true);
   }
@@ -127,7 +153,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
       telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromNow());
     }
     selectivelySetTags(telemetryBuilder, tags);
-    setConnectionString(telemetryBuilder, connectionString, instrumentationKey);
+    setConnectionStringOnTelemetry(telemetryBuilder, connectionString, instrumentationKey);
 
     track(telemetryBuilder, tags, false);
   }
@@ -182,7 +208,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
       telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromNow());
     }
     selectivelySetTags(telemetryBuilder, tags);
-    setConnectionString(telemetryBuilder, connectionString, instrumentationKey);
+    setConnectionStringOnTelemetry(telemetryBuilder, connectionString, instrumentationKey);
 
     track(telemetryBuilder, tags, true);
   }
@@ -223,7 +249,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
       telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromNow());
     }
     selectivelySetTags(telemetryBuilder, tags);
-    setConnectionString(telemetryBuilder, connectionString, instrumentationKey);
+    setConnectionStringOnTelemetry(telemetryBuilder, connectionString, instrumentationKey);
 
     track(telemetryBuilder, tags, true);
   }
@@ -258,7 +284,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
       telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromNow());
     }
     selectivelySetTags(telemetryBuilder, tags);
-    setConnectionString(telemetryBuilder, connectionString, instrumentationKey);
+    setConnectionStringOnTelemetry(telemetryBuilder, connectionString, instrumentationKey);
 
     track(telemetryBuilder, tags, true);
   }
@@ -312,7 +338,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
       telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromNow());
     }
     selectivelySetTags(telemetryBuilder, tags);
-    setConnectionString(telemetryBuilder, connectionString, instrumentationKey);
+    setConnectionStringOnTelemetry(telemetryBuilder, connectionString, instrumentationKey);
 
     track(telemetryBuilder, tags, true);
   }
@@ -352,7 +378,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
       telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromNow());
     }
     selectivelySetTags(telemetryBuilder, tags);
-    setConnectionString(telemetryBuilder, connectionString, instrumentationKey);
+    setConnectionStringOnTelemetry(telemetryBuilder, connectionString, instrumentationKey);
 
     track(telemetryBuilder, tags, true);
   }
@@ -403,7 +429,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
       telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromNow());
     }
     selectivelySetTags(telemetryBuilder, tags);
-    setConnectionString(telemetryBuilder, connectionString, instrumentationKey);
+    setConnectionStringOnTelemetry(telemetryBuilder, connectionString, instrumentationKey);
 
     track(telemetryBuilder, tags, false);
   }
@@ -523,7 +549,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
     }
   }
 
-  private static void setConnectionString(
+  private static void setConnectionStringOnTelemetry(
       AbstractTelemetryBuilder telemetryBuilder,
       @Nullable String connectionString,
       @Nullable String instrumentationKey) {

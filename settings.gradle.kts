@@ -10,7 +10,7 @@ pluginManagement {
 }
 
 plugins {
-  id("com.gradle.enterprise") version "3.12.1"
+  id("com.gradle.enterprise") version "3.12.2"
 }
 
 dependencyResolutionManagement {
@@ -90,6 +90,8 @@ hideFromDependabot(":smoke-tests:apps:CoreAndFilter3x")
 hideFromDependabot(":smoke-tests:apps:CoreAndFilter3xUsingOld3xAgent")
 hideFromDependabot(":smoke-tests:apps:CustomDimensions")
 hideFromDependabot(":smoke-tests:apps:CustomInstrumentation")
+hideFromDependabot(":smoke-tests:apps:DiagnosticExtension:MockExtension")
+hideFromDependabot(":smoke-tests:apps:DiagnosticExtension")
 hideFromDependabot(":smoke-tests:apps:gRPC")
 hideFromDependabot(":smoke-tests:apps:HeartBeat")
 hideFromDependabot(":smoke-tests:apps:HttpClients")
@@ -118,11 +120,12 @@ hideFromDependabot(":smoke-tests:apps:PreAggMetricsWithRoleNameOverridesAndSampl
 hideFromDependabot(":smoke-tests:apps:RateLimitedSampling")
 hideFromDependabot(":smoke-tests:apps:ReadOnly")
 hideFromDependabot(":smoke-tests:apps:RoleNameOverrides")
+hideFromDependabot(":smoke-tests:apps:RuntimeAttach")
+hideFromDependabot(":smoke-tests:apps:RuntimeAttachWithDelayedConnectionString")
 hideFromDependabot(":smoke-tests:apps:Sampling")
 hideFromDependabot(":smoke-tests:apps:SamplingOverrides")
 hideFromDependabot(":smoke-tests:apps:SamplingOverridesBackCompat")
 hideFromDependabot(":smoke-tests:apps:SpringBoot")
-hideFromDependabot(":smoke-tests:apps:SpringBootAttachInMain")
 hideFromDependabot(":smoke-tests:apps:SpringBootAuto")
 hideFromDependabot(":smoke-tests:apps:SpringBootAuto1_3")
 hideFromDependabot(":smoke-tests:apps:SpringCloudStream")

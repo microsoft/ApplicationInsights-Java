@@ -38,6 +38,9 @@ updates:
       - dependency-name: "org.eclipse.jetty:jetty-servlet"
         # smoke test framework intentionally uses javax servlet (as opposed to jakarta servlet)
         versions: [ "[11,)" ]
+      - dependency-name: "org.mockito:*"
+        # mockito 5 requires Java 11
+        versions: [ "[5,)" ]
     schedule:
       interval: "daily"
     open-pull-requests-limit: 10

@@ -11,9 +11,9 @@ data class DependencySet(val group: String, val version: String, val modules: Li
 val dependencyVersions = hashMapOf<String, String>()
 rootProject.extra["versions"] = dependencyVersions
 
-val otelVersion = "1.21.0"
-val otelInstrumentationVersion = "1.21.0"
-val otelInstrumentationAlphaVersion = "1.21.0-alpha"
+val otelVersion = "1.22.0"
+val otelInstrumentationVersion = "1.22.1"
+val otelInstrumentationAlphaVersion = "1.22.1-alpha"
 val otelContribAlphaVersion = "1.18.0-alpha"
 
 rootProject.extra["otelVersion"] = otelVersion
@@ -29,14 +29,14 @@ val DEPENDENCY_BOMS = listOf(
   "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:${otelInstrumentationVersion}",
   "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${otelInstrumentationAlphaVersion}",
   "com.azure:azure-sdk-bom:1.2.8",
-  "io.netty:netty-bom:4.1.86.Final",
-  "org.junit:junit-bom:5.9.1",
+  "io.netty:netty-bom:4.1.87.Final",
+  "org.junit:junit-bom:5.9.2",
   "org.testcontainers:testcontainers-bom:1.17.6",
 )
 
 val autoServiceVersion = "1.0.1"
 val autoValueVersion = "1.10.1"
-val errorProneVersion = "2.17.0"
+val errorProneVersion = "2.18.0"
 val byteBuddyVersion = "1.12.18"
 val jmhVersion = "1.36"
 val mockitoVersion = "4.11.0"
@@ -70,19 +70,20 @@ val CORE_DEPENDENCIES = listOf(
   "io.opentelemetry.javaagent:opentelemetry-javaagent-extension-api:${otelInstrumentationAlphaVersion}",
   "io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap:${otelInstrumentationAlphaVersion}",
   "io.opentelemetry.javaagent:opentelemetry-javaagent-tooling:${otelInstrumentationAlphaVersion}",
-  // temporarily overriding transitive dependency from azure-core until next azure-core release
-  "io.projectreactor.netty:reactor-netty-http:1.1.1"
+  // temporarily overriding transitive dependency from azure-core until next azure-bom release
+  // which targets at least reactor-netty-http:1.1.1
+  "io.projectreactor.netty:reactor-netty-http:1.1.2"
 )
 
 val DEPENDENCIES = listOf(
   "ch.qos.logback:logback-classic:1.2.11",
   "ch.qos.logback.contrib:logback-json-classic:0.1.5",
-  "com.uber.nullaway:nullaway:0.10.7",
+  "com.uber.nullaway:nullaway:0.10.8",
   "commons-codec:commons-codec:1.15",
   "org.apache.commons:commons-text:1.10.0",
   "com.google.code.gson:gson:2.10.1",
   "com.azure:azure-core-test:1.14.0", // this is not included in azure-sdk-bom
-  "org.assertj:assertj-core:3.24.1",
+  "org.assertj:assertj-core:3.24.2",
   "org.awaitility:awaitility:4.2.0",
   "io.github.hakky54:logcaptor:2.7.10",
   "com.microsoft.jfr:jfr-streaming:1.2.0",

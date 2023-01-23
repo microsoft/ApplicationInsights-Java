@@ -35,6 +35,10 @@ public class DelegatingSampler implements Sampler {
     this.delegate = delegate;
   }
 
+  public void reset() {
+    delegate = Sampler.alwaysOff();
+  }
+
   @Override
   public SamplingResult shouldSample(
       Context parentContext,
