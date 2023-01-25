@@ -83,14 +83,14 @@ public final class SpanDataMapper {
                 "http.request.header.",
                 (telemetryBuilder, key, value) -> {
                   if (value instanceof List) {
-                    telemetryBuilder.addProperty(key, Mappings.join((List) value));
+                    telemetryBuilder.addProperty(key, Mappings.join((List<?>) value));
                   }
                 })
             .prefix(
                 "http.response.header.",
                 (telemetryBuilder, key, value) -> {
                   if (value instanceof List) {
-                    telemetryBuilder.addProperty(key, Mappings.join((List) value));
+                    telemetryBuilder.addProperty(key, Mappings.join((List<?>) value));
                   }
                 });
 
@@ -625,10 +625,16 @@ public final class SpanDataMapper {
     if (isAzureSdkMessaging(attributes.get(AiSemanticAttributes.AZURE_SDK_NAMESPACE))) {
       // special case needed until Azure SDK moves to OTel semantic conventions
       String peerAddress = attributes.get(AiSemanticAttributes.AZURE_SDK_PEER_ADDRESS);
-      String destination = attributes.get(AiSemanticAttributes.AZURE_SDK_MESSAGE_BUS_DESTINATION);
-      return peerAddress + "/" + destination;
+      // TODO (limolkova) need to populate messaging.system in SB and EH.
+      // this make exporter backward-compatible with current EventHubs and ServiceBus
+      // instrumentation and new otel plugin
+      if (peerAddress != null) {
+        String destination = attributes.get(AiSemanticAttributes.AZURE_SDK_MESSAGE_BUS_DESTINATION);
+        return peerAddress + "/" + destination;
+      }
     }
-    String messagingSystem = attributes.get(SemanticAttributes.MESSAGING_SYSTEM);
+
+    String messagingSystem = getMessagingSystem(attributes);
     if (messagingSystem == null) {
       return null;
     }

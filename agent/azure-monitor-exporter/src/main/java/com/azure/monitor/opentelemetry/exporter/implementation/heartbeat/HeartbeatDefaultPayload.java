@@ -6,7 +6,7 @@ package com.azure.monitor.opentelemetry.exporter.implementation.heartbeat;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Container for storing default payload and it's associated helpers. */
+/** Container for storing default payload and its associated helpers. */
 public class HeartbeatDefaultPayload {
 
   /** List of default payloads which would be added. */
@@ -25,12 +25,9 @@ public class HeartbeatDefaultPayload {
    * @return Callable to perform execution
    */
   public static Runnable populateDefaultPayload(HeartbeatExporter provider) {
-    return new Runnable() {
-      @Override
-      public void run() {
-        for (HeartBeatPayloadProviderInterface payloadProvider : defaultPayloadProviders) {
-          payloadProvider.setDefaultPayload(provider).run();
-        }
+    return () -> {
+      for (HeartBeatPayloadProviderInterface payloadProvider : defaultPayloadProviders) {
+        payloadProvider.setDefaultPayload(provider).run();
       }
     };
   }
