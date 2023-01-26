@@ -547,7 +547,7 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
     int intervalMillis =
         Integer.getInteger(
             "applicationinsights.testing.metric-reader-interval-millis",
-            configuration.preview.metricIntervalSeconds * 1000);
+            configuration.metricIntervalSeconds * 1000);
     metricReader = readerBuilder.setInterval(Duration.ofMillis(intervalMillis)).build();
 
     if (configuration.internal.preAggregatedStandardMetrics.enabled) {

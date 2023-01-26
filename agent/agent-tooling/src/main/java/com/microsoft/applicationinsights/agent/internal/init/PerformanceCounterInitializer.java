@@ -36,7 +36,7 @@ public class PerformanceCounterInitializer {
   public static void initialize(Configuration configuration) {
 
     PerformanceCounterContainer.INSTANCE.setCollectionFrequencyInSec(
-        configuration.preview.metricIntervalSeconds);
+        configuration.metricIntervalSeconds);
 
     if (logger.isDebugEnabled()) {
       PerformanceCounterContainer.INSTANCE.setLogAvailableJmxMetrics();
