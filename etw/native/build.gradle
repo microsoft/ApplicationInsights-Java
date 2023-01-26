@@ -50,7 +50,6 @@ tasks.withType(CppCompile).configureEach {
   compilerArgs.add "/EHsc"
   compilerArgs.add "/sdl"
   compilerArgs.add "/std:c++14"
-  compilerArgs.add "/guard:cf"
 
   String buildNative = System.properties[NATIVE_BUILD_VARIANT_PROPERTY]
   String outputNative = project.hasProperty(NATIVE_VERBOSE_OUTPUT_PROPERTY)
@@ -71,9 +70,6 @@ tasks.withType(CppCompile).configureEach {
 
 // NOTE: these options apply to Visual Studio Build Tools (link.exe)
 tasks.withType(LinkSharedLibrary).configureEach {
-  // BinSkim: Rule: BA2008 (EnableControlFlowGuard)
-  linkerArgs.add '/guard:cf'
-  linkerArgs.add '/DYNAMICBASE'
 }
 
 import org.apache.tools.ant.taskdefs.condition.Os
