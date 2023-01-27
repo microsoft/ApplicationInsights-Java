@@ -295,7 +295,7 @@ public class ConfigurationBuilder {
     }
   }
 
-  private static void overlayProfilerEnvVars(Configuration config) {
+  static void overlayProfilerEnvVars(Configuration config) {
     String enabledString = null;
     if (config.preview.profiler.enabled != null) {
       enabledString = Boolean.toString(config.preview.profiler.enabled);

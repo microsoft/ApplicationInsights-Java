@@ -11,14 +11,12 @@ import java.time.Instant;
 public abstract class AlertingConfiguration {
 
   public static AlertingConfiguration create(
-      boolean configured,
       AlertConfiguration cpuAlert,
       AlertConfiguration memoryAlert,
       DefaultConfiguration defaultConfiguration,
       CollectionPlanConfiguration collectionPlanConfiguration) {
-
     return new AutoValue_AlertingConfiguration(
-        configured, cpuAlert, memoryAlert, defaultConfiguration, collectionPlanConfiguration);
+        cpuAlert, memoryAlert, defaultConfiguration, collectionPlanConfiguration);
   }
 
   public boolean hasAnEnabledTrigger() {
@@ -32,8 +30,6 @@ public abstract class AlertingConfiguration {
     // Sampling not enabled yet
     // getDefaultConfiguration().getSamplingEnabled();
   }
-
-  public abstract boolean getConfigured();
 
   // Alert configuration for CPU telemetry
   public abstract AlertConfiguration getCpuAlert();

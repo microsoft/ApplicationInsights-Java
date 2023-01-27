@@ -96,9 +96,7 @@ public class ProfilingInitializer {
           "disable profiler or use a writable file system");
     }
 
-    boolean userDisabled = !configuration.preview.profiler.isEnabled();
-
-    if (!userDisabled) {
+    if (configuration.preview.profiler.isEnabled()) {
       performInit();
     }
   }

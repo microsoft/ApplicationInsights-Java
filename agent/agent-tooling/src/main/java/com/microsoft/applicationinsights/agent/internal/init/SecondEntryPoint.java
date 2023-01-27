@@ -165,7 +165,9 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
         configuration.connectionStringConfiguredAtRuntime;
 
     try {
-      ProfilingInitializer.initialize(tempDir, configuration, telemetryClient);
+      if (!configuration.preview.profiler.isEnabled()) {
+        ProfilingInitializer.initialize(tempDir, configuration, telemetryClient);
+      }
     } catch (RuntimeException e) {
       startupLogger.warning("Failed to initialize profiler", e);
     }

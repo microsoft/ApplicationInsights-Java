@@ -60,7 +60,6 @@ public class AlertingSubsystem {
     // init with disabled config
     alertingSubsystem.initialize(
         AlertingConfiguration.create(
-            false,
             AlertConfiguration.builder().setType(AlertMetricType.CPU).build(),
             AlertConfiguration.builder().setType(AlertMetricType.MEMORY).build(),
             DefaultConfiguration.builder().build(),

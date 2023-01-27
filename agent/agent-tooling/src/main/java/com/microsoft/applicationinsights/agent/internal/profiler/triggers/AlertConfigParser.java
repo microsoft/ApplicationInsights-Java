@@ -21,13 +21,8 @@ import javax.annotation.Nullable;
 public class AlertConfigParser {
 
   static AlertingConfiguration parse(
-      boolean configured,
-      String cpuConfig,
-      String memoryConfig,
-      String defaultConfig,
-      String collectionPlan) {
+      String cpuConfig, String memoryConfig, String defaultConfig, String collectionPlan) {
     return AlertingConfiguration.create(
-        configured,
         parseFromCpu(cpuConfig),
         parseFromMemory(memoryConfig),
         parseDefaultConfiguration(defaultConfig),
@@ -206,7 +201,6 @@ public class AlertConfigParser {
       ProfilerConfiguration profilerConfiguration) {
 
     return AlertConfigParser.parse(
-        profilerConfiguration.hasBeenConfigured(),
         profilerConfiguration.getCpuTriggerConfiguration(),
         profilerConfiguration.getMemoryTriggerConfiguration(),
         profilerConfiguration.getDefaultConfiguration(),

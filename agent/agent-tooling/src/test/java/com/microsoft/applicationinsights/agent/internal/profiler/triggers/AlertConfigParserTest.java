@@ -18,7 +18,7 @@ class AlertConfigParserTest {
   @Test
   void nullsInConfigAreHandled() {
 
-    AlertingConfiguration config = AlertConfigParser.parse(false, null, null, null, null);
+    AlertingConfiguration config = AlertConfigParser.parse(null, null, null, null);
     assertThat(config.getCpuAlert().isEnabled()).isFalse();
     assertThat(config.getCollectionPlanConfiguration().isSingle()).isFalse();
     assertThat(config.getMemoryAlert().isEnabled()).isFalse();
@@ -29,7 +29,6 @@ class AlertConfigParserTest {
   void saneDataIsParsed() {
     AlertingConfiguration config =
         AlertConfigParser.parse(
-            true,
             "--cpu-trigger-enabled true --cpu-threshold 80 --cpu-trigger-profilingDuration 30 --cpu-trigger-cooldown 14400",
             "--memory-trigger-enabled true --memory-threshold 20 --memory-trigger-profilingDuration 120 --memory-trigger-cooldown 14400",
             "--sampling-enabled true --sampling-rate 5 --sampling-profiling-duration 120",
