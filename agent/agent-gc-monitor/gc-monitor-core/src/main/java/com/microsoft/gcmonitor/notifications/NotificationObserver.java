@@ -20,7 +20,8 @@ import org.slf4j.LoggerFactory;
 public class NotificationObserver implements NotificationListener {
   private static final Logger LOGGER = LoggerFactory.getLogger(NotificationObserver.class);
   private static final int MAX_QUEUE_SIZE = 1000;
-  private final LinkedBlockingQueue<NotificationJob> workQueue = new LinkedBlockingQueue<>(MAX_QUEUE_SIZE);
+  private final LinkedBlockingQueue<NotificationJob> workQueue =
+      new LinkedBlockingQueue<>(MAX_QUEUE_SIZE);
   private final ExecutorService executorService;
 
   public NotificationObserver(ExecutorService executorService) {
