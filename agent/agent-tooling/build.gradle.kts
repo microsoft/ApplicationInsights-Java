@@ -49,7 +49,7 @@ dependencies {
   compileOnly("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure")
   compileOnly("io.opentelemetry:opentelemetry-extension-trace-propagators")
 
-  implementation("com.github.oshi:oshi-core:6.3.2") {
+  implementation("com.github.oshi:oshi-core:6.4.0") {
     exclude("org.slf4j", "slf4j-api")
   }
 
@@ -66,7 +66,7 @@ dependencies {
   testImplementation("io.opentelemetry:opentelemetry-sdk-logs-testing")
 
   // TODO(trask): update tests, no need to use this anymore
-  testImplementation("com.squareup.okio:okio:3.2.0")
+  testImplementation("com.squareup.okio:okio:3.3.0")
 
   compileOnly(project(":agent:agent-bootstrap"))
   compileOnly("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api")
@@ -86,13 +86,14 @@ dependencies {
   testImplementation("org.assertj:assertj-core")
   testImplementation("org.awaitility:awaitility")
   testImplementation("org.mockito:mockito-core")
-  testImplementation("uk.org.webcompere:system-stubs-jupiter:2.0.1")
+  testImplementation("uk.org.webcompere:system-stubs-jupiter:2.0.2")
   testImplementation("io.github.hakky54:logcaptor")
 }
 
 configurations {
   all {
-    // excluding unused dependency for size (~1.8mb)
+    // excluding unused dependencies for size (~1.8mb)
     exclude("com.fasterxml.jackson.dataformat", "jackson-dataformat-xml")
+    exclude("com.fasterxml.woodstox", "woodstox-core")
   }
 }

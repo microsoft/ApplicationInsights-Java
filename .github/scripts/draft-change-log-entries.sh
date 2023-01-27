@@ -11,6 +11,6 @@ echo
 git log --reverse \
         --author='^(?!dependabot\[bot\] )' \
         --perl-regexp \
-        --pretty=format:"- %s" \
+        --pretty=format:"* %s" \
         $prior_version..HEAD \
   | sed -E 's,\(#([0-9]+)\)$,\n  ([#\1](https://github.com/microsoft/ApplicationInsights-Java/pull/\1)),'

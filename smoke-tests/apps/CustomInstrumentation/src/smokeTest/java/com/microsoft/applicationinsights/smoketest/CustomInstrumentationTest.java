@@ -30,11 +30,51 @@ public abstract class CustomInstrumentationTest {
   @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.create();
 
   @Test
-  @TargetUri("/test")
-  void test() throws Exception {
+  @TargetUri("/internal-span")
+  void internalSpan() throws Exception {
+    Telemetry telemetry = testing.getTelemetry(1);
+
+    String operationId = telemetry.rdEnvelope.getTags().get("ai.operation.id");
+    List<Envelope> mdList = testing.mockedIngestion.waitForMessageItemsInRequest(1, operationId);
+
+    Envelope mdEnvelope = mdList.get(0);
+
+    assertThat(telemetry.rdEnvelope.getSampleRate()).isNull();
+    assertThat(telemetry.rddEnvelope1.getSampleRate()).isNull();
+    assertThat(mdEnvelope.getSampleRate()).isNull();
+
+    MessageData md = (MessageData) ((Data<?>) mdEnvelope.getData()).getBaseData();
+
+    assertThat(telemetry.rd.getName()).isEqualTo("GET /internal-span");
+    assertThat(telemetry.rd.getResponseCode()).isEqualTo("200");
+    assertThat(telemetry.rd.getProperties())
+        .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
+    assertThat(telemetry.rd.getSuccess()).isTrue();
+
+    assertThat(telemetry.rdd1.getName()).isEqualTo("TestController.run");
+    assertThat(telemetry.rdd1.getProperties()).isEmpty();
+    assertThat(telemetry.rdd1.getSuccess()).isTrue();
+
+    assertThat(md.getMessage()).isEqualTo("hello");
+    assertThat(md.getSeverityLevel()).isEqualTo(SeverityLevel.INFORMATION);
+    assertThat(md.getProperties()).containsEntry("SourceType", "Logger");
+    assertThat(md.getProperties()).containsEntry("LoggerName", "smoketestapp");
+    assertThat(md.getProperties()).containsKey("ThreadName");
+    assertThat(md.getProperties()).hasSize(3);
+
+    SmokeTestExtension.assertParentChild(
+        telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /internal-span");
+
+    SmokeTestExtension.assertParentChild(
+        telemetry.rdd1, telemetry.rddEnvelope1, mdEnvelope, "GET /internal-span");
+  }
+
+  @Test
+  @TargetUri("/server-span")
+  void serverSpan() throws Exception {
     List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 2);
 
-    Envelope rdEnvelope1 = getRequestEnvelope(rdList, "GET /test");
+    Envelope rdEnvelope1 = getRequestEnvelope(rdList, "GET /server-span");
     Envelope rdEnvelope2 = getRequestEnvelope(rdList, "TestController.run");
 
     String operationId = rdEnvelope2.getTags().get("ai.operation.id");
@@ -50,7 +90,7 @@ public abstract class CustomInstrumentationTest {
     RequestData rd2 = (RequestData) ((Data<?>) rdEnvelope2.getData()).getBaseData();
     MessageData md = (MessageData) ((Data<?>) mdEnvelope.getData()).getBaseData();
 
-    assertThat(rd1.getName()).isEqualTo("GET /test");
+    assertThat(rd1.getName()).isEqualTo("GET /server-span");
     assertThat(rd1.getResponseCode()).isEqualTo("200");
     assertThat(rd1.getProperties())
         .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
@@ -67,6 +107,8 @@ public abstract class CustomInstrumentationTest {
     assertThat(md.getProperties()).containsEntry("LoggerName", "smoketestapp");
     assertThat(md.getProperties()).containsKey("ThreadName");
     assertThat(md.getProperties()).hasSize(3);
+
+    SmokeTestExtension.assertParentChild(rd2, rdEnvelope2, mdEnvelope, "TestController.run");
   }
 
   private static Envelope getRequestEnvelope(List<Envelope> envelopes, String name) {

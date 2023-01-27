@@ -1,5 +1,49 @@
 # CHANGELOG
 
+## Version 3.4.8 GA
+
+### Enhancements:
+
+* Update to OpenTelemetry Java Instrumentation 1.22.1
+  ([#2840](https://github.com/microsoft/ApplicationInsights-Java/pull/2840))
+* Add support for configuring connection string at runtime
+  ([#2809](https://github.com/microsoft/ApplicationInsights-Java/pull/2809))
+
+## Version 3.4.7 GA
+
+### Enhancements:
+
+* Update to OpenTelemetry Java Instrumentation 1.21
+  ([#2796](https://github.com/microsoft/ApplicationInsights-Java/pull/2796))
+
+### Bug fixes:
+
+* Fix custom instrumentation type
+  ([#2776](https://github.com/microsoft/ApplicationInsights-Java/pull/2776))
+* Fix Azure SDK target mapping
+  ([#2787](https://github.com/microsoft/ApplicationInsights-Java/pull/2787))
+
+## Version 3.4.6 GA
+
+### Bug fixes:
+
+* Fix self-diagnostics trace level logging can hang
+  ([#2778](https://github.com/microsoft/ApplicationInsights-Java/pull/2778))
+
+## Version 3.4.5 GA
+
+### Enhancements:
+
+* Update to OpenTelemetry Java Instrumentation 1.20
+  ([#2712](https://github.com/microsoft/ApplicationInsights-Java/pull/2712))
+* Additional self-diagnostics
+  ([#2709](https://github.com/microsoft/ApplicationInsights-Java/pull/2709),
+   [#2719](https://github.com/microsoft/ApplicationInsights-Java/pull/2719),
+   [#2717](https://github.com/microsoft/ApplicationInsights-Java/pull/2717),
+   [#2716](https://github.com/microsoft/ApplicationInsights-Java/pull/2716),
+   [#2737](https://github.com/microsoft/ApplicationInsights-Java/pull/2737),
+   [#2756](https://github.com/microsoft/ApplicationInsights-Java/pull/2756))
+
 ## Version 3.4.4 GA
 
 ### Enhancements:
@@ -7,7 +51,7 @@
 * Add scala instrumentation when play or akka instrumentation are enabled
   ([#2677](https://github.com/microsoft/ApplicationInsights-Java/pull/2677))
 
-### Bug Fixes:
+### Bug fixes:
 
 * Fix Azure Function instrumentation (bug introduced in 3.4.2)
   ([#2684](https://github.com/microsoft/ApplicationInsights-Java/pull/2684))

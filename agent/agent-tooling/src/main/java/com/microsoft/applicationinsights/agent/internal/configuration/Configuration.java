@@ -33,6 +33,11 @@ import javax.annotation.Nullable;
 public class Configuration {
 
   public String connectionString;
+  // missing connection string will cause the agent to not start up, unless this is set,
+  // in which case the agent will start, but it won't begin capturing any telemetry until the
+  // connection string is configured later on
+  public boolean connectionStringConfiguredAtRuntime =
+      ConfigurationBuilder.inAzureFunctionsConsumptionWorker();
   public Role role = new Role();
   public Map<String, String> customDimensions = new HashMap<>();
   public Sampling sampling = new Sampling();
@@ -41,6 +46,10 @@ public class Configuration {
   public Heartbeat heartbeat = new Heartbeat();
   public Proxy proxy = new Proxy();
   public SelfDiagnostics selfDiagnostics = new SelfDiagnostics();
+  // applies to perf counters, default custom metrics, jmx metrics, and micrometer metrics
+  // not sure if we'll be able to have different metric intervals in future OpenTelemetry metrics
+  // world, so safer to only allow single interval for now
+  public int metricIntervalSeconds = 60;
   public PreviewConfiguration preview = new PreviewConfiguration();
   public InternalConfiguration internal = new InternalConfiguration();
 
@@ -294,11 +303,6 @@ public class Configuration {
     // this is just here to detect if using this old setting in order to give a helpful message
     @Deprecated public boolean openTelemetryApiSupport;
     public PreviewInstrumentation instrumentation = new PreviewInstrumentation();
-    // applies to perf counters, default custom metrics, jmx metrics, and micrometer metrics
-    // not sure if we'll be able to have different metric intervals in future OpenTelemetry metrics
-    // world,
-    // so safer to only allow single interval for now
-    public int metricIntervalSeconds = 60;
     // this is just here to detect if using this old setting in order to give a helpful message
     @Deprecated public Boolean ignoreRemoteParentNotSampled;
     public boolean captureControllerSpans;

@@ -73,10 +73,6 @@ public class LoggingLevelConfigurator {
       // OpenTelemetry instrumentation debug log has lots of things that look like errors
       // which has been confusing customers, so only enable it when user configures "trace" level
       loggerLevel = getDefaultLibraryLevel(level);
-    } else if (name.startsWith("muzzleMatcher")) {
-      // muzzleMatcher logs at WARN level, so by default this is OFF, but enabled when DEBUG logging
-      // is enabled
-      loggerLevel = getMuzzleMatcherLevel(level);
     } else if (name.equals("com.azure.core.implementation.jackson.MemberNameConverterImpl")) {
       // never want to log at trace or debug, as it logs confusing stack trace that
       // looks like error but isn't
@@ -147,14 +143,6 @@ public class LoggingLevelConfigurator {
   private static Level getOtherLibLevel(Level level) {
     // bump INFO up to WARN, keep all others as-is
     return level == Level.INFO ? Level.WARN : level;
-  }
-
-  // TODO need something more reliable, currently will log too much WARN if "muzzleMatcher" logger
-  // name changes
-  // muzzleMatcher logs at WARN level in order to make them visible, but really should only be
-  // enabled when debugging
-  private static Level getMuzzleMatcherLevel(Level level) {
-    return level.toInt() <= Level.DEBUG.toInt() ? level : getMaxLevel(level, Level.ERROR);
   }
 
   private static Level getMaxLevel(Level level1, Level level2) {

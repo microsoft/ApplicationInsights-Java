@@ -96,8 +96,11 @@ public class ConfigurationBuilder {
   private static final String APPLICATIONINSIGHTS_PREVIEW_PROFILER_ENABLED =
       "APPLICATIONINSIGHTS_PREVIEW_PROFILER_ENABLED";
 
-  private static final String APPLICATIONINSIGHTS_PREVIEW_METRIC_INTERVAL_SECONDS =
-      "APPLICATIONINSIGHTS_PREVIEW_METRIC_INTERVAL_SECONDS";
+  private static final String APPLICATIONINSIGHTS_PREVIEW_PROFILER_ENABLEDIAGNOSTICS =
+      "APPLICATIONINSIGHTS_PREVIEW_PROFILER_ENABLEDIAGNOSTICS";
+
+  private static final String APPLICATIONINSIGHTS_METRIC_INTERVAL_SECONDS =
+      "APPLICATIONINSIGHTS_METRIC_INTERVAL_SECONDS";
 
   private static final String APPLICATIONINSIGHTS_AUTHENTICATION_STRING =
       "APPLICATIONINSIGHTS_AUTHENTICATION_STRING";
@@ -303,6 +306,12 @@ public class ConfigurationBuilder {
           "Profiler is not supported for an OpenJ9 JVM. Instead, please use an OpenJDK JVM.");
       config.preview.profiler.enabled = false;
     }
+
+    config.preview.profiler.enableDiagnostics =
+        Boolean.parseBoolean(
+            overlayWithEnvVar(
+                APPLICATIONINSIGHTS_PREVIEW_PROFILER_ENABLEDIAGNOSTICS,
+                Boolean.toString(config.preview.profiler.enableDiagnostics)));
   }
 
   private static boolean isOpenJ9Jvm() {
@@ -544,10 +553,9 @@ public class ConfigurationBuilder {
         overlayWithEnvVar(
             APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_FILE_PATH, config.selfDiagnostics.file.path);
 
-    config.preview.metricIntervalSeconds =
+    config.metricIntervalSeconds =
         overlayWithEnvVar(
-            APPLICATIONINSIGHTS_PREVIEW_METRIC_INTERVAL_SECONDS,
-            config.preview.metricIntervalSeconds);
+            APPLICATIONINSIGHTS_METRIC_INTERVAL_SECONDS, config.metricIntervalSeconds);
 
     config.preview.instrumentation.springIntegration.enabled =
         overlayWithEnvVar(
@@ -678,12 +686,22 @@ public class ConfigurationBuilder {
 
   private static String getWebsiteSiteNameEnvVar() {
     String websiteSiteName = getEnvVar(WEBSITE_SITE_NAME);
-    // TODO we can update this check after the new functions model is deployed.
-    if (websiteSiteName != null && "java".equals(getEnvVar("FUNCTIONS_WORKER_RUNTIME"))) {
+    if (websiteSiteName != null && inAzureFunctionsWorker()) {
       // special case for Azure Functions
       return websiteSiteName.toLowerCase(Locale.ENGLISH);
     }
     return websiteSiteName;
+  }
+
+  public static boolean inAzureFunctionsConsumptionWorker() {
+    // for now its the same, but in future should be different check
+    return inAzureFunctionsWorker();
+  }
+
+  public static boolean inAzureFunctionsWorker() {
+    // supporting both Azure Functions RP Integration, as well as bring your own agent deployments
+    // in Azure Functions
+    return "java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME"));
   }
 
   public static String overlayWithSysPropEnvVar(

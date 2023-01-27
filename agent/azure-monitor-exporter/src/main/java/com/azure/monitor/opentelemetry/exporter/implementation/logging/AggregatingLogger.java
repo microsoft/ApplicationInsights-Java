@@ -22,8 +22,6 @@ class AggregatingLogger {
       Executors.newSingleThreadScheduledExecutor(
           ThreadPoolUtils.createDaemonThreadFactory(AggregatingLogger.class, "aggregating logger"));
 
-  private static final String NEWLINE = System.getProperty("line.separator");
-
   private final Logger logger;
   private final String grouping;
 
@@ -170,7 +168,7 @@ class AggregatingLogger {
             .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
             .forEach(
                 entry -> {
-                  message.append(NEWLINE);
+                  message.append(System.lineSeparator());
                   message.append(" * ");
                   message.append(entry.getKey());
                   message.append(" (");

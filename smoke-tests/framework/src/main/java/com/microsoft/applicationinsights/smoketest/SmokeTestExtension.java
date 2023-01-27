@@ -91,7 +91,10 @@ public class SmokeTestExtension
   private final boolean readOnly;
   private final boolean usesGlobalIngestionEndpoint;
   private final boolean useOld3xAgent;
+  private final String connectionString;
+  private final String selfDiagnosticsLevel;
   private final File javaagentFile;
+  private final File agentExtensionFile;
 
   public static SmokeTestExtension create() {
     return builder().build();
@@ -107,13 +110,25 @@ public class SmokeTestExtension
       boolean usesGlobalIngestionEndpoint,
       boolean skipHealthCheck,
       boolean readOnly,
-      boolean useOld3xAgent) {
+      boolean doNotSetConnectionString,
+      boolean useOld3xAgent,
+      String selfDiagnosticsLevel,
+      File agentExtensionFile) {
     this.skipHealthCheck = skipHealthCheck;
     this.readOnly = readOnly;
     this.dependencyContainer = dependencyContainer;
     this.dependencyContainerEnvVarName = dependencyContainerEnvVarName;
     this.usesGlobalIngestionEndpoint = usesGlobalIngestionEndpoint;
     this.useOld3xAgent = useOld3xAgent;
+    connectionString =
+        doNotSetConnectionString
+            ? ""
+            : "InstrumentationKey=00000000-0000-0000-0000-0FEEDDADBEEF;IngestionEndpoint="
+                + FAKE_INGESTION_ENDPOINT
+                + ";LiveEndpoint="
+                + FAKE_INGESTION_ENDPOINT;
+    this.selfDiagnosticsLevel = selfDiagnosticsLevel;
+    this.agentExtensionFile = agentExtensionFile;
 
     String javaagentPathSystemProperty =
         useOld3xAgent ? "ai.smoke-test.old-3x-javaagent-file" : "ai.smoke-test.javaagent-file";
@@ -362,13 +377,8 @@ public class SmokeTestExtension
     container =
         container
             .withEnv(hostnameEnvVars)
-            .withEnv(
-                "APPLICATIONINSIGHTS_CONNECTION_STRING",
-                "InstrumentationKey=00000000-0000-0000-0000-0FEEDDADBEEF;"
-                    + "IngestionEndpoint="
-                    + FAKE_INGESTION_ENDPOINT
-                    + ";LiveEndpoint="
-                    + FAKE_INGESTION_ENDPOINT)
+            .withEnv("APPLICATIONINSIGHTS_CONNECTION_STRING", connectionString)
+            .withEnv("APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_LEVEL", selfDiagnosticsLevel)
             .withNetwork(network)
             .withExposedPorts(8080)
             .withFileSystemBind(
@@ -379,6 +389,9 @@ public class SmokeTestExtension
     List<String> javaToolOptions = new ArrayList<>();
     javaToolOptions.add("-Dapplicationinsights.testing.batch-schedule-delay-millis=500");
     javaToolOptions.add("-Dapplicationinsights.testing.metric-reader-interval-millis=500");
+    if (agentExtensionFile != null) {
+      javaToolOptions.add("-Dotel.javaagent.extensions=/" + agentExtensionFile.getName());
+    }
     if (usesGlobalIngestionEndpoint) {
       javaToolOptions.add(
           "-Dapplicationinsights.testing.global-ingestion-endpoint=" + FAKE_INGESTION_ENDPOINT);
@@ -390,6 +403,8 @@ public class SmokeTestExtension
       javaToolOptions.add("-javaagent:/applicationinsights-agent.jar");
     }
     container.withEnv("JAVA_TOOL_OPTIONS", String.join(" ", javaToolOptions));
+
+    container = addAdditionalFile(container);
 
     if (useAgent) {
       container =
@@ -433,6 +448,16 @@ public class SmokeTestExtension
 
     targetContainer = container;
     allContainers.add(container);
+  }
+
+  private GenericContainer<?> addAdditionalFile(GenericContainer<?> container) {
+    if (agentExtensionFile != null) {
+      return container.withFileSystemBind(
+          agentExtensionFile.getAbsolutePath(),
+          "/" + agentExtensionFile.getName(),
+          BindMode.READ_ONLY);
+    }
+    return container;
   }
 
   @Override

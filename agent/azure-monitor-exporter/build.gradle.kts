@@ -33,12 +33,12 @@ dependencies {
   testImplementation("org.assertj:assertj-core")
   testImplementation("org.awaitility:awaitility")
   testImplementation("org.mockito:mockito-core")
-  testImplementation("uk.org.webcompere:system-stubs-jupiter:2.0.1")
+  testImplementation("uk.org.webcompere:system-stubs-jupiter:2.0.2")
   testImplementation("io.github.hakky54:logcaptor")
 
-  testImplementation("com.azure:azure-data-appconfiguration:1.3.9")
-  testImplementation("com.azure:azure-messaging-eventhubs:5.15.0")
-  testImplementation("com.azure:azure-messaging-eventhubs-checkpointstore-blob:1.16.1")
+  testImplementation("com.azure:azure-data-appconfiguration:1.4.1")
+  testImplementation("com.azure:azure-messaging-eventhubs:5.15.1")
+  testImplementation("com.azure:azure-messaging-eventhubs-checkpointstore-blob:1.16.2")
 
   testCompileOnly("com.google.code.findbugs:jsr305")
   testCompileOnly("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
@@ -46,7 +46,8 @@ dependencies {
 
 configurations {
   all {
-    // excluding unused dependency for size (~1.8mb)
+    // excluding unused dependencies for size (~1.8mb)
     exclude("com.fasterxml.jackson.dataformat", "jackson-dataformat-xml")
+    exclude("com.fasterxml.woodstox", "woodstox-core")
   }
 }

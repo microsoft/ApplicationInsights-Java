@@ -10,7 +10,6 @@ import com.azure.core.http.HttpPipelineCallContext;
 import com.azure.core.http.HttpPipelineNextPolicy;
 import com.azure.core.http.HttpResponse;
 import com.azure.core.http.policy.HttpPipelinePolicy;
-import com.azure.core.test.TestBase;
 import com.azure.core.test.TestMode;
 import com.azure.core.util.Context;
 import com.azure.core.util.FluxUtil;
@@ -19,6 +18,7 @@ import com.azure.data.appconfiguration.ConfigurationClientBuilder;
 import com.azure.data.appconfiguration.models.ConfigurationSetting;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.TestUtils;
 import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Scope;
@@ -34,7 +34,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 import reactor.core.publisher.Mono;
 
-public class AppConfigurationExporterIntegrationTest extends TestBase {
+public class AppConfigurationExporterIntegrationTest extends MonitorExporterClientTestBase {
 
   @Override
   @BeforeEach
@@ -53,9 +53,12 @@ public class AppConfigurationExporterIntegrationTest extends TestBase {
     CountDownLatch appConfigCountDown = new CountDownLatch(1);
     CountDownLatch exporterCountDown = new CountDownLatch(1);
 
-    Tracer tracer =
-        TestUtils.configureAzureMonitorTraceExporter(
-            new ValidationPolicy(exporterCountDown, "AppConfig.setKey"));
+    ValidationPolicy validationPolicy = new ValidationPolicy(exporterCountDown, "AppConfig.setKey");
+    OpenTelemetry openTelemetry =
+        TestUtils.createOpenTelemetrySdk(getHttpPipeline(validationPolicy));
+
+    Tracer tracer = openTelemetry.getTracer("Sample");
+
     ConfigurationClient client = getConfigurationClient(appConfigCountDown);
 
     Span span = tracer.spanBuilder("set-config-exporter-testing").startSpan();
@@ -79,9 +82,13 @@ public class AppConfigurationExporterIntegrationTest extends TestBase {
     CountDownLatch appConfigCountDown = new CountDownLatch(1);
     CountDownLatch exporterCountDown = new CountDownLatch(1);
 
-    Tracer tracer =
-        TestUtils.configureAzureMonitorTraceExporter(
-            new ValidationPolicy(exporterCountDown, "disable-config-exporter-testing"));
+    ValidationPolicy validationPolicy =
+        new ValidationPolicy(exporterCountDown, "disable-config-exporter-testing");
+    OpenTelemetry openTelemetry =
+        TestUtils.createOpenTelemetrySdk(getHttpPipeline(validationPolicy));
+
+    Tracer tracer = openTelemetry.getTracer("Sample");
+
     ConfigurationClient client = getConfigurationClient(appConfigCountDown);
 
     Span span = tracer.spanBuilder("disable-config-exporter-testing").startSpan();

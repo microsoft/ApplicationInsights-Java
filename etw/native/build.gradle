@@ -70,7 +70,6 @@ tasks.withType(CppCompile).configureEach {
 
 // NOTE: these options apply to Visual Studio Build Tools (link.exe)
 tasks.withType(LinkSharedLibrary).configureEach {
-
 }
 
 import org.apache.tools.ant.taskdefs.condition.Os

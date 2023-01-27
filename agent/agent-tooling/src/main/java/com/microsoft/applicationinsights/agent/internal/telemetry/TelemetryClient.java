@@ -53,6 +53,8 @@ public class TelemetryClient {
 
   @Nullable private static volatile TelemetryClient active;
 
+  private final AppIdSupplier appIdSupplier;
+
   @Nullable private volatile ConnectionString connectionString;
   @Nullable private volatile StatsbeatConnectionString statsbeatConnectionString;
   @Nullable private volatile String roleName;
@@ -112,6 +114,11 @@ public class TelemetryClient {
     this.roleName = builder.roleName;
     this.roleInstance = builder.roleInstance;
     this.diskPersistenceMaxSizeMb = builder.diskPersistenceMaxSizeMb;
+
+    appIdSupplier = new AppIdSupplier();
+    if (this.connectionString != null) {
+      appIdSupplier.updateAppId(this.connectionString);
+    }
   }
 
   public static TelemetryClient getActive() {
@@ -381,14 +388,13 @@ public class TelemetryClient {
   }
 
   @Nullable
-  public String getRoleName() {
-    return roleName;
+  public ConnectionString getConnectionString() {
+    return connectionString;
   }
 
-  // used during Azure Functions placeholder specialization
-  public void updateRoleName(String roleName) {
-    this.roleName = roleName;
-    globalTags.put(ContextTagKeys.AI_CLOUD_ROLE.toString(), roleName);
+  @Nullable
+  public String getRoleName() {
+    return roleName;
   }
 
   @Nullable
@@ -405,21 +411,34 @@ public class TelemetryClient {
 
     if (Strings.isNullOrEmpty(connectionString)) {
       this.connectionString = null;
+      appIdSupplier.updateAppId(null);
       this.statsbeatConnectionString = null;
-    } else {
-      this.connectionString = ConnectionString.parse(connectionString);
-      this.statsbeatConnectionString =
-          StatsbeatConnectionString.create(
-              this.connectionString, statsbeatInstrumentationKey, statsbeatEndpoint);
-      if (this.statsbeatConnectionString == null) {
-        statsbeatModule.shutdown();
-      }
+      return;
+    }
+
+    this.connectionString = ConnectionString.parse(connectionString);
+    appIdSupplier.updateAppId(this.connectionString);
+
+    this.statsbeatConnectionString =
+        StatsbeatConnectionString.create(
+            this.connectionString, statsbeatInstrumentationKey, statsbeatEndpoint);
+    if (this.statsbeatConnectionString == null) {
+      statsbeatModule.shutdown();
     }
   }
 
-  @Nullable
-  public ConnectionString getConnectionString() {
-    return connectionString;
+  public void updateRoleName(String roleName) {
+    this.roleName = roleName;
+    globalTags.put(ContextTagKeys.AI_CLOUD_ROLE.toString(), roleName);
+  }
+
+  public void updateRoleInstance(String roleInstance) {
+    this.roleInstance = roleInstance;
+    globalTags.put(ContextTagKeys.AI_CLOUD_ROLE_INSTANCE.toString(), roleInstance);
+  }
+
+  public String getAppId() {
+    return appIdSupplier.get();
   }
 
   @Nullable

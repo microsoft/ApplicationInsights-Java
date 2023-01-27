@@ -128,7 +128,7 @@ tasks {
         "Agent-Class" to "com.microsoft.applicationinsights.agent.Agent",
         "Premain-Class" to "com.microsoft.applicationinsights.agent.Agent",
         "Can-Redefine-Classes" to true,
-        "Can-Retransform-Classes" to true
+        "Can-Retransform-Classes" to true,
       )
     }
   }
@@ -194,12 +194,12 @@ licenseReport {
   excludeBoms = true
 
   excludeGroups = arrayOf(
-    "applicationinsights-java.*"
+    "applicationinsights-java.*",
   )
 
   excludes = arrayOf(
     "io.opentelemetry:opentelemetry-bom-alpha",
-    "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha"
+    "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha",
   )
 
   filters = arrayOf(LicenseBundleNormalizer("$projectDir/license-normalizer-bundle.json", true))
