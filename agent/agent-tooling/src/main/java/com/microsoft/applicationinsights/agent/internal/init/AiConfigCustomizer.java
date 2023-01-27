@@ -23,7 +23,7 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
     Map<String, String> properties = new HashMap<>();
     properties.put(
         "applicationinsights.internal.micrometer.step.millis",
-        Long.toString(SECONDS.toMillis(configuration.preview.metricIntervalSeconds)));
+        Long.toString(SECONDS.toMillis(configuration.metricIntervalSeconds)));
 
     enableInstrumentations(configuration, properties);
 
