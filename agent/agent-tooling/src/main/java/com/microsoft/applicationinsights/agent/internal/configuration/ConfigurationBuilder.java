@@ -99,8 +99,8 @@ public class ConfigurationBuilder {
   private static final String APPLICATIONINSIGHTS_PREVIEW_PROFILER_ENABLEDIAGNOSTICS =
       "APPLICATIONINSIGHTS_PREVIEW_PROFILER_ENABLEDIAGNOSTICS";
 
-  private static final String APPLICATIONINSIGHTS_PREVIEW_METRIC_INTERVAL_SECONDS =
-      "APPLICATIONINSIGHTS_PREVIEW_METRIC_INTERVAL_SECONDS";
+  private static final String APPLICATIONINSIGHTS_METRIC_INTERVAL_SECONDS =
+      "APPLICATIONINSIGHTS_METRIC_INTERVAL_SECONDS";
 
   private static final String APPLICATIONINSIGHTS_AUTHENTICATION_STRING =
       "APPLICATIONINSIGHTS_AUTHENTICATION_STRING";
@@ -553,10 +553,9 @@ public class ConfigurationBuilder {
         overlayWithEnvVar(
             APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_FILE_PATH, config.selfDiagnostics.file.path);
 
-    config.preview.metricIntervalSeconds =
+    config.metricIntervalSeconds =
         overlayWithEnvVar(
-            APPLICATIONINSIGHTS_PREVIEW_METRIC_INTERVAL_SECONDS,
-            config.preview.metricIntervalSeconds);
+            APPLICATIONINSIGHTS_METRIC_INTERVAL_SECONDS, config.metricIntervalSeconds);
 
     config.preview.instrumentation.springIntegration.enabled =
         overlayWithEnvVar(

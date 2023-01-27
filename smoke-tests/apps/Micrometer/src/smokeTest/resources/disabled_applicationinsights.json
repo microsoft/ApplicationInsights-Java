@@ -11,7 +11,5 @@
       "enabled": false
     }
   },
-  "preview": {
-    "metricIntervalSeconds": 5
-  }
+  "metricIntervalSeconds": 5
 }
