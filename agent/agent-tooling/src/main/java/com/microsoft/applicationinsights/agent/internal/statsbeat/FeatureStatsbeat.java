@@ -164,7 +164,7 @@ public class FeatureStatsbeat extends BaseStatsbeat {
     if (!config.preview.processors.isEmpty()) {
       featureList.add(Feature.TELEMETRY_PROCESSOR_ENABLED);
     }
-    if (config.preview.profiler.enabled) {
+    if (config.preview.profiler.isEnabled()) {
       featureList.add(Feature.PROFILER_ENABLED);
     }
 

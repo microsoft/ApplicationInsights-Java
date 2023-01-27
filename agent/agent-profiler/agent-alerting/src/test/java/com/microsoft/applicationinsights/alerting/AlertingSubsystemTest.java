@@ -26,6 +26,7 @@ class AlertingSubsystemTest {
 
     monitor.updateConfiguration(
         AlertingConfiguration.create(
+            true,
             AlertConfiguration.builder()
                 .setType(AlertMetricType.CPU)
                 .setEnabled(true)
@@ -84,6 +85,7 @@ class AlertingSubsystemTest {
 
     service.updateConfiguration(
         AlertingConfiguration.create(
+            true,
             AlertConfiguration.builder()
                 .setType(AlertMetricType.CPU)
                 .setEnabled(true)
@@ -124,6 +126,7 @@ class AlertingSubsystemTest {
 
     service.updateConfiguration(
         AlertingConfiguration.create(
+            true,
             AlertConfiguration.builder()
                 .setType(AlertMetricType.CPU)
                 .setEnabled(true)

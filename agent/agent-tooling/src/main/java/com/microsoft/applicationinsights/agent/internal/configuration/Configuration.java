@@ -1398,7 +1398,7 @@ public class Configuration {
     public int configPollPeriodSeconds = 60;
     public int periodicRecordingDurationSeconds = 120;
     public int periodicRecordingIntervalSeconds = 60 * 60;
-    public boolean enabled = false;
+    @Nullable public Boolean enabled;
     public String memoryTriggeredSettings = "profile-without-env-data";
     public String cpuTriggeredSettings = "profile-without-env-data";
     public String manualTriggeredSettings = "profile-without-env-data";
@@ -1406,6 +1406,10 @@ public class Configuration {
     public boolean enableDiagnostics = false;
     public boolean enableRequestTriggering = false;
     public RequestTrigger[] requestTriggerEndpoints = {};
+
+    public boolean isEnabled() {
+      return !Boolean.FALSE.equals(enabled);
+    }
   }
 
   public static class GcEventConfiguration {
