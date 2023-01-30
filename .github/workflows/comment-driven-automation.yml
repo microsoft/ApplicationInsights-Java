@@ -75,6 +75,7 @@ jobs:
             fi
             git commit -a -m "./gradlew spotlessApply"
             git push
+            gh pr comment $NUMBER --body "You will need to close and re-open the PR to trigger GitHub Actions."
           elif [[ "$COMMAND" == "license" ]]; then
             ./gradlew generateLicenseReport
             git add licenses
@@ -86,6 +87,7 @@ jobs:
             fi
             git commit -m "./gradlew generateLicenseReport"
             git push
+            gh pr comment $NUMBER --body "You will need to close and re-open the PR to trigger GitHub Actions."
           elif [[ "$COMMAND" == "lockfile" ]]; then
             ./gradlew resolveAndLockAll --write-locks
             git add "*.lockfile"
@@ -95,6 +97,7 @@ jobs:
             fi
             git commit -m "./gradlew resolveAndLockAll --write-locks"
             git push
+            gh pr comment $NUMBER --body "You will need to close and re-open the PR to trigger GitHub Actions."
           elif [[ "$COMMAND" == "help" ]]; then
             gh pr comment $NUMBER --body "$available_commands"
           else
