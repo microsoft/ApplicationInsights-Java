@@ -154,7 +154,7 @@ public class PerformanceMonitoringService {
 
   private static DiagnosticEngineFactory loadDiagnosticEngineFactory() {
     logger.info("loading DiagnosticEngineFactory");
-    return ServiceLoaderUtil.findServiceLoader(DiagnosticEngineFactory.class);
+    return ServiceLoaderUtil.findServiceLoader(DiagnosticEngineFactory.class, true);
   }
 
   public void updateConfiguration(AlertingConfiguration alertingConfig) {

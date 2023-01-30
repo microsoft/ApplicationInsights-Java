@@ -9,6 +9,7 @@ import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_20;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_8;
 
+import com.microsoft.applicationinsights.smoketest.fakeingestion.MockedProfilerSettingsServlet;
 import java.io.File;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -20,6 +21,7 @@ abstract class DiagnosticExtensionTest {
   static final SmokeTestExtension testing =
       SmokeTestExtension.builder()
           .setAgentExtensionFile(new File("MockExtension/build/libs/extension.jar"))
+          .setProfilerEndpoint(MockedProfilerSettingsServlet.ProfilerState.configuredEnabled)
           .build();
 
   @Test

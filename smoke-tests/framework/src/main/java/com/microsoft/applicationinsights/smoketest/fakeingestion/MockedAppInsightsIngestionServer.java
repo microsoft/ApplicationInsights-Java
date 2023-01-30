@@ -23,6 +23,7 @@ public class MockedAppInsightsIngestionServer {
   public static final int DEFAULT_PORT = 6060;
 
   private final MockedAppInsightsIngestionServlet servlet;
+  private final MockedProfilerSettingsServlet profilerSettingsServlet;
   private final Server server;
 
   public MockedAppInsightsIngestionServer() {
@@ -31,7 +32,9 @@ public class MockedAppInsightsIngestionServer {
     server.setHandler(handler);
 
     servlet = new MockedAppInsightsIngestionServlet();
+    profilerSettingsServlet = new MockedProfilerSettingsServlet();
 
+    handler.addServletWithMapping(new ServletHolder(profilerSettingsServlet), "/profiler/*");
     handler.addServletWithMapping(new ServletHolder(servlet), "/*");
   }
 
