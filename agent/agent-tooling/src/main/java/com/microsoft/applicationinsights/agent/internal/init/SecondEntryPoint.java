@@ -164,12 +164,12 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
     BytecodeUtilImpl.connectionStringConfiguredAtRuntime =
         configuration.connectionStringConfiguredAtRuntime;
 
-    try {
-      if (configuration.preview.profiler.isEnabled()) {
+    if (configuration.preview.profiler.enabled) {
+      try {
         ProfilingInitializer.initialize(tempDir, configuration, telemetryClient);
+      } catch (RuntimeException e) {
+        startupLogger.warning("Failed to initialize profiler", e);
       }
-    } catch (RuntimeException e) {
-      startupLogger.warning("Failed to initialize profiler", e);
     }
 
     if (ConfigurationBuilder.inAzureFunctionsConsumptionWorker()) {
@@ -304,7 +304,7 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
     // adding this even if there are no roleNameOverrides, in order to support
     // overriding role name programmatically via Classic SDK
     tracerProvider.addSpanProcessor(new InheritedRoleNameSpanProcessor());
-    if (configuration.preview.profiler.isEnabled()
+    if (configuration.preview.profiler.enabled
         && configuration.preview.profiler.enableRequestTriggering) {
       tracerProvider.addSpanProcessor(new AlertTriggerSpanProcessor());
     }

@@ -68,6 +68,7 @@ public class PerformanceMonitoringService {
     this.tempDir = tempDir;
   }
 
+  // When we introduce full disable, tighten up the synchronization here
   synchronized void enableProfiler(
       ServiceProfilerClient serviceProfilerClient,
       ScheduledExecutorService serviceProfilerExecutorService) {

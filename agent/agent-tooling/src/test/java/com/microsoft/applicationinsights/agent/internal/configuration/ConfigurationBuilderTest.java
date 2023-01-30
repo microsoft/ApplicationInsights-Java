@@ -222,7 +222,7 @@ class ConfigurationBuilderTest {
     Configuration configuration = new Configuration();
     configuration.preview.profiler.enabled = fileValue;
     ConfigurationBuilder.overlayProfilerEnvVars(configuration);
-    assertThat(configuration.preview.profiler.isEnabled()).isEqualTo(expected);
+    assertThat(configuration.preview.profiler.enabled).isEqualTo(expected);
   }
 
   @Test

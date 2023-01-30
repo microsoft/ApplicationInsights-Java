@@ -96,7 +96,7 @@ public class ProfilingInitializer {
           "disable profiler or use a writable file system");
     }
 
-    if (configuration.preview.profiler.isEnabled()) {
+    if (configuration.preview.profiler.enabled) {
       performInit();
     }
   }
