@@ -15,7 +15,6 @@ import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -218,7 +217,7 @@ class ConfigurationBuilderTest {
             });
   }
 
-  private static void runProfilerEnvOverlay(@Nullable Boolean fileValue, boolean expected) {
+  private static void runProfilerEnvOverlay(boolean fileValue, boolean expected) {
     Configuration configuration = new Configuration();
     configuration.preview.profiler.enabled = fileValue;
     ConfigurationBuilder.overlayProfilerEnvVars(configuration);
@@ -227,13 +226,6 @@ class ConfigurationBuilderTest {
 
   @Test
   void testProfilerEnvOverlay() throws Exception {
-    // User has not configured the profiler at all is enabled
-    runProfilerEnvOverlay(null, true);
-
-    // Not set in file overlayed false is disabled
-    withEnvironmentVariable("APPLICATIONINSIGHTS_PREVIEW_PROFILER_ENABLED", "false")
-        .execute(() -> runProfilerEnvOverlay(null, false));
-
     // Enabled in file overlayed false is disabled
     withEnvironmentVariable("APPLICATIONINSIGHTS_PREVIEW_PROFILER_ENABLED", "false")
         .execute(() -> runProfilerEnvOverlay(true, false));
