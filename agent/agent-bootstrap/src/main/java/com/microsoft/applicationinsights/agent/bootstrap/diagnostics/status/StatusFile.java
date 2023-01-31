@@ -21,6 +21,7 @@ import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -321,6 +322,6 @@ public class StatusFile {
     if (input == null) {
       return null;
     }
-    return input.substring(0, 1).toUpperCase() + input.substring(1);
+    return input.substring(0, 1).toUpperCase(Locale.ROOT) + input.substring(1);
   }
 }
