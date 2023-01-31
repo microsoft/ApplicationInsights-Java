@@ -149,6 +149,13 @@ public class ConfigurationBuilder {
           "\"openTelemetryApiSupport\" is no longer in preview and it is now the"
               + " (one and only) default behavior");
     }
+    if (config.preview.metricIntervalSeconds != 60) {
+      configurationLogger.warn(
+          "\"metricIntervalSeconds\" is no longer in preview and it has been GA since 3.4.9");
+      if (config.metricIntervalSeconds == 60) {
+        config.metricIntervalSeconds = config.preview.metricIntervalSeconds;
+      }
+    }
     if (config.preview.instrumentation.azureSdk.enabled) {
       configurationLogger.warn(
           "\"azureSdk\" instrumentation is no longer in preview"
@@ -179,6 +186,7 @@ public class ConfigurationBuilder {
               + " and it is now enabled by default,"
               + " so no need to enable it under preview configuration");
     }
+
     for (SamplingOverride override : config.preview.sampling.overrides) {
       if (override.telemetryKind != null) {
         configurationLogger.warn(
