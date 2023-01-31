@@ -44,7 +44,7 @@
     "Exception" : null
   }, {
     "Method" : "POST",
-    "Uri" : "https://REDACTED.azureserviceprofiler.net/api/apps/00000000-0000-0000-0000-000000000000/artifactkinds/profile/artifacts/11111111-1111-1111-1111-111111111111?iKey=00000000-0000-0000-0000-000000000000&extension=jfr&api-version=2020-10-14-preview&action=commit&etag=\"0x888888888888888\"",
+    "Uri" : "https://REDACTED.azureserviceprofiler.net/api/apps/00000000-0000-0000-0000-000000000000/artifactkinds/profile/artifacts/11111111-1111-1111-1111-111111111111?iKey=00000000-0000-0000-0000-000000000000&extension=jfr&api-version=2020-10-14-preview&action=commit&etag=0x888888888888888",
     "Headers" : { },
     "Response" : {
       "Transfer-Encoding" : "chunked",
