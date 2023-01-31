@@ -99,6 +99,10 @@ public class ConfigurationBuilder {
   private static final String APPLICATIONINSIGHTS_PREVIEW_PROFILER_ENABLEDIAGNOSTICS =
       "APPLICATIONINSIGHTS_PREVIEW_PROFILER_ENABLEDIAGNOSTICS";
 
+  @Deprecated
+  private static final String APPLICATIONINSIGHTS_PREVIEW_METRIC_INTERVAL_SECONDS =
+      "APPLICATIONINSIGHTS_PREVIEW_METRIC_INTERVAL_SECONDS";
+
   private static final String APPLICATIONINSIGHTS_METRIC_INTERVAL_SECONDS =
       "APPLICATIONINSIGHTS_METRIC_INTERVAL_SECONDS";
 
@@ -564,9 +568,21 @@ public class ConfigurationBuilder {
         overlayWithEnvVar(
             APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_FILE_PATH, config.selfDiagnostics.file.path);
 
-    config.metricIntervalSeconds =
-        overlayWithEnvVar(
-            APPLICATIONINSIGHTS_METRIC_INTERVAL_SECONDS, config.metricIntervalSeconds);
+    String deprecatedMetricIntervalSeconds =
+        getEnvVar(APPLICATIONINSIGHTS_PREVIEW_METRIC_INTERVAL_SECONDS);
+    String metricIntervalSeconds = getEnvVar(APPLICATIONINSIGHTS_METRIC_INTERVAL_SECONDS);
+    if (metricIntervalSeconds != null) {
+      config.metricIntervalSeconds =
+          overlayWithEnvVar(
+              APPLICATIONINSIGHTS_METRIC_INTERVAL_SECONDS, config.metricIntervalSeconds);
+    } else if (deprecatedMetricIntervalSeconds != null) {
+      configurationLogger.warn(
+          "\"APPLICATIONINSIGHTS_PREVIEW_METRIC_INTERVAL_SECONDS\" has been renamed to \"APPLICATIONINSIGHTS_METRIC_INTERVAL_SECONDS\""
+              + " in 3.4.9 (GA)");
+      config.metricIntervalSeconds =
+          overlayWithEnvVar(
+              APPLICATIONINSIGHTS_PREVIEW_METRIC_INTERVAL_SECONDS, config.metricIntervalSeconds);
+    }
 
     config.preview.instrumentation.springIntegration.enabled =
         overlayWithEnvVar(
