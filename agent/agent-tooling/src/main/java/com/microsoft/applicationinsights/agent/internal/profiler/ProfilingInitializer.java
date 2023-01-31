@@ -14,15 +14,11 @@ import com.microsoft.applicationinsights.agent.internal.common.SystemInformation
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
 import com.microsoft.applicationinsights.agent.internal.profiler.config.ConfigPollingInit;
+import com.microsoft.applicationinsights.agent.internal.profiler.config.ProfilerConfiguration;
 import com.microsoft.applicationinsights.agent.internal.profiler.service.ServiceProfilerClient;
-import com.microsoft.applicationinsights.agent.internal.profiler.triggers.AlertingSubsystemInit;
-import com.microsoft.applicationinsights.agent.internal.profiler.upload.UploadService;
-import com.microsoft.applicationinsights.agent.internal.profiler.util.ServiceLoaderUtil;
+import com.microsoft.applicationinsights.agent.internal.profiler.triggers.AlertConfigParser;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
-import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryObservers;
-import com.microsoft.applicationinsights.alerting.AlertingSubsystem;
-import com.microsoft.applicationinsights.diagnostics.DiagnosticEngine;
-import com.microsoft.applicationinsights.diagnostics.DiagnosticEngineFactory;
+import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -31,10 +27,6 @@ import java.util.HashSet;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
-import javax.annotation.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Service profiler main entry point, wires up the items below.
@@ -46,36 +38,25 @@ import org.slf4j.LoggerFactory;
  * </ul>
  */
 public class ProfilingInitializer {
+  private final AtomicBoolean currentlyEnabled = new AtomicBoolean();
+  private final String processId;
+  private final String machineName;
+  private final String roleName;
+  private final TelemetryClient telemetryClient;
+  private final String userAgent;
+  private final Configuration configuration;
+  private final File tempDir;
 
-  private static final Logger logger = LoggerFactory.getLogger(ProfilingInitializer.class);
+  //////////////////////////////////////////////////////////
+  // These remain permanently live even if the profiler is disabled within the UI
+  private HttpPipeline httpPipeline;
+  private ScheduledExecutorService serviceProfilerExecutorService;
+  private ServiceProfilerClient serviceProfilerClient;
+  //////////////////////////////////////////////////////////
 
-  // TODO (trask) is this needed?
-  private static final AtomicBoolean initialized = new AtomicBoolean();
+  private PerformanceMonitoringService performanceMonitoringService;
 
-  public static void initialize(
-      @Nullable File tempDir, Configuration config, TelemetryClient telemetryClient) {
-
-    if (tempDir == null) {
-      throw new FriendlyException(
-          "Profile is not supported in a read-only file system.",
-          "disable profiler or use a writable file system");
-    }
-
-    if (initialized.getAndSet(true)) {
-      return;
-    }
-
-    ProfilingInitializer.initialize(
-        SystemInformation.getProcessId(),
-        config.role.instance,
-        config.role.name,
-        telemetryClient,
-        formApplicationInsightsUserAgent(),
-        config,
-        tempDir);
-  }
-
-  private static synchronized void initialize(
+  private ProfilingInitializer(
       String processId,
       String machineName,
       String roleName,
@@ -83,9 +64,46 @@ public class ProfilingInitializer {
       String userAgent,
       Configuration configuration,
       File tempDir) {
+    this.processId = processId;
+    this.machineName = machineName;
+    this.roleName = roleName;
+    this.telemetryClient = telemetryClient;
+    this.userAgent = userAgent;
+    this.configuration = configuration;
+    this.tempDir = tempDir;
+  }
 
+  public static ProfilingInitializer initialize(
+      File tempDir, Configuration configuration, TelemetryClient telemetryClient) {
+
+    ProfilingInitializer profilingInitializer =
+        new ProfilingInitializer(
+            SystemInformation.getProcessId(),
+            configuration.role.instance,
+            configuration.role.name,
+            telemetryClient,
+            formApplicationInsightsUserAgent(),
+            configuration,
+            tempDir);
+    profilingInitializer.initialize();
+    return profilingInitializer;
+  }
+
+  public synchronized void initialize() {
+    if (tempDir == null) {
+      throw new FriendlyException(
+          "Profile is not supported in a read-only file system.",
+          "disable profiler or use a writable file system");
+    }
+
+    if (configuration.preview.profiler.enabled) {
+      performInit();
+    }
+  }
+
+  private synchronized void performInit() {
     // Cannot use default creator, as we need to add POST to the allowed redirects
-    HttpPipeline httpPipeline =
+    httpPipeline =
         LazyHttpClient.newHttpPipeLine(
             telemetryClient.getAadAuthentication(),
             new RedirectPolicy(
@@ -95,118 +113,70 @@ public class ProfilingInitializer {
                     new HashSet<>(
                         Arrays.asList(HttpMethod.GET, HttpMethod.HEAD, HttpMethod.POST)))));
 
-    DiagnosticEngine diagnosticEngine = null;
-    if (configuration.preview.profiler.enableDiagnostics) {
-      // Initialise diagnostic service
-      diagnosticEngine = startDiagnosticEngine();
-    }
-
-    ScheduledExecutorService serviceProfilerExecutorService =
+    serviceProfilerExecutorService =
         Executors.newScheduledThreadPool(
             1,
             ThreadPoolUtils.createDaemonThreadFactory(
                 ProfilingInitializer.class, "ServiceProfilerService"));
 
-    ScheduledExecutorService alertServiceExecutorService =
-        Executors.newScheduledThreadPool(
-            2,
-            ThreadPoolUtils.createDaemonThreadFactory(
-                ProfilingInitializer.class, "ServiceProfilerAlertingService"));
-
-    AtomicReference<Profiler> profilerHolder = new AtomicReference<>();
-
-    AlertingSubsystem alerting =
-        AlertingSubsystemInit.create(
-            configuration,
-            TelemetryObservers.INSTANCE,
-            profilerHolder,
-            telemetryClient,
-            diagnosticEngine,
-            alertServiceExecutorService);
-
-    ServiceProfilerClient serviceProfilerClient =
+    serviceProfilerClient =
         new ServiceProfilerClient(
             getServiceProfilerFrontEndPoint(configuration.preview.profiler),
             telemetryClient.getInstrumentationKey(),
             httpPipeline,
             userAgent);
 
-    UploadService uploadService =
-        new UploadService(
-            serviceProfilerClient,
-            builder -> {},
-            machineName,
-            processId,
-            telemetryClient::getAppId,
-            roleName);
-
-    Profiler profiler = new Profiler(configuration.preview.profiler, tempDir);
-
-    logger.warn("INITIALISING JFR PROFILING SUBSYSTEM THIS FEATURE IS IN BETA");
-
-    serviceProfilerExecutorService.submit(
-        () -> {
-          try {
-            // Daemon remains alive permanently due to scheduling an update
-            profiler.initialize(uploadService, serviceProfilerExecutorService);
-
-            // Monitor service remains alive permanently due to scheduling an periodic config pull
-            ConfigPollingInit.startPollingForConfigUpdates(
-                serviceProfilerExecutorService,
-                serviceProfilerClient,
-                config -> {
-                  AlertingSubsystemInit.updateAlertingConfig(alerting, config);
-                  profiler.updateConfiguration(config);
-                },
-                configuration.preview.profiler.configPollPeriodSeconds);
-
-            profilerHolder.set(profiler);
-
-          } catch (Throwable t) {
-            logger.error(
-                "Failed to initialise profiler service",
-                new RuntimeException(
-                    "Unable to obtain JFR connection, this may indicate that your JVM does not"
-                        + " have JFR enabled. JFR profiling system will shutdown"));
-            alertServiceExecutorService.shutdown();
-            serviceProfilerExecutorService.shutdown();
-          }
-        });
+    // Monitor service remains alive permanently due to scheduling an periodic config pull
+    ConfigPollingInit.startPollingForConfigUpdates(
+        serviceProfilerExecutorService,
+        serviceProfilerClient,
+        this::applyConfiguration,
+        configuration.preview.profiler.configPollPeriodSeconds);
   }
 
-  @Nullable
-  private static DiagnosticEngine startDiagnosticEngine() {
-    try {
-      DiagnosticEngineFactory diagnosticEngineFactory = loadDiagnosticEngineFactory();
-      if (diagnosticEngineFactory != null) {
-        ScheduledExecutorService diagnosticEngineExecutorService =
-            Executors.newScheduledThreadPool(
-                1, ThreadPoolUtils.createNamedDaemonThreadFactory("DiagnosisThreadPool"));
+  synchronized void applyConfiguration(ProfilerConfiguration config) {
+    if (currentlyEnabled.get() || (config.isEnabled() && config.hasBeenConfigured())) {
 
-        DiagnosticEngine diagnosticEngine =
-            diagnosticEngineFactory.create(diagnosticEngineExecutorService);
+      AlertingConfiguration alertingConfig = AlertConfigParser.toAlertingConfig(config);
 
-        if (diagnosticEngine != null) {
-          diagnosticEngine.init();
-        } else {
-          diagnosticEngineExecutorService.shutdown();
+      if (alertingConfig.hasAnEnabledTrigger()) {
+        if (!currentlyEnabled.getAndSet(true)) {
+          enableProfiler();
         }
-        return diagnosticEngine;
-      } else {
-        logger.warn("No diagnostic engine implementation provided");
       }
-    } catch (RuntimeException e) {
-      logger.error("Failed to load profiler factory", e);
+
+      if (currentlyEnabled.get()) {
+        if (performanceMonitoringService != null) {
+          performanceMonitoringService.updateConfiguration(alertingConfig);
+        }
+        return;
+      }
     }
-    return null;
+    disableProfiler();
   }
 
-  private static DiagnosticEngineFactory loadDiagnosticEngineFactory() {
-    return ServiceLoaderUtil.findServiceLoader(DiagnosticEngineFactory.class, true);
+  synchronized void disableProfiler() {
+    // Currently not shutting down when disabled
+    /*
+     if (currentlyEnabled.getAndSet(false)) {
+       alerting = null;
+       uploadService = null;
+       alertServiceExecutorService = null;
+       profile = null;
+     }
+    */
   }
 
-  // visible for testing
-  static URL getServiceProfilerFrontEndPoint(Configuration.ProfilerConfiguration config) {
+  synchronized void enableProfiler() {
+    performanceMonitoringService =
+        new PerformanceMonitoringService(
+            processId, machineName, roleName, telemetryClient, configuration, tempDir);
+
+    performanceMonitoringService.enableProfiler(
+        serviceProfilerClient, serviceProfilerExecutorService);
+  }
+
+  private URL getServiceProfilerFrontEndPoint(Configuration.ProfilerConfiguration config) {
 
     // If the user has overridden their service profiler endpoint use that url
     if (config.serviceProfilerFrontEndPoint != null) {
@@ -220,7 +190,7 @@ public class ProfilingInitializer {
       }
     }
 
-    return TelemetryClient.getActive().getConnectionString().getProfilerEndpoint();
+    return telemetryClient.getConnectionString().getProfilerEndpoint();
   }
 
   private static String formApplicationInsightsUserAgent() {
@@ -239,5 +209,7 @@ public class ProfilingInitializer {
         + ")";
   }
 
-  private ProfilingInitializer() {}
+  public boolean isEnabled() {
+    return currentlyEnabled.get();
+  }
 }

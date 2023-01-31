@@ -147,6 +147,7 @@ class MockedAppInsightsIngestionServlet extends HttpServlet {
       resp.getWriter().append("12341234-1234-1234-1234-123412341234");
       return;
     }
+
     if ("/".equals(req.getPathInfo())) {
       // just to help with debugging when hitting the endpoint manually
       resp.getWriter().append("Fake AI Endpoint Online");

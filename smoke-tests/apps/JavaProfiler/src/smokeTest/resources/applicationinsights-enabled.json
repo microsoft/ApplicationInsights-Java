@@ -1,0 +1,23 @@
+{
+  "role" : {
+    "name" : "testrolename",
+    "instance" : "testroleinstance"
+  },
+  "sampling" : {
+    "percentage" : 100
+  },
+  "preview" : {
+    "profiler" : {
+      "enabled" : true
+    }
+  },
+  "internal": {
+    "statsbeat": {
+      "disabledAll": false,
+      "instrumentationKey": "00000000-0000-0000-0000-0FEEDDADBEEG",
+      "endpoint": "http://host.testcontainers.internal:6060/",
+      "shortIntervalSeconds": 5,
+      "longIntervalSeconds": 5
+    }
+  }
+}

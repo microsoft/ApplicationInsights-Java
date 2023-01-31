@@ -41,7 +41,7 @@ class ConfigService {
         .getSettings(lastModified)
         .flatMap(
             config -> {
-              if (config != null && config.getLastModified().getTime() != lastModified.getTime()) {
+              if (config != null && config.getLastModified().compareTo(lastModified) != 0) {
                 lastModified = config.getLastModified();
                 return Mono.just(config);
               }

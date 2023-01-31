@@ -14,7 +14,6 @@ import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedTi
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.configuration.GcReportingLevel;
 import com.microsoft.applicationinsights.agent.internal.profiler.Profiler;
-import com.microsoft.applicationinsights.agent.internal.profiler.config.ProfilerConfiguration;
 import com.microsoft.applicationinsights.agent.internal.profiler.upload.ServiceProfilerIndex;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryObservers;
@@ -29,7 +28,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -42,7 +40,7 @@ public class AlertingSubsystemInit {
   public static AlertingSubsystem create(
       Configuration configuration,
       TelemetryObservers telemetryObservers,
-      AtomicReference<Profiler> profilerHolder,
+      Profiler profiler,
       TelemetryClient telemetryClient,
       DiagnosticEngine diagnosticEngine,
       ExecutorService executorService) {
@@ -50,7 +48,7 @@ public class AlertingSubsystemInit {
     // TODO (trask) delay creation of AlertingSubsystem until after Profiler is created and
     // initialized?
     Consumer<AlertBreach> alertAction =
-        alert -> alertAction(alert, profilerHolder.get(), diagnosticEngine, telemetryClient);
+        alert -> alertAction(alert, profiler, diagnosticEngine, telemetryClient);
 
     alertingSubsystem = AlertingSubsystem.create(alertAction, TimeSource.DEFAULT);
 
@@ -75,20 +73,10 @@ public class AlertingSubsystemInit {
     return alertingSubsystem;
   }
 
-  public static void updateAlertingConfig(
-      AlertingSubsystem alertingSubsystem, ProfilerConfiguration config) {
-    alertingSubsystem.updateConfiguration(AlertConfigParser.toAlertingConfig(config));
-  }
-
   private static GcEventInit.GcEventMonitorConfiguration fromGcEventMonitorConfiguration(
       Configuration.PreviewConfiguration configuration) {
     if (configuration.gcEvents.reportingLevel != null) {
       return new GcEventInit.GcEventMonitorConfiguration(configuration.gcEvents.reportingLevel);
-    }
-
-    // The memory monitoring requires observing gc events
-    if (configuration.profiler.enabled) {
-      return new GcEventInit.GcEventMonitorConfiguration(GcReportingLevel.TENURED_ONLY);
     }
 
     return new GcEventInit.GcEventMonitorConfiguration(GcReportingLevel.NONE);

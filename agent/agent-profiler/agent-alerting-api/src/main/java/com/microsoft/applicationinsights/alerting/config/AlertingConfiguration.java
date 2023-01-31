@@ -4,6 +4,7 @@
 package com.microsoft.applicationinsights.alerting.config;
 
 import com.google.auto.value.AutoValue;
+import java.time.Instant;
 
 /** Contains the overall configuration of the entire alerting subsystem. */
 @AutoValue
@@ -14,9 +15,20 @@ public abstract class AlertingConfiguration {
       AlertConfiguration memoryAlert,
       DefaultConfiguration defaultConfiguration,
       CollectionPlanConfiguration collectionPlanConfiguration) {
-
     return new AutoValue_AlertingConfiguration(
         cpuAlert, memoryAlert, defaultConfiguration, collectionPlanConfiguration);
+  }
+
+  public boolean hasAnEnabledTrigger() {
+    boolean manualProfileEnabled =
+        getCollectionPlanConfiguration().isSingle()
+            && getCollectionPlanConfiguration().getMode()
+                == CollectionPlanConfiguration.EngineMode.immediate
+            && Instant.now().isBefore(getCollectionPlanConfiguration().getExpiration());
+
+    return getCpuAlert().isEnabled() || manualProfileEnabled || getMemoryAlert().isEnabled();
+    // Sampling not enabled yet
+    // getDefaultConfiguration().getSamplingEnabled();
   }
 
   // Alert configuration for CPU telemetry
