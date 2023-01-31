@@ -692,7 +692,7 @@ public class ConfigurationBuilder {
     String websiteSiteName = getEnvVar(WEBSITE_SITE_NAME);
     if (websiteSiteName != null && inAzureFunctionsWorker()) {
       // special case for Azure Functions
-      return websiteSiteName.toLowerCase(Locale.ENGLISH);
+      return websiteSiteName.toLowerCase(Locale.ROOT);
     }
     return websiteSiteName;
   }

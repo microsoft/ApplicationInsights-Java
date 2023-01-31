@@ -232,7 +232,7 @@ public class Configuration {
     }
 
     public static int getSeverityThreshold(String level) {
-      switch (level.toUpperCase()) {
+      switch (level.toUpperCase(Locale.ROOT)) {
         case "OFF":
           return Integer.MAX_VALUE;
         case "FATAL":
