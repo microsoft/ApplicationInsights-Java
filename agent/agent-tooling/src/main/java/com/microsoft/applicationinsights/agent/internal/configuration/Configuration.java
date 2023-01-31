@@ -303,7 +303,7 @@ public class Configuration {
     // this is just here to detect if using this old setting in order to give a helpful message
     @Deprecated public boolean openTelemetryApiSupport;
     public PreviewInstrumentation instrumentation = new PreviewInstrumentation();
-    // this is just here to detect if using this old setting in order to give a helpful message
+    // these are just here to detect if using this old setting in order to give a helpful message
     @Deprecated public int metricIntervalSeconds = 60;
     @Deprecated public Boolean ignoreRemoteParentNotSampled;
     public boolean captureControllerSpans;
