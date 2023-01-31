@@ -4,7 +4,7 @@
 
 ### Enhancements:
 
-* Enable Profiler by default
+* Allow profiler to be controlled from portal by default
   ([#2683](https://github.com/microsoft/ApplicationInsights-Java/pull/2683))
 * GA metricIntervalSeconds config
   ([#2875](https://github.com/microsoft/ApplicationInsights-Java/pull/2875))
