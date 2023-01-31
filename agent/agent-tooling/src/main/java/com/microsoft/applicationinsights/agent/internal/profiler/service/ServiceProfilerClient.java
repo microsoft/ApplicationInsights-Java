@@ -204,7 +204,7 @@ public class ServiceProfilerClient {
     appendBasePath(path, profileId);
     appendBaseQueryString(path, extension);
 
-    path.append("&action=commit&etag=\"").append(etag).append("\"");
+    path.append("&action=commit&etag=").append(etag);
 
     try {
       return new URL(hostUrl, path.toString());
