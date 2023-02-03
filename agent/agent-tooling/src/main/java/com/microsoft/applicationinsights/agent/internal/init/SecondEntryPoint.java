@@ -3,6 +3,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.init;
 
+import static com.microsoft.applicationinsights.agent.internal.configuration.SnippetInjection.updateInstrumentationKey;
 import static java.util.concurrent.TimeUnit.MINUTES;
 
 import com.azure.core.util.logging.ClientLogger;
@@ -99,6 +100,8 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
         throw new FriendlyException(
             "No connection string provided", "Please provide connection string.");
       }
+    } else {
+      updateInstrumentationKey();
     }
     // TODO (trask) should configuration validation be performed earlier?
     configuration.validate();
