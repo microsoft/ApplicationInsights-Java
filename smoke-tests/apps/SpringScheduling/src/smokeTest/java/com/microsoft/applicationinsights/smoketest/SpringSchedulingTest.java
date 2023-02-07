@@ -3,6 +3,20 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
+import com.microsoft.applicationinsights.smoketest.schemav2.Data;
+import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
+import com.microsoft.applicationinsights.smoketest.schemav2.RemoteDependencyData;
+import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.TaskScheduler;
+
+import java.time.Instant;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
+
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_11;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_11_OPENJ9;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_17;
@@ -12,19 +26,28 @@ import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCA
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_8_OPENJ9;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.WILDFLY_13_JAVA_8;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.WILDFLY_13_JAVA_8_OPENJ9;
-
-import com.microsoft.applicationinsights.smoketest.schemav2.Data;
-import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
-import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Predicate;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.RegisterExtension;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.data.MapEntry.entry;
 
 @UseAgent
 abstract class SpringSchedulingTest {
 
-  @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.create();
+  @RegisterExtension static final SmokeTestExtension testing =
+          SmokeTestExtension.builder().setSelfDiagnosticsLevel("debug").build(); //SmokeTestExtension.create();
+
+  @Test
+  @TargetUri("/should-ignore")
+  void shouldIgnoreTest() throws Exception {
+    // TODO (heya) update test when [#7760](https://github.com/open-telemetry/opentelemetry-java-instrumentation/pull/7760) is released upstream
+    List<Envelope> rddList = testing.mockedIngestion.waitForItems("RemoteDependencyData", 1);
+    Envelope rddEnvelope = rddList.get(0);
+    RemoteDependencyData rdd =
+            (RemoteDependencyData) ((Data<?>) rddEnvelope.getData()).getBaseData();
+
+    assertThat(rddEnvelope.getTags().get("ai.operation.name")).isEqualTo("GET /SpringScheduling/should-ignore");
+    assertThat(rdd.getName()).isEqualTo("TestController$$Lambda$.run");
+    assertThat(rdd.getType()).isEqualTo("InProc");
+  }
 
   @Test
   @TargetUri("/scheduler")

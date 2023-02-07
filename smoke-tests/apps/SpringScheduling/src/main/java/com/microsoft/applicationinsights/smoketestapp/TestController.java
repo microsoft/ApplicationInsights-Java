@@ -3,11 +3,18 @@
 
 package com.microsoft.applicationinsights.smoketestapp;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.TaskScheduler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.Instant;
+
 @RestController
 public class TestController {
+
+  @Autowired
+  private TaskScheduler taskScheduler;
 
   @GetMapping("/")
   public String root() {
@@ -16,6 +23,14 @@ public class TestController {
 
   @GetMapping("/scheduler")
   public String scheduler() {
+    return "OK!";
+  }
+
+  @GetMapping("/should-ignore")
+  public String shouldIgnoreTest() throws Exception {
+    taskScheduler.schedule(
+            () -> System.out.println("here i am"),
+            Instant.now());
     return "OK!";
   }
 }
