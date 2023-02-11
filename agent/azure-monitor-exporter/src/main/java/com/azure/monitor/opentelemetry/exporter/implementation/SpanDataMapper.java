@@ -229,6 +229,10 @@ public final class SpanDataMapper {
       return;
     }
     String dbSystem = attributes.get(SemanticAttributes.DB_SYSTEM);
+    if (dbSystem == null) {
+      // special case needed until Azure SDK moves to latest OTel semantic conventions
+      dbSystem = attributes.get(AiSemanticAttributes.AZURE_SDK_DB_TYPE);
+    }
     if (dbSystem != null) {
       applyDatabaseClientSpan(telemetryBuilder, dbSystem, attributes);
       return;
@@ -392,16 +396,31 @@ public final class SpanDataMapper {
       } else {
         type = "SQL";
       }
+    } else if (dbSystem.equals("Cosmos")) {
+      // this has special icon in portal (documentdb was the old name for cosmos)
+      type = "azure documentdb";
     } else {
       type = dbSystem;
     }
     telemetryBuilder.setType(type);
     telemetryBuilder.setData(dbStatement);
-    String target =
-        nullAwareConcat(
-            getTargetOrDefault(attributes, getDefaultPortForDbSystem(dbSystem), dbSystem),
-            attributes.get(SemanticAttributes.DB_NAME),
-            " | ");
+
+    String target;
+    String dbName;
+    if (dbSystem.equals("Cosmos")) {
+      // special case needed until Azure SDK moves to latest OTel semantic conventions
+      String dbUrl = attributes.get(AiSemanticAttributes.AZURE_SDK_DB_URL);
+      if (dbUrl != null) {
+        target = UrlParser.getTarget(dbUrl);
+      } else {
+        target = null;
+      }
+      dbName = attributes.get(AiSemanticAttributes.AZURE_SDK_DB_INSTANCE);
+    } else {
+      target = getTargetOrDefault(attributes, getDefaultPortForDbSystem(dbSystem), dbSystem);
+      dbName = attributes.get(SemanticAttributes.DB_NAME);
+    }
+    target = nullAwareConcat(target, dbName, " | ");
     if (target == null) {
       target = dbSystem;
     }
