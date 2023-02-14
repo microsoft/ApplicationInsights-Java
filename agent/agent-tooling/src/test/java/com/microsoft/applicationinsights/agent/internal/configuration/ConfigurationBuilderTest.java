@@ -216,4 +216,22 @@ class ConfigurationBuilderTest {
               assertThat(configuration.proxy.password).isEqualTo("passw");
             });
   }
+
+  private static void runProfilerEnvOverlay(boolean fileValue, boolean expected) {
+    Configuration configuration = new Configuration();
+    configuration.preview.profiler.enabled = fileValue;
+    ConfigurationBuilder.overlayProfilerEnvVars(configuration);
+    assertThat(configuration.preview.profiler.enabled).isEqualTo(expected);
+  }
+
+  @Test
+  void testProfilerEnvOverlay() throws Exception {
+    // Enabled in file overlayed false is disabled
+    withEnvironmentVariable("APPLICATIONINSIGHTS_PREVIEW_PROFILER_ENABLED", "false")
+        .execute(() -> runProfilerEnvOverlay(true, false));
+
+    // Disabled in file overlayed true is enabled
+    withEnvironmentVariable("APPLICATIONINSIGHTS_PREVIEW_PROFILER_ENABLED", "true")
+        .execute(() -> runProfilerEnvOverlay(false, true));
+  }
 }

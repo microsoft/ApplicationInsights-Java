@@ -2,7 +2,7 @@ import org.apache.tools.ant.taskdefs.condition.Os
 
 pluginManagement {
   plugins {
-    id("com.github.ben-manes.versions") version "0.44.0"
+    id("com.github.ben-manes.versions") version "0.45.0"
     id("com.github.jk1.dependency-license-report") version "2.1"
     id("me.champeau.jmh") version "0.6.8"
     id("com.gradle.plugin-publish") version "1.1.0"
@@ -10,7 +10,7 @@ pluginManagement {
 }
 
 plugins {
-  id("com.gradle.enterprise") version "3.12.2"
+  id("com.gradle.enterprise") version "3.12.3"
 }
 
 dependencyResolutionManagement {
@@ -100,6 +100,7 @@ hideFromDependabot(":smoke-tests:apps:HttpPreaggregatedMetrics")
 hideFromDependabot(":smoke-tests:apps:HttpServer4xx")
 hideFromDependabot(":smoke-tests:apps:InheritedAttributes")
 hideFromDependabot(":smoke-tests:apps:InstrumentationKeyOverrides")
+hideFromDependabot(":smoke-tests:apps:JavaProfiler")
 hideFromDependabot(":smoke-tests:apps:JavaUtilLogging")
 hideFromDependabot(":smoke-tests:apps:Jdbc")
 hideFromDependabot(":smoke-tests:apps:Jedis")

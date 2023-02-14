@@ -15,7 +15,21 @@ public class TestController {
   }
 
   @GetMapping("/detectIfExtensionInstalled")
-  public String detectIfExtensionInstalled() {
-    return System.getProperty("DIAGNOSTIC_CALLED", "false");
+  public String detectIfExtensionInstalled() throws InterruptedException {
+    // Wait for up to 5 seconds to be enabled
+    for (int i = 0; i < 10; i++) {
+      boolean enabled = Boolean.parseBoolean(System.getProperty("DIAGNOSTIC_CALLED", "false"));
+      if (enabled) {
+        return String.valueOf(true);
+      }
+      Thread.sleep(500);
+    }
+
+    return String.valueOf(false);
+  }
+
+  @GetMapping("/api/profileragent/v4/settings")
+  public String profilerConfig() {
+    return "OK";
   }
 }

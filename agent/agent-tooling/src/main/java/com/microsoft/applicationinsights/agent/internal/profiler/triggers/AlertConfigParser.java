@@ -18,7 +18,7 @@ import java.util.Map;
 import javax.annotation.Nullable;
 
 /** Parses the configuration from the service profiler endpoint. */
-class AlertConfigParser {
+public class AlertConfigParser {
 
   static AlertingConfiguration parse(
       String cpuConfig, String memoryConfig, String defaultConfig, String collectionPlan) {
@@ -32,7 +32,7 @@ class AlertConfigParser {
   // --single --mode immediate --immediate-profiling-duration 120  --expiration 5249143304354868449
   // --settings-moniker Portal_b5bd7880-7406-4058-a6f8-3ea0102706b1
   private static CollectionPlanConfiguration parseCollectionPlan(@Nullable String collectionPlan) {
-    if (collectionPlan == null) {
+    if (collectionPlan == null || collectionPlan.isEmpty()) {
       return CollectionPlanConfiguration.builder()
           .setSingle(false)
           .setMode(EngineMode.immediate)
@@ -197,7 +197,9 @@ class AlertConfigParser {
     return builder;
   }
 
-  static AlertingConfiguration toAlertingConfig(ProfilerConfiguration profilerConfiguration) {
+  public static AlertingConfiguration toAlertingConfig(
+      ProfilerConfiguration profilerConfiguration) {
+
     return AlertConfigParser.parse(
         profilerConfiguration.getCpuTriggerConfiguration(),
         profilerConfiguration.getMemoryTriggerConfiguration(),

@@ -46,6 +46,10 @@ public class Configuration {
   public Heartbeat heartbeat = new Heartbeat();
   public Proxy proxy = new Proxy();
   public SelfDiagnostics selfDiagnostics = new SelfDiagnostics();
+  // applies to perf counters, default custom metrics, jmx metrics, and micrometer metrics
+  // not sure if we'll be able to have different metric intervals in future OpenTelemetry metrics
+  // world, so safer to only allow single interval for now
+  public int metricIntervalSeconds = 60;
   public PreviewConfiguration preview = new PreviewConfiguration();
   public InternalConfiguration internal = new InternalConfiguration();
 
@@ -228,7 +232,7 @@ public class Configuration {
     }
 
     public static int getSeverityThreshold(String level) {
-      switch (level.toUpperCase()) {
+      switch (level.toUpperCase(Locale.ROOT)) {
         case "OFF":
           return Integer.MAX_VALUE;
         case "FATAL":
@@ -299,12 +303,8 @@ public class Configuration {
     // this is just here to detect if using this old setting in order to give a helpful message
     @Deprecated public boolean openTelemetryApiSupport;
     public PreviewInstrumentation instrumentation = new PreviewInstrumentation();
-    // applies to perf counters, default custom metrics, jmx metrics, and micrometer metrics
-    // not sure if we'll be able to have different metric intervals in future OpenTelemetry metrics
-    // world,
-    // so safer to only allow single interval for now
-    public int metricIntervalSeconds = 60;
-    // this is just here to detect if using this old setting in order to give a helpful message
+    // these are just here to detect if using this old setting in order to give a helpful message
+    @Deprecated public int metricIntervalSeconds = 60;
     @Deprecated public Boolean ignoreRemoteParentNotSampled;
     public boolean captureControllerSpans;
     // this is just here to detect if using this old setting in order to give a helpful message
@@ -1398,7 +1398,7 @@ public class Configuration {
     public int configPollPeriodSeconds = 60;
     public int periodicRecordingDurationSeconds = 120;
     public int periodicRecordingIntervalSeconds = 60 * 60;
-    public boolean enabled = false;
+    public boolean enabled = true;
     public String memoryTriggeredSettings = "profile-without-env-data";
     public String cpuTriggeredSettings = "profile-without-env-data";
     public String manualTriggeredSettings = "profile-without-env-data";

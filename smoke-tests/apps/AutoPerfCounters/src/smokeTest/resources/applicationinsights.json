@@ -6,7 +6,5 @@
   "sampling": {
     "percentage": 100
   },
-  "preview": {
-    "metricIntervalSeconds": 5
-  }
+  "metricIntervalSeconds": 5
 }

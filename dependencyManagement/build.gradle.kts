@@ -22,14 +22,14 @@ rootProject.extra["otelInstrumentationAlphaVersion"] = otelInstrumentationAlphaV
 rootProject.extra["otelContribAlphaVersion"] = otelContribAlphaVersion
 
 val DEPENDENCY_BOMS = listOf(
-  "com.fasterxml.jackson:jackson-bom:2.14.1",
+  "com.fasterxml.jackson:jackson-bom:2.14.2",
   "com.google.guava:guava-bom:31.1-jre",
   "io.opentelemetry:opentelemetry-bom:${otelVersion}",
   "io.opentelemetry:opentelemetry-bom-alpha:${otelVersion}-alpha",
   "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:${otelInstrumentationVersion}",
   "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${otelInstrumentationAlphaVersion}",
-  "com.azure:azure-sdk-bom:1.2.8",
-  "io.netty:netty-bom:4.1.87.Final",
+  "com.azure:azure-sdk-bom:1.2.9",
+  "io.netty:netty-bom:4.1.88.Final",
   "org.junit:junit-bom:5.9.2",
   "org.testcontainers:testcontainers-bom:1.17.6",
 )
@@ -79,14 +79,14 @@ val CORE_DEPENDENCIES = listOf(
 val DEPENDENCIES = listOf(
   "ch.qos.logback:logback-classic:1.2.11",
   "ch.qos.logback.contrib:logback-json-classic:0.1.5",
-  "com.uber.nullaway:nullaway:0.10.8",
+  "com.uber.nullaway:nullaway:0.10.9",
   "commons-codec:commons-codec:1.15",
   "org.apache.commons:commons-text:1.10.0",
   "com.google.code.gson:gson:2.10.1",
-  "com.azure:azure-core-test:1.14.0", // this is not included in azure-sdk-bom
+  "com.azure:azure-core-test:1.14.1", // this is not included in azure-sdk-bom
   "org.assertj:assertj-core:3.24.2",
   "org.awaitility:awaitility:4.2.0",
-  "io.github.hakky54:logcaptor:2.7.10",
+  "io.github.hakky54:logcaptor:2.8.0",
   "com.microsoft.jfr:jfr-streaming:1.2.0",
   "com.google.code.findbugs:jsr305:3.0.2",
   "com.github.spotbugs:spotbugs-annotations:4.7.3"

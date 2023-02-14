@@ -10,6 +10,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.util.Locale;
 import java.util.Objects;
 import javax.annotation.Nullable;
 import org.slf4j.Logger;
@@ -70,7 +71,7 @@ class AlternativeJfrConfigurations {
       try {
         // Try parsing the triggeredSettings as a pre-configured type
         // Convert from kebab case to enum type
-        String enumType = triggeredSettings.toUpperCase().replaceAll("-", "_");
+        String enumType = triggeredSettings.toUpperCase(Locale.ROOT).replaceAll("-", "_");
         ProfileTypes profile = ProfileTypes.valueOf(enumType);
 
         return AlternativeJfrConfigurations.get(profile, type);

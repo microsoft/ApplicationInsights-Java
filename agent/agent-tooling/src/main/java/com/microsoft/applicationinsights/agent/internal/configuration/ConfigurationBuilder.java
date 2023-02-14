@@ -99,8 +99,12 @@ public class ConfigurationBuilder {
   private static final String APPLICATIONINSIGHTS_PREVIEW_PROFILER_ENABLEDIAGNOSTICS =
       "APPLICATIONINSIGHTS_PREVIEW_PROFILER_ENABLEDIAGNOSTICS";
 
+  @Deprecated
   private static final String APPLICATIONINSIGHTS_PREVIEW_METRIC_INTERVAL_SECONDS =
       "APPLICATIONINSIGHTS_PREVIEW_METRIC_INTERVAL_SECONDS";
+
+  private static final String APPLICATIONINSIGHTS_METRIC_INTERVAL_SECONDS =
+      "APPLICATIONINSIGHTS_METRIC_INTERVAL_SECONDS";
 
   private static final String APPLICATIONINSIGHTS_AUTHENTICATION_STRING =
       "APPLICATIONINSIGHTS_AUTHENTICATION_STRING";
@@ -148,6 +152,13 @@ public class ConfigurationBuilder {
       configurationLogger.warn(
           "\"openTelemetryApiSupport\" is no longer in preview and it is now the"
               + " (one and only) default behavior");
+    }
+    if (config.preview.metricIntervalSeconds != 60) {
+      configurationLogger.warn(
+          "\"metricIntervalSeconds\" is no longer in preview and it has been GA since 3.4.9");
+      if (config.metricIntervalSeconds == 60) {
+        config.metricIntervalSeconds = config.preview.metricIntervalSeconds;
+      }
     }
     if (config.preview.instrumentation.azureSdk.enabled) {
       configurationLogger.warn(
@@ -295,12 +306,16 @@ public class ConfigurationBuilder {
     }
   }
 
-  private static void overlayProfilerEnvVars(Configuration config) {
-    config.preview.profiler.enabled =
-        Boolean.parseBoolean(
-            overlayWithEnvVar(
-                APPLICATIONINSIGHTS_PREVIEW_PROFILER_ENABLED,
-                Boolean.toString(config.preview.profiler.enabled)));
+  static void overlayProfilerEnvVars(Configuration config) {
+    String enabledString = Boolean.toString(config.preview.profiler.enabled);
+
+    String overlayedValue =
+        overlayWithEnvVar(APPLICATIONINSIGHTS_PREVIEW_PROFILER_ENABLED, enabledString);
+
+    if (overlayedValue != null) {
+      config.preview.profiler.enabled = Boolean.parseBoolean(overlayedValue);
+    }
+
     if (config.preview.profiler.enabled && isOpenJ9Jvm()) {
       configurationLogger.warn(
           "Profiler is not supported for an OpenJ9 JVM. Instead, please use an OpenJDK JVM.");
@@ -553,10 +568,21 @@ public class ConfigurationBuilder {
         overlayWithEnvVar(
             APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_FILE_PATH, config.selfDiagnostics.file.path);
 
-    config.preview.metricIntervalSeconds =
-        overlayWithEnvVar(
-            APPLICATIONINSIGHTS_PREVIEW_METRIC_INTERVAL_SECONDS,
-            config.preview.metricIntervalSeconds);
+    String deprecatedMetricIntervalSeconds =
+        getEnvVar(APPLICATIONINSIGHTS_PREVIEW_METRIC_INTERVAL_SECONDS);
+    String metricIntervalSeconds = getEnvVar(APPLICATIONINSIGHTS_METRIC_INTERVAL_SECONDS);
+    if (metricIntervalSeconds != null) {
+      config.metricIntervalSeconds =
+          overlayWithEnvVar(
+              APPLICATIONINSIGHTS_METRIC_INTERVAL_SECONDS, config.metricIntervalSeconds);
+    } else if (deprecatedMetricIntervalSeconds != null) {
+      configurationLogger.warn(
+          "\"APPLICATIONINSIGHTS_PREVIEW_METRIC_INTERVAL_SECONDS\" has been renamed to \"APPLICATIONINSIGHTS_METRIC_INTERVAL_SECONDS\""
+              + " in 3.4.9 (GA)");
+      config.metricIntervalSeconds =
+          overlayWithEnvVar(
+              APPLICATIONINSIGHTS_PREVIEW_METRIC_INTERVAL_SECONDS, config.metricIntervalSeconds);
+    }
 
     config.preview.instrumentation.springIntegration.enabled =
         overlayWithEnvVar(
@@ -689,7 +715,7 @@ public class ConfigurationBuilder {
     String websiteSiteName = getEnvVar(WEBSITE_SITE_NAME);
     if (websiteSiteName != null && inAzureFunctionsWorker()) {
       // special case for Azure Functions
-      return websiteSiteName.toLowerCase(Locale.ENGLISH);
+      return websiteSiteName.toLowerCase(Locale.ROOT);
     }
     return websiteSiteName;
   }

@@ -99,9 +99,4 @@ class MappingsBuilder {
   interface PrefixMapping {
     void map(AbstractTelemetryBuilder telemetryBuilder, String key, Object value);
   }
-
-  @FunctionalInterface
-  interface DefaultMapping {
-    void map(AbstractTelemetryBuilder telemetryBuilder, AttributeKey key, Object value);
-  }
 }

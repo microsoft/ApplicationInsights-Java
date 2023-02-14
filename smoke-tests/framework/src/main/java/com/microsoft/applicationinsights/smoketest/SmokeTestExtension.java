@@ -9,6 +9,7 @@ import static org.junit.Assert.assertEquals;
 
 import com.google.common.base.Stopwatch;
 import com.microsoft.applicationinsights.smoketest.fakeingestion.MockedAppInsightsIngestionServer;
+import com.microsoft.applicationinsights.smoketest.fakeingestion.ProfilerState;
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.Domain;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
@@ -63,6 +64,8 @@ public class SmokeTestExtension
   private static final int TELEMETRY_RECEIVE_TIMEOUT_SECONDS = 60;
 
   private static final String FAKE_INGESTION_ENDPOINT = "http://host.testcontainers.internal:6060/";
+  private static final String FAKE_PROFILER_ENDPOINT =
+      "http://host.testcontainers.internal:6060/profiler/";
 
   private static final File appFile = new File(System.getProperty("ai.smoke-test.test-app-file"));
 
@@ -113,7 +116,8 @@ public class SmokeTestExtension
       boolean doNotSetConnectionString,
       boolean useOld3xAgent,
       String selfDiagnosticsLevel,
-      File agentExtensionFile) {
+      File agentExtensionFile,
+      ProfilerState profilerState) {
     this.skipHealthCheck = skipHealthCheck;
     this.readOnly = readOnly;
     this.dependencyContainer = dependencyContainer;
@@ -126,13 +130,19 @@ public class SmokeTestExtension
             : "InstrumentationKey=00000000-0000-0000-0000-0FEEDDADBEEF;IngestionEndpoint="
                 + FAKE_INGESTION_ENDPOINT
                 + ";LiveEndpoint="
-                + FAKE_INGESTION_ENDPOINT;
+                + FAKE_INGESTION_ENDPOINT
+                + ";ProfilerEndpoint="
+                + getProfilerEndpoint(profilerState);
     this.selfDiagnosticsLevel = selfDiagnosticsLevel;
     this.agentExtensionFile = agentExtensionFile;
 
     String javaagentPathSystemProperty =
         useOld3xAgent ? "ai.smoke-test.old-3x-javaagent-file" : "ai.smoke-test.javaagent-file";
     javaagentFile = new File(System.getProperty(javaagentPathSystemProperty));
+  }
+
+  private static String getProfilerEndpoint(ProfilerState profilerState) {
+    return FAKE_PROFILER_ENDPOINT + profilerState.name() + "/";
   }
 
   @Override
@@ -397,7 +407,7 @@ public class SmokeTestExtension
           "-Dapplicationinsights.testing.global-ingestion-endpoint=" + FAKE_INGESTION_ENDPOINT);
     }
     if (REMOTE_DEBUG) {
-      javaToolOptions.add("-agentlib:jdwp=transport=dt_socket,address=5005,server=y,suspend=y");
+      javaToolOptions.add("-agentlib:jdwp=transport=dt_socket,address=*:5005,server=y,suspend=y");
     }
     if (useAgent) {
       javaToolOptions.add("-javaagent:/applicationinsights-agent.jar");

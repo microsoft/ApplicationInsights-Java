@@ -20,7 +20,7 @@ public class SystemInformation {
 
   static {
     String osName = System.getProperty("os.name");
-    String osNameLower = osName == null ? null : osName.toLowerCase(Locale.ENGLISH);
+    String osNameLower = osName == null ? null : osName.toLowerCase(Locale.ROOT);
     WINDOWS = osNameLower != null && osNameLower.startsWith("windows");
     LINUX = osNameLower != null && osNameLower.startsWith("linux");
   }

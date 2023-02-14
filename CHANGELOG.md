@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## Version 3.4.9 GA
+
+### Enhancements:
+
+* Allow profiler to be controlled from portal by default
+  ([#2683](https://github.com/microsoft/ApplicationInsights-Java/pull/2683))
+* GA metricIntervalSeconds config
+  ([#2875](https://github.com/microsoft/ApplicationInsights-Java/pull/2875))
+
 ## Version 3.4.8 GA
 
 ### Enhancements:

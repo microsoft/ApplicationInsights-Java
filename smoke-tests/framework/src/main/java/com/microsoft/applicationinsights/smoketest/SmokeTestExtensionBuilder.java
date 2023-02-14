@@ -3,6 +3,7 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
+import com.microsoft.applicationinsights.smoketest.fakeingestion.ProfilerState;
 import java.io.File;
 import org.testcontainers.containers.GenericContainer;
 
@@ -17,6 +18,7 @@ public class SmokeTestExtensionBuilder {
   private boolean useOld3xAgent;
   private String selfDiagnosticsLevel = "info";
   private File agentExtensionFile;
+  private ProfilerState profilerEndpointPath = ProfilerState.unconfigured;
 
   public SmokeTestExtensionBuilder setDependencyContainer(
       String envVarName, GenericContainer<?> container) {
@@ -65,11 +67,17 @@ public class SmokeTestExtensionBuilder {
         doNotSetConnectionString,
         useOld3xAgent,
         selfDiagnosticsLevel,
-        agentExtensionFile);
+        agentExtensionFile,
+        profilerEndpointPath);
   }
 
   public SmokeTestExtensionBuilder setAgentExtensionFile(File file) {
     this.agentExtensionFile = file;
+    return this;
+  }
+
+  public SmokeTestExtensionBuilder setProfilerEndpoint(ProfilerState profilerEndpointPath) {
+    this.profilerEndpointPath = profilerEndpointPath;
     return this;
   }
 }
