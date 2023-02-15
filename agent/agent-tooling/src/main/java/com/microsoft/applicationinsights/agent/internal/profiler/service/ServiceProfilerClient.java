@@ -132,7 +132,6 @@ public class ServiceProfilerClient {
   public Mono<ProfilerConfiguration> getSettings(Date oldTimeStamp) {
 
     URL requestUrl = getSettingsPath(oldTimeStamp);
-    logger.debug("Settings pull request: {}", requestUrl);
 
     HttpRequest request = new HttpRequest(HttpMethod.GET, requestUrl);
 
