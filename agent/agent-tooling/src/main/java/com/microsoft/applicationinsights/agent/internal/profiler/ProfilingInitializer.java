@@ -138,26 +138,26 @@ public class ProfilingInitializer {
   private void startPollingForConfigUpdates() {
     ConfigService configService = new ConfigService(serviceProfilerClient);
     serviceProfilerExecutorService.scheduleAtFixedRate(
-        () -> {
-          try {
-            configService
-                .pullSettings()
-                .subscribe(
-                    this::applyConfiguration,
-                    e -> {
-                      if (currentlyEnabled.get()) {
-                        logger.error("Error pulling service profiler settings", e);
-                      }
-                    });
-          } catch (Throwable t) {
-            if (currentlyEnabled.get()) {
-              logger.error("Error pulling service profiler settings", t);
-            }
-          }
-        },
+        () -> pullProfilerSettings(configService),
         5,
         configuration.preview.profiler.configPollPeriodSeconds,
         TimeUnit.SECONDS);
+  }
+
+  private void pullProfilerSettings(ConfigService configService) {
+    try {
+      configService.pullSettings().subscribe(this::applyConfiguration, this::logProfilerPullError);
+    } catch (Throwable t) {
+      logProfilerPullError(t);
+    }
+  }
+
+  private void logProfilerPullError(Throwable e) {
+    if (currentlyEnabled.get()) {
+      logger.error("Error pulling service profiler settings", e);
+    } else {
+      logger.debug("Error pulling service profiler settings", e);
+    }
   }
 
   synchronized void applyConfiguration(ProfilerConfiguration profilerConfiguration) {
