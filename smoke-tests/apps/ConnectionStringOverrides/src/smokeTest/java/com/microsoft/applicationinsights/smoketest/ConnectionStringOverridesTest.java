@@ -72,7 +72,7 @@ abstract class ConnectionStringOverridesTest {
 
     assertThat(rdd.getType()).isEqualTo("Http");
     assertThat(rdd.getTarget()).isEqualTo("mock.codes");
-    assertThat(rdd.getName()).isEqualTo("GET /200");
+    assertThat(rdd.getName()).isEqualTo("GET");
     assertThat(rdd.getData()).isEqualTo("https://mock.codes/200");
     assertThat(rdd.getResultCode()).isEqualTo("200");
     assertThat(rdd.getSuccess()).isTrue();
