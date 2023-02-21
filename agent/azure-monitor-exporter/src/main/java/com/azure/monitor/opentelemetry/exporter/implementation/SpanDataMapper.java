@@ -311,7 +311,7 @@ public final class SpanDataMapper {
       telemetryBuilder.setResultCode(Long.toString(httpStatusCode));
     } else {
       // https://1dsdocs.azurewebsites.net/schema/Mappings/AzureMonitor-AI.html#remotedependencyresultcode
-      telemetryBuilder.setResultCode(0);
+      telemetryBuilder.setResultCode("0");
     }
 
     telemetryBuilder.setData(httpUrl);
