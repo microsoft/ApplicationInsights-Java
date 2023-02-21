@@ -28,7 +28,7 @@ abstract class JettyNativeHandlerTest {
   void doSimpleTest() throws Exception {
     Telemetry telemetry = testing.getTelemetry(0);
 
-    assertThat(telemetry.rd.getName()).isEqualTo("HTTP GET");
+    assertThat(telemetry.rd.getName()).isEqualTo("GET");
     assertThat(telemetry.rd.getUrl()).matches("http://localhost:[0-9]+/path");
     assertThat(telemetry.rd.getResponseCode()).isEqualTo("200");
     assertThat(telemetry.rd.getSuccess()).isTrue();
