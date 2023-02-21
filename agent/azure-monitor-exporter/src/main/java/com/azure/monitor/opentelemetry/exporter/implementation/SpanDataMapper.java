@@ -309,6 +309,9 @@ public final class SpanDataMapper {
     Long httpStatusCode = attributes.get(SemanticAttributes.HTTP_STATUS_CODE);
     if (httpStatusCode != null) {
       telemetryBuilder.setResultCode(Long.toString(httpStatusCode));
+    } else {
+      // https://1dsdocs.azurewebsites.net/schema/Mappings/AzureMonitor-AI.html#remotedependencyresultcode
+      telemetryBuilder.setResultCode(0);
     }
 
     telemetryBuilder.setData(httpUrl);
