@@ -178,16 +178,7 @@ public final class SpanDataMapper {
 
   private static final Set<String> DEFAULT_HTTP_SPAN_NAMES =
       new HashSet<>(
-          asList(
-              "HTTP OPTIONS",
-              "HTTP GET",
-              "HTTP HEAD",
-              "HTTP POST",
-              "HTTP PUT",
-              "HTTP DELETE",
-              "HTTP TRACE",
-              "HTTP CONNECT",
-              "HTTP PATCH"));
+          asList("OPTIONS", "GET", "HEAD", "POST", "PUT", "DELETE", "TRACE", "CONNECT", "PATCH"));
 
   // the backend product prefers more detailed (but possibly infinite cardinality) name for http
   // dependencies
@@ -594,14 +585,6 @@ public final class SpanDataMapper {
       return null;
     }
     String host = attributes.get(SemanticAttributes.NET_HOST_NAME);
-    if (host == null) {
-      // fall back to deprecated http.host if available
-      host = attributes.get(SemanticAttributes.HTTP_HOST);
-      if (host == null) {
-        return null;
-      }
-      return scheme + "://" + host + target;
-    }
     Long port = attributes.get(SemanticAttributes.NET_HOST_PORT);
     if (port != null && port > 0) {
       return scheme + "://" + host + ":" + port + target;
@@ -642,7 +625,7 @@ public final class SpanDataMapper {
     String source =
         nullAwareConcat(
             getTargetOrNull(attributes, 0),
-            attributes.get(SemanticAttributes.MESSAGING_DESTINATION),
+            attributes.get(SemanticAttributes.MESSAGING_DESTINATION_NAME),
             "/");
     if (source != null) {
       return source;
@@ -661,13 +644,7 @@ public final class SpanDataMapper {
     if (operationName != null) {
       return operationName;
     }
-
-    String spanName = span.getName();
-    String httpMethod = span.getAttributes().get(SemanticAttributes.HTTP_METHOD);
-    if (httpMethod != null && !httpMethod.isEmpty() && spanName.startsWith("/")) {
-      return httpMethod + " " + spanName;
-    }
-    return spanName;
+    return span.getName();
   }
 
   private static String nullAwareConcat(
@@ -815,6 +792,7 @@ public final class SpanDataMapper {
     applyConnectionStringAndRoleNameOverrides(mappingsBuilder);
   }
 
+  @SuppressWarnings("deprecation") // used to emit warning to users
   private static final WarningLogger connectionStringAttributeNoLongerSupported =
       new WarningLogger(
           SpanDataMapper.class,
@@ -824,6 +802,8 @@ public final class SpanDataMapper {
               + " \"connectionStringOverrides\" configuration, or reach out to"
               + " https://github.com/microsoft/ApplicationInsights-Java/issues if you have a"
               + " different use case.");
+
+  @SuppressWarnings("deprecation") // used to emit warning to users
   private static final WarningLogger roleNameAttributeNoLongerSupported =
       new WarningLogger(
           SpanDataMapper.class,
@@ -833,6 +813,8 @@ public final class SpanDataMapper {
               + " \"roleNameOverrides\" configuration, or reach out to"
               + " https://github.com/microsoft/ApplicationInsights-Java/issues if you have a"
               + " different use case.");
+
+  @SuppressWarnings("deprecation") // used to emit warning to users
   private static final WarningLogger roleInstanceAttributeNoLongerSupported =
       new WarningLogger(
           SpanDataMapper.class,
@@ -841,6 +823,8 @@ public final class SpanDataMapper {
               + " is incompatible with pre-aggregated standard metrics. Please reach out to"
               + " https://github.com/microsoft/ApplicationInsights-Java/issues if you have a use"
               + " case for this.");
+
+  @SuppressWarnings("deprecation") // used to emit warning to users
   private static final WarningLogger instrumentationKeyAttributeNoLongerSupported =
       new WarningLogger(
           SpanDataMapper.class,
@@ -851,6 +835,7 @@ public final class SpanDataMapper {
               + " https://github.com/microsoft/ApplicationInsights-Java/issues if you have a"
               + " different use case.");
 
+  @SuppressWarnings("deprecation") // used to emit warning to users
   static void applyConnectionStringAndRoleNameOverrides(MappingsBuilder mappingsBuilder) {
     mappingsBuilder
         .exact(
