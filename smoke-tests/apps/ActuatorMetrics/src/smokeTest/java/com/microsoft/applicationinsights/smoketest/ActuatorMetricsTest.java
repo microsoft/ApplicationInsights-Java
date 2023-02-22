@@ -31,7 +31,7 @@ abstract class ActuatorMetricsTest {
   @Test
   @TargetUri("/test")
   void doMostBasicTest() throws Exception {
-    testing.mockedIngestion.waitForItems("RequestData", 1);
+    testing.getTelemetry(0);
 
     List<Envelope> metricItems =
         testing.mockedIngestion.waitForItems(
