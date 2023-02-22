@@ -16,9 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
-import com.microsoft.applicationinsights.smoketest.schemav2.RemoteDependencyData;
 import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import org.junit.jupiter.api.Test;
@@ -36,18 +34,9 @@ abstract class SpringSchedulingTest {
   @Test
   @TargetUri("/should-ignore")
   void shouldIgnoreTest() throws Exception {
-    // TODO (heya) update test when
-    // [#7760](https://github.com/open-telemetry/opentelemetry-java-instrumentation/pull/7760) is
-    // released upstream
-    List<Envelope> rddList = testing.mockedIngestion.waitForItems("RemoteDependencyData", 1);
-    Envelope rddEnvelope = rddList.get(0);
-    RemoteDependencyData rdd =
-        (RemoteDependencyData) ((Data<?>) rddEnvelope.getData()).getBaseData();
-
-    assertThat(rddEnvelope.getTags().get("ai.operation.name"))
-        .isEqualTo("GET /SpringScheduling/should-ignore");
-    assertThat(rdd.getName()).isEqualTo("TestController$$Lambda$.run");
-    assertThat(rdd.getType()).isEqualTo("InProc");
+    // sleep a bit to make sure no dependencies are reported
+    Thread.sleep(5000);
+    assertThat(testing.mockedIngestion.getCountForType("RemoteDependencyData")).isZero();
   }
 
   @Test
