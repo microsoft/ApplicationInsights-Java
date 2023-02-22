@@ -56,6 +56,9 @@ public final class SpanDataMapper {
               SemanticAttributes.DbSystemValues.HSQLDB,
               SemanticAttributes.DbSystemValues.H2));
 
+  // this is needed until Azure SDK moves to latest OTel semantic conventions
+  private static final String COSMOS = "Cosmos";
+
   private static final Mappings MAPPINGS;
 
   // TODO (trask) add to generated ContextTagKeys class
@@ -164,6 +167,8 @@ public final class SpanDataMapper {
     telemetryBuilder.setSuccess(getSuccess(span));
 
     if (inProc) {
+      // TODO (trask) need to handle Cosmos INTERNAL spans
+      // see https://github.com/microsoft/ApplicationInsights-Java/pull/2906/files#r1104981386
       telemetryBuilder.setType("InProc");
     } else {
       applySemanticConventions(telemetryBuilder, span);
@@ -220,6 +225,10 @@ public final class SpanDataMapper {
       return;
     }
     String dbSystem = attributes.get(SemanticAttributes.DB_SYSTEM);
+    if (dbSystem == null) {
+      // special case needed until Azure SDK moves to latest OTel semantic conventions
+      dbSystem = attributes.get(AiSemanticAttributes.AZURE_SDK_DB_TYPE);
+    }
     if (dbSystem != null) {
       applyDatabaseClientSpan(telemetryBuilder, dbSystem, attributes);
       return;
@@ -386,16 +395,31 @@ public final class SpanDataMapper {
       } else {
         type = "SQL";
       }
+    } else if (dbSystem.equals(COSMOS)) {
+      // this has special icon in portal (documentdb was the old name for cosmos)
+      type = "Microsoft.DocumentDb";
     } else {
       type = dbSystem;
     }
     telemetryBuilder.setType(type);
     telemetryBuilder.setData(dbStatement);
-    String target =
-        nullAwareConcat(
-            getTargetOrDefault(attributes, getDefaultPortForDbSystem(dbSystem), dbSystem),
-            attributes.get(SemanticAttributes.DB_NAME),
-            " | ");
+
+    String target;
+    String dbName;
+    if (dbSystem.equals(COSMOS)) {
+      // special case needed until Azure SDK moves to latest OTel semantic conventions
+      String dbUrl = attributes.get(AiSemanticAttributes.AZURE_SDK_DB_URL);
+      if (dbUrl != null) {
+        target = UrlParser.getTarget(dbUrl);
+      } else {
+        target = null;
+      }
+      dbName = attributes.get(AiSemanticAttributes.AZURE_SDK_DB_INSTANCE);
+    } else {
+      target = getTargetOrDefault(attributes, getDefaultPortForDbSystem(dbSystem), dbSystem);
+      dbName = attributes.get(SemanticAttributes.DB_NAME);
+    }
+    target = nullAwareConcat(target, dbName, " | ");
     if (target == null) {
       target = dbSystem;
     }
