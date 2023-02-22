@@ -56,6 +56,9 @@ public final class SpanDataMapper {
               SemanticAttributes.DbSystemValues.HSQLDB,
               SemanticAttributes.DbSystemValues.H2));
 
+  // this is needed until Azure SDK moves to latest OTel semantic conventions
+  private static final String COSMOS = "Cosmos";
+
   private static final Mappings MAPPINGS;
 
   // TODO (trask) add to generated ContextTagKeys class
@@ -392,7 +395,7 @@ public final class SpanDataMapper {
       } else {
         type = "SQL";
       }
-    } else if (dbSystem.equals("Cosmos")) {
+    } else if (dbSystem.equals(COSMOS)) {
       // this has special icon in portal (documentdb was the old name for cosmos)
       type = "Microsoft.DocumentDb";
     } else {
@@ -403,7 +406,7 @@ public final class SpanDataMapper {
 
     String target;
     String dbName;
-    if (dbSystem.equals("Cosmos")) {
+    if (dbSystem.equals(COSMOS)) {
       // special case needed until Azure SDK moves to latest OTel semantic conventions
       String dbUrl = attributes.get(AiSemanticAttributes.AZURE_SDK_DB_URL);
       if (dbUrl != null) {
