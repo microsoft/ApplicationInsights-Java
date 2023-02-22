@@ -164,6 +164,8 @@ public final class SpanDataMapper {
     telemetryBuilder.setSuccess(getSuccess(span));
 
     if (inProc) {
+      // TODO (trask) need to handle Cosmos INTERNAL spans
+      // see https://github.com/microsoft/ApplicationInsights-Java/pull/2906/files#r1104981386
       telemetryBuilder.setType("InProc");
     } else {
       applySemanticConventions(telemetryBuilder, span);
@@ -392,7 +394,7 @@ public final class SpanDataMapper {
       }
     } else if (dbSystem.equals("Cosmos")) {
       // this has special icon in portal (documentdb was the old name for cosmos)
-      type = "azure documentdb";
+      type = "Microsoft.DocumentDb";
     } else {
       type = dbSystem;
     }
