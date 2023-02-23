@@ -56,6 +56,9 @@ public final class SpanDataMapper {
               SemanticAttributes.DbSystemValues.HSQLDB,
               SemanticAttributes.DbSystemValues.H2));
 
+  // this is needed until Azure SDK moves to latest OTel semantic conventions
+  private static final String COSMOS = "Cosmos";
+
   private static final Mappings MAPPINGS;
 
   // TODO (trask) add to generated ContextTagKeys class
@@ -164,6 +167,8 @@ public final class SpanDataMapper {
     telemetryBuilder.setSuccess(getSuccess(span));
 
     if (inProc) {
+      // TODO (trask) need to handle Cosmos INTERNAL spans
+      // see https://github.com/microsoft/ApplicationInsights-Java/pull/2906/files#r1104981386
       telemetryBuilder.setType("InProc");
     } else {
       applySemanticConventions(telemetryBuilder, span);
@@ -178,16 +183,7 @@ public final class SpanDataMapper {
 
   private static final Set<String> DEFAULT_HTTP_SPAN_NAMES =
       new HashSet<>(
-          asList(
-              "HTTP OPTIONS",
-              "HTTP GET",
-              "HTTP HEAD",
-              "HTTP POST",
-              "HTTP PUT",
-              "HTTP DELETE",
-              "HTTP TRACE",
-              "HTTP CONNECT",
-              "HTTP PATCH"));
+          asList("OPTIONS", "GET", "HEAD", "POST", "PUT", "DELETE", "TRACE", "CONNECT", "PATCH"));
 
   // the backend product prefers more detailed (but possibly infinite cardinality) name for http
   // dependencies
@@ -229,6 +225,10 @@ public final class SpanDataMapper {
       return;
     }
     String dbSystem = attributes.get(SemanticAttributes.DB_SYSTEM);
+    if (dbSystem == null) {
+      // special case needed until Azure SDK moves to latest OTel semantic conventions
+      dbSystem = attributes.get(AiSemanticAttributes.AZURE_SDK_DB_TYPE);
+    }
     if (dbSystem != null) {
       applyDatabaseClientSpan(telemetryBuilder, dbSystem, attributes);
       return;
@@ -309,6 +309,9 @@ public final class SpanDataMapper {
     Long httpStatusCode = attributes.get(SemanticAttributes.HTTP_STATUS_CODE);
     if (httpStatusCode != null) {
       telemetryBuilder.setResultCode(Long.toString(httpStatusCode));
+    } else {
+      // https://1dsdocs.azurewebsites.net/schema/Mappings/AzureMonitor-AI.html#remotedependencyresultcode
+      telemetryBuilder.setResultCode("0");
     }
 
     telemetryBuilder.setData(httpUrl);
@@ -392,16 +395,31 @@ public final class SpanDataMapper {
       } else {
         type = "SQL";
       }
+    } else if (dbSystem.equals(COSMOS)) {
+      // this has special icon in portal (documentdb was the old name for cosmos)
+      type = "Microsoft.DocumentDb";
     } else {
       type = dbSystem;
     }
     telemetryBuilder.setType(type);
     telemetryBuilder.setData(dbStatement);
-    String target =
-        nullAwareConcat(
-            getTargetOrDefault(attributes, getDefaultPortForDbSystem(dbSystem), dbSystem),
-            attributes.get(SemanticAttributes.DB_NAME),
-            " | ");
+
+    String target;
+    String dbName;
+    if (dbSystem.equals(COSMOS)) {
+      // special case needed until Azure SDK moves to latest OTel semantic conventions
+      String dbUrl = attributes.get(AiSemanticAttributes.AZURE_SDK_DB_URL);
+      if (dbUrl != null) {
+        target = UrlParser.getTarget(dbUrl);
+      } else {
+        target = null;
+      }
+      dbName = attributes.get(AiSemanticAttributes.AZURE_SDK_DB_INSTANCE);
+    } else {
+      target = getTargetOrDefault(attributes, getDefaultPortForDbSystem(dbSystem), dbSystem);
+      dbName = attributes.get(SemanticAttributes.DB_NAME);
+    }
+    target = nullAwareConcat(target, dbName, " | ");
     if (target == null) {
       target = dbSystem;
     }
@@ -594,14 +612,6 @@ public final class SpanDataMapper {
       return null;
     }
     String host = attributes.get(SemanticAttributes.NET_HOST_NAME);
-    if (host == null) {
-      // fall back to deprecated http.host if available
-      host = attributes.get(SemanticAttributes.HTTP_HOST);
-      if (host == null) {
-        return null;
-      }
-      return scheme + "://" + host + target;
-    }
     Long port = attributes.get(SemanticAttributes.NET_HOST_PORT);
     if (port != null && port > 0) {
       return scheme + "://" + host + ":" + port + target;
@@ -642,7 +652,7 @@ public final class SpanDataMapper {
     String source =
         nullAwareConcat(
             getTargetOrNull(attributes, 0),
-            attributes.get(SemanticAttributes.MESSAGING_DESTINATION),
+            attributes.get(SemanticAttributes.MESSAGING_DESTINATION_NAME),
             "/");
     if (source != null) {
       return source;
@@ -661,13 +671,7 @@ public final class SpanDataMapper {
     if (operationName != null) {
       return operationName;
     }
-
-    String spanName = span.getName();
-    String httpMethod = span.getAttributes().get(SemanticAttributes.HTTP_METHOD);
-    if (httpMethod != null && !httpMethod.isEmpty() && spanName.startsWith("/")) {
-      return httpMethod + " " + spanName;
-    }
-    return spanName;
+    return span.getName();
   }
 
   private static String nullAwareConcat(
@@ -815,6 +819,7 @@ public final class SpanDataMapper {
     applyConnectionStringAndRoleNameOverrides(mappingsBuilder);
   }
 
+  @SuppressWarnings("deprecation") // used to emit warning to users
   private static final WarningLogger connectionStringAttributeNoLongerSupported =
       new WarningLogger(
           SpanDataMapper.class,
@@ -824,6 +829,8 @@ public final class SpanDataMapper {
               + " \"connectionStringOverrides\" configuration, or reach out to"
               + " https://github.com/microsoft/ApplicationInsights-Java/issues if you have a"
               + " different use case.");
+
+  @SuppressWarnings("deprecation") // used to emit warning to users
   private static final WarningLogger roleNameAttributeNoLongerSupported =
       new WarningLogger(
           SpanDataMapper.class,
@@ -833,6 +840,8 @@ public final class SpanDataMapper {
               + " \"roleNameOverrides\" configuration, or reach out to"
               + " https://github.com/microsoft/ApplicationInsights-Java/issues if you have a"
               + " different use case.");
+
+  @SuppressWarnings("deprecation") // used to emit warning to users
   private static final WarningLogger roleInstanceAttributeNoLongerSupported =
       new WarningLogger(
           SpanDataMapper.class,
@@ -841,6 +850,8 @@ public final class SpanDataMapper {
               + " is incompatible with pre-aggregated standard metrics. Please reach out to"
               + " https://github.com/microsoft/ApplicationInsights-Java/issues if you have a use"
               + " case for this.");
+
+  @SuppressWarnings("deprecation") // used to emit warning to users
   private static final WarningLogger instrumentationKeyAttributeNoLongerSupported =
       new WarningLogger(
           SpanDataMapper.class,
@@ -851,6 +862,7 @@ public final class SpanDataMapper {
               + " https://github.com/microsoft/ApplicationInsights-Java/issues if you have a"
               + " different use case.");
 
+  @SuppressWarnings("deprecation") // used to emit warning to users
   static void applyConnectionStringAndRoleNameOverrides(MappingsBuilder mappingsBuilder) {
     mappingsBuilder
         .exact(

@@ -13,7 +13,7 @@ import com.microsoft.applicationinsights.agent.internal.common.FriendlyException
 import com.microsoft.applicationinsights.agent.internal.common.SystemInformation;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
-import com.microsoft.applicationinsights.agent.internal.profiler.config.ConfigPollingInit;
+import com.microsoft.applicationinsights.agent.internal.profiler.config.ConfigService;
 import com.microsoft.applicationinsights.agent.internal.profiler.config.ProfilerConfiguration;
 import com.microsoft.applicationinsights.agent.internal.profiler.service.ServiceProfilerClient;
 import com.microsoft.applicationinsights.agent.internal.profiler.triggers.AlertConfigParser;
@@ -26,7 +26,10 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Service profiler main entry point, wires up the items below.
@@ -38,6 +41,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * </ul>
  */
 public class ProfilingInitializer {
+  private static final Logger logger = LoggerFactory.getLogger(ProfilingInitializer.class);
+
   private final AtomicBoolean currentlyEnabled = new AtomicBoolean();
   private final String processId;
   private final String machineName;
@@ -127,17 +132,40 @@ public class ProfilingInitializer {
             userAgent);
 
     // Monitor service remains alive permanently due to scheduling an periodic config pull
-    ConfigPollingInit.startPollingForConfigUpdates(
-        serviceProfilerExecutorService,
-        serviceProfilerClient,
-        this::applyConfiguration,
-        configuration.preview.profiler.configPollPeriodSeconds);
+    startPollingForConfigUpdates();
   }
 
-  synchronized void applyConfiguration(ProfilerConfiguration config) {
-    if (currentlyEnabled.get() || (config.isEnabled() && config.hasBeenConfigured())) {
+  private void startPollingForConfigUpdates() {
+    ConfigService configService = new ConfigService(serviceProfilerClient);
+    serviceProfilerExecutorService.scheduleAtFixedRate(
+        () -> pullProfilerSettings(configService),
+        5,
+        configuration.preview.profiler.configPollPeriodSeconds,
+        TimeUnit.SECONDS);
+  }
 
-      AlertingConfiguration alertingConfig = AlertConfigParser.toAlertingConfig(config);
+  private void pullProfilerSettings(ConfigService configService) {
+    try {
+      configService.pullSettings().subscribe(this::applyConfiguration, this::logProfilerPullError);
+    } catch (Throwable t) {
+      logProfilerPullError(t);
+    }
+  }
+
+  private void logProfilerPullError(Throwable e) {
+    if (currentlyEnabled.get()) {
+      logger.error("Error pulling service profiler settings", e);
+    } else {
+      logger.debug("Error pulling service profiler settings", e);
+    }
+  }
+
+  synchronized void applyConfiguration(ProfilerConfiguration profilerConfiguration) {
+    if (currentlyEnabled.get()
+        || (profilerConfiguration.isEnabled() && profilerConfiguration.hasBeenConfigured())) {
+
+      AlertingConfiguration alertingConfig =
+          AlertConfigParser.toAlertingConfig(profilerConfiguration);
 
       if (alertingConfig.hasAnEnabledTrigger()) {
         if (!currentlyEnabled.getAndSet(true)) {
@@ -152,6 +180,7 @@ public class ProfilingInitializer {
         return;
       }
     }
+
     disableProfiler();
   }
 

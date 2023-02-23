@@ -114,7 +114,7 @@ class AvailableJmxMetricLogger {
     Set<String> attributes = new HashSet<>();
     for (MBeanAttributeInfo attribute : mbeanInfo.getAttributes()) {
       if (!attribute.isReadable()) {
-        attributes.add(attribute.getName() + " (not readable)");
+        attributes.add(escapedName(attribute) + " (not readable)");
         continue;
       }
       try {
@@ -125,7 +125,7 @@ class AvailableJmxMetricLogger {
         // "java.lang.UnsupportedOperationException: CollectionUsage threshold is not supported"
         // and available jmx metrics are already only logged at debug
         logger.trace(e.getMessage(), e);
-        attributes.add(attribute.getName() + " (exception)");
+        attributes.add(escapedName(attribute) + " (exception)");
       }
     }
     return attributes;
@@ -148,14 +148,14 @@ class AvailableJmxMetricLogger {
       }
     }
 
-    return singletonList(attribute.getName() + " (" + valueType(value) + ")");
+    return singletonList(escapedName(attribute) + " (" + valueType(value) + ")");
   }
 
   private static List<String> getCompositeTypeAttributes(
       MBeanAttributeInfo attribute, @Nullable Object compositeData, CompositeType compositeType) {
     List<String> attributes = new ArrayList<>();
     for (String itemName : compositeType.keySet()) {
-      String attributeName = attribute.getName() + "." + itemName;
+      String attributeName = escapedName(attribute) + "." + itemName;
       OpenType<?> itemType = compositeType.getType(itemName);
       if (itemType == null) {
         attributes.add(attributeName + " (null)");
@@ -171,6 +171,10 @@ class AvailableJmxMetricLogger {
       }
     }
     return attributes;
+  }
+
+  private static String escapedName(MBeanAttributeInfo attribute) {
+    return attribute.getName().replace(".", "\\.");
   }
 
   private static String valueType(@Nullable Object value) {

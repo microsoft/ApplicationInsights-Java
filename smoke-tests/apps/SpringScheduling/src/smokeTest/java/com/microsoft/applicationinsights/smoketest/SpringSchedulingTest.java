@@ -12,6 +12,7 @@ import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCA
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_8_OPENJ9;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.WILDFLY_13_JAVA_8;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.WILDFLY_13_JAVA_8_OPENJ9;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
@@ -24,7 +25,19 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 @UseAgent
 abstract class SpringSchedulingTest {
 
-  @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.create();
+  @RegisterExtension
+  static final SmokeTestExtension testing =
+      SmokeTestExtension.builder()
+          .setSelfDiagnosticsLevel("debug")
+          .build(); // SmokeTestExtension.create();
+
+  @Test
+  @TargetUri("/should-ignore")
+  void shouldIgnoreTest() throws Exception {
+    // sleep a bit to make sure no dependencies are reported
+    Thread.sleep(5000);
+    assertThat(testing.mockedIngestion.getCountForType("RemoteDependencyData")).isZero();
+  }
 
   @Test
   @TargetUri("/scheduler")

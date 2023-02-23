@@ -72,18 +72,14 @@ public class JmxDataFetcher {
           InstanceNotFoundException {
     ArrayList<Object> result = new ArrayList<>();
 
-    String[] inners = attributeName.split("\\.");
+    List<String> inners = splitByDot(attributeName);
 
     for (ObjectName object : objects) {
-
-      Object value;
-
-      if (inners.length == 1) {
-        value = server.getAttribute(object, attributeName);
-      } else {
-        value = server.getAttribute(object, inners[0]);
+      Object value = server.getAttribute(object, inners.get(0));
+      if (inners.size() > 1) {
         if (value != null) {
-          value = ((CompositeData) value).get(inners[1]);
+          // TODO (trask) will support more nesting after moving to upstream otel jmx component
+          value = ((CompositeData) value).get(inners.get(1));
         }
       }
       if (value != null) {
@@ -92,6 +88,55 @@ public class JmxDataFetcher {
     }
 
     return result;
+  }
+
+  // This code is copied in from upstream otel java instrumentation repository
+  // until we move to upstream version
+  private static List<String> splitByDot(String rawName) {
+    List<String> components = new ArrayList<>();
+    try {
+      StringBuilder currentSegment = new StringBuilder();
+      boolean escaped = false;
+      for (int i = 0; i < rawName.length(); ++i) {
+        char ch = rawName.charAt(i);
+        if (escaped) {
+          // Allow only '\' and '.' to be escaped
+          if (ch != '\\' && ch != '.') {
+            throw new IllegalArgumentException(
+                "Invalid escape sequence in attribute name '" + rawName + "'");
+          }
+          currentSegment.append(ch);
+          escaped = false;
+        } else {
+          if (ch == '\\') {
+            escaped = true;
+          } else if (ch == '.') {
+            // this is a segment separator
+            verifyAndAddNameSegment(components, currentSegment);
+            currentSegment = new StringBuilder();
+          } else {
+            currentSegment.append(ch);
+          }
+        }
+      }
+
+      // The returned list is never empty ...
+      verifyAndAddNameSegment(components, currentSegment);
+
+    } catch (IllegalArgumentException unused) {
+      // Drop the original exception. We have more meaningful context here.
+      throw new IllegalArgumentException("Invalid attribute name '" + rawName + "'");
+    }
+
+    return components;
+  }
+
+  private static void verifyAndAddNameSegment(List<String> segments, StringBuilder candidate) {
+    String newSegment = candidate.toString().trim();
+    if (newSegment.isEmpty()) {
+      throw new IllegalArgumentException();
+    }
+    segments.add(newSegment);
   }
 
   private JmxDataFetcher() {}

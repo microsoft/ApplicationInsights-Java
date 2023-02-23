@@ -1,5 +1,18 @@
 # CHANGELOG
 
+## Version 3.4.10 GA
+
+### Enhancements:
+
+* Update to OpenTelemetry Java Instrumentation 1.23
+  ([#2923](https://github.com/microsoft/ApplicationInsights-Java/pull/2923))
+* Set resultCode to "0" when Span.httpStatusCode is not present
+  ([#2925](https://github.com/microsoft/ApplicationInsights-Java/pull/2925))
+* Support dots in JMX attribute names
+  ([#2921](https://github.com/microsoft/ApplicationInsights-Java/pull/2921))
+* Improve Cosmos telemetry mapping
+  ([#2906](https://github.com/microsoft/ApplicationInsights-Java/pull/2906))
+
 ## Version 3.4.9 GA
 
 ### Enhancements:
