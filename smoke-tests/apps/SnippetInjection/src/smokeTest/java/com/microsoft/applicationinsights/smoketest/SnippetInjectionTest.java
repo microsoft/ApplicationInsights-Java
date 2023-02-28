@@ -19,16 +19,14 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 abstract class SnippetInjectionTest {
   @RegisterExtension
   static final SmokeTestExtension testing =
-      SmokeTestExtension.builder()
-          .setAgentExtensionFile(new File("MockExtension/build/libs/extension.jar"))
-          .setProfilerEndpoint(ProfilerState.configuredEnabled)
-          .build();
+      SmokeTestExtension.builder().setSelfDiagnosticsLevel("trace").build();
 
   @Test
-  @TargetUri("/")
-  void doDelayedSnippetInjectionTest() throws Exception {
+  @TargetUri("/hello")
+  void normalSnippetInjectionTest() throws Exception {
     String url = testing.getBaseUrl() + "/hello";
     String response = HttpHelper.get(url, "");
+
     System.out.println(response);
 
     Assertions.assertTrue(Boolean.parseBoolean(response));

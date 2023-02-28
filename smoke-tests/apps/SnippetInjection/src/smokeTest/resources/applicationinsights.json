@@ -1,17 +1,16 @@
 {
-  "role" : {
-    "name" : "testrolename",
-    "instance" : "testroleinstance"
+  "role": {
+    "name": "testrolename",
+    "instance": "testroleinstance"
   },
-  "sampling" : {
-    "percentage" : 100
+  "sampling": {
+    "percentage": 100
   },
-  "preview" : {
-    "profiler" : {
-      "enabled" : true,
-      "memoryTriggeredSettings" : "DIAGNOSTIC_PROFILE",
-      "cpuTriggeredSettings" : "DIAGNOSTIC_PROFILE",
-      "enableDiagnostics" : true
-    }
+  "customDimensions": {
+    "test": "value",
+    "home": "${HOME}",
+    "service.version": "123"
   }
 }
+
+// TODO check
