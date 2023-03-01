@@ -3,14 +3,13 @@
 
 package com.microsoft.applicationinsights.agent.internal.init;
 
+import static java.util.concurrent.TimeUnit.MINUTES;
+
 import com.azure.monitor.opentelemetry.exporter.implementation.heartbeat.HeartbeatExporter;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
-import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.profiler.ProfilingInitializer;
-import com.microsoft.applicationinsights.agent.internal.statsbeat.StatsbeatModule;
-import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryObservers;
 import io.opentelemetry.javaagent.bootstrap.ClassFileTransformerHolder;
 import io.opentelemetry.javaagent.bootstrap.InstrumentationHolder;
 import java.lang.instrument.ClassFileTransformer;
@@ -20,8 +19,6 @@ import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static java.util.concurrent.TimeUnit.MINUTES;
 
 public class AzureFunctionsInitializer implements Runnable {
 
@@ -34,7 +31,10 @@ public class AzureFunctionsInitializer implements Runnable {
   private final Consumer<List<TelemetryItem>> telemetryItemsConsumer;
   private final ProfilingInitializer profilingInitializer;
 
-  public AzureFunctionsInitializer(RuntimeConfigurator runtimeConfigurator, Consumer<List<TelemetryItem>> telemetryItemsConsumer, ProfilingInitializer profilingInitializer) {
+  public AzureFunctionsInitializer(
+      RuntimeConfigurator runtimeConfigurator,
+      Consumer<List<TelemetryItem>> telemetryItemsConsumer,
+      ProfilingInitializer profilingInitializer) {
     this.runtimeConfigurator = runtimeConfigurator;
     this.telemetryItemsConsumer = telemetryItemsConsumer;
     this.profilingInitializer = profilingInitializer;
@@ -92,7 +92,6 @@ public class AzureFunctionsInitializer implements Runnable {
     runtimeConfig.selfDiagnosticsLevel =
         getAndLogAtDebug("APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_LEVEL");
 
-
     // initialize Profiler
     if (runtimeConfig.preview.profiler.enabled) {
       profilingInitializer.initialize();
@@ -100,7 +99,10 @@ public class AzureFunctionsInitializer implements Runnable {
 
     // enable Heartbeat
     long intervalSeconds = Math.min(runtimeConfig.heartbeat.intervalSeconds, MINUTES.toSeconds(15));
-    HeartbeatExporter.start(intervalSeconds, runtimeConfigurator.getTelemetryClient()::populateDefaults, telemetryItemsConsumer);
+    HeartbeatExporter.start(
+        intervalSeconds,
+        runtimeConfigurator.getTelemetryClient()::populateDefaults,
+        telemetryItemsConsumer);
 
     // TODO (heya) enable Statsbeat and need to refactor RuntimeConfiguration
 

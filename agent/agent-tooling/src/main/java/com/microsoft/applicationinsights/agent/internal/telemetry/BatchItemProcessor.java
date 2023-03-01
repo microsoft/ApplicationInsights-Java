@@ -12,9 +12,6 @@ import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.Telemetr
 import io.opentelemetry.internal.shaded.jctools.queues.MpscArrayQueue;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.DaemonThreadFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Queue;

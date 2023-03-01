@@ -14,7 +14,6 @@ import com.azure.monitor.opentelemetry.exporter.implementation.heartbeat.Heartbe
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.QuickPulse;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
-import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryObservers;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.TempDirs;
 import com.google.auto.service.AutoService;
 import com.microsoft.applicationinsights.agent.bootstrap.AzureFunctions;
@@ -42,6 +41,7 @@ import com.microsoft.applicationinsights.agent.internal.statsbeat.StatsbeatModul
 import com.microsoft.applicationinsights.agent.internal.telemetry.BatchItemProcessor;
 import com.microsoft.applicationinsights.agent.internal.telemetry.MetricFilter;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
+import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryObservers;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdkBuilder;
@@ -136,18 +136,19 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
             .build();
 
     Consumer<List<TelemetryItem>> heartbeatTelemetryItemConsumer =
-            telemetryItems -> {
-              for (TelemetryItem telemetryItem : telemetryItems) {
-                TelemetryObservers.INSTANCE
-                        .getObservers()
-                        .forEach(consumer -> consumer.accept(telemetryItem));
-                telemetryClient.trackAsync(telemetryItem);
-              }
-            };
+        telemetryItems -> {
+          for (TelemetryItem telemetryItem : telemetryItems) {
+            TelemetryObservers.INSTANCE
+                .getObservers()
+                .forEach(consumer -> consumer.accept(telemetryItem));
+            telemetryClient.trackAsync(telemetryItem);
+          }
+        };
 
     // interval longer than 15 minutes is not allowed since we use this data for usage telemetry
     if (telemetryClient.getConnectionString() != null) {
-      long intervalSeconds = Math.min(configuration.heartbeat.intervalSeconds, MINUTES.toSeconds(15));
+      long intervalSeconds =
+          Math.min(configuration.heartbeat.intervalSeconds, MINUTES.toSeconds(15));
       HeartbeatExporter.start(
           intervalSeconds, telemetryClient::populateDefaults, heartbeatTelemetryItemConsumer);
     }
@@ -170,7 +171,8 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
     ProfilingInitializer profilingInitializer = null;
     if (configuration.preview.profiler.enabled) {
       try {
-        profilingInitializer = ProfilingInitializer.initialize(tempDir, configuration, telemetryClient);
+        profilingInitializer =
+            ProfilingInitializer.initialize(tempDir, configuration, telemetryClient);
       } catch (RuntimeException e) {
         startupLogger.warning("Failed to initialize profiler", e);
       }
@@ -179,7 +181,8 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
     if (ConfigurationBuilder.inAzureFunctionsConsumptionWorker()) {
       AzureFunctions.setup(
           () -> telemetryClient.getConnectionString() != null,
-          new AzureFunctionsInitializer(runtimeConfigurator, heartbeatTelemetryItemConsumer, profilingInitializer));
+          new AzureFunctionsInitializer(
+              runtimeConfigurator, heartbeatTelemetryItemConsumer, profilingInitializer));
     }
 
     RpConfiguration rpConfiguration = FirstEntryPoint.getRpConfiguration();

@@ -90,7 +90,7 @@ public class ProfilingInitializer {
             formApplicationInsightsUserAgent(),
             configuration,
             tempDir);
-      profilingInitializer.initialize();
+    profilingInitializer.initialize();
     return profilingInitializer;
   }
 
