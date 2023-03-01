@@ -90,7 +90,7 @@ public class ProfilingInitializer {
             formApplicationInsightsUserAgent(),
             configuration,
             tempDir);
-    profilingInitializer.initialize();
+      profilingInitializer.initialize();
     return profilingInitializer;
   }
 
@@ -101,7 +101,7 @@ public class ProfilingInitializer {
           "disable profiler or use a writable file system");
     }
 
-    if (configuration.preview.profiler.enabled) {
+    if (configuration.preview.profiler.enabled && telemetryClient.getConnectionString() != null) {
       performInit();
     }
   }

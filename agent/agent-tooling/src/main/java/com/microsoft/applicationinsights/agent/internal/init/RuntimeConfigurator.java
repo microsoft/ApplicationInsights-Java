@@ -79,6 +79,10 @@ public class RuntimeConfigurator {
 
     copy.instrumentationLoggingLevel = config.instrumentationLoggingLevel;
     copy.selfDiagnosticsLevel = config.selfDiagnosticsLevel;
+
+    copy.preview.profiler.enabled = config.preview.profiler.enabled;
+
+    copy.heartbeat.intervalSeconds = config.heartbeat.intervalSeconds;
     return copy;
   }
 
@@ -148,6 +152,10 @@ public class RuntimeConfigurator {
     } else {
       BytecodeUtilImpl.samplingPercentage = 100;
     }
+  }
+
+  TelemetryClient getTelemetryClient() {
+    return telemetryClient;
   }
 
   private void updateConnectionString(@Nullable String connectionString) {

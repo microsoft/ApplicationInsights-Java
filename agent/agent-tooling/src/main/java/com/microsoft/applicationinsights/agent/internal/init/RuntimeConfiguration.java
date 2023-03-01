@@ -22,4 +22,10 @@ public class RuntimeConfiguration {
   public String instrumentationLoggingLevel;
 
   public String selfDiagnosticsLevel;
+
+  public Configuration.PreviewConfiguration preview = new Configuration.PreviewConfiguration();
+
+  public Configuration.ProfilerConfiguration profiler = new Configuration.ProfilerConfiguration();
+
+  public Configuration.Heartbeat heartbeat = new Configuration.Heartbeat();
 }
