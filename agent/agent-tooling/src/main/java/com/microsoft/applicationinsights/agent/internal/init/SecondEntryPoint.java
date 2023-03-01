@@ -141,7 +141,7 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
             TelemetryObservers.INSTANCE
                 .getObservers()
                 .forEach(consumer -> consumer.accept(telemetryItem));
-            telemetryClient.trackAsync(telemetryItem);
+            telemetryClient.getMetricsBatchItemProcessor().trackAsync(telemetryItem);
           }
         };
 
