@@ -70,7 +70,7 @@ public final class BatchItemProcessor {
       Thread workerThread = new DaemonThreadFactory(WORKER_THREAD_NAME).newThread(worker);
       workerThread.setUncaughtExceptionHandler((t, e) -> logger.error(e.getMessage(), e));
       workerThread.start();
-    } catch (Exception ex) {
+    } catch (RuntimeException ex) {
       logger.error("An error occurs when running the batch worker thread", ex);
     }
   }
