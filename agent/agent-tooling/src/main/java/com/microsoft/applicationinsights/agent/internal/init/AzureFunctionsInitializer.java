@@ -93,12 +93,12 @@ public class AzureFunctionsInitializer implements Runnable {
         getAndLogAtDebug("APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_LEVEL");
 
     // initialize Profiler
-    if (runtimeConfig.preview.profiler.enabled) {
+    if (runtimeConfig.profilerEnabled) {
       profilingInitializer.initialize();
     }
 
     // enable Heartbeat
-    long intervalSeconds = Math.min(runtimeConfig.heartbeat.intervalSeconds, MINUTES.toSeconds(15));
+    long intervalSeconds = Math.min(runtimeConfig.heartbeatIntervalSeconds, MINUTES.toSeconds(15));
     HeartbeatExporter.start(
         intervalSeconds,
         runtimeConfigurator.getTelemetryClient()::populateDefaults,
