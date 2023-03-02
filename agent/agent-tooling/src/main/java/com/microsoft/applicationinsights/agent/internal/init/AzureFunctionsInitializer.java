@@ -28,15 +28,15 @@ public class AzureFunctionsInitializer implements Runnable {
       LoggerFactory.getLogger(DiagnosticsHelper.DIAGNOSTICS_LOGGER_NAME);
 
   private final RuntimeConfigurator runtimeConfigurator;
-  private final Consumer<List<TelemetryItem>> telemetryItemsConsumer;
+  private final Consumer<List<TelemetryItem>> heartbeatTelemetryItemsConsumer;
   private final ProfilingInitializer profilingInitializer;
 
   public AzureFunctionsInitializer(
       RuntimeConfigurator runtimeConfigurator,
-      Consumer<List<TelemetryItem>> telemetryItemsConsumer,
+      Consumer<List<TelemetryItem>> heartbeatTelemetryItemsConsumer,
       ProfilingInitializer profilingInitializer) {
     this.runtimeConfigurator = runtimeConfigurator;
-    this.telemetryItemsConsumer = telemetryItemsConsumer;
+    this.heartbeatTelemetryItemsConsumer = heartbeatTelemetryItemsConsumer;
     this.profilingInitializer = profilingInitializer;
   }
 
@@ -102,7 +102,7 @@ public class AzureFunctionsInitializer implements Runnable {
     HeartbeatExporter.start(
         intervalSeconds,
         runtimeConfigurator.getTelemetryClient()::populateDefaults,
-        telemetryItemsConsumer);
+        heartbeatTelemetryItemsConsumer);
 
     // TODO (heya) enable Statsbeat and need to refactor RuntimeConfiguration
 

@@ -23,9 +23,7 @@ public class RuntimeConfiguration {
 
   public String selfDiagnosticsLevel;
 
-  public Configuration.PreviewConfiguration preview = new Configuration.PreviewConfiguration();
+  public boolean profilerEnabled;
 
-  public Configuration.ProfilerConfiguration profiler = new Configuration.ProfilerConfiguration();
-
-  public Configuration.Heartbeat heartbeat = new Configuration.Heartbeat();
+  public long heartbeatIntervalSeconds;
 }

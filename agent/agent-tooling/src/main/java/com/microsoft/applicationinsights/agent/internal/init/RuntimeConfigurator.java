@@ -58,6 +58,9 @@ public class RuntimeConfigurator {
 
     runtimeConfig.instrumentationLoggingLevel = initialConfig.instrumentation.logging.level;
     runtimeConfig.selfDiagnosticsLevel = initialConfig.selfDiagnostics.level;
+
+    runtimeConfig.profilerEnabled = initialConfig.preview.profiler.enabled;
+    runtimeConfig.heartbeatIntervalSeconds = initialConfig.heartbeat.intervalSeconds;
     return runtimeConfig;
   }
 
@@ -80,9 +83,8 @@ public class RuntimeConfigurator {
     copy.instrumentationLoggingLevel = config.instrumentationLoggingLevel;
     copy.selfDiagnosticsLevel = config.selfDiagnosticsLevel;
 
-    copy.preview.profiler.enabled = config.preview.profiler.enabled;
-
-    copy.heartbeat.intervalSeconds = config.heartbeat.intervalSeconds;
+    copy.profilerEnabled = config.profilerEnabled;
+    copy.heartbeatIntervalSeconds = config.heartbeatIntervalSeconds;
     return copy;
   }
 
