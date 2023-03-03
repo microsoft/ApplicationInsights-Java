@@ -3,18 +3,24 @@
 
 package com.microsoft.applicationinsights.agent.internal.init;
 
+import static java.util.concurrent.TimeUnit.MINUTES;
+
 import ch.qos.logback.classic.LoggerContext;
+import com.azure.monitor.opentelemetry.exporter.implementation.heartbeat.HeartbeatExporter;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
 import com.microsoft.applicationinsights.agent.internal.classicsdk.BytecodeUtilImpl;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.exporter.AgentLogExporter;
 import com.microsoft.applicationinsights.agent.internal.legacyheaders.DelegatingPropagator;
+import com.microsoft.applicationinsights.agent.internal.profiler.ProfilingInitializer;
 import com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampler;
 import com.microsoft.applicationinsights.agent.internal.sampling.Samplers;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import org.slf4j.Logger;
@@ -27,14 +33,20 @@ public class RuntimeConfigurator {
   private final TelemetryClient telemetryClient;
   private final Supplier<AgentLogExporter> agentLogExporter;
   private volatile RuntimeConfiguration currentConfig;
+  @Nullable private final Consumer<List<TelemetryItem>> heartbeatTelemetryItemsConsumer;
+  @Nullable private final ProfilingInitializer profilingInitializer;
 
   RuntimeConfigurator(
       TelemetryClient telemetryClient,
       Supplier<AgentLogExporter> agentLogExporter,
-      Configuration initialConfig) {
+      Configuration initialConfig,
+      Consumer<List<TelemetryItem>> heartbeatTelemetryItemConsumer,
+      ProfilingInitializer profilingInitializer) {
     this.telemetryClient = telemetryClient;
     this.agentLogExporter = agentLogExporter;
     currentConfig = captureInitialConfig(initialConfig);
+    this.heartbeatTelemetryItemsConsumer = heartbeatTelemetryItemConsumer;
+    this.profilingInitializer = profilingInitializer;
   }
 
   private static RuntimeConfiguration captureInitialConfig(Configuration initialConfig) {
@@ -118,6 +130,21 @@ public class RuntimeConfigurator {
       updateSampling(enabled, runtimeConfig.sampling, runtimeConfig.samplingPreview);
     }
 
+    // initialize Profiler
+    if (runtimeConfig.profilerEnabled) {
+      profilingInitializer.initialize();
+    }
+
+    // enable Heartbeat
+    if (telemetryClient.getConnectionString() != null) {
+      long intervalSeconds =
+          Math.min(runtimeConfig.heartbeatIntervalSeconds, MINUTES.toSeconds(15));
+      HeartbeatExporter.start(
+          intervalSeconds, telemetryClient::populateDefaults, heartbeatTelemetryItemsConsumer);
+    }
+
+    // TODO (heya) enable Statsbeat and need to refactor RuntimeConfiguration
+
     updateInstrumentationLoggingLevel(runtimeConfig.instrumentationLoggingLevel);
     updateSelfDiagnosticsLevel(runtimeConfig.selfDiagnosticsLevel);
 
@@ -154,10 +181,6 @@ public class RuntimeConfigurator {
     } else {
       BytecodeUtilImpl.samplingPercentage = 100;
     }
-  }
-
-  TelemetryClient getTelemetryClient() {
-    return telemetryClient;
   }
 
   private void updateConnectionString(@Nullable String connectionString) {

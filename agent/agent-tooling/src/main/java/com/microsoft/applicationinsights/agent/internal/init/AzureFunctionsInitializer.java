@@ -3,19 +3,12 @@
 
 package com.microsoft.applicationinsights.agent.internal.init;
 
-import static java.util.concurrent.TimeUnit.MINUTES;
-
-import com.azure.monitor.opentelemetry.exporter.implementation.heartbeat.HeartbeatExporter;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
-import com.microsoft.applicationinsights.agent.internal.profiler.ProfilingInitializer;
 import io.opentelemetry.javaagent.bootstrap.ClassFileTransformerHolder;
 import io.opentelemetry.javaagent.bootstrap.InstrumentationHolder;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.Instrumentation;
-import java.util.List;
-import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,16 +21,9 @@ public class AzureFunctionsInitializer implements Runnable {
       LoggerFactory.getLogger(DiagnosticsHelper.DIAGNOSTICS_LOGGER_NAME);
 
   private final RuntimeConfigurator runtimeConfigurator;
-  private final Consumer<List<TelemetryItem>> heartbeatTelemetryItemsConsumer;
-  private final ProfilingInitializer profilingInitializer;
 
-  public AzureFunctionsInitializer(
-      RuntimeConfigurator runtimeConfigurator,
-      Consumer<List<TelemetryItem>> heartbeatTelemetryItemsConsumer,
-      ProfilingInitializer profilingInitializer) {
+  public AzureFunctionsInitializer(RuntimeConfigurator runtimeConfigurator) {
     this.runtimeConfigurator = runtimeConfigurator;
-    this.heartbeatTelemetryItemsConsumer = heartbeatTelemetryItemsConsumer;
-    this.profilingInitializer = profilingInitializer;
   }
 
   @Override
@@ -91,20 +77,6 @@ public class AzureFunctionsInitializer implements Runnable {
         getAndLogAtDebug("APPLICATIONINSIGHTS_INSTRUMENTATION_LOGGING_LEVEL");
     runtimeConfig.selfDiagnosticsLevel =
         getAndLogAtDebug("APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_LEVEL");
-
-    // initialize Profiler
-    if (runtimeConfig.profilerEnabled) {
-      profilingInitializer.initialize();
-    }
-
-    // enable Heartbeat
-    long intervalSeconds = Math.min(runtimeConfig.heartbeatIntervalSeconds, MINUTES.toSeconds(15));
-    HeartbeatExporter.start(
-        intervalSeconds,
-        runtimeConfigurator.getTelemetryClient()::populateDefaults,
-        heartbeatTelemetryItemsConsumer);
-
-    // TODO (heya) enable Statsbeat and need to refactor RuntimeConfiguration
 
     runtimeConfigurator.apply(runtimeConfig);
   }

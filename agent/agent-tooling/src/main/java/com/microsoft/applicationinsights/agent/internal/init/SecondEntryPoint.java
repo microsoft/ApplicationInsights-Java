@@ -147,6 +147,7 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
 
     // interval longer than 15 minutes is not allowed since we use this data for usage telemetry
     if (telemetryClient.getConnectionString() != null) {
+      startupLogger.verbose("connection string is not null, start HeartbeatExporter");
       long intervalSeconds =
           Math.min(configuration.heartbeat.intervalSeconds, MINUTES.toSeconds(15));
       HeartbeatExporter.start(
@@ -154,19 +155,6 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
     }
 
     TelemetryClient.setActive(telemetryClient);
-
-    RuntimeConfigurator runtimeConfigurator =
-        new RuntimeConfigurator(telemetryClient, () -> agentLogExporter, configuration);
-
-    if (configuration.sampling.percentage != null) {
-      BytecodeUtilImpl.samplingPercentage = configuration.sampling.percentage.floatValue();
-    } else {
-      BytecodeUtilImpl.samplingPercentage = 100;
-    }
-    BytecodeUtilImpl.featureStatsbeat = statsbeatModule.getFeatureStatsbeat();
-    BytecodeUtilImpl.runtimeConfigurator = runtimeConfigurator;
-    BytecodeUtilImpl.connectionStringConfiguredAtRuntime =
-        configuration.connectionStringConfiguredAtRuntime;
 
     ProfilingInitializer profilingInitializer = null;
     if (configuration.preview.profiler.enabled) {
@@ -178,11 +166,28 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
       }
     }
 
+    RuntimeConfigurator runtimeConfigurator =
+        new RuntimeConfigurator(
+            telemetryClient,
+            () -> agentLogExporter,
+            configuration,
+            heartbeatTelemetryItemConsumer,
+            profilingInitializer);
+
+    if (configuration.sampling.percentage != null) {
+      BytecodeUtilImpl.samplingPercentage = configuration.sampling.percentage.floatValue();
+    } else {
+      BytecodeUtilImpl.samplingPercentage = 100;
+    }
+    BytecodeUtilImpl.featureStatsbeat = statsbeatModule.getFeatureStatsbeat();
+    BytecodeUtilImpl.runtimeConfigurator = runtimeConfigurator;
+    BytecodeUtilImpl.connectionStringConfiguredAtRuntime =
+        configuration.connectionStringConfiguredAtRuntime;
+
     if (ConfigurationBuilder.inAzureFunctionsConsumptionWorker()) {
       AzureFunctions.setup(
           () -> telemetryClient.getConnectionString() != null,
-          new AzureFunctionsInitializer(
-              runtimeConfigurator, heartbeatTelemetryItemConsumer, profilingInitializer));
+          new AzureFunctionsInitializer(runtimeConfigurator));
     }
 
     RpConfiguration rpConfiguration = FirstEntryPoint.getRpConfiguration();
