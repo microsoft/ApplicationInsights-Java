@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 package com.microsoft.applicationinsights.agent.internal.profiler;
 
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
@@ -12,28 +15,18 @@ import org.junit.jupiter.api.Test;
 
 public class AlternativeJfrConfigurationsTest {
 
-  private static void assertForAllConfigs(Configuration.ProfilerConfiguration config,
-      Consumer<String> assertion) {
+  private static void assertForAllConfigs(
+      Configuration.ProfilerConfiguration config, Consumer<String> assertion) {
+
+    assertion.accept(AlternativeJfrConfigurations.getCpuProfileConfig(config).getConfiguration());
 
     assertion.accept(
-        AlternativeJfrConfigurations
-            .getCpuProfileConfig(config)
-            .getConfiguration());
+        AlternativeJfrConfigurations.getMemoryProfileConfig(config).getConfiguration());
 
     assertion.accept(
-        AlternativeJfrConfigurations
-            .getMemoryProfileConfig(config)
-            .getConfiguration());
+        AlternativeJfrConfigurations.getManualProfileConfig(config).getConfiguration());
 
-    assertion.accept(
-        AlternativeJfrConfigurations
-            .getManualProfileConfig(config)
-            .getConfiguration());
-
-    assertion.accept(
-        AlternativeJfrConfigurations
-            .getSpanProfileConfig(config)
-            .getConfiguration());
+    assertion.accept(AlternativeJfrConfigurations.getSpanProfileConfig(config).getConfiguration());
   }
 
   @Test
@@ -51,9 +44,11 @@ public class AlternativeJfrConfigurationsTest {
       config.memoryTriggeredSettings = tmpfile.getAbsolutePath();
 
       config.enableDiagnostics = true;
-      assertForAllConfigs(config, (fileContent) -> {
-        Assertions.assertEquals("a-jfc-file", fileContent);
-      });
+      assertForAllConfigs(
+          config,
+          (fileContent) -> {
+            Assertions.assertEquals("a-jfc-file", fileContent);
+          });
 
     } finally {
       tmpfile.delete();
@@ -64,19 +59,23 @@ public class AlternativeJfrConfigurationsTest {
   public void ifDiagnosticsAreEnabledDefaultToDiagnosticProfile() {
     Configuration.ProfilerConfiguration config = new Configuration.ProfilerConfiguration();
     config.enableDiagnostics = true;
-    assertForAllConfigs(config, fileContent -> {
-      Assertions.assertTrue(
-          fileContent.contains("com.microsoft.jeg.illuminate.events.jfr.DiagnosticEvent"));
-    });
+    assertForAllConfigs(
+        config,
+        fileContent -> {
+          Assertions.assertTrue(
+              fileContent.contains("com.microsoft.jeg.illuminate.events.jfr.DiagnosticEvent"));
+        });
   }
 
   @Test
   public void ifDiagnosticsAreDisabledDoesNotUseDiagnosticProfile() {
     Configuration.ProfilerConfiguration config = new Configuration.ProfilerConfiguration();
     config.enableDiagnostics = false;
-    assertForAllConfigs(config, fileContent -> {
-      Assertions.assertFalse(
-          fileContent.contains("com.microsoft.jeg.illuminate.events.jfr.DiagnosticEvent"));
-    });
+    assertForAllConfigs(
+        config,
+        fileContent -> {
+          Assertions.assertFalse(
+              fileContent.contains("com.microsoft.jeg.illuminate.events.jfr.DiagnosticEvent"));
+        });
   }
 }

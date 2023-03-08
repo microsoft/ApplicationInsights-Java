@@ -99,13 +99,13 @@ class AlternativeJfrConfigurations {
   }
 
   private static ProfileTypes overlayDiagnosticSetting(
-      Configuration.ProfilerConfiguration configuration,
-      ProfileTypes profile) {
+      Configuration.ProfilerConfiguration configuration, ProfileTypes profile) {
 
     if (configuration.enableDiagnostics && profile != ProfileTypes.DIAGNOSTIC_PROFILE) {
       // If diagnostics are enabled then use the DIAGNOSTIC_PROFILE configuration
       if (profile != ProfileTypes.PROFILE_WITHOUT_ENV_DATA) {
-        // Since DIAGNOSTIC_PROFILE and PROFILE_WITHOUT_ENV_DATA are similar, no need to warn in that scenario
+        // Since DIAGNOSTIC_PROFILE and PROFILE_WITHOUT_ENV_DATA are similar, no need to warn in
+        // that scenario
         logger.warn(
             "Diagnostics is enabled, this requires the use of the DIAGNOSTIC_PROFILE jfc configuration. The DIAGNOSTIC_PROFILE settings have been applied, overriding the current setting of "
                 + profile.name());
@@ -141,8 +141,8 @@ class AlternativeJfrConfigurations {
   }
 
   static RecordingConfiguration getMemoryProfileConfig(Configuration.ProfilerConfiguration config) {
-    return getRecordingConfiguration(config, config.memoryTriggeredSettings,
-        AlertMetricType.MEMORY);
+    return getRecordingConfiguration(
+        config, config.memoryTriggeredSettings, AlertMetricType.MEMORY);
   }
 
   static RecordingConfiguration getCpuProfileConfig(Configuration.ProfilerConfiguration config) {
@@ -154,7 +154,7 @@ class AlternativeJfrConfigurations {
   }
 
   static RecordingConfiguration getManualProfileConfig(Configuration.ProfilerConfiguration config) {
-    return getRecordingConfiguration(config, config.manualTriggeredSettings,
-        AlertMetricType.MANUAL);
+    return getRecordingConfiguration(
+        config, config.manualTriggeredSettings, AlertMetricType.MANUAL);
   }
 }
