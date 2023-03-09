@@ -12,7 +12,7 @@ Describe what actually happened that was unexpected.
 
 ### To Reproduce
 
-Submitting a PR with an example reproducing the issue in [this repository](https://github.com/microsoft/ApplicationInsights-Java-Repros) would make it easier for the Application Insight maintainers to help you.
+Submitting a PR with an example reproducing the issue in [this repository](https://github.com/microsoft/ApplicationInsights-Java-Repros) would make it easier for the Application Insight maintainers to help you. Before doing this, you have to fork this repository.
 
 ### System information
 Please provide the following information:
