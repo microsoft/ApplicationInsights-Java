@@ -206,7 +206,7 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
           configuration.internal.statsbeat.shortIntervalSeconds,
           configuration.internal.statsbeat.longIntervalSeconds,
           configuration.preview.statsbeat.disabled,
-          initializeStatsbeatFeatureSet(configuration));
+          initStatsbeatFeatureSet(configuration));
     }
 
     // TODO (trask) add this method to AutoConfigurationCustomizer upstream?
@@ -300,7 +300,7 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
     return new TelemetryItemExporter(telemetryPipeline, telemetryPipelineListener);
   }
 
-  private static Set<Feature> initializeStatsbeatFeatureSet(Configuration config) {
+  private static Set<Feature> initStatsbeatFeatureSet(Configuration config) {
     Set<Feature> featureList = new HashSet<>();
     if (config.preview.authentication.enabled) {
       featureList.add(Feature.AAD);
