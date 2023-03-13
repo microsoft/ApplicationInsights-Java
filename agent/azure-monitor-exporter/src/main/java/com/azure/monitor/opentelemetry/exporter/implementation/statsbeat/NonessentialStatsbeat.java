@@ -5,7 +5,9 @@ package com.azure.monitor.opentelemetry.exporter.implementation.statsbeat;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.StatsbeatTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.localstorage.LocalStorageStats;
-import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
+import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryItemExporter;
+
+import java.util.Collections;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class NonessentialStatsbeat extends BaseStatsbeat implements LocalStorageStats {
@@ -29,21 +31,21 @@ public class NonessentialStatsbeat extends BaseStatsbeat implements LocalStorage
   }
 
   @Override
-  protected void send(TelemetryClient telemetryClient) {
+  protected void send(TelemetryItemExporter telemetryItemExporter) {
     long readFailures = readFailureCount.getAndSet(0);
     if (readFailures != 0) {
       StatsbeatTelemetryBuilder telemetryItem =
           createStatsbeatTelemetry(
-              telemetryClient, READ_FAILURE_COUNT, (double) readFailureCount.get());
-      telemetryClient.trackStatsbeatAsync(telemetryItem.build());
+              READ_FAILURE_COUNT, (double) readFailureCount.get());
+      telemetryItemExporter.send(Collections.singletonList(telemetryItem.build()));
     }
 
     long writeFailures = readFailureCount.getAndSet(0);
     if (writeFailures != 0) {
       StatsbeatTelemetryBuilder telemetryItem =
           createStatsbeatTelemetry(
-              telemetryClient, WRITE_FAILURE_COUNT, (double) writeFailureCount.get());
-      telemetryClient.trackStatsbeatAsync(telemetryItem.build());
+              WRITE_FAILURE_COUNT, (double) writeFailureCount.get());
+      telemetryItemExporter.send(Collections.singletonList(telemetryItem.build()));
     }
   }
 

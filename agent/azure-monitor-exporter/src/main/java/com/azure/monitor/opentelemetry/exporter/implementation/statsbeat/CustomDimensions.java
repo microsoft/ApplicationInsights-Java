@@ -7,7 +7,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.builders.Statsbea
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.PropertyHelper;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.SystemInformation;
 
-class CustomDimensions {
+public class CustomDimensions {
 
   private volatile ResourceProvider resourceProvider;
   private volatile OperatingSystem operatingSystem;
@@ -18,7 +18,7 @@ class CustomDimensions {
   private final String sdkVersion;
 
   // visible for testing
-  CustomDimensions() {
+  public CustomDimensions() {
     String qualifiedSdkVersion = PropertyHelper.getQualifiedSdkVersionString();
 
     if (qualifiedSdkVersion.startsWith("awr")) {

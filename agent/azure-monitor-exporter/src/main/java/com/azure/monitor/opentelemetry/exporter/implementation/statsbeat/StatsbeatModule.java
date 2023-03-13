@@ -147,7 +147,7 @@ public class StatsbeatModule {
 
   private void updateConnectionString(StatsbeatConnectionString connectionString) {
     if (connectionString != null) {
-      networkStatsbeat.setConnectionString((connectionString));
+      networkStatsbeat.setConnectionString(connectionString);
       attachStatsbeat.setConnectionString(connectionString);
       featureStatsbeat.setConnectionString(connectionString);
       instrumentationStatsbeat.setConnectionString(connectionString);

@@ -208,19 +208,21 @@ public final class TelemetryItem {
   }
 
   @JsonIgnore
-  public void setConnectionString(String connectionString) {
+  public TelemetryItem setConnectionString(String connectionString) {
     this.connectionString = connectionString;
     this.instrumentationKey = ConnectionString.parse(connectionString).getInstrumentationKey();
+    return this;
   }
 
   @JsonIgnore
-  public void setConnectionString(ConnectionString connectionString) {
+  public TelemetryItem setConnectionString(ConnectionString connectionString) {
     this.connectionString = connectionString.getOriginalString();
     this.instrumentationKey = connectionString.getInstrumentationKey();
+    return this;
   }
 
   @JsonIgnore
-  public void setConnectionString(StatsbeatConnectionString connectionString) {
+  public TelemetryItem setConnectionString(StatsbeatConnectionString connectionString) {
     instrumentationKey = connectionString.getInstrumentationKey();
     // TODO (heya) turn StatsbeatConnectionString into a real connection string?
     this.connectionString =
@@ -228,6 +230,7 @@ public final class TelemetryItem {
             + instrumentationKey
             + ";IngestionEndpoint="
             + connectionString.getIngestionEndpoint();
+    return this;
   }
 
   /**

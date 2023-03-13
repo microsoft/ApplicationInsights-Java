@@ -3,7 +3,7 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation.statsbeat;
 
-enum FeatureType {
+public enum FeatureType {
   FEATURE,
   INSTRUMENTATION
 }

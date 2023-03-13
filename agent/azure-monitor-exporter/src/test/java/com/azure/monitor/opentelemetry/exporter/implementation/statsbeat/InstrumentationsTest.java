@@ -1,11 +1,10 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-package com.microsoft.applicationinsights.agent.internal.statsbeat;
+package com.azure.monitor.opentelemetry.exporter.implementation.statsbeat;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.statsbeat.Instrumentations;
 import java.util.HashSet;
 import java.util.Set;
 import org.junit.jupiter.api.Test;

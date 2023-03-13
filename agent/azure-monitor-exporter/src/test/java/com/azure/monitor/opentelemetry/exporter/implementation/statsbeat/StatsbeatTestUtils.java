@@ -1,15 +1,43 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-package com.microsoft.applicationinsights.agent.internal.statsbeat;
+package com.azure.monitor.opentelemetry.exporter.implementation.statsbeat;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.statsbeat.Feature;
+import com.azure.core.http.HttpClient;
+import com.azure.core.http.HttpHeaders;
+import com.azure.core.http.HttpPipelineBuilder;
+import com.azure.core.http.HttpRequest;
+import com.azure.core.http.HttpResponse;
+import com.azure.core.util.FluxUtil;
+import com.azure.monitor.opentelemetry.exporter.implementation.MockHttpResponse;
+import com.azure.monitor.opentelemetry.exporter.implementation.localstorage.LocalStorageTelemetryPipelineListener;
+import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryItemExporter;
+import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipeline;
+import org.junit.jupiter.api.io.TempDir;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
+import java.util.zip.GZIPInputStream;
 
 public final class StatsbeatTestUtils {
+
+  @TempDir
+  static
+  File tempFolder;
+  private static final String REDIRECT_URL = "http://foo.bar.redirect";
+  private static final String INSTRUMENTATION_KEY = "00000000-0000-0000-0000-0FEEDDADBEEF";
 
   private static final Map<Integer, String> INSTRUMENTATION_MAP_DECODING;
   private static final Map<Integer, Feature> FEATURE_MAP_DECODING;
@@ -157,5 +185,73 @@ public final class StatsbeatTestUtils {
     return result;
   }
 
+  static TelemetryItemExporter getTelemetryItemExporter() {
+    HttpPipelineBuilder pipelineBuilder = new HttpPipelineBuilder().httpClient(initStatsbeatHttpClient());
+    TelemetryPipeline telemetryPipeline = new TelemetryPipeline(pipelineBuilder.build());
+
+    return new TelemetryItemExporter(
+            telemetryPipeline,
+            new LocalStorageTelemetryPipelineListener(50, tempFolder, telemetryPipeline, null, false));
+  }
+
+  private static StatsbeatHttpClient initStatsbeatHttpClient() {
+   return new StatsbeatHttpClient(
+                    request -> {
+                      if (request.getUrl().toString().contains(REDIRECT_URL)) {
+                        return Mono.just(new MockHttpResponse(request, 200));
+                      }
+                      Flux<ByteBuffer> requestBody = request.getBody();
+                      String requestBodyString = getRequestBodyString(requestBody);
+                      if (requestBodyString != null && requestBodyString.contains(INSTRUMENTATION_KEY)) {
+                        return Mono.just(new MockHttpResponse(request, 200));
+                      }
+                      Map<String, String> headers = new HashMap<>();
+                      headers.put("Location", REDIRECT_URL);
+                      HttpHeaders httpHeaders = new HttpHeaders(headers);
+                      return Mono.just(new MockHttpResponse(request, 307, httpHeaders));
+                    });
+  }
+
+  private static class StatsbeatHttpClient implements HttpClient {
+
+    private final AtomicInteger count = new AtomicInteger();
+    private final Function<HttpRequest, Mono<HttpResponse>> handler;
+
+    StatsbeatHttpClient(Function<HttpRequest, Mono<HttpResponse>> handler) {
+      this.handler = handler;
+    }
+
+    @Override
+    public Mono<HttpResponse> send(HttpRequest httpRequest) {
+      count.getAndIncrement();
+      return handler.apply(httpRequest);
+    }
+  }
+
   private StatsbeatTestUtils() {}
+
+  private static String getRequestBodyString(Flux<ByteBuffer> requestBody) {
+    ByteArrayOutputStream bos = new ByteArrayOutputStream();
+    byte[] compressed = FluxUtil.collectBytesInByteBufferStream(requestBody).block();
+    int bufferSize = compressed.length;
+    String requestBodyString = null;
+    try {
+      ByteArrayInputStream bis = new ByteArrayInputStream(compressed);
+      GZIPInputStream gis = new GZIPInputStream(bis, bufferSize);
+      StringBuilder sb = new StringBuilder();
+      byte[] data = new byte[bufferSize];
+      int bytesRead;
+      while ((bytesRead = gis.read(data)) != -1) {
+        sb.append(new String(data, 0, bytesRead, Charset.defaultCharset()));
+      }
+      bis.close();
+      bos.close();
+      gis.close();
+      requestBodyString = new String(sb);
+    } catch (IOException e) {
+      // It's ok when this exception is thrown. The tests will fail. Added this comment to satisfy
+      // style guide.
+    }
+    return requestBodyString;
+  }
 }

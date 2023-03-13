@@ -1,16 +1,12 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-package com.microsoft.applicationinsights.agent.internal.statsbeat;
+package com.azure.monitor.opentelemetry.exporter.implementation.statsbeat;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.StatsbeatTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricsData;
-import com.azure.monitor.opentelemetry.exporter.implementation.statsbeat.AttachStatsbeat;
-import com.azure.monitor.opentelemetry.exporter.implementation.statsbeat.AzureMetadataService;
-import com.azure.monitor.opentelemetry.exporter.implementation.statsbeat.CustomDimensions;
-import com.azure.monitor.opentelemetry.exporter.implementation.statsbeat.ResourceProvider;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;

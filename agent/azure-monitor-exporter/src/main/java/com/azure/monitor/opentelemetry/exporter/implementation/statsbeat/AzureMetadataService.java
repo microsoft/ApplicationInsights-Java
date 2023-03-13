@@ -4,12 +4,16 @@
 package com.azure.monitor.opentelemetry.exporter.implementation.statsbeat;
 
 import com.azure.core.http.HttpMethod;
+import com.azure.core.http.HttpPipeline;
+import com.azure.core.http.HttpPipelineBuilder;
 import com.azure.core.http.HttpRequest;
 import com.azure.core.http.HttpResponse;
+import com.azure.core.http.policy.CookiePolicy;
+import com.azure.core.http.policy.RetryPolicy;
+import com.azure.core.http.policy.UserAgentPolicy;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.ThreadPoolUtils;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
 import java.io.IOException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -40,10 +44,14 @@ class AzureMetadataService implements Runnable {
 
   private final AttachStatsbeat attachStatsbeat;
   private final CustomDimensions customDimensions;
+  private final HttpPipeline httpPipeline;
 
   AzureMetadataService(AttachStatsbeat attachStatsbeat, CustomDimensions customDimensions) {
     this.attachStatsbeat = attachStatsbeat;
     this.customDimensions = customDimensions;
+    this.httpPipeline = new HttpPipelineBuilder()
+            .policies(new UserAgentPolicy(), new RetryPolicy(), new CookiePolicy())
+            .build();
   }
 
   void scheduleWithFixedDelay(long interval) {
@@ -89,7 +97,7 @@ class AzureMetadataService implements Runnable {
     request.setHeader("Metadata", "true");
     HttpResponse response;
     try {
-      response = LazyHttpClient.getInstance().send(request).block();
+      response = httpPipeline.send(request).block();
     } catch (RuntimeException e) {
       logger.debug(
           "Shutting down AzureMetadataService scheduler: is not running on Azure VM or VMSS");

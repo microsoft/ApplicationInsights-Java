@@ -271,7 +271,7 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
         .addShutdownHook(new Thread(() -> flushAll(telemetryClient).join(10, TimeUnit.SECONDS)));
   }
 
-  private TelemetryItemExporter initStatsbeatTelemetryItemExporter(
+  private static TelemetryItemExporter initStatsbeatTelemetryItemExporter(
       StatsbeatModule statsbeatModule, File tempDir, int diskPersistenceMaxSizeMb) {
     HttpPipeline httpPipeline = LazyHttpClient.newHttpPipeLine(null);
     TelemetryPipeline telemetryPipeline = new TelemetryPipeline(httpPipeline);
@@ -300,7 +300,7 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
     return new TelemetryItemExporter(telemetryPipeline, telemetryPipelineListener);
   }
 
-  private Set<Feature> initializeStatsbeatFeatureSet(Configuration config) {
+  private static Set<Feature> initializeStatsbeatFeatureSet(Configuration config) {
     Set<Feature> featureList = new HashSet<>();
     if (config.preview.authentication.enabled) {
       featureList.add(Feature.AAD);
