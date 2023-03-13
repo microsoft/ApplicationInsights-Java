@@ -5,7 +5,6 @@ package com.azure.monitor.opentelemetry.exporter.implementation.statsbeat;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.statsbeat.NonessentialStatsbeat;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

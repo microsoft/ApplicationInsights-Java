@@ -13,10 +13,6 @@ import com.azure.monitor.opentelemetry.exporter.implementation.MockHttpResponse;
 import com.azure.monitor.opentelemetry.exporter.implementation.localstorage.LocalStorageTelemetryPipelineListener;
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryItemExporter;
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipeline;
-import org.junit.jupiter.api.io.TempDir;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -30,12 +26,13 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.zip.GZIPInputStream;
+import org.junit.jupiter.api.io.TempDir;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 public final class StatsbeatTestUtils {
 
-  @TempDir
-  static
-  File tempFolder;
+  @TempDir static File tempFolder;
   private static final String REDIRECT_URL = "http://foo.bar.redirect";
   private static final String INSTRUMENTATION_KEY = "00000000-0000-0000-0000-0FEEDDADBEEF";
 
@@ -186,30 +183,31 @@ public final class StatsbeatTestUtils {
   }
 
   static TelemetryItemExporter getTelemetryItemExporter() {
-    HttpPipelineBuilder pipelineBuilder = new HttpPipelineBuilder().httpClient(initStatsbeatHttpClient());
+    HttpPipelineBuilder pipelineBuilder =
+        new HttpPipelineBuilder().httpClient(initStatsbeatHttpClient());
     TelemetryPipeline telemetryPipeline = new TelemetryPipeline(pipelineBuilder.build());
 
     return new TelemetryItemExporter(
-            telemetryPipeline,
-            new LocalStorageTelemetryPipelineListener(50, tempFolder, telemetryPipeline, null, false));
+        telemetryPipeline,
+        new LocalStorageTelemetryPipelineListener(50, tempFolder, telemetryPipeline, null, false));
   }
 
   private static StatsbeatHttpClient initStatsbeatHttpClient() {
-   return new StatsbeatHttpClient(
-                    request -> {
-                      if (request.getUrl().toString().contains(REDIRECT_URL)) {
-                        return Mono.just(new MockHttpResponse(request, 200));
-                      }
-                      Flux<ByteBuffer> requestBody = request.getBody();
-                      String requestBodyString = getRequestBodyString(requestBody);
-                      if (requestBodyString != null && requestBodyString.contains(INSTRUMENTATION_KEY)) {
-                        return Mono.just(new MockHttpResponse(request, 200));
-                      }
-                      Map<String, String> headers = new HashMap<>();
-                      headers.put("Location", REDIRECT_URL);
-                      HttpHeaders httpHeaders = new HttpHeaders(headers);
-                      return Mono.just(new MockHttpResponse(request, 307, httpHeaders));
-                    });
+    return new StatsbeatHttpClient(
+        request -> {
+          if (request.getUrl().toString().contains(REDIRECT_URL)) {
+            return Mono.just(new MockHttpResponse(request, 200));
+          }
+          Flux<ByteBuffer> requestBody = request.getBody();
+          String requestBodyString = getRequestBodyString(requestBody);
+          if (requestBodyString != null && requestBodyString.contains(INSTRUMENTATION_KEY)) {
+            return Mono.just(new MockHttpResponse(request, 200));
+          }
+          Map<String, String> headers = new HashMap<>();
+          headers.put("Location", REDIRECT_URL);
+          HttpHeaders httpHeaders = new HttpHeaders(headers);
+          return Mono.just(new MockHttpResponse(request, 307, httpHeaders));
+        });
   }
 
   private static class StatsbeatHttpClient implements HttpClient {

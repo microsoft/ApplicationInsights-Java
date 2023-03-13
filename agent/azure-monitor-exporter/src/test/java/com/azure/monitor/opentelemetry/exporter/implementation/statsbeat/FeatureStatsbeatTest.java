@@ -124,9 +124,7 @@ public class FeatureStatsbeatTest {
     testFeature(feature, false);
   }
 
-  private static void testFeature(
-      Feature feature,
-      boolean expected) {
+  private static void testFeature(Feature feature, boolean expected) {
     // given
     FeatureStatsbeat featureStatsbeat =
         new FeatureStatsbeat(new CustomDimensions(), FeatureType.FEATURE);

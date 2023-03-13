@@ -5,7 +5,6 @@ package com.azure.monitor.opentelemetry.exporter.implementation.statsbeat;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.statsbeat.NetworkStatsbeat;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Constant;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;

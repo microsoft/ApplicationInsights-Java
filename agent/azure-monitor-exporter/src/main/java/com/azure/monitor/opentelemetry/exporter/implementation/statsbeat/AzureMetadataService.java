@@ -49,7 +49,8 @@ class AzureMetadataService implements Runnable {
   AzureMetadataService(AttachStatsbeat attachStatsbeat, CustomDimensions customDimensions) {
     this.attachStatsbeat = attachStatsbeat;
     this.customDimensions = customDimensions;
-    this.httpPipeline = new HttpPipelineBuilder()
+    this.httpPipeline =
+        new HttpPipelineBuilder()
             .policies(new UserAgentPolicy(), new RetryPolicy(), new CookiePolicy())
             .build();
   }
