@@ -5,7 +5,8 @@ package com.microsoft.applicationinsights.agent.internal.statsbeat;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.microsoft.applicationinsights.agent.internal.utils.Constant;
+import com.azure.monitor.opentelemetry.exporter.implementation.statsbeat.NetworkStatsbeat;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.Constant;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;

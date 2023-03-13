@@ -3,6 +3,8 @@
 
 package com.microsoft.applicationinsights.agent.internal.statsbeat;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.statsbeat.Feature;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;

@@ -1,14 +1,14 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-package com.microsoft.applicationinsights.agent.internal.statsbeat;
+package com.azure.monitor.opentelemetry.exporter.implementation.statsbeat;
 
 import java.util.BitSet;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-enum Feature {
+public enum Feature {
   JAVA_VENDOR_ORACLE(0),
   JAVA_VENDOR_ZULU(1),
   JAVA_VENDOR_MICROSOFT(2),

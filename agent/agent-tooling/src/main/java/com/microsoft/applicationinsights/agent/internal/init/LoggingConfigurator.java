@@ -25,7 +25,7 @@ import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.log.Applica
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.log.ApplicationInsightsDiagnosticsLogFilter;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.log.ApplicationInsightsJsonLayout;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.log.MoshiJsonFormatter;
-import com.microsoft.applicationinsights.agent.internal.common.PropertyHelper;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.PropertyHelper;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.logbackpatch.FixedWindowRollingPolicy;
 import java.nio.file.Path;

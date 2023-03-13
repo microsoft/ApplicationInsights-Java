@@ -12,6 +12,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+
+import com.azure.monitor.opentelemetry.exporter.implementation.statsbeat.AttachStatsbeat;
+import com.azure.monitor.opentelemetry.exporter.implementation.statsbeat.AzureMetadataService;
+import com.azure.monitor.opentelemetry.exporter.implementation.statsbeat.CustomDimensions;
+import com.azure.monitor.opentelemetry.exporter.implementation.statsbeat.ResourceProvider;
 import okio.BufferedSource;
 import okio.Okio;
 import org.junit.jupiter.api.BeforeEach;

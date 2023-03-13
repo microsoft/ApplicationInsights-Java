@@ -5,6 +5,10 @@ package com.microsoft.applicationinsights.agent.internal.statsbeat;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.statsbeat.CustomDimensions;
+import com.azure.monitor.opentelemetry.exporter.implementation.statsbeat.Feature;
+import com.azure.monitor.opentelemetry.exporter.implementation.statsbeat.FeatureStatsbeat;
+import com.azure.monitor.opentelemetry.exporter.implementation.statsbeat.FeatureType;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import java.util.BitSet;
 import java.util.function.BiConsumer;
