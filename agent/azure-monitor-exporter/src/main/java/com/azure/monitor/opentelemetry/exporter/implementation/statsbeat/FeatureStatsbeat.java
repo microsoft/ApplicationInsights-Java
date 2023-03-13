@@ -67,8 +67,7 @@ public class FeatureStatsbeat extends BaseStatsbeat {
       featureType = "1";
     }
 
-    StatsbeatTelemetryBuilder telemetryBuilder =
-        createStatsbeatTelemetry(FEATURE_METRIC_NAME, 0);
+    StatsbeatTelemetryBuilder telemetryBuilder = createStatsbeatTelemetry(FEATURE_METRIC_NAME, 0);
     telemetryBuilder.addProperty("feature", featureValue);
     telemetryBuilder.addProperty("type", featureType);
 

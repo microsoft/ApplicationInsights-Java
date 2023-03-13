@@ -20,6 +20,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.Telemetr
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipelineListener;
 import com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.QuickPulse;
 import com.azure.monitor.opentelemetry.exporter.implementation.statsbeat.Feature;
+import com.azure.monitor.opentelemetry.exporter.implementation.statsbeat.StatsbeatModule;
 import com.azure.monitor.opentelemetry.exporter.implementation.statsbeat.StatsbeatTelemetryPipelineListener;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.TempDirs;
@@ -45,7 +46,6 @@ import com.microsoft.applicationinsights.agent.internal.processors.MySpanData;
 import com.microsoft.applicationinsights.agent.internal.processors.SpanExporterWithAttributeProcessor;
 import com.microsoft.applicationinsights.agent.internal.profiler.ProfilingInitializer;
 import com.microsoft.applicationinsights.agent.internal.profiler.triggers.AlertTriggerSpanProcessor;
-import com.azure.monitor.opentelemetry.exporter.implementation.statsbeat.StatsbeatModule;
 import com.microsoft.applicationinsights.agent.internal.telemetry.BatchItemProcessor;
 import com.microsoft.applicationinsights.agent.internal.telemetry.MetricFilter;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
@@ -78,7 +78,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -199,15 +198,15 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
     // initialize StatsbeatModule
     if (telemetryClient.getConnectionString() != null) {
       statsbeatModule.start(
-              initStatsbeatTelemetryItemExporter(statsbeatModule, tempDir, configuration.preview.diskPersistenceMaxSizeMb),
-              telemetryClient::getStatsbeatConnectionString,
-              telemetryClient::getInstrumentationKey,
-              configuration.internal.statsbeat.disabledAll,
-              configuration.internal.statsbeat.shortIntervalSeconds,
-              configuration.internal.statsbeat.longIntervalSeconds,
-              configuration.preview.statsbeat.disabled,
-              initializeStatsbeatFeatureSet(configuration)
-      );
+          initStatsbeatTelemetryItemExporter(
+              statsbeatModule, tempDir, configuration.preview.diskPersistenceMaxSizeMb),
+          telemetryClient::getStatsbeatConnectionString,
+          telemetryClient::getInstrumentationKey,
+          configuration.internal.statsbeat.disabledAll,
+          configuration.internal.statsbeat.shortIntervalSeconds,
+          configuration.internal.statsbeat.longIntervalSeconds,
+          configuration.preview.statsbeat.disabled,
+          initializeStatsbeatFeatureSet(configuration));
     }
 
     // TODO (trask) add this method to AutoConfigurationCustomizer upstream?
@@ -272,30 +271,30 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
         .addShutdownHook(new Thread(() -> flushAll(telemetryClient).join(10, TimeUnit.SECONDS)));
   }
 
-  private TelemetryItemExporter initStatsbeatTelemetryItemExporter(StatsbeatModule statsbeatModule, File tempDir, int diskPersistenceMaxSizeMb) {
+  private TelemetryItemExporter initStatsbeatTelemetryItemExporter(
+      StatsbeatModule statsbeatModule, File tempDir, int diskPersistenceMaxSizeMb) {
     HttpPipeline httpPipeline = LazyHttpClient.newHttpPipeLine(null);
     TelemetryPipeline telemetryPipeline = new TelemetryPipeline(httpPipeline);
 
     TelemetryPipelineListener telemetryPipelineListener;
     if (tempDir == null) {
-      telemetryPipelineListener =
-              new StatsbeatTelemetryPipelineListener(statsbeatModule::shutdown);
+      telemetryPipelineListener = new StatsbeatTelemetryPipelineListener(statsbeatModule::shutdown);
     } else {
       LocalStorageTelemetryPipelineListener localStorageTelemetryPipelineListener =
-              new LocalStorageTelemetryPipelineListener(
-                      diskPersistenceMaxSizeMb,
-                      TempDirs.getSubDir(tempDir, STATSBEAT_FOLDER_NAME),
-                      telemetryPipeline,
-                      LocalStorageStats.noop(),
-                      true);
+          new LocalStorageTelemetryPipelineListener(
+              diskPersistenceMaxSizeMb,
+              TempDirs.getSubDir(tempDir, STATSBEAT_FOLDER_NAME),
+              telemetryPipeline,
+              LocalStorageStats.noop(),
+              true);
       telemetryPipelineListener =
-              TelemetryPipelineListener.composite(
-                      new StatsbeatTelemetryPipelineListener(
-                              () -> {
-                                statsbeatModule.shutdown();
-                                localStorageTelemetryPipelineListener.shutdown();
-                              }),
-                      localStorageTelemetryPipelineListener);
+          TelemetryPipelineListener.composite(
+              new StatsbeatTelemetryPipelineListener(
+                  () -> {
+                    statsbeatModule.shutdown();
+                    localStorageTelemetryPipelineListener.shutdown();
+                  }),
+              localStorageTelemetryPipelineListener);
     }
 
     return new TelemetryItemExporter(telemetryPipeline, telemetryPipelineListener);
@@ -303,107 +302,107 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
 
   private Set<Feature> initializeStatsbeatFeatureSet(Configuration config) {
     Set<Feature> featureList = new HashSet<>();
-      if (config.preview.authentication.enabled) {
-        featureList.add(Feature.AAD);
-      }
-      if (config.preview.legacyRequestIdPropagation.enabled) {
-        featureList.add(Feature.LEGACY_PROPAGATION_ENABLED);
-      }
+    if (config.preview.authentication.enabled) {
+      featureList.add(Feature.AAD);
+    }
+    if (config.preview.legacyRequestIdPropagation.enabled) {
+      featureList.add(Feature.LEGACY_PROPAGATION_ENABLED);
+    }
 
-      // disabled instrumentations
-      if (!config.instrumentation.azureSdk.enabled) {
-        featureList.add(Feature.AZURE_SDK_DISABLED);
-      }
-      if (!config.instrumentation.cassandra.enabled) {
-        featureList.add(Feature.CASSANDRA_DISABLED);
-      }
-      if (!config.instrumentation.jdbc.enabled) {
-        featureList.add(Feature.JDBC_DISABLED);
-      }
-      if (!config.instrumentation.jms.enabled) {
-        featureList.add(Feature.JMS_DISABLED);
-      }
-      if (!config.instrumentation.kafka.enabled) {
-        featureList.add(Feature.KAFKA_DISABLED);
-      }
-      if (!config.instrumentation.micrometer.enabled) {
-        featureList.add(Feature.MICROMETER_DISABLED);
-      }
-      if (!config.instrumentation.mongo.enabled) {
-        featureList.add(Feature.MONGO_DISABLED);
-      }
-      if (!config.instrumentation.quartz.enabled) {
-        featureList.add(Feature.QUARTZ_DISABLED);
-      }
-      if (!config.instrumentation.rabbitmq.enabled) {
-        featureList.add(Feature.RABBITMQ_DISABLED);
-      }
-      if (!config.instrumentation.redis.enabled) {
-        featureList.add(Feature.REDIS_DISABLED);
-      }
-      if (!config.instrumentation.springScheduling.enabled) {
-        featureList.add(Feature.SPRING_SCHEDULING_DISABLED);
-      }
+    // disabled instrumentations
+    if (!config.instrumentation.azureSdk.enabled) {
+      featureList.add(Feature.AZURE_SDK_DISABLED);
+    }
+    if (!config.instrumentation.cassandra.enabled) {
+      featureList.add(Feature.CASSANDRA_DISABLED);
+    }
+    if (!config.instrumentation.jdbc.enabled) {
+      featureList.add(Feature.JDBC_DISABLED);
+    }
+    if (!config.instrumentation.jms.enabled) {
+      featureList.add(Feature.JMS_DISABLED);
+    }
+    if (!config.instrumentation.kafka.enabled) {
+      featureList.add(Feature.KAFKA_DISABLED);
+    }
+    if (!config.instrumentation.micrometer.enabled) {
+      featureList.add(Feature.MICROMETER_DISABLED);
+    }
+    if (!config.instrumentation.mongo.enabled) {
+      featureList.add(Feature.MONGO_DISABLED);
+    }
+    if (!config.instrumentation.quartz.enabled) {
+      featureList.add(Feature.QUARTZ_DISABLED);
+    }
+    if (!config.instrumentation.rabbitmq.enabled) {
+      featureList.add(Feature.RABBITMQ_DISABLED);
+    }
+    if (!config.instrumentation.redis.enabled) {
+      featureList.add(Feature.REDIS_DISABLED);
+    }
+    if (!config.instrumentation.springScheduling.enabled) {
+      featureList.add(Feature.SPRING_SCHEDULING_DISABLED);
+    }
 
-      // preview instrumentation
-      if (!config.preview.instrumentation.akka.enabled) {
-        featureList.add(Feature.AKKA_DISABLED);
-      }
-      if (!config.preview.instrumentation.apacheCamel.enabled) {
-        featureList.add(Feature.APACHE_CAMEL_DISABLED);
-      }
-      if (config.preview.instrumentation.grizzly.enabled) {
-        featureList.add(Feature.GRIZZLY_ENABLED);
-      }
-      if (!config.preview.instrumentation.play.enabled) {
-        featureList.add(Feature.PLAY_DISABLED);
-      }
-      if (!config.preview.instrumentation.springIntegration.enabled) {
-        featureList.add(Feature.SPRING_INTEGRATION_DISABLED);
-      }
-      if (!config.preview.instrumentation.vertx.enabled) {
-        featureList.add(Feature.VERTX_DISABLED);
-      }
-      if (!config.preview.instrumentation.jaxrsAnnotations.enabled) {
-        featureList.add(Feature.JAXRS_ANNOTATIONS_DISABLED);
-      }
+    // preview instrumentation
+    if (!config.preview.instrumentation.akka.enabled) {
+      featureList.add(Feature.AKKA_DISABLED);
+    }
+    if (!config.preview.instrumentation.apacheCamel.enabled) {
+      featureList.add(Feature.APACHE_CAMEL_DISABLED);
+    }
+    if (config.preview.instrumentation.grizzly.enabled) {
+      featureList.add(Feature.GRIZZLY_ENABLED);
+    }
+    if (!config.preview.instrumentation.play.enabled) {
+      featureList.add(Feature.PLAY_DISABLED);
+    }
+    if (!config.preview.instrumentation.springIntegration.enabled) {
+      featureList.add(Feature.SPRING_INTEGRATION_DISABLED);
+    }
+    if (!config.preview.instrumentation.vertx.enabled) {
+      featureList.add(Feature.VERTX_DISABLED);
+    }
+    if (!config.preview.instrumentation.jaxrsAnnotations.enabled) {
+      featureList.add(Feature.JAXRS_ANNOTATIONS_DISABLED);
+    }
 
-      // Statsbeat
-      if (config.preview.statsbeat.disabled) {
-        featureList.add(Feature.STATSBEAT_DISABLED);
-      }
+    // Statsbeat
+    if (config.preview.statsbeat.disabled) {
+      featureList.add(Feature.STATSBEAT_DISABLED);
+    }
 
-      if (config.preview.disablePropagation) {
-        featureList.add(Feature.PROPAGATION_DISABLED);
-      }
-      if (!config.preview.captureHttpServer4xxAsError) {
-        featureList.add(Feature.CAPTURE_HTTP_SERVER_4XX_AS_SUCCESS);
-      }
-      if (!config.preview.captureHttpServerHeaders.requestHeaders.isEmpty()
-              || !config.preview.captureHttpServerHeaders.responseHeaders.isEmpty()) {
-        featureList.add(Feature.CAPTURE_HTTP_SERVER_HEADERS);
-      }
-      if (!config.preview.captureHttpClientHeaders.requestHeaders.isEmpty()
-              || !config.preview.captureHttpClientHeaders.responseHeaders.isEmpty()) {
-        featureList.add(Feature.CAPTURE_HTTP_CLIENT_HEADERS);
-      }
-      if (!config.preview.processors.isEmpty()) {
-        featureList.add(Feature.TELEMETRY_PROCESSOR_ENABLED);
-      }
-      if (config.preview.profiler.enabled) {
-        featureList.add(Feature.PROFILER_ENABLED);
-      }
+    if (config.preview.disablePropagation) {
+      featureList.add(Feature.PROPAGATION_DISABLED);
+    }
+    if (!config.preview.captureHttpServer4xxAsError) {
+      featureList.add(Feature.CAPTURE_HTTP_SERVER_4XX_AS_SUCCESS);
+    }
+    if (!config.preview.captureHttpServerHeaders.requestHeaders.isEmpty()
+        || !config.preview.captureHttpServerHeaders.responseHeaders.isEmpty()) {
+      featureList.add(Feature.CAPTURE_HTTP_SERVER_HEADERS);
+    }
+    if (!config.preview.captureHttpClientHeaders.requestHeaders.isEmpty()
+        || !config.preview.captureHttpClientHeaders.responseHeaders.isEmpty()) {
+      featureList.add(Feature.CAPTURE_HTTP_CLIENT_HEADERS);
+    }
+    if (!config.preview.processors.isEmpty()) {
+      featureList.add(Feature.TELEMETRY_PROCESSOR_ENABLED);
+    }
+    if (config.preview.profiler.enabled) {
+      featureList.add(Feature.PROFILER_ENABLED);
+    }
 
-      // customDimensions
-      if (!config.customDimensions.isEmpty()) {
-        featureList.add(Feature.CUSTOM_DIMENSIONS_ENABLED);
-      }
+    // customDimensions
+    if (!config.customDimensions.isEmpty()) {
+      featureList.add(Feature.CUSTOM_DIMENSIONS_ENABLED);
+    }
 
-      if (config.preview.captureLoggingLevelAsCustomDimension) {
-        featureList.add(Feature.LOGGING_LEVEL_CUSTOM_PROPERTY_ENABLED);
-      }
+    if (config.preview.captureLoggingLevelAsCustomDimension) {
+      featureList.add(Feature.LOGGING_LEVEL_CUSTOM_PROPERTY_ENABLED);
+    }
 
-      return featureList;
+    return featureList;
   }
 
   private static CompletableResultCode flushAll(TelemetryClient telemetryClient) {

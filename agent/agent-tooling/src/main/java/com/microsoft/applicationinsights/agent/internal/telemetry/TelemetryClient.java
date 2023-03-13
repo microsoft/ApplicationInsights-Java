@@ -15,7 +15,6 @@ import com.azure.monitor.opentelemetry.exporter.implementation.builders.RemoteDe
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.RequestTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
 import com.azure.monitor.opentelemetry.exporter.implementation.configuration.StatsbeatConnectionString;
-import com.azure.monitor.opentelemetry.exporter.implementation.localstorage.LocalStorageStats;
 import com.azure.monitor.opentelemetry.exporter.implementation.localstorage.LocalStorageTelemetryPipelineListener;
 import com.azure.monitor.opentelemetry.exporter.implementation.logging.DiagnosticTelemetryPipelineListener;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
@@ -27,14 +26,13 @@ import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.Telemetr
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipeline;
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipelineListener;
 import com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.QuickPulse;
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.TempDirs;
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.PropertyHelper;
-import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
-import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
 import com.azure.monitor.opentelemetry.exporter.implementation.statsbeat.NetworkStatsbeatHttpPipelinePolicy;
 import com.azure.monitor.opentelemetry.exporter.implementation.statsbeat.StatsbeatModule;
-import com.azure.monitor.opentelemetry.exporter.implementation.statsbeat.StatsbeatTelemetryPipelineListener;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.PropertyHelper;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.TempDirs;
+import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
+import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.File;

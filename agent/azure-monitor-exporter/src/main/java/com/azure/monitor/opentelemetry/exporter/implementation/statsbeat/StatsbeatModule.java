@@ -3,22 +3,20 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation.statsbeat;
 
+import static com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMsgId.FAIL_TO_SEND_STATSBEAT_ERROR;
+
 import com.azure.monitor.opentelemetry.exporter.implementation.configuration.StatsbeatConnectionString;
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryItemExporter;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.ThreadPoolUtils;
-
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
-
-import static com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMsgId.FAIL_TO_SEND_STATSBEAT_ERROR;
 
 public class StatsbeatModule {
 
@@ -51,14 +49,14 @@ public class StatsbeatModule {
   }
 
   public void start(
-          TelemetryItemExporter telemetryItemExporter,
-          Supplier<StatsbeatConnectionString> connectionString,
-          Supplier<String> instrumentationKey,
-          boolean disabledAll,
-          long shortIntervalSeconds,
-          long longIntervalSeconds,
-          boolean disabled,
-          Set<Feature> featureSet) {
+      TelemetryItemExporter telemetryItemExporter,
+      Supplier<StatsbeatConnectionString> connectionString,
+      Supplier<String> instrumentationKey,
+      boolean disabledAll,
+      long shortIntervalSeconds,
+      long longIntervalSeconds,
+      boolean disabled,
+      Set<Feature> featureSet) {
     if (connectionString == null) {
       logger.debug("Don't start StatsbeatModule when statsbeat connection string is null.");
       return;
@@ -180,7 +178,8 @@ public class StatsbeatModule {
       try {
         // For Linux Consumption Plan, connection string is lazily set.
         // There is no need to send statsbeat when cikey is empty.
-        if (statsbeat.getInstrumentationKey() == null || statsbeat.getInstrumentationKey().isEmpty()) {
+        if (statsbeat.getInstrumentationKey() == null
+            || statsbeat.getInstrumentationKey().isEmpty()) {
           return;
         }
         statsbeat.send(telemetryItemExporter);

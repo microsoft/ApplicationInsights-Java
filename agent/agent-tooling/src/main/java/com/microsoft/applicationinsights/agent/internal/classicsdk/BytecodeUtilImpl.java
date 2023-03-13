@@ -21,6 +21,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.builders.RemoteDe
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.RequestTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.SeverityLevel;
+import com.azure.monitor.opentelemetry.exporter.implementation.statsbeat.FeatureStatsbeat;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedDuration;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedTime;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
@@ -28,7 +29,6 @@ import com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil.BytecodeUt
 import com.microsoft.applicationinsights.agent.internal.init.RuntimeConfiguration;
 import com.microsoft.applicationinsights.agent.internal.init.RuntimeConfigurator;
 import com.microsoft.applicationinsights.agent.internal.legacyheaders.AiLegacyPropagator;
-import com.azure.monitor.opentelemetry.exporter.implementation.statsbeat.FeatureStatsbeat;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;

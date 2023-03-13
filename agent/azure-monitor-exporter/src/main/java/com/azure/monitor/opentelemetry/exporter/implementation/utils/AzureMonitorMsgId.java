@@ -24,7 +24,6 @@ public enum AzureMonitorMsgId {
   FRIENDLY_NETWORK_ERROR("2113"),
   FAIL_TO_SEND_STATSBEAT_ERROR("2114");
 
-
   private final String value;
 
   AzureMonitorMsgId(String value) {

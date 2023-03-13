@@ -3,6 +3,9 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation.statsbeat;
 
+import static com.azure.monitor.opentelemetry.exporter.implementation.utils.Constant.EXCEPTION_TYPE;
+import static com.azure.monitor.opentelemetry.exporter.implementation.utils.Constant.STATUS_CODE;
+
 import com.azure.core.http.HttpPipelineCallContext;
 import com.azure.core.http.HttpPipelineNextPolicy;
 import com.azure.core.http.HttpResponse;
@@ -10,9 +13,6 @@ import com.azure.core.http.policy.HttpPipelinePolicy;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.StatusCode;
 import java.util.concurrent.atomic.AtomicLong;
 import reactor.core.publisher.Mono;
-
-import static com.azure.monitor.opentelemetry.exporter.implementation.utils.Constant.EXCEPTION_TYPE;
-import static com.azure.monitor.opentelemetry.exporter.implementation.utils.Constant.STATUS_CODE;
 
 public class NetworkStatsbeatHttpPipelinePolicy implements HttpPipelinePolicy {
 
@@ -57,10 +57,7 @@ public class NetworkStatsbeatHttpPipelinePolicy implements HttpPipelinePolicy {
         .doOnError(
             throwable -> {
               networkStatsbeat.incrementExceptionCount(
-                  instrumentationKey,
-                  host,
-                  EXCEPTION_TYPE,
-                  throwable.getClass().getName());
+                  instrumentationKey, host, EXCEPTION_TYPE, throwable.getClass().getName());
             });
   }
 }

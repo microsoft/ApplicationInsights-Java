@@ -3,11 +3,13 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation.statsbeat;
 
+import static com.azure.monitor.opentelemetry.exporter.implementation.utils.Constant.EXCEPTION_TYPE;
+import static com.azure.monitor.opentelemetry.exporter.implementation.utils.Constant.STATUS_CODE;
+
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.StatsbeatTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryItemExporter;
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.internal.GuardedBy;
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -16,9 +18,6 @@ import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.Nullable;
-
-import static com.azure.monitor.opentelemetry.exporter.implementation.utils.Constant.EXCEPTION_TYPE;
-import static com.azure.monitor.opentelemetry.exporter.implementation.utils.Constant.STATUS_CODE;
 
 public class NetworkStatsbeat extends BaseStatsbeat {
 
@@ -191,8 +190,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
     if (local.requestSuccessCount.get() != 0) {
       StatsbeatTelemetryBuilder requestSuccessCountSt =
           createStatsbeatTelemetry(
-              REQUEST_SUCCESS_COUNT_METRIC_NAME,
-              (double) local.requestSuccessCount.get());
+              REQUEST_SUCCESS_COUNT_METRIC_NAME, (double) local.requestSuccessCount.get());
       addCommonProperties(requestSuccessCountSt, key);
       telemetryItemExporter.send(Collections.singletonList(requestSuccessCountSt.build()));
     }
@@ -200,8 +198,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
     if (local.requestFailureCount.get() != 0) {
       StatsbeatTelemetryBuilder requestFailureCountSt =
           createStatsbeatTelemetry(
-              REQUEST_FAILURE_COUNT_METRIC_NAME,
-              (double) local.requestFailureCount.get());
+              REQUEST_FAILURE_COUNT_METRIC_NAME, (double) local.requestFailureCount.get());
       addCommonProperties(requestFailureCountSt, key);
       telemetryItemExporter.send(Collections.singletonList(requestFailureCountSt.build()));
     }
@@ -223,10 +220,10 @@ public class NetworkStatsbeat extends BaseStatsbeat {
 
     if (local.throttlingCount.get() != 0) {
       StatsbeatTelemetryBuilder throttleCountSt =
-          createStatsbeatTelemetry(THROTTLE_COUNT_METRIC_NAME, (double) local.throttlingCount.get());
+          createStatsbeatTelemetry(
+              THROTTLE_COUNT_METRIC_NAME, (double) local.throttlingCount.get());
       addCommonProperties(throttleCountSt, key);
       telemetryItemExporter.send(Collections.singletonList(throttleCountSt.build()));
-
     }
 
     if (local.exceptionCount.get() != 0) {

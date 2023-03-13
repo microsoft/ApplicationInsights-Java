@@ -5,16 +5,15 @@ package com.microsoft.applicationinsights.agent.internal.statsbeat;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.statsbeat.AttachStatsbeat;
+import com.azure.monitor.opentelemetry.exporter.implementation.statsbeat.AzureMetadataService;
+import com.azure.monitor.opentelemetry.exporter.implementation.statsbeat.CustomDimensions;
+import com.azure.monitor.opentelemetry.exporter.implementation.statsbeat.MetadataInstanceResponse;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-
-import com.azure.monitor.opentelemetry.exporter.implementation.statsbeat.AttachStatsbeat;
-import com.azure.monitor.opentelemetry.exporter.implementation.statsbeat.AzureMetadataService;
-import com.azure.monitor.opentelemetry.exporter.implementation.statsbeat.CustomDimensions;
-import com.azure.monitor.opentelemetry.exporter.implementation.statsbeat.MetadataInstanceResponse;
 import okio.BufferedSource;
 import okio.Okio;
 import org.junit.jupiter.api.Test;

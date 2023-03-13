@@ -44,5 +44,4 @@ abstract class BaseStatsbeat {
   void setInstrumentationKey(String instrumentationKey) {
     this.instrumentationKey = instrumentationKey;
   }
-
 }
