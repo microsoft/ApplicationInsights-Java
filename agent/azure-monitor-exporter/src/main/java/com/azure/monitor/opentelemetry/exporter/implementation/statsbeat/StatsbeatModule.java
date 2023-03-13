@@ -162,7 +162,7 @@ public class StatsbeatModule {
       instrumentationStatsbeat.setInstrumentationKey(instrumentationKey);
     }
   }
-  
+
   /** Runnable which is responsible for calling the send method to transmit Statsbeat telemetry. */
   private static class StatsbeatSender implements Runnable {
 
