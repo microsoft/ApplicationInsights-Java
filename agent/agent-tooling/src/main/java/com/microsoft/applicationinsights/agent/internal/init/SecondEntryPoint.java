@@ -197,16 +197,20 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
 
     // initialize StatsbeatModule
     if (telemetryClient.getConnectionString() != null) {
-      statsbeatModule.start(
-          initStatsbeatTelemetryItemExporter(
-              statsbeatModule, tempDir, configuration.preview.diskPersistenceMaxSizeMb),
-          telemetryClient::getStatsbeatConnectionString,
-          telemetryClient::getInstrumentationKey,
-          configuration.internal.statsbeat.disabledAll,
-          configuration.internal.statsbeat.shortIntervalSeconds,
-          configuration.internal.statsbeat.longIntervalSeconds,
-          configuration.preview.statsbeat.disabled,
-          initStatsbeatFeatureSet(configuration));
+      try {
+        statsbeatModule.start(
+                initStatsbeatTelemetryItemExporter(
+                        statsbeatModule, tempDir, configuration.preview.diskPersistenceMaxSizeMb),
+                telemetryClient::getStatsbeatConnectionString,
+                telemetryClient::getInstrumentationKey,
+                configuration.internal.statsbeat.disabledAll,
+                configuration.internal.statsbeat.shortIntervalSeconds,
+                configuration.internal.statsbeat.longIntervalSeconds,
+                configuration.preview.statsbeat.disabled,
+                initStatsbeatFeatureSet(configuration));
+      } catch (RuntimeException ex) {
+        startupLogger.error("Fail to start StatsbeatModule", ex);
+      }
     }
 
     // TODO (trask) add this method to AutoConfigurationCustomizer upstream?
