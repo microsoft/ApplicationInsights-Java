@@ -18,7 +18,7 @@ public class CustomDimensions {
   private final String sdkVersion;
 
   // visible for testing
-  public CustomDimensions() {
+  CustomDimensions() {
     String qualifiedSdkVersion = PropertyHelper.getQualifiedSdkVersionString();
 
     if (qualifiedSdkVersion.startsWith("awr")) {

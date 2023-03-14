@@ -94,7 +94,7 @@ public enum Feature {
   }
 
   // only used by tests
-  public int getBitmapIndex() {
+  int getBitmapIndex() {
     return bitmapIndex;
   }
 }

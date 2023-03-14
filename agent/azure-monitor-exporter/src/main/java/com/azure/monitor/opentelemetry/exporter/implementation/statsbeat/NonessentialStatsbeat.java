@@ -21,11 +21,11 @@ public class NonessentialStatsbeat extends BaseStatsbeat implements LocalStorage
   private final AtomicLong writeFailureCount = new AtomicLong();
 
   // only used by tests
-  public NonessentialStatsbeat() {
+  NonessentialStatsbeat() {
     super(new CustomDimensions());
   }
 
-  protected NonessentialStatsbeat(CustomDimensions customDimensions) {
+  NonessentialStatsbeat(CustomDimensions customDimensions) {
     super(customDimensions);
   }
 

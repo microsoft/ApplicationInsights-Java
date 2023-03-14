@@ -38,11 +38,11 @@ public class NetworkStatsbeat extends BaseStatsbeat {
       new HashMap<>();
 
   // only used by tests
-  public NetworkStatsbeat() {
+  NetworkStatsbeat() {
     super(new CustomDimensions());
   }
 
-  public NetworkStatsbeat(CustomDimensions customDimensions) {
+  NetworkStatsbeat(CustomDimensions customDimensions) {
     super(customDimensions);
   }
 

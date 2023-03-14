@@ -18,7 +18,7 @@ public class FeatureStatsbeat extends BaseStatsbeat {
       Collections.newSetFromMap(new ConcurrentHashMap<>());
   private final FeatureType type;
 
-  public FeatureStatsbeat(CustomDimensions customDimensions, FeatureType type) {
+  FeatureStatsbeat(CustomDimensions customDimensions, FeatureType type) {
     // track java distribution
     super(customDimensions);
     this.type = type;
@@ -27,7 +27,7 @@ public class FeatureStatsbeat extends BaseStatsbeat {
   }
 
   /** Returns a long that represents a list of features enabled. Each bitfield maps to a feature. */
-  public long getFeature() {
+  long getFeature() {
     return Feature.encode(featureList);
   }
 
@@ -35,7 +35,7 @@ public class FeatureStatsbeat extends BaseStatsbeat {
    * Returns a long that represents a list of instrumentations. Each bitfield maps to an
    * instrumentation.
    */
-  public long[] getInstrumentation() {
+  long[] getInstrumentation() {
     return Instrumentations.encode(instrumentationList);
   }
 
@@ -74,7 +74,7 @@ public class FeatureStatsbeat extends BaseStatsbeat {
     telemetryItemExporter.send(Collections.singletonList(telemetryBuilder.build()));
   }
 
-  public void trackConfigurationOptions(Set<Feature> featureSet) {
+  void trackConfigurationOptions(Set<Feature> featureSet) {
     featureList.addAll(featureSet);
   }
 }
