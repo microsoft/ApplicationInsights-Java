@@ -199,15 +199,15 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
     if (telemetryClient.getConnectionString() != null) {
       try {
         statsbeatModule.start(
-                initStatsbeatTelemetryItemExporter(
-                        statsbeatModule, tempDir, configuration.preview.diskPersistenceMaxSizeMb),
-                telemetryClient::getStatsbeatConnectionString,
-                telemetryClient::getInstrumentationKey,
-                configuration.internal.statsbeat.disabledAll,
-                configuration.internal.statsbeat.shortIntervalSeconds,
-                configuration.internal.statsbeat.longIntervalSeconds,
-                configuration.preview.statsbeat.disabled,
-                initStatsbeatFeatureSet(configuration));
+            initStatsbeatTelemetryItemExporter(
+                statsbeatModule, tempDir, configuration.preview.diskPersistenceMaxSizeMb),
+            telemetryClient::getStatsbeatConnectionString,
+            telemetryClient::getInstrumentationKey,
+            configuration.internal.statsbeat.disabledAll,
+            configuration.internal.statsbeat.shortIntervalSeconds,
+            configuration.internal.statsbeat.longIntervalSeconds,
+            configuration.preview.statsbeat.disabled,
+            initStatsbeatFeatureSet(configuration));
       } catch (RuntimeException ex) {
         startupLogger.error("Fail to start StatsbeatModule", ex);
       }
