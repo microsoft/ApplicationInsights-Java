@@ -29,6 +29,7 @@ public class AlternativeJfrConfigurationsTest {
     assertion.accept(AlternativeJfrConfigurations.getSpanProfileConfig(config).getConfiguration());
   }
 
+  // To be able to remove sensitive events
   @Test
   public void ifDiagnosticsAreEnabled_A_CustomJfcFileIsNotOverridden() throws IOException {
     File tmpfile = File.createTempFile("config", "jfc");
