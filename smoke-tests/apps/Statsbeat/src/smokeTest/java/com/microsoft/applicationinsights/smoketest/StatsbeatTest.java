@@ -86,6 +86,7 @@ abstract class StatsbeatTest {
     assertThat(metricData.getProperties()).containsKey("os");
     assertThat(metricData.getProperties()).containsKey("language");
     assertThat(metricData.getProperties()).containsKey("version");
+    // customer defined dimensions do not apply to Statsbeat
     assertThat(metricData.getProperties()).doesNotContainEntry("tag1", "abc");
     assertThat(metricData.getProperties()).doesNotContainEntry("tag2", "def");
     assertThat(metricData.getProperties()).doesNotContainEntry("service.version", "123");
