@@ -103,14 +103,17 @@ public final class SpanDataMapper {
   }
 
   private final boolean captureHttpServer4xxAsError;
+  private final boolean captureRequestException;
   private final BiConsumer<AbstractTelemetryBuilder, Resource> telemetryInitializer;
   private final BiPredicate<EventData, String> eventSuppressor;
 
   public SpanDataMapper(
       boolean captureHttpServer4xxAsError,
+      boolean captureRequestException,
       BiConsumer<AbstractTelemetryBuilder, Resource> telemetryInitializer,
       BiPredicate<EventData, String> eventSuppressor) {
     this.captureHttpServer4xxAsError = captureHttpServer4xxAsError;
+    this.captureRequestException = captureRequestException;
     this.telemetryInitializer = telemetryInitializer;
     this.eventSuppressor = eventSuppressor;
   }
@@ -701,7 +704,8 @@ public final class SpanDataMapper {
         SpanContext parentSpanContext = span.getParentSpanContext();
         // Application Insights expects exception records to be "top-level" exceptions
         // not just any exception that bubbles up
-        if (!parentSpanContext.isValid() || parentSpanContext.isRemote()) {
+        if ((!parentSpanContext.isValid() || parentSpanContext.isRemote())
+            && captureRequestException) {
           // TODO (trask) map OpenTelemetry exception to Application Insights exception better
           String stacktrace = event.getAttributes().get(SemanticAttributes.EXCEPTION_STACKTRACE);
           if (stacktrace != null) {

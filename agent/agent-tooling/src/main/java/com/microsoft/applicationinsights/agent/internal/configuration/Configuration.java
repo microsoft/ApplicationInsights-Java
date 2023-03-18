@@ -323,6 +323,8 @@ public class Configuration {
     // Note: this configuration option will be removed in 4.0.0
     public boolean captureLoggingLevelAsCustomDimension;
 
+    public boolean captureRequestException = true;
+
     public boolean captureLogbackCodeAttributes;
 
     public boolean captureLogbackMarker;

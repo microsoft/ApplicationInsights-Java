@@ -319,7 +319,10 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
     if ("none".equals(tracesExporter)) { // "none" is the default set in AiConfigCustomizer
       SpanExporter spanExporter =
           createSpanExporter(
-              telemetryClient, quickPulse, configuration.preview.captureHttpServer4xxAsError);
+              telemetryClient,
+              quickPulse,
+              configuration.preview.captureHttpServer4xxAsError,
+              configuration.preview.captureRequestException);
 
       spanExporter = wrapSpanExporter(spanExporter, configuration);
 
@@ -338,11 +341,13 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
   private static SpanExporter createSpanExporter(
       TelemetryClient telemetryClient,
       @Nullable QuickPulse quickPulse,
-      boolean captureHttpServer4xxAsError) {
+      boolean captureHttpServer4xxAsError,
+      boolean captureRequestException) {
 
     SpanDataMapper mapper =
         new SpanDataMapper(
             captureHttpServer4xxAsError,
+            captureRequestException,
             telemetryClient::populateDefaults,
             (event, instrumentationName) -> {
               boolean lettuce51 = instrumentationName.equals("io.opentelemetry.lettuce-5.1");
