@@ -1,24 +1,24 @@
 # This is a Gradle generated file for dependency locking.
 # Manual edits can break the build and are not advised.
 # This file is expected to be part of source control.
-com.azure:azure-core-http-netty:1.13.0=runtimeClasspath
-com.azure:azure-core:1.36.0=runtimeClasspath
-com.azure:azure-identity:1.8.0=runtimeClasspath
-com.azure:azure-sdk-bom:1.2.10=runtimeClasspath
-com.azure:azure-storage-blob:12.21.0=runtimeClasspath
-com.azure:azure-storage-common:12.20.0=runtimeClasspath
-com.azure:azure-storage-internal-avro:12.6.0=runtimeClasspath
+com.azure:azure-core-http-netty:1.13.1=runtimeClasspath
+com.azure:azure-core:1.37.0=runtimeClasspath
+com.azure:azure-identity:1.8.1=runtimeClasspath
+com.azure:azure-sdk-bom:1.2.11=runtimeClasspath
+com.azure:azure-storage-blob:12.21.1=runtimeClasspath
+com.azure:azure-storage-common:12.20.1=runtimeClasspath
+com.azure:azure-storage-internal-avro:12.6.1=runtimeClasspath
 com.fasterxml.jackson.core:jackson-annotations:2.14.2=runtimeClasspath
 com.fasterxml.jackson.core:jackson-core:2.14.2=runtimeClasspath
 com.fasterxml.jackson.core:jackson-databind:2.14.2=runtimeClasspath
 com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.14.2=runtimeClasspath
 com.fasterxml.jackson:jackson-bom:2.14.2=runtimeClasspath
-com.github.oshi:oshi-core:6.4.0=runtimeClasspath
+com.github.oshi:oshi-core:6.4.1=runtimeClasspath
 com.github.stephenc.jcip:jcip-annotations:1.0-1=runtimeClasspath
 com.google.errorprone:error_prone_annotations:2.18.0=runtimeClasspath
 com.google.guava:guava-bom:31.1-jre=runtimeClasspath
 com.microsoft.azure:msal4j-persistence-extension:1.1.0=runtimeClasspath
-com.microsoft.azure:msal4j:1.13.4=runtimeClasspath
+com.microsoft.azure:msal4j:1.13.5=runtimeClasspath
 com.microsoft.jfr:jfr-streaming:1.2.0=runtimeClasspath
 com.nimbusds:content-type:2.2=runtimeClasspath
 com.nimbusds:lang-tag:1.6=runtimeClasspath
@@ -57,8 +57,8 @@ io.opentelemetry:opentelemetry-bom:1.23.1=runtimeClasspath
 io.projectreactor.netty:reactor-netty-core:1.1.5=runtimeClasspath
 io.projectreactor.netty:reactor-netty-http:1.1.5=runtimeClasspath
 io.projectreactor:reactor-core:3.5.4=runtimeClasspath
-net.java.dev.jna:jna-platform:5.12.1=runtimeClasspath
-net.java.dev.jna:jna:5.12.1=runtimeClasspath
+net.java.dev.jna:jna-platform:5.13.0=runtimeClasspath
+net.java.dev.jna:jna:5.13.0=runtimeClasspath
 net.minidev:accessors-smart:2.4.8=runtimeClasspath
 net.minidev:json-smart:2.4.8=runtimeClasspath
 org.apache.commons:commons-lang3:3.12.0=runtimeClasspath
