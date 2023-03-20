@@ -38,7 +38,7 @@ dependencies {
 
   testImplementation("com.azure:azure-data-appconfiguration:1.4.2")
   testImplementation("com.azure:azure-messaging-eventhubs:5.15.2")
-  testImplementation("com.azure:azure-messaging-eventhubs-checkpointstore-blob:1.16.3")
+  testImplementation("com.azure:azure-messaging-eventhubs-checkpointstore-blob:1.16.4")
 
   testCompileOnly("com.google.code.findbugs:jsr305")
   testCompileOnly("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
