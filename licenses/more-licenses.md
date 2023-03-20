@@ -1,7 +1,7 @@
 
 #agent
 ##Dependency License Report
-_2023-03-20 11:03:10 UTC_
+_2023-03-20 17:06:55 UTC_
 ## Apache License, Version 2.0
 
 **1** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-annotations` **Version:** `2.14.2` 
@@ -301,27 +301,27 @@ _2023-03-20 11:03:10 UTC_
 
 ## MIT License
 
-**56** **Group:** `com.azure` **Name:** `azure-core` **Version:** `1.36.0` 
+**56** **Group:** `com.azure` **Name:** `azure-core` **Version:** `1.37.0` 
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**57** **Group:** `com.azure` **Name:** `azure-core-http-netty` **Version:** `1.13.0` 
+**57** **Group:** `com.azure` **Name:** `azure-core-http-netty` **Version:** `1.13.1` 
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**58** **Group:** `com.azure` **Name:** `azure-identity` **Version:** `1.8.0` 
+**58** **Group:** `com.azure` **Name:** `azure-identity` **Version:** `1.8.1` 
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**59** **Group:** `com.azure` **Name:** `azure-storage-blob` **Version:** `12.21.0` 
+**59** **Group:** `com.azure` **Name:** `azure-storage-blob` **Version:** `12.21.1` 
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**60** **Group:** `com.azure` **Name:** `azure-storage-common` **Version:** `12.20.0` 
+**60** **Group:** `com.azure` **Name:** `azure-storage-common` **Version:** `12.20.1` 
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**61** **Group:** `com.azure` **Name:** `azure-storage-internal-avro` **Version:** `12.6.0` 
+**61** **Group:** `com.azure` **Name:** `azure-storage-internal-avro` **Version:** `12.6.1` 
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
@@ -330,7 +330,7 @@ _2023-03-20 11:03:10 UTC_
 > - **Manifest License**: "SPDX-License-Identifier: MIT";link="https://opensource.org/licenses/MIT" (Not Packaged)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**63** **Group:** `com.microsoft.azure` **Name:** `msal4j` **Version:** `1.13.4` 
+**63** **Group:** `com.microsoft.azure` **Name:** `msal4j` **Version:** `1.13.5` 
 > - **Project URL**: [https://github.com/AzureAD/microsoft-authentication-library-for-java](https://github.com/AzureAD/microsoft-authentication-library-for-java)
 > - **Manifest License**: "MIT License" (Not Packaged)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)

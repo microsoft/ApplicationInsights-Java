@@ -1,10 +1,10 @@
 # This is a Gradle generated file for dependency locking.
 # Manual edits can break the build and are not advised.
 # This file is expected to be part of source control.
-com.azure:azure-core-http-netty:1.13.0=runtimeClasspath
-com.azure:azure-core:1.36.0=runtimeClasspath
-com.azure:azure-identity:1.8.0=runtimeClasspath
-com.azure:azure-sdk-bom:1.2.10=runtimeClasspath
+com.azure:azure-core-http-netty:1.13.1=runtimeClasspath
+com.azure:azure-core:1.37.0=runtimeClasspath
+com.azure:azure-identity:1.8.1=runtimeClasspath
+com.azure:azure-sdk-bom:1.2.11=runtimeClasspath
 com.fasterxml.jackson.core:jackson-annotations:2.14.2=runtimeClasspath
 com.fasterxml.jackson.core:jackson-core:2.14.2=runtimeClasspath
 com.fasterxml.jackson.core:jackson-databind:2.14.2=runtimeClasspath
@@ -13,7 +13,7 @@ com.fasterxml.jackson:jackson-bom:2.14.2=runtimeClasspath
 com.github.stephenc.jcip:jcip-annotations:1.0-1=runtimeClasspath
 com.google.guava:guava-bom:31.1-jre=runtimeClasspath
 com.microsoft.azure:msal4j-persistence-extension:1.1.0=runtimeClasspath
-com.microsoft.azure:msal4j:1.13.4=runtimeClasspath
+com.microsoft.azure:msal4j:1.13.5=runtimeClasspath
 com.nimbusds:content-type:2.2=runtimeClasspath
 com.nimbusds:lang-tag:1.6=runtimeClasspath
 com.nimbusds:nimbus-jose-jwt:9.22=runtimeClasspath
