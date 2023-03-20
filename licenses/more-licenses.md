@@ -1,7 +1,7 @@
 
 #agent
 ##Dependency License Report
-_2023-03-15 17:43:04 UTC_
+_2023-03-20 11:03:10 UTC_
 ## Apache License, Version 2.0
 
 **1** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-annotations` **Version:** `2.14.2` 
@@ -198,17 +198,17 @@ _2023-03-15 17:43:04 UTC_
 > - **POM Project URL**: [https://github.com/reactor/reactor-netty](https://github.com/reactor/reactor-netty)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
-**39** **Group:** `net.java.dev.jna` **Name:** `jna` **Version:** `5.12.1` 
+**39** **Group:** `net.java.dev.jna` **Name:** `jna` **Version:** `5.13.0` 
 > - **POM Project URL**: [https://github.com/java-native-access/jna](https://github.com/java-native-access/jna)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 > - **POM License**: GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 - [https://www.gnu.org/licenses/lgpl-2.1](https://www.gnu.org/licenses/lgpl-2.1)
-> - **Embedded license files**: [jna-5.12.1.jar/META-INF/LICENSE](jna-5.12.1.jar/META-INF/LICENSE)
+> - **Embedded license files**: [jna-5.13.0.jar/META-INF/LICENSE](jna-5.13.0.jar/META-INF/LICENSE)
 
-**40** **Group:** `net.java.dev.jna` **Name:** `jna-platform` **Version:** `5.12.1` 
+**40** **Group:** `net.java.dev.jna` **Name:** `jna-platform` **Version:** `5.13.0` 
 > - **POM Project URL**: [https://github.com/java-native-access/jna](https://github.com/java-native-access/jna)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 > - **POM License**: GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 - [https://www.gnu.org/licenses/lgpl-2.1](https://www.gnu.org/licenses/lgpl-2.1)
-> - **Embedded license files**: [jna-platform-5.12.1.jar/META-INF/LICENSE](jna-platform-5.12.1.jar/META-INF/LICENSE)
+> - **Embedded license files**: [jna-platform-5.13.0.jar/META-INF/LICENSE](jna-platform-5.13.0.jar/META-INF/LICENSE)
 
 **41** **Group:** `net.minidev` **Name:** `accessors-smart` **Version:** `2.4.8` 
 > - **Project URL**: [https://urielch.github.io/](https://urielch.github.io/)
@@ -287,17 +287,17 @@ _2023-03-15 17:43:04 UTC_
 > - **POM License**: Eclipse Public License - v 1.0 - [http://www.eclipse.org/legal/epl-v10.html](http://www.eclipse.org/legal/epl-v10.html)
 > - **POM License**: GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 - [https://www.gnu.org/licenses/lgpl-2.1](https://www.gnu.org/licenses/lgpl-2.1)
 
-**54** **Group:** `net.java.dev.jna` **Name:** `jna` **Version:** `5.12.1` 
+**54** **Group:** `net.java.dev.jna` **Name:** `jna` **Version:** `5.13.0` 
 > - **POM Project URL**: [https://github.com/java-native-access/jna](https://github.com/java-native-access/jna)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 > - **POM License**: GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 - [https://www.gnu.org/licenses/lgpl-2.1](https://www.gnu.org/licenses/lgpl-2.1)
-> - **Embedded license files**: [jna-5.12.1.jar/META-INF/LICENSE](jna-5.12.1.jar/META-INF/LICENSE)
+> - **Embedded license files**: [jna-5.13.0.jar/META-INF/LICENSE](jna-5.13.0.jar/META-INF/LICENSE)
 
-**55** **Group:** `net.java.dev.jna` **Name:** `jna-platform` **Version:** `5.12.1` 
+**55** **Group:** `net.java.dev.jna` **Name:** `jna-platform` **Version:** `5.13.0` 
 > - **POM Project URL**: [https://github.com/java-native-access/jna](https://github.com/java-native-access/jna)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 > - **POM License**: GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 - [https://www.gnu.org/licenses/lgpl-2.1](https://www.gnu.org/licenses/lgpl-2.1)
-> - **Embedded license files**: [jna-platform-5.12.1.jar/META-INF/LICENSE](jna-platform-5.12.1.jar/META-INF/LICENSE)
+> - **Embedded license files**: [jna-platform-5.13.0.jar/META-INF/LICENSE](jna-platform-5.13.0.jar/META-INF/LICENSE)
 
 ## MIT License
 
@@ -325,7 +325,7 @@ _2023-03-15 17:43:04 UTC_
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**62** **Group:** `com.github.oshi` **Name:** `oshi-core` **Version:** `6.4.0` 
+**62** **Group:** `com.github.oshi` **Name:** `oshi-core` **Version:** `6.4.1` 
 > - **Manifest Project URL**: [https://github.com/oshi/oshi/oshi-core](https://github.com/oshi/oshi/oshi-core)
 > - **Manifest License**: "SPDX-License-Identifier: MIT";link="https://opensource.org/licenses/MIT" (Not Packaged)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
