@@ -55,14 +55,14 @@ public class StatusFile {
   static final String HOME_ENV_VAR = "HOME";
 
   // visible for testing
-  static final String DEFAULT_LOGDIR = "/LogFiles";
+  static final String DEFAULT_LOGDIR = File.separator + "LogFiles";
 
   // visible for testing
-  static final String DEFAULT_APPLICATIONINSIGHTS_LOGDIR = "/ApplicationInsights";
+  static final String DEFAULT_APPLICATIONINSIGHTS_LOGDIR = File.separator + "ApplicationInsights";
 
   // visible for testing
   static final String WINDOWS_DEFAULT_HOME_DIR =
-      "/home" + DEFAULT_LOGDIR + DEFAULT_APPLICATIONINSIGHTS_LOGDIR;
+      File.separator + "home" + DEFAULT_LOGDIR + DEFAULT_APPLICATIONINSIGHTS_LOGDIR;
 
   // visible for testing
   static String logDir;
