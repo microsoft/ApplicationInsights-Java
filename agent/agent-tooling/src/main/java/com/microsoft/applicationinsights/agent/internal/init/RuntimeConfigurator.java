@@ -131,7 +131,7 @@ public class RuntimeConfigurator {
     }
 
     // initialize Profiler
-    if (runtimeConfig.profilerEnabled) {
+    if (runtimeConfig.profilerEnabled && profilingInitializer != null) {
       profilingInitializer.initialize();
     }
 
