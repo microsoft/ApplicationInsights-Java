@@ -115,7 +115,6 @@ public class LoggingConfigurator {
     Appender<ILoggingEvent> diagnosticAppender = configureConsoleAppender();
     diagnosticLogger.addAppender(diagnosticAppender);
 
-    // todo add appdender filter
     ApplicationInsightsDiagnosticsLogFilter filter = new ApplicationInsightsDiagnosticsLogFilter();
     filter.setContext(loggerContext);
     filter.start();
