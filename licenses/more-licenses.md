@@ -1,7 +1,7 @@
 
 #agent
 ##Dependency License Report
-_2023-03-24 04:32:06 UTC_
+_2023-03-27 10:28:49 UTC_
 ## Apache License, Version 2.0
 
 **1** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-annotations` **Version:** `2.14.2` 
@@ -210,12 +210,12 @@ _2023-03-24 04:32:06 UTC_
 > - **POM License**: GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 - [https://www.gnu.org/licenses/lgpl-2.1](https://www.gnu.org/licenses/lgpl-2.1)
 > - **Embedded license files**: [jna-platform-5.13.0.jar/META-INF/LICENSE](jna-platform-5.13.0.jar/META-INF/LICENSE)
 
-**41** **Group:** `net.minidev` **Name:** `accessors-smart` **Version:** `2.4.8` 
+**41** **Group:** `net.minidev` **Name:** `accessors-smart` **Version:** `2.4.9` 
 > - **Project URL**: [https://urielch.github.io/](https://urielch.github.io/)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
-**42** **Group:** `net.minidev` **Name:** `json-smart` **Version:** `2.4.8` 
+**42** **Group:** `net.minidev` **Name:** `json-smart` **Version:** `2.4.9` 
 > - **Project URL**: [https://urielch.github.io/](https://urielch.github.io/)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
