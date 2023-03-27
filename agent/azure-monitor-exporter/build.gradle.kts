@@ -18,7 +18,7 @@ dependencies {
 
   implementation("com.azure:azure-core")
   implementation("com.azure:azure-identity")
-  
+
   // CVE-2023-1370 - https://github.com/advisories/GHSA-493p-pfq6-5258
   // Transitive dependency: json-smart -> com.microsoft.azure:msal4j:1.13.5 ->  com.azure:azure-identity
   // -> azure-monitor-exporter
