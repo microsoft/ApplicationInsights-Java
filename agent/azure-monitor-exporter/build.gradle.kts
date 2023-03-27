@@ -18,6 +18,12 @@ dependencies {
 
   implementation("com.azure:azure-core")
   implementation("com.azure:azure-identity")
+  
+  // CVE-2023-1370 - https://github.com/advisories/GHSA-493p-pfq6-5258
+  // Transitive dependency: json-smart -> com.microsoft.azure:msal4j:1.13.5 ->  com.azure:azure-identity
+  // -> azure-monitor-exporter
+  // upstream fix: https://github.com/AzureAD/microsoft-authentication-library-for-java/pull/612
+  implementation("net.minidev:json-smart:2.4.9")
 
   compileOnly("io.opentelemetry:opentelemetry-sdk")
   compileOnly("io.opentelemetry:opentelemetry-sdk-metrics")
