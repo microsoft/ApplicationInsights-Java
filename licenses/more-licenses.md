@@ -1,7 +1,7 @@
 
 #agent
 ##Dependency License Report
-_2023-03-27 10:28:49 UTC_
+_2023-03-28 08:54:41 UTC_
 ## Apache License, Version 2.0
 
 **1** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-annotations` **Version:** `2.14.2` 
@@ -215,7 +215,7 @@ _2023-03-27 10:28:49 UTC_
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
-**42** **Group:** `net.minidev` **Name:** `json-smart` **Version:** `2.4.9` 
+**42** **Group:** `net.minidev` **Name:** `json-smart` **Version:** `2.4.10` 
 > - **Project URL**: [https://urielch.github.io/](https://urielch.github.io/)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
