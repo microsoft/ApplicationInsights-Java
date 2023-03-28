@@ -23,7 +23,7 @@ dependencies {
   // Transitive dependency: json-smart -> com.microsoft.azure:msal4j:1.13.5 ->  com.azure:azure-identity
   // -> azure-monitor-exporter
   // upstream fix: https://github.com/AzureAD/microsoft-authentication-library-for-java/pull/612
-  implementation("net.minidev:json-smart:2.4.9")
+  implementation("net.minidev:json-smart:2.4.10")
 
   compileOnly("io.opentelemetry:opentelemetry-sdk")
   compileOnly("io.opentelemetry:opentelemetry-sdk-metrics")
