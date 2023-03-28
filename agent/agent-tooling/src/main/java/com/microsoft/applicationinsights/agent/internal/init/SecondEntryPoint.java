@@ -145,9 +145,9 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
           }
         };
 
-    // interval longer than 15 minutes is not allowed since we use this data for usage telemetry
     if (telemetryClient.getConnectionString() != null) {
       startupLogger.verbose("connection string is not null, start HeartbeatExporter");
+      // interval longer than 15 minutes is not allowed since we use this data for usage telemetry
       long intervalSeconds =
           Math.min(configuration.heartbeat.intervalSeconds, MINUTES.toSeconds(15));
       HeartbeatExporter.start(

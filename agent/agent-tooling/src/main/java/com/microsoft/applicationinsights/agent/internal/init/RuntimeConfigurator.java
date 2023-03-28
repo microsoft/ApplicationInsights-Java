@@ -33,7 +33,7 @@ public class RuntimeConfigurator {
   private final TelemetryClient telemetryClient;
   private final Supplier<AgentLogExporter> agentLogExporter;
   private volatile RuntimeConfiguration currentConfig;
-  @Nullable private final Consumer<List<TelemetryItem>> heartbeatTelemetryItemsConsumer;
+  private final Consumer<List<TelemetryItem>> heartbeatTelemetryItemsConsumer;
   @Nullable private final ProfilingInitializer profilingInitializer;
 
   RuntimeConfigurator(
