@@ -97,6 +97,15 @@ public class StatsbeatModule {
         longIntervalSeconds,
         TimeUnit.SECONDS);
 
+    // the condition below will always be false, but by referencing the executor it ensures the
+    // executor can't become unreachable in the middle of the scheduleWithFixedDelay() method
+    // execution above (and prior to the task being registered), which can lead to the executor
+    // being terminated and scheduleWithFixedDelay throwing a RejectedExecutionException
+    // (see https://bugs.openjdk.org/browse/JDK-8145304)
+    if (scheduledExecutor.isTerminated()) {
+      throw new AssertionError();
+    }
+
     ResourceProvider rp = customDimensions.getResourceProvider();
     // only turn on AzureMetadataService when the resource provider is VM or UNKNOWN.
     if (rp == ResourceProvider.RP_VM || rp == ResourceProvider.UNKNOWN) {
