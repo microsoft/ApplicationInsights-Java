@@ -48,7 +48,6 @@ public class StatsbeatModule {
     azureMetadataService = new AzureMetadataService(attachStatsbeat, customDimensions);
   }
 
-  @SuppressWarnings("SystemOut")
   public void start(
       TelemetryItemExporter telemetryItemExporter,
       Supplier<StatsbeatConnectionString> connectionString,
