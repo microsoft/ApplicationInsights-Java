@@ -48,6 +48,7 @@ public class StatsbeatModule {
     azureMetadataService = new AzureMetadataService(attachStatsbeat, customDimensions);
   }
 
+  @SuppressWarnings("SystemOut")
   public void start(
       TelemetryItemExporter telemetryItemExporter,
       Supplier<StatsbeatConnectionString> connectionString,
@@ -57,7 +58,7 @@ public class StatsbeatModule {
       long longIntervalSeconds,
       boolean disabled,
       Set<Feature> featureSet) {
-    if (connectionString == null) {
+    if (connectionString.get() == null) {
       logger.debug("Don't start StatsbeatModule when statsbeat connection string is null.");
       return;
     }
@@ -75,15 +76,6 @@ public class StatsbeatModule {
 
     updateConnectionString(connectionString.get());
     updateInstrumentationKey(instrumentationKey.get());
-
-    // the condition below will always be false, but by referencing the executor it ensures the
-    // executor can't become unreachable in the middle of the scheduleWithFixedDelay() method
-    // execution above (and prior to the task being registered), which can lead to the executor
-    // being terminated and scheduleWithFixedDelay throwing a RejectedExecutionException
-    // (see https://bugs.openjdk.org/browse/JDK-8145304)
-    if (scheduledExecutor.isTerminated()) {
-      throw new AssertionError();
-    }
 
     scheduledExecutor.scheduleWithFixedDelay(
         new StatsbeatSender(networkStatsbeat, telemetryItemExporter),
