@@ -17,6 +17,7 @@ import com.microsoft.applicationinsights.agent.internal.profiler.ProfilingInitia
 import com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampler;
 import com.microsoft.applicationinsights.agent.internal.sampling.Samplers;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -32,21 +33,23 @@ public class RuntimeConfigurator {
 
   private final TelemetryClient telemetryClient;
   private final Supplier<AgentLogExporter> agentLogExporter;
+  private final Configuration initialConfig;
   private volatile RuntimeConfiguration currentConfig;
   private final Consumer<List<TelemetryItem>> heartbeatTelemetryItemsConsumer;
-  @Nullable private final ProfilingInitializer profilingInitializer;
+  private final File tempDir;
 
   RuntimeConfigurator(
       TelemetryClient telemetryClient,
       Supplier<AgentLogExporter> agentLogExporter,
       Configuration initialConfig,
       Consumer<List<TelemetryItem>> heartbeatTelemetryItemConsumer,
-      ProfilingInitializer profilingInitializer) {
+      File tempDir) {
     this.telemetryClient = telemetryClient;
     this.agentLogExporter = agentLogExporter;
+    this.initialConfig = initialConfig;
     currentConfig = captureInitialConfig(initialConfig);
     this.heartbeatTelemetryItemsConsumer = heartbeatTelemetryItemConsumer;
-    this.profilingInitializer = profilingInitializer;
+    this.tempDir = tempDir;
   }
 
   private static RuntimeConfiguration captureInitialConfig(Configuration initialConfig) {
@@ -131,8 +134,13 @@ public class RuntimeConfigurator {
     }
 
     // initialize Profiler
-    if (runtimeConfig.profilerEnabled && profilingInitializer != null) {
-      profilingInitializer.initialize();
+    if (runtimeConfig.profilerEnabled && telemetryClient.getConnectionString() != null) {
+      try {
+        updateProfilerConfig(runtimeConfig, initialConfig);
+        ProfilingInitializer.initialize(tempDir, initialConfig, telemetryClient);
+      } catch (RuntimeException e) {
+        logger.warn("Failed to initialize profiler", e);
+      }
     }
 
     // enable Heartbeat
@@ -149,6 +157,13 @@ public class RuntimeConfigurator {
     updateSelfDiagnosticsLevel(runtimeConfig.selfDiagnosticsLevel);
 
     currentConfig = runtimeConfig;
+  }
+
+  private static void updateProfilerConfig(
+      RuntimeConfiguration runtimeConfiguration, Configuration initialConfig) {
+    initialConfig.connectionString = runtimeConfiguration.connectionString;
+    initialConfig.role.name = runtimeConfiguration.role.name;
+    initialConfig.role.instance = runtimeConfiguration.role.instance;
   }
 
   static void updatePropagation(

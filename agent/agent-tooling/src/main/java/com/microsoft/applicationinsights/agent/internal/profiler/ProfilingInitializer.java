@@ -94,14 +94,14 @@ public class ProfilingInitializer {
     return profilingInitializer;
   }
 
-  public synchronized void initialize() {
+  synchronized void initialize() {
     if (tempDir == null) {
       throw new FriendlyException(
           "Profile is not supported in a read-only file system.",
           "disable profiler or use a writable file system");
     }
 
-    if (configuration.preview.profiler.enabled && telemetryClient.getConnectionString() != null) {
+    if (configuration.preview.profiler.enabled) {
       performInit();
     }
   }

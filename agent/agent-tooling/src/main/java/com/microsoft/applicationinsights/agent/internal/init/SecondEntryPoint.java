@@ -156,11 +156,9 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
 
     TelemetryClient.setActive(telemetryClient);
 
-    ProfilingInitializer profilingInitializer = null;
     if (configuration.preview.profiler.enabled) {
       try {
-        profilingInitializer =
-            ProfilingInitializer.initialize(tempDir, configuration, telemetryClient);
+        ProfilingInitializer.initialize(tempDir, configuration, telemetryClient);
       } catch (RuntimeException e) {
         startupLogger.warning("Failed to initialize profiler", e);
       }
@@ -172,7 +170,7 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
             () -> agentLogExporter,
             configuration,
             heartbeatTelemetryItemConsumer,
-            profilingInitializer);
+            tempDir);
 
     if (configuration.sampling.percentage != null) {
       BytecodeUtilImpl.samplingPercentage = configuration.sampling.percentage.floatValue();
