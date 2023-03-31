@@ -21,6 +21,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
@@ -37,6 +38,9 @@ public class RuntimeConfigurator {
   private volatile RuntimeConfiguration currentConfig;
   private final Consumer<List<TelemetryItem>> heartbeatTelemetryItemsConsumer;
   private final File tempDir;
+
+  private final AtomicBoolean profilerStarted = new AtomicBoolean();
+  private final AtomicBoolean heartbeatStarted = new AtomicBoolean();
 
   RuntimeConfigurator(
       TelemetryClient telemetryClient,
@@ -135,25 +139,36 @@ public class RuntimeConfigurator {
 
     // initialize Profiler
     if (runtimeConfig.profilerEnabled && telemetryClient.getConnectionString() != null) {
-      try {
-        ProfilingInitializer.initialize(
-            tempDir,
-            initialConfig.preview.profiler,
-            initialConfig.preview.gcEvents.reportingLevel,
-            runtimeConfig.role.name,
-            runtimeConfig.role.instance,
-            telemetryClient);
-      } catch (RuntimeException e) {
-        logger.warn("Failed to initialize profiler", e);
+      // this prevents profiler being initialized more than once in Azure Spring App
+      if (!profilerStarted.getAndSet(true)) {
+        try {
+          ProfilingInitializer.initialize(
+              tempDir,
+              initialConfig.preview.profiler,
+              initialConfig.preview.gcEvents.reportingLevel,
+              runtimeConfig.role.name,
+              runtimeConfig.role.instance,
+              telemetryClient);
+        } catch (RuntimeException e) {
+          logger.warn("Failed to initialize profiler", e);
+        }
+      } else {
+        logger.warn("Profiler has already been initialized.");
       }
     }
 
     // enable Heartbeat
     if (telemetryClient.getConnectionString() != null) {
-      long intervalSeconds =
-          Math.min(runtimeConfig.heartbeatIntervalSeconds, MINUTES.toSeconds(15));
-      HeartbeatExporter.start(
-          intervalSeconds, telemetryClient::populateDefaults, heartbeatTelemetryItemsConsumer);
+      // this prevents heartbeat being started more than once in Azure Spring App
+      if (!heartbeatStarted.getAndSet(true)) {
+        // interval longer than 15 minutes is not allowed since we use this data for usage telemetry
+        long intervalSeconds =
+            Math.min(runtimeConfig.heartbeatIntervalSeconds, MINUTES.toSeconds(15));
+        HeartbeatExporter.start(
+            intervalSeconds, telemetryClient::populateDefaults, heartbeatTelemetryItemsConsumer);
+      } else {
+        logger.warn("Heartbeat has already started.");
+      }
     }
 
     // TODO (heya) enable Statsbeat and need to refactor RuntimeConfiguration

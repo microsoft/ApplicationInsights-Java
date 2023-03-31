@@ -170,10 +170,10 @@ public class ProfilingInitializer {
     }
   }
 
-  synchronized void applyConfiguration(ProfilerConfiguration confi) {
-    if (currentlyEnabled.get() || (confi.isEnabled() && confi.hasBeenConfigured())) {
+  synchronized void applyConfiguration(ProfilerConfiguration config) {
+    if (currentlyEnabled.get() || (config.isEnabled() && config.hasBeenConfigured())) {
 
-      AlertingConfiguration alertingConfig = AlertConfigParser.toAlertingConfig(confi);
+      AlertingConfiguration alertingConfig = AlertConfigParser.toAlertingConfig(config);
 
       if (alertingConfig.hasAnEnabledTrigger()) {
         if (!currentlyEnabled.getAndSet(true)) {
