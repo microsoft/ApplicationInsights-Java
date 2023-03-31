@@ -5,6 +5,7 @@ package com.microsoft.applicationinsights.agent.internal.profiler;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.ThreadPoolUtils;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
+import com.microsoft.applicationinsights.agent.internal.configuration.GcReportingLevel;
 import com.microsoft.applicationinsights.agent.internal.profiler.service.ServiceProfilerClient;
 import com.microsoft.applicationinsights.agent.internal.profiler.triggers.AlertingSubsystemInit;
 import com.microsoft.applicationinsights.agent.internal.profiler.upload.UploadService;
@@ -38,7 +39,8 @@ public class PerformanceMonitoringService {
   private final String machineName;
   private final String roleName;
   private final TelemetryClient telemetryClient;
-  private final Configuration configuration;
+  private final Configuration.ProfilerConfiguration configuration;
+  private final GcReportingLevel reportingLevel;
   private final File tempDir;
 
   private boolean currentlyEnabled = false;
@@ -58,13 +60,15 @@ public class PerformanceMonitoringService {
       String machineName,
       String roleName,
       TelemetryClient telemetryClient,
-      Configuration configuration,
+      Configuration.ProfilerConfiguration configuration,
+      GcReportingLevel reportingLevel,
       File tempDir) {
     this.processId = processId;
     this.machineName = machineName;
     this.roleName = roleName;
     this.telemetryClient = telemetryClient;
     this.configuration = configuration;
+    this.reportingLevel = reportingLevel;
     this.tempDir = tempDir;
   }
 
@@ -80,7 +84,7 @@ public class PerformanceMonitoringService {
     logger.warn("INITIALISING JFR PROFILING SUBSYSTEM THIS FEATURE IS IN BETA");
 
     diagnosticEngine = null;
-    if (configuration.preview.profiler.enableDiagnostics) {
+    if (configuration.enabled) {
       // Initialise diagnostic service
       diagnosticEngine = startDiagnosticEngine();
     }
@@ -91,11 +95,12 @@ public class PerformanceMonitoringService {
             ThreadPoolUtils.createDaemonThreadFactory(
                 ProfilingInitializer.class, "ServiceProfilerAlertingService"));
 
-    profiler = new Profiler(configuration.preview.profiler, tempDir);
+    profiler = new Profiler(configuration, tempDir);
 
     alerting =
         AlertingSubsystemInit.create(
             configuration,
+            reportingLevel,
             TelemetryObservers.INSTANCE,
             profiler,
             telemetryClient,

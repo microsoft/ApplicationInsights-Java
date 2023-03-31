@@ -38,7 +38,8 @@ public class AlertingSubsystemInit {
   private static volatile AlertingSubsystem alertingSubsystem;
 
   public static AlertingSubsystem create(
-      Configuration configuration,
+      Configuration.ProfilerConfiguration configuration,
+      GcReportingLevel reportingLevel,
       TelemetryObservers telemetryObservers,
       Profiler profiler,
       TelemetryClient telemetryClient,
@@ -52,9 +53,9 @@ public class AlertingSubsystemInit {
 
     alertingSubsystem = AlertingSubsystem.create(alertAction, TimeSource.DEFAULT);
 
-    if (configuration.preview.profiler.enableRequestTriggering) {
+    if (configuration.enableRequestTriggering) {
       List<AlertPipeline> spanPipelines =
-          Arrays.stream(configuration.preview.profiler.requestTriggerEndpoints)
+          Arrays.stream(configuration.requestTriggerEndpoints)
               .map(it -> RequestAlertPipelineBuilder.build(it, alertAction, TimeSource.DEFAULT))
               .collect(Collectors.toList());
 
@@ -68,15 +69,15 @@ public class AlertingSubsystemInit {
         alertingSubsystem,
         telemetryClient,
         executorService,
-        fromGcEventMonitorConfiguration(configuration.preview));
+        fromGcEventMonitorConfiguration(reportingLevel));
 
     return alertingSubsystem;
   }
 
   private static GcEventInit.GcEventMonitorConfiguration fromGcEventMonitorConfiguration(
-      Configuration.PreviewConfiguration configuration) {
-    if (configuration.gcEvents.reportingLevel != null) {
-      return new GcEventInit.GcEventMonitorConfiguration(configuration.gcEvents.reportingLevel);
+      GcReportingLevel reportingLevel) {
+    if (reportingLevel != null) {
+      return new GcEventInit.GcEventMonitorConfiguration(reportingLevel);
     }
 
     return new GcEventInit.GcEventMonitorConfiguration(GcReportingLevel.NONE);
