@@ -6,8 +6,6 @@
 
 * Update to OpenTelemetry Java Instrumentation 1.24
   ([#2963](https://github.com/microsoft/ApplicationInsights-Java/pull/2963))
-* Update json-smart from 2.4.8 to 2.4.9 to address CVE-2023-1370
-  ([#2979](https://github.com/microsoft/ApplicationInsights-Java/pull/2979))
 
 ### Bug fixes:
 
