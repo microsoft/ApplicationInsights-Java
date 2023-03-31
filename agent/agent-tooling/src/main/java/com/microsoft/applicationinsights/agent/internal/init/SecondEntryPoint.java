@@ -170,6 +170,7 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
       }
     }
 
+    // TODO (heya) remove duplicate code in both RuntimeConfigurator and SecondEntryPoint
     RuntimeConfigurator runtimeConfigurator =
         new RuntimeConfigurator(
             telemetryClient,
