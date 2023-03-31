@@ -1,5 +1,17 @@
 # CHANGELOG
 
+## Version 3.4.11 GA
+
+### Enhancements:
+
+* Update to OpenTelemetry Java Instrumentation 1.24
+  ([#2963](https://github.com/microsoft/ApplicationInsights-Java/pull/2963))
+
+### Bug fixes:
+
+* Fix custom metrics in Azure Function Consumption Plan
+  ([#2946](https://github.com/microsoft/ApplicationInsights-Java/pull/2946))
+
 ## Version 3.4.10 GA
 
 ### Enhancements:
