@@ -12,6 +12,7 @@ import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.SdkVersionF
 import com.microsoft.applicationinsights.agent.internal.common.FriendlyException;
 import com.microsoft.applicationinsights.agent.internal.common.SystemInformation;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
+import com.microsoft.applicationinsights.agent.internal.configuration.GcReportingLevel;
 import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
 import com.microsoft.applicationinsights.agent.internal.profiler.config.ConfigService;
 import com.microsoft.applicationinsights.agent.internal.profiler.config.ProfilerConfiguration;
@@ -49,7 +50,8 @@ public class ProfilingInitializer {
   private final String roleName;
   private final TelemetryClient telemetryClient;
   private final String userAgent;
-  private final Configuration configuration;
+  private final Configuration.ProfilerConfiguration configuration;
+  private final GcReportingLevel reportingLevel;
   private final File tempDir;
 
   //////////////////////////////////////////////////////////
@@ -67,7 +69,8 @@ public class ProfilingInitializer {
       String roleName,
       TelemetryClient telemetryClient,
       String userAgent,
-      Configuration configuration,
+      Configuration.ProfilerConfiguration configuration,
+      GcReportingLevel reportingLevel,
       File tempDir) {
     this.processId = processId;
     this.machineName = machineName;
@@ -75,20 +78,27 @@ public class ProfilingInitializer {
     this.telemetryClient = telemetryClient;
     this.userAgent = userAgent;
     this.configuration = configuration;
+    this.reportingLevel = reportingLevel;
     this.tempDir = tempDir;
   }
 
   public static ProfilingInitializer initialize(
-      File tempDir, Configuration configuration, TelemetryClient telemetryClient) {
+      File tempDir,
+      Configuration.ProfilerConfiguration configuration,
+      GcReportingLevel reportingLevel,
+      String roleName,
+      String roleInstance,
+      TelemetryClient telemetryClient) {
 
     ProfilingInitializer profilingInitializer =
         new ProfilingInitializer(
             SystemInformation.getProcessId(),
-            configuration.role.instance,
-            configuration.role.name,
+            roleInstance,
+            roleName,
             telemetryClient,
             formApplicationInsightsUserAgent(),
             configuration,
+            reportingLevel,
             tempDir);
     profilingInitializer.initialize();
     return profilingInitializer;
@@ -101,7 +111,7 @@ public class ProfilingInitializer {
           "disable profiler or use a writable file system");
     }
 
-    if (configuration.preview.profiler.enabled) {
+    if (configuration.enabled) {
       performInit();
     }
   }
@@ -126,7 +136,7 @@ public class ProfilingInitializer {
 
     serviceProfilerClient =
         new ServiceProfilerClient(
-            getServiceProfilerFrontEndPoint(configuration.preview.profiler),
+            getServiceProfilerFrontEndPoint(configuration),
             telemetryClient.getInstrumentationKey(),
             httpPipeline,
             userAgent);
@@ -140,7 +150,7 @@ public class ProfilingInitializer {
     serviceProfilerExecutorService.scheduleAtFixedRate(
         () -> pullProfilerSettings(configService),
         5,
-        configuration.preview.profiler.configPollPeriodSeconds,
+        configuration.configPollPeriodSeconds,
         TimeUnit.SECONDS);
   }
 
@@ -160,12 +170,10 @@ public class ProfilingInitializer {
     }
   }
 
-  synchronized void applyConfiguration(ProfilerConfiguration profilerConfiguration) {
-    if (currentlyEnabled.get()
-        || (profilerConfiguration.isEnabled() && profilerConfiguration.hasBeenConfigured())) {
+  synchronized void applyConfiguration(ProfilerConfiguration confi) {
+    if (currentlyEnabled.get() || (confi.isEnabled() && confi.hasBeenConfigured())) {
 
-      AlertingConfiguration alertingConfig =
-          AlertConfigParser.toAlertingConfig(profilerConfiguration);
+      AlertingConfiguration alertingConfig = AlertConfigParser.toAlertingConfig(confi);
 
       if (alertingConfig.hasAnEnabledTrigger()) {
         if (!currentlyEnabled.getAndSet(true)) {
@@ -199,7 +207,13 @@ public class ProfilingInitializer {
   synchronized void enableProfiler() {
     performanceMonitoringService =
         new PerformanceMonitoringService(
-            processId, machineName, roleName, telemetryClient, configuration, tempDir);
+            processId,
+            machineName,
+            roleName,
+            telemetryClient,
+            configuration,
+            reportingLevel,
+            tempDir);
 
     performanceMonitoringService.enableProfiler(
         serviceProfilerClient, serviceProfilerExecutorService);

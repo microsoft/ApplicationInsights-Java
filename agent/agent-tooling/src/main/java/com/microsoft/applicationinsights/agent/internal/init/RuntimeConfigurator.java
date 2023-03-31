@@ -136,8 +136,13 @@ public class RuntimeConfigurator {
     // initialize Profiler
     if (runtimeConfig.profilerEnabled && telemetryClient.getConnectionString() != null) {
       try {
-        updateProfilerConfig(runtimeConfig, initialConfig);
-        ProfilingInitializer.initialize(tempDir, initialConfig, telemetryClient);
+        ProfilingInitializer.initialize(
+            tempDir,
+            initialConfig.preview.profiler,
+            initialConfig.preview.gcEvents.reportingLevel,
+            runtimeConfig.role.name,
+            runtimeConfig.role.instance,
+            telemetryClient);
       } catch (RuntimeException e) {
         logger.warn("Failed to initialize profiler", e);
       }
@@ -157,13 +162,6 @@ public class RuntimeConfigurator {
     updateSelfDiagnosticsLevel(runtimeConfig.selfDiagnosticsLevel);
 
     currentConfig = runtimeConfig;
-  }
-
-  private static void updateProfilerConfig(
-      RuntimeConfiguration runtimeConfiguration, Configuration initialConfig) {
-    initialConfig.connectionString = runtimeConfiguration.connectionString;
-    initialConfig.role.name = runtimeConfiguration.role.name;
-    initialConfig.role.instance = runtimeConfiguration.role.instance;
   }
 
   static void updatePropagation(
