@@ -156,7 +156,7 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
 
     TelemetryClient.setActive(telemetryClient);
 
-    if (configuration.preview.profiler.enabled) {
+    if (configuration.preview.profiler.enabled && telemetryClient.getConnectionString() != null) {
       try {
         ProfilingInitializer.initialize(tempDir, configuration, telemetryClient);
       } catch (RuntimeException e) {
