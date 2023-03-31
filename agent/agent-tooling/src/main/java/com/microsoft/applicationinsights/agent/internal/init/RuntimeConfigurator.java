@@ -153,7 +153,7 @@ public class RuntimeConfigurator {
           logger.warn("Failed to initialize profiler", e);
         }
       } else {
-        logger.warn("Profiler has already been initialized.");
+        logger.debug("Profiler has already been initialized.");
       }
     }
 
@@ -167,7 +167,7 @@ public class RuntimeConfigurator {
         HeartbeatExporter.start(
             intervalSeconds, telemetryClient::populateDefaults, heartbeatTelemetryItemsConsumer);
       } else {
-        logger.warn("Heartbeat has already started.");
+        logger.debug("Heartbeat has already started.");
       }
     }
 
