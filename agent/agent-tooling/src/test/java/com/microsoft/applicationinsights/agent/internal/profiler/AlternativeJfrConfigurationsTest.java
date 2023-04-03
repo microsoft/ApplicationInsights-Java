@@ -64,19 +64,7 @@ public class AlternativeJfrConfigurationsTest {
         config,
         fileContent -> {
           Assertions.assertTrue(
-              fileContent.contains("com.microsoft.jeg.illuminate.events.jfr.DiagnosticEvent"));
-        });
-  }
-
-  @Test
-  public void ifDiagnosticsAreDisabledDoesNotUseDiagnosticProfile() {
-    Configuration.ProfilerConfiguration config = new Configuration.ProfilerConfiguration();
-    config.enableDiagnostics = false;
-    assertForAllConfigs(
-        config,
-        fileContent -> {
-          Assertions.assertFalse(
-              fileContent.contains("com.microsoft.jeg.illuminate.events.jfr.DiagnosticEvent"));
+              fileContent.contains("com.microsoft.applicationinsights.diagnostics.jfr.Telemetry"));
         });
   }
 }

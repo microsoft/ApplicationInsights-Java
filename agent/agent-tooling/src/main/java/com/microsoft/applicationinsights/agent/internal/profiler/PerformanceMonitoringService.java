@@ -151,7 +151,9 @@ public class PerformanceMonitoringService {
       } else {
         logger.warn("No diagnostic engine implementation provided");
       }
-    } catch (RuntimeException e) {
+    } catch (Throwable e) {
+      // This is a broad catch however there could be a broad range of issues such as ClassNotFound
+      // and dont want to disrupt the rest of the code
       logger.error("Failed to load profiler factory", e);
     }
     return null;

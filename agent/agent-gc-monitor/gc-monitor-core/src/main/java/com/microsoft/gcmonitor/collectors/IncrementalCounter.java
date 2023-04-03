@@ -40,11 +40,6 @@ class IncrementalCounter {
     return lastSeenValue;
   }
 
-  @Override
-  public String toString() {
-    return "IncrementalCounter [lastSeenValue=" + lastSeenValue + ", increment=" + increment + "]";
-  }
-
   public void reset() {
     lastSeenValue = NO_PREVIOUS;
     increment = NO_PREVIOUS;
