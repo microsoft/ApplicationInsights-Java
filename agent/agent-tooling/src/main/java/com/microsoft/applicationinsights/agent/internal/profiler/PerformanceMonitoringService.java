@@ -84,7 +84,7 @@ public class PerformanceMonitoringService {
     logger.warn("INITIALISING JFR PROFILING SUBSYSTEM THIS FEATURE IS IN BETA");
 
     diagnosticEngine = null;
-    if (configuration.enabled) {
+    if (configuration.enableDiagnostics) {
       // Initialise diagnostic service
       diagnosticEngine = startDiagnosticEngine();
     }
