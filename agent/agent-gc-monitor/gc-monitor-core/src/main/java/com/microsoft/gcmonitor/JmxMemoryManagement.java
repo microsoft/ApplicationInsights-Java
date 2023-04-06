@@ -122,8 +122,12 @@ public class JmxMemoryManagement implements MemoryManagement {
 
   interface CollectorFactory<T, V> {
     V apply(T t)
-        throws UnableToMonitorMemoryException, AttributeNotFoundException, MBeanException,
-            ReflectionException, InstanceNotFoundException, IOException;
+        throws UnableToMonitorMemoryException,
+            AttributeNotFoundException,
+            MBeanException,
+            ReflectionException,
+            InstanceNotFoundException,
+            IOException;
   }
 
   private static <V> Set<V> getEntityFromMbeanServer(

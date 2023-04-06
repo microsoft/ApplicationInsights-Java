@@ -68,7 +68,9 @@ public class JmxDataFetcher {
 
   private static List<Object> fetch(
       MBeanServer server, Set<ObjectName> objects, String attributeName)
-      throws AttributeNotFoundException, MBeanException, ReflectionException,
+      throws AttributeNotFoundException,
+          MBeanException,
+          ReflectionException,
           InstanceNotFoundException {
     ArrayList<Object> result = new ArrayList<>();
 
