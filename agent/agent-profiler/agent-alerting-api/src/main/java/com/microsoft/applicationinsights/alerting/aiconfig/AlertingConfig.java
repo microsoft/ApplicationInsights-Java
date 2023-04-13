@@ -66,6 +66,7 @@ public class AlertingConfig {
   }
 
   public enum RequestTriggerThresholdType {
+    @JsonProperty("greater-than")
     GREATER_THAN
   }
 

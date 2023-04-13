@@ -36,15 +36,7 @@ public class RequestAlertPipelineBuilderTest {
     ObjectMapper mapper = new ObjectMapper();
     String configurationStr = mapper.writeValueAsString(triggerConfig);
     String alertingConfigStr = mapper.writeValueAsString(config);
-
-    // Account for serialization differences
-    alertingConfigStr =
-        alertingConfigStr
-            .replaceAll("NAME_REGEX", "name-regex")
-            .replaceAll("BREACH_RATIO", "breach-ratio")
-            .replaceAll("GREATER_THAN", "greater-than")
-            .replaceAll("FIXED_DURATION_COOLDOWN", "fixed-duration-cooldown")
-            .replaceAll("LATENCY", "latency");
+    ;
 
     Assertions.assertEquals(configurationStr, alertingConfigStr);
   }
@@ -61,25 +53,27 @@ public class RequestAlertPipelineBuilderTest {
                     file,
                     () -> {
                       ObjectMapper mapper = new ObjectMapper();
-                      JsonNode array = mapper.readTree(
-                              RequestAlertPipelineBuilderTest.class.getClassLoader()
-                                  .getResourceAsStream(file))
-                          .get("preview")
-                          .get("profiler")
-                          .withArray("requestTriggerEndpoints");
+                      JsonNode array =
+                          mapper
+                              .readTree(
+                                  RequestAlertPipelineBuilderTest.class
+                                      .getClassLoader()
+                                      .getResourceAsStream(file))
+                              .get("preview")
+                              .get("profiler")
+                              .withArray("requestTriggerEndpoints");
 
-                      array
-                          .forEach(config -> {
+                      array.forEach(
+                          config -> {
                             try {
-                              AlertingConfig.RequestTrigger alertingConfig = mapper.readValue(
-                                  config.toPrettyString(),
-                                  AlertingConfig.RequestTrigger.class);
+                              AlertingConfig.RequestTrigger alertingConfig =
+                                  mapper.readValue(
+                                      config.toPrettyString(), AlertingConfig.RequestTrigger.class);
                               Assertions.assertNotNull(alertingConfig);
                             } catch (JsonProcessingException e) {
                               Assertions.fail(e);
                             }
                           });
-
                     }))
         .collect(Collectors.toList());
   }
