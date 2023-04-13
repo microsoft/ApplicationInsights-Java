@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class AlertingConfig {
 
   public enum RequestFilterType {
+    @JsonProperty("name-regex")
     NAME_REGEX
   }
 
@@ -44,6 +45,7 @@ public class AlertingConfig {
   }
 
   public enum RequestAggregationType {
+    @JsonProperty("breach-ratio")
     BREACH_RATIO
   }
 
@@ -89,6 +91,7 @@ public class AlertingConfig {
   }
 
   public enum RequestTriggerThrottlingType {
+    @JsonProperty("fixed-duration-cooldown")
     FIXED_DURATION_COOLDOWN
   }
 
@@ -106,6 +109,7 @@ public class AlertingConfig {
   }
 
   public enum RequestTriggerType {
+    @JsonProperty("latency")
     LATENCY
   }
 
