@@ -16,9 +16,12 @@ import com.microsoft.applicationinsights.alerting.AlertingSubsystem;
 import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration;
 import com.microsoft.applicationinsights.diagnostics.DiagnosticEngine;
 import com.microsoft.applicationinsights.diagnostics.DiagnosticEngineFactory;
+import com.microsoft.applicationinsights.diagnostics.appinsights.CodeOptimizerApplicationInsightFactoryJfr;
 import java.io.File;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -159,9 +162,25 @@ public class PerformanceMonitoringService {
     return null;
   }
 
+  @Nullable
   private static DiagnosticEngineFactory loadDiagnosticEngineFactory() {
     logger.info("loading DiagnosticEngineFactory");
-    return ServiceLoaderUtil.findServiceLoader(DiagnosticEngineFactory.class, true);
+    List<DiagnosticEngineFactory> diagnosticEngines =
+        ServiceLoaderUtil.findAllServiceLoaders(DiagnosticEngineFactory.class, true);
+
+    if (diagnosticEngines.size() > 1) {
+      // A second diagnostic engine has been provided, prefer the non-default one
+      diagnosticEngines =
+          diagnosticEngines.stream()
+              .filter(it -> !it.getClass().equals(CodeOptimizerApplicationInsightFactoryJfr.class))
+              .collect(Collectors.toList());
+    }
+
+    if (diagnosticEngines.size() == 0) {
+      return null;
+    }
+
+    return diagnosticEngines.get(0);
   }
 
   public void updateConfiguration(AlertingConfiguration alertingConfig) {
