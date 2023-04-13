@@ -20,7 +20,7 @@ An example of a complete configuration is as follows:
       "requestTriggerEndpoints": [
         {
           "name": "Users endpoint is responsive",
-          "type": "LATENCY",
+          "type": "latency",
           "filter": {
             "type": "name-regex",
             "value": "/users/get/.*"
@@ -77,7 +77,7 @@ Each individual configuration is formed of:
   will be evaluated, such as mean, max, min etc.
 - `filter` - Filters the spans of interest for this SLA
 - `name` - Name of this SLA trigger, this will be displayed within the UI
-- `type` - The type of the metric that will be analysed (at time of writing LATENCY is the only
+- `type` - The type of the metric that will be analysed (at time of writing latency is the only
   supported type).
 - `profileDuration` - The duration in seconds of the profile to be collected when this SLA is
   breached.
@@ -166,7 +166,7 @@ Currently, we support:
       "requestTriggerEndpoints": [
         {
           "name": "All",
-          "type": "LATENCY",
+          "type": "latency",
           "profileDuration": 30,
           "filter": {
             "type": "name-regex",
@@ -213,7 +213,7 @@ Currently, we support:
       "requestTriggerEndpoints": [
         {
           "name": "Users",
-          "type": "LATENCY",
+          "type": "latency",
           "profileDuration": 30,
           "filter": {
             "type": "name-regex",
@@ -234,7 +234,7 @@ Currently, we support:
         },
         {
           "name": "Index.html",
-          "type": "LATENCY",
+          "type": "latency",
           "profileDuration": 60,
           "filter": {
             "type": "name-regex",

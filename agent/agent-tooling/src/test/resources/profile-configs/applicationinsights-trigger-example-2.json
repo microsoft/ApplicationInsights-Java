@@ -7,7 +7,7 @@
       "requestTriggerEndpoints": [
         {
           "name": "Users",
-          "type": "LATENCY",
+          "type": "latency",
           "profileDuration": 30,
           "filter": {
             "type": "name-regex",
@@ -28,7 +28,7 @@
         },
         {
           "name": "Index.html",
-          "type": "LATENCY",
+          "type": "latency",
           "profileDuration": 60,
           "filter": {
             "type": "name-regex",

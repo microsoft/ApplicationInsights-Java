@@ -6,7 +6,7 @@
       "requestTriggerEndpoints": [
         {
           "name": "All",
-          "type": "LATENCY",
+          "type": "latency",
           "profileDuration": 30,
           "filter": {
             "type": "name-regex",
