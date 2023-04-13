@@ -37,7 +37,8 @@ public class RequestAlertPipelineBuilderTest {
             .replaceAll("NAME_REGEX", "name-regex")
             .replaceAll("BREACH_RATIO", "breach-ratio")
             .replaceAll("GREATER_THAN", "greater-than")
-            .replaceAll("FIXED_DURATION_COOLDOWN", "fixed-duration-cooldown");
+            .replaceAll("FIXED_DURATION_COOLDOWN", "fixed-duration-cooldown")
+            .replaceAll("LATENCY", "latency");
 
     Assertions.assertEquals(configurationStr, alertingConfigStr);
   }
