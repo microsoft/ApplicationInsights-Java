@@ -68,7 +68,7 @@ public class FirstEntryPoint implements LoggingCustomizer {
 
   @Override
   public String name() {
-    return "FirstEntryPoint";
+    return startupLogger.getName();
   }
 
   @Override
