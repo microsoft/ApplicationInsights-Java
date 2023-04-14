@@ -54,6 +54,6 @@ net.minidev:json-smart:2.4.10=runtimeClasspath
 org.junit:junit-bom:5.9.2=runtimeClasspath
 org.ow2.asm:asm:9.3=runtimeClasspath
 org.reactivestreams:reactive-streams:1.0.4=runtimeClasspath
-org.slf4j:slf4j-api:1.7.36=runtimeClasspath
+org.slf4j:slf4j-api:2.0.7=runtimeClasspath
 org.testcontainers:testcontainers-bom:1.18.0=runtimeClasspath
 empty=

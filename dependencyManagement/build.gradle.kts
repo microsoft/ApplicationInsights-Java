@@ -45,7 +45,7 @@ val mockitoVersion = "4.11.0"
 // via Instrumentation.appendToBootstrapClassLoaderSearch(), there's nothing similar for
 // resources (which is a known problem in the java agent world), and so the META-INF/services
 // resource is not found
-val slf4jVersion = "1.7.36"
+val slf4jVersion = "2.0.7"
 // 1.12.0 and above use okio 2.x which pulls in kotlin libs
 val moshiVersion = "1.11.0"
 
