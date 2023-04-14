@@ -67,6 +67,11 @@ public class FirstEntryPoint implements LoggingCustomizer {
   }
 
   @Override
+  public String name() {
+    return "FirstEntryPoint";
+  }
+
+  @Override
   public void init() {
     try {
       if (DEBUG_SIGNED_JAR_ACCESS) {
