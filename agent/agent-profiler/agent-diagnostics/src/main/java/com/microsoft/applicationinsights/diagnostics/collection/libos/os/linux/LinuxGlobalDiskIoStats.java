@@ -13,7 +13,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /** Extracts Disk IO stats (read/write volumes) from /proc */
-class LinuxGlobalDiskIoStats extends TwoStepProcReader implements GlobalDiskStats {
+public class LinuxGlobalDiskIoStats extends TwoStepProcReader implements GlobalDiskStats {
 
   private static final String DISKSTAT_FILE_LOCATION = "/proc/diskstats";
 
