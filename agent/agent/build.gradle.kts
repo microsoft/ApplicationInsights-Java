@@ -109,8 +109,7 @@ tasks {
     //
     // the two exclusions below excludes slf4j and slf4j-simple from the agent class loader
     // (which come from the upstream agent)
-    exclude("inst/io/opentelemetry/javaagent/slf4j/**")
-    exclude("inst/META-INF/services/io.opentelemetry.javaagent.slf4j.spi.SLF4JServiceProvider")
+    exclude("inst/io/opentelemetry/javaagent/logging/simple/**")
 
     exclude("io/opentelemetry/javaagent/shaded/instrumentation/api/instrumenter/http/TemporaryMetricsView.class")
     exclude("io/opentelemetry/javaagent/shaded/instrumentation/api/instrumenter/InstrumenterBuilder.class")
