@@ -37,7 +37,7 @@ abstract class ClassicSdkWebInterop2xTest {
         .isEqualTo("mydeviceosversion");
     assertThat(telemetry.rd.getProperties()).containsEntry("myattr1", "myvalue1");
     assertThat(telemetry.rd.getProperties()).containsEntry("myattr2", "myvalue2");
-    assertThat(telemetry.rd.getProperties()).hasSize(4);
+    assertThat(telemetry.rd.getProperties()).hasSize(3);
     assertThat(telemetry.rd.getProperties())
         .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
     assertThat(telemetry.rd.getSuccess()).isFalse();
