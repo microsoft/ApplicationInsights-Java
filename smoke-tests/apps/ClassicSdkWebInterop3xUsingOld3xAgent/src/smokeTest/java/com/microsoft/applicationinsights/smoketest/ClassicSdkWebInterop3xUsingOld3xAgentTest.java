@@ -39,6 +39,7 @@ abstract class ClassicSdkWebInterop3xUsingOld3xAgentTest {
     assertThat(telemetry.rd.getProperties()).hasSize(3);
     assertThat(telemetry.rd.getProperties())
         .containsEntry("_MS.ProcessedByMetricExtractors", "True");
+
     assertThat(telemetry.rd.getSuccess()).isFalse();
   }
 
