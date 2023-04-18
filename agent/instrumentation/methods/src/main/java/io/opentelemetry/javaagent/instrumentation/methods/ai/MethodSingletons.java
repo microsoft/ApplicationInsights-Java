@@ -33,6 +33,7 @@ public final class MethodSingletons {
                 GlobalOpenTelemetry.get(),
                 INSTRUMENTATION_NAME,
                 CodeSpanNameExtractor.create(codeAttributesGetter))
+            .setInstrumentationVersion("1.25.0-alpha-applicationinsights")
             .addAttributesExtractor(CodeAttributesExtractor.create(codeAttributesGetter))
             // START APPLICATION INSIGHTS MODIFICATIONS
             .buildInstrumenter(new MethodSpanKindExtractor());
