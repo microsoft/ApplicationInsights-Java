@@ -39,6 +39,7 @@ abstract class ClassicSdkWebInterop2xTest {
     assertThat(telemetry.rd.getProperties()).hasSize(3);
     assertThat(telemetry.rd.getProperties())
         .containsEntry("_MS.ProcessedByMetricExtractors", "True");
+
     assertThat(telemetry.rd.getSuccess()).isFalse();
   }
 
