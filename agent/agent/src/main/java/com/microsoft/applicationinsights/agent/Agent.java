@@ -28,6 +28,9 @@ public class Agent {
       StartupProfiler.start();
     }
 
+    // https://github.com/open-telemetry/opentelemetry-java-instrumentation/pull/7339
+    System.setProperty("otel.javaagent.logging", "applicationinsights");
+
     OpenTelemetryAgent.premain(agentArgs, inst);
   }
 
