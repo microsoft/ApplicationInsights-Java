@@ -13,6 +13,7 @@ import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_8;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_8_OPENJ9;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.data.MapEntry.entry;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.DataPoint;
@@ -60,12 +61,12 @@ abstract class GrpcTest {
 
     assertThat(rdd.getTarget()).isEqualTo("localhost:10203");
 
-    assertThat(rd1.getProperties()).containsEntry("_MS.ProcessedByMetricExtractors", "True");
-    assertThat(telemetry.rd.getProperties()).containsKey("user_agent.original");
+    assertThat(rd1.getProperties())
+        .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
     assertThat(rd1.getSuccess()).isTrue();
 
-    assertThat(rdd.getProperties()).containsEntry("_MS.ProcessedByMetricExtractors", "True");
-    assertThat(telemetry.rd.getProperties()).containsKey("user_agent.original");
+    assertThat(rdd.getProperties())
+        .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
     assertThat(rdd.getSuccess()).isTrue();
 
     // TODO (trask): verify rd2
@@ -108,12 +109,14 @@ abstract class GrpcTest {
 
     assertThat(rdd.getTarget()).isEqualTo("localhost:10203");
 
-    assertThat(rd1.getProperties()).containsEntry("_MS.ProcessedByMetricExtractors", "True");
-    assertThat(telemetry.rd.getProperties()).containsKey("user_agent.original");
+    assertThat(rd1.getProperties())
+        .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
+
     assertThat(rd1.getSuccess()).isTrue();
 
-    assertThat(rdd.getProperties()).containsEntry("_MS.ProcessedByMetricExtractors", "True");
-    assertThat(telemetry.rd.getProperties()).containsKey("user_agent.original");
+    assertThat(rdd.getProperties())
+        .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
+
     assertThat(rdd.getSuccess()).isTrue();
 
     // TODO (trask): verify rd2

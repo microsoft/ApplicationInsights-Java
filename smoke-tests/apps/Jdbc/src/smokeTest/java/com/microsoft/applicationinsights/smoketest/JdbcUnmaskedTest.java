@@ -21,8 +21,8 @@ class JdbcUnmaskedTest {
     Telemetry telemetry = testing.getTelemetry(1);
 
     assertThat(telemetry.rd.getProperties())
-        .containsEntry("_MS.ProcessedByMetricExtractors", "True");
-    assertThat(telemetry.rd.getProperties()).containsKey("user_agent.original");
+        .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
+
     assertThat(telemetry.rd.getSuccess()).isTrue();
 
     assertThat(telemetry.rdd1.getName()).isEqualTo("SELECT testdb.abc");

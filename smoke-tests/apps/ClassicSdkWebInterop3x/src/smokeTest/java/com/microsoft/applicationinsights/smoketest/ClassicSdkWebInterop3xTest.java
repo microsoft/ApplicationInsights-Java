@@ -38,8 +38,7 @@ abstract class ClassicSdkWebInterop3xTest {
     assertThat(telemetry.rd.getProperties()).containsEntry("myattr2", "myvalue2");
     assertThat(telemetry.rd.getProperties()).hasSize(4);
     assertThat(telemetry.rd.getProperties())
-        .containsEntry("_MS.ProcessedByMetricExtractors", "True");
-    assertThat(telemetry.rd.getProperties()).containsKey("user_agent.original");
+        .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
 
     assertThat(telemetry.rd.getSuccess()).isFalse();
   }

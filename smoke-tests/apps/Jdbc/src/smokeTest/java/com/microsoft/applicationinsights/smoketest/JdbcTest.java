@@ -13,6 +13,7 @@ import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCA
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.WILDFLY_13_JAVA_8;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.WILDFLY_13_JAVA_8_OPENJ9;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.data.MapEntry.entry;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -46,8 +47,7 @@ abstract class JdbcTest {
     Telemetry telemetry = testing.getTelemetry(1);
 
     assertThat(telemetry.rd.getProperties())
-        .containsEntry("_MS.ProcessedByMetricExtractors", "True");
-    assertThat(telemetry.rd.getProperties()).containsKey("user_agent.original");
+        .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
     assertThat(telemetry.rd.getSuccess()).isTrue();
 
     assertThat(telemetry.rdd1.getName()).isEqualTo("SELECT testdb.abc");
@@ -67,8 +67,7 @@ abstract class JdbcTest {
     Telemetry telemetry = testing.getTelemetry(1);
 
     assertThat(telemetry.rd.getProperties())
-        .containsEntry("_MS.ProcessedByMetricExtractors", "True");
-    assertThat(telemetry.rd.getProperties()).containsKey("user_agent.original");
+        .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
     assertThat(telemetry.rd.getSuccess()).isTrue();
 
     assertThat(telemetry.rdd1.getName()).isEqualTo("SELECT testdb.abc");
@@ -88,8 +87,7 @@ abstract class JdbcTest {
     Telemetry telemetry = testing.getTelemetry(1);
 
     assertThat(telemetry.rd.getProperties())
-        .containsEntry("_MS.ProcessedByMetricExtractors", "True");
-    assertThat(telemetry.rd.getProperties()).containsKey("user_agent.original");
+        .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
     assertThat(telemetry.rd.getSuccess()).isTrue();
 
     StringBuilder a2000 = new StringBuilder();
@@ -117,8 +115,7 @@ abstract class JdbcTest {
     Telemetry telemetry = testing.getTelemetry(1);
 
     assertThat(telemetry.rd.getProperties())
-        .containsEntry("_MS.ProcessedByMetricExtractors", "True");
-    assertThat(telemetry.rd.getProperties()).containsKey("user_agent.original");
+        .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
     assertThat(telemetry.rd.getSuccess()).isTrue();
 
     assertThat(telemetry.rdd1.getName()).isEqualTo("INSERT testdb.abc");
@@ -140,8 +137,7 @@ abstract class JdbcTest {
     Telemetry telemetry = testing.getTelemetry(1);
 
     assertThat(telemetry.rd.getProperties())
-        .containsEntry("_MS.ProcessedByMetricExtractors", "True");
-    assertThat(telemetry.rd.getProperties()).containsKey("user_agent.original");
+        .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
     assertThat(telemetry.rd.getSuccess()).isTrue();
 
     assertThat(telemetry.rdd1.getName()).isEqualTo("insert testdb.abc");
@@ -167,8 +163,7 @@ abstract class JdbcTest {
         testing.getTelemetry(1, rdd -> !rdd.getData().startsWith("/* mysql-connector-java? "));
 
     assertThat(telemetry.rd.getProperties())
-        .containsEntry("_MS.ProcessedByMetricExtractors", "True");
-    assertThat(telemetry.rd.getProperties()).containsKey("user_agent.original");
+        .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
     assertThat(telemetry.rd.getSuccess()).isTrue();
 
     assertThat(telemetry.rdd1.getName()).isEqualTo("SELECT mysql.abc");
@@ -191,8 +186,7 @@ abstract class JdbcTest {
         testing.getTelemetry(1, rdd -> !rdd.getData().startsWith("/* mysql-connector-java? "));
 
     assertThat(telemetry.rd.getProperties())
-        .containsEntry("_MS.ProcessedByMetricExtractors", "True");
-    assertThat(telemetry.rd.getProperties()).containsKey("user_agent.original");
+        .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
     assertThat(telemetry.rd.getSuccess()).isTrue();
 
     assertThat(telemetry.rdd1.getName()).isEqualTo("SELECT mysql.abc");
@@ -213,8 +207,7 @@ abstract class JdbcTest {
     Telemetry telemetry = testing.getTelemetry(1);
 
     assertThat(telemetry.rd.getProperties())
-        .containsEntry("_MS.ProcessedByMetricExtractors", "True");
-    assertThat(telemetry.rd.getProperties()).containsKey("user_agent.original");
+        .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
     assertThat(telemetry.rd.getSuccess()).isTrue();
 
     assertThat(telemetry.rdd1.getName()).isEqualTo("SELECT postgres.abc");
@@ -235,8 +228,7 @@ abstract class JdbcTest {
     Telemetry telemetry = testing.getTelemetry(1);
 
     assertThat(telemetry.rd.getProperties())
-        .containsEntry("_MS.ProcessedByMetricExtractors", "True");
-    assertThat(telemetry.rd.getProperties()).containsKey("user_agent.original");
+        .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
     assertThat(telemetry.rd.getSuccess()).isTrue();
 
     assertThat(telemetry.rdd1.getName()).isEqualTo("SELECT postgres.abc");
@@ -257,8 +249,7 @@ abstract class JdbcTest {
     Telemetry telemetry = testing.getTelemetry(1);
 
     assertThat(telemetry.rd.getProperties())
-        .containsEntry("_MS.ProcessedByMetricExtractors", "True");
-    assertThat(telemetry.rd.getProperties()).containsKey("user_agent.original");
+        .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
     assertThat(telemetry.rd.getSuccess()).isTrue();
 
     assertThat(telemetry.rdd1.getName()).isEqualTo("SELECT abc");
@@ -278,8 +269,7 @@ abstract class JdbcTest {
     Telemetry telemetry = testing.getTelemetry(1);
 
     assertThat(telemetry.rd.getProperties())
-        .containsEntry("_MS.ProcessedByMetricExtractors", "True");
-    assertThat(telemetry.rd.getProperties()).containsKey("user_agent.original");
+        .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
     assertThat(telemetry.rd.getSuccess()).isTrue();
 
     assertThat(telemetry.rdd1.getName()).isEqualTo("SELECT abc");
@@ -300,8 +290,7 @@ abstract class JdbcTest {
     Telemetry telemetry = testing.getTelemetry(1);
 
     assertThat(telemetry.rd.getProperties())
-        .containsEntry("_MS.ProcessedByMetricExtractors", "True");
-    assertThat(telemetry.rd.getProperties()).containsKey("user_agent.original");
+        .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
     assertThat(telemetry.rd.getSuccess()).isTrue();
 
     assertThat(telemetry.rdd1.getName()).isEqualTo("SELECT abc");
@@ -322,8 +311,7 @@ abstract class JdbcTest {
     Telemetry telemetry = testing.getTelemetry(1);
 
     assertThat(telemetry.rd.getProperties())
-        .containsEntry("_MS.ProcessedByMetricExtractors", "True");
-    assertThat(telemetry.rd.getProperties()).containsKey("user_agent.original");
+        .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
     assertThat(telemetry.rd.getSuccess()).isTrue();
 
     assertThat(telemetry.rdd1.getName()).isEqualTo("SELECT abc");

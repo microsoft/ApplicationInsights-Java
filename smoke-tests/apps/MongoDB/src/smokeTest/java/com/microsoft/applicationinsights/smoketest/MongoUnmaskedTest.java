@@ -31,8 +31,8 @@ class MongoUnmaskedTest {
     assertThat(telemetry.rd.getSuccess()).isTrue();
     assertThat(telemetry.rd.getSource()).isNull();
     assertThat(telemetry.rd.getProperties())
-        .containsEntry("_MS.ProcessedByMetricExtractors", "True");
-    assertThat(telemetry.rd.getProperties()).containsKey("user_agent.original");
+        .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
+
     assertThat(telemetry.rd.getMeasurements()).isEmpty();
 
     assertThat(telemetry.rdd1.getName()).isEqualTo("find testdb.test");
