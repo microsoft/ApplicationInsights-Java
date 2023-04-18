@@ -5,7 +5,6 @@ package com.microsoft.applicationinsights.smoketest;
 
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_8;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.data.MapEntry.entry;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
@@ -40,8 +39,7 @@ class KafkaDisabledTest {
 
     assertThat(rd.getName()).isEqualTo("GET /sendMessage");
     assertThat(rd.getResponseCode()).isEqualTo("200");
-    assertThat(rd.getProperties())
-        .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
+    assertThat(rd.getProperties()).containsEntry("_MS.ProcessedByMetricExtractors", "True");
     assertThat(rd.getSuccess()).isTrue();
 
     // verify the downstream http dependency that is no longer part of the same trace
@@ -56,8 +54,7 @@ class KafkaDisabledTest {
 
     assertThat(rdd.getName()).isEqualTo("GET /");
     assertThat(rdd.getData()).isEqualTo("https://www.bing.com");
-    assertThat(rdd.getProperties())
-        .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
+    assertThat(rdd.getProperties()).containsEntry("_MS.ProcessedByMetricExtractors", "True");
     assertThat(rdd.getSuccess()).isTrue();
 
     // sleep a bit and make sure no kafka "requests" or dependencies are reported

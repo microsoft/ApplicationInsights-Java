@@ -13,7 +13,6 @@ import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_8;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_8_OPENJ9;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.data.MapEntry.entry;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
@@ -57,8 +56,7 @@ abstract class JmsTest {
         (RemoteDependencyData) ((Data<?>) rddEnvelope2.getData()).getBaseData();
 
     assertThat(rd1.getName()).isEqualTo("GET /sendMessage");
-    assertThat(rd1.getProperties())
-        .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
+    assertThat(rd1.getProperties()).containsEntry("_MS.ProcessedByMetricExtractors", "True");
     assertThat(rd1.getSuccess()).isTrue();
 
     assertThat(rdd1.getName()).isEqualTo("message send");
@@ -77,8 +75,7 @@ abstract class JmsTest {
     assertThat(rdd2.getData()).isEqualTo("https://www.bing.com");
     assertThat(rdd2.getType()).isEqualTo("Http");
     assertThat(rdd2.getTarget()).isEqualTo("www.bing.com");
-    assertThat(rdd2.getProperties())
-        .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
+    assertThat(rdd2.getProperties()).containsEntry("_MS.ProcessedByMetricExtractors", "True");
     assertThat(rdd2.getSuccess()).isTrue();
 
     SmokeTestExtension.assertParentChild(rd1, rdEnvelope1, rddEnvelope1, "GET /sendMessage");

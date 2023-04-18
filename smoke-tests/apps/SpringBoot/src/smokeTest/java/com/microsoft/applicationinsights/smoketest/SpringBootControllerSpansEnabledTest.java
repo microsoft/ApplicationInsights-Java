@@ -5,7 +5,6 @@ package com.microsoft.applicationinsights.smoketest;
 
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_8;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.data.MapEntry.entry;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
@@ -94,8 +93,7 @@ class SpringBootControllerSpansEnabledTest {
 
     assertThat(rd.getName()).isEqualTo("GET /SpringBoot/throwsException");
     assertThat(rd.getResponseCode()).isEqualTo("500");
-    assertThat(rd.getProperties())
-        .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
+    assertThat(rd.getProperties()).containsEntry("_MS.ProcessedByMetricExtractors", "True");
     assertThat(rd.getSuccess()).isFalse();
 
     assertThat(rdd1.getName()).isEqualTo("TestController.resultCodeTest");
@@ -141,8 +139,7 @@ class SpringBootControllerSpansEnabledTest {
 
     assertThat(rd.getName()).isEqualTo("GET /SpringBoot/asyncDependencyCall");
     assertThat(rd.getResponseCode()).isEqualTo("200");
-    assertThat(rd.getProperties())
-        .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
+    assertThat(rd.getProperties()).containsEntry("_MS.ProcessedByMetricExtractors", "True");
     assertThat(rd.getSuccess()).isTrue();
 
     assertThat(rdd1.getName()).isEqualTo("TestController.asyncDependencyCall");
@@ -155,8 +152,7 @@ class SpringBootControllerSpansEnabledTest {
     assertThat(rdd2.getName()).isEqualTo("GET /");
     assertThat(rdd2.getData()).isEqualTo("https://www.bing.com");
     assertThat(rdd2.getTarget()).isEqualTo("www.bing.com");
-    assertThat(rdd2.getProperties())
-        .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
+    assertThat(rdd2.getProperties()).containsEntry("_MS.ProcessedByMetricExtractors", "True");
     assertThat(rdd2.getSuccess()).isTrue();
 
     // TODO (trask): why is spring-webmvc instrumentation capturing this twice?

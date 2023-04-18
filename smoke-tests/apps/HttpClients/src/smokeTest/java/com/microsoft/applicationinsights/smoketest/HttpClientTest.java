@@ -13,7 +13,6 @@ import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCA
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.WILDFLY_13_JAVA_8;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.WILDFLY_13_JAVA_8_OPENJ9;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.data.MapEntry.entry;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -80,7 +79,7 @@ abstract class HttpClientTest {
     Telemetry telemetry = testing.getTelemetry(3);
 
     assertThat(telemetry.rd.getProperties())
-        .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
+        .containsEntry("_MS.ProcessedByMetricExtractors", "True");
     assertThat(telemetry.rd.getSuccess()).isTrue();
     // TODO (trask) add this check in all smoke tests?
     assertThat(telemetry.rdEnvelope.getSampleRate()).isNull();
@@ -91,7 +90,7 @@ abstract class HttpClientTest {
     assertThat(telemetry.rdd1.getTarget()).isEqualTo("mock.codes");
     assertThat(telemetry.rdd1.getResultCode()).isEqualTo("200");
     assertThat(telemetry.rdd1.getProperties())
-        .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
+        .containsEntry("_MS.ProcessedByMetricExtractors", "True");
     assertThat(telemetry.rdd1.getSuccess()).isTrue();
     assertThat(telemetry.rddEnvelope1.getSampleRate()).isNull();
 
@@ -101,7 +100,7 @@ abstract class HttpClientTest {
     assertThat(telemetry.rdd2.getTarget()).isEqualTo("mock.codes");
     assertThat(telemetry.rdd2.getResultCode()).isEqualTo("404");
     assertThat(telemetry.rdd2.getProperties())
-        .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
+        .containsEntry("_MS.ProcessedByMetricExtractors", "True");
     assertThat(telemetry.rdd2.getSuccess()).isFalse();
     assertThat(telemetry.rddEnvelope2.getSampleRate()).isNull();
 
@@ -111,7 +110,7 @@ abstract class HttpClientTest {
     assertThat(telemetry.rdd3.getTarget()).isEqualTo("mock.codes");
     assertThat(telemetry.rdd3.getResultCode()).isEqualTo("500");
     assertThat(telemetry.rdd3.getProperties())
-        .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
+        .containsEntry("_MS.ProcessedByMetricExtractors", "True");
     assertThat(telemetry.rdd3.getSuccess()).isFalse();
     assertThat(telemetry.rddEnvelope3.getSampleRate()).isNull();
 

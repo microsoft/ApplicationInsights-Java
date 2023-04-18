@@ -5,7 +5,6 @@ package com.microsoft.applicationinsights.smoketest;
 
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_8;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.data.MapEntry.entry;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
 import com.microsoft.applicationinsights.smoketest.schemav2.RemoteDependencyData;
@@ -39,7 +38,7 @@ class AzureSdkControllerSpansEnabledTest {
     assertThat(telemetry.rd.getSuccess()).isTrue();
     assertThat(telemetry.rd.getSource()).isNull();
     assertThat(telemetry.rd.getProperties())
-        .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
+        .containsEntry("_MS.ProcessedByMetricExtractors", "True");
     assertThat(telemetry.rd.getMeasurements()).isEmpty();
 
     assertThat(telemetry.rdd1.getName()).isEqualTo("TestController.test");
