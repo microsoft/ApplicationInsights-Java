@@ -54,6 +54,7 @@ class JmsControllerSpansEnabledTest {
 
     assertThat(rd1.getName()).isEqualTo("GET /sendMessage");
     assertThat(rd1.getProperties()).containsEntry("_MS.ProcessedByMetricExtractors", "True");
+    assertThat(telemetry.rd.getProperties()).containsKey("user_agent.original");
     assertThat(rd1.getSuccess()).isTrue();
 
     assertThat(rdd1.getName()).isEqualTo("HelloController.sendMessage");
@@ -80,6 +81,7 @@ class JmsControllerSpansEnabledTest {
     assertThat(rdd3.getType()).isEqualTo("Http");
     assertThat(rdd3.getTarget()).isEqualTo("www.bing.com");
     assertThat(rdd3.getProperties()).containsEntry("_MS.ProcessedByMetricExtractors", "True");
+    assertThat(telemetry.rd.getProperties()).containsKey("user_agent.original");
     assertThat(rdd3.getSuccess()).isTrue();
 
     SmokeTestExtension.assertParentChild(rd1, rdEnvelope1, rddEnvelope1, "GET /sendMessage");

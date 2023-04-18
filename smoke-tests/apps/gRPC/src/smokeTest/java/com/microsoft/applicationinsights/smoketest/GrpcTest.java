@@ -61,9 +61,11 @@ abstract class GrpcTest {
     assertThat(rdd.getTarget()).isEqualTo("localhost:10203");
 
     assertThat(rd1.getProperties()).containsEntry("_MS.ProcessedByMetricExtractors", "True");
+    assertThat(telemetry.rd.getProperties()).containsKey("user_agent.original");
     assertThat(rd1.getSuccess()).isTrue();
 
     assertThat(rdd.getProperties()).containsEntry("_MS.ProcessedByMetricExtractors", "True");
+    assertThat(telemetry.rd.getProperties()).containsKey("user_agent.original");
     assertThat(rdd.getSuccess()).isTrue();
 
     // TODO (trask): verify rd2
@@ -107,9 +109,11 @@ abstract class GrpcTest {
     assertThat(rdd.getTarget()).isEqualTo("localhost:10203");
 
     assertThat(rd1.getProperties()).containsEntry("_MS.ProcessedByMetricExtractors", "True");
+    assertThat(telemetry.rd.getProperties()).containsKey("user_agent.original");
     assertThat(rd1.getSuccess()).isTrue();
 
     assertThat(rdd.getProperties()).containsEntry("_MS.ProcessedByMetricExtractors", "True");
+    assertThat(telemetry.rd.getProperties()).containsKey("user_agent.original");
     assertThat(rdd.getSuccess()).isTrue();
 
     // TODO (trask): verify rd2

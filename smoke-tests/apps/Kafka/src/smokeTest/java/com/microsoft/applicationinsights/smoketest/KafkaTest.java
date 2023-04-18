@@ -74,6 +74,7 @@ abstract class KafkaTest {
 
     assertThat(rd1.getName()).isEqualTo("GET /sendMessage");
     assertThat(rd1.getProperties()).containsEntry("_MS.ProcessedByMetricExtractors", "True");
+    assertThat(telemetry.rd.getProperties()).containsKey("user_agent.original");
     assertThat(rd1.getSuccess()).isTrue();
 
     assertThat(rdd1.getName()).isEqualTo("mytopic send");
@@ -93,6 +94,7 @@ abstract class KafkaTest {
     assertThat(rdd2.getType()).isEqualTo("Http");
     assertThat(rdd2.getTarget()).isEqualTo("www.bing.com");
     assertThat(rdd2.getProperties()).containsEntry("_MS.ProcessedByMetricExtractors", "True");
+    assertThat(telemetry.rd.getProperties()).containsKey("user_agent.original");
     assertThat(rdd2.getSuccess()).isTrue();
 
     SmokeTestExtension.assertParentChild(rd1, rdEnvelope1, rddEnvelope1, "GET /sendMessage");

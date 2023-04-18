@@ -33,6 +33,7 @@ abstract class HttpHeadersTest {
     assertThat(telemetry.rd.getProperties()).hasSize(4);
     assertThat(telemetry.rd.getProperties())
         .containsEntry("_MS.ProcessedByMetricExtractors", "True");
+    assertThat(telemetry.rd.getProperties()).containsKey("user_agent.original");
     assertThat(telemetry.rd.getSuccess()).isTrue();
   }
 
@@ -45,6 +46,7 @@ abstract class HttpHeadersTest {
     assertThat(telemetry.rd.getProperties()).hasSize(2);
     assertThat(telemetry.rd.getProperties())
         .containsEntry("_MS.ProcessedByMetricExtractors", "True");
+    assertThat(telemetry.rd.getProperties()).containsKey("user_agent.original");
     assertThat(telemetry.rd.getSuccess()).isTrue();
     assertThat(telemetry.rdd1.getProperties().get("http.request.header.abc"))
         .isEqualTo("testing123");
@@ -52,6 +54,7 @@ abstract class HttpHeadersTest {
     assertThat(telemetry.rdd1.getProperties()).hasSize(3);
     assertThat(telemetry.rdd1.getProperties())
         .containsEntry("_MS.ProcessedByMetricExtractors", "True");
+    assertThat(telemetry.rd.getProperties()).containsKey("user_agent.original");
     assertThat(telemetry.rdd1.getSuccess()).isTrue();
   }
 

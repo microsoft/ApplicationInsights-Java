@@ -59,6 +59,7 @@ abstract class HttpPreaggregatedMetricsTest {
 
     assertThat(telemetry.rd.getProperties())
         .containsEntry("_MS.ProcessedByMetricExtractors", "True");
+    assertThat(telemetry.rd.getProperties()).containsKey("user_agent.original");
     assertThat(telemetry.rdd1.getData()).isEqualTo(successUrlWithQueryString);
     assertThat(telemetry.rd.getSuccess()).isTrue();
     assertThat(telemetry.rdEnvelope.getSampleRate()).isNull();
@@ -68,6 +69,7 @@ abstract class HttpPreaggregatedMetricsTest {
     assertThat(telemetry.rdd1.getResultCode()).isEqualTo("200");
     assertThat(telemetry.rdd1.getProperties())
         .containsEntry("_MS.ProcessedByMetricExtractors", "True");
+    assertThat(telemetry.rd.getProperties()).containsKey("user_agent.original");
     assertThat(telemetry.rdd1.getSuccess()).isTrue();
     assertThat(telemetry.rddEnvelope1.getSampleRate()).isNull();
 
@@ -78,6 +80,7 @@ abstract class HttpPreaggregatedMetricsTest {
     assertThat(telemetry.rdd2.getResultCode()).isEqualTo("404");
     assertThat(telemetry.rdd2.getProperties())
         .containsEntry("_MS.ProcessedByMetricExtractors", "True");
+    assertThat(telemetry.rd.getProperties()).containsKey("user_agent.original");
     assertThat(telemetry.rdd2.getSuccess()).isFalse();
     assertThat(telemetry.rddEnvelope2.getSampleRate()).isNull();
 
@@ -88,6 +91,7 @@ abstract class HttpPreaggregatedMetricsTest {
     assertThat(telemetry.rdd3.getResultCode()).isEqualTo("500");
     assertThat(telemetry.rdd3.getProperties())
         .containsEntry("_MS.ProcessedByMetricExtractors", "True");
+    assertThat(telemetry.rd.getProperties()).containsKey("user_agent.original");
     assertThat(telemetry.rdd3.getSuccess()).isFalse();
     assertThat(telemetry.rddEnvelope3.getSampleRate()).isNull();
 

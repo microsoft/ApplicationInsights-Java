@@ -40,6 +40,7 @@ abstract class SpringBootAutoTest {
     assertThat(telemetry.rd.getSource()).isNull();
     assertThat(telemetry.rd.getProperties())
         .containsEntry("_MS.ProcessedByMetricExtractors", "True");
+    assertThat(telemetry.rd.getProperties()).containsKey("user_agent.original");
     assertThat(telemetry.rd.getMeasurements()).isEmpty();
   }
 

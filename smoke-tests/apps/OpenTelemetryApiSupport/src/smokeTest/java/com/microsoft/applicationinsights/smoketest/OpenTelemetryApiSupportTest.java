@@ -38,6 +38,7 @@ abstract class OpenTelemetryApiSupportTest {
     assertThat(telemetry.rd.getProperties()).containsEntry("myattr2", "myvalue2");
     assertThat(telemetry.rd.getProperties())
         .containsEntry("_MS.ProcessedByMetricExtractors", "True");
+    assertThat(telemetry.rd.getProperties()).containsKey("user_agent.original");
 
     assertThat(telemetry.rdEnvelope.getIKey()).isEqualTo("00000000-0000-0000-0000-0FEEDDADBEEF");
     assertThat(telemetry.rdEnvelope.getTags()).containsEntry("ai.cloud.role", "testrolename");
@@ -64,6 +65,7 @@ abstract class OpenTelemetryApiSupportTest {
     assertThat(telemetry.rd.getSource()).isNull();
     assertThat(telemetry.rd.getProperties())
         .containsEntry("_MS.ProcessedByMetricExtractors", "True");
+    assertThat(telemetry.rd.getProperties()).containsKey("user_agent.original");
     assertThat(telemetry.rd.getMeasurements()).isEmpty();
 
     // checking that instrumentation key, cloud role name, cloud role instance, and sdk version are
@@ -106,6 +108,7 @@ abstract class OpenTelemetryApiSupportTest {
     assertThat(telemetry.rd.getSource()).isNull();
     assertThat(telemetry.rd.getProperties())
         .containsEntry("_MS.ProcessedByMetricExtractors", "True");
+    assertThat(telemetry.rd.getProperties()).containsKey("user_agent.original");
     assertThat(telemetry.rd.getMeasurements()).isEmpty();
 
     assertThat(telemetry.rdd1.getName()).isEqualTo("TestController." + methodName);

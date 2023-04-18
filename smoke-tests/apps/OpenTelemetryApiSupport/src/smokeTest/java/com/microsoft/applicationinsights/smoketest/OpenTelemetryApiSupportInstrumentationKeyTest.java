@@ -38,6 +38,7 @@ abstract class OpenTelemetryApiSupportInstrumentationKeyTest {
     assertThat(telemetry.rd.getSource()).isNull();
     assertThat(telemetry.rd.getProperties())
         .containsEntry("_MS.ProcessedByMetricExtractors", "True");
+    assertThat(telemetry.rd.getProperties()).containsKey("user_agent.original");
     assertThat(telemetry.rd.getMeasurements()).isEmpty();
 
     // this is no longer supported since 3.4.0, but the test is still included here to (manually)

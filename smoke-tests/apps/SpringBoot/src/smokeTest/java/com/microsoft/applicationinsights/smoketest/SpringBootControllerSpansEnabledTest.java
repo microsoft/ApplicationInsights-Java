@@ -94,6 +94,7 @@ class SpringBootControllerSpansEnabledTest {
     assertThat(rd.getName()).isEqualTo("GET /SpringBoot/throwsException");
     assertThat(rd.getResponseCode()).isEqualTo("500");
     assertThat(rd.getProperties()).containsEntry("_MS.ProcessedByMetricExtractors", "True");
+    assertThat(telemetry.rd.getProperties()).containsKey("user_agent.original");
     assertThat(rd.getSuccess()).isFalse();
 
     assertThat(rdd1.getName()).isEqualTo("TestController.resultCodeTest");
@@ -140,6 +141,7 @@ class SpringBootControllerSpansEnabledTest {
     assertThat(rd.getName()).isEqualTo("GET /SpringBoot/asyncDependencyCall");
     assertThat(rd.getResponseCode()).isEqualTo("200");
     assertThat(rd.getProperties()).containsEntry("_MS.ProcessedByMetricExtractors", "True");
+    assertThat(telemetry.rd.getProperties()).containsKey("user_agent.original");
     assertThat(rd.getSuccess()).isTrue();
 
     assertThat(rdd1.getName()).isEqualTo("TestController.asyncDependencyCall");
@@ -153,6 +155,7 @@ class SpringBootControllerSpansEnabledTest {
     assertThat(rdd2.getData()).isEqualTo("https://www.bing.com");
     assertThat(rdd2.getTarget()).isEqualTo("www.bing.com");
     assertThat(rdd2.getProperties()).containsEntry("_MS.ProcessedByMetricExtractors", "True");
+    assertThat(telemetry.rd.getProperties()).containsKey("user_agent.original");
     assertThat(rdd2.getSuccess()).isTrue();
 
     // TODO (trask): why is spring-webmvc instrumentation capturing this twice?

@@ -37,6 +37,7 @@ abstract class TelemetryProcessorsTest {
     assertThat(telemetry.rd.getProperties()).hasSize(5);
     assertThat(telemetry.rd.getProperties())
         .containsEntry("_MS.ProcessedByMetricExtractors", "True");
+    assertThat(telemetry.rd.getProperties()).containsKey("user_agent.original");
     assertThat(telemetry.rd.getSuccess()).isTrue();
     // Log processor test
     List<MessageData> logs = testing.mockedIngestion.getMessageDataInRequest(1);
@@ -58,6 +59,7 @@ abstract class TelemetryProcessorsTest {
     assertThat(telemetry.rd.getProperties()).hasSize(5);
     assertThat(telemetry.rd.getProperties())
         .containsEntry("_MS.ProcessedByMetricExtractors", "True");
+    assertThat(telemetry.rd.getProperties()).containsKey("user_agent.original");
     assertThat(telemetry.rd.getSuccess()).isTrue();
   }
 

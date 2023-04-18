@@ -51,6 +51,7 @@ abstract class NonDaemonThreadsTest {
     MessageData md = (MessageData) ((Data<?>) mdEnvelope.getData()).getBaseData();
 
     assertThat(rd.getProperties()).containsEntry("_MS.ProcessedByMetricExtractors", "True");
+    assertThat(telemetry.rd.getProperties()).containsKey("user_agent.original");
     assertThat(rd.getSuccess()).isTrue();
 
     assertThat(rdd.getName()).isEqualTo("GET /search");
@@ -58,6 +59,7 @@ abstract class NonDaemonThreadsTest {
     assertThat(rdd.getTarget()).isEqualTo("www.bing.com");
     assertThat(rdd.getData()).isEqualTo("https://www.bing.com/search?q=test");
     assertThat(rdd.getProperties()).containsEntry("_MS.ProcessedByMetricExtractors", "True");
+    assertThat(telemetry.rd.getProperties()).containsKey("user_agent.original");
     assertThat(rdd.getSuccess()).isTrue();
 
     assertThat(md.getMessage()).isEqualTo("done");

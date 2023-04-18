@@ -88,6 +88,7 @@ abstract class SpringBootTest {
     assertThat(rd.getName()).isEqualTo("GET /SpringBoot/throwsException");
     assertThat(rd.getResponseCode()).isEqualTo("500");
     assertThat(rd.getProperties()).containsEntry("_MS.ProcessedByMetricExtractors", "True");
+    assertThat(telemetry.rd.getProperties()).containsKey("user_agent.original");
     assertThat(rd.getSuccess()).isFalse();
 
     SmokeTestExtension.assertParentChild(
@@ -117,12 +118,14 @@ abstract class SpringBootTest {
     assertThat(rd.getName()).isEqualTo("GET /SpringBoot/asyncDependencyCall");
     assertThat(rd.getResponseCode()).isEqualTo("200");
     assertThat(rd.getProperties()).containsEntry("_MS.ProcessedByMetricExtractors", "True");
+    assertThat(telemetry.rd.getProperties()).containsKey("user_agent.original");
     assertThat(rd.getSuccess()).isTrue();
 
     assertThat(rdd1.getName()).isEqualTo("GET /");
     assertThat(rdd1.getData()).isEqualTo("https://www.bing.com");
     assertThat(rdd1.getTarget()).isEqualTo("www.bing.com");
     assertThat(rd.getProperties()).containsEntry("_MS.ProcessedByMetricExtractors", "True");
+    assertThat(telemetry.rd.getProperties()).containsKey("user_agent.original");
     assertThat(rdd1.getSuccess()).isTrue();
 
     SmokeTestExtension.assertParentChild(

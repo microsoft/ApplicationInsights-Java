@@ -48,6 +48,7 @@ public abstract class CustomInstrumentationTest {
     assertThat(telemetry.rd.getResponseCode()).isEqualTo("200");
     assertThat(telemetry.rd.getProperties())
         .containsEntry("_MS.ProcessedByMetricExtractors", "True");
+    assertThat(telemetry.rd.getProperties()).containsKey("user_agent.original");
     assertThat(telemetry.rd.getSuccess()).isTrue();
 
     assertThat(telemetry.rdd1.getName()).isEqualTo("TestController.run");
@@ -92,6 +93,7 @@ public abstract class CustomInstrumentationTest {
     assertThat(rd1.getName()).isEqualTo("GET /server-span");
     assertThat(rd1.getResponseCode()).isEqualTo("200");
     assertThat(rd1.getProperties()).containsEntry("_MS.ProcessedByMetricExtractors", "True");
+    assertThat(telemetry.rd.getProperties()).containsKey("user_agent.original");
     assertThat(rd1.getSuccess()).isTrue();
 
     assertThat(rd2.getName()).isEqualTo("TestController.run");

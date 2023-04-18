@@ -50,6 +50,7 @@ abstract class InheritedAttributesTest {
     assertThat(rd.getProperties()).containsEntry("tenant", "z");
     assertThat(rd.getProperties()).hasSize(2);
     assertThat(rd.getProperties()).containsEntry("_MS.ProcessedByMetricExtractors", "True");
+    assertThat(telemetry.rd.getProperties()).containsKey("user_agent.original");
     assertThat(rd.getSuccess()).isTrue();
 
     assertThat(md.getMessage()).isEqualTo("hello");

@@ -59,6 +59,7 @@ abstract class SpringCloudStreamTest {
 
     assertThat(rd1.getName()).isEqualTo("GET /sendMessage");
     assertThat(rd1.getProperties()).containsEntry("_MS.ProcessedByMetricExtractors", "True");
+    assertThat(telemetry.rd.getProperties()).containsKey("user_agent.original");
     assertThat(rd1.getSuccess()).isTrue();
 
     assertThat(rdd1.getName()).isEqualTo("greetings send");

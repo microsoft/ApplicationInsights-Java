@@ -33,6 +33,7 @@ class JmsDisabledTest {
     assertThat(rd.getName()).isEqualTo("GET /sendMessage");
     assertThat(rd.getResponseCode()).isEqualTo("200");
     assertThat(rd.getProperties()).containsEntry("_MS.ProcessedByMetricExtractors", "True");
+    assertThat(telemetry.rd.getProperties()).containsKey("user_agent.original");
     assertThat(rd.getSuccess()).isTrue();
 
     // verify the downstream http dependency that is no longer part of the same trace
@@ -48,6 +49,7 @@ class JmsDisabledTest {
     assertThat(rdd.getName()).isEqualTo("GET /");
     assertThat(rdd.getData()).isEqualTo("https://www.bing.com");
     assertThat(rdd.getProperties()).containsEntry("_MS.ProcessedByMetricExtractors", "True");
+    assertThat(telemetry.rd.getProperties()).containsKey("user_agent.original");
     assertThat(rdd.getSuccess()).isTrue();
 
     // sleep a bit and make sure no kafka "requests" or dependencies are reported
