@@ -33,7 +33,7 @@ abstract class HttpHeadersTest {
     assertThat(telemetry.rd.getProperties()).containsKey("http.request.header.host");
     assertThat(telemetry.rd.getProperties()).hasSize(3);
     assertThat(telemetry.rd.getProperties())
-        .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
+        .containsEntry("_MS.ProcessedByMetricExtractors", "True");
     assertThat(telemetry.rd.getSuccess()).isTrue();
   }
 
@@ -52,7 +52,7 @@ abstract class HttpHeadersTest {
     assertThat(telemetry.rdd1.getProperties()).containsKey("http.response.header.date");
     assertThat(telemetry.rdd1.getProperties()).hasSize(3);
     assertThat(telemetry.rdd1.getProperties())
-        .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
+        .containsEntry("_MS.ProcessedByMetricExtractors", "True");
 
     assertThat(telemetry.rdd1.getSuccess()).isTrue();
   }

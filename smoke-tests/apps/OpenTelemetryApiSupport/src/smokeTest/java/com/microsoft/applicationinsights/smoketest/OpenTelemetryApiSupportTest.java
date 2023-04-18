@@ -38,8 +38,7 @@ abstract class OpenTelemetryApiSupportTest {
     assertThat(telemetry.rd.getProperties()).containsEntry("myattr1", "myvalue1");
     assertThat(telemetry.rd.getProperties()).containsEntry("myattr2", "myvalue2");
     assertThat(telemetry.rd.getProperties())
-        .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
-
+        .containsEntry("_MS.ProcessedByMetricExtractors", "True");
     assertThat(telemetry.rdEnvelope.getIKey()).isEqualTo("00000000-0000-0000-0000-0FEEDDADBEEF");
     assertThat(telemetry.rdEnvelope.getTags()).containsEntry("ai.cloud.role", "testrolename");
     assertThat(telemetry.rdEnvelope.getTags().get("ai.cloud.roleInstance"))

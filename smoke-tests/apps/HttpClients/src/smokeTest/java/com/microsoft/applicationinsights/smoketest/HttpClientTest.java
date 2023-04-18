@@ -92,7 +92,6 @@ abstract class HttpClientTest {
     assertThat(telemetry.rdd1.getResultCode()).isEqualTo("200");
     assertThat(telemetry.rdd1.getProperties())
         .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
-
     assertThat(telemetry.rdd1.getSuccess()).isTrue();
     assertThat(telemetry.rddEnvelope1.getSampleRate()).isNull();
 

@@ -13,7 +13,6 @@ import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_8;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_8_OPENJ9;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.data.MapEntry.entry;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
@@ -50,8 +49,7 @@ abstract class InheritedAttributesTest {
     assertThat(rd.getResponseCode()).isEqualTo("200");
     assertThat(rd.getProperties()).containsEntry("tenant", "z");
     assertThat(rd.getProperties()).hasSize(2);
-    assertThat(rd.getProperties())
-        .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
+    assertThat(rd.getProperties()).containsEntry("_MS.ProcessedByMetricExtractors", "True");
     assertThat(rd.getSuccess()).isTrue();
 
     assertThat(md.getMessage()).isEqualTo("hello");

@@ -111,12 +111,10 @@ abstract class GrpcTest {
 
     assertThat(rd1.getProperties())
         .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
-
     assertThat(rd1.getSuccess()).isTrue();
 
     assertThat(rdd.getProperties())
         .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
-
     assertThat(rdd.getSuccess()).isTrue();
 
     // TODO (trask): verify rd2
