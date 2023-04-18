@@ -30,7 +30,7 @@ abstract class HttpHeadersTest {
     assertThat(telemetry.rd.getProperties().get("http.response.header.abc"))
         .isEqualTo("testing123");
     assertThat(telemetry.rd.getProperties()).containsKey("http.request.header.host");
-    assertThat(telemetry.rd.getProperties()).hasSize(3);
+    assertThat(telemetry.rd.getProperties()).hasSize(4);
     assertThat(telemetry.rd.getProperties())
         .containsEntry("_MS.ProcessedByMetricExtractors", "True");
     assertThat(telemetry.rd.getSuccess()).isTrue();

@@ -33,7 +33,7 @@ abstract class CustomDimensionsTest {
 
     assertThat(telemetry.rd.getProperties()).containsEntry("test", "value");
     assertThat(telemetry.rd.getProperties()).containsKey("home");
-    assertThat(telemetry.rd.getProperties()).hasSize(3);
+    assertThat(telemetry.rd.getProperties()).hasSize(4);
     assertThat(telemetry.rd.getProperties())
         .containsEntry("_MS.ProcessedByMetricExtractors", "True");
     assertThat(telemetry.rd.getSuccess()).isTrue();
