@@ -3,13 +3,13 @@
 
 package io.opentelemetry.sdk.metrics.internal.view;
 
-import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
+import com.microsoft.applicationinsights.agent.internal.init.AiContextKeys;
+import io.opentelemetry.context.Context;
 
 final class UserAgents {
 
-  static boolean isBot(Attributes attributes) {
-    String userAgent = attributes.get(SemanticAttributes.USER_AGENT_ORIGINAL);
+  static boolean isBot(Context context) {
+    String userAgent = context.get(AiContextKeys.USER_AGENT);
     return userAgent != null && userAgent.contains("AlwaysOn");
   }
 
