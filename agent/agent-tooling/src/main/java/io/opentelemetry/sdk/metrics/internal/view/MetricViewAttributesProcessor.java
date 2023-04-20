@@ -46,7 +46,7 @@ class MetricViewAttributesProcessor extends AttributesProcessor {
     }
     applyView(builder, incoming, attributeKeys);
     if (captureSynthetic) {
-      builder.put(AiSemanticAttributes.IS_SYNTHETIC, UserAgents.isBot(context));
+      builder.put(AiSemanticAttributes.IS_SYNTHETIC, UserAgents.isBot(incoming));
     }
     return builder.build();
   }

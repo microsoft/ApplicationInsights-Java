@@ -13,8 +13,5 @@ public final class AiContextKeys {
   public static final ContextKey<String> ROLE_NAME =
       ContextKey.named("applicationinsights.internal.role_name");
 
-  public static final ContextKey<String> USER_AGENT =
-      ContextKey.named("applicationinsights.internal.user_agent");
-
   private AiContextKeys() {}
 }

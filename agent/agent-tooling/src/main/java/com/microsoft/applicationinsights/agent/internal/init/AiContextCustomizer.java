@@ -61,11 +61,6 @@ public class AiContextCustomizer<R> implements ContextCustomizer<R> {
       span.setAttribute(AiSemanticAttributes.INTERNAL_ROLE_NAME, roleNameOverride);
     }
 
-    String userAgent = startAttributes.get(SemanticAttributes.USER_AGENT_ORIGINAL);
-    if (userAgent != null) {
-      newContext = newContext.with(AiContextKeys.USER_AGENT, userAgent);
-    }
-
     return newContext;
   }
 
