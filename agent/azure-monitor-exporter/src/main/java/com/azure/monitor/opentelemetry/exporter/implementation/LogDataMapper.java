@@ -79,7 +79,7 @@ public class LogDataMapper {
             .exactString(SemanticAttributes.CODE_FUNCTION, "MethodName")
             .exactLong(SemanticAttributes.CODE_LINENO, "LineNumber")
             .exactString(LOG4J_MARKER, "Marker")
-            .exactStringArray(LOGBACK_MARKER, "logback.marker");
+            .exactStringArray(LOGBACK_MARKER, "Marker");
 
     SpanDataMapper.applyCommonTags(mappingsBuilder);
 
