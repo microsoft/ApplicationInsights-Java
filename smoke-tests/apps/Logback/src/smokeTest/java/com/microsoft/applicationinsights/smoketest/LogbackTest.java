@@ -20,6 +20,7 @@ import com.microsoft.applicationinsights.smoketest.schemav2.ExceptionData;
 import com.microsoft.applicationinsights.smoketest.schemav2.MessageData;
 import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
 import com.microsoft.applicationinsights.smoketest.schemav2.SeverityLevel;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -101,11 +102,10 @@ abstract class LogbackTest {
       assertThat(md2.getProperties()).hasSize(3);
     }
 
-    // TODO not sure why this entry no longers available.. can't find upstream changes related to
-    // this
-    //    if (!isWildflyServer()) {
-    //      assertThat(md3.getProperties()).containsEntry("Marker", "aMarker");
-    //    }
+    if (!isWildflyServer()) {
+      assertThat(md3.getProperties())
+          .containsEntry("logback.marker", Arrays.toString(new String[] {"aMarker"}));
+    }
 
     SmokeTestExtension.assertParentChild(rd, rdEnvelope, mdEnvelope1, "GET /Logback/test");
     SmokeTestExtension.assertParentChild(rd, rdEnvelope, mdEnvelope2, "GET /Logback/test");

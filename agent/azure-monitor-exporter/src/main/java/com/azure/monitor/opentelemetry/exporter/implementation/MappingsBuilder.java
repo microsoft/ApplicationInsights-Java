@@ -8,8 +8,10 @@ import static java.util.Arrays.asList;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.AbstractTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Trie;
 import io.opentelemetry.api.common.AttributeKey;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -81,6 +83,17 @@ class MappingsBuilder {
         (telemetryBuilder, value) -> {
           if (value instanceof Long) {
             telemetryBuilder.addProperty(propertyName, Long.toString((Long) value));
+          }
+        });
+    return this;
+  }
+
+  MappingsBuilder exactStringArray(AttributeKey<List<String>> attributeKey, String propertyName) {
+    exactMappings.put(
+        attributeKey.getKey(),
+        (telemetryBuilder, value) -> {
+          if (value instanceof List) {
+            telemetryBuilder.addProperty(propertyName, Arrays.toString(((List) value).toArray()));
           }
         });
     return this;
