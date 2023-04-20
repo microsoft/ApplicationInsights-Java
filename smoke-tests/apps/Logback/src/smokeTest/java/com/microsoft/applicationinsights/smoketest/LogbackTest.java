@@ -102,7 +102,7 @@ abstract class LogbackTest {
     }
 
     if (!isWildflyServer()) {
-      assertThat(md3.getProperties()).containsEntry("Marker", "[aMarker]");
+      assertThat(md3.getProperties()).containsEntry("Marker", "aMarker");
     }
 
     SmokeTestExtension.assertParentChild(rd, rdEnvelope, mdEnvelope1, "GET /Logback/test");

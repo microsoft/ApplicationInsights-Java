@@ -8,7 +8,6 @@ import static java.util.Arrays.asList;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.AbstractTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Trie;
 import io.opentelemetry.api.common.AttributeKey;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -93,7 +92,7 @@ class MappingsBuilder {
         attributeKey.getKey(),
         (telemetryBuilder, value) -> {
           if (value instanceof List) {
-            telemetryBuilder.addProperty(propertyName, Arrays.toString(((List) value).toArray()));
+            telemetryBuilder.addProperty(propertyName, String.join(",", (List) value));
           }
         });
     return this;
