@@ -62,7 +62,7 @@ final class TemporaryMetricsView {
     view.add(SemanticAttributes.NET_HOST_PORT);
     view.add(SemanticAttributes.HTTP_ROUTE);
     // START APPLICATION INSIGHTS MODIFICATIONS
-    view.add(SemanticAttributes.HTTP_USER_AGENT);
+    view.add(SemanticAttributes.USER_AGENT_ORIGINAL);
     // END APPLICATION INSIGHTS MODIFICATIONS
     return view;
   }
