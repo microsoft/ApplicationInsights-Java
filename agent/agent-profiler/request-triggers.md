@@ -20,7 +20,7 @@ An example of a complete configuration is as follows:
       "requestTriggerEndpoints": [
         {
           "name": "Users endpoint is responsive",
-          "type": "LATENCY",
+          "type": "latency",
           "filter": {
             "type": "name-regex",
             "value": "/users/get/.*"
