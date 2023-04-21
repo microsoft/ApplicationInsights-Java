@@ -1,5 +1,17 @@
 # CHANGELOG
 
+## Version 3.4.12 GA
+
+### Enhancements:
+
+* Update to OpenTelemetry Java Instrumentation 1.25
+  ([#3005](https://github.com/microsoft/ApplicationInsights-Java/pull/3005))
+
+### Bug fixes:
+
+* Fix NPE when pulling profiler configuration
+  ([#2987](https://github.com/microsoft/ApplicationInsights-Java/pull/2987))
+
 ## Version 3.4.11 GA
 
 ### Enhancements:
