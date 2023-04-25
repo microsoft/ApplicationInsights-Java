@@ -1,10 +1,11 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-package com.microsoft.applicationinsights.agent.internal.statsbeat;
+package com.azure.monitor.opentelemetry.exporter.implementation.statsbeat;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.StatsbeatTelemetryBuilder;
-import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
+import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryItemExporter;
+import java.util.Collections;
 import javax.annotation.Nullable;
 
 class AttachStatsbeat extends BaseStatsbeat {
@@ -28,16 +29,15 @@ class AttachStatsbeat extends BaseStatsbeat {
   }
 
   @Override
-  protected void send(TelemetryClient telemetryClient) {
+  protected void send(TelemetryItemExporter exporter) {
     // WEBSITE_HOSTNAME is lazily set in Linux Consumption Plan.
     if (resourceProviderId == null || resourceProviderId.isEmpty()) {
       resourceProviderId = initResourceProviderId(customDimensions.getResourceProvider(), null);
     }
 
-    StatsbeatTelemetryBuilder telemetryBuilder =
-        createStatsbeatTelemetry(telemetryClient, ATTACH_METRIC_NAME, 0);
+    StatsbeatTelemetryBuilder telemetryBuilder = createStatsbeatTelemetry(ATTACH_METRIC_NAME, 0);
     telemetryBuilder.addProperty("rpId", resourceProviderId);
-    telemetryClient.trackStatsbeatAsync(telemetryBuilder.build());
+    exporter.send(Collections.singletonList(telemetryBuilder.build()));
   }
 
   /** Returns the unique identifier of the resource provider. */

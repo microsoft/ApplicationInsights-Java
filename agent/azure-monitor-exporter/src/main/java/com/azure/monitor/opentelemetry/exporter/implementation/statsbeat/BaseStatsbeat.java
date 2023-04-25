@@ -1,35 +1,47 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-package com.microsoft.applicationinsights.agent.internal.statsbeat;
+package com.azure.monitor.opentelemetry.exporter.implementation.statsbeat;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.StatsbeatTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.configuration.StatsbeatConnectionString;
-import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
+import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryItemExporter;
 
 abstract class BaseStatsbeat {
 
   private final CustomDimensions customDimensions;
+  protected StatsbeatConnectionString connectionString;
+  protected String instrumentationKey;
 
   protected BaseStatsbeat(CustomDimensions customDimensions) {
     this.customDimensions = customDimensions;
   }
 
-  protected abstract void send(TelemetryClient telemetryClient);
+  protected abstract void send(TelemetryItemExporter exporter);
 
-  protected StatsbeatTelemetryBuilder createStatsbeatTelemetry(
-      TelemetryClient telemetryClient, String name, double value) {
+  protected StatsbeatTelemetryBuilder createStatsbeatTelemetry(String name, double value) {
 
     StatsbeatTelemetryBuilder telemetryBuilder = StatsbeatTelemetryBuilder.create(name, value);
 
-    StatsbeatConnectionString connectionString = telemetryClient.getStatsbeatConnectionString();
     if (connectionString != null) {
       // not sure if connectionString can be null in Azure Functions
       telemetryBuilder.setConnectionString(connectionString);
     }
 
-    customDimensions.populateProperties(telemetryBuilder, telemetryClient.getInstrumentationKey());
+    customDimensions.populateProperties(telemetryBuilder, instrumentationKey);
 
     return telemetryBuilder;
+  }
+
+  void setConnectionString(StatsbeatConnectionString connectionString) {
+    this.connectionString = connectionString;
+  }
+
+  String getInstrumentationKey() {
+    return instrumentationKey;
+  }
+
+  void setInstrumentationKey(String instrumentationKey) {
+    this.instrumentationKey = instrumentationKey;
   }
 }

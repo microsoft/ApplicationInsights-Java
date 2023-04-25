@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-package com.microsoft.applicationinsights.agent.internal.common;
+package com.azure.monitor.opentelemetry.exporter.implementation.utils;
 
 import java.io.IOException;
 import java.io.InputStream;

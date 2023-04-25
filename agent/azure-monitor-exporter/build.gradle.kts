@@ -46,6 +46,8 @@ dependencies {
   testImplementation("com.azure:azure-messaging-eventhubs:5.15.3")
   testImplementation("com.azure:azure-messaging-eventhubs-checkpointstore-blob:1.16.4")
 
+  testImplementation("com.squareup.okio:okio:3.3.0")
+
   testCompileOnly("com.google.code.findbugs:jsr305")
   testCompileOnly("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
 }
