@@ -155,4 +155,6 @@ public final class StatsbeatTestUtils {
     }
     return result;
   }
+
+  private StatsbeatTestUtils() {}
 }
