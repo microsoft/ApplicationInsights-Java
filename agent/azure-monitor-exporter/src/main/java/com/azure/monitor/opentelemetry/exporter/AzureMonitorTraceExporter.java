@@ -48,7 +48,7 @@ final class AzureMonitorTraceExporter implements SpanExporter {
     for (SpanData span : spans) {
       LOGGER.verbose("exporting span: {}", span);
       try {
-        mapper.map(span, telemetryItems::add);
+        mapper.map(span, telemetryItems::add, null);
         OPERATION_LOGGER.recordSuccess();
       } catch (Throwable t) {
         OPERATION_LOGGER.recordFailure(t.getMessage(), t, EXPORTER_MAPPING_ERROR);

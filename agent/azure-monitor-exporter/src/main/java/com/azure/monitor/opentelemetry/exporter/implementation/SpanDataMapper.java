@@ -21,7 +21,6 @@ import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedDu
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedTime;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.UrlParser;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.sdk.resources.Resource;
@@ -120,7 +119,7 @@ public final class SpanDataMapper {
     return map(span, itemCount);
   }
 
-  public void map(SpanData span, Consumer<TelemetryItem> consumer) {
+  public void map(SpanData span, Consumer<TelemetryItem> consumer, @Nullable String stack) {
     long itemCount = getItemCount(span);
     TelemetryItem telemetryItem = map(span, itemCount);
     consumer.accept(telemetryItem);
@@ -128,7 +127,8 @@ public final class SpanDataMapper {
         span,
         telemetryItem.getTags().get(ContextTagKeys.AI_OPERATION_NAME.toString()),
         itemCount,
-        consumer);
+        consumer,
+        stack);
   }
 
   public TelemetryItem map(SpanData span, long itemCount) {
@@ -689,26 +689,16 @@ public final class SpanDataMapper {
       SpanData span,
       @Nullable String operationName,
       long itemCount,
-      Consumer<TelemetryItem> consumer) {
+      Consumer<TelemetryItem> consumer,
+      String stacktrace) {
     for (EventData event : span.getEvents()) {
       String instrumentationScopeName = span.getInstrumentationScopeInfo().getName();
       if (eventSuppressor.test(event, instrumentationScopeName)) {
         continue;
       }
 
-      if (event.getAttributes().get(SemanticAttributes.EXCEPTION_TYPE) != null
-          || event.getAttributes().get(SemanticAttributes.EXCEPTION_MESSAGE) != null) {
-        SpanContext parentSpanContext = span.getParentSpanContext();
-        // Application Insights expects exception records to be "top-level" exceptions
-        // not just any exception that bubbles up
-        if (!parentSpanContext.isValid() || parentSpanContext.isRemote()) {
-          // TODO (trask) map OpenTelemetry exception to Application Insights exception better
-          String stacktrace = event.getAttributes().get(SemanticAttributes.EXCEPTION_STACKTRACE);
-          if (stacktrace != null) {
-            consumer.accept(
-                createExceptionTelemetryItem(stacktrace, span, operationName, itemCount));
-          }
-        }
+      if (stacktrace != null) {
+        consumer.accept(createExceptionTelemetryItem(stacktrace, span, operationName, itemCount));
         return;
       }
 
