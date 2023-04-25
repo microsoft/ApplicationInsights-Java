@@ -615,7 +615,7 @@ public class Configuration {
       }
       if (DiagnosticsHelper.useAppSvcRpIntegrationLogging()
           || DiagnosticsHelper.useFunctionsRpIntegrationLogging()) {
-        return StatusFile.getLogDir() + "/" + DEFAULT_NAME;
+        return StatusFile.getLogDir() + File.separator + DEFAULT_NAME;
       }
       // azure spring cloud
       return DEFAULT_NAME;
@@ -1381,6 +1381,7 @@ public class Configuration {
   }
 
   public enum RequestTriggerType {
+    @JsonProperty("latency")
     LATENCY
   }
 

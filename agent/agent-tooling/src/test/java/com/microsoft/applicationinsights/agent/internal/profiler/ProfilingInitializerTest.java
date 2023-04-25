@@ -6,6 +6,7 @@ package com.microsoft.applicationinsights.agent.internal.profiler;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.MessageTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
+import com.microsoft.applicationinsights.agent.internal.configuration.GcReportingLevel;
 import com.microsoft.applicationinsights.agent.internal.profiler.config.ProfilerConfiguration;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import java.io.File;
@@ -220,7 +221,13 @@ public class ProfilingInitializerTest {
                 "InstrumentationKey=00000000-0000-0000-0000-000000000000;IngestionEndpoint=https://fake-ingestion-endpoint"));
 
     ProfilingInitializer profiler =
-        ProfilingInitializer.initialize(new File("/tmp/"), new Configuration(), client);
+        ProfilingInitializer.initialize(
+            new File("/tmp/"),
+            new Configuration.ProfilerConfiguration(),
+            GcReportingLevel.NONE,
+            "test-role-name",
+            "test-role-instance",
+            client);
 
     profiler = Mockito.spy(profiler);
     profiler.initialize();

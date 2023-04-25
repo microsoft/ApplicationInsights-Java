@@ -147,9 +147,7 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
             .setDiskPersistenceMaxSizeMb(configuration.preview.diskPersistenceMaxSizeMb)
             .build();
 
-    // interval longer than 15 minutes is not allowed since we use this data for usage telemetry
-    long intervalSeconds = Math.min(configuration.heartbeat.intervalSeconds, MINUTES.toSeconds(15));
-    Consumer<List<TelemetryItem>> telemetryItemsConsumer =
+    Consumer<List<TelemetryItem>> heartbeatTelemetryItemConsumer =
         telemetryItems -> {
           for (TelemetryItem telemetryItem : telemetryItems) {
             TelemetryObservers.INSTANCE
@@ -158,13 +156,40 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
             telemetryClient.getMetricsBatchItemProcessor().trackAsync(telemetryItem);
           }
         };
-    HeartbeatExporter.start(
-        intervalSeconds, telemetryClient::populateDefaults, telemetryItemsConsumer);
+
+    if (telemetryClient.getConnectionString() != null) {
+      startupLogger.verbose("connection string is not null, start HeartbeatExporter");
+      // interval longer than 15 minutes is not allowed since we use this data for usage telemetry
+      long intervalSeconds =
+          Math.min(configuration.heartbeat.intervalSeconds, MINUTES.toSeconds(15));
+      HeartbeatExporter.start(
+          intervalSeconds, telemetryClient::populateDefaults, heartbeatTelemetryItemConsumer);
+    }
 
     TelemetryClient.setActive(telemetryClient);
 
+    if (configuration.preview.profiler.enabled && telemetryClient.getConnectionString() != null) {
+      try {
+        ProfilingInitializer.initialize(
+            tempDir,
+            configuration.preview.profiler,
+            configuration.preview.gcEvents.reportingLevel,
+            configuration.role.name,
+            configuration.role.instance,
+            telemetryClient);
+      } catch (RuntimeException e) {
+        startupLogger.warning("Failed to initialize profiler", e);
+      }
+    }
+
+    // TODO (heya) remove duplicate code in both RuntimeConfigurator and SecondEntryPoint
     RuntimeConfigurator runtimeConfigurator =
-        new RuntimeConfigurator(telemetryClient, () -> agentLogExporter, configuration);
+        new RuntimeConfigurator(
+            telemetryClient,
+            () -> agentLogExporter,
+            configuration,
+            heartbeatTelemetryItemConsumer,
+            tempDir);
 
     if (configuration.sampling.percentage != null) {
       BytecodeUtilImpl.samplingPercentage = configuration.sampling.percentage.floatValue();
@@ -175,14 +200,6 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
     BytecodeUtilImpl.runtimeConfigurator = runtimeConfigurator;
     BytecodeUtilImpl.connectionStringConfiguredAtRuntime =
         configuration.connectionStringConfiguredAtRuntime;
-
-    if (configuration.preview.profiler.enabled) {
-      try {
-        ProfilingInitializer.initialize(tempDir, configuration, telemetryClient);
-      } catch (RuntimeException e) {
-        startupLogger.warning("Failed to initialize profiler", e);
-      }
-    }
 
     if (ConfigurationBuilder.inAzureFunctionsConsumptionWorker()) {
       AzureFunctions.setup(

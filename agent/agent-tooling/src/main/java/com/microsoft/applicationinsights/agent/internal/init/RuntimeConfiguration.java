@@ -22,4 +22,8 @@ public class RuntimeConfiguration {
   public String instrumentationLoggingLevel;
 
   public String selfDiagnosticsLevel;
+
+  public boolean profilerEnabled;
+
+  public long heartbeatIntervalSeconds;
 }

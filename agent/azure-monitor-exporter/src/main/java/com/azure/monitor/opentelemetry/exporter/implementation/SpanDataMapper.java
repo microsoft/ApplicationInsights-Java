@@ -75,7 +75,7 @@ public final class SpanDataMapper {
             .ignoreExact(AiSemanticAttributes.KAFKA_RECORD_QUEUE_TIME_MS.getKey())
             .ignoreExact(AiSemanticAttributes.KAFKA_OFFSET.getKey())
             .exact(
-                SemanticAttributes.HTTP_USER_AGENT.getKey(),
+                SemanticAttributes.USER_AGENT_ORIGINAL.getKey(),
                 (builder, value) -> {
                   if (value instanceof String) {
                     builder.addTag("ai.user.userAgent", (String) value);

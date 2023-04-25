@@ -115,6 +115,11 @@ public class LoggingConfigurator {
     Appender<ILoggingEvent> diagnosticAppender = configureConsoleAppender();
     diagnosticLogger.addAppender(diagnosticAppender);
 
+    ApplicationInsightsDiagnosticsLogFilter filter = new ApplicationInsightsDiagnosticsLogFilter();
+    filter.setContext(loggerContext);
+    filter.start();
+    diagnosticAppender.addFilter(filter);
+
     // errors reported by other loggers should also go to diagnostic log
     // (level filter for these is applied in ApplicationInsightsDiagnosticsLogFilter)
     rootLogger.addAppender(diagnosticAppender);

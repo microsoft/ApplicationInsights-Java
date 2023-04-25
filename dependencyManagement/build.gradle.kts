@@ -11,9 +11,9 @@ data class DependencySet(val group: String, val version: String, val modules: Li
 val dependencyVersions = hashMapOf<String, String>()
 rootProject.extra["versions"] = dependencyVersions
 
-val otelVersion = "1.23.1"
-val otelInstrumentationVersion = "1.23.0"
-val otelInstrumentationAlphaVersion = "1.23.0-alpha"
+val otelVersion = "1.25.0"
+val otelInstrumentationAlphaVersion = "1.25.0-alpha"
+val otelInstrumentationVersion = "1.25.0"
 val otelContribAlphaVersion = "1.18.0-alpha"
 
 rootProject.extra["otelVersion"] = otelVersion
@@ -28,10 +28,10 @@ val DEPENDENCY_BOMS = listOf(
   "io.opentelemetry:opentelemetry-bom-alpha:${otelVersion}-alpha",
   "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:${otelInstrumentationVersion}",
   "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${otelInstrumentationAlphaVersion}",
-  "com.azure:azure-sdk-bom:1.2.10",
-  "io.netty:netty-bom:4.1.89.Final",
+  "com.azure:azure-sdk-bom:1.2.11",
+  "io.netty:netty-bom:4.1.91.Final",
   "org.junit:junit-bom:5.9.2",
-  "org.testcontainers:testcontainers-bom:1.17.6",
+  "org.testcontainers:testcontainers-bom:1.18.0",
 )
 
 val autoServiceVersion = "1.0.1"
@@ -72,20 +72,20 @@ val CORE_DEPENDENCIES = listOf(
   "io.opentelemetry.javaagent:opentelemetry-javaagent-tooling:${otelInstrumentationAlphaVersion}",
   // temporarily overriding transitive dependency from azure-core until next azure-bom release
   // which targets at least reactor-netty-http:1.1.1
-  "io.projectreactor.netty:reactor-netty-http:1.1.4"
+  "io.projectreactor.netty:reactor-netty-http:1.1.6"
 )
 
 val DEPENDENCIES = listOf(
-  "ch.qos.logback:logback-classic:1.2.11",
+  "ch.qos.logback:logback-classic:1.2.12",
   "ch.qos.logback.contrib:logback-json-classic:0.1.5",
-  "com.uber.nullaway:nullaway:0.10.9",
+  "com.uber.nullaway:nullaway:0.10.10",
   "commons-codec:commons-codec:1.15",
   "org.apache.commons:commons-text:1.10.0",
   "com.google.code.gson:gson:2.10.1",
-  "com.azure:azure-core-test:1.15.0", // this is not included in azure-sdk-bom
+  "com.azure:azure-core-test:1.16.2", // this is not included in azure-sdk-bom
   "org.assertj:assertj-core:3.24.2",
   "org.awaitility:awaitility:4.2.0",
-  "io.github.hakky54:logcaptor:2.8.0",
+  "io.github.hakky54:logcaptor:2.9.0",
   "com.microsoft.jfr:jfr-streaming:1.2.0",
   "com.google.code.findbugs:jsr305:3.0.2",
   "com.github.spotbugs:spotbugs-annotations:4.7.3"

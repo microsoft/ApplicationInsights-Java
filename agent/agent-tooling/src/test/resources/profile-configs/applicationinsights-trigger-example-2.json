@@ -1,0 +1,53 @@
+{
+  "connectionString": "InstrumentationKey=00000000-0000-0000-0000-000000000000",
+  "preview": {
+    "profiler": {
+      "enabled": true,
+      "enableRequestTriggering": true,
+      "requestTriggerEndpoints": [
+        {
+          "name": "Users",
+          "type": "latency",
+          "profileDuration": 30,
+          "filter": {
+            "type": "name-regex",
+            "value": "/users/.*"
+          },
+          "aggregation": {
+            "configuration": {
+              "thresholdMillis": 7000
+            },
+            "type": "breach-ratio"
+          },
+          "threshold": {
+            "value": 0.75
+          },
+          "throttling": {
+            "value": 60
+          }
+        },
+        {
+          "name": "Index.html",
+          "type": "latency",
+          "profileDuration": 60,
+          "filter": {
+            "type": "name-regex",
+            "value": "/index\\.html"
+          },
+          "aggregation": {
+            "configuration": {
+              "thresholdMillis": 100
+            },
+            "type": "breach-ratio"
+          },
+          "threshold": {
+            "value": 0.5
+          },
+          "throttling": {
+            "value": 60
+          }
+        }
+      ]
+    }
+  }
+}
