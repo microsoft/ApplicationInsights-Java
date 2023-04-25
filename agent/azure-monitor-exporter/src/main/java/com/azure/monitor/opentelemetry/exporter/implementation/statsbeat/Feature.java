@@ -8,6 +8,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+// TODO (heya) identify and separate feature list between agent and exporter or add a flag to
+// indicate which module that feature belongs
 public enum Feature {
   JAVA_VENDOR_ORACLE(0),
   JAVA_VENDOR_ZULU(1),
