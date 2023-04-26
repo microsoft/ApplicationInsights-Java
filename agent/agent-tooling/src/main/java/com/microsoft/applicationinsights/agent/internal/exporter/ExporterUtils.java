@@ -8,12 +8,12 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.opentelemetry.api.trace.SpanContext;
 import java.util.concurrent.ThreadLocalRandom;
 
-final class ExporterUtils {
+public final class ExporterUtils {
 
   @SuppressFBWarnings(
       value = "SECPR", // Predictable pseudorandom number generator
       justification = "Predictable random is ok for sampling decision")
-  static boolean shouldSample(SpanContext spanContext, double percentage) {
+  public static boolean shouldSample(SpanContext spanContext, double percentage) {
     if (percentage == 100) {
       // optimization, no need to calculate score
       return true;

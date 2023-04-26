@@ -105,14 +105,17 @@ public final class SpanDataMapper {
   private final boolean captureHttpServer4xxAsError;
   private final BiConsumer<AbstractTelemetryBuilder, Resource> telemetryInitializer;
   private final BiPredicate<EventData, String> eventSuppressor;
+  private final BiPredicate<SpanData, EventData> shouldSuppress;
 
   public SpanDataMapper(
       boolean captureHttpServer4xxAsError,
       BiConsumer<AbstractTelemetryBuilder, Resource> telemetryInitializer,
-      BiPredicate<EventData, String> eventSuppressor) {
+      BiPredicate<EventData, String> eventSuppressor,
+      BiPredicate<SpanData, EventData> shouldSuppress) {
     this.captureHttpServer4xxAsError = captureHttpServer4xxAsError;
     this.telemetryInitializer = telemetryInitializer;
     this.eventSuppressor = eventSuppressor;
+    this.shouldSuppress = shouldSuppress;
   }
 
   public TelemetryItem map(SpanData span) {
@@ -120,10 +123,7 @@ public final class SpanDataMapper {
     return map(span, itemCount);
   }
 
-  public void map(
-      SpanData span,
-      Consumer<TelemetryItem> consumer,
-      BiPredicate<SpanData, EventData> shouldSuppress) {
+  public void map(SpanData span, Consumer<TelemetryItem> consumer) {
     long itemCount = getItemCount(span);
     TelemetryItem telemetryItem = map(span, itemCount);
     consumer.accept(telemetryItem);
@@ -131,8 +131,7 @@ public final class SpanDataMapper {
         span,
         telemetryItem.getTags().get(ContextTagKeys.AI_OPERATION_NAME.toString()),
         itemCount,
-        consumer,
-        shouldSuppress);
+        consumer);
   }
 
   public TelemetryItem map(SpanData span, long itemCount) {
@@ -693,8 +692,7 @@ public final class SpanDataMapper {
       SpanData span,
       @Nullable String operationName,
       long itemCount,
-      Consumer<TelemetryItem> consumer,
-      BiPredicate<SpanData, EventData> shouldSuppress) {
+      Consumer<TelemetryItem> consumer) {
     for (EventData event : span.getEvents()) {
       String instrumentationScopeName = span.getInstrumentationScopeInfo().getName();
       if (eventSuppressor.test(event, instrumentationScopeName)) {
@@ -709,10 +707,10 @@ public final class SpanDataMapper {
         if (!parentSpanContext.isValid() || parentSpanContext.isRemote()) {
           // TODO (trask) map OpenTelemetry exception to Application Insights exception better
           String stacktrace = event.getAttributes().get(SemanticAttributes.EXCEPTION_STACKTRACE);
-          if (stacktrace != null && shouldSuppress.test(span, event)) {
-            continue;
+          if (stacktrace != null && !shouldSuppress.test(span, event)) {
+            consumer.accept(
+                createExceptionTelemetryItem(stacktrace, span, operationName, itemCount));
           }
-          consumer.accept(createExceptionTelemetryItem(stacktrace, span, operationName, itemCount));
         }
         return;
       }

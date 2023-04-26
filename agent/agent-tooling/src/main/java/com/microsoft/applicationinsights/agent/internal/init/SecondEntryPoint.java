@@ -28,6 +28,7 @@ import com.microsoft.applicationinsights.agent.internal.configuration.RpConfigur
 import com.microsoft.applicationinsights.agent.internal.exporter.AgentLogExporter;
 import com.microsoft.applicationinsights.agent.internal.exporter.AgentMetricExporter;
 import com.microsoft.applicationinsights.agent.internal.exporter.AgentSpanExporter;
+import com.microsoft.applicationinsights.agent.internal.exporter.ExporterUtils;
 import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
 import com.microsoft.applicationinsights.agent.internal.legacyheaders.AiLegacyHeaderSpanProcessor;
 import com.microsoft.applicationinsights.agent.internal.processors.ExporterWithLogProcessor;
@@ -37,6 +38,7 @@ import com.microsoft.applicationinsights.agent.internal.processors.MySpanData;
 import com.microsoft.applicationinsights.agent.internal.processors.SpanExporterWithAttributeProcessor;
 import com.microsoft.applicationinsights.agent.internal.profiler.ProfilingInitializer;
 import com.microsoft.applicationinsights.agent.internal.profiler.triggers.AlertTriggerSpanProcessor;
+import com.microsoft.applicationinsights.agent.internal.sampling.SamplingOverrides;
 import com.microsoft.applicationinsights.agent.internal.statsbeat.StatsbeatModule;
 import com.microsoft.applicationinsights.agent.internal.telemetry.BatchItemProcessor;
 import com.microsoft.applicationinsights.agent.internal.telemetry.MetricFilter;
@@ -384,6 +386,13 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
                 return true;
               }
               return false;
+            },
+            (span, event) -> {
+              Double samplingPercentage =
+                  new SamplingOverrides(exceptionSamplingOverrides)
+                      .getOverridePercentage(event.getAttributes());
+              return samplingPercentage != null
+                  && !ExporterUtils.shouldSample(span.getSpanContext(), samplingPercentage);
             });
 
     BatchItemProcessor batchItemProcessor = telemetryClient.getGeneralBatchItemProcessor();

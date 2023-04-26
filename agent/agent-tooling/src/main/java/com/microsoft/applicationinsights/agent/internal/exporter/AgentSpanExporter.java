@@ -16,7 +16,6 @@ import com.microsoft.applicationinsights.agent.internal.telemetry.BatchItemProce
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryObservers;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.Collection;
@@ -66,7 +65,7 @@ public final class AgentSpanExporter implements SpanExporter {
     for (SpanData span : spans) {
       logger.debug("exporting span: {}", span);
       try {
-        mapper.map(span, telemetryItemConsumer, this::shouldSuppress);
+        mapper.map(span, telemetryItemConsumer);
         exportingSpanLogger.recordSuccess();
       } catch (Throwable t) {
         exportingSpanLogger.recordFailure(t.getMessage(), t, EXPORTER_MAPPING_ERROR);
@@ -84,12 +83,5 @@ public final class AgentSpanExporter implements SpanExporter {
   @Override
   public CompletableResultCode shutdown() {
     return CompletableResultCode.ofSuccess();
-  }
-
-  boolean shouldSuppress(SpanData span, EventData event) {
-    Double samplingPercentage =
-        exceptionSamplingOverrides.getOverridePercentage(event.getAttributes());
-    return samplingPercentage != null
-        && !ExporterUtils.shouldSample(span.getSpanContext(), samplingPercentage);
   }
 }
