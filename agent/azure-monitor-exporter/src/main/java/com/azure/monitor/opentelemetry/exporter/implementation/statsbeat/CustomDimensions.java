@@ -1,13 +1,13 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-package com.microsoft.applicationinsights.agent.internal.statsbeat;
+package com.azure.monitor.opentelemetry.exporter.implementation.statsbeat;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.StatsbeatTelemetryBuilder;
-import com.microsoft.applicationinsights.agent.internal.common.PropertyHelper;
-import com.microsoft.applicationinsights.agent.internal.common.SystemInformation;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.PropertyHelper;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.SystemInformation;
 
-class CustomDimensions {
+public class CustomDimensions {
 
   private volatile ResourceProvider resourceProvider;
   private volatile OperatingSystem operatingSystem;

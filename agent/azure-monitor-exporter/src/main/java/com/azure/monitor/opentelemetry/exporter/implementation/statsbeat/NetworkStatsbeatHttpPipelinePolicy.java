@@ -1,14 +1,16 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-package com.microsoft.applicationinsights.agent.internal.statsbeat;
+package com.azure.monitor.opentelemetry.exporter.implementation.statsbeat;
+
+import static com.azure.monitor.opentelemetry.exporter.implementation.utils.Constant.EXCEPTION_TYPE;
+import static com.azure.monitor.opentelemetry.exporter.implementation.utils.Constant.STATUS_CODE;
 
 import com.azure.core.http.HttpPipelineCallContext;
 import com.azure.core.http.HttpPipelineNextPolicy;
 import com.azure.core.http.HttpResponse;
 import com.azure.core.http.policy.HttpPipelinePolicy;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.StatusCode;
-import com.microsoft.applicationinsights.agent.internal.utils.Constant;
 import java.util.concurrent.atomic.AtomicLong;
 import reactor.core.publisher.Mono;
 
@@ -42,23 +44,20 @@ public class NetworkStatsbeatHttpPipelinePolicy implements HttpPipelinePolicy {
                 // these are not tracked as success or failure since they are just redirects
               } else if (statusCode == 402 || statusCode == 439) {
                 networkStatsbeat.incrementThrottlingCount(
-                    instrumentationKey, host, Constant.STATUS_CODE, statusCode);
+                    instrumentationKey, host, STATUS_CODE, statusCode);
               } else if (StatusCode.isRetryable(statusCode)) {
                 networkStatsbeat.incrementRetryCount(
-                    instrumentationKey, host, Constant.STATUS_CODE, statusCode);
+                    instrumentationKey, host, STATUS_CODE, statusCode);
               } else {
                 // 400 and 404 will be tracked as failure count
                 networkStatsbeat.incrementRequestFailureCount(
-                    instrumentationKey, host, Constant.STATUS_CODE, statusCode);
+                    instrumentationKey, host, STATUS_CODE, statusCode);
               }
             })
         .doOnError(
             throwable -> {
               networkStatsbeat.incrementExceptionCount(
-                  instrumentationKey,
-                  host,
-                  Constant.EXCEPTION_TYPE,
-                  throwable.getClass().getName());
+                  instrumentationKey, host, EXCEPTION_TYPE, throwable.getClass().getName());
             });
   }
 }

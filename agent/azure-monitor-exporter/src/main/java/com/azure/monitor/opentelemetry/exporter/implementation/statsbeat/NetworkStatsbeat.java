@@ -1,13 +1,16 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-package com.microsoft.applicationinsights.agent.internal.statsbeat;
+package com.azure.monitor.opentelemetry.exporter.implementation.statsbeat;
+
+import static com.azure.monitor.opentelemetry.exporter.implementation.utils.Constant.EXCEPTION_TYPE;
+import static com.azure.monitor.opentelemetry.exporter.implementation.utils.Constant.STATUS_CODE;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.StatsbeatTelemetryBuilder;
+import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryItemExporter;
 import com.google.auto.value.AutoValue;
-import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
-import com.microsoft.applicationinsights.agent.internal.utils.Constant;
-import io.opentelemetry.instrumentation.api.internal.GuardedBy;
+import io.opentelemetry.api.internal.GuardedBy;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
@@ -35,16 +38,16 @@ public class NetworkStatsbeat extends BaseStatsbeat {
       new HashMap<>();
 
   // only used by tests
-  public NetworkStatsbeat() {
+  NetworkStatsbeat() {
     super(new CustomDimensions());
   }
 
-  public NetworkStatsbeat(CustomDimensions customDimensions) {
+  NetworkStatsbeat(CustomDimensions customDimensions) {
     super(customDimensions);
   }
 
   @Override
-  protected void send(TelemetryClient telemetryClient) {
+  protected void send(TelemetryItemExporter telemetryItemExporter) {
     Map<IntervalMetricsKey, IntervalMetrics> local;
     synchronized (lock) {
       local = new HashMap<>(instrumentationKeyCounterMap);
@@ -53,7 +56,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
 
     for (Map.Entry<IntervalMetricsKey, IntervalMetrics> entry : local.entrySet()) {
       IntervalMetricsKey key = entry.getKey();
-      sendIntervalMetric(telemetryClient, key, entry.getValue());
+      sendIntervalMetric(telemetryItemExporter, key, entry.getValue());
     }
   }
 
@@ -123,7 +126,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
     synchronized (lock) {
       IntervalMetrics intervalMetrics =
           instrumentationKeyCounterMap.get(
-              IntervalMetricsKey.create(ikey, host, Constant.STATUS_CODE, statusCode));
+              IntervalMetricsKey.create(ikey, host, STATUS_CODE, statusCode));
       return intervalMetrics == null ? 0L : intervalMetrics.requestFailureCount.get();
     }
   }
@@ -142,7 +145,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
     synchronized (lock) {
       IntervalMetrics intervalMetrics =
           instrumentationKeyCounterMap.get(
-              IntervalMetricsKey.create(ikey, host, Constant.STATUS_CODE, statusCode));
+              IntervalMetricsKey.create(ikey, host, STATUS_CODE, statusCode));
       return intervalMetrics == null ? 0L : intervalMetrics.retryCount.get();
     }
   }
@@ -152,7 +155,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
     synchronized (lock) {
       IntervalMetrics intervalMetrics =
           instrumentationKeyCounterMap.get(
-              IntervalMetricsKey.create(ikey, host, Constant.STATUS_CODE, statusCode));
+              IntervalMetricsKey.create(ikey, host, STATUS_CODE, statusCode));
       return intervalMetrics == null ? 0L : intervalMetrics.throttlingCount.get();
     }
   }
@@ -162,7 +165,7 @@ public class NetworkStatsbeat extends BaseStatsbeat {
     synchronized (lock) {
       IntervalMetrics intervalMetrics =
           instrumentationKeyCounterMap.get(
-              IntervalMetricsKey.create(ikey, host, Constant.EXCEPTION_TYPE, exceptionType));
+              IntervalMetricsKey.create(ikey, host, EXCEPTION_TYPE, exceptionType));
       return intervalMetrics == null ? 0L : intervalMetrics.exceptionCount.get();
     }
   }
@@ -183,57 +186,52 @@ public class NetworkStatsbeat extends BaseStatsbeat {
   }
 
   private void sendIntervalMetric(
-      TelemetryClient telemetryClient, IntervalMetricsKey key, IntervalMetrics local) {
+      TelemetryItemExporter telemetryItemExporter, IntervalMetricsKey key, IntervalMetrics local) {
     if (local.requestSuccessCount.get() != 0) {
       StatsbeatTelemetryBuilder requestSuccessCountSt =
           createStatsbeatTelemetry(
-              telemetryClient,
-              REQUEST_SUCCESS_COUNT_METRIC_NAME,
-              (double) local.requestSuccessCount.get());
+              REQUEST_SUCCESS_COUNT_METRIC_NAME, (double) local.requestSuccessCount.get());
       addCommonProperties(requestSuccessCountSt, key);
-      telemetryClient.trackStatsbeatAsync(requestSuccessCountSt.build());
+      telemetryItemExporter.send(Collections.singletonList(requestSuccessCountSt.build()));
     }
 
     if (local.requestFailureCount.get() != 0) {
       StatsbeatTelemetryBuilder requestFailureCountSt =
           createStatsbeatTelemetry(
-              telemetryClient,
-              REQUEST_FAILURE_COUNT_METRIC_NAME,
-              (double) local.requestFailureCount.get());
+              REQUEST_FAILURE_COUNT_METRIC_NAME, (double) local.requestFailureCount.get());
       addCommonProperties(requestFailureCountSt, key);
-      telemetryClient.trackStatsbeatAsync(requestFailureCountSt.build());
+      telemetryItemExporter.send(Collections.singletonList(requestFailureCountSt.build()));
     }
 
     double durationAvg = local.getRequestDurationAvg();
     if (durationAvg != 0) {
       StatsbeatTelemetryBuilder requestDurationSt =
-          createStatsbeatTelemetry(telemetryClient, REQUEST_DURATION_METRIC_NAME, durationAvg);
+          createStatsbeatTelemetry(REQUEST_DURATION_METRIC_NAME, durationAvg);
       addCommonProperties(requestDurationSt, key);
-      telemetryClient.trackStatsbeatAsync(requestDurationSt.build());
+      telemetryItemExporter.send(Collections.singletonList(requestDurationSt.build()));
     }
 
     if (local.retryCount.get() != 0) {
       StatsbeatTelemetryBuilder retryCountSt =
-          createStatsbeatTelemetry(
-              telemetryClient, RETRY_COUNT_METRIC_NAME, (double) local.retryCount.get());
+          createStatsbeatTelemetry(RETRY_COUNT_METRIC_NAME, (double) local.retryCount.get());
       addCommonProperties(retryCountSt, key);
-      telemetryClient.trackStatsbeatAsync(retryCountSt.build());
+      telemetryItemExporter.send(Collections.singletonList(retryCountSt.build()));
     }
 
     if (local.throttlingCount.get() != 0) {
       StatsbeatTelemetryBuilder throttleCountSt =
           createStatsbeatTelemetry(
-              telemetryClient, THROTTLE_COUNT_METRIC_NAME, (double) local.throttlingCount.get());
+              THROTTLE_COUNT_METRIC_NAME, (double) local.throttlingCount.get());
       addCommonProperties(throttleCountSt, key);
-      telemetryClient.trackStatsbeatAsync(throttleCountSt.build());
+      telemetryItemExporter.send(Collections.singletonList(throttleCountSt.build()));
     }
 
     if (local.exceptionCount.get() != 0) {
       StatsbeatTelemetryBuilder exceptionCountSt =
           createStatsbeatTelemetry(
-              telemetryClient, EXCEPTION_COUNT_METRIC_NAME, (double) local.exceptionCount.get());
+              EXCEPTION_COUNT_METRIC_NAME, (double) local.exceptionCount.get());
       addCommonProperties(exceptionCountSt, key);
-      telemetryClient.trackStatsbeatAsync(exceptionCountSt.build());
+      telemetryItemExporter.send(Collections.singletonList(exceptionCountSt.build()));
     }
   }
 

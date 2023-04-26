@@ -3,7 +3,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.init;
 
-import com.microsoft.applicationinsights.agent.internal.statsbeat.StatsbeatModule;
+import com.azure.monitor.opentelemetry.exporter.implementation.statsbeat.StatsbeatModule;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;

@@ -1,17 +1,19 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-package com.microsoft.applicationinsights.agent.internal.statsbeat;
+package com.azure.monitor.opentelemetry.exporter.implementation.statsbeat;
 
-import static com.microsoft.applicationinsights.agent.bootstrap.diagnostics.MsgId.FAIL_TO_SEND_STATSBEAT_ERROR;
+import static com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMsgId.FAIL_TO_SEND_STATSBEAT_ERROR;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.configuration.StatsbeatConnectionString;
+import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryItemExporter;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.ThreadPoolUtils;
-import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
-import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
+import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -46,8 +48,16 @@ public class StatsbeatModule {
     azureMetadataService = new AzureMetadataService(attachStatsbeat, customDimensions);
   }
 
-  public void start(TelemetryClient telemetryClient, Configuration config) {
-    if (telemetryClient.getStatsbeatConnectionString() == null) {
+  public void start(
+      TelemetryItemExporter telemetryItemExporter,
+      Supplier<StatsbeatConnectionString> connectionString,
+      Supplier<String> instrumentationKey,
+      boolean disabledAll,
+      long shortIntervalSeconds,
+      long longIntervalSeconds,
+      boolean disabled,
+      Set<Feature> featureSet) {
+    if (connectionString.get() == null) {
       logger.debug("Don't start StatsbeatModule when statsbeat connection string is null.");
       return;
     }
@@ -56,33 +66,33 @@ public class StatsbeatModule {
       throw new IllegalStateException("initialize already called");
     }
 
-    if (config.internal.statsbeat.disabledAll) {
+    if (disabledAll) {
       // disabledAll is an internal emergency kill-switch to turn off Statsbeat completely when
       // something goes wrong.
       // this happens rarely.
       return;
     }
 
-    long shortIntervalSeconds = config.internal.statsbeat.shortIntervalSeconds;
-    long longIntervalSeconds = config.internal.statsbeat.longIntervalSeconds;
+    updateConnectionString(connectionString.get());
+    updateInstrumentationKey(instrumentationKey.get());
 
     scheduledExecutor.scheduleWithFixedDelay(
-        new StatsbeatSender(networkStatsbeat, telemetryClient),
+        new StatsbeatSender(networkStatsbeat, telemetryItemExporter),
         shortIntervalSeconds,
         shortIntervalSeconds,
         TimeUnit.SECONDS);
     scheduledExecutor.scheduleWithFixedDelay(
-        new StatsbeatSender(attachStatsbeat, telemetryClient),
+        new StatsbeatSender(attachStatsbeat, telemetryItemExporter),
         Math.min(60, longIntervalSeconds),
         longIntervalSeconds,
         TimeUnit.SECONDS);
     scheduledExecutor.scheduleWithFixedDelay(
-        new StatsbeatSender(featureStatsbeat, telemetryClient),
+        new StatsbeatSender(featureStatsbeat, telemetryItemExporter),
         Math.min(60, longIntervalSeconds),
         longIntervalSeconds,
         TimeUnit.SECONDS);
     scheduledExecutor.scheduleWithFixedDelay(
-        new StatsbeatSender(instrumentationStatsbeat, telemetryClient),
+        new StatsbeatSender(instrumentationStatsbeat, telemetryItemExporter),
         Math.min(60, longIntervalSeconds),
         longIntervalSeconds,
         TimeUnit.SECONDS);
@@ -94,11 +104,13 @@ public class StatsbeatModule {
       azureMetadataService.scheduleWithFixedDelay(longIntervalSeconds);
     }
 
-    featureStatsbeat.trackConfigurationOptions(config);
+    featureStatsbeat.trackConfigurationOptions(featureSet);
 
-    if (!config.preview.statsbeat.disabled) {
+    if (!disabled) {
+      nonessentialStatsbeat.setConnectionString(connectionString.get());
+      nonessentialStatsbeat.setInstrumentationKey(instrumentationKey.get());
       scheduledExecutor.scheduleWithFixedDelay(
-          new StatsbeatSender(nonessentialStatsbeat, telemetryClient),
+          new StatsbeatSender(nonessentialStatsbeat, telemetryItemExporter),
           longIntervalSeconds,
           longIntervalSeconds,
           TimeUnit.SECONDS);
@@ -133,15 +145,33 @@ public class StatsbeatModule {
     return nonessentialStatsbeat;
   }
 
+  private void updateConnectionString(StatsbeatConnectionString connectionString) {
+    if (connectionString != null) {
+      networkStatsbeat.setConnectionString(connectionString);
+      attachStatsbeat.setConnectionString(connectionString);
+      featureStatsbeat.setConnectionString(connectionString);
+      instrumentationStatsbeat.setConnectionString(connectionString);
+    }
+  }
+
+  private void updateInstrumentationKey(String instrumentationKey) {
+    if (instrumentationKey != null && !instrumentationKey.isEmpty()) {
+      networkStatsbeat.setInstrumentationKey(instrumentationKey);
+      attachStatsbeat.setInstrumentationKey(instrumentationKey);
+      featureStatsbeat.setInstrumentationKey(instrumentationKey);
+      instrumentationStatsbeat.setInstrumentationKey(instrumentationKey);
+    }
+  }
+
   /** Runnable which is responsible for calling the send method to transmit Statsbeat telemetry. */
   private static class StatsbeatSender implements Runnable {
 
     private final BaseStatsbeat statsbeat;
-    private final TelemetryClient telemetryClient;
+    private final TelemetryItemExporter telemetryItemExporter;
 
-    private StatsbeatSender(BaseStatsbeat statsbeat, TelemetryClient telemetryClient) {
+    private StatsbeatSender(BaseStatsbeat statsbeat, TelemetryItemExporter telemetryItemExporter) {
       this.statsbeat = statsbeat;
-      this.telemetryClient = telemetryClient;
+      this.telemetryItemExporter = telemetryItemExporter;
     }
 
     @Override
@@ -149,11 +179,11 @@ public class StatsbeatModule {
       try {
         // For Linux Consumption Plan, connection string is lazily set.
         // There is no need to send statsbeat when cikey is empty.
-        String customerIkey = telemetryClient.getInstrumentationKey();
-        if (customerIkey == null || customerIkey.isEmpty()) {
+        if (statsbeat.getInstrumentationKey() == null
+            || statsbeat.getInstrumentationKey().isEmpty()) {
           return;
         }
-        statsbeat.send(telemetryClient);
+        statsbeat.send(telemetryItemExporter);
       } catch (RuntimeException e) {
         try (MDC.MDCCloseable ignored = FAIL_TO_SEND_STATSBEAT_ERROR.makeActive()) {
           logger.error("Error occurred while sending statsbeat", e);

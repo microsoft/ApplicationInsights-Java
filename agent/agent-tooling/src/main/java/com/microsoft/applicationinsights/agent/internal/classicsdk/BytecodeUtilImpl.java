@@ -21,6 +21,8 @@ import com.azure.monitor.opentelemetry.exporter.implementation.builders.RemoteDe
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.RequestTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.SeverityLevel;
+import com.azure.monitor.opentelemetry.exporter.implementation.statsbeat.Feature;
+import com.azure.monitor.opentelemetry.exporter.implementation.statsbeat.FeatureStatsbeat;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedDuration;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedTime;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
@@ -28,7 +30,6 @@ import com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil.BytecodeUt
 import com.microsoft.applicationinsights.agent.internal.init.RuntimeConfiguration;
 import com.microsoft.applicationinsights.agent.internal.init.RuntimeConfigurator;
 import com.microsoft.applicationinsights.agent.internal.legacyheaders.AiLegacyPropagator;
-import com.microsoft.applicationinsights.agent.internal.statsbeat.FeatureStatsbeat;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
@@ -522,7 +523,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
     TelemetryClient.getActive().trackAsync(telemetryBuilder.build());
 
     if (featureStatsbeat != null) {
-      featureStatsbeat.track2xBridgeUsage();
+      featureStatsbeat.addFeature(Feature.SDK_2X_BRIDGE_VIA_3X_AGENT);
     }
   }
 
