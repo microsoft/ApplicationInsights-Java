@@ -366,16 +366,9 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
       List<Configuration.SamplingOverride> exceptionSamplingOverrides) {
 
     SpanDataMapper mapper =
-        new SpanDataMapper(captureHttpServer4xxAsError, telemetryClient::populateDefaults);
-
-    BatchItemProcessor batchItemProcessor = telemetryClient.getGeneralBatchItemProcessor();
-
-    return new StatsbeatSpanExporter(
-        new AgentSpanExporter(
-            mapper,
-            quickPulse,
-            batchItemProcessor,
-            exceptionSamplingOverrides,
+        new SpanDataMapper(
+            captureHttpServer4xxAsError,
+            telemetryClient::populateDefaults,
             (event, instrumentationName) -> {
               boolean lettuce51 = instrumentationName.equals("io.opentelemetry.lettuce-5.1");
               if (lettuce51 && event.getName().startsWith("redis.encode.")) {
@@ -391,7 +384,12 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
                 return true;
               }
               return false;
-            }),
+            });
+
+    BatchItemProcessor batchItemProcessor = telemetryClient.getGeneralBatchItemProcessor();
+
+    return new StatsbeatSpanExporter(
+        new AgentSpanExporter(mapper, quickPulse, batchItemProcessor, exceptionSamplingOverrides),
         telemetryClient.getStatsbeatModule());
   }
 

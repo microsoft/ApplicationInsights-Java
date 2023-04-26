@@ -21,6 +21,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedDu
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedTime;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.UrlParser;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.sdk.resources.Resource;
@@ -31,6 +32,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.BiConsumer;
+import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 import reactor.util.annotation.Nullable;
 
@@ -102,12 +104,15 @@ public final class SpanDataMapper {
 
   private final boolean captureHttpServer4xxAsError;
   private final BiConsumer<AbstractTelemetryBuilder, Resource> telemetryInitializer;
+  private final BiPredicate<EventData, String> eventSuppressor;
 
   public SpanDataMapper(
       boolean captureHttpServer4xxAsError,
-      BiConsumer<AbstractTelemetryBuilder, Resource> telemetryInitializer) {
+      BiConsumer<AbstractTelemetryBuilder, Resource> telemetryInitializer,
+      BiPredicate<EventData, String> eventSuppressor) {
     this.captureHttpServer4xxAsError = captureHttpServer4xxAsError;
     this.telemetryInitializer = telemetryInitializer;
+    this.eventSuppressor = eventSuppressor;
   }
 
   public TelemetryItem map(SpanData span) {
@@ -115,11 +120,19 @@ public final class SpanDataMapper {
     return map(span, itemCount);
   }
 
-  public TelemetryItem map(SpanData span, Consumer<TelemetryItem> consumer) {
+  public void map(
+      SpanData span,
+      Consumer<TelemetryItem> consumer,
+      BiPredicate<SpanData, EventData> shouldSample) {
     long itemCount = getItemCount(span);
     TelemetryItem telemetryItem = map(span, itemCount);
     consumer.accept(telemetryItem);
-    return telemetryItem;
+    exportEvents(
+        span,
+        telemetryItem.getTags().get(ContextTagKeys.AI_OPERATION_NAME.toString()),
+        itemCount,
+        consumer,
+        shouldSample);
   }
 
   public TelemetryItem map(SpanData span, long itemCount) {
@@ -676,39 +689,56 @@ public final class SpanDataMapper {
     return str1 + separator + str2;
   }
 
-  public void exportEvent(
+  private void exportEvents(
       SpanData span,
       @Nullable String operationName,
+      long itemCount,
       Consumer<TelemetryItem> consumer,
-      String stacktrace,
-      EventData event) {
-    long itemCount = getItemCount(span);
-    if (stacktrace != null) {
-      consumer.accept(createExceptionTelemetryItem(stacktrace, span, operationName, itemCount));
-      return;
+      BiPredicate<SpanData, EventData> shouldSample) {
+    for (EventData event : span.getEvents()) {
+      String instrumentationScopeName = span.getInstrumentationScopeInfo().getName();
+      if (eventSuppressor.test(event, instrumentationScopeName)) {
+        continue;
+      }
+
+      if (event.getAttributes().get(SemanticAttributes.EXCEPTION_TYPE) != null
+          || event.getAttributes().get(SemanticAttributes.EXCEPTION_MESSAGE) != null) {
+        SpanContext parentSpanContext = span.getParentSpanContext();
+        // Application Insights expects exception records to be "top-level" exceptions
+        // not just any exception that bubbles up
+        if (!parentSpanContext.isValid() || parentSpanContext.isRemote()) {
+          // TODO (trask) map OpenTelemetry exception to Application Insights exception better
+          String stacktrace = event.getAttributes().get(SemanticAttributes.EXCEPTION_STACKTRACE);
+          if (stacktrace != null && shouldSample.test(span, event)) {
+            consumer.accept(
+                createExceptionTelemetryItem(stacktrace, span, operationName, itemCount));
+          }
+        }
+        return;
+      }
+
+      MessageTelemetryBuilder telemetryBuilder = MessageTelemetryBuilder.create();
+      telemetryInitializer.accept(telemetryBuilder, span.getResource());
+
+      // set standard properties
+      setOperationId(telemetryBuilder, span.getTraceId());
+      setOperationParentId(telemetryBuilder, span.getSpanId());
+      if (operationName != null) {
+        setOperationName(telemetryBuilder, operationName);
+      } else {
+        setOperationName(telemetryBuilder, span.getAttributes());
+      }
+      setTime(telemetryBuilder, event.getEpochNanos());
+      setItemCount(telemetryBuilder, itemCount);
+
+      // update tags
+      MAPPINGS.map(event.getAttributes(), telemetryBuilder);
+
+      // set message-specific properties
+      telemetryBuilder.setMessage(event.getName());
+
+      consumer.accept(telemetryBuilder.build());
     }
-
-    MessageTelemetryBuilder telemetryBuilder = MessageTelemetryBuilder.create();
-    telemetryInitializer.accept(telemetryBuilder, span.getResource());
-
-    // set standard properties
-    setOperationId(telemetryBuilder, span.getTraceId());
-    setOperationParentId(telemetryBuilder, span.getSpanId());
-    if (operationName != null) {
-      setOperationName(telemetryBuilder, operationName);
-    } else {
-      setOperationName(telemetryBuilder, span.getAttributes());
-    }
-    setTime(telemetryBuilder, event.getEpochNanos());
-    setItemCount(telemetryBuilder, itemCount);
-
-    // update tags
-    MAPPINGS.map(event.getAttributes(), telemetryBuilder);
-
-    // set message-specific properties
-    telemetryBuilder.setMessage(event.getName());
-
-    consumer.accept(telemetryBuilder.build());
   }
 
   private TelemetryItem createExceptionTelemetryItem(

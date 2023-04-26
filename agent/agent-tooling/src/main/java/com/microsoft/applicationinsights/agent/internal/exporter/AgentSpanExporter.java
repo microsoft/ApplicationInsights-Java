@@ -4,12 +4,9 @@
 package com.microsoft.applicationinsights.agent.internal.exporter;
 
 import static com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMsgId.EXPORTER_MAPPING_ERROR;
-import static com.microsoft.applicationinsights.agent.internal.exporter.ExporterUtils.shouldSample;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.SemanticAttributes;
 import com.azure.monitor.opentelemetry.exporter.implementation.SpanDataMapper;
 import com.azure.monitor.opentelemetry.exporter.implementation.logging.OperationLogger;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.QuickPulse;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
@@ -18,14 +15,12 @@ import com.microsoft.applicationinsights.agent.internal.sampling.SamplingOverrid
 import com.microsoft.applicationinsights.agent.internal.telemetry.BatchItemProcessor;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryObservers;
-import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.Collection;
 import java.util.List;
-import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import org.slf4j.Logger;
@@ -41,14 +36,12 @@ public final class AgentSpanExporter implements SpanExporter {
   private final SpanDataMapper mapper;
   private final Consumer<TelemetryItem> telemetryItemConsumer;
   private final SamplingOverrides exceptionSamplingOverrides;
-  private final BiPredicate<EventData, String> eventSuppressor;
 
   public AgentSpanExporter(
       SpanDataMapper mapper,
       @Nullable QuickPulse quickPulse,
       BatchItemProcessor batchItemProcessor,
-      List<Configuration.SamplingOverride> samplingOverrides,
-      BiPredicate<EventData, String> eventSuppressor) {
+      List<Configuration.SamplingOverride> samplingOverrides) {
     this.mapper = mapper;
     telemetryItemConsumer =
         telemetryItem -> {
@@ -61,7 +54,6 @@ public final class AgentSpanExporter implements SpanExporter {
           batchItemProcessor.trackAsync(telemetryItem);
         };
     exceptionSamplingOverrides = new SamplingOverrides(samplingOverrides);
-    this.eventSuppressor = eventSuppressor;
   }
 
   @Override
@@ -73,10 +65,8 @@ public final class AgentSpanExporter implements SpanExporter {
     }
     for (SpanData span : spans) {
       logger.debug("exporting span: {}", span);
-      TelemetryItem telemetryItem = null;
       try {
-        telemetryItem = mapper.map(span, telemetryItemConsumer);
-        exportEvents(span, telemetryItem);
+        mapper.map(span, telemetryItemConsumer, this::shouldSample);
         exportingSpanLogger.recordSuccess();
       } catch (Throwable t) {
         exportingSpanLogger.recordFailure(t.getMessage(), t, EXPORTER_MAPPING_ERROR);
@@ -97,37 +87,10 @@ public final class AgentSpanExporter implements SpanExporter {
     return CompletableResultCode.ofSuccess();
   }
 
-  private void exportEvents(SpanData span, TelemetryItem telemetryItem) {
-    for (EventData event : span.getEvents()) {
-      String instrumentationScopeName = span.getInstrumentationScopeInfo().getName();
-      if (eventSuppressor.test(event, instrumentationScopeName)) {
-        continue;
-      }
-      event.getAttributes().forEach((k, v) -> logger.debug("event.attributes: {}:{}", k, v));
-      if (event.getAttributes().get(SemanticAttributes.EXCEPTION_TYPE) != null
-          || event.getAttributes().get(SemanticAttributes.EXCEPTION_MESSAGE) != null) {
-        SpanContext parentSpanContext = span.getParentSpanContext();
-        // Application Insights expects exception records to be "top-level" exceptions
-        // not just any exception that bubbles up
-        if (!parentSpanContext.isValid() || parentSpanContext.isRemote()) {
-          // TODO (trask) map OpenTelemetry exception to Application Insights exception better
-          String stacktrace = event.getAttributes().get(SemanticAttributes.EXCEPTION_STACKTRACE);
-          if (stacktrace != null) {
-            Double samplingPercentage =
-                exceptionSamplingOverrides.getOverridePercentage(event.getAttributes());
-            if (samplingPercentage != null
-                && !shouldSample(span.getSpanContext(), samplingPercentage)) {
-              continue;
-            }
-            mapper.exportEvent(
-                span,
-                telemetryItem.getTags().get(ContextTagKeys.AI_OPERATION_NAME.toString()),
-                telemetryItemConsumer,
-                stacktrace,
-                event);
-          }
-        }
-      }
-    }
+  boolean shouldSample(SpanData span, EventData event) {
+    Double samplingPercentage =
+        exceptionSamplingOverrides.getOverridePercentage(event.getAttributes());
+    return samplingPercentage != null
+        && !ExporterUtils.shouldSample(span.getSpanContext(), samplingPercentage);
   }
 }

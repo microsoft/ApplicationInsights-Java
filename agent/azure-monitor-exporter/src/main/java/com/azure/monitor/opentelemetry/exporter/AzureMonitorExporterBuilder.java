@@ -217,7 +217,8 @@ public final class AzureMonitorExporterBuilder {
    *     environment variable "APPLICATIONINSIGHTS_CONNECTION_STRING" is not set.
    */
   public SpanExporter buildTraceExporter() {
-    SpanDataMapper mapper = new SpanDataMapper(true, this::populateDefaults);
+    SpanDataMapper mapper =
+        new SpanDataMapper(true, this::populateDefaults, (event, instrumentationName) -> false);
 
     return new AzureMonitorTraceExporter(mapper, initExporterBuilder());
   }
