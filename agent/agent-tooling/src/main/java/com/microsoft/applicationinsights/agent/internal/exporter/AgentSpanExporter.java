@@ -66,13 +66,12 @@ public final class AgentSpanExporter implements SpanExporter {
     for (SpanData span : spans) {
       logger.debug("exporting span: {}", span);
       try {
-        mapper.map(span, telemetryItemConsumer, this::shouldSample);
+        mapper.map(span, telemetryItemConsumer, this::shouldSuppress);
         exportingSpanLogger.recordSuccess();
       } catch (Throwable t) {
         exportingSpanLogger.recordFailure(t.getMessage(), t, EXPORTER_MAPPING_ERROR);
       }
     }
-
     // always returning success, because all error handling is performed internally
     return CompletableResultCode.ofSuccess();
   }
@@ -87,7 +86,7 @@ public final class AgentSpanExporter implements SpanExporter {
     return CompletableResultCode.ofSuccess();
   }
 
-  boolean shouldSample(SpanData span, EventData event) {
+  boolean shouldSuppress(SpanData span, EventData event) {
     Double samplingPercentage =
         exceptionSamplingOverrides.getOverridePercentage(event.getAttributes());
     return samplingPercentage != null
