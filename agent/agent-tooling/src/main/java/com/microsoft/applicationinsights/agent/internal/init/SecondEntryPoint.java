@@ -398,7 +398,7 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
     BatchItemProcessor batchItemProcessor = telemetryClient.getGeneralBatchItemProcessor();
 
     return new StatsbeatSpanExporter(
-        new AgentSpanExporter(mapper, quickPulse, batchItemProcessor, exceptionSamplingOverrides),
+        new AgentSpanExporter(mapper, quickPulse, batchItemProcessor),
         telemetryClient.getStatsbeatModule());
   }
 

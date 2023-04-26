@@ -10,8 +10,6 @@ import com.azure.monitor.opentelemetry.exporter.implementation.logging.Operation
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.QuickPulse;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
-import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
-import com.microsoft.applicationinsights.agent.internal.sampling.SamplingOverrides;
 import com.microsoft.applicationinsights.agent.internal.telemetry.BatchItemProcessor;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryObservers;
@@ -19,7 +17,6 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.Collection;
-import java.util.List;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import org.slf4j.Logger;
@@ -34,13 +31,11 @@ public final class AgentSpanExporter implements SpanExporter {
 
   private final SpanDataMapper mapper;
   private final Consumer<TelemetryItem> telemetryItemConsumer;
-  private final SamplingOverrides exceptionSamplingOverrides;
 
   public AgentSpanExporter(
       SpanDataMapper mapper,
       @Nullable QuickPulse quickPulse,
-      BatchItemProcessor batchItemProcessor,
-      List<Configuration.SamplingOverride> samplingOverrides) {
+      BatchItemProcessor batchItemProcessor) {
     this.mapper = mapper;
     telemetryItemConsumer =
         telemetryItem -> {
@@ -52,7 +47,6 @@ public final class AgentSpanExporter implements SpanExporter {
               .forEach(consumer -> consumer.accept(telemetryItem));
           batchItemProcessor.trackAsync(telemetryItem);
         };
-    exceptionSamplingOverrides = new SamplingOverrides(samplingOverrides);
   }
 
   @Override
