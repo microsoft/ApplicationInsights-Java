@@ -218,7 +218,7 @@ public final class AzureMonitorExporterBuilder {
    */
   public SpanExporter buildTraceExporter() {
     SpanDataMapper mapper =
-        new SpanDataMapper(true, this::populateDefaults, (event, instrumentationName) -> false);
+        new SpanDataMapper(true, this::populateDefaults);
 
     return new AzureMonitorTraceExporter(mapper, initExporterBuilder());
   }

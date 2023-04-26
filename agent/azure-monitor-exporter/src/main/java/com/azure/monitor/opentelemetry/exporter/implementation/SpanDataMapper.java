@@ -31,7 +31,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.BiConsumer;
-import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 import reactor.util.annotation.Nullable;
 
@@ -103,15 +102,12 @@ public final class SpanDataMapper {
 
   private final boolean captureHttpServer4xxAsError;
   private final BiConsumer<AbstractTelemetryBuilder, Resource> telemetryInitializer;
-  private final BiPredicate<EventData, String> eventSuppressor;
 
   public SpanDataMapper(
       boolean captureHttpServer4xxAsError,
-      BiConsumer<AbstractTelemetryBuilder, Resource> telemetryInitializer,
-      BiPredicate<EventData, String> eventSuppressor) {
+      BiConsumer<AbstractTelemetryBuilder, Resource> telemetryInitializer) {
     this.captureHttpServer4xxAsError = captureHttpServer4xxAsError;
     this.telemetryInitializer = telemetryInitializer;
-    this.eventSuppressor = eventSuppressor;
   }
 
   public TelemetryItem map(SpanData span) {
@@ -119,16 +115,11 @@ public final class SpanDataMapper {
     return map(span, itemCount);
   }
 
-  public void map(SpanData span, Consumer<TelemetryItem> consumer, @Nullable String stack) {
+  public TelemetryItem map(SpanData span, Consumer<TelemetryItem> consumer) {
     long itemCount = getItemCount(span);
     TelemetryItem telemetryItem = map(span, itemCount);
     consumer.accept(telemetryItem);
-    exportEvents(
-        span,
-        telemetryItem.getTags().get(ContextTagKeys.AI_OPERATION_NAME.toString()),
-        itemCount,
-        consumer,
-        stack);
+    return telemetryItem;
   }
 
   public TelemetryItem map(SpanData span, long itemCount) {
@@ -685,45 +676,39 @@ public final class SpanDataMapper {
     return str1 + separator + str2;
   }
 
-  private void exportEvents(
+  public void exportEvent(
       SpanData span,
       @Nullable String operationName,
-      long itemCount,
       Consumer<TelemetryItem> consumer,
-      String stacktrace) {
-    for (EventData event : span.getEvents()) {
-      String instrumentationScopeName = span.getInstrumentationScopeInfo().getName();
-      if (eventSuppressor.test(event, instrumentationScopeName)) {
-        continue;
-      }
-
-      if (stacktrace != null) {
-        consumer.accept(createExceptionTelemetryItem(stacktrace, span, operationName, itemCount));
-        return;
-      }
-
-      MessageTelemetryBuilder telemetryBuilder = MessageTelemetryBuilder.create();
-      telemetryInitializer.accept(telemetryBuilder, span.getResource());
-
-      // set standard properties
-      setOperationId(telemetryBuilder, span.getTraceId());
-      setOperationParentId(telemetryBuilder, span.getSpanId());
-      if (operationName != null) {
-        setOperationName(telemetryBuilder, operationName);
-      } else {
-        setOperationName(telemetryBuilder, span.getAttributes());
-      }
-      setTime(telemetryBuilder, event.getEpochNanos());
-      setItemCount(telemetryBuilder, itemCount);
-
-      // update tags
-      MAPPINGS.map(event.getAttributes(), telemetryBuilder);
-
-      // set message-specific properties
-      telemetryBuilder.setMessage(event.getName());
-
-      consumer.accept(telemetryBuilder.build());
+      String stacktrace,
+      EventData event) {
+    long itemCount = getItemCount(span);
+    if (stacktrace != null) {
+      consumer.accept(createExceptionTelemetryItem(stacktrace, span, operationName, itemCount));
+      return;
     }
+
+    MessageTelemetryBuilder telemetryBuilder = MessageTelemetryBuilder.create();
+    telemetryInitializer.accept(telemetryBuilder, span.getResource());
+
+    // set standard properties
+    setOperationId(telemetryBuilder, span.getTraceId());
+    setOperationParentId(telemetryBuilder, span.getSpanId());
+    if (operationName != null) {
+      setOperationName(telemetryBuilder, operationName);
+    } else {
+      setOperationName(telemetryBuilder, span.getAttributes());
+    }
+    setTime(telemetryBuilder, event.getEpochNanos());
+    setItemCount(telemetryBuilder, itemCount);
+
+    // update tags
+    MAPPINGS.map(event.getAttributes(), telemetryBuilder);
+
+    // set message-specific properties
+    telemetryBuilder.setMessage(event.getName());
+
+    consumer.accept(telemetryBuilder.build());
   }
 
   private TelemetryItem createExceptionTelemetryItem(
