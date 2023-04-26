@@ -1,0 +1,31 @@
+{
+  "role": {
+    "name": "testrolename",
+    "instance": "testroleinstance"
+  },
+  "sampling": {
+    "percentage": 100
+  },
+  "preview": {
+    "sampling": {
+      "overrides": [
+        {
+          "telemetryType": "exception",
+          "attributes": [
+            {
+              "key": "exception.message",
+              "value": "this is an expected exception",
+              "matchType": "strict"
+            },
+            {
+              "key": "exception.type",
+              "value": "java.lang.RuntimeException",
+              "matchType": "strict"
+            }
+          ],
+          "percentage": 0
+        }
+      ]
+    }
+  }
+}
