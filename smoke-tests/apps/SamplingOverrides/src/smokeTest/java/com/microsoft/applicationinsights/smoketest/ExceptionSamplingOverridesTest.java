@@ -20,7 +20,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 @UseAgent("applicationinsights3.json")
-abstract class SamplingOverrides3Test {
+abstract class ExceptionSamplingOverridesTest {
 
   @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.create();
 
@@ -35,29 +35,29 @@ abstract class SamplingOverrides3Test {
   }
 
   @Environment(TOMCAT_8_JAVA_8)
-  static class Tomcat8Java8Test extends SamplingOverrides3Test {}
+  static class Tomcat8Java8Test extends ExceptionSamplingOverridesTest {}
 
   @Environment(TOMCAT_8_JAVA_8_OPENJ9)
-  static class Tomcat8Java8OpenJ9Test extends SamplingOverrides3Test {}
+  static class Tomcat8Java8OpenJ9Test extends ExceptionSamplingOverridesTest {}
 
   @Environment(TOMCAT_8_JAVA_11)
-  static class Tomcat8Java11Test extends SamplingOverrides3Test {}
+  static class Tomcat8Java11Test extends ExceptionSamplingOverridesTest {}
 
   @Environment(TOMCAT_8_JAVA_11_OPENJ9)
-  static class Tomcat8Java11OpenJ9Test extends SamplingOverrides3Test {}
+  static class Tomcat8Java11OpenJ9Test extends ExceptionSamplingOverridesTest {}
 
   @Environment(TOMCAT_8_JAVA_17)
-  static class Tomcat8Java17Test extends SamplingOverrides3Test {}
+  static class Tomcat8Java17Test extends ExceptionSamplingOverridesTest {}
 
   @Environment(TOMCAT_8_JAVA_19)
-  static class Tomcat8Java19Test extends SamplingOverrides3Test {}
+  static class Tomcat8Java19Test extends ExceptionSamplingOverridesTest {}
 
   @Environment(TOMCAT_8_JAVA_20)
-  static class Tomcat8Java20Test extends SamplingOverrides3Test {}
+  static class Tomcat8Java20Test extends ExceptionSamplingOverridesTest {}
 
   @Environment(WILDFLY_13_JAVA_8)
-  static class Wildfly13Java8Test extends SamplingOverrides3Test {}
+  static class Wildfly13Java8Test extends ExceptionSamplingOverridesTest {}
 
   @Environment(WILDFLY_13_JAVA_8_OPENJ9)
-  static class Wildfly13Java8OpenJ9Test extends SamplingOverrides3Test {}
+  static class Wildfly13Java8OpenJ9Test extends ExceptionSamplingOverridesTest {}
 }
