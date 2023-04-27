@@ -11,9 +11,9 @@ data class DependencySet(val group: String, val version: String, val modules: Li
 val dependencyVersions = hashMapOf<String, String>()
 rootProject.extra["versions"] = dependencyVersions
 
-val otelVersion = "1.23.1"
-val otelInstrumentationAlphaVersion = "1.24.0-alpha"
-val otelInstrumentationVersion = "1.24.0"
+val otelVersion = "1.25.0"
+val otelInstrumentationAlphaVersion = "1.25.0-alpha"
+val otelInstrumentationVersion = "1.25.0"
 val otelContribAlphaVersion = "1.18.0-alpha"
 
 rootProject.extra["otelVersion"] = otelVersion
@@ -29,8 +29,8 @@ val DEPENDENCY_BOMS = listOf(
   "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:${otelInstrumentationVersion}",
   "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${otelInstrumentationAlphaVersion}",
   "com.azure:azure-sdk-bom:1.2.11",
-  "io.netty:netty-bom:4.1.91.Final",
-  "org.junit:junit-bom:5.9.2",
+  "io.netty:netty-bom:4.1.92.Final",
+  "org.junit:junit-bom:5.9.3",
   "org.testcontainers:testcontainers-bom:1.18.0",
 )
 
@@ -82,7 +82,7 @@ val DEPENDENCIES = listOf(
   "commons-codec:commons-codec:1.15",
   "org.apache.commons:commons-text:1.10.0",
   "com.google.code.gson:gson:2.10.1",
-  "com.azure:azure-core-test:1.16.0", // this is not included in azure-sdk-bom
+  "com.azure:azure-core-test:1.16.2", // this is not included in azure-sdk-bom
   "org.assertj:assertj-core:3.24.2",
   "org.awaitility:awaitility:4.2.0",
   "io.github.hakky54:logcaptor:2.9.0",

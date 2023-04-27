@@ -1381,6 +1381,7 @@ public class Configuration {
   }
 
   public enum RequestTriggerType {
+    @JsonProperty("latency")
     LATENCY
   }
 

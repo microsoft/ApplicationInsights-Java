@@ -140,7 +140,10 @@ public class ServiceProfilerClient {
         .flatMap(
             response -> {
               if (response.getStatusCode() >= 300) {
-                return Mono.error(new HttpResponseException(response));
+                return Mono.error(
+                    new HttpResponseException(
+                        "Received error code " + response.getStatusCode() + " from " + requestUrl,
+                        response));
               }
               return response
                   .getBodyAsString()

@@ -28,6 +28,13 @@ public class Agent {
       StartupProfiler.start();
     }
 
+    // https://github.com/open-telemetry/opentelemetry-java-instrumentation/pull/7339
+    // Starting 1.25.0, OpenTelemetry defaults logger to Slf4jSimplerlogger when system property
+    // "otel.javaagent.logging" is null.
+    // Setting this system property programmatically will tell agent class loader to load our
+    // Slf4jInternalLogger instead.
+    System.setProperty("otel.javaagent.logging", "applicationinsights");
+
     OpenTelemetryAgent.premain(agentArgs, inst);
   }
 

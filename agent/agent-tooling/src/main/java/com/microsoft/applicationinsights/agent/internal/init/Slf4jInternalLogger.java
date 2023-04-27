@@ -8,7 +8,7 @@ import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class Slf4jInternalLogger extends InternalLogger {
+public class Slf4jInternalLogger implements InternalLogger {
 
   static Slf4jInternalLogger create(String name) {
     return new Slf4jInternalLogger(name);
@@ -21,7 +21,7 @@ public class Slf4jInternalLogger extends InternalLogger {
   }
 
   @Override
-  protected boolean isLoggable(InternalLogger.Level level) {
+  public boolean isLoggable(Level level) {
     switch (level) {
       case TRACE:
         return logger.isTraceEnabled();
@@ -38,7 +38,7 @@ public class Slf4jInternalLogger extends InternalLogger {
   }
 
   @Override
-  protected void log(InternalLogger.Level level, String message, @Nullable Throwable error) {
+  public void log(Level level, String message, @Nullable Throwable error) {
     switch (level) {
       case TRACE:
         logger.trace(message, error);
@@ -60,7 +60,7 @@ public class Slf4jInternalLogger extends InternalLogger {
   }
 
   @Override
-  protected String name() {
+  public String name() {
     return logger.getName();
   }
 }
