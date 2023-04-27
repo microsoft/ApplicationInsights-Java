@@ -15,13 +15,14 @@ public class MicrometerUtil {
 
   public static void trackMetric(
       String name,
+      String namespace,
       double value,
       Integer count,
       Double min,
       Double max,
       Map<String, String> properties) {
     if (delegate != null) {
-      delegate.trackMetric(name, value, count, min, max, properties);
+      delegate.trackMetric(name, namespace, value, count, min, max, properties);
     }
   }
 
@@ -29,6 +30,7 @@ public class MicrometerUtil {
 
     void trackMetric(
         String name,
+        String namespace,
         double value,
         Integer count,
         Double min,

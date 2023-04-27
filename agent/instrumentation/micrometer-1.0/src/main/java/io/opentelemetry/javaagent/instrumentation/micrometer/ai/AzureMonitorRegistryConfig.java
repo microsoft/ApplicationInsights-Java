@@ -10,12 +10,16 @@ import java.time.Duration;
 public class AzureMonitorRegistryConfig implements StepRegistryConfig {
 
   private final Duration step;
+  private final String namespace;
 
   public AzureMonitorRegistryConfig() {
     step =
         InstrumentationConfig.get()
             .getDuration(
                 "applicationinsights.internal.micrometer.step.millis", Duration.ofSeconds(60));
+    namespace =
+        InstrumentationConfig.get()
+            .getString("applicationinsights.internal.micrometer.namespace", "");
   }
 
   @Override
@@ -31,5 +35,9 @@ public class AzureMonitorRegistryConfig implements StepRegistryConfig {
   @Override
   public Duration step() {
     return step;
+  }
+
+  public String namespace() {
+    return namespace;
   }
 }
