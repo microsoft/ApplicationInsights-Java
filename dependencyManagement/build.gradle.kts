@@ -72,7 +72,12 @@ val CORE_DEPENDENCIES = listOf(
   "io.opentelemetry.javaagent:opentelemetry-javaagent-tooling:${otelInstrumentationAlphaVersion}",
   // temporarily overriding transitive dependency from azure-core until next azure-bom release
   // which targets at least reactor-netty-http:1.1.1
-  "io.projectreactor.netty:reactor-netty-http:1.1.6"
+  "io.projectreactor.netty:reactor-netty-http:1.1.6",
+  // CVE-2023-1370 - https://github.com/advisories/GHSA-493p-pfq6-5258
+  // Transitive dependency: json-smart -> com.microsoft.azure:msal4j:1.13.5 ->  com.azure:azure-identity
+  // -> azure-monitor-exporter
+  // upstream fix: https://github.com/AzureAD/microsoft-authentication-library-for-java/pull/612
+  "net.minidev:json-smart:2.4.10"
 )
 
 val DEPENDENCIES = listOf(
