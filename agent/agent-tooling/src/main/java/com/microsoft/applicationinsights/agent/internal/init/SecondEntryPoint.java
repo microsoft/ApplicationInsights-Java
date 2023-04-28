@@ -502,7 +502,7 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
               telemetryClient,
               quickPulse,
               configuration.preview.captureHttpServer4xxAsError,
-              exceptionSamplingOverrides);
+              new SamplingOverrides(exceptionSamplingOverrides));
 
       spanExporter = wrapSpanExporter(spanExporter, configuration);
 
@@ -522,7 +522,7 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
       TelemetryClient telemetryClient,
       @Nullable QuickPulse quickPulse,
       boolean captureHttpServer4xxAsError,
-      List<Configuration.SamplingOverride> exceptionSamplingOverrides) {
+      SamplingOverrides exceptionSamplingOverrides) {
 
     SpanDataMapper mapper =
         new SpanDataMapper(
@@ -546,8 +546,7 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
             },
             (span, event) -> {
               Double samplingPercentage =
-                  new SamplingOverrides(exceptionSamplingOverrides)
-                      .getOverridePercentage(event.getAttributes());
+                  exceptionSamplingOverrides.getOverridePercentage(event.getAttributes());
               return samplingPercentage != null
                   && !ExporterUtils.shouldSample(span.getSpanContext(), samplingPercentage);
             });
