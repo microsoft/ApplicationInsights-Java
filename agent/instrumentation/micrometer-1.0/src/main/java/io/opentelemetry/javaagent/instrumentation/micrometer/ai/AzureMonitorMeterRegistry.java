@@ -28,12 +28,9 @@ public class AzureMonitorMeterRegistry extends StepMeterRegistry {
   public static final AzureMonitorMeterRegistry INSTANCE =
       new AzureMonitorMeterRegistry(Clock.SYSTEM);
 
-  private final AzureMonitorRegistryConfig config;
-
   // visible for testing
   public AzureMonitorMeterRegistry(Clock clock) {
-    super(new AzureMonitorRegistryConfig(), clock);
-    config = new AzureMonitorRegistryConfig();
+    super(AzureMonitorRegistryConfig.INSTANCE, clock);
     config().namingConvention(new AzureMonitorNamingConvention());
     start(new DaemonThreadFactory("azure-micrometer-publisher"));
   }
@@ -205,7 +202,7 @@ public class AzureMonitorMeterRegistry extends StepMeterRegistry {
   }
 
   private String getNamespace() {
-    return config.namespace();
+    return AzureMonitorRegistryConfig.INSTANCE.namespace();
   }
 
   private Map<String, String> getProperties(Meter meter) {

@@ -12,7 +12,9 @@ public class AzureMonitorRegistryConfig implements StepRegistryConfig {
   private final Duration step;
   private final String namespace;
 
-  public AzureMonitorRegistryConfig() {
+  public static final AzureMonitorRegistryConfig INSTANCE = new AzureMonitorRegistryConfig();
+
+  private AzureMonitorRegistryConfig() {
     step =
         InstrumentationConfig.get()
             .getDuration(
