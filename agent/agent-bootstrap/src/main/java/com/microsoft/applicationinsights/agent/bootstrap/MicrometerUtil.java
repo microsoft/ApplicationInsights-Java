@@ -4,6 +4,7 @@
 package com.microsoft.applicationinsights.agent.bootstrap;
 
 import java.util.Map;
+import javax.annotation.Nullable;
 
 public class MicrometerUtil {
 
@@ -15,7 +16,7 @@ public class MicrometerUtil {
 
   public static void trackMetric(
       String name,
-      String namespace,
+      @Nullable String namespace,
       double value,
       Integer count,
       Double min,
@@ -30,7 +31,7 @@ public class MicrometerUtil {
 
     void trackMetric(
         String name,
-        String namespace,
+        @Nullable String namespace,
         double value,
         Integer count,
         Double min,
