@@ -201,6 +201,7 @@ public class AzureMonitorMeterRegistry extends StepMeterRegistry {
             meterId.getBaseUnit());
   }
 
+  @Nullable
   private static String getNamespace() {
     return AzureMonitorRegistryConfig.INSTANCE.namespace();
   }
