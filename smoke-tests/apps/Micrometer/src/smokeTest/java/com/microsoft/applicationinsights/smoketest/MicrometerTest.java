@@ -59,6 +59,7 @@ abstract class MicrometerTest {
     assertThat(point.getMin()).isNull();
     assertThat(point.getMax()).isNull();
     assertThat(point.getStdDev()).isNull();
+    assertThat(point.getMetricNamespace()).isNull();
     assertThat(data.getProperties()).hasSize(1);
     assertThat(data.getProperties()).containsEntry("tag1", "value1");
   }
