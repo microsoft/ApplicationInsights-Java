@@ -70,6 +70,7 @@ class MicrometerTest {
     assertThat(measurement.count).isNull();
     assertThat(measurement.min).isNull();
     assertThat(measurement.max).isNull();
+    assertThat(measurement.namespace).isNull();
   }
 
   @Test
@@ -87,6 +88,7 @@ class MicrometerTest {
     assertThat(measurement.count).isNull();
     assertThat(measurement.min).isNull();
     assertThat(measurement.max).isNull();
+    assertThat(measurement.namespace).isNull();
   }
 
   @Test
@@ -105,6 +107,7 @@ class MicrometerTest {
     assertThat(measurement.count).isNull();
     assertThat(measurement.min).isNull();
     assertThat(measurement.max).isNull();
+    assertThat(measurement.namespace).isNull();
   }
 
   @Test
@@ -125,6 +128,7 @@ class MicrometerTest {
     // min is not supported, see https://github.com/micrometer-metrics/micrometer/issues/457
     assertThat(measurement.min).isNull();
     assertThat(measurement.max).isEqualTo(55);
+    assertThat(measurement.namespace).isNull();
   }
 
   @Test
@@ -146,6 +150,7 @@ class MicrometerTest {
     // min is not supported, see https://github.com/micrometer-metrics/micrometer/issues/457
     assertThat(measurement.min).isNull();
     assertThat(measurement.max).isEqualTo(5.5);
+    assertThat(measurement.namespace).isNull();
   }
 
   @Test
@@ -188,6 +193,7 @@ class MicrometerTest {
     assertThat(activeMeasurement.count).isNull();
     assertThat(activeMeasurement.min).isNull();
     assertThat(activeMeasurement.max).isNull();
+    assertThat(activeMeasurement.namespace).isNull();
 
     AgentTestingMicrometerDelegate.Measurement durationMeasurement =
         getLastMeasurement("test-long-task-timer_duration");
@@ -195,6 +201,7 @@ class MicrometerTest {
     assertThat(durationMeasurement.count).isNull();
     assertThat(durationMeasurement.min).isNull();
     assertThat(durationMeasurement.max).isNull();
+    assertThat(durationMeasurement.namespace).isNull();
   }
 
   @Test
@@ -213,6 +220,7 @@ class MicrometerTest {
     assertThat(measurements.count).isNull();
     assertThat(measurements.min).isNull();
     assertThat(measurements.max).isNull();
+    assertThat(measurements.namespace).isNull();
   }
 
   @Test
@@ -232,6 +240,7 @@ class MicrometerTest {
     assertThat(measurement.count).isEqualTo(2);
     assertThat(measurement.min).isNull();
     assertThat(measurement.max).isNull();
+    assertThat(measurement.namespace).isNull();
   }
 
   public AgentTestingMicrometerDelegate.Measurement getLastMeasurement(String name) {

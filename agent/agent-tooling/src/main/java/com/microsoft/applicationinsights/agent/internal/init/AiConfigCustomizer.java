@@ -183,6 +183,10 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
       // properties.put("otel.instrumentation.micrometer.enabled", "true");
       // properties.put("otel.instrumentation.spring-boot-actuator-autoconfigure.enabled", "true");
     }
+    String namespace = config.instrumentation.micrometer.namespace;
+    if (namespace != null) {
+      properties.put("applicationinsights.internal.micrometer.namespace", namespace);
+    }
     if (config.instrumentation.azureSdk.enabled) {
       properties.put("otel.instrumentation.azure-core.enabled", "true");
     }

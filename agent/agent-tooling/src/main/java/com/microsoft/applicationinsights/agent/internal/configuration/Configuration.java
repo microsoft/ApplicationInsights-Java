@@ -263,6 +263,7 @@ public class Configuration {
 
   public static class MicrometerInstrumentation {
     public boolean enabled = true;
+    public String namespace;
     // this is just here to detect if using this old undocumented setting in order to give a helpful
     // error message
     @Deprecated public int reportingIntervalSeconds = 60;
