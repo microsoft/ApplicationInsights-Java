@@ -12,8 +12,8 @@ val dependencyVersions = hashMapOf<String, String>()
 rootProject.extra["versions"] = dependencyVersions
 
 val otelVersion = "1.25.0"
-val otelInstrumentationAlphaVersion = "1.25.0-alpha"
-val otelInstrumentationVersion = "1.25.0"
+val otelInstrumentationAlphaVersion = "1.25.1-alpha"
+val otelInstrumentationVersion = "1.25.1"
 val otelContribAlphaVersion = "1.18.0-alpha"
 
 rootProject.extra["otelVersion"] = otelVersion
@@ -28,7 +28,7 @@ val DEPENDENCY_BOMS = listOf(
   "io.opentelemetry:opentelemetry-bom-alpha:${otelVersion}-alpha",
   "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:${otelInstrumentationVersion}",
   "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${otelInstrumentationAlphaVersion}",
-  "com.azure:azure-sdk-bom:1.2.11",
+  "com.azure:azure-sdk-bom:1.2.12",
   "io.netty:netty-bom:4.1.92.Final",
   "org.junit:junit-bom:5.9.3",
   "org.testcontainers:testcontainers-bom:1.18.0",
@@ -72,7 +72,12 @@ val CORE_DEPENDENCIES = listOf(
   "io.opentelemetry.javaagent:opentelemetry-javaagent-tooling:${otelInstrumentationAlphaVersion}",
   // temporarily overriding transitive dependency from azure-core until next azure-bom release
   // which targets at least reactor-netty-http:1.1.1
-  "io.projectreactor.netty:reactor-netty-http:1.1.6"
+  "io.projectreactor.netty:reactor-netty-http:1.1.6",
+  // CVE-2023-1370 - https://github.com/advisories/GHSA-493p-pfq6-5258
+  // Transitive dependency: json-smart -> com.microsoft.azure:msal4j:1.13.5 ->  com.azure:azure-identity
+  // -> azure-monitor-exporter
+  // upstream fix: https://github.com/AzureAD/microsoft-authentication-library-for-java/pull/612
+  "net.minidev:json-smart:2.4.10"
 )
 
 val DEPENDENCIES = listOf(

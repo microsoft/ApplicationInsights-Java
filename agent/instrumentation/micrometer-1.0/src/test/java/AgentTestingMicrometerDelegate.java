@@ -5,6 +5,7 @@ import com.microsoft.applicationinsights.agent.bootstrap.MicrometerUtil;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
+import javax.annotation.Nullable;
 
 public class AgentTestingMicrometerDelegate implements MicrometerUtil.MicrometerUtilDelegate {
 
@@ -13,12 +14,13 @@ public class AgentTestingMicrometerDelegate implements MicrometerUtil.Micrometer
   @Override
   public void trackMetric(
       String name,
+      @Nullable String namespace,
       double value,
       Integer count,
       Double min,
       Double max,
       Map<String, String> properties) {
-    measurements.add(new Measurement(name, value, count, min, max, properties));
+    measurements.add(new Measurement(name, namespace, value, count, min, max, properties));
   }
 
   public void reset() {
@@ -32,6 +34,8 @@ public class AgentTestingMicrometerDelegate implements MicrometerUtil.Micrometer
   public static class Measurement {
 
     public final String name;
+
+    @Nullable public final String namespace;
     public final double value;
     public final Integer count;
     public final Double min;
@@ -40,12 +44,14 @@ public class AgentTestingMicrometerDelegate implements MicrometerUtil.Micrometer
 
     private Measurement(
         String name,
+        @Nullable String namespace,
         double value,
         Integer count,
         Double min,
         Double max,
         Map<String, String> properties) {
       this.name = name;
+      this.namespace = namespace;
       this.value = value;
       this.count = count;
       this.min = min;

@@ -29,3 +29,11 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           path: agent/agent/build/reports
+
+  scheduled-job-notification:
+    needs:
+      - analyze
+    if: always()
+    uses: ./.github/workflows/reusable-scheduled-job-notification.yml
+    with:
+      success: ${{ needs.analyze.result == 'success' }}

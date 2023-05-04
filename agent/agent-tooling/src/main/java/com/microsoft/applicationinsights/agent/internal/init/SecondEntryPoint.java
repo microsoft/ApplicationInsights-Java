@@ -37,6 +37,7 @@ import com.microsoft.applicationinsights.agent.internal.configuration.RpConfigur
 import com.microsoft.applicationinsights.agent.internal.exporter.AgentLogExporter;
 import com.microsoft.applicationinsights.agent.internal.exporter.AgentMetricExporter;
 import com.microsoft.applicationinsights.agent.internal.exporter.AgentSpanExporter;
+import com.microsoft.applicationinsights.agent.internal.exporter.ExporterUtils;
 import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
 import com.microsoft.applicationinsights.agent.internal.legacyheaders.AiLegacyHeaderSpanProcessor;
 import com.microsoft.applicationinsights.agent.internal.processors.ExporterWithLogProcessor;
@@ -46,6 +47,7 @@ import com.microsoft.applicationinsights.agent.internal.processors.MySpanData;
 import com.microsoft.applicationinsights.agent.internal.processors.SpanExporterWithAttributeProcessor;
 import com.microsoft.applicationinsights.agent.internal.profiler.ProfilingInitializer;
 import com.microsoft.applicationinsights.agent.internal.profiler.triggers.AlertTriggerSpanProcessor;
+import com.microsoft.applicationinsights.agent.internal.sampling.SamplingOverrides;
 import com.microsoft.applicationinsights.agent.internal.telemetry.BatchItemProcessor;
 import com.microsoft.applicationinsights.agent.internal.telemetry.MetricFilter;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
@@ -491,9 +493,16 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
 
     String tracesExporter = otelConfig.getString("otel.traces.exporter");
     if ("none".equals(tracesExporter)) { // "none" is the default set in AiConfigCustomizer
+      List<Configuration.SamplingOverride> exceptionSamplingOverrides =
+          configuration.preview.sampling.overrides.stream()
+              .filter(override -> override.telemetryType == SamplingTelemetryType.EXCEPTION)
+              .collect(Collectors.toList());
       SpanExporter spanExporter =
           createSpanExporter(
-              telemetryClient, quickPulse, configuration.preview.captureHttpServer4xxAsError);
+              telemetryClient,
+              quickPulse,
+              configuration.preview.captureHttpServer4xxAsError,
+              new SamplingOverrides(exceptionSamplingOverrides));
 
       spanExporter = wrapSpanExporter(spanExporter, configuration);
 
@@ -512,7 +521,8 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
   private static SpanExporter createSpanExporter(
       TelemetryClient telemetryClient,
       @Nullable QuickPulse quickPulse,
-      boolean captureHttpServer4xxAsError) {
+      boolean captureHttpServer4xxAsError,
+      SamplingOverrides exceptionSamplingOverrides) {
 
     SpanDataMapper mapper =
         new SpanDataMapper(
@@ -533,6 +543,12 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
                 return true;
               }
               return false;
+            },
+            (span, event) -> {
+              Double samplingPercentage =
+                  exceptionSamplingOverrides.getOverridePercentage(event.getAttributes());
+              return samplingPercentage != null
+                  && !ExporterUtils.shouldSample(span.getSpanContext(), samplingPercentage);
             });
 
     BatchItemProcessor batchItemProcessor = telemetryClient.getGeneralBatchItemProcessor();

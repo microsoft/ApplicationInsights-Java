@@ -1,10 +1,11 @@
 # This is a Gradle generated file for dependency locking.
 # Manual edits can break the build and are not advised.
 # This file is expected to be part of source control.
-com.azure:azure-core-http-netty:1.13.1=runtimeClasspath
-com.azure:azure-core:1.37.0=runtimeClasspath
-com.azure:azure-identity:1.8.1=runtimeClasspath
-com.azure:azure-sdk-bom:1.2.11=runtimeClasspath
+com.azure:azure-core-http-netty:1.13.2=runtimeClasspath
+com.azure:azure-core:1.38.0=runtimeClasspath
+com.azure:azure-identity:1.8.2=runtimeClasspath
+com.azure:azure-json:1.0.0=runtimeClasspath
+com.azure:azure-sdk-bom:1.2.12=runtimeClasspath
 com.fasterxml.jackson.core:jackson-annotations:2.14.2=runtimeClasspath
 com.fasterxml.jackson.core:jackson-core:2.14.2=runtimeClasspath
 com.fasterxml.jackson.core:jackson-databind:2.14.2=runtimeClasspath
@@ -13,7 +14,7 @@ com.fasterxml.jackson:jackson-bom:2.14.2=runtimeClasspath
 com.github.stephenc.jcip:jcip-annotations:1.0-1=runtimeClasspath
 com.google.guava:guava-bom:31.1-jre=runtimeClasspath
 com.microsoft.azure:msal4j-persistence-extension:1.1.0=runtimeClasspath
-com.microsoft.azure:msal4j:1.13.5=runtimeClasspath
+com.microsoft.azure:msal4j:1.13.7=runtimeClasspath
 com.nimbusds:content-type:2.2=runtimeClasspath
 com.nimbusds:lang-tag:1.6=runtimeClasspath
 com.nimbusds:nimbus-jose-jwt:9.22=runtimeClasspath
@@ -40,8 +41,8 @@ io.netty:netty-transport-native-epoll:4.1.92.Final=runtimeClasspath
 io.netty:netty-transport-native-kqueue:4.1.92.Final=runtimeClasspath
 io.netty:netty-transport-native-unix-common:4.1.92.Final=runtimeClasspath
 io.netty:netty-transport:4.1.92.Final=runtimeClasspath
-io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:1.25.0-alpha=runtimeClasspath
-io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:1.25.0=runtimeClasspath
+io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:1.25.1-alpha=runtimeClasspath
+io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:1.25.1=runtimeClasspath
 io.opentelemetry:opentelemetry-bom-alpha:1.25.0-alpha=runtimeClasspath
 io.opentelemetry:opentelemetry-bom:1.25.0=runtimeClasspath
 io.projectreactor.netty:reactor-netty-core:1.1.6=runtimeClasspath

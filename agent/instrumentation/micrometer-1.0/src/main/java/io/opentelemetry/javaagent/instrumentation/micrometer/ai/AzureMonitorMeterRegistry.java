@@ -30,7 +30,7 @@ public class AzureMonitorMeterRegistry extends StepMeterRegistry {
 
   // visible for testing
   public AzureMonitorMeterRegistry(Clock clock) {
-    super(new AzureMonitorRegistryConfig(), clock);
+    super(AzureMonitorRegistryConfig.INSTANCE, clock);
     config().namingConvention(new AzureMonitorNamingConvention());
     start(new DaemonThreadFactory("azure-micrometer-publisher"));
   }
@@ -67,15 +67,29 @@ public class AzureMonitorMeterRegistry extends StepMeterRegistry {
 
   private void trackTimeGauge(TimeGauge gauge) {
     trackMetric(
-        getName(gauge), gauge.value(getBaseTimeUnit()), null, null, null, getProperties(gauge));
+        getName(gauge),
+        getNamespace(),
+        gauge.value(getBaseTimeUnit()),
+        null,
+        null,
+        null,
+        getProperties(gauge));
   }
 
   private void trackGauge(Gauge gauge) {
-    trackMetric(getName(gauge), gauge.value(), null, null, null, getProperties(gauge));
+    trackMetric(
+        getName(gauge), getNamespace(), gauge.value(), null, null, null, getProperties(gauge));
   }
 
   private void trackCounter(Counter counter) {
-    trackMetric(getName(counter), counter.count(), null, null, null, getProperties(counter));
+    trackMetric(
+        getName(counter),
+        getNamespace(),
+        counter.count(),
+        null,
+        null,
+        null,
+        getProperties(counter));
   }
 
   private void trackTimer(Timer timer) {
@@ -87,6 +101,7 @@ public class AzureMonitorMeterRegistry extends StepMeterRegistry {
     // min is not supported, see https://github.com/micrometer-metrics/micrometer/issues/457
     trackMetric(
         getName(timer),
+        getNamespace(),
         timer.totalTime(getBaseTimeUnit()),
         castCountToInt(count),
         null,
@@ -103,6 +118,7 @@ public class AzureMonitorMeterRegistry extends StepMeterRegistry {
     // min is not supported, see https://github.com/micrometer-metrics/micrometer/issues/457
     trackMetric(
         getName(summary),
+        getNamespace(),
         summary.totalAmount(),
         castCountToInt(count),
         null,
@@ -112,9 +128,17 @@ public class AzureMonitorMeterRegistry extends StepMeterRegistry {
 
   private void trackLongTaskTimer(LongTaskTimer timer) {
     Map<String, String> properties = getProperties(timer);
-    trackMetric(getName(timer, "active"), timer.activeTasks(), null, null, null, properties);
+    trackMetric(
+        getName(timer, "active"),
+        getNamespace(),
+        timer.activeTasks(),
+        null,
+        null,
+        null,
+        properties);
     trackMetric(
         getName(timer, "duration"),
+        getNamespace(),
         timer.duration(getBaseTimeUnit()),
         null,
         null,
@@ -123,7 +147,14 @@ public class AzureMonitorMeterRegistry extends StepMeterRegistry {
   }
 
   private void trackFunctionCounter(FunctionCounter counter) {
-    trackMetric(getName(counter), counter.count(), null, null, null, getProperties(counter));
+    trackMetric(
+        getName(counter),
+        getNamespace(),
+        counter.count(),
+        null,
+        null,
+        null,
+        getProperties(counter));
   }
 
   private void trackFunctionTimer(FunctionTimer timer) {
@@ -134,6 +165,7 @@ public class AzureMonitorMeterRegistry extends StepMeterRegistry {
     }
     trackMetric(
         getName(timer),
+        getNamespace(),
         timer.totalTime(getBaseTimeUnit()),
         castCountToInt(count),
         null,
@@ -146,6 +178,7 @@ public class AzureMonitorMeterRegistry extends StepMeterRegistry {
     for (Measurement measurement : meter.measure()) {
       trackMetric(
           getName(meter, measurement.getStatistic().toString().toLowerCase()),
+          getNamespace(),
           measurement.getValue(),
           null,
           null,
@@ -166,6 +199,11 @@ public class AzureMonitorMeterRegistry extends StepMeterRegistry {
             meterId.getName() + (suffix == null ? "" : "." + suffix),
             meterId.getType(),
             meterId.getBaseUnit());
+  }
+
+  @Nullable
+  private static String getNamespace() {
+    return AzureMonitorRegistryConfig.INSTANCE.namespace();
   }
 
   private Map<String, String> getProperties(Meter meter) {

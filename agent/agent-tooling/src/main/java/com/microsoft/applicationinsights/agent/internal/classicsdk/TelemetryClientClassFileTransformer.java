@@ -13,6 +13,7 @@ import static org.objectweb.asm.Opcodes.ASTORE;
 import static org.objectweb.asm.Opcodes.CHECKCAST;
 import static org.objectweb.asm.Opcodes.DLOAD;
 import static org.objectweb.asm.Opcodes.DUP;
+import static org.objectweb.asm.Opcodes.GETFIELD;
 import static org.objectweb.asm.Opcodes.GOTO;
 import static org.objectweb.asm.Opcodes.ICONST_M1;
 import static org.objectweb.asm.Opcodes.IFEQ;
@@ -24,6 +25,7 @@ import static org.objectweb.asm.Opcodes.INVOKEINTERFACE;
 import static org.objectweb.asm.Opcodes.INVOKESPECIAL;
 import static org.objectweb.asm.Opcodes.INVOKESTATIC;
 import static org.objectweb.asm.Opcodes.INVOKEVIRTUAL;
+import static org.objectweb.asm.Opcodes.IRETURN;
 import static org.objectweb.asm.Opcodes.ISTORE;
 import static org.objectweb.asm.Opcodes.NEW;
 import static org.objectweb.asm.Opcodes.RETURN;
@@ -35,6 +37,7 @@ import javax.annotation.Nullable;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -75,7 +78,13 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
       TelemetryClientClassVisitor cv = new TelemetryClientClassVisitor(cw);
       ClassReader cr = new ClassReader(classfileBuffer);
       cr.accept(cv, 0);
-      return cw.toByteArray();
+      if (cv.foundIsDisabledMethod && !cv.foundConfigurationField) {
+        logger.error(
+            "isDisabled() method found in TelemetryClient but configuration field was not found");
+        return null;
+      } else {
+        return cw.toByteArray();
+      }
     } catch (Throwable t) {
       logger.error(t.getMessage(), t);
       return null;
@@ -88,9 +97,22 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
 
     private final ClassWriter cw;
 
+    private boolean foundConfigurationField;
+    private boolean foundIsDisabledMethod;
+
     private TelemetryClientClassVisitor(ClassWriter cw) {
       super(ASM9, cw);
       this.cw = cw;
+    }
+
+    @Override
+    public FieldVisitor visitField(
+        int access, String name, String descriptor, String signature, Object value) {
+      if (name.equals("configuration")
+          && descriptor.equals("L" + unshadedPrefix + "/TelemetryConfiguration;")) {
+        foundConfigurationField = true;
+      }
+      return super.visitField(access, name, descriptor, signature, value);
     }
 
     @Override
@@ -112,6 +134,10 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
       } else if (name.equals("trackAvailability")
           && descriptor.equals("(L" + unshadedPrefix + "/telemetry/AvailabilityTelemetry;)V")) {
         overwriteTrackAvailabilityMethod(mv);
+        return null;
+      } else if (name.equals("isDisabled") && descriptor.equals("()Z")) {
+        foundIsDisabledMethod = true;
+        overwriteIsDisabledMethod(mv);
         return null;
       } else if (name.equals("flush") && descriptor.equals("()V")) {
         overwriteFlushMethod(mv);
@@ -402,6 +428,29 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
       Label label2 = new Label();
       mv.visitLabel(label2);
       mv.visitMaxs(6, 4);
+      mv.visitEnd();
+    }
+
+    private void overwriteIsDisabledMethod(MethodVisitor mv) {
+      mv.visitCode();
+      Label label0 = new Label();
+      mv.visitLabel(label0);
+      mv.visitVarInsn(ALOAD, 0);
+      mv.visitFieldInsn(
+          GETFIELD,
+          unshadedPrefix + "/TelemetryClient",
+          "configuration",
+          "L" + unshadedPrefix + "/TelemetryConfiguration;");
+      mv.visitMethodInsn(
+          INVOKEVIRTUAL,
+          unshadedPrefix + "/TelemetryConfiguration",
+          "isTrackingDisabled",
+          "()Z",
+          false);
+      mv.visitInsn(IRETURN);
+      Label label1 = new Label();
+      mv.visitLabel(label1);
+      mv.visitMaxs(1, 1);
       mv.visitEnd();
     }
 

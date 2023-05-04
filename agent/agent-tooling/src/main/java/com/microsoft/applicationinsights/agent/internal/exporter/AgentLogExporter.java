@@ -4,18 +4,17 @@
 package com.microsoft.applicationinsights.agent.internal.exporter;
 
 import static com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMsgId.EXPORTER_MAPPING_ERROR;
+import static com.microsoft.applicationinsights.agent.internal.exporter.ExporterUtils.shouldSample;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.LogDataMapper;
 import com.azure.monitor.opentelemetry.exporter.implementation.logging.OperationLogger;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.QuickPulse;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.SamplingOverride;
-import com.microsoft.applicationinsights.agent.internal.sampling.AiSampler;
 import com.microsoft.applicationinsights.agent.internal.sampling.SamplingOverrides;
 import com.microsoft.applicationinsights.agent.internal.telemetry.BatchItemProcessor;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryObservers;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
@@ -23,7 +22,6 @@ import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import org.slf4j.Logger;
@@ -133,24 +131,5 @@ public class AgentLogExporter implements LogRecordExporter {
   @Override
   public CompletableResultCode shutdown() {
     return CompletableResultCode.ofSuccess();
-  }
-
-  @SuppressFBWarnings(
-      value = "SECPR", // Predictable pseudorandom number generator
-      justification = "Predictable random is ok for sampling decision")
-  private static boolean shouldSample(SpanContext spanContext, double percentage) {
-    if (percentage == 100) {
-      // optimization, no need to calculate score
-      return true;
-    }
-    if (percentage == 0) {
-      // optimization, no need to calculate score
-      return false;
-    }
-    if (spanContext.isValid()) {
-      return AiSampler.shouldRecordAndSample(spanContext.getTraceId(), percentage);
-    }
-    // this is a standalone log (not part of a trace), so randomly sample at the given percentage
-    return ThreadLocalRandom.current().nextDouble() < percentage / 100;
   }
 }

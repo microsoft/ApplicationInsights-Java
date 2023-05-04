@@ -31,6 +31,7 @@ public class BytecodeUtil {
             @Override
             public void trackMetric(
                 String name,
+                @Nullable String namespace,
                 double value,
                 Integer count,
                 Double min,
@@ -39,7 +40,7 @@ public class BytecodeUtil {
               delegate.trackMetric(
                   null,
                   name,
-                  null,
+                  namespace,
                   value,
                   count,
                   min,
