@@ -27,6 +27,7 @@ import com.microsoft.applicationinsights.diagnostics.collection.libos.os.nop.NoO
 import com.microsoft.applicationinsights.diagnostics.collection.libos.os.nop.NoOpProcessDumper;
 import com.microsoft.applicationinsights.diagnostics.collection.libos.process.Process;
 import com.microsoft.applicationinsights.diagnostics.collection.libos.process.ProcessDumper;
+import com.microsoft.applicationinsights.diagnostics.collection.libos.process.ThisPidSupplier;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.Collections;
@@ -57,9 +58,11 @@ public class SystemStatsProvider {
 
   private SystemStatsProvider() {}
 
-  public static void init() {
+  public static void init(int thisPid) {
     // Ensure we only initialize once
     if (initialised.compareAndSet(false, true)) {
+      singletons.put(ThisPidSupplier.class, new AtomicReference<>((ThisPidSupplier) () -> thisPid));
+
       if (singletons.get(Calibrator.class) == null) {
         try {
           getCalibration();
@@ -73,6 +76,10 @@ public class SystemStatsProvider {
         }
       }
     }
+  }
+
+  private static <T> T getSingleton(Class<T> clazz) {
+    return (T) singletons.get(clazz).get();
   }
 
   private static <T> T getSingleton(Class<T> clazz, Supplier<T> supplier) {
@@ -168,9 +175,10 @@ public class SystemStatsProvider {
 
   @Nullable
   private static ProcessDumper getProcessDumper() {
+    ThisPidSupplier pidSupplier = getSingleton(ThisPidSupplier.class);
     switch (OperatingSystemDetector.getOperatingSystem()) {
       case LINUX:
-        return new LinuxProcessDumper(false);
+        return new LinuxProcessDumper(false, pidSupplier.get());
       default:
         return new NoOpProcessDumper();
     }
@@ -239,8 +247,8 @@ public class SystemStatsProvider {
         });
   }
 
-  public static SystemStatsReader getStatsReader() {
-    init();
+  public static SystemStatsReader getStatsReader(int thisPidSupplier) {
+    init(thisPidSupplier);
     return getSystemStatsReader();
   }
 

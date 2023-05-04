@@ -30,9 +30,11 @@ public class CodeOptimizerDiagnosticEngineJfr implements DiagnosticEngine {
   private static final Logger LOGGER =
       LoggerFactory.getLogger(CodeOptimizerDiagnosticEngineJfr.class);
   public static final int SEMAPHORE_TIMEOUT_IN_SEC = 10;
+  public static final long TIME_BEFORE_END_OF_PROFILE_TO_EMIT_EVENT = 10L;
   private final ObjectMapper mapper;
   private final ScheduledExecutorService executorService;
   private final Semaphore semaphore = new Semaphore(1, false);
+  private int thisPid;
 
   public CodeOptimizerDiagnosticEngineJfr(ScheduledExecutorService executorService) {
     this.executorService = executorService;
@@ -40,21 +42,23 @@ public class CodeOptimizerDiagnosticEngineJfr implements DiagnosticEngine {
   }
 
   @Override
-  public void init() {
+  public void init(int thisPid) {
     if (!CodeOptimizerDiagnosticsJfrInit.isOsSupported()) {
       LOGGER.warn("Code Optimizer diagnostics is not supported on this operating system");
       return;
     }
 
+    this.thisPid = thisPid;
+
     LOGGER.debug("Initialising Code Optimizer Diagnostic Engine");
-    CodeOptimizerDiagnosticsJfrInit.initFeature();
+    CodeOptimizerDiagnosticsJfrInit.initFeature(thisPid);
     LOGGER.debug("Code Optimizer Diagnostic Engine Initialised");
   }
 
-  private static void startDiagnosticCycle() {
+  private static void startDiagnosticCycle(int thisPid) {
     LOGGER.debug("Starting Code Optimizer Diagnostic Cycle");
-    CodeOptimizerDiagnosticsJfrInit.initFeature();
-    CodeOptimizerDiagnosticsJfrInit.start();
+    CodeOptimizerDiagnosticsJfrInit.initFeature(thisPid);
+    CodeOptimizerDiagnosticsJfrInit.start(thisPid);
   }
 
   private static void endDiagnosticCycle() {
@@ -72,9 +76,9 @@ public class CodeOptimizerDiagnosticEngineJfr implements DiagnosticEngine {
 
         long profileDurationInSec = alert.getAlertConfiguration().getProfileDurationSeconds();
 
-        long end = profileDurationInSec - 10L;
+        long end = profileDurationInSec - TIME_BEFORE_END_OF_PROFILE_TO_EMIT_EVENT;
 
-        startDiagnosticCycle();
+        startDiagnosticCycle(thisPid);
 
         scheduleEmittingAlertBreachEvent(alert, end);
 

@@ -4,6 +4,7 @@
 package com.microsoft.applicationinsights.agent.internal.profiler;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.ThreadPoolUtils;
+import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.PidFinder;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.configuration.GcReportingLevel;
 import com.microsoft.applicationinsights.agent.internal.profiler.service.ServiceProfilerClient;
@@ -146,7 +147,7 @@ public class PerformanceMonitoringService {
             diagnosticEngineFactory.create(diagnosticEngineExecutorService);
 
         if (diagnosticEngine != null) {
-          diagnosticEngine.init();
+          diagnosticEngine.init(Integer.parseInt(new PidFinder().getValue()));
         } else {
           diagnosticEngineExecutorService.shutdown();
         }
@@ -157,7 +158,7 @@ public class PerformanceMonitoringService {
     } catch (Throwable e) {
       // This is a broad catch however there could be a broad range of issues such as ClassNotFound
       // and dont want to disrupt the rest of the code
-      logger.error("Failed to load profiler factory", e);
+      logger.error("Failed to initialize the diagnostic engine", e);
     }
     return null;
   }

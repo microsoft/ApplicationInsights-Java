@@ -3,14 +3,11 @@
 
 package com.microsoft.applicationinsights.diagnostics.collection.libos.os.linux;
 
-import static java.lang.Integer.parseInt;
-
 import com.microsoft.applicationinsights.diagnostics.collection.libos.process.Process;
 import com.microsoft.applicationinsights.diagnostics.collection.libos.process.ProcessDumper;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
-import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -29,9 +26,8 @@ public class LinuxProcessDumper implements ProcessDumper, Closeable {
 
   private final int thisPid;
 
-  public LinuxProcessDumper(boolean isDaemon) {
-    String[] splitName = ManagementFactory.getRuntimeMXBean().getName().split("@");
-    thisPid = parseInt(splitName[0]);
+  public LinuxProcessDumper(boolean isDaemon, int thisPid) {
+    this.thisPid = thisPid;
     this.isDaemon = isDaemon;
   }
 

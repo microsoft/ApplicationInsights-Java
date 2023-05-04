@@ -4,10 +4,8 @@
 package com.microsoft.applicationinsights.diagnostics.jfr;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import java.util.Arrays;
 import java.util.List;
 import java.util.StringJoiner;
-import java.util.stream.Collectors;
 import jdk.jfr.Category;
 import jdk.jfr.Description;
 import jdk.jfr.Event;
@@ -58,12 +56,6 @@ public class Telemetry extends Event {
         });
     this.telemetry = joiner.toString();
     this.version = LATEST_VERSION;
-  }
-
-  public List<Double> getTelemetryData() {
-    return Arrays.stream(telemetry.split(","))
-        .map(Double::parseDouble)
-        .collect(Collectors.toList());
   }
 
   public int getVersion() {

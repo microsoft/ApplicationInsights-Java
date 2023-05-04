@@ -87,22 +87,22 @@ public class CodeOptimizerDiagnosticsJfrInit {
     return OperatingSystemDetector.getOperatingSystem().supportsDiagnostics();
   }
 
-  public static void initFeature() {
+  public static void initFeature(int thisPid) {
     if (!isOsSupported()) {
       return;
     }
 
     // eagerly get stats to warm it up
-    SystemStatsProvider.init();
+    SystemStatsProvider.init(thisPid);
   }
 
-  public static void start() {
+  public static void start(int thisPidSupplier) {
     if (!isOsSupported()) {
       return;
     }
 
     if (running.compareAndSet(false, true)) {
-      SystemStatsReader statsReader = SystemStatsProvider.getStatsReader();
+      SystemStatsReader statsReader = SystemStatsProvider.getStatsReader(thisPidSupplier);
       Runnable emitter = emitTelemetry(statsReader);
       if (telemetryEmitter.compareAndSet(null, emitter)) {
         FlightRecorder.addPeriodicEvent(Telemetry.class, emitter);
