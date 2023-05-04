@@ -3,12 +3,12 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_11;
+
 import com.microsoft.applicationinsights.smoketest.fakeingestion.ProfilerState;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
-
-import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_11;
 
 @UseAgent
 abstract class DiagnosticsTest {

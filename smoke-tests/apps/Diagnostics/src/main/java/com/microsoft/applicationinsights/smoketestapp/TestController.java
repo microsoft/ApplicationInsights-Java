@@ -5,7 +5,6 @@ package com.microsoft.applicationinsights.smoketestapp;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
@@ -17,13 +16,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class TestController {
-
-  public TestController() {
-    System.err.println("FOO");
-  }
-
   @GetMapping("/")
-  public String root() throws IOException {
+  public String root() {
     return "OK";
   }
 
