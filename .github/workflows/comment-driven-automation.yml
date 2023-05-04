@@ -42,7 +42,7 @@ jobs:
           env.COMMAND == 'spotless' ||
           env.COMMAND == 'license' ||
           env.COMMAND == 'lockfile'
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/gradle-build-action@v2.4.2
         with:
           cache-read-only: true
 
