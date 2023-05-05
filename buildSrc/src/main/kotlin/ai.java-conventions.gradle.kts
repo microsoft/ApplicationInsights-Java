@@ -154,7 +154,7 @@ dependencyCheck {
 
 if (!path.startsWith(":smoke-tests")) {
   configurations.configureEach {
-    if (name.toLowerCase().endsWith("runtimeclasspath")) {
+    if (name.lowercase().endsWith("runtimeclasspath")) {
       resolutionStrategy.activateDependencyLocking()
     }
   }

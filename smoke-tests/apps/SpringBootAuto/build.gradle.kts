@@ -3,7 +3,7 @@ plugins {
 }
 
 dependencies {
-  implementation("org.springframework.boot:spring-boot-starter-web:2.1.7.RELEASE") {
+  implementation("org.springframework.boot:spring-boot-starter-web:2.5.12") {
     exclude("org.springframework.boot", "spring-boot-starter-tomcat")
   }
   // this dependency is needed to make wildfly happy

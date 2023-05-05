@@ -1,6 +1,6 @@
 plugins {
   id("ai.java-conventions")
-  id("org.springframework.boot" version "2.1.7.RELEASE")
+  id("org.springframework.boot" version "2.5.12")
   id("war")
 }
 
@@ -10,7 +10,7 @@ dependencies {
   // compileOnly(project(path:":agent:agent", configuration:"devtest"))
   compileOnly(project(path: ":agent:agent"))
 
-  implementation("org.springframework.boot:spring-boot-starter-web:2.1.7.RELEASE") {
+  implementation("org.springframework.boot:spring-boot-starter-web:2.5.12") {
     exclude("org.springframework.boot", "spring-boot-starter-tomcat")
   }
   implementation("org.apache.commons:commons-lang3:3.12.0")
