@@ -43,5 +43,5 @@ dependencies {
   implementation("me.champeau.jmh:jmh-gradle-plugin:0.7.1")
 
   // earlier versions aren't compatible with Gradle 8.1.1
-  implementation("org.springframework.boot:spring-boot-gradle-plugin:2.5.0")
+  implementation("org.springframework.boot:spring-boot-gradle-plugin:2.5.12")
 }

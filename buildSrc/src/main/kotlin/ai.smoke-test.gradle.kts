@@ -2,8 +2,7 @@ import com.microsoft.applicationinsights.gradle.AiSmokeTestExtension
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 
 plugins {
-  `java-library`
-
+  java
   id("ai.spotless-conventions")
 }
 
