@@ -16,9 +16,13 @@ import com.microsoft.applicationinsights.alerting.config.AlertConfiguration;
 import com.microsoft.applicationinsights.alerting.config.AlertMetricType;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /** Constructs an AlertPipeline for processing span telemetry data. */
 class RequestAlertPipelineBuilder {
+
+  private static final Logger logger = LoggerFactory.getLogger(RequestAlertPipelineBuilder.class);
 
   private RequestAlertPipelineBuilder() {}
 
@@ -27,6 +31,14 @@ class RequestAlertPipelineBuilder {
       Configuration.RequestTrigger configuration,
       Consumer<AlertBreach> alertAction,
       TimeSource timeSource) {
+
+    if (configuration.profileDuration < 30) {
+      logger.warn(
+          "A profile duration of "
+              + configuration.profileDuration
+              + " seconds was requested, profiles must be a minimum of 30 seconds. This configuration has been set to 30 seconds");
+      configuration.profileDuration = 30;
+    }
 
     AlertingConfig.RequestTrigger requestTriggerConfiguration =
         buildRequestTriggerConfiguration(configuration);
