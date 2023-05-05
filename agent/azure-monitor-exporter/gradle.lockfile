@@ -1,16 +1,17 @@
 # This is a Gradle generated file for dependency locking.
 # Manual edits can break the build and are not advised.
 # This file is expected to be part of source control.
+ch.randelshofer:fastdoubleparser:0.8.0=runtimeClasspath
 com.azure:azure-core-http-netty:1.13.2=runtimeClasspath
 com.azure:azure-core:1.38.0=runtimeClasspath
 com.azure:azure-identity:1.8.2=runtimeClasspath
 com.azure:azure-json:1.0.0=runtimeClasspath
 com.azure:azure-sdk-bom:1.2.12=runtimeClasspath
-com.fasterxml.jackson.core:jackson-annotations:2.14.2=runtimeClasspath
-com.fasterxml.jackson.core:jackson-core:2.14.2=runtimeClasspath
-com.fasterxml.jackson.core:jackson-databind:2.14.2=runtimeClasspath
-com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.14.2=runtimeClasspath
-com.fasterxml.jackson:jackson-bom:2.14.2=runtimeClasspath
+com.fasterxml.jackson.core:jackson-annotations:2.15.0=runtimeClasspath
+com.fasterxml.jackson.core:jackson-core:2.15.0=runtimeClasspath
+com.fasterxml.jackson.core:jackson-databind:2.15.0=runtimeClasspath
+com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.15.0=runtimeClasspath
+com.fasterxml.jackson:jackson-bom:2.15.0=runtimeClasspath
 com.github.stephenc.jcip:jcip-annotations:1.0-1=runtimeClasspath
 com.google.guava:guava-bom:31.1-jre=runtimeClasspath
 com.microsoft.azure:msal4j-persistence-extension:1.1.0=runtimeClasspath
