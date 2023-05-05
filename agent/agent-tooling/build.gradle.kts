@@ -90,11 +90,3 @@ dependencies {
   testImplementation("uk.org.webcompere:system-stubs-jupiter:2.0.2")
   testImplementation("io.github.hakky54:logcaptor")
 }
-
-configurations {
-  all {
-    // excluding unused dependencies for size (~1.8mb)
-    exclude("com.fasterxml.jackson.dataformat", "jackson-dataformat-xml")
-    exclude("com.fasterxml.woodstox", "woodstox-core")
-  }
-}
