@@ -45,11 +45,3 @@ dependencies {
   testCompileOnly("com.google.code.findbugs:jsr305")
   testCompileOnly("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
 }
-
-configurations {
-  all {
-    // excluding unused dependencies for size (~1.8mb)
-    exclude("com.fasterxml.jackson.dataformat", "jackson-dataformat-xml")
-    exclude("com.fasterxml.woodstox", "woodstox-core")
-  }
-}

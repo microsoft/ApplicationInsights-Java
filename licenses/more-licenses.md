@@ -1,7 +1,7 @@
 
 #agent
 ##Dependency License Report
-_2023-05-05 14:48:11 UTC_
+_2023-05-05 14:24:24 PDT_
 ## Apache License, Version 2.0
 
 **1** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-annotations` **Version:** `2.15.0` 
@@ -45,22 +45,21 @@ _2023-05-05 14:48:11 UTC_
 > - **POM Project URL**: [https://bitbucket.org/connect2id/nimbus-content-type](https://bitbucket.org/connect2id/nimbus-content-type)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
-**8** **Group:** `com.nimbusds` **Name:** `lang-tag` **Version:** `1.6` 
+**8** **Group:** `com.nimbusds` **Name:** `lang-tag` **Version:** `1.7` 
 > - **Manifest Project URL**: [https://connect2id.com/](https://connect2id.com/)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM Project URL**: [https://bitbucket.org/connect2id/nimbus-language-tags](https://bitbucket.org/connect2id/nimbus-language-tags)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
-**9** **Group:** `com.nimbusds` **Name:** `nimbus-jose-jwt` **Version:** `9.22` 
+**9** **Group:** `com.nimbusds` **Name:** `nimbus-jose-jwt` **Version:** `9.30.2` 
 > - **Manifest Project URL**: [https://connect2id.com](https://connect2id.com)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM Project URL**: [https://bitbucket.org/connect2id/nimbus-jose-jwt](https://bitbucket.org/connect2id/nimbus-jose-jwt)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
-**10** **Group:** `com.nimbusds` **Name:** `oauth2-oidc-sdk` **Version:** `9.35` 
-> - **Manifest Project URL**: [https://connect2id.com](https://connect2id.com)
+**10** **Group:** `com.nimbusds` **Name:** `oauth2-oidc-sdk` **Version:** `10.7.1` 
+> - **Project URL**: [https://bitbucket.org/connect2id/oauth-2.0-sdk-with-openid-connect-extensions](https://bitbucket.org/connect2id/oauth-2.0-sdk-with-openid-connect-extensions)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
-> - **POM Project URL**: [https://bitbucket.org/connect2id/oauth-2.0-sdk-with-openid-connect-extensions](https://bitbucket.org/connect2id/oauth-2.0-sdk-with-openid-connect-extensions)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
 
 **11** **Group:** `com.squareup.moshi` **Name:** `moshi` **Version:** `1.11.0` 
@@ -314,7 +313,7 @@ _2023-05-05 14:48:11 UTC_
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**59** **Group:** `com.azure` **Name:** `azure-identity` **Version:** `1.8.2` 
+**59** **Group:** `com.azure` **Name:** `azure-identity` **Version:** `1.8.3` 
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
@@ -339,12 +338,12 @@ _2023-05-05 14:48:11 UTC_
 > - **Manifest License**: "SPDX-License-Identifier: MIT";link="https://opensource.org/licenses/MIT" (Not Packaged)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**65** **Group:** `com.microsoft.azure` **Name:** `msal4j` **Version:** `1.13.7` 
+**65** **Group:** `com.microsoft.azure` **Name:** `msal4j` **Version:** `1.13.8` 
 > - **Project URL**: [https://github.com/AzureAD/microsoft-authentication-library-for-java](https://github.com/AzureAD/microsoft-authentication-library-for-java)
 > - **Manifest License**: "MIT License" (Not Packaged)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**66** **Group:** `com.microsoft.azure` **Name:** `msal4j-persistence-extension` **Version:** `1.1.0` 
+**66** **Group:** `com.microsoft.azure` **Name:** `msal4j-persistence-extension` **Version:** `1.2.0` 
 > - **POM Project URL**: [https://github.com/AzureAD/microsoft-authentication-extensions-for-java](https://github.com/AzureAD/microsoft-authentication-extensions-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 

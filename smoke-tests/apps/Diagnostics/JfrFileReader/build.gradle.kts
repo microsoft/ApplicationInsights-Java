@@ -1,14 +1,20 @@
 plugins {
-  `java`
+  java
+}
+
+dependencies {
+  compileOnly("org.gradle.jfr.polyfill:jfr-polyfill:1.0.0")
 }
 
 java {
   toolchain {
-    languageVersion.set(JavaLanguageVersion.of(11))
+    languageVersion.set(JavaLanguageVersion.of(17))
   }
 }
 
-
-dependencies {
-  compileOnly("org.gradle.jfr.polyfill:jfr-polyfill:1.0.0")
+tasks.withType<JavaCompile>().configureEach {
+  with(options) {
+    release.set(11)
+    compilerArgs.add("-Werror")
+  }
 }
