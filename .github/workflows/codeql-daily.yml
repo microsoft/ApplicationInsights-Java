@@ -30,3 +30,11 @@ jobs:
 
       - name: Perform CodeQL analysis
         uses: github/codeql-action/analyze@v2
+
+  scheduled-job-notification:
+    needs:
+      - analyze
+    if: always()
+    uses: ./.github/workflows/reusable-scheduled-job-notification.yml
+    with:
+      success: ${{ needs.analyze.result == 'success' }}
