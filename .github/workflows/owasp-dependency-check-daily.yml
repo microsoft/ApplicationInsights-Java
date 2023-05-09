@@ -36,4 +36,4 @@ jobs:
     if: always()
     uses: ./.github/workflows/reusable-scheduled-job-notification.yml
     with:
-      success: needs.analyze.result == 'success'
+      success: ${{ needs.analyze.result == 'success' }}
