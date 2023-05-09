@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import java.io.IOException;
+import java.util.Locale;
 
 public class LowerCaseEnumSerializers {
 
@@ -19,7 +20,7 @@ public class LowerCaseEnumSerializers {
     @Override
     public void serialize(T value, JsonGenerator gen, SerializerProvider serializers)
         throws IOException {
-      gen.writeString(value.name().toLowerCase().replace("_", "-"));
+      gen.writeString(value.name().toLowerCase(Locale.ROOT).replace("_", "-"));
     }
   }
 
@@ -33,7 +34,8 @@ public class LowerCaseEnumSerializers {
 
     @Override
     public T deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
-      return Enum.valueOf(clazz, p.getValueAsString().toUpperCase().replaceAll("-", "_"));
+      return Enum.valueOf(
+          clazz, p.getValueAsString().toUpperCase(Locale.ROOT).replaceAll("-", "_"));
     }
   }
 }

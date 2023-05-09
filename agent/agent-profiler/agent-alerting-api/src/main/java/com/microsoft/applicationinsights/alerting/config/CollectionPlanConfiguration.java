@@ -5,6 +5,7 @@ package com.microsoft.applicationinsights.alerting.config;
 
 import com.google.auto.value.AutoValue;
 import java.time.Instant;
+import java.util.Locale;
 
 @AutoValue
 public abstract class CollectionPlanConfiguration {
@@ -31,7 +32,7 @@ public abstract class CollectionPlanConfiguration {
 
     public static EngineMode parse(String value) {
       try {
-        return EngineMode.valueOf(value.toLowerCase());
+        return EngineMode.valueOf(value.toLowerCase(Locale.ROOT));
       } catch (IllegalArgumentException e) {
         return unknown;
       }

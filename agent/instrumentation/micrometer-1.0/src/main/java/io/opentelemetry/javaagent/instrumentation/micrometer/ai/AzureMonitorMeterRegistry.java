@@ -20,6 +20,7 @@ import io.micrometer.core.instrument.Timer;
 import io.micrometer.core.instrument.step.StepMeterRegistry;
 import io.micrometer.core.lang.Nullable;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -177,7 +178,7 @@ public class AzureMonitorMeterRegistry extends StepMeterRegistry {
     Map<String, String> properties = getProperties(meter);
     for (Measurement measurement : meter.measure()) {
       trackMetric(
-          getName(meter, measurement.getStatistic().toString().toLowerCase()),
+          getName(meter, measurement.getStatistic().toString().toLowerCase(Locale.ROOT)),
           getNamespace(),
           measurement.getValue(),
           null,
