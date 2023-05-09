@@ -4,6 +4,7 @@
 package com.microsoft.applicationinsights.diagnostics.collection.libos.os;
 
 import com.microsoft.applicationinsights.diagnostics.collection.libos.OperatingSystem;
+import java.util.Locale;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,13 +24,13 @@ public class OperatingSystemDetector {
   static {
     OperatingSystem detectedOs = OperatingSystem.UNKNOWN;
     try {
-      String operatingSystemString = System.getProperty(OS_NAME_PROPERTY).toLowerCase();
+      String operatingSystemString = System.getProperty(OS_NAME_PROPERTY).toLowerCase(Locale.ROOT);
       LOGGER.debug("Detected OS " + operatingSystemString);
       if (operatingSystemString.contains(MAC)) {
         detectedOs = OperatingSystem.MAC_OS;
       } else if (operatingSystemString.contains(LINUX)) {
         detectedOs = OperatingSystem.LINUX;
-      } else if (operatingSystemString.contains(WINDOWS.toLowerCase())) {
+      } else if (operatingSystemString.contains(WINDOWS.toLowerCase(Locale.ROOT))) {
         detectedOs = OperatingSystem.WINDOWS;
       } else if (operatingSystemString.contains(SOLARIS)) {
         detectedOs = OperatingSystem.SOLARIS;
