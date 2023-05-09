@@ -226,7 +226,7 @@ configurations {
     exclude("com.fasterxml.woodstox", "woodstox-core")
 
     // these are needed until next com.azure:azure-sdk-bom 1.2.13 is released
-    resolutionStrategy.force("com.azure:azure-identity:1.8.3")
+    resolutionStrategy.force("com.azure:azure-identity:1.9.0")
     resolutionStrategy.force("com.microsoft.azure:msal4j:1.13.8")
   }
 }
