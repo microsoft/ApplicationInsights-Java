@@ -1,0 +1,15 @@
+{
+  "role": {
+    "name": "testrolename",
+    "instance": "testroleinstance"
+  },
+  "sampling": {
+    "percentage": 100
+  },
+  "instrumentation": {
+    "micrometer": {
+      "enabled": false
+    }
+  },
+  "metricIntervalSeconds": 5
+}

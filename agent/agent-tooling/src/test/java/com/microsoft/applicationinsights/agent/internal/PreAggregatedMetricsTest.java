@@ -139,7 +139,7 @@ public class PreAggregatedMetricsTest {
     MetricTelemetryBuilder builder = MetricTelemetryBuilder.create();
     MetricData metricData = metricDataCollection.iterator().next();
     MetricDataMapper.updateMetricPointBuilder(
-        builder, metricData, metricData.getData().getPoints().iterator().next(), true, true);
+        builder, metricData, metricData.getData().getPoints().iterator().next(), true, true, null);
     TelemetryItem telemetryItem = builder.build();
     MetricsData metricsData = (MetricsData) telemetryItem.getData().getBaseData();
 
@@ -217,7 +217,7 @@ public class PreAggregatedMetricsTest {
     MetricTelemetryBuilder builder = MetricTelemetryBuilder.create();
     MetricData metricData = metricDataCollection.iterator().next();
     MetricDataMapper.updateMetricPointBuilder(
-        builder, metricData, metricData.getData().getPoints().iterator().next(), true, true);
+        builder, metricData, metricData.getData().getPoints().iterator().next(), true, true, null);
     TelemetryItem telemetryItem = builder.build();
     MetricsData metricsData = (MetricsData) telemetryItem.getData().getBaseData();
 
@@ -297,7 +297,7 @@ public class PreAggregatedMetricsTest {
     MetricTelemetryBuilder builder = MetricTelemetryBuilder.create();
     MetricData metricData = target;
     MetricDataMapper.updateMetricPointBuilder(
-        builder, metricData, metricData.getData().getPoints().iterator().next(), true, true);
+        builder, metricData, metricData.getData().getPoints().iterator().next(), true, true, null);
     TelemetryItem telemetryItem = builder.build();
     MetricsData metricsData = (MetricsData) telemetryItem.getData().getBaseData();
 

@@ -21,6 +21,7 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
     Configuration configuration = FirstEntryPoint.getConfiguration();
 
     Map<String, String> properties = new HashMap<>();
+    // used by micrometer-1.0 instrumentation
     properties.put(
         "applicationinsights.internal.micrometer.step.millis",
         Long.toString(SECONDS.toMillis(configuration.metricIntervalSeconds)));
@@ -177,15 +178,9 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
     properties.put("otel.instrumentation.undertow.enabled", "true");
 
     if (config.instrumentation.micrometer.enabled) {
-      // TODO (heya) replace with below when updating to upstream micrometer
       properties.put("otel.instrumentation.ai-micrometer.enabled", "true");
-      properties.put("otel.instrumentation.ai-actuator-metrics.enabled", "true");
-      // properties.put("otel.instrumentation.micrometer.enabled", "true");
-      // properties.put("otel.instrumentation.spring-boot-actuator-autoconfigure.enabled", "true");
-    }
-    String namespace = config.instrumentation.micrometer.namespace;
-    if (namespace != null) {
-      properties.put("applicationinsights.internal.micrometer.namespace", namespace);
+      // properties.put("otel.instrumentation.ai-actuator-metrics.enabled", "true");
+      properties.put("otel.instrumentation.spring-boot-actuator-autoconfigure.enabled", "true");
     }
     if (config.instrumentation.azureSdk.enabled) {
       properties.put("otel.instrumentation.azure-core.enabled", "true");

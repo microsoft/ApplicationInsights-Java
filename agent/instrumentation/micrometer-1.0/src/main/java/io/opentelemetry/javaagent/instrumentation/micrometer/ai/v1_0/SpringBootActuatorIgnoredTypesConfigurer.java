@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-package io.opentelemetry.javaagent.instrumentation.micrometer.ai;
+package io.opentelemetry.javaagent.instrumentation.micrometer.ai.v1_0;
 
 import com.google.auto.service.AutoService;
 import io.opentelemetry.javaagent.extension.ignore.IgnoredTypesBuilder;

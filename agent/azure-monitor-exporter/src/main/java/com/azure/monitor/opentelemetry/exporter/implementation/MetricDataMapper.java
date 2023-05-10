@@ -48,6 +48,7 @@ public class MetricDataMapper {
 
   private final BiConsumer<AbstractTelemetryBuilder, Resource> telemetryInitializer;
   private final boolean captureHttpServer4xxAsError;
+  @Nullable private final String micrometerMetricNamespace;
 
   static {
     EXCLUDED_METRIC_NAMES.add("http.server.active_requests"); // Servlet
@@ -62,9 +63,11 @@ public class MetricDataMapper {
 
   public MetricDataMapper(
       BiConsumer<AbstractTelemetryBuilder, Resource> telemetryInitializer,
-      boolean captureHttpServer4xxAsError) {
+      boolean captureHttpServer4xxAsError,
+      @Nullable String micrometerMetricNamespace) {
     this.telemetryInitializer = telemetryInitializer;
     this.captureHttpServer4xxAsError = captureHttpServer4xxAsError;
+    this.micrometerMetricNamespace = micrometerMetricNamespace;
   }
 
   public void map(MetricData metricData, Consumer<TelemetryItem> consumer) {
@@ -94,6 +97,15 @@ public class MetricDataMapper {
       MetricData metricData, boolean isPreAggregatedStandardMetric) {
     List<TelemetryItem> telemetryItems = new ArrayList<>();
 
+    String namespace = null;
+    if (micrometerMetricNamespace != null
+        && metricData
+            .getInstrumentationScopeInfo()
+            .getName()
+            .equals("io.opentelemetry.micrometer-1.5")) {
+      namespace = micrometerMetricNamespace;
+    }
+
     for (PointData pointData : metricData.getData().getPoints()) {
       MetricTelemetryBuilder builder = MetricTelemetryBuilder.create();
       telemetryInitializer.accept(builder, metricData.getResource());
@@ -104,7 +116,8 @@ public class MetricDataMapper {
           metricData,
           pointData,
           captureHttpServer4xxAsError,
-          isPreAggregatedStandardMetric);
+          isPreAggregatedStandardMetric,
+          namespace);
 
       telemetryItems.add(builder.build());
     }
@@ -117,7 +130,8 @@ public class MetricDataMapper {
       MetricData metricData,
       PointData pointData,
       boolean captureHttpServer4xxAsError,
-      boolean isPreAggregatedStandardMetric) {
+      boolean isPreAggregatedStandardMetric,
+      String namespace) {
     checkArgument(metricData != null, "MetricData cannot be null.");
 
     MetricPointBuilder pointBuilder = new MetricPointBuilder();
@@ -152,6 +166,9 @@ public class MetricDataMapper {
     // TODO (heya) why give it the same name as otel metric?
     //  it seems this field doesn't matter and only _MS.MetricId property matters?
     pointBuilder.setName(metricData.getName());
+    if (namespace != null) {
+      pointBuilder.setNamespace(namespace);
+    }
     metricTelemetryBuilder.setMetricPoint(pointBuilder);
 
     Attributes attributes = pointData.getAttributes();

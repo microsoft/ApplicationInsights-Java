@@ -59,6 +59,13 @@ public class AgentMetricExporter implements MetricExporter {
       return CompletableResultCode.ofSuccess();
     }
     for (MetricData metricData : metrics) {
+      String name = metricData.getName();
+      if (metricData
+          .getInstrumentationScopeInfo()
+          .getName()
+          .equals("io.opentelemetry.micrometer-1.5")) {
+        name = name.replace('.', '_');
+      }
       if (MetricFilter.shouldSkip(metricData.getName(), metricFilters)) {
         continue;
       }

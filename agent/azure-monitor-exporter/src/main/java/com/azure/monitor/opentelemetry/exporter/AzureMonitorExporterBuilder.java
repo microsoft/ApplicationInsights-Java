@@ -243,7 +243,7 @@ public final class AzureMonitorExporterBuilder {
     HeartbeatExporter.start(
         MINUTES.toSeconds(15), this::populateDefaults, telemetryItemExporter::send);
     return new AzureMonitorMetricExporter(
-        new MetricDataMapper(this::populateDefaults, true), telemetryItemExporter);
+        new MetricDataMapper(this::populateDefaults, true, null), telemetryItemExporter);
   }
 
   /**

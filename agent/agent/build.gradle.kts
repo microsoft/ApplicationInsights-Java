@@ -114,6 +114,7 @@ tasks {
 
     exclude("io/opentelemetry/javaagent/shaded/instrumentation/api/instrumenter/http/TemporaryMetricsView.class")
     exclude("io/opentelemetry/javaagent/shaded/instrumentation/api/instrumenter/InstrumenterBuilder.class")
+    exclude("io/opentelemetry/javaagent/instrumentation/micrometer/v1_5/**")
 
     dependsOn(isolateJavaagentLibs)
     from(isolateJavaagentLibs.get().outputs)

@@ -48,7 +48,7 @@ class ActuatorTest {
     // given
     ClassPathResource resource =
         new ClassPathResource(
-            "io/opentelemetry/javaagent/instrumentation/micrometer/ai/AzureMonitorAutoConfiguration.class");
+            "io/opentelemetry/javaagent/instrumentation/micrometer/ai/v1_0/AzureMonitorAutoConfiguration.class");
 
     // when
     InputStream input = resource.getInputStream();

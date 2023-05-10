@@ -1,10 +1,11 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-package io.opentelemetry.javaagent.instrumentation.micrometer.ai;
+package io.opentelemetry.javaagent.instrumentation.micrometer.ai.v1_0;
 
 import static io.opentelemetry.javaagent.extension.matcher.AgentElementMatchers.hasClassesNamed;
 import static java.util.Collections.singletonList;
+import static net.bytebuddy.matcher.ElementMatchers.not;
 
 import com.google.auto.service.AutoService;
 import io.opentelemetry.javaagent.extension.instrumentation.HelperResourceBuilder;
@@ -24,7 +25,9 @@ public class ActuatorInstrumentationModule extends InstrumentationModule {
 
   @Override
   public ElementMatcher.Junction<ClassLoader> classLoaderMatcher() {
-    return hasClassesNamed("io.micrometer.core.instrument.Metrics");
+    return hasClassesNamed("io.micrometer.core.instrument.Metrics")
+        // added in 1.5
+        .and(not(hasClassesNamed("io.micrometer.core.instrument.config.validate.Validated")));
   }
 
   @Override
@@ -33,7 +36,7 @@ public class ActuatorInstrumentationModule extends InstrumentationModule {
     // this line will make AzureMonitorAutoConfiguration available to all classloaders,
     // so that the bean class loader (different than the instrumented class loader) can load it
     helperResourceBuilder.registerForAllClassLoaders(
-        "io/opentelemetry/javaagent/instrumentation/micrometer/ai/AzureMonitorAutoConfiguration.class");
+        "io/opentelemetry/javaagent/instrumentation/micrometer/ai/v1_0/AzureMonitorAutoConfiguration.class");
   }
 
   @Override
