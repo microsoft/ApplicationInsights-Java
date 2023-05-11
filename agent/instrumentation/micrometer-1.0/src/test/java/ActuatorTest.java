@@ -35,7 +35,7 @@ class ActuatorTest {
     // then
     assertThat(list)
         .contains(
-            "io.opentelemetry.javaagent.instrumentation.micrometer.ai.AzureMonitorAutoConfiguration");
+            "io.opentelemetry.javaagent.instrumentation.micrometer.ai.v1_0.AzureMonitorAutoConfiguration");
     assertThat(list)
         .doesNotContain(
             "com.microsoft.azure.spring.autoconfigure.metrics.AzureMonitorMetricsExportAutoConfiguration");
