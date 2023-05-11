@@ -34,6 +34,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.Properties;
 import javax.annotation.Nullable;
+import io.opentelemetry.javaagent.tooling.config.EarlyInitAgentConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -72,7 +73,7 @@ public class FirstEntryPoint implements LoggingCustomizer {
   }
 
   @Override
-  public void init() {
+  public void init(EarlyInitAgentConfig earlyConfig) {
     try {
       if (DEBUG_SIGNED_JAR_ACCESS) {
         JarVerifierClassFileTransformer transformer = new JarVerifierClassFileTransformer();
