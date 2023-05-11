@@ -37,7 +37,6 @@ public abstract class DelegatingLogData implements LogRecordData {
     return delegate.getTimestampEpochNanos();
   }
 
-
   @Override
   public long getObservedTimestampEpochNanos() {
     return delegate.getObservedTimestampEpochNanos();
