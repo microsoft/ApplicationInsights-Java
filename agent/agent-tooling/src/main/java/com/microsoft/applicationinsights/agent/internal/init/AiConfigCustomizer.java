@@ -179,7 +179,9 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
 
     if (config.instrumentation.micrometer.enabled) {
       properties.put("otel.instrumentation.ai-micrometer.enabled", "true");
-      // properties.put("otel.instrumentation.ai-actuator-metrics.enabled", "true");
+      // this is the actuator instrumentation for micrometer 1.0
+      properties.put("otel.instrumentation.ai-actuator-metrics.enabled", "true");
+      // this is the actuator instrumentation for micrometer 1.5
       properties.put("otel.instrumentation.spring-boot-actuator-autoconfigure.enabled", "true");
     }
     String namespace = config.instrumentation.micrometer.namespace;
