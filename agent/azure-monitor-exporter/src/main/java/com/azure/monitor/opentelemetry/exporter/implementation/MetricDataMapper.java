@@ -98,11 +98,7 @@ public class MetricDataMapper {
     List<TelemetryItem> telemetryItems = new ArrayList<>();
 
     String namespace = null;
-    if (micrometerMetricNamespace != null
-        && metricData
-            .getInstrumentationScopeInfo()
-            .getName()
-            .equals("io.opentelemetry.micrometer-1.5")) {
+    if (micrometerMetricNamespace != null && isFromMicrometerInstrumentation(metricData)) {
       namespace = micrometerMetricNamespace;
     }
 
@@ -122,6 +118,13 @@ public class MetricDataMapper {
       telemetryItems.add(builder.build());
     }
     return telemetryItems;
+  }
+
+  private static boolean isFromMicrometerInstrumentation(MetricData metricData) {
+    return metricData
+        .getInstrumentationScopeInfo()
+        .getName()
+        .equals("io.opentelemetry.micrometer-1.5");
   }
 
   // visible for testing
