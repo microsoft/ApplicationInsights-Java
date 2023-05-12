@@ -33,8 +33,13 @@ public abstract class DelegatingLogData implements LogRecordData {
   }
 
   @Override
-  public long getEpochNanos() {
-    return delegate.getEpochNanos();
+  public long getTimestampEpochNanos() {
+    return delegate.getTimestampEpochNanos();
+  }
+
+  @Override
+  public long getObservedTimestampEpochNanos() {
+    return delegate.getObservedTimestampEpochNanos();
   }
 
   @Override
@@ -80,8 +85,11 @@ public abstract class DelegatingLogData implements LogRecordData {
         + "instrumentationScopeInfo="
         + getInstrumentationScopeInfo()
         + ", "
-        + "epochNanos="
-        + getEpochNanos()
+        + "timestampEpochNanos="
+        + getTimestampEpochNanos()
+        + ", "
+        + "observedTimestampEpochNanos="
+        + getObservedTimestampEpochNanos()
         + ", "
         + "attributes="
         + getAttributes()

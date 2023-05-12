@@ -11,9 +11,9 @@ data class DependencySet(val group: String, val version: String, val modules: Li
 val dependencyVersions = hashMapOf<String, String>()
 rootProject.extra["versions"] = dependencyVersions
 
-val otelVersion = "1.25.0"
-val otelInstrumentationAlphaVersion = "1.25.1-alpha"
-val otelInstrumentationVersion = "1.25.1"
+val otelVersion = "1.26.0"
+val otelInstrumentationAlphaVersion = "1.26.0-alpha"
+val otelInstrumentationVersion = "1.26.0"
 val otelContribAlphaVersion = "1.18.0-alpha"
 
 rootProject.extra["otelVersion"] = otelVersion
@@ -31,12 +31,12 @@ val DEPENDENCY_BOMS = listOf(
   "com.azure:azure-sdk-bom:1.2.12",
   "io.netty:netty-bom:4.1.92.Final",
   "org.junit:junit-bom:5.9.3",
-  "org.testcontainers:testcontainers-bom:1.18.0",
+  "org.testcontainers:testcontainers-bom:1.18.1",
 )
 
 val autoServiceVersion = "1.0.1"
 val autoValueVersion = "1.10.1"
-val errorProneVersion = "2.19.0"
+val errorProneVersion = "2.19.1"
 val byteBuddyVersion = "1.12.18"
 val jmhVersion = "1.36"
 val mockitoVersion = "4.11.0"
