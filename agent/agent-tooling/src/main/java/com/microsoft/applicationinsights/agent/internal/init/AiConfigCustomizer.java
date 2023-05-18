@@ -25,7 +25,7 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
         "applicationinsights.internal.micrometer.step.millis",
         Long.toString(SECONDS.toMillis(configuration.metricIntervalSeconds)));
 
-    enableInstrumentations(configuration, properties);
+    enableInstrumentations(otelConfig, configuration, properties);
 
     if (!configuration.preview.captureControllerSpans) {
       properties.put(
@@ -116,7 +116,8 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
     return properties;
   }
 
-  private static void enableInstrumentations(Configuration config, Map<String, String> properties) {
+  private static void enableInstrumentations(
+      ConfigProperties otelConfig, Configuration config, Map<String, String> properties) {
     properties.put("otel.instrumentation.common.default-enabled", "false");
 
     properties.put("otel.instrumentation.experimental.span-suppression-strategy", "client");
@@ -148,7 +149,9 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
     properties.put("otel.instrumentation.liberty.enabled", "true");
     properties.put("otel.instrumentation.liberty-dispatcher.enabled", "true");
     properties.put("otel.instrumentation.log4j-appender.enabled", "true");
-    properties.put("otel.instrumentation.logback-appender.enabled", "true");
+    if (otelConfig.getBoolean("otel.instrumentation.logback-appender.enabled", true)) {
+      properties.put("otel.instrumentation.logback-appender.enabled", "true");
+    }
     properties.put("otel.instrumentation.log4j-mdc.enabled", "true");
     properties.put("otel.instrumentation.log4j-context-data.enabled", "true");
     properties.put("otel.instrumentation.logback-mdc.enabled", "true");
