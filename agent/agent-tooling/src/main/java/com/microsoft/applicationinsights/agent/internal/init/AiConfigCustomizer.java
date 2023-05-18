@@ -148,7 +148,12 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
     properties.put("otel.instrumentation.liberty.enabled", "true");
     properties.put("otel.instrumentation.liberty-dispatcher.enabled", "true");
     properties.put("otel.instrumentation.log4j-appender.enabled", "true");
-    properties.put("otel.instrumentation.logback-appender.enabled", "true");
+
+    String logbackSystemProperty =
+        System.getProperty("otel.instrumentation.logback-appender.enabled");
+    if (logbackSystemProperty == null && Boolean.parseBoolean(logbackSystemProperty)) {
+      properties.put("otel.instrumentation.logback-appender.enabled", "true");
+    }
     properties.put("otel.instrumentation.log4j-mdc.enabled", "true");
     properties.put("otel.instrumentation.log4j-context-data.enabled", "true");
     properties.put("otel.instrumentation.logback-mdc.enabled", "true");
