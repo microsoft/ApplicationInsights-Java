@@ -15,6 +15,20 @@ jobs:
   common:
     uses: ./.github/workflows/build-common.yml
 
+  test-clean:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up JDK for running Gradle
+        uses: actions/setup-java@v3
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - run: |
+          ./gradlew test clean
+
   required-status-check:
     needs:
       - common
