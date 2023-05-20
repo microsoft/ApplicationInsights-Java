@@ -132,13 +132,13 @@ jobs:
       - name: Test
         run: >
           ./gradlew
-            check
-            clean
-            -x spotlessCheck
-            -PtestJavaVersion=${{ matrix.test-java-version }}
-            -PtestJavaVM=${{ matrix.vm }}
-            -Porg.gradle.java.installations.paths=${{ steps.setup-test-java.outputs.path }}
-            -Porg.gradle.java.installations.auto-download=false ${{ inputs.no-build-cache && ' --no-build-cache' || '' }}
+          check
+          clean
+          -x spotlessCheck
+          -PtestJavaVersion=${{ matrix.test-java-version }}
+          -PtestJavaVM=${{ matrix.vm }}
+          -Porg.gradle.java.installations.paths=${{ steps.setup-test-java.outputs.path }}
+          -Porg.gradle.java.installations.auto-download=false ${{ inputs.no-build-cache && ' --no-build-cache' || '' }}
 
   setup-smoke-test-matrix:
     runs-on: ubuntu-latest
