@@ -130,11 +130,10 @@ jobs:
           java-version: 17
 
       - name: Test
-        uses: gradle/gradle-build-action@v2.4.2
-        with:
-          # spotless is checked separately since it's a common source of failure
-          arguments: >
+        run: >
+          ./gradlew
             check
+            clean
             -x spotlessCheck
             -PtestJavaVersion=${{ matrix.test-java-version }}
             -PtestJavaVM=${{ matrix.vm }}
