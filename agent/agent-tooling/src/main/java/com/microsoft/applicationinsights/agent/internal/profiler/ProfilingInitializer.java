@@ -171,6 +171,9 @@ public class ProfilingInitializer {
   }
 
   synchronized void applyConfiguration(ProfilerConfiguration config) {
+    logger.info("Trigger settings");
+    logger.info(config.getRequestTriggerConfiguration());
+
     if (currentlyEnabled.get() || (config.isEnabled() && config.hasBeenConfigured())) {
 
       AlertingConfiguration alertingConfig = AlertConfigParser.toAlertingConfig(config);
