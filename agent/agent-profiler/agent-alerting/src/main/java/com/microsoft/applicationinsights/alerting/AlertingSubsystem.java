@@ -13,13 +13,15 @@ import com.microsoft.applicationinsights.alerting.config.AlertMetricType;
 import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration;
 import com.microsoft.applicationinsights.alerting.config.CollectionPlanConfiguration;
 import com.microsoft.applicationinsights.alerting.config.CollectionPlanConfiguration.EngineMode;
-import com.microsoft.applicationinsights.alerting.config.DefaultConfiguration;
+
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
+import com.microsoft.applicationinsights.alerting.config.DefaultConfiguration;
+import com.microsoft.applicationinsights.alerting.config.RequestTriggerConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,7 +71,8 @@ public class AlertingSubsystem {
                 .setExpiration(Instant.now())
                 .setImmediateProfilingDurationSeconds(0)
                 .setSettingsMoniker("")
-                .build()));
+                .build(),
+            RequestTriggerConfiguration.builder().build()));
     return alertingSubsystem;
   }
 

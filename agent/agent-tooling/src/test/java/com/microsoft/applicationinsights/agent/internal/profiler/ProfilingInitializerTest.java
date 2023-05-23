@@ -171,6 +171,7 @@ public class ProfilingInitializerTest {
         "",
         "--cpu-threshold 80 --cpu-trigger-profilingDuration 120 --cpu-trigger-cooldown 14400 --cpu-trigger-enabled true",
         "--memory-threshold 80 --memory-trigger-profilingDuration 120 --memory-trigger-cooldown 14400 --memory-trigger-enabled true",
+        null,
         null);
   }
 
@@ -184,6 +185,7 @@ public class ProfilingInitializerTest {
             + triggersEnabled,
         "--memory-threshold 80 --memory-trigger-profilingDuration 120 --memory-trigger-cooldown 14400 --memory-trigger-enabled "
             + triggersEnabled,
+        null,
         null);
   }
 
@@ -207,6 +209,7 @@ public class ProfilingInitializerTest {
             + triggersEnabled,
         "--memory-threshold 80 --memory-trigger-profilingDuration 120 --memory-trigger-cooldown 14400 --memory-trigger-enabled "
             + triggersEnabled,
+        null,
         null);
   }
 

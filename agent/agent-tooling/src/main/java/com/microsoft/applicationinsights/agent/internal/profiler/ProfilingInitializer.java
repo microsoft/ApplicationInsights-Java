@@ -161,6 +161,9 @@ public class ProfilingInitializer {
   }
 
   synchronized void applyConfiguration(ProfilerConfiguration profilerConfiguration) {
+    logger.info("Trigger settings");
+    logger.info(profilerConfiguration.getRequestTriggerConfiguration());
+
     if (currentlyEnabled.get()
         || (profilerConfiguration.isEnabled() && profilerConfiguration.hasBeenConfigured())) {
 
@@ -169,6 +172,7 @@ public class ProfilingInitializer {
 
       if (alertingConfig.hasAnEnabledTrigger()) {
         if (!currentlyEnabled.getAndSet(true)) {
+          // enableProfiler(alertingConfig.getRequestTriggerConfiguration());
           enableProfiler();
         }
       }
@@ -206,7 +210,6 @@ public class ProfilingInitializer {
   }
 
   private URL getServiceProfilerFrontEndPoint(Configuration.ProfilerConfiguration config) {
-
     // If the user has overridden their service profiler endpoint use that url
     if (config.serviceProfilerFrontEndPoint != null) {
       try {

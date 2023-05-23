@@ -5,6 +5,8 @@ package com.microsoft.applicationinsights.alerting.aiconfig;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.ArrayList;
+import java.util.List;
 
 public class AlertingConfig {
 
@@ -62,7 +64,6 @@ public class AlertingConfig {
       this.configuration = configuration;
     }
   }
-
   public enum RequestTriggerThresholdType {
     GREATER_THAN
   }
@@ -107,6 +108,16 @@ public class AlertingConfig {
 
   public enum RequestTriggerType {
     LATENCY
+  }
+
+  public static List<Class> allTypes;
+  static {
+    allTypes = new ArrayList<>();
+    allTypes.add(RequestFilterType.class);
+    allTypes.add(RequestAggregationType.class);
+    allTypes.add(RequestTriggerThresholdType.class);
+    allTypes.add(RequestTriggerThrottlingType.class);
+    allTypes.add(RequestTriggerType.class);
   }
 
   public static class RequestTrigger {

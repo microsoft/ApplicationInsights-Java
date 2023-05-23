@@ -16,6 +16,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
+import com.microsoft.applicationinsights.alerting.config.RequestTriggerConfiguration;
 import org.junit.jupiter.api.Test;
 
 class AlertingSubsystemTest {
@@ -51,7 +52,9 @@ class AlertingSubsystemTest {
                 .setExpiration(Instant.now())
                 .setImmediateProfilingDurationSeconds(120)
                 .setSettingsMoniker("a-settings-moniker")
-                .build()));
+                .build(),
+            RequestTriggerConfiguration.builder().build()
+            ));
     return monitor;
   }
 
@@ -109,7 +112,8 @@ class AlertingSubsystemTest {
                 .setExpiration(Instant.now().plus(100, ChronoUnit.SECONDS))
                 .setImmediateProfilingDurationSeconds(120)
                 .setSettingsMoniker("a-settings-moniker")
-                .build()));
+                .build(),
+            RequestTriggerConfiguration.builder().build()));
 
     assertThat(called.get().getType()).isEqualTo(AlertMetricType.MANUAL);
   }
@@ -149,7 +153,8 @@ class AlertingSubsystemTest {
                 .setExpiration(Instant.now().minus(100, ChronoUnit.SECONDS))
                 .setImmediateProfilingDurationSeconds(120)
                 .setSettingsMoniker("a-settings-moniker")
-                .build()));
+                .build(),
+            RequestTriggerConfiguration.builder().build()));
 
     assertThat(called.get()).isNull();
   }

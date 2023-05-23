@@ -34,7 +34,8 @@ public abstract class ProfilerConfiguration {
       @JsonProperty("collectionPlan") String collectionPlan,
       @JsonProperty("cpuTriggerConfiguration") String cpuTriggerConfiguration,
       @JsonProperty("memoryTriggerConfiguration") String memoryTriggerConfiguration,
-      @JsonProperty("defaultConfiguration") String defaultConfiguration) {
+      @JsonProperty("defaultConfiguration") String defaultConfiguration,
+      @JsonProperty("requestTriggerConfiguration") String requestTriggerConfiguration) {
 
     return new AutoValue_ProfilerConfiguration(
         lastModified,
@@ -42,7 +43,8 @@ public abstract class ProfilerConfiguration {
         collectionPlan,
         cpuTriggerConfiguration,
         memoryTriggerConfiguration,
-        defaultConfiguration);
+        defaultConfiguration,
+        requestTriggerConfiguration);
   }
 
   public boolean hasBeenConfigured() {
@@ -62,4 +64,7 @@ public abstract class ProfilerConfiguration {
 
   @Nullable
   public abstract String getDefaultConfiguration();
+
+  @Nullable
+  public abstract String getRequestTriggerConfiguration();
 }

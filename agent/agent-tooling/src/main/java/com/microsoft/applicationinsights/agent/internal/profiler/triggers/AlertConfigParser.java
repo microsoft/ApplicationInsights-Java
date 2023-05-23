@@ -3,17 +3,23 @@
 
 package com.microsoft.applicationinsights.agent.internal.profiler.triggers;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.type.CollectionType;
 import com.microsoft.applicationinsights.agent.internal.profiler.config.ProfilerConfiguration;
+import com.microsoft.applicationinsights.alerting.aiconfig.AlertingConfig;
 import com.microsoft.applicationinsights.alerting.config.AlertConfiguration;
 import com.microsoft.applicationinsights.alerting.config.AlertMetricType;
 import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration;
 import com.microsoft.applicationinsights.alerting.config.CollectionPlanConfiguration;
 import com.microsoft.applicationinsights.alerting.config.CollectionPlanConfiguration.EngineMode;
 import com.microsoft.applicationinsights.alerting.config.DefaultConfiguration;
+import com.microsoft.applicationinsights.alerting.config.RequestTriggerConfiguration;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
 
@@ -21,12 +27,14 @@ import javax.annotation.Nullable;
 public class AlertConfigParser {
 
   static AlertingConfiguration parse(
-      String cpuConfig, String memoryConfig, String defaultConfig, String collectionPlan) {
+      String cpuConfig, String memoryConfig, String defaultConfig, String collectionPlan, String requestTriggerConfiguration) {
     return AlertingConfiguration.create(
         parseFromCpu(cpuConfig),
         parseFromMemory(memoryConfig),
         parseDefaultConfiguration(defaultConfig),
-        parseCollectionPlan(collectionPlan));
+        parseCollectionPlan(collectionPlan),
+        parseRequestTriggerConfiguration(requestTriggerConfiguration)
+    );
   }
 
   // --single --mode immediate --immediate-profiling-duration 120  --expiration 5249143304354868449
@@ -164,6 +172,32 @@ public class AlertConfigParser {
         .build();
   }
 
+  static RequestTriggerConfiguration parseRequestTriggerConfiguration (@Nullable String requestTriggerConfiguration) {
+    // requestTriggerConfiguration = "[{\n                    \"name\": \"Users endpoint is responsive\",\n                    \"type\": \"latency\",\n                    \"filter\": {\n                      \"type\": \"name-regex\",\n                      \"value\": \"/users/get/.*\"\n                    },\n                    \"aggregation\": {\n                      \"configuration\": {\n                        \"thresholdMillis\": 20,\n                        \"minimumSamples\": 10\n                      },\n                      \"type\": \"breach-ratio\",\n                      \"windowSizeMillis\": 60000\n                    },\n                    \"threshold\": {\n                      \"value\": 0.75\n                    },\n                    \"profileDuration\": 30,\n                    \"throttling\": {\n                      \"value\": 60\n                    }\n                  }]";
+
+    for (Class type : AlertingConfig.allTypes) {
+      for (Object name : type.getEnumConstants()) {
+        requestTriggerConfiguration = requestTriggerConfiguration.replace(
+                name.toString()
+                        .toLowerCase()
+                        .replace('_', '-'), name.toString());
+      }
+    };
+
+    try {
+      ObjectMapper objectMapper = new ObjectMapper();
+      CollectionType type = objectMapper.getTypeFactory().constructCollectionType(List.class, AlertingConfig.RequestTrigger.class);
+
+      List<AlertingConfig.RequestTrigger> trigger = objectMapper.readValue(requestTriggerConfiguration, type);
+
+      return RequestTriggerConfiguration.builder(trigger).build();
+    } catch (JsonProcessingException e) {
+      throw new IllegalArgumentException(e);
+    }
+
+    // return RequestTriggerConfiguration.builder().build();
+  }
+
   private interface ConfigParser<T> {
     void parse(T config, @Nullable String arg);
   }
@@ -204,7 +238,8 @@ public class AlertConfigParser {
         profilerConfiguration.getCpuTriggerConfiguration(),
         profilerConfiguration.getMemoryTriggerConfiguration(),
         profilerConfiguration.getDefaultConfiguration(),
-        profilerConfiguration.getCollectionPlan());
+        profilerConfiguration.getCollectionPlan(),
+        profilerConfiguration.getRequestTriggerConfiguration());
   }
 
   // visible for testing

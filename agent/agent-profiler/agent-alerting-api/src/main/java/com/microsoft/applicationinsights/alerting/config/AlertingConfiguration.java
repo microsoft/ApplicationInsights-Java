@@ -14,9 +14,12 @@ public abstract class AlertingConfiguration {
       AlertConfiguration cpuAlert,
       AlertConfiguration memoryAlert,
       DefaultConfiguration defaultConfiguration,
-      CollectionPlanConfiguration collectionPlanConfiguration) {
+      CollectionPlanConfiguration collectionPlanConfiguration,
+      RequestTriggerConfiguration requestTriggerConfiguration
+      ) {
     return new AutoValue_AlertingConfiguration(
-        cpuAlert, memoryAlert, defaultConfiguration, collectionPlanConfiguration);
+        cpuAlert, memoryAlert, defaultConfiguration, collectionPlanConfiguration,
+        requestTriggerConfiguration);
   }
 
   public boolean hasAnEnabledTrigger() {
@@ -42,4 +45,7 @@ public abstract class AlertingConfiguration {
 
   // Alert configuration for manual profiling
   public abstract CollectionPlanConfiguration getCollectionPlanConfiguration();
+
+  // Alert configuration for span profiling
+  public abstract RequestTriggerConfiguration getRequestTriggerConfiguration();
 }

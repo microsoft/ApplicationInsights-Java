@@ -18,7 +18,7 @@ class AlertConfigParserTest {
   @Test
   void nullsInConfigAreHandled() {
 
-    AlertingConfiguration config = AlertConfigParser.parse(null, null, null, null);
+    AlertingConfiguration config = AlertConfigParser.parse(null, null, null, null, null);
     assertThat(config.getCpuAlert().isEnabled()).isFalse();
     assertThat(config.getCollectionPlanConfiguration().isSingle()).isFalse();
     assertThat(config.getMemoryAlert().isEnabled()).isFalse();
@@ -32,7 +32,8 @@ class AlertConfigParserTest {
             "--cpu-trigger-enabled true --cpu-threshold 80 --cpu-trigger-profilingDuration 30 --cpu-trigger-cooldown 14400",
             "--memory-trigger-enabled true --memory-threshold 20 --memory-trigger-profilingDuration 120 --memory-trigger-cooldown 14400",
             "--sampling-enabled true --sampling-rate 5 --sampling-profiling-duration 120",
-            "--single --mode immediate --immediate-profiling-duration 120  --expiration 5249157885138288517 --settings-moniker a-settings-moniker");
+            "--single --mode immediate --immediate-profiling-duration 120  --expiration 5249157885138288517 --settings-moniker a-settings-moniker",
+            null);
 
     assertThat(config.getCpuAlert())
         .isEqualTo(
@@ -69,5 +70,19 @@ class AlertConfigParserTest {
                 .setImmediateProfilingDurationSeconds(120)
                 .setSettingsMoniker("a-settings-moniker")
                 .build());
+  }
+
+  @Test
+  void requestTriggerIsParsed() {
+    AlertingConfiguration config =
+        AlertConfigParser.parse(
+            "--cpu-trigger-enabled true --cpu-threshold 80 --cpu-trigger-profilingDuration 30 --cpu-trigger-cooldown 14400",
+            "--memory-trigger-enabled true --memory-threshold 20 --memory-trigger-profilingDuration 120 --memory-trigger-cooldown 14400",
+            "--sampling-enabled true --sampling-rate 5 --sampling-profiling-duration 120",
+            "--single --mode immediate --immediate-profiling-duration 120  --expiration 5249157885138288517 --settings-moniker a-settings-moniker",
+            "{}");
+
+
+    System.out.println(config);
   }
 }
