@@ -5,6 +5,7 @@ package com.microsoft.applicationinsights.agent.internal.telemetry;
 
 import static com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMsgId.BATCH_ITEM_PROCESSOR_ERROR;
 
+import com.azure.core.util.logging.ClientLogger;
 import com.azure.monitor.opentelemetry.exporter.implementation.logging.OperationLogger;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryItemExporter;
@@ -25,6 +26,8 @@ import java.util.concurrent.atomic.AtomicReference;
 
 // copied from io.opentelemetry.sdk.trace.export.BatchSpanProcessor
 public final class BatchItemProcessor {
+
+  private static final ClientLogger logger = new ClientLogger(BatchItemProcessor.class);
 
   private static final String WORKER_THREAD_NAME =
       BatchItemProcessor.class.getSimpleName() + "_WorkerThread";
@@ -62,7 +65,9 @@ public final class BatchItemProcessor {
             queue,
             queue.capacity(),
             queueName);
+
     Thread workerThread = new DaemonThreadFactory(WORKER_THREAD_NAME).newThread(worker);
+    workerThread.setUncaughtExceptionHandler((t, e) -> logger.error(e.getMessage(), e));
     workerThread.start();
   }
 

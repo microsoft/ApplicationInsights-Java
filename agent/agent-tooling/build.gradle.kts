@@ -20,6 +20,7 @@ dependencies {
   implementation(project(":agent:agent-gc-monitor:gc-monitor-api"))
   implementation(project(":agent:agent-gc-monitor:gc-monitor-core"))
   implementation(project(":agent:agent-profiler:agent-diagnostics-api"))
+  implementation(project(":agent:agent-profiler:agent-diagnostics"))
   implementation(project(":agent:azure-monitor-exporter")) {
     exclude("org.ow2.asm", "asm")
   }
@@ -49,7 +50,7 @@ dependencies {
   compileOnly("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure")
   compileOnly("io.opentelemetry:opentelemetry-extension-trace-propagators")
 
-  implementation("com.github.oshi:oshi-core:6.4.0") {
+  implementation("com.github.oshi:oshi-core:6.4.2") {
     exclude("org.slf4j", "slf4j-api")
   }
 
@@ -88,12 +89,4 @@ dependencies {
   testImplementation("org.mockito:mockito-core")
   testImplementation("uk.org.webcompere:system-stubs-jupiter:2.0.2")
   testImplementation("io.github.hakky54:logcaptor")
-}
-
-configurations {
-  all {
-    // excluding unused dependencies for size (~1.8mb)
-    exclude("com.fasterxml.jackson.dataformat", "jackson-dataformat-xml")
-    exclude("com.fasterxml.woodstox", "woodstox-core")
-  }
 }

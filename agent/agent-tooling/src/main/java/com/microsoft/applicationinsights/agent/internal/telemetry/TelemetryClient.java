@@ -15,7 +15,6 @@ import com.azure.monitor.opentelemetry.exporter.implementation.builders.RemoteDe
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.RequestTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
 import com.azure.monitor.opentelemetry.exporter.implementation.configuration.StatsbeatConnectionString;
-import com.azure.monitor.opentelemetry.exporter.implementation.localstorage.LocalStorageStats;
 import com.azure.monitor.opentelemetry.exporter.implementation.localstorage.LocalStorageTelemetryPipelineListener;
 import com.azure.monitor.opentelemetry.exporter.implementation.logging.DiagnosticTelemetryPipelineListener;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
@@ -27,14 +26,13 @@ import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.Telemetr
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipeline;
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipelineListener;
 import com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.QuickPulse;
+import com.azure.monitor.opentelemetry.exporter.implementation.statsbeat.NetworkStatsbeatHttpPipelinePolicy;
+import com.azure.monitor.opentelemetry.exporter.implementation.statsbeat.StatsbeatModule;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.PropertyHelper;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.TempDirs;
-import com.microsoft.applicationinsights.agent.internal.common.PropertyHelper;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
-import com.microsoft.applicationinsights.agent.internal.statsbeat.NetworkStatsbeatHttpPipelinePolicy;
-import com.microsoft.applicationinsights.agent.internal.statsbeat.StatsbeatModule;
-import com.microsoft.applicationinsights.agent.internal.statsbeat.StatsbeatTelemetryPipelineListener;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.File;
@@ -49,7 +47,6 @@ import org.apache.commons.text.StringSubstitutor;
 public class TelemetryClient {
 
   private static final String TELEMETRY_FOLDER_NAME = "telemetry";
-  private static final String STATSBEAT_FOLDER_NAME = "statsbeat";
 
   @Nullable private static volatile TelemetryClient active;
 
@@ -182,13 +179,6 @@ public class TelemetryClient {
     }
   }
 
-  public void trackStatsbeatAsync(TelemetryItem telemetry) {
-    // batching, retry, throttling, and writing to disk on failure occur downstream
-    // for simplicity not reporting back success/failure from this layer
-    // only that it was successfully delivered to the next layer
-    getStatsbeatBatchItemProcessor().trackAsync(telemetry);
-  }
-
   public CompletableResultCode forceFlush() {
     List<CompletableResultCode> resultCodes = new ArrayList<>();
     if (generalBatchItemProcessor != null) {
@@ -267,45 +257,6 @@ public class TelemetryClient {
         // worker thread can drive, so anything higher than this should not increase throughput
         .setMaxPendingExports(100)
         .build(queueName);
-  }
-
-  public BatchItemProcessor getStatsbeatBatchItemProcessor() {
-    if (statsbeatBatchItemProcessor == null) {
-      synchronized (batchItemProcessorInitLock) {
-        if (statsbeatBatchItemProcessor == null) {
-          HttpPipeline httpPipeline = LazyHttpClient.newHttpPipeLine(null);
-          TelemetryPipeline telemetryPipeline = new TelemetryPipeline(httpPipeline);
-
-          TelemetryPipelineListener telemetryPipelineListener;
-          if (tempDir == null) {
-            telemetryPipelineListener =
-                new StatsbeatTelemetryPipelineListener(statsbeatModule::shutdown);
-          } else {
-            LocalStorageTelemetryPipelineListener localStorageTelemetryPipelineListener =
-                new LocalStorageTelemetryPipelineListener(
-                    diskPersistenceMaxSizeMb,
-                    TempDirs.getSubDir(tempDir, STATSBEAT_FOLDER_NAME),
-                    telemetryPipeline,
-                    LocalStorageStats.noop(),
-                    true);
-            telemetryPipelineListener =
-                TelemetryPipelineListener.composite(
-                    new StatsbeatTelemetryPipelineListener(
-                        () -> {
-                          statsbeatModule.shutdown();
-                          localStorageTelemetryPipelineListener.shutdown();
-                        }),
-                    localStorageTelemetryPipelineListener);
-          }
-
-          TelemetryItemExporter exporter =
-              new TelemetryItemExporter(telemetryPipeline, telemetryPipelineListener);
-
-          statsbeatBatchItemProcessor = BatchItemProcessor.builder(exporter).build("statsbeat");
-        }
-      }
-    }
-    return statsbeatBatchItemProcessor;
   }
 
   /** Gets or sets the default instrumentation key for the application. */

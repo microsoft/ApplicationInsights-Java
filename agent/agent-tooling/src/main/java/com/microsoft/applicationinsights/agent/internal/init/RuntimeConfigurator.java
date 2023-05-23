@@ -3,18 +3,26 @@
 
 package com.microsoft.applicationinsights.agent.internal.init;
 
+import static java.util.concurrent.TimeUnit.MINUTES;
+
 import ch.qos.logback.classic.LoggerContext;
+import com.azure.monitor.opentelemetry.exporter.implementation.heartbeat.HeartbeatExporter;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
 import com.microsoft.applicationinsights.agent.internal.classicsdk.BytecodeUtilImpl;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.exporter.AgentLogExporter;
 import com.microsoft.applicationinsights.agent.internal.legacyheaders.DelegatingPropagator;
+import com.microsoft.applicationinsights.agent.internal.profiler.ProfilingInitializer;
 import com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampler;
 import com.microsoft.applicationinsights.agent.internal.sampling.Samplers;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import org.slf4j.Logger;
@@ -26,15 +34,26 @@ public class RuntimeConfigurator {
 
   private final TelemetryClient telemetryClient;
   private final Supplier<AgentLogExporter> agentLogExporter;
+  private final Configuration initialConfig;
   private volatile RuntimeConfiguration currentConfig;
+  private final Consumer<List<TelemetryItem>> heartbeatTelemetryItemsConsumer;
+  private final File tempDir;
+
+  private final AtomicBoolean profilerStarted = new AtomicBoolean();
+  private final AtomicBoolean heartbeatStarted = new AtomicBoolean();
 
   RuntimeConfigurator(
       TelemetryClient telemetryClient,
       Supplier<AgentLogExporter> agentLogExporter,
-      Configuration initialConfig) {
+      Configuration initialConfig,
+      Consumer<List<TelemetryItem>> heartbeatTelemetryItemConsumer,
+      File tempDir) {
     this.telemetryClient = telemetryClient;
     this.agentLogExporter = agentLogExporter;
+    this.initialConfig = initialConfig;
     currentConfig = captureInitialConfig(initialConfig);
+    this.heartbeatTelemetryItemsConsumer = heartbeatTelemetryItemConsumer;
+    this.tempDir = tempDir;
   }
 
   private static RuntimeConfiguration captureInitialConfig(Configuration initialConfig) {
@@ -58,6 +77,9 @@ public class RuntimeConfigurator {
 
     runtimeConfig.instrumentationLoggingLevel = initialConfig.instrumentation.logging.level;
     runtimeConfig.selfDiagnosticsLevel = initialConfig.selfDiagnostics.level;
+
+    runtimeConfig.profilerEnabled = initialConfig.preview.profiler.enabled;
+    runtimeConfig.heartbeatIntervalSeconds = initialConfig.heartbeat.intervalSeconds;
     return runtimeConfig;
   }
 
@@ -79,6 +101,9 @@ public class RuntimeConfigurator {
 
     copy.instrumentationLoggingLevel = config.instrumentationLoggingLevel;
     copy.selfDiagnosticsLevel = config.selfDiagnosticsLevel;
+
+    copy.profilerEnabled = config.profilerEnabled;
+    copy.heartbeatIntervalSeconds = config.heartbeatIntervalSeconds;
     return copy;
   }
 
@@ -111,6 +136,42 @@ public class RuntimeConfigurator {
             runtimeConfig.sampling.requestsPerSecond, currentConfig.sampling.requestsPerSecond)) {
       updateSampling(enabled, runtimeConfig.sampling, runtimeConfig.samplingPreview);
     }
+
+    // initialize Profiler
+    if (runtimeConfig.profilerEnabled && telemetryClient.getConnectionString() != null) {
+      // this prevents profiler being initialized more than once in Azure Spring App
+      if (!profilerStarted.getAndSet(true)) {
+        try {
+          ProfilingInitializer.initialize(
+              tempDir,
+              initialConfig.preview.profiler,
+              initialConfig.preview.gcEvents.reportingLevel,
+              runtimeConfig.role.name,
+              runtimeConfig.role.instance,
+              telemetryClient);
+        } catch (RuntimeException e) {
+          logger.warn("Failed to initialize profiler", e);
+        }
+      } else {
+        logger.debug("Profiler has already been initialized.");
+      }
+    }
+
+    // enable Heartbeat
+    if (telemetryClient.getConnectionString() != null) {
+      // this prevents heartbeat being started more than once in Azure Spring App
+      if (!heartbeatStarted.getAndSet(true)) {
+        // interval longer than 15 minutes is not allowed since we use this data for usage telemetry
+        long intervalSeconds =
+            Math.min(runtimeConfig.heartbeatIntervalSeconds, MINUTES.toSeconds(15));
+        HeartbeatExporter.start(
+            intervalSeconds, telemetryClient::populateDefaults, heartbeatTelemetryItemsConsumer);
+      } else {
+        logger.debug("Heartbeat has already started.");
+      }
+    }
+
+    // TODO (heya) enable Statsbeat and need to refactor RuntimeConfiguration
 
     updateInstrumentationLoggingLevel(runtimeConfig.instrumentationLoggingLevel);
     updateSelfDiagnosticsLevel(runtimeConfig.selfDiagnosticsLevel);

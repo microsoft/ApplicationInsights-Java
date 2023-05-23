@@ -1,0 +1,32 @@
+{
+  "connectionString": "InstrumentationKey=00000000-0000-0000-0000-000000000000",
+  "preview": {
+    "profiler": {
+      "enableRequestTriggering": true,
+      "requestTriggerEndpoints": [
+        {
+          "name": "Users endpoint is responsive",
+          "type": "latency",
+          "filter": {
+            "type": "name-regex",
+            "value": "/users/get/.*"
+          },
+          "aggregation": {
+            "configuration": {
+              "thresholdMillis": 7000
+            },
+            "type": "breach-ratio",
+            "windowSizeMillis": 60000
+          },
+          "threshold": {
+            "value": 0.75
+          },
+          "profileDuration": 30,
+          "throttling": {
+            "value": 60
+          }
+        }
+      ]
+    }
+  }
+}

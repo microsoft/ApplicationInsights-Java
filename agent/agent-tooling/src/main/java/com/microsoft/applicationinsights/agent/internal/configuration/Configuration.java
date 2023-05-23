@@ -263,6 +263,7 @@ public class Configuration {
 
   public static class MicrometerInstrumentation {
     public boolean enabled = true;
+    public String namespace;
     // this is just here to detect if using this old undocumented setting in order to give a helpful
     // error message
     @Deprecated public int reportingIntervalSeconds = 60;
@@ -615,7 +616,7 @@ public class Configuration {
       }
       if (DiagnosticsHelper.useAppSvcRpIntegrationLogging()
           || DiagnosticsHelper.useFunctionsRpIntegrationLogging()) {
-        return StatusFile.getLogDir() + "/" + DEFAULT_NAME;
+        return StatusFile.getLogDir() + File.separator + DEFAULT_NAME;
       }
       // azure spring cloud
       return DEFAULT_NAME;
@@ -1381,6 +1382,7 @@ public class Configuration {
   }
 
   public enum RequestTriggerType {
+    @JsonProperty("latency")
     LATENCY
   }
 

@@ -74,7 +74,7 @@ class RpConfigurationPollingTest {
 
     // when
     RuntimeConfigurator runtimeConfigurator =
-        new RuntimeConfigurator(telemetryClient, () -> null, config);
+        new RuntimeConfigurator(telemetryClient, () -> null, config, item -> {}, null);
     new RpConfigurationPolling(rpConfiguration, runtimeConfigurator).run();
 
     // then
@@ -117,7 +117,7 @@ class RpConfigurationPollingTest {
 
     // when
     RuntimeConfigurator runtimeConfigurator =
-        new RuntimeConfigurator(telemetryClient, () -> null, config);
+        new RuntimeConfigurator(telemetryClient, () -> null, config, item -> {}, null);
     new RpConfigurationPolling(rpConfiguration, runtimeConfigurator).run();
 
     // then

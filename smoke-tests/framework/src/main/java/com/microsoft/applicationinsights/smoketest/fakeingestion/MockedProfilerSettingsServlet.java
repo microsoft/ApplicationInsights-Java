@@ -81,7 +81,7 @@ public class MockedProfilerSettingsServlet extends HttpServlet {
         ProfilerState.manualprofile,
         "{\n"
             + "   \"agentConcurrency\" : 0,\n"
-            + "   \"collectionPlan\" : \"--single --mode immediate --immediate-profiling-duration 120  --expiration "
+            + "   \"collectionPlan\" : \"--single --mode immediate --immediate-profiling-duration 30  --expiration "
             + expire
             + " --settings-moniker a-settings-moniker\",\n"
             + "   \"cpuTriggerConfiguration\" : \"--cpu-threshold 80 --cpu-trigger-profilingDuration 120 --cpu-trigger-cooldown 14400 --cpu-trigger-enabled true\",\n"

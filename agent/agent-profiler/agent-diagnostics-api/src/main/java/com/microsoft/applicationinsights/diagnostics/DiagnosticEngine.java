@@ -10,7 +10,7 @@ import java.util.concurrent.Future;
 public interface DiagnosticEngine {
 
   /** Invoked on application startup. */
-  void init();
+  void init(int thisPid);
 
   /**
    * Perform a diagnostic cycle. It is expected that this will execute and return within the time in

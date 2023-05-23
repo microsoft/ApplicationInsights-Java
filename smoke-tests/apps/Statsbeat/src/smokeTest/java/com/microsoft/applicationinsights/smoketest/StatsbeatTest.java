@@ -33,7 +33,18 @@ abstract class StatsbeatTest {
     List<Envelope> metrics =
         testing.mockedIngestion.waitForMetricItems("Feature", 2, 70, TimeUnit.SECONDS);
 
-    MetricData data = (MetricData) ((Data<?>) metrics.get(0).getData()).getBaseData();
+    // sort envelope list to have feature at the beginning and instrumentation at the end
+    Envelope[] sortedMetrics = new Envelope[2];
+    for (int i = 0; i < metrics.size(); i++) {
+      MetricData data = (MetricData) ((Data<?>) metrics.get(i).getData()).getBaseData();
+      if ("0".equals(data.getProperties().get("type"))) {
+        sortedMetrics[0] = metrics.get(i);
+      } else {
+        sortedMetrics[1] = metrics.get(i);
+      }
+    }
+
+    MetricData data = (MetricData) ((Data<?>) sortedMetrics[0].getData()).getBaseData();
     assertCommon(data);
     assertThat(data.getProperties()).containsKey("feature");
     assertThat(data.getProperties()).containsKey("type");
@@ -41,7 +52,7 @@ abstract class StatsbeatTest {
     assertThat(data.getProperties()).hasSize(9);
 
     MetricData instrumentationData =
-        (MetricData) ((Data<?>) metrics.get(1).getData()).getBaseData();
+        (MetricData) ((Data<?>) sortedMetrics[1].getData()).getBaseData();
     assertCommon(instrumentationData);
     assertThat(instrumentationData.getProperties()).containsKey("feature");
     assertThat(instrumentationData.getProperties()).containsKey("type");
@@ -86,6 +97,10 @@ abstract class StatsbeatTest {
     assertThat(metricData.getProperties()).containsKey("os");
     assertThat(metricData.getProperties()).containsKey("language");
     assertThat(metricData.getProperties()).containsKey("version");
+    // customer defined dimensions do not apply to Statsbeat
+    assertThat(metricData.getProperties()).doesNotContainEntry("tag1", "abc");
+    assertThat(metricData.getProperties()).doesNotContainEntry("tag2", "def");
+    assertThat(metricData.getProperties()).doesNotContainEntry("service.version", "123");
   }
 
   @Environment(TOMCAT_8_JAVA_8)

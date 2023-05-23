@@ -603,7 +603,7 @@ public final class SemanticAttributes {
    * Value of the <a href="https://www.rfc-editor.org/rfc/rfc9110.html#field.user-agent">HTTP
    * User-Agent</a> header sent by the client.
    */
-  public static final AttributeKey<String> HTTP_USER_AGENT = stringKey("http.user_agent");
+  public static final AttributeKey<String> USER_AGENT_ORIGINAL = stringKey("user_agent.original");
 
   /**
    * The size of the request payload body in bytes. This is the number of bytes transferred

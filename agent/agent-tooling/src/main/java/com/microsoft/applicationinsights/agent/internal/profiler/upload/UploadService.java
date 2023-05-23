@@ -27,6 +27,7 @@ import java.nio.file.Path;
 import java.util.Base64;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Consumer;
@@ -292,7 +293,8 @@ public class UploadService {
   BlobUploadFromFileOptions createBlockBlobOptions(File file, UploadContext uploadContext) {
     HashMap<String, String> metadata = new HashMap<>();
 
-    metadata.put(DATA_CUBE_META_NAME, uploadContext.getDataCube().toString().toLowerCase());
+    metadata.put(
+        DATA_CUBE_META_NAME, uploadContext.getDataCube().toString().toLowerCase(Locale.ROOT));
     metadata.put(MACHINE_NAME_META_NAME, uploadContext.getMachineName());
     metadata.put(
         START_TIME_META_NAME, TimestampContract.timestampToString(uploadContext.getSessionId()));

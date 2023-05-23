@@ -58,8 +58,10 @@ public abstract class ProfilerConfiguration {
   @Nullable
   public abstract String getCollectionPlan();
 
+  @Nullable
   public abstract String getCpuTriggerConfiguration();
 
+  @Nullable
   public abstract String getMemoryTriggerConfiguration();
 
   @Nullable
