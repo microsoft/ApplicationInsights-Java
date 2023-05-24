@@ -34,7 +34,7 @@ val DEPENDENCY_BOMS = listOf(
   "org.testcontainers:testcontainers-bom:1.18.1",
 )
 
-val autoServiceVersion = "1.0.1"
+val autoServiceVersion = "1.1.0"
 val autoValueVersion = "1.10.1"
 val errorProneVersion = "2.19.1"
 val byteBuddyVersion = "1.12.18"
