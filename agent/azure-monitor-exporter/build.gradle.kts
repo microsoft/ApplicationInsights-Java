@@ -36,7 +36,7 @@ dependencies {
   testImplementation("uk.org.webcompere:system-stubs-jupiter:2.0.2")
   testImplementation("io.github.hakky54:logcaptor")
 
-  testImplementation("com.azure:azure-data-appconfiguration:1.4.4")
+  testImplementation("com.azure:azure-data-appconfiguration:1.4.5")
   testImplementation("com.azure:azure-messaging-eventhubs:5.15.4")
   testImplementation("com.azure:azure-messaging-eventhubs-checkpointstore-blob:1.16.6")
 
