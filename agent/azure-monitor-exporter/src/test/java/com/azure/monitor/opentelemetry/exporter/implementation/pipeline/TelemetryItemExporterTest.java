@@ -31,11 +31,18 @@ import java.util.function.Function;
 import java.util.zip.GZIPInputStream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
+import uk.org.webcompere.systemstubs.jupiter.SystemStub;
+import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 
+@ExtendWith(SystemStubsExtension.class)
 public class TelemetryItemExporterTest {
+
+  @SystemStub EnvironmentVariables envVars = new EnvironmentVariables();
 
   private static final String CONNECTION_STRING =
       "InstrumentationKey=00000000-0000-0000-0000-0FEEDDADBEEF;IngestionEndpoint=http://foo.bar";
@@ -223,6 +230,30 @@ public class TelemetryItemExporterTest {
     // the redirect url should be cached and should not invoke another redirect.
     assertThat(completableResultCode.isSuccess()).isEqualTo(true);
     assertThat(recordingHttpClient.getCount()).isEqualTo(5);
+  }
+
+  @Test
+  public void otelResouceAttributeTest() {
+    envVars.set("OTEL_RESOURCE_ATTRIBUTES", "key1=value1,key2=value2,key3=value3");
+
+    // given
+    List<TelemetryItem> telemetryItems = new ArrayList<>();
+    telemetryItems.add(TestUtils.createMetricTelemetry("metric" + 1, 1, CONNECTION_STRING));
+    telemetryItems.add(TestUtils.createMetricTelemetry("metric" + 2, 2, CONNECTION_STRING));
+    telemetryItems.add(
+        TestUtils.createMetricTelemetry("metric" + 3, 3, REDIRECT_CONNECTION_STRING));
+    telemetryItems.add(
+        TestUtils.createMetricTelemetry("metric" + 4, 4, REDIRECT_CONNECTION_STRING));
+    TelemetryItemExporter exporter = getExporter();
+
+    // when
+    CompletableResultCode completableResultCode = exporter.send(telemetryItems);
+
+    // then
+    assertThat(completableResultCode.isSuccess()).isEqualTo(true);
+    assertThat(recordingHttpClient.getCount()).isEqualTo(3);
+
+    envVars.set("OTEL_RESOURCE_ATTRIBUTES", ""); // clear env var
   }
 
   static class RecordingHttpClient implements HttpClient {

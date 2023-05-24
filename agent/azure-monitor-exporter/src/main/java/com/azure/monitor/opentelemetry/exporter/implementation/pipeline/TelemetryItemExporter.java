@@ -7,7 +7,15 @@ import static com.azure.monitor.opentelemetry.exporter.implementation.utils.Azur
 
 import com.azure.core.util.logging.ClientLogger;
 import com.azure.core.util.logging.LogLevel;
+import com.azure.monitor.opentelemetry.exporter.implementation.builders.MetricTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.logging.OperationLogger;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.MessageData;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricsData;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.MonitorDomain;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.RemoteDependencyData;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.RequestData;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryEventData;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryExceptionData;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -19,19 +27,24 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 import java.util.zip.GZIPOutputStream;
+import javax.annotation.Nullable;
 
 public class TelemetryItemExporter {
 
   // the number 100 was calculated as the max number of concurrent exports that the single worker
   // thread can drive, so anything higher than this should not increase throughput
   private static final int MAX_CONCURRENT_EXPORTS = 100;
+
+  private static final String _OTELRESOURCE_ = "_OTELRESOURCE_";
 
   private static final ClientLogger logger = new ClientLogger(TelemetryItemExporter.class);
 
@@ -46,6 +59,8 @@ public class TelemetryItemExporter {
 
   private static final OperationLogger encodeBatchOperationLogger =
       new OperationLogger(TelemetryItemExporter.class, "Encoding telemetry batch into json");
+
+  private final Map<String, String> attributes;
 
   private static ObjectMapper createObjectMapper() {
     ObjectMapper mapper = new ObjectMapper();
@@ -69,6 +84,7 @@ public class TelemetryItemExporter {
       TelemetryPipeline telemetryPipeline, TelemetryPipelineListener listener) {
     this.telemetryPipeline = telemetryPipeline;
     this.listener = listener;
+    this.attributes = initOtelResourceAttributes();
   }
 
   public CompletableResultCode send(List<TelemetryItem> telemetryItems) {
@@ -116,6 +132,15 @@ public class TelemetryItemExporter {
   CompletableResultCode internalSendByConnectionString(
       List<TelemetryItem> telemetryItems, String connectionString) {
     List<ByteBuffer> byteBuffers;
+
+    // Don't send _OTELRESOURCE_ custom metric when OTEL_RESOURCE_ATTRIBUTES env var is empty
+    if (!attributes.isEmpty()) {
+      telemetryItems.add(
+          createOtelResourceMetric(
+              connectionString,
+              telemetryItems.get(0).getTags(),
+              getProperties(telemetryItems.get(0))));
+    }
     try {
       byteBuffers = encode(telemetryItems);
       encodeBatchOperationLogger.recordSuccess();
@@ -124,6 +149,64 @@ public class TelemetryItemExporter {
       return CompletableResultCode.ofFailure();
     }
     return telemetryPipeline.send(byteBuffers, connectionString, listener);
+  }
+
+  private TelemetryItem createOtelResourceMetric(
+      String connectionString, Map<String, String> tags, @Nullable Map<String, String> properties) {
+    MetricTelemetryBuilder builder = MetricTelemetryBuilder.create(_OTELRESOURCE_, 0);
+    builder.setConnectionString(connectionString);
+
+    tags.forEach((k, v) -> builder.addTag(k, v));
+    if (properties != null && !properties.isEmpty()) {
+      properties.forEach((k, v) -> builder.addProperty(k, v));
+    }
+
+    // add attributes from OTEL_RESOURCE_ATTRIBUTES
+    for (String entry : attributes.keySet()) {
+      builder.addProperty(entry, attributes.get(entry));
+    }
+    return builder.build();
+  }
+
+  private static Map<String, String> initOtelResourceAttributes() {
+    String otelResourceAttributes = System.getenv("OTEL_RESOURCE_ATTRIBUTES");
+    if (otelResourceAttributes == null) {
+      return Collections.EMPTY_MAP;
+    }
+    List<String> attributes = filterBlanksAndNulls(otelResourceAttributes.split(","));
+    Map<String, String> map = new HashMap<>();
+    for (String entry : attributes) {
+      String[] pair = entry.split("=");
+      map.put(pair[0], pair[1]);
+    }
+    return map;
+  }
+
+  @Nullable
+  private static Map<String, String> getProperties(TelemetryItem telemetryItem) {
+    MonitorDomain monitorDomain = telemetryItem.getData().getBaseData();
+    if (monitorDomain instanceof MetricsData) {
+      return ((MetricsData) monitorDomain).getProperties();
+    } else if (monitorDomain instanceof MessageData) {
+      return ((MessageData) monitorDomain).getProperties();
+    } else if (monitorDomain instanceof RequestData) {
+      return ((RequestData) monitorDomain).getProperties();
+    } else if (monitorDomain instanceof RemoteDependencyData) {
+      return ((RemoteDependencyData) monitorDomain).getProperties();
+    } else if (monitorDomain instanceof TelemetryExceptionData) {
+      return ((TelemetryExceptionData) monitorDomain).getProperties();
+    } else if (monitorDomain instanceof TelemetryEventData) {
+      return ((TelemetryEventData) monitorDomain).getProperties();
+    }
+    // do we need to care about other domain type
+    return null;
+  }
+
+  private static List<String> filterBlanksAndNulls(String[] values) {
+    return Arrays.stream(values)
+        .map(String::trim)
+        .filter(s -> !s.isEmpty())
+        .collect(Collectors.toList());
   }
 
   List<ByteBuffer> encode(List<TelemetryItem> telemetryItems) throws IOException {
