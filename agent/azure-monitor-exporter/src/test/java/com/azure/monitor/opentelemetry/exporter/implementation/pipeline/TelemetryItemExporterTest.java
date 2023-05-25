@@ -297,15 +297,15 @@ public class TelemetryItemExporterTest {
     assertThat(result.get(1).size()).isEqualTo(1);
     assertThat(result.get(1).get(0).getTags().get(ContextTagKeys.AI_CLOUD_ROLE.toString()))
         .isEqualTo("rolename2");
-    assertThat(result.get(0).get(0).getConnectionString())
-        .isEqualTo(result.get(1).get(0).getConnectionString());
+    assertThat(result.get(0).get(0).getConnectionString()).isEqualTo(CONNECTION_STRING);
+    assertThat(result.get(1).get(0).getConnectionString()).isEqualTo(CONNECTION_STRING);
     assertThat(result.get(2).size()).isEqualTo(2);
     assertThat(result.get(2).get(0).getTags().get(ContextTagKeys.AI_CLOUD_ROLE.toString()))
         .isEqualTo("rolename3");
     assertThat(result.get(2).get(1).getTags().get(ContextTagKeys.AI_CLOUD_ROLE.toString()))
         .isEqualTo("rolename3");
-    assertThat(result.get(2).get(0).getConnectionString())
-        .isEqualTo(result.get(2).get(1).getConnectionString());
+    assertThat(result.get(2).get(0).getConnectionString()).isEqualTo(REDIRECT_CONNECTION_STRING);
+    assertThat(result.get(2).get(1).getConnectionString()).isEqualTo(REDIRECT_CONNECTION_STRING);
   }
 
   static class RecordingHttpClient implements HttpClient {

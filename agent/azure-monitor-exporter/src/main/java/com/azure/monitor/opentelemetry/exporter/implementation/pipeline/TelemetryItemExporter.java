@@ -52,7 +52,8 @@ public class TelemetryItemExporter {
   private static final OperationLogger encodeBatchOperationLogger =
       new OperationLogger(TelemetryItemExporter.class, "Encoding telemetry batch into json");
 
-  private final Map<String, String> attributes;
+  private static final Map<String, String> OTEL_RESOURCE_ATTRIBUTES =
+      DefaultConfigProperties.create(Collections.emptyMap()).getMap("otel.resource.attributes");
 
   private static ObjectMapper createObjectMapper() {
     ObjectMapper mapper = new ObjectMapper();
@@ -76,8 +77,6 @@ public class TelemetryItemExporter {
       TelemetryPipeline telemetryPipeline, TelemetryPipelineListener listener) {
     this.telemetryPipeline = telemetryPipeline;
     this.listener = listener;
-    this.attributes =
-        DefaultConfigProperties.create(Collections.emptyMap()).getMap("otel.resource.attributes");
   }
 
   public CompletableResultCode send(List<TelemetryItem> telemetryItems) {
@@ -110,6 +109,7 @@ public class TelemetryItemExporter {
         String roleName = "";
         if (telemetryItem.getTags() != null) { // Statsbeat doesn't have tags
           roleName = telemetryItem.getTags().get(ContextTagKeys.AI_CLOUD_ROLE.toString());
+          roleName = roleName == null ? "" : roleName;
         }
         roleNameGroupings.computeIfAbsent(roleName, k -> new ArrayList<>()).add(telemetryItem);
       }
@@ -152,9 +152,8 @@ public class TelemetryItemExporter {
 
     // Don't send _OTELRESOURCE_ custom metric when OTEL_RESOURCE_ATTRIBUTES env var is empty
     // insert _OTELRESOURCE_ at the beginning of each batch
-    if (!attributes.isEmpty()) {
-      telemetryItems.add(
-          0, createOtelResourceMetric(connectionString, telemetryItems.get(0).getTags()));
+    if (!OTEL_RESOURCE_ATTRIBUTES.isEmpty()) {
+      telemetryItems.add(0, createOtelResourceMetric(telemetryItems.get(0).getTags()));
     }
     try {
       byteBuffers = encode(telemetryItems);
@@ -166,25 +165,20 @@ public class TelemetryItemExporter {
     return telemetryPipeline.send(byteBuffers, connectionString, listener);
   }
 
-  private TelemetryItem createOtelResourceMetric(
-      String connectionString, Map<String, String> existingTags) {
+  private static TelemetryItem createOtelResourceMetric(Map<String, String> existingTags) {
     MetricTelemetryBuilder builder = MetricTelemetryBuilder.create(_OTELRESOURCE_, 0);
-    builder.setConnectionString(connectionString);
-
-    Map<String, String> tags = new HashMap<>();
-    tags.put(
+    builder.addTag(
         ContextTagKeys.AI_CLOUD_ROLE.toString(),
         existingTags.get(ContextTagKeys.AI_CLOUD_ROLE.toString()));
-    tags.put(
+    builder.addTag(
         ContextTagKeys.AI_CLOUD_ROLE_INSTANCE.toString(),
         existingTags.get(ContextTagKeys.AI_CLOUD_ROLE_INSTANCE.toString()));
-    tags.put(
+    builder.addTag(
         ContextTagKeys.AI_INTERNAL_SDK_VERSION.toString(),
         existingTags.get(ContextTagKeys.AI_INTERNAL_SDK_VERSION.toString()));
-    tags.forEach((k, v) -> builder.addTag(k, v));
 
     // add attributes from OTEL_RESOURCE_ATTRIBUTES
-    for (Map.Entry<String, String> entry : attributes.entrySet()) {
+    for (Map.Entry<String, String> entry : OTEL_RESOURCE_ATTRIBUTES.entrySet()) {
       builder.addProperty(entry.getKey(), entry.getValue());
     }
     return builder.build();
