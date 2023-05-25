@@ -49,7 +49,7 @@ abstract class RoleNameOverridesTest {
   private static void testApp(String roleName) throws Exception {
     // verify _OTELRESOURCE_ custom metric per role name
     List<Envelope> otelResourceMetrics =
-        testing.mockedIngestion.waitForMetricItems("_OTELRESOURCE_", roleName, 1);
+        testing.mockedIngestion.waitForMetricItems("_OTELRESOURCE_", roleName, 1, true);
     verifyOtelResourceAttributeCustomMetric(otelResourceMetrics, roleName);
 
     List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);

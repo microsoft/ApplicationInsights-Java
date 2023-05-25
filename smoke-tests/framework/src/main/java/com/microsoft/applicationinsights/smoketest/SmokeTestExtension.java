@@ -620,21 +620,26 @@ public class SmokeTestExtension
     };
   }
 
-  public static Predicate<Envelope> getMetricPredicate(String name, String rolename) {
+  public static Predicate<Envelope> getMetricPredicate(
+      String name, String secondPredicate, boolean isRolename) {
     Objects.requireNonNull(name, "name");
-    Objects.requireNonNull(rolename, "rolename");
+    Objects.requireNonNull(secondPredicate, "secondPredicate");
 
     return input -> {
       if (input == null) {
         return false;
       }
       if (!input.getData().getBaseType().equals("MetricData")
-          || !input.getTags().get("ai.cloud.role").equals(rolename)) {
+          || (isRolename && !input.getTags().get("ai.cloud.role").equals(secondPredicate))
+          || (!isRolename && !input.getIKey().equals(secondPredicate))) {
         return false;
       }
       MetricData md = getBaseData(input);
-      return name.equals(md.getMetrics().get(0).getName())
-          && rolename.equals(input.getTags().get("ai.cloud.role"));
+      boolean isSecondPredicateValid =
+          isRolename
+              ? secondPredicate.equals(input.getTags().get("ai.cloud.role"))
+              : secondPredicate.equals(input.getIKey());
+      return name.equals(md.getMetrics().get(0).getName()) && isSecondPredicateValid;
     };
   }
 }
