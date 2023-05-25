@@ -30,15 +30,6 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 @UseAgent
 abstract class DetectUnexpectedOtelMetricsTest {
 
-  private static final Set<String> EXPECTED_OTEL_METRICS = new HashSet<>(4);
-
-  static {
-    EXPECTED_OTEL_METRICS.add("http.server.duration"); // Servlet
-    EXPECTED_OTEL_METRICS.add("http.client.duration"); // HttpClient
-    EXPECTED_OTEL_METRICS.add("rpc.client.duration"); // gRPC
-    EXPECTED_OTEL_METRICS.add("rpc.server.duration"); // gRPC
-  }
-
   @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.create();
 
   @Test
@@ -67,7 +58,7 @@ abstract class DetectUnexpectedOtelMetricsTest {
     assertThatThrownBy(
             () ->
                 testing.mockedIngestion.waitForItemsUnexpectedOtelMetric(
-                    "MetricData", EXPECTED_OTEL_METRICS, envelope -> true))
+                    "MetricData", envelope -> true))
         .isInstanceOf(TimeoutException.class);
   }
 

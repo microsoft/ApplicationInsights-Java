@@ -11,7 +11,6 @@ import com.microsoft.applicationinsights.smoketest.schemav2.MetricData;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -225,7 +224,7 @@ public class MockedAppInsightsIngestionServer {
 
   // wait for at least one unexpected otel metrics for failure case or timeout for success
   public List<Envelope> waitForItemsUnexpectedOtelMetric(
-      String type, Set<String> expectedMetrics, Predicate<Envelope> condition)
+      String type, Predicate<Envelope> condition)
       throws InterruptedException, ExecutionException, TimeoutException {
     List<Envelope> items =
         waitForItems(
@@ -236,7 +235,7 @@ public class MockedAppInsightsIngestionServer {
                   return false;
                 }
                 MetricData md = (MetricData) ((Data<?>) input.getData()).getBaseData();
-                if (expectedMetrics.contains(md.getMetrics().get(0).getName())) {
+                if (md.getProperties().containsKey("_MS.MetricId")) {
                   return false;
                 }
                 return condition.test(input);
