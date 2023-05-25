@@ -9,6 +9,7 @@ import com.azure.core.util.logging.ClientLogger;
 import com.azure.core.util.logging.LogLevel;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.MetricTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.logging.OperationLogger;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MessageData;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricsData;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.MonitorDomain;
@@ -88,17 +89,41 @@ public class TelemetryItemExporter {
   }
 
   public CompletableResultCode send(List<TelemetryItem> telemetryItems) {
+    List<List<TelemetryItem>> result =
+        groupTelemetryItemsByConnectionStringAndRoleName(telemetryItems);
+    List<CompletableResultCode> resultCodeList = new ArrayList<>();
+    for (List<TelemetryItem> batch : result) {
+      resultCodeList.add(
+          internalSendByConnectionStringAndRoleName(batch, batch.get(0).getConnectionString()));
+    }
+    return maybeAddToActiveExportResults(resultCodeList);
+  }
+
+  // visible for tests
+  List<List<TelemetryItem>> groupTelemetryItemsByConnectionStringAndRoleName(
+      List<TelemetryItem> telemetryItems) {
     Map<String, List<TelemetryItem>> groupings = new HashMap<>();
+    // group TelemetryItem by connection string
     for (TelemetryItem telemetryItem : telemetryItems) {
       groupings
           .computeIfAbsent(telemetryItem.getConnectionString(), k -> new ArrayList<>())
           .add(telemetryItem);
     }
-    List<CompletableResultCode> resultCodeList = new ArrayList<>();
-    for (Map.Entry<String, List<TelemetryItem>> entry : groupings.entrySet()) {
-      resultCodeList.add(internalSendByConnectionString(entry.getValue(), entry.getKey()));
+
+    // and then group TelemetryItem by role name
+    List<List<TelemetryItem>> result = new ArrayList<>();
+    for (String key : groupings.keySet()) {
+      Map<String, List<TelemetryItem>> roleNameGroupings = new HashMap<>();
+      for (TelemetryItem telemetryItem : groupings.get(key)) {
+        roleNameGroupings
+            .computeIfAbsent(
+                telemetryItem.getTags().get(ContextTagKeys.AI_CLOUD_ROLE.toString()),
+                k -> new ArrayList<>())
+            .add(telemetryItem);
+      }
+      result.addAll(roleNameGroupings.values());
     }
-    return maybeAddToActiveExportResults(resultCodeList);
+    return result;
   }
 
   private CompletableResultCode maybeAddToActiveExportResults(List<CompletableResultCode> results) {
@@ -129,17 +154,27 @@ public class TelemetryItemExporter {
     return listener.shutdown();
   }
 
-  CompletableResultCode internalSendByConnectionString(
+  CompletableResultCode internalSendByConnectionStringAndRoleName(
       List<TelemetryItem> telemetryItems, String connectionString) {
     List<ByteBuffer> byteBuffers;
 
     // Don't send _OTELRESOURCE_ custom metric when OTEL_RESOURCE_ATTRIBUTES env var is empty
+    // insert _OTELRESOURCE_ at the beginning of each batch
     if (!attributes.isEmpty()) {
+      Map<String, String> tags = new HashMap<>();
+      Map<String, String> existingTags = telemetryItems.get(0).getTags();
+      tags.put(
+          ContextTagKeys.AI_CLOUD_ROLE.toString(),
+          existingTags.get(ContextTagKeys.AI_CLOUD_ROLE.toString()));
+      tags.put(
+          ContextTagKeys.AI_CLOUD_ROLE_INSTANCE.toString(),
+          existingTags.get(ContextTagKeys.AI_CLOUD_ROLE_INSTANCE.toString()));
+      tags.put(
+          ContextTagKeys.AI_INTERNAL_SDK_VERSION.toString(),
+          existingTags.get(ContextTagKeys.AI_INTERNAL_SDK_VERSION.toString()));
       telemetryItems.add(
-          createOtelResourceMetric(
-              connectionString,
-              telemetryItems.get(0).getTags(),
-              getProperties(telemetryItems.get(0))));
+          0,
+          createOtelResourceMetric(connectionString, tags, getProperties(telemetryItems.get(0))));
     }
     try {
       byteBuffers = encode(telemetryItems);
@@ -169,6 +204,7 @@ public class TelemetryItemExporter {
   }
 
   private static Map<String, String> initOtelResourceAttributes() {
+    // OTEL_RESOURCE_ATTRIBUTES consists of a list of comma delimited key/value pairs
     String otelResourceAttributes = System.getenv("OTEL_RESOURCE_ATTRIBUTES");
     if (otelResourceAttributes == null) {
       return Collections.EMPTY_MAP;

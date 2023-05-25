@@ -13,6 +13,7 @@ import com.azure.core.http.HttpResponse;
 import com.azure.core.util.FluxUtil;
 import com.azure.monitor.opentelemetry.exporter.implementation.MockHttpResponse;
 import com.azure.monitor.opentelemetry.exporter.implementation.localstorage.LocalStorageTelemetryPipelineListener;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.TestUtils;
 import io.opentelemetry.sdk.common.CompletableResultCode;
@@ -254,6 +255,47 @@ public class TelemetryItemExporterTest {
     assertThat(recordingHttpClient.getCount()).isEqualTo(3);
 
     envVars.set("OTEL_RESOURCE_ATTRIBUTES", ""); // clear env var
+  }
+
+  @Test
+  public void groupTelemetryItemsByConnectionStringAndRoleNameTest() {
+    List<TelemetryItem> telemetryItems = new ArrayList<>();
+    TelemetryItem telemetryItem1 =
+        TestUtils.createMetricTelemetry("metric" + 1, 1, CONNECTION_STRING);
+    telemetryItem1.getTags().put(ContextTagKeys.AI_CLOUD_ROLE.toString(), "rolename1");
+    telemetryItems.add(telemetryItem1);
+    TelemetryItem telemetryItem2 =
+        TestUtils.createMetricTelemetry("metric" + 2, 2, CONNECTION_STRING);
+    telemetryItem2.getTags().put(ContextTagKeys.AI_CLOUD_ROLE.toString(), "rolename2");
+    telemetryItems.add(telemetryItem2);
+    TelemetryItem telemetryItem3 =
+        TestUtils.createMetricTelemetry("metric" + 3, 3, REDIRECT_CONNECTION_STRING);
+    telemetryItem3.getTags().put(ContextTagKeys.AI_CLOUD_ROLE.toString(), "rolename3");
+    telemetryItems.add(telemetryItem3);
+    TelemetryItem telemetryItem4 =
+        TestUtils.createMetricTelemetry("metric" + 4, 4, REDIRECT_CONNECTION_STRING);
+    telemetryItem4.getTags().put(ContextTagKeys.AI_CLOUD_ROLE.toString(), "rolename3");
+    telemetryItems.add(telemetryItem4);
+
+    TelemetryItemExporter exporter = getExporter();
+    List<List<TelemetryItem>> result =
+        exporter.groupTelemetryItemsByConnectionStringAndRoleName(telemetryItems);
+    assertThat(result.size()).isEqualTo(3);
+    assertThat(result.get(0).size()).isEqualTo(1);
+    assertThat(result.get(0).get(0).getTags().get(ContextTagKeys.AI_CLOUD_ROLE.toString()))
+        .isEqualTo("rolename1");
+    assertThat(result.get(1).size()).isEqualTo(1);
+    assertThat(result.get(1).get(0).getTags().get(ContextTagKeys.AI_CLOUD_ROLE.toString()))
+        .isEqualTo("rolename2");
+    assertThat(result.get(0).get(0).getConnectionString())
+        .isEqualTo(result.get(1).get(0).getConnectionString());
+    assertThat(result.get(2).size()).isEqualTo(2);
+    assertThat(result.get(2).get(0).getTags().get(ContextTagKeys.AI_CLOUD_ROLE.toString()))
+        .isEqualTo("rolename3");
+    assertThat(result.get(2).get(1).getTags().get(ContextTagKeys.AI_CLOUD_ROLE.toString()))
+        .isEqualTo("rolename3");
+    assertThat(result.get(2).get(0).getConnectionString())
+        .isEqualTo(result.get(2).get(1).getConnectionString());
   }
 
   static class RecordingHttpClient implements HttpClient {
