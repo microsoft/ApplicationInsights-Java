@@ -268,22 +268,6 @@ public class TelemetryItemExporterTest {
   }
 
   @Test
-  public void initOtelResourceAttributesTest() {
-    envVars.set(
-        "OTEL_RESOURCE_ATTRIBUTES",
-        "fakeOtelResourceKey1=fakeValue1,fakeOtelResourceKey2=fakeValue2,fakeOtelResourceKey3=fakeValue3");
-    Map<String, String> map = TelemetryItemExporter.initOtelResourceAttributes();
-    assertThat(map.size()).isEqualTo(3);
-    assertThat(map.get("fakeOtelResourceKey1")).isEqualTo("fakeValue1");
-    assertThat(map.get("fakeOtelResourceKey2")).isEqualTo("fakeValue2");
-    assertThat(map.get("fakeOtelResourceKey3")).isEqualTo("fakeValue3");
-
-    envVars.set("OTEL_RESOURCE_ATTRIBUTES", ""); // clear env var
-    map = TelemetryItemExporter.initOtelResourceAttributes();
-    assertThat(map.isEmpty()).isTrue();
-  }
-
-  @Test
   public void groupTelemetryItemsByConnectionStringAndRoleNameTest() {
     List<TelemetryItem> telemetryItems = new ArrayList<>();
     TelemetryItem telemetryItem1 =

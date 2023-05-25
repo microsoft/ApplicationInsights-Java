@@ -16,19 +16,18 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.io.SerializedString;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 import java.util.zip.GZIPOutputStream;
 
 public class TelemetryItemExporter {
@@ -77,7 +76,8 @@ public class TelemetryItemExporter {
       TelemetryPipeline telemetryPipeline, TelemetryPipelineListener listener) {
     this.telemetryPipeline = telemetryPipeline;
     this.listener = listener;
-    this.attributes = initOtelResourceAttributes();
+    this.attributes =
+        DefaultConfigProperties.create(Collections.emptyMap()).getMap("otel.resource.attributes");
   }
 
   public CompletableResultCode send(List<TelemetryItem> telemetryItems) {
@@ -190,31 +190,7 @@ public class TelemetryItemExporter {
     return builder.build();
   }
 
-  // visible for testing
-  static Map<String, String> initOtelResourceAttributes() {
-    // OTEL_RESOURCE_ATTRIBUTES consists of a list of comma delimited key/value pairs
-    String otelResourceAttributes = System.getenv("OTEL_RESOURCE_ATTRIBUTES");
-    if (otelResourceAttributes == null) {
-      return Collections.EMPTY_MAP;
-    }
-    List<String> attributes = filterBlanksAndNulls(otelResourceAttributes.split(","));
-    Map<String, String> map = new HashMap<>();
-    for (String entry : attributes) {
-      String[] pair = entry.split("=");
-      map.put(pair[0], pair[1]);
-    }
-    return map;
-  }
-
-  private static List<String> filterBlanksAndNulls(String[] values) {
-    return Arrays.stream(values)
-        .map(String::trim)
-        .filter(s -> !s.isEmpty())
-        .collect(Collectors.toList());
-  }
-
   List<ByteBuffer> encode(List<TelemetryItem> telemetryItems) throws IOException {
-
     if (logger.canLogAtLevel(LogLevel.VERBOSE)) {
       StringWriter debug = new StringWriter();
       try (JsonGenerator jg = mapper.createGenerator(debug)) {
