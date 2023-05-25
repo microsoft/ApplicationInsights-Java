@@ -104,9 +104,9 @@ public class TelemetryItemExporter {
 
     // and then group TelemetryItem by role name
     List<List<TelemetryItem>> result = new ArrayList<>();
-    for (String key : groupings.keySet()) {
+    for (Map.Entry<String, List<TelemetryItem>> entry : groupings.entrySet()) {
       Map<String, List<TelemetryItem>> roleNameGroupings = new HashMap<>();
-      for (TelemetryItem telemetryItem : groupings.get(key)) {
+      for (TelemetryItem telemetryItem : entry.getValue()) {
         roleNameGroupings
             .computeIfAbsent(
                 telemetryItem.getTags().get(ContextTagKeys.AI_CLOUD_ROLE.toString()),
