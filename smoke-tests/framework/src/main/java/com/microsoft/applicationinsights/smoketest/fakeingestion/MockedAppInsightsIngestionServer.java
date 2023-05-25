@@ -225,25 +225,23 @@ public class MockedAppInsightsIngestionServer {
   // wait for at least one unexpected otel metrics for failure case or timeout for success
   public List<Envelope> waitForItemsUnexpectedOtelMetric(String type, Predicate<Envelope> condition)
       throws InterruptedException, ExecutionException, TimeoutException {
-    List<Envelope> items =
-        waitForItems(
-            new Predicate<Envelope>() {
-              @Override
-              public boolean test(Envelope input) {
-                if (!input.getData().getBaseType().equals(type)) {
-                  return false;
-                }
-                MetricData md = (MetricData) ((Data<?>) input.getData()).getBaseData();
-                if (md.getProperties().containsKey("_MS.MetricId")) {
-                  return false;
-                }
-                return condition.test(input);
-              }
-            },
-            1,
-            10,
-            TimeUnit.SECONDS);
-    return items;
+    return waitForItems(
+        new Predicate<Envelope>() {
+          @Override
+          public boolean test(Envelope input) {
+            if (!input.getData().getBaseType().equals(type)) {
+              return false;
+            }
+            MetricData md = (MetricData) ((Data<?>) input.getData()).getBaseData();
+            if (md.getProperties().containsKey("_MS.MetricId")) {
+              return false;
+            }
+            return condition.test(input);
+          }
+        },
+        1,
+        10,
+        TimeUnit.SECONDS);
   }
 
   // this is used to filter out some sporadic messages that are captured via java.util.logging

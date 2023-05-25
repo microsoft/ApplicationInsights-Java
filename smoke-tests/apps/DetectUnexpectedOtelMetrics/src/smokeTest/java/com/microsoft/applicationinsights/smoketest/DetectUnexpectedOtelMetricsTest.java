@@ -26,8 +26,7 @@ abstract class DetectUnexpectedOtelMetricsTest {
   @Test
   @TargetUri("/app")
   void testApp() throws Exception {
-    // no other otel metrics other than EXPECTED_OTEL_METRICS, expect an TimeoutException being
-    // thrown
+    // verify no unexpected otel metrics, expect an TimeoutException being thrown
     assertThatThrownBy(
             () ->
                 testing.mockedIngestion.waitForItemsUnexpectedOtelMetric(
