@@ -107,9 +107,13 @@ public class TelemetryItemExporter {
     for (Map.Entry<String, List<TelemetryItem>> entry : groupings.entrySet()) {
       Map<String, List<TelemetryItem>> roleNameGroupings = new HashMap<>();
       for (TelemetryItem telemetryItem : entry.getValue()) {
+        String roleName = "";
+        if (telemetryItem.getTags() != null) { // Statsbeat doesn't have tags
+          roleName = telemetryItem.getTags().get(ContextTagKeys.AI_CLOUD_ROLE.toString());
+        }
         roleNameGroupings
             .computeIfAbsent(
-                telemetryItem.getTags().get(ContextTagKeys.AI_CLOUD_ROLE.toString()),
+                roleName,
                 k -> new ArrayList<>())
             .add(telemetryItem);
       }
