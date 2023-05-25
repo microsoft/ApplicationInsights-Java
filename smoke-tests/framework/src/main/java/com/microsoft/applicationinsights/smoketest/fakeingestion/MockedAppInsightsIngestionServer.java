@@ -201,11 +201,23 @@ public class MockedAppInsightsIngestionServer {
     return waitForMetricItems(metricName, numItems, 10, TimeUnit.SECONDS);
   }
 
+  public List<Envelope> waitForMetricItems(String metricName, String rolename, int numItems)
+      throws InterruptedException, TimeoutException {
+    return waitForMetricItems(metricName, rolename, numItems, 10, TimeUnit.SECONDS);
+  }
+
   public List<Envelope> waitForMetricItems(
       String metricName, int numItems, int timeout, TimeUnit timeUnit)
       throws InterruptedException, TimeoutException {
     return servlet.waitForItems(
         SmokeTestExtension.getMetricPredicate(metricName), numItems, timeout, timeUnit);
+  }
+
+  public List<Envelope> waitForMetricItems(
+      String metricName, String rolename, int numItems, int timeout, TimeUnit timeUnit)
+      throws InterruptedException, TimeoutException {
+    return servlet.waitForItems(
+        SmokeTestExtension.getMetricPredicate(metricName, rolename), numItems, timeout, timeUnit);
   }
 
   // this is important for Message and Exception types which can also be captured outside of

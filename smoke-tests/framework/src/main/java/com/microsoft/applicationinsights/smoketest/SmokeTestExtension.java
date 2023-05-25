@@ -619,4 +619,22 @@ public class SmokeTestExtension
       return name.equals(md.getMetrics().get(0).getName());
     };
   }
+
+  public static Predicate<Envelope> getMetricPredicate(String name, String rolename) {
+    Objects.requireNonNull(name, "name");
+    Objects.requireNonNull(rolename, "rolename");
+
+    return input -> {
+      if (input == null) {
+        return false;
+      }
+      if (!input.getData().getBaseType().equals("MetricData")
+          || !input.getTags().get("ai.cloud.role").equals(rolename)) {
+        return false;
+      }
+      MetricData md = getBaseData(input);
+      return name.equals(md.getMetrics().get(0).getName())
+          && rolename.equals(input.getTags().get("ai.cloud.role"));
+    };
+  }
 }

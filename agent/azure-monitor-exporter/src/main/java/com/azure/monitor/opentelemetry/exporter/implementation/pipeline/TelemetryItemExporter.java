@@ -153,18 +153,8 @@ public class TelemetryItemExporter {
     // Don't send _OTELRESOURCE_ custom metric when OTEL_RESOURCE_ATTRIBUTES env var is empty
     // insert _OTELRESOURCE_ at the beginning of each batch
     if (!attributes.isEmpty()) {
-      Map<String, String> tags = new HashMap<>();
-      Map<String, String> existingTags = telemetryItems.get(0).getTags();
-      tags.put(
-          ContextTagKeys.AI_CLOUD_ROLE.toString(),
-          existingTags.get(ContextTagKeys.AI_CLOUD_ROLE.toString()));
-      tags.put(
-          ContextTagKeys.AI_CLOUD_ROLE_INSTANCE.toString(),
-          existingTags.get(ContextTagKeys.AI_CLOUD_ROLE_INSTANCE.toString()));
-      tags.put(
-          ContextTagKeys.AI_INTERNAL_SDK_VERSION.toString(),
-          existingTags.get(ContextTagKeys.AI_INTERNAL_SDK_VERSION.toString()));
-      telemetryItems.add(0, createOtelResourceMetric(connectionString, tags));
+      telemetryItems.add(
+          0, createOtelResourceMetric(connectionString, telemetryItems.get(0).getTags()));
     }
     try {
       byteBuffers = encode(telemetryItems);
@@ -177,9 +167,20 @@ public class TelemetryItemExporter {
   }
 
   private TelemetryItem createOtelResourceMetric(
-      String connectionString, Map<String, String> tags) {
+      String connectionString, Map<String, String> existingTags) {
     MetricTelemetryBuilder builder = MetricTelemetryBuilder.create(_OTELRESOURCE_, 0);
     builder.setConnectionString(connectionString);
+
+    Map<String, String> tags = new HashMap<>();
+    tags.put(
+        ContextTagKeys.AI_CLOUD_ROLE.toString(),
+        existingTags.get(ContextTagKeys.AI_CLOUD_ROLE.toString()));
+    tags.put(
+        ContextTagKeys.AI_CLOUD_ROLE_INSTANCE.toString(),
+        existingTags.get(ContextTagKeys.AI_CLOUD_ROLE_INSTANCE.toString()));
+    tags.put(
+        ContextTagKeys.AI_INTERNAL_SDK_VERSION.toString(),
+        existingTags.get(ContextTagKeys.AI_INTERNAL_SDK_VERSION.toString()));
     tags.forEach((k, v) -> builder.addTag(k, v));
 
     // add attributes from OTEL_RESOURCE_ATTRIBUTES
@@ -189,7 +190,8 @@ public class TelemetryItemExporter {
     return builder.build();
   }
 
-  private static Map<String, String> initOtelResourceAttributes() {
+  // visible for testing
+  static Map<String, String> initOtelResourceAttributes() {
     // OTEL_RESOURCE_ATTRIBUTES consists of a list of comma delimited key/value pairs
     String otelResourceAttributes = System.getenv("OTEL_RESOURCE_ATTRIBUTES");
     if (otelResourceAttributes == null) {

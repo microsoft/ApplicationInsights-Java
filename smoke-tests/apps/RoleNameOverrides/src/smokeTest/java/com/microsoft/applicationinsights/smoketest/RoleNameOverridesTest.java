@@ -49,7 +49,7 @@ abstract class RoleNameOverridesTest {
   private static void testApp(String roleName) throws Exception {
     // verify _OTELRESOURCE_ custom metric per role name
     List<Envelope> otelResourceMetrics =
-        testing.mockedIngestion.waitForMetricItems("_OTELRESOURCE_", 1);
+        testing.mockedIngestion.waitForMetricItems("_OTELRESOURCE_", roleName, 1);
     verifyOtelResourceAttributeCustomMetric(otelResourceMetrics, roleName);
 
     List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
@@ -106,7 +106,6 @@ abstract class RoleNameOverridesTest {
 
   private static void verifyOtelResourceAttributeCustomMetric(
       List<Envelope> otelResourceMetrics, String rolename) {
-    assertThat(otelResourceMetrics.size()).isEqualTo(1);
     Map<String, String> tags = otelResourceMetrics.get(0).getTags();
     assertThat(tags.get("ai.internal.sdkVersion")).isNotNull();
     assertThat(tags.get("ai.cloud.roleInstance")).isNotNull();
