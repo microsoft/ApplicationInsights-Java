@@ -223,8 +223,7 @@ public class MockedAppInsightsIngestionServer {
   }
 
   // wait for at least one unexpected otel metrics for failure case or timeout for success
-  public List<Envelope> waitForItemsUnexpectedOtelMetric(
-      String type, Predicate<Envelope> condition)
+  public List<Envelope> waitForItemsUnexpectedOtelMetric(String type, Predicate<Envelope> condition)
       throws InterruptedException, ExecutionException, TimeoutException {
     List<Envelope> items =
         waitForItems(
