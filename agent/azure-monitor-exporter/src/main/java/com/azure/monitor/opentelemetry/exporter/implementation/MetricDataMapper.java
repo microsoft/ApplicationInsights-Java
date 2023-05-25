@@ -50,7 +50,10 @@ public class MetricDataMapper {
   private final boolean captureHttpServer4xxAsError;
 
   static {
+    // TODO (heya) add a smoke test to detect unexpected OpenTelemetry metrics
     EXCLUDED_METRIC_NAMES.add("http.server.active_requests"); // Servlet
+    EXCLUDED_METRIC_NAMES.add("http.client.response.size");
+    EXCLUDED_METRIC_NAMES.add("http.server.response.size");
 
     OTEL_PRE_AGGREGATED_STANDARD_METRIC_NAMES.add("http.server.duration"); // Servlet
     OTEL_PRE_AGGREGATED_STANDARD_METRIC_NAMES.add("http.client.duration"); // HttpClient
