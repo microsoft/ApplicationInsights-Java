@@ -181,7 +181,6 @@ public class MockedAppInsightsIngestionServer {
     return items;
   }
 
-  @SuppressWarnings("SystemOut")
   // wait for at least one unexpected otel metrics for failure case or timeout for success
   public List<Envelope> waitForItemsUnexpectedOtelMetric(
       String type, Set<String> expectedMetrics, Predicate<Envelope> condition)
