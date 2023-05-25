@@ -59,6 +59,7 @@ public final class MethodSingletons {
       return Span.current().getSpanContext().isValid();
     }
   }
+
   // END APPLICATION INSIGHTS MODIFICATIONS
 
   private MethodSingletons() {}
