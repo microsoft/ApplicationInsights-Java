@@ -183,8 +183,8 @@ public class TelemetryItemExporter {
     tags.forEach((k, v) -> builder.addTag(k, v));
 
     // add attributes from OTEL_RESOURCE_ATTRIBUTES
-    for (String entry : attributes.keySet()) {
-      builder.addProperty(entry, attributes.get(entry));
+    for (Map.Entry<String, String> entry : attributes.entrySet()) {
+      builder.addProperty(entry.getKey(), entry.getValue());
     }
     return builder.build();
   }
