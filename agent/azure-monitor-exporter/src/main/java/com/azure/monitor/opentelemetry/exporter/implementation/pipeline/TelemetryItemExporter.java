@@ -111,11 +111,7 @@ public class TelemetryItemExporter {
         if (telemetryItem.getTags() != null) { // Statsbeat doesn't have tags
           roleName = telemetryItem.getTags().get(ContextTagKeys.AI_CLOUD_ROLE.toString());
         }
-        roleNameGroupings
-            .computeIfAbsent(
-                roleName,
-                k -> new ArrayList<>())
-            .add(telemetryItem);
+        roleNameGroupings.computeIfAbsent(roleName, k -> new ArrayList<>()).add(telemetryItem);
       }
       result.addAll(roleNameGroupings.values());
     }

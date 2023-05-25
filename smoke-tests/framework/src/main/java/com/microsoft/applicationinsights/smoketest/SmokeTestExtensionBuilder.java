@@ -48,7 +48,8 @@ public class SmokeTestExtensionBuilder {
     return this;
   }
 
-  public SmokeTestExtensionBuilder otelResourceAttributesEnvVar(String otelResourceAttributesEnvVar) {
+  public SmokeTestExtensionBuilder otelResourceAttributesEnvVar(
+      String otelResourceAttributesEnvVar) {
     this.otelResourceAttributesEnvVar = otelResourceAttributesEnvVar;
     return this;
   }

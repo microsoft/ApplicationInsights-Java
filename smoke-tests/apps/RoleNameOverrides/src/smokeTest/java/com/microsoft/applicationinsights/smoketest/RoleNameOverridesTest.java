@@ -32,7 +32,10 @@ abstract class RoleNameOverridesTest {
 
   @RegisterExtension
   static final SmokeTestExtension testing =
-      SmokeTestExtension.builder().otelResourceAttributesEnvVar("fakeOtelResourceKey1=fakeValue1,fakeOtelResourceKey2=fakeValue2,fakeOtelResourceKey3=fakeValue3").build();
+      SmokeTestExtension.builder()
+          .otelResourceAttributesEnvVar(
+              "fakeOtelResourceKey1=fakeValue1,fakeOtelResourceKey2=fakeValue2,fakeOtelResourceKey3=fakeValue3")
+          .build();
 
   @Test
   @TargetUri("/app2")
