@@ -32,7 +32,7 @@ abstract class ConnectionStringOverridesTest {
 
   @RegisterExtension
   static final SmokeTestExtension testing =
-      SmokeTestExtension.builder().useOtelResourceAttributesEnvVar().build();
+      SmokeTestExtension.builder().otelResourceAttributesEnvVar("key1=value1,key2=value2").build();
 
   @Test
   @TargetUri("/app2")
@@ -118,10 +118,9 @@ abstract class ConnectionStringOverridesTest {
     MetricData otelResourceMetricData =
         (MetricData) ((Data<?>) otelResourceMetrics.get(0).getData()).getBaseData();
     Map<String, String> properties = otelResourceMetricData.getProperties();
-    assertThat(properties.size()).isEqualTo(3);
-    assertThat(properties.get("fakeOtelResourceKey1")).isEqualTo("fakeValue1");
-    assertThat(properties.get("fakeOtelResourceKey2")).isEqualTo("fakeValue2");
-    assertThat(properties.get("fakeOtelResourceKey3")).isEqualTo("fakeValue3");
+    assertThat(properties.size()).isEqualTo(2);
+    assertThat(properties.get("key1")).isEqualTo("value1");
+    assertThat(properties.get("key2")).isEqualTo("value2");
   }
 
   private static void verifyHttpClientPreAggregatedMetrics(List<Envelope> metrics, String iKey) {

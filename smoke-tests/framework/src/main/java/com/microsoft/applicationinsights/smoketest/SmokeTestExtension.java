@@ -95,7 +95,7 @@ public class SmokeTestExtension
   private final boolean usesGlobalIngestionEndpoint;
   private final boolean useOld3xAgent;
   private final String connectionString;
-  private final String otelResourceAttributes;
+  private final String otelResourceAttributesEnvVar;
   private final String selfDiagnosticsLevel;
   private final File javaagentFile;
   private final File agentExtensionFile;
@@ -115,7 +115,7 @@ public class SmokeTestExtension
       boolean skipHealthCheck,
       boolean readOnly,
       boolean doNotSetConnectionString,
-      boolean useOtelResourceAttributesEnvVar,
+      String otelResourceAttributesEnvVar,
       boolean useOld3xAgent,
       String selfDiagnosticsLevel,
       File agentExtensionFile,
@@ -135,10 +135,8 @@ public class SmokeTestExtension
                 + FAKE_INGESTION_ENDPOINT
                 + ";ProfilerEndpoint="
                 + getProfilerEndpoint(profilerState);
-    otelResourceAttributes =
-        useOtelResourceAttributesEnvVar
-            ? "fakeOtelResourceKey1=fakeValue1,fakeOtelResourceKey2=fakeValue2,fakeOtelResourceKey3=fakeValue3"
-            : "";
+
+    this.otelResourceAttributesEnvVar = otelResourceAttributesEnvVar;
     this.selfDiagnosticsLevel = selfDiagnosticsLevel;
     this.agentExtensionFile = agentExtensionFile;
 
@@ -395,7 +393,7 @@ public class SmokeTestExtension
             .withEnv(hostnameEnvVars)
             .withEnv("APPLICATIONINSIGHTS_CONNECTION_STRING", connectionString)
             .withEnv("APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_LEVEL", selfDiagnosticsLevel)
-            .withEnv("OTEL_RESOURCE_ATTRIBUTES", otelResourceAttributes)
+            .withEnv("OTEL_RESOURCE_ATTRIBUTES", otelResourceAttributesEnvVar)
             .withNetwork(network)
             .withExposedPorts(8080)
             .withFileSystemBind(
