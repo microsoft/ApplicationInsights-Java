@@ -239,12 +239,22 @@ public class TelemetryItemExporterTest {
 
     // given
     List<TelemetryItem> telemetryItems = new ArrayList<>();
-    telemetryItems.add(TestUtils.createMetricTelemetry("metric" + 1, 1, CONNECTION_STRING));
-    telemetryItems.add(TestUtils.createMetricTelemetry("metric" + 2, 2, CONNECTION_STRING));
-    telemetryItems.add(
-        TestUtils.createMetricTelemetry("metric" + 3, 3, REDIRECT_CONNECTION_STRING));
-    telemetryItems.add(
-        TestUtils.createMetricTelemetry("metric" + 4, 4, REDIRECT_CONNECTION_STRING));
+    TelemetryItem telemetryItem1 =
+        TestUtils.createMetricTelemetry("metric" + 1, 1, CONNECTION_STRING);
+    telemetryItem1.getTags().put(ContextTagKeys.AI_CLOUD_ROLE.toString(), "rolename1");
+    telemetryItems.add(telemetryItem1);
+    TelemetryItem telemetryItem2 =
+        TestUtils.createMetricTelemetry("metric" + 2, 2, CONNECTION_STRING);
+    telemetryItem2.getTags().put(ContextTagKeys.AI_CLOUD_ROLE.toString(), "rolename2");
+    telemetryItems.add(telemetryItem2);
+    TelemetryItem telemetryItem3 =
+        TestUtils.createMetricTelemetry("metric" + 3, 3, REDIRECT_CONNECTION_STRING);
+    telemetryItem3.getTags().put(ContextTagKeys.AI_CLOUD_ROLE.toString(), "rolename3");
+    telemetryItems.add(telemetryItem3);
+    TelemetryItem telemetryItem4 =
+        TestUtils.createMetricTelemetry("metric" + 4, 4, REDIRECT_CONNECTION_STRING);
+    telemetryItem4.getTags().put(ContextTagKeys.AI_CLOUD_ROLE.toString(), "rolename4");
+    telemetryItems.add(telemetryItem4);
     TelemetryItemExporter exporter = getExporter();
 
     // when
@@ -252,7 +262,7 @@ public class TelemetryItemExporterTest {
 
     // then
     assertThat(completableResultCode.isSuccess()).isEqualTo(true);
-    assertThat(recordingHttpClient.getCount()).isEqualTo(3);
+    assertThat(recordingHttpClient.getCount()).isEqualTo(5);
 
     envVars.set("OTEL_RESOURCE_ATTRIBUTES", ""); // clear env var
   }

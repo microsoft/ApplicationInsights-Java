@@ -10,13 +10,6 @@ import com.azure.core.util.logging.LogLevel;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.MetricTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.logging.OperationLogger;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.MessageData;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricsData;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.MonitorDomain;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.RemoteDependencyData;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.RequestData;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryEventData;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryExceptionData;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -37,7 +30,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.zip.GZIPOutputStream;
-import javax.annotation.Nullable;
 
 public class TelemetryItemExporter {
 
@@ -172,9 +164,7 @@ public class TelemetryItemExporter {
       tags.put(
           ContextTagKeys.AI_INTERNAL_SDK_VERSION.toString(),
           existingTags.get(ContextTagKeys.AI_INTERNAL_SDK_VERSION.toString()));
-      telemetryItems.add(
-          0,
-          createOtelResourceMetric(connectionString, tags, getProperties(telemetryItems.get(0))));
+      telemetryItems.add(0, createOtelResourceMetric(connectionString, tags));
     }
     try {
       byteBuffers = encode(telemetryItems);
@@ -187,14 +177,10 @@ public class TelemetryItemExporter {
   }
 
   private TelemetryItem createOtelResourceMetric(
-      String connectionString, Map<String, String> tags, @Nullable Map<String, String> properties) {
+      String connectionString, Map<String, String> tags) {
     MetricTelemetryBuilder builder = MetricTelemetryBuilder.create(_OTELRESOURCE_, 0);
     builder.setConnectionString(connectionString);
-
     tags.forEach((k, v) -> builder.addTag(k, v));
-    if (properties != null && !properties.isEmpty()) {
-      properties.forEach((k, v) -> builder.addProperty(k, v));
-    }
 
     // add attributes from OTEL_RESOURCE_ATTRIBUTES
     for (String entry : attributes.keySet()) {
@@ -216,26 +202,6 @@ public class TelemetryItemExporter {
       map.put(pair[0], pair[1]);
     }
     return map;
-  }
-
-  @Nullable
-  private static Map<String, String> getProperties(TelemetryItem telemetryItem) {
-    MonitorDomain monitorDomain = telemetryItem.getData().getBaseData();
-    if (monitorDomain instanceof MetricsData) {
-      return ((MetricsData) monitorDomain).getProperties();
-    } else if (monitorDomain instanceof MessageData) {
-      return ((MessageData) monitorDomain).getProperties();
-    } else if (monitorDomain instanceof RequestData) {
-      return ((RequestData) monitorDomain).getProperties();
-    } else if (monitorDomain instanceof RemoteDependencyData) {
-      return ((RemoteDependencyData) monitorDomain).getProperties();
-    } else if (monitorDomain instanceof TelemetryExceptionData) {
-      return ((TelemetryExceptionData) monitorDomain).getProperties();
-    } else if (monitorDomain instanceof TelemetryEventData) {
-      return ((TelemetryEventData) monitorDomain).getProperties();
-    }
-    // do we need to care about other domain type
-    return null;
   }
 
   private static List<String> filterBlanksAndNulls(String[] values) {

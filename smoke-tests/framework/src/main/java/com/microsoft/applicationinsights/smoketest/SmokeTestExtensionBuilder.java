@@ -15,6 +15,7 @@ public class SmokeTestExtensionBuilder {
   private boolean skipHealthCheck;
   private boolean readOnly;
   private boolean doNotSetConnectionString;
+  private boolean useOtelResourceAttributesEnvVar;
   private boolean useOld3xAgent;
   private String selfDiagnosticsLevel = "info";
   private File agentExtensionFile;
@@ -47,6 +48,11 @@ public class SmokeTestExtensionBuilder {
     return this;
   }
 
+  public SmokeTestExtensionBuilder useOtelResourceAttributesEnvVar() {
+    this.useOtelResourceAttributesEnvVar = true;
+    return this;
+  }
+
   public SmokeTestExtensionBuilder useOld3xAgent() {
     useOld3xAgent = true;
     return this;
@@ -65,6 +71,7 @@ public class SmokeTestExtensionBuilder {
         skipHealthCheck,
         readOnly,
         doNotSetConnectionString,
+        useOtelResourceAttributesEnvVar,
         useOld3xAgent,
         selfDiagnosticsLevel,
         agentExtensionFile,
