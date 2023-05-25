@@ -7,9 +7,11 @@ import com.microsoft.applicationinsights.smoketest.SmokeTestExtension;
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.Domain;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
+import com.microsoft.applicationinsights.smoketest.schemav2.MetricData;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -136,6 +138,7 @@ public class MockedAppInsightsIngestionServer {
     return waitForItems(condition, 1, timeout, timeUnit).get(0);
   }
 
+  @SuppressWarnings("UngroupedOverloads")
   public List<Envelope> waitForItems(String type, int numItems)
       throws ExecutionException, InterruptedException, TimeoutException {
     return waitForItems(type, numItems, null);
@@ -143,11 +146,13 @@ public class MockedAppInsightsIngestionServer {
 
   // if operationId is null, then matches all items, otherwise only matches items with that
   // operationId
+  @SuppressWarnings("UngroupedOverloads")
   public List<Envelope> waitForItems(String type, int numItems, @Nullable String operationId)
       throws InterruptedException, ExecutionException, TimeoutException {
     return waitForItems(type, numItems, operationId, envelope -> true);
   }
 
+  @SuppressWarnings("UngroupedOverloads")
   public List<Envelope> waitForItems(
       String type, int numItems, @Nullable String operationId, Predicate<Envelope> condition)
       throws InterruptedException, ExecutionException, TimeoutException {
@@ -176,6 +181,32 @@ public class MockedAppInsightsIngestionServer {
     return items;
   }
 
+  @SuppressWarnings("SystemOut")
+  // wait for at least one unexpected otel metrics for failure case or timeout for success
+  public List<Envelope> waitForItemsUnexpectedOtelMetric(
+      String type, Set<String> expectedMetrics, Predicate<Envelope> condition)
+      throws InterruptedException, ExecutionException, TimeoutException {
+    List<Envelope> items =
+        waitForItems(
+            new Predicate<Envelope>() {
+              @Override
+              public boolean test(Envelope input) {
+                if (!input.getData().getBaseType().equals(type)) {
+                  return false;
+                }
+                MetricData md = (MetricData) ((Data<?>) input.getData()).getBaseData();
+                if (expectedMetrics.contains(md.getMetrics().get(0).getName())) {
+                  return false;
+                }
+                return condition.test(input);
+              }
+            },
+            1,
+            10,
+            TimeUnit.SECONDS);
+    return items;
+  }
+
   /**
    * Waits the given amount of time for this mocked server to receive a certain number of items
    * which match the given predicate.
@@ -190,6 +221,7 @@ public class MockedAppInsightsIngestionServer {
    * @throws ExecutionException if an exception is thrown while waiting
    * @throws TimeoutException if the timeout is reached
    */
+  @SuppressWarnings("UngroupedOverloads")
   public List<Envelope> waitForItems(
       Predicate<Envelope> condition, int numItems, int timeout, TimeUnit timeUnit)
       throws InterruptedException, ExecutionException, TimeoutException {
