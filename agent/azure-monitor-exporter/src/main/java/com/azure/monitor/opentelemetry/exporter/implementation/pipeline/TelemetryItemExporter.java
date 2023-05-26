@@ -55,8 +55,7 @@ public class TelemetryItemExporter {
   private static final OperationLogger encodeBatchOperationLogger =
       new OperationLogger(TelemetryItemExporter.class, "Encoding telemetry batch into json");
 
-  private static final Map<String, String> OTEL_RESOURCE_ATTRIBUTES =
-      DefaultConfigProperties.create(Collections.emptyMap()).getMap("otel.resource.attributes");
+  private static final Map<String, String> OTEL_RESOURCE_ATTRIBUTES = initOtelResourceAttributes();
 
   private static ObjectMapper createObjectMapper() {
     ObjectMapper mapper = new ObjectMapper();
@@ -121,6 +120,25 @@ public class TelemetryItemExporter {
     return result;
   }
 
+  // visible for testing
+  static Map<String, String> initOtelResourceAttributes() {
+    Map<String, String> originalMap =
+        DefaultConfigProperties.create(Collections.emptyMap()).getMap("otel.resource.attributes");
+    Map<String, String> decodedMap = new HashMap<>(originalMap.size());
+    // Attributes specified via otel.resource.attributes follow the W3C Baggage spec and
+    // characters outside the baggage-octet range are percent encoded
+    // https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/resource/sdk.md#specifying-resource-information-via-an-environment-variable
+    originalMap.forEach(
+        (key, value) -> {
+          try {
+            decodedMap.put(key, URLDecoder.decode(value, StandardCharsets.UTF_8.displayName()));
+          } catch (UnsupportedEncodingException e) {
+            logger.warning("Fail to decode OTEL_RESOURCE_ATTRIBUTES value.", e);
+          }
+        });
+    return decodedMap;
+  }
+
   private CompletableResultCode maybeAddToActiveExportResults(List<CompletableResultCode> results) {
     if (activeExportResults.size() >= MAX_CONCURRENT_EXPORTS) {
       // this is just a failsafe to limit concurrent exports, it's not ideal because it blocks
@@ -156,12 +174,8 @@ public class TelemetryItemExporter {
     // Don't send _OTELRESOURCE_ custom metric when OTEL_RESOURCE_ATTRIBUTES env var is empty
     // insert _OTELRESOURCE_ at the beginning of each batch
     if (!OTEL_RESOURCE_ATTRIBUTES.isEmpty()) {
-      try {
-        telemetryItems.add(
-            0, createOtelResourceMetric(telemetryItems.get(0).getTags(), connectionString));
-      } catch (UnsupportedEncodingException ex) {
-        logger.warning("Fail to create an _OTELRESOURCE_ custom metric.", ex);
-      }
+      telemetryItems.add(
+          0, createOtelResourceMetric(telemetryItems.get(0).getTags(), connectionString));
     }
     try {
       byteBuffers = encode(telemetryItems);
@@ -174,8 +188,7 @@ public class TelemetryItemExporter {
   }
 
   private static TelemetryItem createOtelResourceMetric(
-      Map<String, String> existingTags, String connectionString)
-      throws UnsupportedEncodingException {
+      Map<String, String> existingTags, String connectionString) {
     MetricTelemetryBuilder builder = MetricTelemetryBuilder.create(_OTELRESOURCE_, 0);
     // this is needed in order to stamp iKey onto the telemetry item during serialization
     builder.setConnectionString(connectionString);
@@ -191,12 +204,7 @@ public class TelemetryItemExporter {
 
     // add attributes from OTEL_RESOURCE_ATTRIBUTES
     for (Map.Entry<String, String> entry : OTEL_RESOURCE_ATTRIBUTES.entrySet()) {
-      // Attributes specified via otel.resource.attributes follow the W3C Baggage spec and
-      // characters outside the baggage-octet range are percent encoded
-      // https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/resource/sdk.md#specifying-resource-information-via-an-environment-variable
-      builder.addProperty(
-          entry.getKey(),
-          URLDecoder.decode(entry.getValue(), StandardCharsets.UTF_8.displayName()));
+      builder.addProperty(entry.getKey(), entry.getValue());
     }
     return builder.build();
   }

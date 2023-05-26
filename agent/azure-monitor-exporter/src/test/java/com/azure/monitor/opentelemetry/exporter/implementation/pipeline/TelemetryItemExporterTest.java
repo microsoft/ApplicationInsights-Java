@@ -233,6 +233,19 @@ public class TelemetryItemExporterTest {
     assertThat(recordingHttpClient.getCount()).isEqualTo(5);
   }
 
+  // test decoding of baggage-octet range of characters
+  // https://www.w3.org/TR/baggage/
+  @Test
+  public void initOtelResourceAttributesTest() {
+    envVars.set("OTEL_RESOURCE_ATTRIBUTES", "key1=value%201,key2=value2,key3=value%203");
+    Map<String, String> attributes = TelemetryItemExporter.initOtelResourceAttributes();
+    assertThat(attributes.size()).isEqualTo(3);
+    assertThat(attributes.get("key1")).isEqualTo("value 1");
+    assertThat(attributes.get("key2")).isEqualTo("value2");
+    assertThat(attributes.get("key3")).isEqualTo("value 3");
+    envVars.set("OTEL_RESOURCE_ATTRIBUTES", "");
+  }
+
   @Test
   public void otelResouceAttributeTest() {
     envVars.set("OTEL_RESOURCE_ATTRIBUTES", "key1=value1,key2=value2,key3=value3");
@@ -291,21 +304,27 @@ public class TelemetryItemExporterTest {
     List<List<TelemetryItem>> result =
         exporter.groupTelemetryItemsByConnectionStringAndRoleName(telemetryItems);
     assertThat(result.size()).isEqualTo(3);
-    assertThat(result.get(0).size()).isEqualTo(1);
-    assertThat(result.get(0).get(0).getTags().get(ContextTagKeys.AI_CLOUD_ROLE.toString()))
+
+    List<TelemetryItem> group1 = result.get(0);
+    assertThat(group1.size()).isEqualTo(1);
+    assertThat(group1.get(0).getTags().get(ContextTagKeys.AI_CLOUD_ROLE.toString()))
         .isEqualTo("rolename1");
-    assertThat(result.get(1).size()).isEqualTo(1);
-    assertThat(result.get(1).get(0).getTags().get(ContextTagKeys.AI_CLOUD_ROLE.toString()))
+    assertThat(group1.get(0).getConnectionString()).isEqualTo(CONNECTION_STRING);
+
+    List<TelemetryItem> group2 = result.get(1);
+    assertThat(group2.size()).isEqualTo(1);
+    assertThat(group2.get(0).getTags().get(ContextTagKeys.AI_CLOUD_ROLE.toString()))
         .isEqualTo("rolename2");
-    assertThat(result.get(0).get(0).getConnectionString()).isEqualTo(CONNECTION_STRING);
-    assertThat(result.get(1).get(0).getConnectionString()).isEqualTo(CONNECTION_STRING);
-    assertThat(result.get(2).size()).isEqualTo(2);
-    assertThat(result.get(2).get(0).getTags().get(ContextTagKeys.AI_CLOUD_ROLE.toString()))
+    assertThat(group2.get(0).getConnectionString()).isEqualTo(CONNECTION_STRING);
+
+    List<TelemetryItem> group3 = result.get(2);
+    assertThat(group3.size()).isEqualTo(2);
+    assertThat(group3.get(0).getTags().get(ContextTagKeys.AI_CLOUD_ROLE.toString()))
         .isEqualTo("rolename3");
-    assertThat(result.get(2).get(1).getTags().get(ContextTagKeys.AI_CLOUD_ROLE.toString()))
+    assertThat(group3.get(0).getConnectionString()).isEqualTo(REDIRECT_CONNECTION_STRING);
+    assertThat(group3.get(1).getTags().get(ContextTagKeys.AI_CLOUD_ROLE.toString()))
         .isEqualTo("rolename3");
-    assertThat(result.get(2).get(0).getConnectionString()).isEqualTo(REDIRECT_CONNECTION_STRING);
-    assertThat(result.get(2).get(1).getConnectionString()).isEqualTo(REDIRECT_CONNECTION_STRING);
+    assertThat(group3.get(1).getConnectionString()).isEqualTo(REDIRECT_CONNECTION_STRING);
   }
 
   static class RecordingHttpClient implements HttpClient {
