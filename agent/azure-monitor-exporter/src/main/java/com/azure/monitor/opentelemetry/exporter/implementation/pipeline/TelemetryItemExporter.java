@@ -153,7 +153,8 @@ public class TelemetryItemExporter {
     // Don't send _OTELRESOURCE_ custom metric when OTEL_RESOURCE_ATTRIBUTES env var is empty
     // insert _OTELRESOURCE_ at the beginning of each batch
     if (!OTEL_RESOURCE_ATTRIBUTES.isEmpty()) {
-      telemetryItems.add(0, createOtelResourceMetric(telemetryItems.get(0).getTags()));
+      telemetryItems.add(
+          0, createOtelResourceMetric(telemetryItems.get(0).getTags(), connectionString));
     }
     try {
       byteBuffers = encode(telemetryItems);
@@ -165,8 +166,10 @@ public class TelemetryItemExporter {
     return telemetryPipeline.send(byteBuffers, connectionString, listener);
   }
 
-  private static TelemetryItem createOtelResourceMetric(Map<String, String> existingTags) {
+  private static TelemetryItem createOtelResourceMetric(
+      Map<String, String> existingTags, String connectionString) {
     MetricTelemetryBuilder builder = MetricTelemetryBuilder.create(_OTELRESOURCE_, 0);
+    builder.setConnectionString(connectionString);
     builder.addTag(
         ContextTagKeys.AI_CLOUD_ROLE.toString(),
         existingTags.get(ContextTagKeys.AI_CLOUD_ROLE.toString()));
