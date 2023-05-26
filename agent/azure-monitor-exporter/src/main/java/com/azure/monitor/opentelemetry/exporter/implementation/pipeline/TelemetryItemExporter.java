@@ -20,7 +20,10 @@ import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -103,9 +106,9 @@ public class TelemetryItemExporter {
 
     // and then group TelemetryItem by role name
     List<List<TelemetryItem>> result = new ArrayList<>();
-    for (Map.Entry<String, List<TelemetryItem>> entry : groupings.entrySet()) {
+    for (List<TelemetryItem> group : groupings.values()) {
       Map<String, List<TelemetryItem>> roleNameGroupings = new HashMap<>();
-      for (TelemetryItem telemetryItem : entry.getValue()) {
+      for (TelemetryItem telemetryItem : group) {
         String roleName = "";
         if (telemetryItem.getTags() != null) { // Statsbeat doesn't have tags
           roleName = telemetryItem.getTags().get(ContextTagKeys.AI_CLOUD_ROLE.toString());
@@ -153,8 +156,12 @@ public class TelemetryItemExporter {
     // Don't send _OTELRESOURCE_ custom metric when OTEL_RESOURCE_ATTRIBUTES env var is empty
     // insert _OTELRESOURCE_ at the beginning of each batch
     if (!OTEL_RESOURCE_ATTRIBUTES.isEmpty()) {
-      telemetryItems.add(
-          0, createOtelResourceMetric(telemetryItems.get(0).getTags(), connectionString));
+      try {
+        telemetryItems.add(
+            0, createOtelResourceMetric(telemetryItems.get(0).getTags(), connectionString));
+      } catch (UnsupportedEncodingException ex) {
+        logger.warning("Fail to create an _OTELRESOURCE_ custom metric.", ex);
+      }
     }
     try {
       byteBuffers = encode(telemetryItems);
@@ -167,8 +174,10 @@ public class TelemetryItemExporter {
   }
 
   private static TelemetryItem createOtelResourceMetric(
-      Map<String, String> existingTags, String connectionString) {
+      Map<String, String> existingTags, String connectionString)
+      throws UnsupportedEncodingException {
     MetricTelemetryBuilder builder = MetricTelemetryBuilder.create(_OTELRESOURCE_, 0);
+    // this is needed in order to stamp iKey onto the telemetry item during serialization
     builder.setConnectionString(connectionString);
     builder.addTag(
         ContextTagKeys.AI_CLOUD_ROLE.toString(),
@@ -182,7 +191,12 @@ public class TelemetryItemExporter {
 
     // add attributes from OTEL_RESOURCE_ATTRIBUTES
     for (Map.Entry<String, String> entry : OTEL_RESOURCE_ATTRIBUTES.entrySet()) {
-      builder.addProperty(entry.getKey(), entry.getValue());
+      // Attributes specified via otel.resource.attributes follow the W3C Baggage spec and
+      // characters outside the baggage-octet range are percent encoded
+      // https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/resource/sdk.md#specifying-resource-information-via-an-environment-variable
+      builder.addProperty(
+          entry.getKey(),
+          URLDecoder.decode(entry.getValue(), StandardCharsets.UTF_8.displayName()));
     }
     return builder.build();
   }
