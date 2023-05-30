@@ -22,11 +22,13 @@ dependencies {
   compileOnly("io.opentelemetry:opentelemetry-sdk")
   compileOnly("io.opentelemetry:opentelemetry-sdk-metrics")
   compileOnly("io.opentelemetry:opentelemetry-sdk-logs")
+  compileOnly("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure-spi")
 
   testImplementation("io.opentelemetry:opentelemetry-sdk")
   testImplementation("io.opentelemetry:opentelemetry-sdk-metrics")
   testImplementation("io.opentelemetry:opentelemetry-sdk-logs")
   testImplementation("io.opentelemetry:opentelemetry-sdk-testing")
+  testImplementation("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure-spi")
 
   testImplementation("org.junit.jupiter:junit-jupiter")
   testImplementation("com.azure:azure-core-test")

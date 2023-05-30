@@ -30,7 +30,12 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 @UseAgent
 abstract class RoleNameOverridesTest {
 
-  @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.create();
+  @RegisterExtension
+  static final SmokeTestExtension testing =
+      SmokeTestExtension.builder()
+          .otelResourceAttributesEnvVar(
+              "fakeOtelResourceKey1=fakeValue1,fakeOtelResourceKey2=fakeValue2,fakeOtelResourceKey3=fakeValue3")
+          .build();
 
   @Test
   @TargetUri("/app2")
@@ -45,8 +50,12 @@ abstract class RoleNameOverridesTest {
   }
 
   private static void testApp(String roleName) throws Exception {
-    List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
+    // verify _OTELRESOURCE_ custom metric per role name
+    List<Envelope> otelResourceMetrics =
+        testing.mockedIngestion.waitForMetricItems("_OTELRESOURCE_", roleName, 1, true);
+    verifyOtelResourceAttributeCustomMetric(otelResourceMetrics, roleName);
 
+    List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
     Envelope rdEnvelope = rdList.get(0);
     String operationId = rdEnvelope.getTags().get("ai.operation.id");
 
@@ -96,6 +105,22 @@ abstract class RoleNameOverridesTest {
 
     verifyHttpClientPreAggregatedMetrics(clientMetrics, roleName);
     verifyHttpServerPreAggregatedMetrics(serverMetrics, roleName);
+  }
+
+  private static void verifyOtelResourceAttributeCustomMetric(
+      List<Envelope> otelResourceMetrics, String rolename) {
+    Map<String, String> tags = otelResourceMetrics.get(0).getTags();
+    assertThat(tags.get("ai.internal.sdkVersion")).isNotNull();
+    assertThat(tags.get("ai.cloud.roleInstance")).isNotNull();
+    assertThat(tags.get("ai.cloud.role")).isEqualTo(rolename);
+
+    MetricData otelResourceMetricData =
+        (MetricData) ((Data<?>) otelResourceMetrics.get(0).getData()).getBaseData();
+    Map<String, String> properties = otelResourceMetricData.getProperties();
+    assertThat(properties.size()).isEqualTo(3);
+    assertThat(properties.get("fakeOtelResourceKey1")).isEqualTo("fakeValue1");
+    assertThat(properties.get("fakeOtelResourceKey2")).isEqualTo("fakeValue2");
+    assertThat(properties.get("fakeOtelResourceKey3")).isEqualTo("fakeValue3");
   }
 
   private static void verifyHttpClientPreAggregatedMetrics(
