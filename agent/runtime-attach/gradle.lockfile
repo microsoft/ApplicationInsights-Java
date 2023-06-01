@@ -12,5 +12,5 @@ io.opentelemetry:opentelemetry-bom-alpha:1.26.0-alpha=runtimeClasspath
 io.opentelemetry:opentelemetry-bom:1.26.0=runtimeClasspath
 net.bytebuddy:byte-buddy-agent:1.11.18=runtimeClasspath
 org.junit:junit-bom:5.9.3=runtimeClasspath
-org.testcontainers:testcontainers-bom:1.18.2=runtimeClasspath
+org.testcontainers:testcontainers-bom:1.18.3=runtimeClasspath
 empty=
