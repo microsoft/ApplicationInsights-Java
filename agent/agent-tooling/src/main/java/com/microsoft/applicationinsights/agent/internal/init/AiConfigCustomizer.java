@@ -122,6 +122,8 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
 
     properties.put("otel.instrumentation.experimental.span-suppression-strategy", "client");
 
+    properties.put("otel.instrumentation.http.prefer-forwarded-url-scheme", "true");
+
     // instrumentation that cannot be disabled (currently at least)
 
     properties.put("otel.instrumentation.ai-azure-functions.enabled", "true");
