@@ -113,9 +113,9 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
       if (!configuration.connectionStringConfiguredAtRuntime) {
         throw new FriendlyException(
             "No connection string provided", "Please provide connection string.");
-      } else {
-        updateInstrumentationKey();
       }
+    } else {
+      updateInstrumentationKey(configuration);
     }
     // TODO (trask) should configuration validation be performed earlier?
     configuration.validate();

@@ -3,8 +3,6 @@
 
 package com.microsoft.applicationinsights.agent.internal.configuration;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
-import com.microsoft.applicationinsights.agent.internal.init.FirstEntryPoint;
 import io.opentelemetry.javaagent.bootstrap.servlet.ExperimentalSnippetHolder;
 
 public class SnippetConfiguration {
@@ -22,13 +20,7 @@ public class SnippetConfiguration {
           + "}});\n"
           + "</script>\n";
 
-  public static void updateInstrumentationKey() {
-    Configuration configuration = FirstEntryPoint.getConfiguration();
-    if (Strings.isNullOrEmpty(configuration.connectionString)) {
-      if (!configuration.connectionStringConfiguredAtRuntime) {
-        return;
-      }
-    }
+  public static void updateInstrumentationKey(Configuration configuration) {
     snippet = snippet.replace("INSTRUMENTATION_KEY", configuration.connectionString);
     ExperimentalSnippetHolder.setSnippet(snippet);
   }
