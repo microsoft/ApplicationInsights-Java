@@ -4,7 +4,7 @@
 package com.microsoft.applicationinsights.agent.internal.configuration;
 
 import io.opentelemetry.javaagent.bootstrap.servlet.ExperimentalSnippetHolder;
-
+// preveiw Configuration
 public class SnippetConfiguration {
   private static String snippet =
       "<script type=\"text/javascript\">\n"
@@ -16,12 +16,12 @@ public class SnippetConfiguration {
           + "crossOrigin: \"anonymous\", // When supplied this will add the provided value as the cross origin attribute on the script tag\n"
           + "// onInit: null, // Once the application insights instance has loaded and initialized this callback function will be called with 1 argument -- the sdk instance (DO NOT ADD anything to the sdk.queue -- As they won't get called)\n"
           + "cfg: { // Application Insights Configuration\n"
-          + "instrumentationKey: \"INSTRUMENTATION_KEY\"\n"
+          + "connectionString: \"CONNECTION_STRING\"\n"
           + "}});\n"
           + "</script>\n";
 
-  public static void updateInstrumentationKey(Configuration configuration) {
-    snippet = snippet.replace("INSTRUMENTATION_KEY", configuration.connectionString);
+  public static void setSnippet(String connectionString) {
+    snippet = snippet.replace("CONNECTION_STRING", connectionString);
     ExperimentalSnippetHolder.setSnippet(snippet);
   }
 
