@@ -3,6 +3,7 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation;
 
+import static io.opentelemetry.api.common.AttributeKey.stringArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
 import com.azure.core.util.logging.ClientLogger;
@@ -20,6 +21,7 @@ import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.resources.Resource;
+import java.util.List;
 import java.util.function.BiConsumer;
 import reactor.util.annotation.Nullable;
 
@@ -35,7 +37,7 @@ public class LogDataMapper {
   private static final String LOG4J_MAP_MESSAGE_PREFIX = "log4j.map_message."; // log4j 2.x
 
   private static final AttributeKey<String> LOG4J_MARKER = stringKey("log4j.marker");
-  private static final AttributeKey<String> LOGBACK_MARKER = stringKey("logback.marker");
+  private static final AttributeKey<List<String>> LOGBACK_MARKER = stringArrayKey("logback.marker");
 
   private static final Mappings MAPPINGS;
 
@@ -77,7 +79,7 @@ public class LogDataMapper {
             .exactString(SemanticAttributes.CODE_FUNCTION, "MethodName")
             .exactLong(SemanticAttributes.CODE_LINENO, "LineNumber")
             .exactString(LOG4J_MARKER, "Marker")
-            .exactString(LOGBACK_MARKER, "Marker");
+            .exactStringArray(LOGBACK_MARKER, "Marker");
 
     SpanDataMapper.applyCommonTags(mappingsBuilder);
 
@@ -112,7 +114,7 @@ public class LogDataMapper {
 
     // set standard properties
     setOperationTags(telemetryBuilder, log);
-    setTime(telemetryBuilder, log.getEpochNanos());
+    setTime(telemetryBuilder, log.getTimestampEpochNanos());
     setItemCount(telemetryBuilder, log, itemCount);
 
     // update tags
@@ -142,7 +144,7 @@ public class LogDataMapper {
 
     // set standard properties
     setOperationTags(telemetryBuilder, log);
-    setTime(telemetryBuilder, log.getEpochNanos());
+    setTime(telemetryBuilder, log.getTimestampEpochNanos());
     setItemCount(telemetryBuilder, log, itemCount);
 
     // update tags

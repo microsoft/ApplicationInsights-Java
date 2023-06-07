@@ -6,14 +6,23 @@ package com.microsoft.applicationinsights.agent.internal.init;
 import static com.microsoft.applicationinsights.agent.internal.configuration.SnippetConfiguration.updateInstrumentationKey;
 import static java.util.concurrent.TimeUnit.MINUTES;
 
+import com.azure.core.http.HttpPipeline;
 import com.azure.core.util.logging.ClientLogger;
 import com.azure.monitor.opentelemetry.exporter.implementation.LogDataMapper;
 import com.azure.monitor.opentelemetry.exporter.implementation.MetricDataMapper;
 import com.azure.monitor.opentelemetry.exporter.implementation.SpanDataMapper;
 import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
 import com.azure.monitor.opentelemetry.exporter.implementation.heartbeat.HeartbeatExporter;
+import com.azure.monitor.opentelemetry.exporter.implementation.localstorage.LocalStorageStats;
+import com.azure.monitor.opentelemetry.exporter.implementation.localstorage.LocalStorageTelemetryPipelineListener;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
+import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryItemExporter;
+import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipeline;
+import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipelineListener;
 import com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.QuickPulse;
+import com.azure.monitor.opentelemetry.exporter.implementation.statsbeat.Feature;
+import com.azure.monitor.opentelemetry.exporter.implementation.statsbeat.StatsbeatModule;
+import com.azure.monitor.opentelemetry.exporter.implementation.statsbeat.StatsbeatTelemetryPipelineListener;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.TempDirs;
 import com.google.auto.service.AutoService;
@@ -29,6 +38,7 @@ import com.microsoft.applicationinsights.agent.internal.configuration.RpConfigur
 import com.microsoft.applicationinsights.agent.internal.exporter.AgentLogExporter;
 import com.microsoft.applicationinsights.agent.internal.exporter.AgentMetricExporter;
 import com.microsoft.applicationinsights.agent.internal.exporter.AgentSpanExporter;
+import com.microsoft.applicationinsights.agent.internal.exporter.ExporterUtils;
 import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
 import com.microsoft.applicationinsights.agent.internal.legacyheaders.AiLegacyHeaderSpanProcessor;
 import com.microsoft.applicationinsights.agent.internal.processors.ExporterWithLogProcessor;
@@ -38,7 +48,7 @@ import com.microsoft.applicationinsights.agent.internal.processors.MySpanData;
 import com.microsoft.applicationinsights.agent.internal.processors.SpanExporterWithAttributeProcessor;
 import com.microsoft.applicationinsights.agent.internal.profiler.ProfilingInitializer;
 import com.microsoft.applicationinsights.agent.internal.profiler.triggers.AlertTriggerSpanProcessor;
-import com.microsoft.applicationinsights.agent.internal.statsbeat.StatsbeatModule;
+import com.microsoft.applicationinsights.agent.internal.sampling.SamplingOverrides;
 import com.microsoft.applicationinsights.agent.internal.telemetry.BatchItemProcessor;
 import com.microsoft.applicationinsights.agent.internal.telemetry.MetricFilter;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
@@ -68,7 +78,9 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -79,6 +91,8 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
 
   private static final ClientLogger startupLogger =
       new ClientLogger("com.microsoft.applicationinsights.agent");
+
+  private static final String STATSBEAT_FOLDER_NAME = "statsbeat";
 
   @Nullable public static AgentLogExporter agentLogExporter;
 
@@ -138,9 +152,7 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
             .setDiskPersistenceMaxSizeMb(configuration.preview.diskPersistenceMaxSizeMb)
             .build();
 
-    // interval longer than 15 minutes is not allowed since we use this data for usage telemetry
-    long intervalSeconds = Math.min(configuration.heartbeat.intervalSeconds, MINUTES.toSeconds(15));
-    Consumer<List<TelemetryItem>> telemetryItemsConsumer =
+    Consumer<List<TelemetryItem>> heartbeatTelemetryItemConsumer =
         telemetryItems -> {
           for (TelemetryItem telemetryItem : telemetryItems) {
             TelemetryObservers.INSTANCE
@@ -149,13 +161,40 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
             telemetryClient.getMetricsBatchItemProcessor().trackAsync(telemetryItem);
           }
         };
-    HeartbeatExporter.start(
-        intervalSeconds, telemetryClient::populateDefaults, telemetryItemsConsumer);
+
+    if (telemetryClient.getConnectionString() != null) {
+      startupLogger.verbose("connection string is not null, start HeartbeatExporter");
+      // interval longer than 15 minutes is not allowed since we use this data for usage telemetry
+      long intervalSeconds =
+          Math.min(configuration.heartbeat.intervalSeconds, MINUTES.toSeconds(15));
+      HeartbeatExporter.start(
+          intervalSeconds, telemetryClient::populateDefaults, heartbeatTelemetryItemConsumer);
+    }
 
     TelemetryClient.setActive(telemetryClient);
 
+    if (configuration.preview.profiler.enabled && telemetryClient.getConnectionString() != null) {
+      try {
+        ProfilingInitializer.initialize(
+            tempDir,
+            configuration.preview.profiler,
+            configuration.preview.gcEvents.reportingLevel,
+            configuration.role.name,
+            configuration.role.instance,
+            telemetryClient);
+      } catch (RuntimeException e) {
+        startupLogger.warning("Failed to initialize profiler", e);
+      }
+    }
+
+    // TODO (heya) remove duplicate code in both RuntimeConfigurator and SecondEntryPoint
     RuntimeConfigurator runtimeConfigurator =
-        new RuntimeConfigurator(telemetryClient, () -> agentLogExporter, configuration);
+        new RuntimeConfigurator(
+            telemetryClient,
+            () -> agentLogExporter,
+            configuration,
+            heartbeatTelemetryItemConsumer,
+            tempDir);
 
     if (configuration.sampling.percentage != null) {
       BytecodeUtilImpl.samplingPercentage = configuration.sampling.percentage.floatValue();
@@ -166,14 +205,6 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
     BytecodeUtilImpl.runtimeConfigurator = runtimeConfigurator;
     BytecodeUtilImpl.connectionStringConfiguredAtRuntime =
         configuration.connectionStringConfiguredAtRuntime;
-
-    if (configuration.preview.profiler.enabled) {
-      try {
-        ProfilingInitializer.initialize(tempDir, configuration, telemetryClient);
-      } catch (RuntimeException e) {
-        startupLogger.warning("Failed to initialize profiler", e);
-      }
-    }
 
     if (ConfigurationBuilder.inAzureFunctionsConsumptionWorker()) {
       AzureFunctions.setup(
@@ -187,7 +218,18 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
     }
 
     // initialize StatsbeatModule
-    statsbeatModule.start(telemetryClient, configuration);
+    if (telemetryClient.getConnectionString() != null) {
+      statsbeatModule.start(
+          initStatsbeatTelemetryItemExporter(
+              statsbeatModule, tempDir, configuration.preview.diskPersistenceMaxSizeMb),
+          telemetryClient::getStatsbeatConnectionString,
+          telemetryClient::getInstrumentationKey,
+          configuration.internal.statsbeat.disabledAll,
+          configuration.internal.statsbeat.shortIntervalSeconds,
+          configuration.internal.statsbeat.longIntervalSeconds,
+          configuration.preview.statsbeat.disabled,
+          initStatsbeatFeatureSet(configuration));
+    }
 
     // TODO (trask) add this method to AutoConfigurationCustomizer upstream?
     ((AutoConfiguredOpenTelemetrySdkBuilder) autoConfiguration).registerShutdownHook(false);
@@ -249,6 +291,140 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
 
     Runtime.getRuntime()
         .addShutdownHook(new Thread(() -> flushAll(telemetryClient).join(10, TimeUnit.SECONDS)));
+  }
+
+  private static TelemetryItemExporter initStatsbeatTelemetryItemExporter(
+      StatsbeatModule statsbeatModule, File tempDir, int diskPersistenceMaxSizeMb) {
+    HttpPipeline httpPipeline = LazyHttpClient.newHttpPipeLine(null);
+    TelemetryPipeline telemetryPipeline = new TelemetryPipeline(httpPipeline);
+
+    TelemetryPipelineListener telemetryPipelineListener;
+    if (tempDir == null) {
+      telemetryPipelineListener = new StatsbeatTelemetryPipelineListener(statsbeatModule::shutdown);
+    } else {
+      LocalStorageTelemetryPipelineListener localStorageTelemetryPipelineListener =
+          new LocalStorageTelemetryPipelineListener(
+              diskPersistenceMaxSizeMb,
+              TempDirs.getSubDir(tempDir, STATSBEAT_FOLDER_NAME),
+              telemetryPipeline,
+              LocalStorageStats.noop(),
+              true);
+      telemetryPipelineListener =
+          TelemetryPipelineListener.composite(
+              new StatsbeatTelemetryPipelineListener(
+                  () -> {
+                    statsbeatModule.shutdown();
+                    localStorageTelemetryPipelineListener.shutdown();
+                  }),
+              localStorageTelemetryPipelineListener);
+    }
+
+    return new TelemetryItemExporter(telemetryPipeline, telemetryPipelineListener);
+  }
+
+  private static Set<Feature> initStatsbeatFeatureSet(Configuration config) {
+    Set<Feature> featureList = new HashSet<>();
+    if (config.preview.authentication.enabled) {
+      featureList.add(Feature.AAD);
+    }
+    if (config.preview.legacyRequestIdPropagation.enabled) {
+      featureList.add(Feature.LEGACY_PROPAGATION_ENABLED);
+    }
+
+    // disabled instrumentations
+    if (!config.instrumentation.azureSdk.enabled) {
+      featureList.add(Feature.AZURE_SDK_DISABLED);
+    }
+    if (!config.instrumentation.cassandra.enabled) {
+      featureList.add(Feature.CASSANDRA_DISABLED);
+    }
+    if (!config.instrumentation.jdbc.enabled) {
+      featureList.add(Feature.JDBC_DISABLED);
+    }
+    if (!config.instrumentation.jms.enabled) {
+      featureList.add(Feature.JMS_DISABLED);
+    }
+    if (!config.instrumentation.kafka.enabled) {
+      featureList.add(Feature.KAFKA_DISABLED);
+    }
+    if (!config.instrumentation.micrometer.enabled) {
+      featureList.add(Feature.MICROMETER_DISABLED);
+    }
+    if (!config.instrumentation.mongo.enabled) {
+      featureList.add(Feature.MONGO_DISABLED);
+    }
+    if (!config.instrumentation.quartz.enabled) {
+      featureList.add(Feature.QUARTZ_DISABLED);
+    }
+    if (!config.instrumentation.rabbitmq.enabled) {
+      featureList.add(Feature.RABBITMQ_DISABLED);
+    }
+    if (!config.instrumentation.redis.enabled) {
+      featureList.add(Feature.REDIS_DISABLED);
+    }
+    if (!config.instrumentation.springScheduling.enabled) {
+      featureList.add(Feature.SPRING_SCHEDULING_DISABLED);
+    }
+
+    // preview instrumentation
+    if (!config.preview.instrumentation.akka.enabled) {
+      featureList.add(Feature.AKKA_DISABLED);
+    }
+    if (!config.preview.instrumentation.apacheCamel.enabled) {
+      featureList.add(Feature.APACHE_CAMEL_DISABLED);
+    }
+    if (config.preview.instrumentation.grizzly.enabled) {
+      featureList.add(Feature.GRIZZLY_ENABLED);
+    }
+    if (!config.preview.instrumentation.play.enabled) {
+      featureList.add(Feature.PLAY_DISABLED);
+    }
+    if (!config.preview.instrumentation.springIntegration.enabled) {
+      featureList.add(Feature.SPRING_INTEGRATION_DISABLED);
+    }
+    if (!config.preview.instrumentation.vertx.enabled) {
+      featureList.add(Feature.VERTX_DISABLED);
+    }
+    if (!config.preview.instrumentation.jaxrsAnnotations.enabled) {
+      featureList.add(Feature.JAXRS_ANNOTATIONS_DISABLED);
+    }
+
+    // Statsbeat
+    if (config.preview.statsbeat.disabled) {
+      featureList.add(Feature.STATSBEAT_DISABLED);
+    }
+
+    if (config.preview.disablePropagation) {
+      featureList.add(Feature.PROPAGATION_DISABLED);
+    }
+    if (!config.preview.captureHttpServer4xxAsError) {
+      featureList.add(Feature.CAPTURE_HTTP_SERVER_4XX_AS_SUCCESS);
+    }
+    if (!config.preview.captureHttpServerHeaders.requestHeaders.isEmpty()
+        || !config.preview.captureHttpServerHeaders.responseHeaders.isEmpty()) {
+      featureList.add(Feature.CAPTURE_HTTP_SERVER_HEADERS);
+    }
+    if (!config.preview.captureHttpClientHeaders.requestHeaders.isEmpty()
+        || !config.preview.captureHttpClientHeaders.responseHeaders.isEmpty()) {
+      featureList.add(Feature.CAPTURE_HTTP_CLIENT_HEADERS);
+    }
+    if (!config.preview.processors.isEmpty()) {
+      featureList.add(Feature.TELEMETRY_PROCESSOR_ENABLED);
+    }
+    if (config.preview.profiler.enabled) {
+      featureList.add(Feature.PROFILER_ENABLED);
+    }
+
+    // customDimensions
+    if (!config.customDimensions.isEmpty()) {
+      featureList.add(Feature.CUSTOM_DIMENSIONS_ENABLED);
+    }
+
+    if (config.preview.captureLoggingLevelAsCustomDimension) {
+      featureList.add(Feature.LOGGING_LEVEL_CUSTOM_PROPERTY_ENABLED);
+    }
+
+    return featureList;
   }
 
   private static CompletableResultCode flushAll(TelemetryClient telemetryClient) {
@@ -320,9 +496,16 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
 
     String tracesExporter = otelConfig.getString("otel.traces.exporter");
     if ("none".equals(tracesExporter)) { // "none" is the default set in AiConfigCustomizer
+      List<Configuration.SamplingOverride> exceptionSamplingOverrides =
+          configuration.preview.sampling.overrides.stream()
+              .filter(override -> override.telemetryType == SamplingTelemetryType.EXCEPTION)
+              .collect(Collectors.toList());
       SpanExporter spanExporter =
           createSpanExporter(
-              telemetryClient, quickPulse, configuration.preview.captureHttpServer4xxAsError);
+              telemetryClient,
+              quickPulse,
+              configuration.preview.captureHttpServer4xxAsError,
+              new SamplingOverrides(exceptionSamplingOverrides));
 
       spanExporter = wrapSpanExporter(spanExporter, configuration);
 
@@ -341,7 +524,8 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
   private static SpanExporter createSpanExporter(
       TelemetryClient telemetryClient,
       @Nullable QuickPulse quickPulse,
-      boolean captureHttpServer4xxAsError) {
+      boolean captureHttpServer4xxAsError,
+      SamplingOverrides exceptionSamplingOverrides) {
 
     SpanDataMapper mapper =
         new SpanDataMapper(
@@ -362,6 +546,12 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
                 return true;
               }
               return false;
+            },
+            (span, event) -> {
+              Double samplingPercentage =
+                  exceptionSamplingOverrides.getOverridePercentage(event.getAttributes());
+              return samplingPercentage != null
+                  && !ExporterUtils.shouldSample(span.getSpanContext(), samplingPercentage);
             });
 
     BatchItemProcessor batchItemProcessor = telemetryClient.getGeneralBatchItemProcessor();

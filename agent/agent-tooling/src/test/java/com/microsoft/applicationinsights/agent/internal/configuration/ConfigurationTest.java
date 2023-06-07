@@ -19,8 +19,14 @@ import com.microsoft.applicationinsights.agent.internal.configuration.Configurat
 import io.opentelemetry.api.common.AttributeKey;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestFactory;
 import org.junit.jupiter.api.extension.ExtendWith;
 import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
 import uk.org.webcompere.systemstubs.jupiter.SystemStub;
@@ -680,6 +686,26 @@ class ConfigurationTest {
   void shouldNotParseFaultyJson() {
     assertThatThrownBy(() -> loadConfiguration("applicationinsights_faulty.json", true))
         .isInstanceOf(UnrecognizedPropertyException.class);
+  }
+
+  @TestFactory
+  public Collection<DynamicTest> canParseExampleProfilerConfigurations() {
+    return Stream.of(
+            "profile-configs/applicationinsights-trigger-example-1.json",
+            "profile-configs/applicationinsights-trigger-example-2.json",
+            "profile-configs/applicationinsights-trigger-example-3.json")
+        .map(
+            file ->
+                DynamicTest.dynamicTest(
+                    file,
+                    () -> {
+                      Configuration config = loadConfiguration(file, true);
+                      Assertions.assertNotNull(config);
+                      Assertions.assertNotNull(config.preview.profiler.requestTriggerEndpoints);
+                      Assertions.assertTrue(
+                          config.preview.profiler.requestTriggerEndpoints.length > 0);
+                    }))
+        .collect(Collectors.toList());
   }
 
   private static Configuration loadConfiguration() throws IOException {

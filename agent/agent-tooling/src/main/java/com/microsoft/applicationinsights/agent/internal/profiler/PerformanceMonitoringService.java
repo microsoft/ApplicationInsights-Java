@@ -4,7 +4,9 @@
 package com.microsoft.applicationinsights.agent.internal.profiler;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.ThreadPoolUtils;
+import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.PidFinder;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
+import com.microsoft.applicationinsights.agent.internal.configuration.GcReportingLevel;
 import com.microsoft.applicationinsights.agent.internal.profiler.service.ServiceProfilerClient;
 import com.microsoft.applicationinsights.agent.internal.profiler.triggers.AlertingSubsystemInit;
 import com.microsoft.applicationinsights.agent.internal.profiler.upload.UploadService;
@@ -15,9 +17,12 @@ import com.microsoft.applicationinsights.alerting.AlertingSubsystem;
 import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration;
 import com.microsoft.applicationinsights.diagnostics.DiagnosticEngine;
 import com.microsoft.applicationinsights.diagnostics.DiagnosticEngineFactory;
+import com.microsoft.applicationinsights.diagnostics.appinsights.CodeOptimizerApplicationInsightFactoryJfr;
 import java.io.File;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,7 +43,8 @@ public class PerformanceMonitoringService {
   private final String machineName;
   private final String roleName;
   private final TelemetryClient telemetryClient;
-  private final Configuration configuration;
+  private final Configuration.ProfilerConfiguration configuration;
+  private final GcReportingLevel reportingLevel;
   private final File tempDir;
 
   private boolean currentlyEnabled = false;
@@ -51,6 +57,7 @@ public class PerformanceMonitoringService {
   @Nullable private Profiler profiler;
   @Nullable private DiagnosticEngine diagnosticEngine;
   @Nullable private ScheduledExecutorService diagnosticEngineExecutorService;
+
   //////////////////////////////////////////////////////////
 
   public PerformanceMonitoringService(
@@ -58,13 +65,15 @@ public class PerformanceMonitoringService {
       String machineName,
       String roleName,
       TelemetryClient telemetryClient,
-      Configuration configuration,
+      Configuration.ProfilerConfiguration configuration,
+      GcReportingLevel reportingLevel,
       File tempDir) {
     this.processId = processId;
     this.machineName = machineName;
     this.roleName = roleName;
     this.telemetryClient = telemetryClient;
     this.configuration = configuration;
+    this.reportingLevel = reportingLevel;
     this.tempDir = tempDir;
   }
 
@@ -80,7 +89,7 @@ public class PerformanceMonitoringService {
     logger.warn("INITIALISING JFR PROFILING SUBSYSTEM THIS FEATURE IS IN BETA");
 
     diagnosticEngine = null;
-    if (configuration.preview.profiler.enableDiagnostics) {
+    if (configuration.enableDiagnostics) {
       // Initialise diagnostic service
       diagnosticEngine = startDiagnosticEngine();
     }
@@ -91,11 +100,12 @@ public class PerformanceMonitoringService {
             ThreadPoolUtils.createDaemonThreadFactory(
                 ProfilingInitializer.class, "ServiceProfilerAlertingService"));
 
-    profiler = new Profiler(configuration.preview.profiler, tempDir);
+    profiler = new Profiler(configuration, tempDir);
 
     alerting =
         AlertingSubsystemInit.create(
             configuration,
+            reportingLevel,
             TelemetryObservers.INSTANCE,
             profiler,
             telemetryClient,
@@ -138,7 +148,7 @@ public class PerformanceMonitoringService {
             diagnosticEngineFactory.create(diagnosticEngineExecutorService);
 
         if (diagnosticEngine != null) {
-          diagnosticEngine.init();
+          diagnosticEngine.init(Integer.parseInt(new PidFinder().getValue()));
         } else {
           diagnosticEngineExecutorService.shutdown();
         }
@@ -146,15 +156,33 @@ public class PerformanceMonitoringService {
       } else {
         logger.warn("No diagnostic engine implementation provided");
       }
-    } catch (RuntimeException e) {
-      logger.error("Failed to load profiler factory", e);
+    } catch (Throwable e) {
+      // This is a broad catch however there could be a broad range of issues such as ClassNotFound
+      // and dont want to disrupt the rest of the code
+      logger.error("Failed to initialize the diagnostic engine", e);
     }
     return null;
   }
 
+  @Nullable
   private static DiagnosticEngineFactory loadDiagnosticEngineFactory() {
     logger.info("loading DiagnosticEngineFactory");
-    return ServiceLoaderUtil.findServiceLoader(DiagnosticEngineFactory.class, true);
+    List<DiagnosticEngineFactory> diagnosticEngines =
+        ServiceLoaderUtil.findAllServiceLoaders(DiagnosticEngineFactory.class, true);
+
+    if (diagnosticEngines.size() > 1) {
+      // A second diagnostic engine has been provided, prefer the non-default one
+      diagnosticEngines =
+          diagnosticEngines.stream()
+              .filter(it -> !it.getClass().equals(CodeOptimizerApplicationInsightFactoryJfr.class))
+              .collect(Collectors.toList());
+    }
+
+    if (diagnosticEngines.size() == 0) {
+      return null;
+    }
+
+    return diagnosticEngines.get(0);
   }
 
   public void updateConfiguration(AlertingConfiguration alertingConfig) {

@@ -1,0 +1,18 @@
+{
+  "role" : {
+    "name" : "testrolename",
+    "instance" : "testroleinstance"
+  },
+  "sampling" : {
+    "percentage" : 100
+  },
+  "preview" : {
+    "profiler" : {
+      "enabled" : true,
+      "memoryTriggeredSettings" : "DIAGNOSTIC_PROFILE",
+      "cpuTriggeredSettings" : "DIAGNOSTIC_PROFILE",
+      "manualTriggeredSettings" : "DIAGNOSTIC_PROFILE",
+      "enableDiagnostics" : true
+    }
+  }
+}

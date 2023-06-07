@@ -9,7 +9,7 @@ import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 final class UserAgents {
 
   static boolean isBot(Attributes attributes) {
-    String userAgent = attributes.get(SemanticAttributes.HTTP_USER_AGENT);
+    String userAgent = attributes.get(SemanticAttributes.USER_AGENT_ORIGINAL);
     return userAgent != null && userAgent.contains("AlwaysOn");
   }
 

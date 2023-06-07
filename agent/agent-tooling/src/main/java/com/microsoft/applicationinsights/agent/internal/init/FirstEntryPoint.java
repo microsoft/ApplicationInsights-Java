@@ -6,14 +6,14 @@ package com.microsoft.applicationinsights.agent.internal.init;
 import static com.microsoft.applicationinsights.agent.bootstrap.diagnostics.MsgId.INITIALIZATION_SUCCESS;
 import static com.microsoft.applicationinsights.agent.bootstrap.diagnostics.MsgId.STARTUP_FAILURE_ERROR;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.PropertyHelper;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.SystemInformation;
 import com.google.auto.service.AutoService;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.PidFinder;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.SdkVersionFinder;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.status.StatusFile;
 import com.microsoft.applicationinsights.agent.internal.common.FriendlyException;
-import com.microsoft.applicationinsights.agent.internal.common.PropertyHelper;
-import com.microsoft.applicationinsights.agent.internal.common.SystemInformation;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.SelfDiagnostics;
 import com.microsoft.applicationinsights.agent.internal.configuration.ConfigurationBuilder;
@@ -23,6 +23,7 @@ import io.opentelemetry.javaagent.bootstrap.InstrumentationHolder;
 import io.opentelemetry.javaagent.bootstrap.InternalLogger;
 import io.opentelemetry.javaagent.bootstrap.JavaagentFileHolder;
 import io.opentelemetry.javaagent.tooling.LoggingCustomizer;
+import io.opentelemetry.javaagent.tooling.config.EarlyInitAgentConfig;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
@@ -67,7 +68,12 @@ public class FirstEntryPoint implements LoggingCustomizer {
   }
 
   @Override
-  public void init() {
+  public String name() {
+    return "applicationinsights";
+  }
+
+  @Override
+  public void init(EarlyInitAgentConfig earlyConfig) {
     try {
       if (DEBUG_SIGNED_JAR_ACCESS) {
         JarVerifierClassFileTransformer transformer = new JarVerifierClassFileTransformer();

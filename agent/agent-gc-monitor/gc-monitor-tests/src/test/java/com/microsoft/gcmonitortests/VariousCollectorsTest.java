@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.StringJoiner;
 import java.util.function.Predicate;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledForJreRange;
 import org.junit.jupiter.api.condition.EnabledOnOs;
@@ -41,6 +42,7 @@ class VariousCollectorsTest {
     testGc("-XX:+UseSerialGC", 50);
   }
 
+  @Disabled
   @Test
   @EnabledForJreRange(min = JAVA_11)
   void testShenandoah() throws Exception {

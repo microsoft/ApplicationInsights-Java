@@ -4,20 +4,19 @@ plugins {
 
 val sdkVersionDir = "${buildDir}/generated/resources/sdk-version"
 
-sourceSets {
-  main {
-    resources {
-      srcDir(sdkVersionDir)
+tasks {
+  register("generateVersionResource") {
+    inputs.property("project.version", project.version.toString())
+    outputs.dir(sdkVersionDir)
+
+    doLast {
+      File(sdkVersionDir, "ai.sdk-version.properties").writeText("version=${project.version}")
     }
   }
 }
 
-tasks {
-  val generateVersionProperties by registering(WriteProperties::class) {
-    outputFile = File(sdkVersionDir, "ai.sdk-version.properties")
-    property("version", project.version)
-  }
-  processResources {
-    dependsOn(generateVersionProperties)
+sourceSets {
+  main {
+    output.dir(sdkVersionDir, "builtBy" to "generateVersionResource")
   }
 }
