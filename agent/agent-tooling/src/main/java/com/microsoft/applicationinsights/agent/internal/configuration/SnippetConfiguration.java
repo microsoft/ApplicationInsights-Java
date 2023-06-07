@@ -4,6 +4,7 @@
 package com.microsoft.applicationinsights.agent.internal.configuration;
 
 import io.opentelemetry.javaagent.bootstrap.servlet.ExperimentalSnippetHolder;
+
 // preveiw Configuration
 public class SnippetConfiguration {
   private static String snippet =
@@ -21,8 +22,11 @@ public class SnippetConfiguration {
           + "</script>\n";
 
   public static void setSnippet(String connectionString) {
-    snippet = snippet.replace("CONNECTION_STRING", connectionString);
-    ExperimentalSnippetHolder.setSnippet(snippet);
+    if (Configuration.PreviewConfiguration.injectJavaScriptSnippet){
+      snippet = snippet.replace("CONNECTION_STRING", connectionString);
+      ExperimentalSnippetHolder.setSnippet(snippet);
+    }
+
   }
 
   private SnippetConfiguration() {}
