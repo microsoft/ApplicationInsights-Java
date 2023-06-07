@@ -22,11 +22,10 @@ public class SnippetConfiguration {
           + "</script>\n";
 
   public static void setSnippet(String connectionString) {
-    if (Configuration.PreviewConfiguration.injectJavaScriptSnippet){
+    if (Configuration.PreviewConfiguration.injectJavaScriptSnippet) {
       snippet = snippet.replace("CONNECTION_STRING", connectionString);
       ExperimentalSnippetHolder.setSnippet(snippet);
     }
-
   }
 
   private SnippetConfiguration() {}
