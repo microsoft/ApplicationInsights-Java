@@ -20,12 +20,13 @@ public class SnippetConfiguration {
     ClassLoader classLoader = SnippetConfiguration.class.getClassLoader();
     return Paths.get(classLoader.getResource(resourceName).toURI());
   }
-  public static String readSnippet(){
+
+  public static String readSnippet() {
     try {
       Path path = getConfigFilePath("snippet.txt");
       byte[] bytes = Files.readAllBytes(path);
       return new String(bytes, Charset.defaultCharset());
-    } catch(IOException | URISyntaxException e){
+    } catch (IOException | URISyntaxException e) {
       throw new UncheckedIOException((IOException) e);
     }
   }
