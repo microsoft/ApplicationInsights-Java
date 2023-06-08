@@ -21,7 +21,7 @@ public class SnippetConfiguration {
     return Paths.get(classLoader.getResource(resourceName).toURI());
   }
 
-  public static String readSnippet() {
+  static String readSnippet() {
     try {
       Path path = getConfigFilePath("snippet.txt");
       byte[] bytes = Files.readAllBytes(path);
@@ -32,7 +32,7 @@ public class SnippetConfiguration {
   }
 
   public static void setSnippet(String connectionString) {
-    snippet = snippet.replace("CONNECTION_STRING", connectionString);
+    snippet = snippet.replace("YOUR_CONNECTION_STRING", connectionString);
     ExperimentalSnippetHolder.setSnippet(snippet);
   }
 
