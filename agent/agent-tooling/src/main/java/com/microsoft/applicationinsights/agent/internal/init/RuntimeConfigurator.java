@@ -11,6 +11,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryI
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
 import com.microsoft.applicationinsights.agent.internal.classicsdk.BytecodeUtilImpl;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
+import com.microsoft.applicationinsights.agent.internal.configuration.SnippetConfiguration;
 import com.microsoft.applicationinsights.agent.internal.exporter.AgentLogExporter;
 import com.microsoft.applicationinsights.agent.internal.legacyheaders.DelegatingPropagator;
 import com.microsoft.applicationinsights.agent.internal.profiler.ProfilingInitializer;
@@ -119,6 +120,9 @@ public class RuntimeConfigurator {
     boolean currentEnabled = !Strings.isNullOrEmpty(currentConfig.connectionString);
 
     updateConnectionString(runtimeConfig.connectionString);
+    if (Configuration.PreviewConfiguration.javaScriptSnippet.enabled) {
+      SnippetConfiguration.initializeSnippet(runtimeConfig.connectionString);
+    }
     updateRoleName(runtimeConfig.role.name);
     updateRoleInstance(runtimeConfig.role.instance);
 

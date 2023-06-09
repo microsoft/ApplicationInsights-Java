@@ -27,7 +27,7 @@ dependencies {
 
   compileOnly("io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap")
   compileOnly("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling")
-
+  compileOnly("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-common-bootstrap")
   testImplementation("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling")
 
   compileOnly("io.opentelemetry.javaagent:opentelemetry-javaagent-extension-api")
