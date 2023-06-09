@@ -317,7 +317,7 @@ public class Configuration {
     public boolean disablePropagation;
     public boolean captureHttpServer4xxAsError = true;
 
-    public static InjectJavaScriptSnippet injectJavaScriptSnippet = new InjectJavaScriptSnippet();
+    public static JavaScriptSnippet javaScriptSnippet = new JavaScriptSnippet();
 
     // LoggingLevel is no longer sent by default since 3.3.0, since the data is already available
     // under SeverityLevel. This configuration is provided as a temporary measure for customers
@@ -584,7 +584,7 @@ public class Configuration {
     public boolean enabled = true;
   }
 
-  public static class InjectJavaScriptSnippet {
+  public static class JavaScriptSnippet {
     public boolean enabled = false;
   }
 
