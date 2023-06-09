@@ -585,7 +585,7 @@ public class Configuration {
   }
 
   public static class JavaScriptSnippet {
-    public boolean enabled = false;
+    public boolean enabled;
   }
 
   public static class DisabledByDefaultInstrumentation {
