@@ -4,14 +4,14 @@
 package com.microsoft.applicationinsights.agent.internal.configuration;
 
 import io.opentelemetry.javaagent.bootstrap.servlet.ExperimentalSnippetHolder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 // preview Configuration
 public class SnippetConfiguration {
