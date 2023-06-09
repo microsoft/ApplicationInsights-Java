@@ -585,7 +585,7 @@ public class Configuration {
   }
 
   public static class InjectJavaScriptSnippet {
-    public boolean enabled = true;
+    public boolean enabled = false;
   }
 
   public static class DisabledByDefaultInstrumentation {

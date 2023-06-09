@@ -16,14 +16,14 @@ import java.nio.file.Paths;
 public class SnippetConfiguration {
   private static String snippet = readSnippet();
 
-  static Path getConfigFilePath(String resourceName) throws URISyntaxException {
+  static Path getSnippetFilePath(String resourceName) throws URISyntaxException {
     ClassLoader classLoader = SnippetConfiguration.class.getClassLoader();
     return Paths.get(classLoader.getResource(resourceName).toURI());
   }
 
   static String readSnippet() {
     try {
-      Path path = getConfigFilePath("snippet.txt");
+      Path path = getSnippetFilePath("snippet.txt");
       byte[] bytes = Files.readAllBytes(path);
       return new String(bytes, Charset.defaultCharset());
     } catch (IOException | URISyntaxException e) {
