@@ -5,7 +5,6 @@ package com.microsoft.applicationinsights.agent.internal.configuration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.IOException;
 import org.junit.jupiter.api.Test;
 
 public class SnippetConfigurationTest {
@@ -13,7 +12,7 @@ public class SnippetConfigurationTest {
       "InstrumentationKey=00000000-0000-0000-0000-000000000000;IngestionEndpoint=https://fake-ingestion-endpoint";
 
   @Test
-  void testSnippetSetup() throws IOException {
+  void testSnippetSetup() {
     String snippet = SnippetConfiguration.readSnippet();
     assertThat(snippet).contains("connectionString: \"YOUR_CONNECTION_STRING\"\n");
     snippet = snippet.replace("YOUR_CONNECTION_STRING", CONNECTION_STRING);
