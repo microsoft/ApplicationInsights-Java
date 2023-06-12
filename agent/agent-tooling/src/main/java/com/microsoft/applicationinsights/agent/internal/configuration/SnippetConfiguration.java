@@ -22,14 +22,14 @@ public class SnippetConfiguration {
     ClassLoader classLoader = SnippetConfiguration.class.getClassLoader();
     String resourceName = "javascript-snippet.txt";
     InputStream inputStream = classLoader.getResourceAsStream(resourceName);
-    String returnString = "";
+    StringBuilder snippetBuilder = new StringBuilder();
     if (inputStream != null) {
       try (BufferedReader reader =
           new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
         String line;
         while ((line = reader.readLine()) != null) {
           // Process each line of the file
-          returnString += line + "\n";
+          snippetBuilder.append(line + "\n");
         }
       } catch (IOException e) {
         // Handle any IO exceptions that occur
@@ -39,7 +39,7 @@ public class SnippetConfiguration {
       // Handle the case when the resource is not found
       LOGGER.error("Resource not found: " + resourceName);
     }
-    return returnString;
+    return snippetBuilder.toString();
   }
 
   public static void initializeSnippet(String connectionString) {
