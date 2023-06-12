@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,28 +19,28 @@ public class SnippetConfiguration {
   private static final Logger LOGGER = LoggerFactory.getLogger(SnippetConfiguration.class);
 
   // visible for testing
-  static String readSnippet() {
+  static String readSnippet(){
     ClassLoader classLoader = SnippetConfiguration.class.getClassLoader();
     String resourceName = "javascript-snippet.txt";
     InputStream inputStream = classLoader.getResourceAsStream(resourceName);
-    StringBuilder snippetBuilder = new StringBuilder();
-    if (inputStream != null) {
-      try (BufferedReader reader =
-          new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
-        String line;
-        while ((line = reader.readLine()) != null) {
-          // Process each line of the file
-          snippetBuilder.append(line + "\n");
-        }
-      } catch (IOException e) {
-        // Handle any IO exceptions that occur
-        LOGGER.error("Failed to read javascript-snippet file", e);
-      }
-    } else {
-      // Handle the case when the resource is not found
+    if (inputStream == null){
       LOGGER.error("Resource not found: " + resourceName);
+      return "";
     }
-    return snippetBuilder.toString();
+    try {
+      return toString(inputStream);
+    } catch (IOException e) {
+      // Handle any IO exceptions that occur
+      LOGGER.error("Failed to read javascript-snippet file", e);
+    }
+    return "";
+  }
+
+  private static String toString(InputStream inputStream) throws IOException {
+    try (BufferedReader bufferedReader =
+        new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
+      return bufferedReader.lines().collect(Collectors.joining(System.lineSeparator()));
+    }
   }
 
   public static void initializeSnippet(String connectionString) {
