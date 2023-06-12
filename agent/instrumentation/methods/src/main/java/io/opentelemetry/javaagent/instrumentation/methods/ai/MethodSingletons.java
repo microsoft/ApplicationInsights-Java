@@ -33,7 +33,8 @@ public final class MethodSingletons {
                 GlobalOpenTelemetry.get(),
                 INSTRUMENTATION_NAME,
                 CodeSpanNameExtractor.create(codeAttributesGetter))
-            .setInstrumentationVersion("1.23.0-alpha-applicationinsights")
+            .setInstrumentationVersion(
+                "1.25.0-alpha-applicationinsights") // TODO automate version or use upstream
             .addAttributesExtractor(CodeAttributesExtractor.create(codeAttributesGetter))
             // START APPLICATION INSIGHTS MODIFICATIONS
             .buildInstrumenter(new MethodSpanKindExtractor());
@@ -58,6 +59,7 @@ public final class MethodSingletons {
       return Span.current().getSpanContext().isValid();
     }
   }
+
   // END APPLICATION INSIGHTS MODIFICATIONS
 
   private MethodSingletons() {}

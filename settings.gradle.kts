@@ -2,15 +2,15 @@ import org.apache.tools.ant.taskdefs.condition.Os
 
 pluginManagement {
   plugins {
-    id("com.github.ben-manes.versions") version "0.46.0"
-    id("com.github.jk1.dependency-license-report") version "2.1"
-    id("me.champeau.jmh") version "0.6.8"
-    id("com.gradle.plugin-publish") version "1.1.0"
+    id("com.github.ben-manes.versions") version "0.47.0"
+    id("com.github.jk1.dependency-license-report") version "2.4"
+    id("me.champeau.jmh") version "0.7.1"
+    id("com.gradle.plugin-publish") version "1.2.0"
   }
 }
 
 plugins {
-  id("com.gradle.enterprise") version "3.12.3"
+  id("com.gradle.enterprise") version "3.13.3"
 }
 
 dependencyResolutionManagement {
@@ -49,8 +49,11 @@ include(":agent:agent-gc-monitor:gc-monitor-api")
 include(":agent:agent-gc-monitor:gc-monitor-core")
 include(":agent:agent-gc-monitor:gc-monitor-tests")
 
+include(":agent:agent-profiler:agent-diagnostics-jfr")
+include(":agent:agent-profiler:agent-diagnostics-serialization")
 include(":agent:agent-profiler:agent-alerting-api")
 include(":agent:agent-profiler:agent-diagnostics-api")
+include(":agent:agent-profiler:agent-diagnostics")
 include(":agent:agent-profiler:agent-alerting")
 
 include(":agent:agent-bootstrap")
@@ -90,6 +93,9 @@ hideFromDependabot(":smoke-tests:apps:CoreAndFilter3x")
 hideFromDependabot(":smoke-tests:apps:CoreAndFilter3xUsingOld3xAgent")
 hideFromDependabot(":smoke-tests:apps:CustomDimensions")
 hideFromDependabot(":smoke-tests:apps:CustomInstrumentation")
+hideFromDependabot(":smoke-tests:apps:DetectUnexpectedOtelMetrics")
+hideFromDependabot(":smoke-tests:apps:Diagnostics")
+hideFromDependabot(":smoke-tests:apps:Diagnostics:JfrFileReader")
 hideFromDependabot(":smoke-tests:apps:DiagnosticExtension:MockExtension")
 hideFromDependabot(":smoke-tests:apps:DiagnosticExtension")
 hideFromDependabot(":smoke-tests:apps:DotInJmxMetric")

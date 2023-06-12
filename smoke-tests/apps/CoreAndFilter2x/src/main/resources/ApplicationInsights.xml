@@ -7,7 +7,8 @@
 
   <!-- cannot use ConnectionString here since testing CoreAndFilter against very old SDK
        prior to 2.5.1 when when ConnectionString support was introduced -->
-  <InstrumentationKey>BAD1BAD1-BAD1-BAD1-BAD1-BAD1BAD1BAD1</InstrumentationKey>
+  <!-- testing to ensure 3.x integration still works even with no InstrumentationKey configured -->
+  <!--InstrumentationKey>BAD1BAD1-BAD1-BAD1-BAD1-BAD1BAD1BAD1</InstrumentationKey-->
 
   <SDKLogger type="CONSOLE">
     <enabled>true</enabled>

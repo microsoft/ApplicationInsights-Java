@@ -95,6 +95,7 @@ public class SmokeTestExtension
   private final boolean usesGlobalIngestionEndpoint;
   private final boolean useOld3xAgent;
   private final String connectionString;
+  private final String otelResourceAttributesEnvVar;
   private final String selfDiagnosticsLevel;
   private final File javaagentFile;
   private final File agentExtensionFile;
@@ -114,6 +115,7 @@ public class SmokeTestExtension
       boolean skipHealthCheck,
       boolean readOnly,
       boolean doNotSetConnectionString,
+      String otelResourceAttributesEnvVar,
       boolean useOld3xAgent,
       String selfDiagnosticsLevel,
       File agentExtensionFile,
@@ -133,6 +135,8 @@ public class SmokeTestExtension
                 + FAKE_INGESTION_ENDPOINT
                 + ";ProfilerEndpoint="
                 + getProfilerEndpoint(profilerState);
+
+    this.otelResourceAttributesEnvVar = otelResourceAttributesEnvVar;
     this.selfDiagnosticsLevel = selfDiagnosticsLevel;
     this.agentExtensionFile = agentExtensionFile;
 
@@ -389,6 +393,7 @@ public class SmokeTestExtension
             .withEnv(hostnameEnvVars)
             .withEnv("APPLICATIONINSIGHTS_CONNECTION_STRING", connectionString)
             .withEnv("APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_LEVEL", selfDiagnosticsLevel)
+            .withEnv("OTEL_RESOURCE_ATTRIBUTES", otelResourceAttributesEnvVar)
             .withNetwork(network)
             .withExposedPorts(8080)
             .withFileSystemBind(
@@ -610,6 +615,29 @@ public class SmokeTestExtension
       }
       MetricData md = getBaseData(input);
       return name.equals(md.getMetrics().get(0).getName());
+    };
+  }
+
+  public static Predicate<Envelope> getMetricPredicate(
+      String name, String secondPredicate, boolean isRolename) {
+    Objects.requireNonNull(name, "name");
+    Objects.requireNonNull(secondPredicate, "secondPredicate");
+
+    return input -> {
+      if (input == null) {
+        return false;
+      }
+      if (!input.getData().getBaseType().equals("MetricData")
+          || (isRolename && !input.getTags().get("ai.cloud.role").equals(secondPredicate))
+          || (!isRolename && !input.getIKey().equals(secondPredicate))) {
+        return false;
+      }
+      MetricData md = getBaseData(input);
+      boolean isSecondPredicateValid =
+          isRolename
+              ? secondPredicate.equals(input.getTags().get("ai.cloud.role"))
+              : secondPredicate.equals(input.getIKey());
+      return name.equals(md.getMetrics().get(0).getName()) && isSecondPredicateValid;
     };
   }
 }

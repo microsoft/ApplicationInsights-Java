@@ -22,11 +22,13 @@ dependencies {
   compileOnly("io.opentelemetry:opentelemetry-sdk")
   compileOnly("io.opentelemetry:opentelemetry-sdk-metrics")
   compileOnly("io.opentelemetry:opentelemetry-sdk-logs")
+  compileOnly("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure-spi")
 
   testImplementation("io.opentelemetry:opentelemetry-sdk")
   testImplementation("io.opentelemetry:opentelemetry-sdk-metrics")
   testImplementation("io.opentelemetry:opentelemetry-sdk-logs")
   testImplementation("io.opentelemetry:opentelemetry-sdk-testing")
+  testImplementation("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure-spi")
 
   testImplementation("org.junit.jupiter:junit-jupiter")
   testImplementation("com.azure:azure-core-test")
@@ -36,18 +38,12 @@ dependencies {
   testImplementation("uk.org.webcompere:system-stubs-jupiter:2.0.2")
   testImplementation("io.github.hakky54:logcaptor")
 
-  testImplementation("com.azure:azure-data-appconfiguration:1.4.2")
-  testImplementation("com.azure:azure-messaging-eventhubs:5.15.2")
-  testImplementation("com.azure:azure-messaging-eventhubs-checkpointstore-blob:1.16.3")
+  testImplementation("com.azure:azure-data-appconfiguration:1.4.5")
+  testImplementation("com.azure:azure-messaging-eventhubs:5.15.5")
+  testImplementation("com.azure:azure-messaging-eventhubs-checkpointstore-blob:1.16.6")
+
+  testImplementation("com.squareup.okio:okio:3.3.0")
 
   testCompileOnly("com.google.code.findbugs:jsr305")
   testCompileOnly("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
-}
-
-configurations {
-  all {
-    // excluding unused dependencies for size (~1.8mb)
-    exclude("com.fasterxml.jackson.dataformat", "jackson-dataformat-xml")
-    exclude("com.fasterxml.woodstox", "woodstox-core")
-  }
 }

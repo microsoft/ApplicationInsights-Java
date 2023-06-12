@@ -1,0 +1,73 @@
+name: Pull request helper
+on:
+  pull_request_target:
+
+jobs:
+  pull-request-helper:
+    if: github.event.pull_request.user.login == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          # this is the personal access token used for "git push" below
+          # which is needed in order to trigger workflows
+          token: ${{ secrets.PR_HELPER_GITHUB_TOKEN }}
+
+      - name: Check out PR branch
+        env:
+          NUMBER: ${{ github.event.pull_request.number }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh pr checkout $NUMBER
+
+      - name: Set up Gradle cache
+        uses: gradle/gradle-build-action@v2.4.2
+        with:
+          cache-read-only: true
+
+      - name: Set git user
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+
+      # - name: Spotless
+      #   env:
+      #     NUMBER: ${{ github.event.issue.number }}
+      #   run: |
+      #     ./gradlew spotlessApply
+      #     if git diff --quiet; then
+      #       exit 0 # success
+      #     fi
+      #     git commit -a -m "./gradlew spotlessApply"
+
+      - name: Update license report
+        env:
+          NUMBER: ${{ github.event.issue.number }}
+        run: |
+          ./gradlew generateLicenseReport
+          git add licenses
+          # there's always going to one line difference due to the timestamp included in the report
+          if [[ $(git diff --cached --shortstat licenses) == " 1 file changed, 1 insertion(+), 1 deletion(-)" ]]
+          then
+            git reset HEAD licenses
+            git checkout -- licenses
+            exit 0 # success
+          fi
+          git commit -m "./gradlew generateLicenseReport"
+
+      - name: Update lock files
+        env:
+          NUMBER: ${{ github.event.issue.number }}
+        run: |
+          ./gradlew resolveAndLockAll --write-locks
+          git add "*.lockfile"
+          if git diff --cached --quiet; then
+            exit 0 # success
+          fi
+          git commit -m "./gradlew resolveAndLockAll --write-locks"
+
+      - name: Push
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git push

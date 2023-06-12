@@ -75,7 +75,7 @@ public final class SpanDataMapper {
             .ignoreExact(AiSemanticAttributes.KAFKA_RECORD_QUEUE_TIME_MS.getKey())
             .ignoreExact(AiSemanticAttributes.KAFKA_OFFSET.getKey())
             .exact(
-                SemanticAttributes.HTTP_USER_AGENT.getKey(),
+                SemanticAttributes.USER_AGENT_ORIGINAL.getKey(),
                 (builder, value) -> {
                   if (value instanceof String) {
                     builder.addTag("ai.user.userAgent", (String) value);
@@ -105,14 +105,17 @@ public final class SpanDataMapper {
   private final boolean captureHttpServer4xxAsError;
   private final BiConsumer<AbstractTelemetryBuilder, Resource> telemetryInitializer;
   private final BiPredicate<EventData, String> eventSuppressor;
+  private final BiPredicate<SpanData, EventData> shouldSuppress;
 
   public SpanDataMapper(
       boolean captureHttpServer4xxAsError,
       BiConsumer<AbstractTelemetryBuilder, Resource> telemetryInitializer,
-      BiPredicate<EventData, String> eventSuppressor) {
+      BiPredicate<EventData, String> eventSuppressor,
+      BiPredicate<SpanData, EventData> shouldSuppress) {
     this.captureHttpServer4xxAsError = captureHttpServer4xxAsError;
     this.telemetryInitializer = telemetryInitializer;
     this.eventSuppressor = eventSuppressor;
+    this.shouldSuppress = shouldSuppress;
   }
 
   public TelemetryItem map(SpanData span) {
@@ -704,7 +707,7 @@ public final class SpanDataMapper {
         if (!parentSpanContext.isValid() || parentSpanContext.isRemote()) {
           // TODO (trask) map OpenTelemetry exception to Application Insights exception better
           String stacktrace = event.getAttributes().get(SemanticAttributes.EXCEPTION_STACKTRACE);
-          if (stacktrace != null) {
+          if (stacktrace != null && !shouldSuppress.test(span, event)) {
             consumer.accept(
                 createExceptionTelemetryItem(stacktrace, span, operationName, itemCount));
           }

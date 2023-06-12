@@ -42,7 +42,9 @@ public class GcProcessRunner {
 
   /** Run the GcEventGenerator process and collect gc events. */
   public List<GcCollectionEvent> getGcCollectionEvents()
-      throws IOException, UnableToMonitorMemoryException, InterruptedException,
+      throws IOException,
+          UnableToMonitorMemoryException,
+          InterruptedException,
           GcNotPresentException {
     int port = getRandomPort();
     Process process = startGcProcess(port, gcArg, heapSizeInMb);

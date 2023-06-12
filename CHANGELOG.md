@@ -1,5 +1,43 @@
 # CHANGELOG
 
+## Version 3.4.13 GA
+
+### Enhancements:
+
+* Update to OpenTelemetry Java Instrumentation 1.26
+  ([#3069](https://github.com/microsoft/ApplicationInsights-Java/pull/3069))
+* Improve sampling override to support exceptions
+  ([#3022](https://github.com/microsoft/ApplicationInsights-Java/pull/3022))
+
+### Bug fixes:
+
+* Fix 2.x SDK integration when no 2.x iKey present
+  ([#3036](https://github.com/microsoft/ApplicationInsights-Java/pull/3036))
+
+## Version 3.4.12 GA
+
+### Enhancements:
+
+* Update to OpenTelemetry Java Instrumentation 1.25
+  ([#3005](https://github.com/microsoft/ApplicationInsights-Java/pull/3005))
+
+### Bug fixes:
+
+* Fix NPE when pulling profiler configuration
+  ([#2987](https://github.com/microsoft/ApplicationInsights-Java/pull/2987))
+
+## Version 3.4.11 GA
+
+### Enhancements:
+
+* Update to OpenTelemetry Java Instrumentation 1.24
+  ([#2963](https://github.com/microsoft/ApplicationInsights-Java/pull/2963))
+
+### Bug fixes:
+
+* Fix custom metrics in Azure Function Consumption Plan
+  ([#2946](https://github.com/microsoft/ApplicationInsights-Java/pull/2946))
+
 ## Version 3.4.10 GA
 
 ### Enhancements:

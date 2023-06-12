@@ -55,14 +55,19 @@ public class StatusFile {
   static final String HOME_ENV_VAR = "HOME";
 
   // visible for testing
-  static final String DEFAULT_LOGDIR = "/LogFiles";
+  static final String DEFAULT_LOGDIR = "LogFiles";
 
   // visible for testing
-  static final String DEFAULT_APPLICATIONINSIGHTS_LOGDIR = "/ApplicationInsights";
+  static final String DEFAULT_APPLICATIONINSIGHTS_LOGDIR = "ApplicationInsights";
 
   // visible for testing
   static final String WINDOWS_DEFAULT_HOME_DIR =
-      "/home" + DEFAULT_LOGDIR + DEFAULT_APPLICATIONINSIGHTS_LOGDIR;
+      File.separator
+          + "home"
+          + File.separator
+          + DEFAULT_LOGDIR
+          + File.separator
+          + DEFAULT_APPLICATIONINSIGHTS_LOGDIR;
 
   // visible for testing
   static String logDir;
@@ -110,11 +115,15 @@ public class StatusFile {
     if (DiagnosticsHelper.isOsWindows()) {
       String siteLogDir = System.getProperty(SITE_LOGDIR_PROPERTY);
       if (siteLogDir != null && !siteLogDir.isEmpty()) {
-        return siteLogDir + DEFAULT_APPLICATIONINSIGHTS_LOGDIR;
+        return siteLogDir + File.separator + DEFAULT_APPLICATIONINSIGHTS_LOGDIR;
       }
       String homeDir = System.getenv(HOME_ENV_VAR);
       if (homeDir != null && !homeDir.isEmpty()) {
-        return homeDir + DEFAULT_LOGDIR + DEFAULT_APPLICATIONINSIGHTS_LOGDIR;
+        return homeDir
+            + File.separator
+            + DEFAULT_LOGDIR
+            + File.separator
+            + DEFAULT_APPLICATIONINSIGHTS_LOGDIR;
       }
       return WINDOWS_DEFAULT_HOME_DIR;
     }

@@ -19,13 +19,13 @@ import ch.qos.logback.core.rolling.RollingFileAppender;
 import ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy;
 import ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy;
 import ch.qos.logback.core.util.FileSize;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.PropertyHelper;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.etw.EtwAppender;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.log.ApplicationInsightsCsvLayout;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.log.ApplicationInsightsDiagnosticsLogFilter;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.log.ApplicationInsightsJsonLayout;
 import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.log.MoshiJsonFormatter;
-import com.microsoft.applicationinsights.agent.internal.common.PropertyHelper;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.logbackpatch.FixedWindowRollingPolicy;
 import java.nio.file.Path;
@@ -114,6 +114,11 @@ public class LoggingConfigurator {
     diagnosticLogger.setAdditive(false);
     Appender<ILoggingEvent> diagnosticAppender = configureConsoleAppender();
     diagnosticLogger.addAppender(diagnosticAppender);
+
+    ApplicationInsightsDiagnosticsLogFilter filter = new ApplicationInsightsDiagnosticsLogFilter();
+    filter.setContext(loggerContext);
+    filter.start();
+    diagnosticAppender.addFilter(filter);
 
     // errors reported by other loggers should also go to diagnostic log
     // (level filter for these is applied in ApplicationInsightsDiagnosticsLogFilter)

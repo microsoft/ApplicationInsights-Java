@@ -20,7 +20,7 @@ jobs:
           java-version: 17
 
       - name: Spotless
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/gradle-build-action@v2.4.2
         with:
           arguments: spotlessCheck ${{ inputs.no-build-cache && '--no-build-cache' || '' }}
 
@@ -40,10 +40,10 @@ jobs:
         uses: actions/setup-java@v3
         with:
           distribution: temurin
-          java-version: 11
+          java-version: 17
 
       - name: Generate license report
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/gradle-build-action@v2.4.2
         with:
           # ignore inputs.no-build-cache and always run with --no-build-cache
           # see https://github.com/jk1/Gradle-License-Report/issues/231
@@ -79,10 +79,10 @@ jobs:
         uses: actions/setup-java@v3
         with:
           distribution: temurin
-          java-version: 11
+          java-version: 17
 
       - name: Assemble
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/gradle-build-action@v2.4.2
         with:
           # javadoc task fails sporadically fetching https://docs.oracle.com/javase/8/docs/api/
           arguments: assemble -Dai.etw.native.build=release -x javadoc ${{ inputs.no-build-cache && '--no-build-cache' || '' }}
@@ -127,10 +127,10 @@ jobs:
         uses: actions/setup-java@v3
         with:
           distribution: temurin
-          java-version: 11
+          java-version: 17
 
       - name: Test
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/gradle-build-action@v2.4.2
         with:
           # spotless is checked separately since it's a common source of failure
           arguments: >
@@ -163,13 +163,13 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Set up Java 11
+      - name: Set up Java 17
         uses: actions/setup-java@v3
         with:
           distribution: temurin
-          java-version: 11
+          java-version: 17
 
       - name: Test
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/gradle-build-action@v2.4.2
         with:
           arguments: ${{ matrix.module }}:smokeTest

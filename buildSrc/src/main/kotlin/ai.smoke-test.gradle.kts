@@ -2,8 +2,7 @@ import com.microsoft.applicationinsights.gradle.AiSmokeTestExtension
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 
 plugins {
-  `java-library`
-
+  java
   id("ai.spotless-conventions")
 }
 
@@ -25,7 +24,7 @@ configurations["smokeTestRuntimeOnly"].extendsFrom(configurations.runtimeOnly.ge
 // FIXME (trask) copy-pasted from ai.java-conventions.gradle
 java {
   toolchain {
-    languageVersion.set(JavaLanguageVersion.of(11))
+    languageVersion.set(JavaLanguageVersion.of(17))
   }
 
   // See https://docs.gradle.org/current/userguide/upgrading_version_5.html, Automatic target JVM version

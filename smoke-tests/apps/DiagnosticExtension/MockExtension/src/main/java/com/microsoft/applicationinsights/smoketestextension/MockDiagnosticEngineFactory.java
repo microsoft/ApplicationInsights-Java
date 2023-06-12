@@ -17,7 +17,7 @@ public class MockDiagnosticEngineFactory implements DiagnosticEngineFactory {
     return new DiagnosticEngine() {
 
       @Override
-      public void init() {
+      public void init(int thisPid) {
         System.setProperty("DIAGNOSTIC_CALLED", "true");
       }
 

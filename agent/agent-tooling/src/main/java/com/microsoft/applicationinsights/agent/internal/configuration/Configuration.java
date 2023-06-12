@@ -263,6 +263,7 @@ public class Configuration {
 
   public static class MicrometerInstrumentation {
     public boolean enabled = true;
+    public String namespace;
     // this is just here to detect if using this old undocumented setting in order to give a helpful
     // error message
     @Deprecated public int reportingIntervalSeconds = 60;
@@ -315,6 +316,8 @@ public class Configuration {
     // https://portal.microsofticm.com/imp/v3/incidents/details/266992200/home
     public boolean disablePropagation;
     public boolean captureHttpServer4xxAsError = true;
+
+    public static JavaScriptSnippet javaScriptSnippet = new JavaScriptSnippet();
 
     // LoggingLevel is no longer sent by default since 3.3.0, since the data is already available
     // under SeverityLevel. This configuration is provided as a temporary measure for customers
@@ -581,6 +584,10 @@ public class Configuration {
     public boolean enabled = true;
   }
 
+  public static class JavaScriptSnippet {
+    public boolean enabled;
+  }
+
   public static class DisabledByDefaultInstrumentation {
     public boolean enabled;
   }
@@ -615,7 +622,7 @@ public class Configuration {
       }
       if (DiagnosticsHelper.useAppSvcRpIntegrationLogging()
           || DiagnosticsHelper.useFunctionsRpIntegrationLogging()) {
-        return StatusFile.getLogDir() + "/" + DEFAULT_NAME;
+        return StatusFile.getLogDir() + File.separator + DEFAULT_NAME;
       }
       // azure spring cloud
       return DEFAULT_NAME;
@@ -1381,6 +1388,7 @@ public class Configuration {
   }
 
   public enum RequestTriggerType {
+    @JsonProperty("latency")
     LATENCY
   }
 

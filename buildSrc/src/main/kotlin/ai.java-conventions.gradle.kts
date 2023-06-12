@@ -20,7 +20,7 @@ repositories {
 
 java {
   toolchain {
-    languageVersion.set(JavaLanguageVersion.of(11))
+    languageVersion.set(JavaLanguageVersion.of(17))
   }
 
   // See https://docs.gradle.org/current/userguide/upgrading_version_5.html, Automatic target JVM version
@@ -154,7 +154,7 @@ dependencyCheck {
 
 if (!path.startsWith(":smoke-tests")) {
   configurations.configureEach {
-    if (name.toLowerCase().endsWith("runtimeclasspath")) {
+    if (name.lowercase().endsWith("runtimeclasspath")) {
       resolutionStrategy.activateDependencyLocking()
     }
   }
