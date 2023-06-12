@@ -3,15 +3,18 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
-import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_11;
-import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_17;
-import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_19;
-import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_20;
-import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_8;
 
-import com.microsoft.applicationinsights.smoketest.fakeingestion.ProfilerState;
-import java.io.File;
-import org.junit.jupiter.api.Assertions;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_11;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_11_OPENJ9;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_17;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_19;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_20;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_8;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_8_OPENJ9;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.WILDFLY_13_JAVA_8;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.WILDFLY_13_JAVA_8_OPENJ9;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -19,31 +22,50 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 abstract class SnippetInjectionTest {
   @RegisterExtension
   static final SmokeTestExtension testing =
-      SmokeTestExtension.builder().setSelfDiagnosticsLevel("trace").build();
+      SmokeTestExtension.builder().build();
 
   @Test
-  @TargetUri("/hello")
+  @TargetUri("/test")
   void normalSnippetInjectionTest() throws Exception {
-    String url = testing.getBaseUrl() + "/hello";
+    String url = testing.getBaseUrl() + "/test";
+    System.out.println("url ----------------\n"+url);
     String response = HttpHelper.get(url, "");
-
-    System.out.println(response);
-
-    Assertions.assertTrue(Boolean.parseBoolean(response));
+    System.out.println("Response ----------------\n"+response);
+    assertThat(response).contains("script");
   }
 
-  @Environment(JAVA_8)
-  static class Java8Test extends SnippetInjectionTest {}
+  @Test
+  @TargetUri("/")
+  void rootTest() throws Exception {
+    String url = testing.getBaseUrl() + "/";
+    String response = HttpHelper.get(url, "");
+    System.out.println("Response ----------------\n"+response);
+  }
 
-  @Environment(JAVA_11)
-  static class Java11Test extends SnippetInjectionTest {}
+  @Environment(TOMCAT_8_JAVA_8)
+  static class Tomcat8Java8Test extends SnippetInjectionTest {}
 
-  @Environment(JAVA_17)
-  static class Java17Test extends SnippetInjectionTest {}
+  @Environment(TOMCAT_8_JAVA_8_OPENJ9)
+  static class Tomcat8Java8OpenJ9Test extends SnippetInjectionTest {}
 
-  @Environment(JAVA_19)
-  static class Java18Test extends SnippetInjectionTest {}
+  @Environment(TOMCAT_8_JAVA_11)
+  static class Tomcat8Java11Test extends SnippetInjectionTest {}
 
-  @Environment(JAVA_20)
-  static class Java19Test extends SnippetInjectionTest {}
+  @Environment(TOMCAT_8_JAVA_11_OPENJ9)
+  static class Tomcat8Java11OpenJ9Test extends SnippetInjectionTest {}
+
+  @Environment(TOMCAT_8_JAVA_17)
+  static class Tomcat8Java17Test extends SnippetInjectionTest {}
+
+  @Environment(TOMCAT_8_JAVA_19)
+  static class Tomcat8Java19Test extends SnippetInjectionTest {}
+
+  @Environment(TOMCAT_8_JAVA_20)
+  static class Tomcat8Java20Test extends SnippetInjectionTest {}
+
+  @Environment(WILDFLY_13_JAVA_8)
+  static class Wildfly13Java8Test extends SnippetInjectionTest {}
+
+  @Environment(WILDFLY_13_JAVA_8_OPENJ9)
+  static class Wildfly13Java8OpenJ9Test extends SnippetInjectionTest {}
 }

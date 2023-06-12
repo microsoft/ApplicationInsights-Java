@@ -5,6 +5,7 @@ package com.microsoft.applicationinsights.smoketestapp;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.ModelAndView;
 
 @RestController
 public class TestController {
@@ -14,8 +15,10 @@ public class TestController {
     return "OK";
   }
 
-  @RequestMapping(path="/hello")
-  public String getHelloPage(){
-    return "hello.html";
+  @GetMapping("/test")
+  public ModelAndView getHelloPage() {
+    ModelAndView mav = new ModelAndView(); // the name of the HTML page
+    mav.setViewName("test.html");
+    return mav;
   }
 }
