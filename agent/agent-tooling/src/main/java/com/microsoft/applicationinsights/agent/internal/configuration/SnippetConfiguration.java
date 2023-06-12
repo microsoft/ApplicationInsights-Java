@@ -4,12 +4,11 @@
 package com.microsoft.applicationinsights.agent.internal.configuration;
 
 import io.opentelemetry.javaagent.bootstrap.servlet.ExperimentalSnippetHolder;
+import java.io.BufferedReader;
 import java.io.IOException;
-import java.net.URISyntaxException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,19 +19,27 @@ public class SnippetConfiguration {
 
   // visible for testing
   static String readSnippet() {
-    try {
-      Path path = getSnippetFilePath("javascript-snippet.txt");
-      byte[] bytes = Files.readAllBytes(path);
-      return new String(bytes, StandardCharsets.UTF_8);
-    } catch (IOException | URISyntaxException e) {
-      LOGGER.error("Failed to read javascript-snippet file", e);
-    }
-    return "";
-  }
-
-  private static Path getSnippetFilePath(String resourceName) throws URISyntaxException {
     ClassLoader classLoader = SnippetConfiguration.class.getClassLoader();
-    return Paths.get(classLoader.getResource(resourceName).toURI());
+    String resourceName = "javascript-snippet.txt";
+    InputStream inputStream = classLoader.getResourceAsStream(resourceName);
+    String returnString = "";
+    if (inputStream != null) {
+      try (BufferedReader reader =
+          new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
+        String line;
+        while ((line = reader.readLine()) != null) {
+          // Process each line of the file
+          returnString += line + "\n";
+        }
+      } catch (IOException e) {
+        // Handle any IO exceptions that occur
+        LOGGER.error("Failed to read javascript-snippet file", e);
+      }
+    } else {
+      // Handle the case when the resource is not found
+      LOGGER.error("Resource not found: " + resourceName);
+    }
+    return returnString;
   }
 
   public static void initializeSnippet(String connectionString) {
