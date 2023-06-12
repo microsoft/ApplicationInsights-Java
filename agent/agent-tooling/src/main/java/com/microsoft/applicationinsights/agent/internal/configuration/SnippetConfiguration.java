@@ -39,7 +39,7 @@ public class SnippetConfiguration {
   private static String toString(InputStream inputStream) throws IOException {
     try (BufferedReader bufferedReader =
         new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
-      return bufferedReader.lines().collect(Collectors.joining(System.lineSeparator()));
+      return bufferedReader.lines().collect(Collectors.joining("\n"));
     }
   }
 
