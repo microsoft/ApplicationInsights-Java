@@ -14,7 +14,7 @@ public class SnippetConfigurationTest {
   @Test
   void testSnippetSetup() {
     String snippet = SnippetConfiguration.readSnippet();
-    assertThat(snippet).contains("connectionString: \"YOUR_CONNECTION_STRING\"\n");
+    assertThat(snippet).contains("connectionString: \"YOUR_CONNECTION_STRING\"");
     snippet = snippet.replace("YOUR_CONNECTION_STRING", CONNECTION_STRING);
     assertThat(snippet).contains("    connectionString: \"" + CONNECTION_STRING);
   }
