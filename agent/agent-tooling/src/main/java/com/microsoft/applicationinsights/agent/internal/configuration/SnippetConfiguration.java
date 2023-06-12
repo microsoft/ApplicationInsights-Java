@@ -19,11 +19,11 @@ public class SnippetConfiguration {
   private static final Logger LOGGER = LoggerFactory.getLogger(SnippetConfiguration.class);
 
   // visible for testing
-  static String readSnippet(){
+  static String readSnippet() {
     ClassLoader classLoader = SnippetConfiguration.class.getClassLoader();
     String resourceName = "javascript-snippet.txt";
     InputStream inputStream = classLoader.getResourceAsStream(resourceName);
-    if (inputStream == null){
+    if (inputStream == null) {
       LOGGER.error("Resource not found: " + resourceName);
       return "";
     }
