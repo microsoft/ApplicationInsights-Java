@@ -703,7 +703,7 @@ class ConfigurationTest {
                       Assertions.assertNotNull(config);
                       Assertions.assertNotNull(config.preview.profiler.requestTriggerEndpoints);
                       Assertions.assertTrue(
-                          config.preview.profiler.requestTriggerEndpoints.length > 0);
+                          config.preview.profiler.requestTriggerEndpoints.size() > 0);
                     }))
         .collect(Collectors.toList());
   }

@@ -12,11 +12,11 @@ import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration;
 import com.microsoft.applicationinsights.alerting.config.CollectionPlanConfiguration;
 import com.microsoft.applicationinsights.alerting.config.CollectionPlanConfiguration.EngineMode;
 import com.microsoft.applicationinsights.alerting.config.DefaultConfiguration;
+
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
-import com.microsoft.applicationinsights.alerting.config.RequestTriggerConfiguration;
 import org.junit.jupiter.api.Test;
 
 class AlertingSubsystemTest {
@@ -53,8 +53,7 @@ class AlertingSubsystemTest {
                 .setImmediateProfilingDurationSeconds(120)
                 .setSettingsMoniker("a-settings-moniker")
                 .build(),
-            RequestTriggerConfiguration.builder().build()
-            ));
+            RequestTriggerConfiguration.builder().build()));
     return monitor;
   }
 

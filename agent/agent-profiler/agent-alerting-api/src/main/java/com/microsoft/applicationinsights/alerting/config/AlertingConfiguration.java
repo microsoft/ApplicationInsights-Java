@@ -5,6 +5,7 @@ package com.microsoft.applicationinsights.alerting.config;
 
 import com.google.auto.value.AutoValue;
 import java.time.Instant;
+import java.util.List;
 
 /** Contains the overall configuration of the entire alerting subsystem. */
 @AutoValue
@@ -15,11 +16,11 @@ public abstract class AlertingConfiguration {
       AlertConfiguration memoryAlert,
       DefaultConfiguration defaultConfiguration,
       CollectionPlanConfiguration collectionPlanConfiguration,
-      RequestTriggerConfiguration requestTriggerConfiguration
+      List<AlertConfiguration> requestAlerts
       ) {
     return new AutoValue_AlertingConfiguration(
         cpuAlert, memoryAlert, defaultConfiguration, collectionPlanConfiguration,
-        requestTriggerConfiguration);
+            requestAlerts);
   }
 
   public boolean hasAnEnabledTrigger() {
@@ -47,5 +48,5 @@ public abstract class AlertingConfiguration {
   public abstract CollectionPlanConfiguration getCollectionPlanConfiguration();
 
   // Alert configuration for span profiling
-  public abstract RequestTriggerConfiguration getRequestTriggerConfiguration();
+  public abstract List<AlertConfiguration> getRequestAlerts();
 }

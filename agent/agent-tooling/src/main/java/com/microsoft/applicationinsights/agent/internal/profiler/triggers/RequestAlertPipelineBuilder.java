@@ -43,6 +43,8 @@ class RequestAlertPipelineBuilder {
     AlertingConfig.RequestTrigger requestTriggerConfiguration =
         buildRequestTriggerConfiguration(configuration);
 
+    logger.info("FILTER VALUE");
+    logger.info(configuration.filter.value);
     AlertRequestFilter filter = AlertRequestFilterBuilder.build(configuration.filter);
 
     Aggregation aggregation = getAggregation(configuration, timeSource);
@@ -58,6 +60,8 @@ class RequestAlertPipelineBuilder {
             .setCooldownSeconds(configuration.throttling.value)
             .setRequestTrigger(requestTriggerConfiguration)
             .build();
+
+    logger.info("CREATING PIPELINE FOR REQUEST");
 
     return SingleAlertPipeline.create(filter, aggregation, config, alertAction);
   }

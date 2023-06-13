@@ -15,13 +15,14 @@ import com.microsoft.applicationinsights.alerting.config.CollectionPlanConfigura
 import com.microsoft.applicationinsights.alerting.config.CollectionPlanConfiguration.EngineMode;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import com.microsoft.applicationinsights.alerting.config.DefaultConfiguration;
-import com.microsoft.applicationinsights.alerting.config.RequestTriggerConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,14 +47,17 @@ public class AlertingSubsystem {
   // Current configuration of the alerting subsystem
   private AlertingConfiguration alertConfig;
 
+  private boolean requestTriggersFromConfig;
+
   protected AlertingSubsystem(Consumer<AlertBreach> alertHandler) {
     this(alertHandler, TimeSource.DEFAULT);
   }
 
   protected AlertingSubsystem(Consumer<AlertBreach> alertHandler, TimeSource timeSource) {
     this.alertHandler = alertHandler;
-    alertPipelines = new AlertPipelines(alertHandler);
+    this.alertPipelines = new AlertPipelines(alertHandler);
     this.timeSource = timeSource;
+    this.requestTriggersFromConfig = false;
   }
 
   public static AlertingSubsystem create(
@@ -72,7 +76,7 @@ public class AlertingSubsystem {
                 .setImmediateProfilingDurationSeconds(0)
                 .setSettingsMoniker("")
                 .build(),
-            RequestTriggerConfiguration.builder().build()));
+            new ArrayList<>()));
     return alertingSubsystem;
   }
 
@@ -111,6 +115,12 @@ public class AlertingSubsystem {
           this.alertConfig == null ? null : this.alertConfig.getMemoryAlert();
       updatePipelineConfig(alertingConfig.getMemoryAlert(), oldMemoryConfig);
 
+      if (!this.requestTriggersFromConfig && alertingConfig.getRequestAlerts() != null && !alertingConfig.getRequestAlerts().isEmpty()) {
+        List<AlertConfiguration> oldRequestConfig =
+                this.alertConfig == null ? null : this.alertConfig.getRequestAlerts();
+        updateRequestPipelineConfig(alertingConfig.getRequestAlerts(), oldRequestConfig);
+      }
+
       evaluateManualTrigger(alertingConfig);
       this.alertConfig = alertingConfig;
     }
@@ -121,6 +131,13 @@ public class AlertingSubsystem {
       AlertConfiguration newAlertConfig, @Nullable AlertConfiguration oldAlertConfig) {
     if (oldAlertConfig == null || !oldAlertConfig.equals(newAlertConfig)) {
       alertPipelines.updateAlertConfig(newAlertConfig, timeSource);
+    }
+  }
+
+  private void updateRequestPipelineConfig(
+          List<AlertConfiguration> newAlertConfig, @Nullable List<AlertConfiguration> oldAlertConfig) {
+    if (oldAlertConfig == null || !oldAlertConfig.equals(newAlertConfig)) {
+      alertPipelines.updateRequestAlertConfig(newAlertConfig, timeSource);
     }
   }
 
@@ -157,5 +174,9 @@ public class AlertingSubsystem {
 
   public void setPipeline(AlertMetricType type, AlertPipeline alertPipeline) {
     alertPipelines.setAlertPipeline(type, alertPipeline);
+  }
+
+  public void setRequestTriggersFromConfig(boolean requestTriggersFromConfig) {
+    this.requestTriggersFromConfig = requestTriggersFromConfig;
   }
 }

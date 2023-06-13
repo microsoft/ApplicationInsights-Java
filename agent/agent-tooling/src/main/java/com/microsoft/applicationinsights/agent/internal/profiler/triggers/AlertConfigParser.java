@@ -3,8 +3,6 @@
 
 package com.microsoft.applicationinsights.agent.internal.profiler.triggers;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.type.CollectionType;
 import com.microsoft.applicationinsights.agent.internal.profiler.config.ProfilerConfiguration;
 import com.microsoft.applicationinsights.alerting.aiconfig.AlertingConfig;
 import com.microsoft.applicationinsights.alerting.config.AlertConfiguration;
@@ -13,28 +11,47 @@ import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration;
 import com.microsoft.applicationinsights.alerting.config.CollectionPlanConfiguration;
 import com.microsoft.applicationinsights.alerting.config.CollectionPlanConfiguration.EngineMode;
 import com.microsoft.applicationinsights.alerting.config.DefaultConfiguration;
-import com.microsoft.applicationinsights.alerting.config.RequestTriggerConfiguration;
-import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 /** Parses the configuration from the service profiler endpoint. */
 public class AlertConfigParser {
 
   static AlertingConfiguration parse(
-      String cpuConfig, String memoryConfig, String defaultConfig, String collectionPlan, String requestTriggerConfiguration) {
+      String cpuConfig,
+      String memoryConfig,
+      String defaultConfig,
+      String collectionPlan,
+      List<AlertingConfig.RequestTrigger> requestTriggerConfig) {
     return AlertingConfiguration.create(
         parseFromCpu(cpuConfig),
         parseFromMemory(memoryConfig),
         parseDefaultConfiguration(defaultConfig),
         parseCollectionPlan(collectionPlan),
-        parseRequestTriggerConfiguration(requestTriggerConfiguration)
-    );
+        buildRequestTriggerConfiguration(requestTriggerConfig));
+  }
+
+  private static List<AlertConfiguration> buildRequestTriggerConfiguration(List<AlertingConfig.RequestTrigger> requestTriggerConfig) {
+    if (requestTriggerConfig == null) {
+        return new ArrayList<>();
+    }
+    return requestTriggerConfig.stream().map(trigger -> AlertConfiguration.builder()
+                    .setType(AlertMetricType.REQUEST)
+                    .setEnabled(true)
+                    .setThreshold(trigger.threshold.value)
+                    .setProfileDurationSeconds((int) trigger.profileDuration)
+                    .setCooldownSeconds((int) trigger.throttling.value)
+                    .setRequestTrigger(trigger)
+                    .build())
+            .collect(Collectors.toList());
   }
 
   // --single --mode immediate --immediate-profiling-duration 120  --expiration 5249143304354868449
@@ -170,32 +187,6 @@ public class AlertConfigParser {
     return parseConfig(AlertConfiguration.builder(), tokens, parsers)
         .setType(AlertMetricType.CPU)
         .build();
-  }
-
-  static RequestTriggerConfiguration parseRequestTriggerConfiguration (@Nullable String requestTriggerConfiguration) {
-    // requestTriggerConfiguration = "[{\n                    \"name\": \"Users endpoint is responsive\",\n                    \"type\": \"latency\",\n                    \"filter\": {\n                      \"type\": \"name-regex\",\n                      \"value\": \"/users/get/.*\"\n                    },\n                    \"aggregation\": {\n                      \"configuration\": {\n                        \"thresholdMillis\": 20,\n                        \"minimumSamples\": 10\n                      },\n                      \"type\": \"breach-ratio\",\n                      \"windowSizeMillis\": 60000\n                    },\n                    \"threshold\": {\n                      \"value\": 0.75\n                    },\n                    \"profileDuration\": 30,\n                    \"throttling\": {\n                      \"value\": 60\n                    }\n                  }]";
-
-    for (Class type : AlertingConfig.allTypes) {
-      for (Object name : type.getEnumConstants()) {
-        requestTriggerConfiguration = requestTriggerConfiguration.replace(
-                name.toString()
-                        .toLowerCase()
-                        .replace('_', '-'), name.toString());
-      }
-    };
-
-    try {
-      ObjectMapper objectMapper = new ObjectMapper();
-      CollectionType type = objectMapper.getTypeFactory().constructCollectionType(List.class, AlertingConfig.RequestTrigger.class);
-
-      List<AlertingConfig.RequestTrigger> trigger = objectMapper.readValue(requestTriggerConfiguration, type);
-
-      return RequestTriggerConfiguration.builder(trigger).build();
-    } catch (JsonProcessingException e) {
-      throw new IllegalArgumentException(e);
-    }
-
-    // return RequestTriggerConfiguration.builder().build();
   }
 
   private interface ConfigParser<T> {

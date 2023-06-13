@@ -133,6 +133,9 @@ public class ServiceProfilerClient {
 
     URL requestUrl = getSettingsPath(oldTimeStamp);
 
+    logger.info("URL");
+    logger.info(requestUrl.toString());
+
     HttpRequest request = new HttpRequest(HttpMethod.GET, requestUrl);
 
     return httpPipeline
@@ -145,11 +148,15 @@ public class ServiceProfilerClient {
                         "Received error code " + response.getStatusCode() + " from " + requestUrl,
                         response));
               }
+
               return response
                   .getBodyAsString()
                   .flatMap(
                       body -> {
                         try {
+                          logger.info("BODY AS STRING");
+                          logger.info(body);
+
                           return Mono.just(mapper.readValue(body, ProfilerConfiguration.class));
                         } catch (IOException e) {
                           return Mono.error(e);

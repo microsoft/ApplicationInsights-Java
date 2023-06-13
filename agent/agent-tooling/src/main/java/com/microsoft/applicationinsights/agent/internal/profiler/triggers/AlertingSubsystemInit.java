@@ -24,7 +24,9 @@ import com.microsoft.applicationinsights.alerting.analysis.pipelines.AlertPipeli
 import com.microsoft.applicationinsights.alerting.analysis.pipelines.AlertPipelineMultiplexer;
 import com.microsoft.applicationinsights.alerting.config.AlertMetricType;
 import com.microsoft.applicationinsights.diagnostics.DiagnosticEngine;
-import java.util.Arrays;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -36,6 +38,8 @@ public class AlertingSubsystemInit {
 
   // TODO (trask) inject instead of using global
   private static volatile AlertingSubsystem alertingSubsystem;
+
+  private static final Logger logger = LoggerFactory.getLogger(AlertingSubsystemInit.class);
 
   public static AlertingSubsystem create(
       Configuration.ProfilerConfiguration configuration,
@@ -53,11 +57,23 @@ public class AlertingSubsystemInit {
 
     alertingSubsystem = AlertingSubsystem.create(alertAction, TimeSource.DEFAULT);
 
+    logger.info("ALERTING SUBSYSTEM create");
+
     if (configuration.enableRequestTriggering) {
+      logger.info("REQUEST TRIGGERING INIT");
+
+      if (!configuration.requestTriggerEndpoints.isEmpty()) {
+        logger.info("LOCAL CONFIGURATION FOUND");
+
+        alertingSubsystem.setRequestTriggersFromConfig(true);
+      }
+
       List<AlertPipeline> spanPipelines =
-          Arrays.stream(configuration.requestTriggerEndpoints)
+          configuration.requestTriggerEndpoints.stream()
               .map(it -> RequestAlertPipelineBuilder.build(it, alertAction, TimeSource.DEFAULT))
               .collect(Collectors.toList());
+
+      logger.info("NUMBER OF PIPELINESS " + spanPipelines.size());
 
       alertingSubsystem.setPipeline(
           AlertMetricType.REQUEST, new AlertPipelineMultiplexer(spanPipelines));

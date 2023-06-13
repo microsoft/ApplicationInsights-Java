@@ -111,12 +111,16 @@ public class ProfilingInitializer {
           "disable profiler or use a writable file system");
     }
 
+    logger.info("before init");
+
     if (configuration.enabled) {
       performInit();
     }
   }
 
   private synchronized void performInit() {
+    logger.info("init");
+
     // Cannot use default creator, as we need to add POST to the allowed redirects
     httpPipeline =
         LazyHttpClient.newHttpPipeLine(
@@ -163,6 +167,9 @@ public class ProfilingInitializer {
   }
 
   private void logProfilerPullError(Throwable e) {
+    logger.error("ERROR PULLING TRIGGERS");
+    logger.error(e.getMessage());
+
     if (currentlyEnabled.get()) {
       logger.error("Error pulling service profiler settings", e);
     } else {
@@ -172,7 +179,11 @@ public class ProfilingInitializer {
 
   synchronized void applyConfiguration(ProfilerConfiguration config) {
     logger.info("Trigger settings");
-    logger.info(config.getRequestTriggerConfiguration());
+    if (config.getRequestTriggerConfiguration() != null && !config.getRequestTriggerConfiguration().isEmpty()) {
+      logger.info(config.getRequestTriggerConfiguration().get(0).name);
+    } else {
+      logger.info("Trigger settings empty");
+    }
 
     if (currentlyEnabled.get() || (config.isEnabled() && config.hasBeenConfigured())) {
 
