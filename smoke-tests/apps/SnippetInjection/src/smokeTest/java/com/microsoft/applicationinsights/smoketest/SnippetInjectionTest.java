@@ -22,24 +22,14 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 abstract class SnippetInjectionTest {
   @RegisterExtension
   static final SmokeTestExtension testing =
-      SmokeTestExtension.builder().build();
+      SmokeTestExtension.builder().setSelfDiagnosticsLevel("trace").build();
 
   @Test
   @TargetUri("/test")
   void normalSnippetInjectionTest() throws Exception {
     String url = testing.getBaseUrl() + "/test";
-    System.out.println("url ----------------\n"+url);
     String response = HttpHelper.get(url, "");
-    System.out.println("Response ----------------\n"+response);
     assertThat(response).contains("script");
-  }
-
-  @Test
-  @TargetUri("/")
-  void rootTest() throws Exception {
-    String url = testing.getBaseUrl() + "/";
-    String response = HttpHelper.get(url, "");
-    System.out.println("Response ----------------\n"+response);
   }
 
   @Environment(TOMCAT_8_JAVA_8)

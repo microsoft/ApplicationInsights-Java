@@ -1,4 +1,5 @@
 {
+  "connectionString": "InstrumentationKey=00000000-0000-0000-0000-000000000000",
   "role": {
     "name": "testrolename",
     "instance": "testroleinstance"
@@ -7,12 +8,6 @@
     "percentage": 100
   },
   "preview": {
-    "connectionStringOverrides": [
-      {
-        "httpPathPrefix": "/SnippetInjectionTest/test",
-        "connectionString": "InstrumentationKey=814a172a-92fd-4950-9023-9cf13bb65696;IngestionEndpoint=https://eastus-8.in.applicationinsights.azure.com/;LiveEndpoint=https://eastus.livediagnostics.monitor.azure.com/"
-      }
-    ],
     "javaScriptSnippet":
       {
         "enabled": true
