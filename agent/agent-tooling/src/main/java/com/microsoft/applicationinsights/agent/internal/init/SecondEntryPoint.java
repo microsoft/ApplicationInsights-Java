@@ -392,6 +392,9 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
     if (!config.preview.instrumentation.jaxrsAnnotations.enabled) {
       featureList.add(Feature.JAXRS_ANNOTATIONS_DISABLED);
     }
+    if (config.preview.javaScriptSnippet.enabled) {
+      featureList.add(Feature.JAVASCRIPT_SNIPPET);
+    }
 
     // Statsbeat
     if (config.preview.statsbeat.disabled) {
