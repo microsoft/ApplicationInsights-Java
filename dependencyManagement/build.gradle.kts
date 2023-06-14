@@ -12,8 +12,8 @@ val dependencyVersions = hashMapOf<String, String>()
 rootProject.extra["versions"] = dependencyVersions
 
 val otelVersion = "1.26.0"
-val otelInstrumentationAlphaVersion = "1.26.0-alpha"
-val otelInstrumentationVersion = "1.26.0"
+val otelInstrumentationAlphaVersion = "1.27.0-alpha"
+val otelInstrumentationVersion = "1.27.0"
 val otelContribAlphaVersion = "1.18.0-alpha"
 
 rootProject.extra["otelVersion"] = otelVersion
@@ -70,7 +70,6 @@ val CORE_DEPENDENCIES = listOf(
   "io.opentelemetry.javaagent:opentelemetry-javaagent-extension-api:${otelInstrumentationAlphaVersion}",
   "io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap:${otelInstrumentationAlphaVersion}",
   "io.opentelemetry.javaagent:opentelemetry-javaagent-tooling:${otelInstrumentationAlphaVersion}",
-  "io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-common-bootstrap:${otelInstrumentationAlphaVersion}",
   // temporarily overriding transitive dependency from azure-core until next azure-bom release
   // which targets at least reactor-netty-http:1.1.1
   "io.projectreactor.netty:reactor-netty-http:1.1.7",
