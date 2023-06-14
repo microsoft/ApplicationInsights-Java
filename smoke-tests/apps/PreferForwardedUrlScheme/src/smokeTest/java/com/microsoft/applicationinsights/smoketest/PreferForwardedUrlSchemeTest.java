@@ -31,6 +31,8 @@ public abstract class PreferForwardedUrlSchemeTest {
     Telemetry telemetry = testing.getTelemetry(0);
 
     assertThat(telemetry.rd.getName()).isEqualTo("GET /test");
+    // note: this is normally http://, but here is https:// because of the
+    // support for X-Forwarded-Proto
     assertThat(telemetry.rd.getUrl()).matches("https://localhost:[0-9]+/test");
     assertThat(telemetry.rd.getResponseCode()).isEqualTo("200");
     assertThat(telemetry.rd.getProperties())
