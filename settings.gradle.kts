@@ -141,7 +141,7 @@ hideFromDependabot(":smoke-tests:apps:SpringScheduling")
 hideFromDependabot(":smoke-tests:apps:Statsbeat")
 hideFromDependabot(":smoke-tests:apps:SystemExit")
 hideFromDependabot(":smoke-tests:apps:TelemetryProcessors")
-hideFromDependabot(":smoke-tests:apps:VerifyShading")
+hideFromDependabot(":smoke-tests:apps:VerifyAgentJar")
 hideFromDependabot(":smoke-tests:apps:WebAuto")
 hideFromDependabot(":smoke-tests:apps:WebFlux")
 
