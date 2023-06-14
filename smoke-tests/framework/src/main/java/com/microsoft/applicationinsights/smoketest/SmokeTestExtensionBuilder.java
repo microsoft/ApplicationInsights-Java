@@ -5,6 +5,8 @@ package com.microsoft.applicationinsights.smoketest;
 
 import com.microsoft.applicationinsights.smoketest.fakeingestion.ProfilerState;
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 import org.testcontainers.containers.GenericContainer;
 
 public class SmokeTestExtensionBuilder {
@@ -20,6 +22,7 @@ public class SmokeTestExtensionBuilder {
   private String selfDiagnosticsLevel = "info";
   private File agentExtensionFile;
   private ProfilerState profilerEndpointPath = ProfilerState.unconfigured;
+  private final Map<String, String> httpHeaders = new HashMap<>();
 
   public SmokeTestExtensionBuilder setDependencyContainer(
       String envVarName, GenericContainer<?> container) {
@@ -64,6 +67,21 @@ public class SmokeTestExtensionBuilder {
     return this;
   }
 
+  public SmokeTestExtensionBuilder setAgentExtensionFile(File file) {
+    this.agentExtensionFile = file;
+    return this;
+  }
+
+  public SmokeTestExtensionBuilder setProfilerEndpoint(ProfilerState profilerEndpointPath) {
+    this.profilerEndpointPath = profilerEndpointPath;
+    return this;
+  }
+
+  public SmokeTestExtensionBuilder setHttpHeader(String key, String value) {
+    httpHeaders.put(key, value);
+    return this;
+  }
+
   public SmokeTestExtension build() {
     return new SmokeTestExtension(
         dependencyContainer,
@@ -76,16 +94,7 @@ public class SmokeTestExtensionBuilder {
         useOld3xAgent,
         selfDiagnosticsLevel,
         agentExtensionFile,
-        profilerEndpointPath);
-  }
-
-  public SmokeTestExtensionBuilder setAgentExtensionFile(File file) {
-    this.agentExtensionFile = file;
-    return this;
-  }
-
-  public SmokeTestExtensionBuilder setProfilerEndpoint(ProfilerState profilerEndpointPath) {
-    this.profilerEndpointPath = profilerEndpointPath;
-    return this;
+        profilerEndpointPath,
+        httpHeaders);
   }
 }

@@ -4,6 +4,7 @@
 package com.microsoft.applicationinsights.smoketest;
 
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_11;
+import static java.util.Collections.emptyMap;
 
 import com.microsoft.applicationinsights.smoketest.fakeingestion.ProfilerState;
 import org.junit.jupiter.api.Assertions;
@@ -25,7 +26,7 @@ abstract class DiagnosticsTest {
   @TargetUri("/")
   void getJfr() throws Exception {
     String url = testing.getBaseUrl() + "/jfrFileHasDiagnostics";
-    String response = HttpHelper.get(url, "");
+    String response = HttpHelper.get(url, "", emptyMap());
     Assertions.assertTrue(Boolean.parseBoolean(response));
   }
 
