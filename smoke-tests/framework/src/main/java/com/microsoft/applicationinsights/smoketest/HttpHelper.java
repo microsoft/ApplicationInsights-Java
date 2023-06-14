@@ -21,7 +21,8 @@ public class HttpHelper {
     return getResponseCode(httpGet);
   }
 
-  public static String get(String url, String userAgent, Map<String, String> httpHeaders) throws IOException {
+  public static String get(String url, String userAgent, Map<String, String> httpHeaders)
+      throws IOException {
     HttpGet httpGet = new HttpGet(url);
     if (!userAgent.isEmpty()) {
       httpGet.setHeader("User-Agent", userAgent);

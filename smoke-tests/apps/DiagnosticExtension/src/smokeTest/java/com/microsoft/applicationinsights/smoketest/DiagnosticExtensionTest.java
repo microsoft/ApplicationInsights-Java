@@ -12,7 +12,6 @@ import static java.util.Collections.emptyMap;
 
 import com.microsoft.applicationinsights.smoketest.fakeingestion.ProfilerState;
 import java.io.File;
-import java.util.Collections;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
