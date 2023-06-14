@@ -87,8 +87,6 @@ public class PerformanceMonitoringService {
     currentlyEnabled = true;
     logger.warn("INITIALISING JFR PROFILING SUBSYSTEM THIS FEATURE IS IN BETA");
 
-    logger.info("ALERTING SUBSYSTEM");
-
     diagnosticEngine = null;
     if (configuration.enableDiagnostics) {
       // Initialise diagnostic service
@@ -102,8 +100,6 @@ public class PerformanceMonitoringService {
                 ProfilingInitializer.class, "ServiceProfilerAlertingService"));
 
     profiler = new Profiler(configuration, tempDir);
-
-    logger.info("ALERTING SUBSYSTEM");
 
     alerting =
         AlertingSubsystemInit.create(

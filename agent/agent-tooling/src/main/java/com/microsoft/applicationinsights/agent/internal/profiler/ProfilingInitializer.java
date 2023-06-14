@@ -111,8 +111,6 @@ public class ProfilingInitializer {
           "disable profiler or use a writable file system");
     }
 
-    logger.info("before init");
-
     if (configuration.enabled) {
       performInit();
     }
@@ -167,9 +165,6 @@ public class ProfilingInitializer {
   }
 
   private void logProfilerPullError(Throwable e) {
-    logger.error("ERROR PULLING TRIGGERS");
-    logger.error(e.getMessage());
-
     if (currentlyEnabled.get()) {
       logger.error("Error pulling service profiler settings", e);
     } else {
@@ -178,13 +173,6 @@ public class ProfilingInitializer {
   }
 
   synchronized void applyConfiguration(ProfilerConfiguration config) {
-    logger.info("Trigger settings");
-    if (config.getRequestTriggerConfiguration() != null && !config.getRequestTriggerConfiguration().isEmpty()) {
-      logger.info(config.getRequestTriggerConfiguration().get(0).name);
-    } else {
-      logger.info("Trigger settings empty");
-    }
-
     if (currentlyEnabled.get() || (config.isEnabled() && config.hasBeenConfigured())) {
 
       AlertingConfiguration alertingConfig = AlertConfigParser.toAlertingConfig(config);

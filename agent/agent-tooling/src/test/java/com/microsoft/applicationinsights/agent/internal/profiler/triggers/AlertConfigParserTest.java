@@ -5,6 +5,7 @@ package com.microsoft.applicationinsights.agent.internal.profiler.triggers;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.microsoft.applicationinsights.alerting.aiconfig.AlertingConfig;
 import com.microsoft.applicationinsights.alerting.config.AlertConfiguration;
 import com.microsoft.applicationinsights.alerting.config.AlertMetricType;
 import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration;
@@ -12,6 +13,9 @@ import com.microsoft.applicationinsights.alerting.config.CollectionPlanConfigura
 import com.microsoft.applicationinsights.alerting.config.CollectionPlanConfiguration.EngineMode;
 import com.microsoft.applicationinsights.alerting.config.DefaultConfiguration;
 import org.junit.jupiter.api.Test;
+
+import java.util.ArrayList;
+import java.util.List;
 
 class AlertConfigParserTest {
 
@@ -73,15 +77,37 @@ class AlertConfigParserTest {
   }
 
   @Test
-  void requestTriggerIsParsed() {
+  void requestTriggerIsBuilt() {
+    AlertingConfig.RequestTrigger requestTrigger = new AlertingConfig.RequestTrigger(
+            "test",
+            AlertingConfig.RequestTriggerType.LATENCY,
+            new AlertingConfig.RequestFilter(AlertingConfig.RequestFilterType.NAME_REGEX, "/api/users/.*"),
+            new AlertingConfig.RequestAggregation(AlertingConfig.RequestAggregationType.BREACH_RATIO, 7000,
+                    new AlertingConfig.RequestAggregationConfig(10000, 10)),
+            new AlertingConfig.RequestTriggerThreshold(AlertingConfig.RequestTriggerThresholdType.GREATER_THAN, 0.75f),
+            new AlertingConfig.RequestTriggerThrottling(AlertingConfig.RequestTriggerThrottlingType.FIXED_DURATION_COOLDOWN, 1800),
+            10);
+    List<AlertingConfig.RequestTrigger> requestTriggers = new ArrayList<>();
+    requestTriggers.add(requestTrigger);
+
     AlertingConfiguration config =
         AlertConfigParser.parse(
             "--cpu-trigger-enabled true --cpu-threshold 80 --cpu-trigger-profilingDuration 30 --cpu-trigger-cooldown 14400",
             "--memory-trigger-enabled true --memory-threshold 20 --memory-trigger-profilingDuration 120 --memory-trigger-cooldown 14400",
             "--sampling-enabled true --sampling-rate 5 --sampling-profiling-duration 120",
             "--single --mode immediate --immediate-profiling-duration 120  --expiration 5249157885138288517 --settings-moniker a-settings-moniker",
-            null);
+            requestTriggers);
 
-    System.out.println(config);
+    assertThat(config.getRequestAlerts()).isNotNull();
+    assertThat(config.getRequestAlerts().size()).isEqualTo(1);
+    assertThat(config.getRequestAlerts().get(0))
+        .isEqualTo(
+            AlertConfiguration.builder()
+                .setType(AlertMetricType.REQUEST)
+                .setEnabled(true)
+                .setThreshold(0.75f)
+                .setProfileDurationSeconds(10)
+                .setCooldownSeconds(1800)
+                .setRequestTrigger(requestTrigger));
   }
 }

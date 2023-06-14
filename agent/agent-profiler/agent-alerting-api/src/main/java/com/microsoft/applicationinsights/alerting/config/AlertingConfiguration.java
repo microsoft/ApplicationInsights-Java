@@ -47,6 +47,6 @@ public abstract class AlertingConfiguration {
   // Alert configuration for manual profiling
   public abstract CollectionPlanConfiguration getCollectionPlanConfiguration();
 
-  // Alert configuration for span profiling
+  // Alert configuration for SPAN telemetry
   public abstract List<AlertConfiguration> getRequestAlerts();
 }

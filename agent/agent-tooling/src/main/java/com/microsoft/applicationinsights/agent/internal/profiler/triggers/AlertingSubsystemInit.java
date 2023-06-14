@@ -57,14 +57,8 @@ public class AlertingSubsystemInit {
 
     alertingSubsystem = AlertingSubsystem.create(alertAction, TimeSource.DEFAULT);
 
-    logger.info("ALERTING SUBSYSTEM create");
-
     if (configuration.enableRequestTriggering) {
-      logger.info("REQUEST TRIGGERING INIT");
-
       if (!configuration.requestTriggerEndpoints.isEmpty()) {
-        logger.info("LOCAL CONFIGURATION FOUND");
-
         alertingSubsystem.setRequestTriggersFromConfig(true);
       }
 
@@ -72,8 +66,6 @@ public class AlertingSubsystemInit {
           configuration.requestTriggerEndpoints.stream()
               .map(it -> RequestAlertPipelineBuilder.build(it, alertAction, TimeSource.DEFAULT))
               .collect(Collectors.toList());
-
-      logger.info("NUMBER OF PIPELINESS " + spanPipelines.size());
 
       alertingSubsystem.setPipeline(
           AlertMetricType.REQUEST, new AlertPipelineMultiplexer(spanPipelines));
