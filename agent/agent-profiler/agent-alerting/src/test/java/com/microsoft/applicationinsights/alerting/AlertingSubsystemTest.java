@@ -15,6 +15,7 @@ import com.microsoft.applicationinsights.alerting.config.DefaultConfiguration;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import org.junit.jupiter.api.Test;
@@ -53,7 +54,16 @@ class AlertingSubsystemTest {
                 .setImmediateProfilingDurationSeconds(120)
                 .setSettingsMoniker("a-settings-moniker")
                 .build(),
-            RequestTriggerConfiguration.builder().build()));
+            new ArrayList<AlertConfiguration>() {{
+                  add(AlertConfiguration.builder()
+                          .setType(AlertMetricType.REQUEST)
+                          .setEnabled(true)
+                          .setThreshold(0.75f)
+                          .setProfileDurationSeconds(10)
+                          .setCooldownSeconds(1800)
+                          .setRequestTrigger(null)
+                          .build());
+                }}));
     return monitor;
   }
 
@@ -112,7 +122,16 @@ class AlertingSubsystemTest {
                 .setImmediateProfilingDurationSeconds(120)
                 .setSettingsMoniker("a-settings-moniker")
                 .build(),
-            RequestTriggerConfiguration.builder().build()));
+            new ArrayList<AlertConfiguration>() {{
+                  add(AlertConfiguration.builder()
+                          .setType(AlertMetricType.REQUEST)
+                          .setEnabled(true)
+                          .setThreshold(0.75f)
+                          .setProfileDurationSeconds(10)
+                          .setCooldownSeconds(1800)
+                          .setRequestTrigger(null)
+                          .build());
+                }}));
 
     assertThat(called.get().getType()).isEqualTo(AlertMetricType.MANUAL);
   }
@@ -153,7 +172,16 @@ class AlertingSubsystemTest {
                 .setImmediateProfilingDurationSeconds(120)
                 .setSettingsMoniker("a-settings-moniker")
                 .build(),
-            RequestTriggerConfiguration.builder().build()));
+            new ArrayList<AlertConfiguration>() {{
+                  add(AlertConfiguration.builder()
+                          .setType(AlertMetricType.REQUEST)
+                          .setEnabled(true)
+                          .setThreshold(0.75f)
+                          .setProfileDurationSeconds(10)
+                          .setCooldownSeconds(1800)
+                          .setRequestTrigger(null)
+                          .build());
+                }}));
 
     assertThat(called.get()).isNull();
   }

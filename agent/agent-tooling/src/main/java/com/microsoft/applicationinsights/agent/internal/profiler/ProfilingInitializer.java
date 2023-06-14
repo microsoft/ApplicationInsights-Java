@@ -117,8 +117,6 @@ public class ProfilingInitializer {
   }
 
   private synchronized void performInit() {
-    logger.info("init");
-
     // Cannot use default creator, as we need to add POST to the allowed redirects
     httpPipeline =
         LazyHttpClient.newHttpPipeLine(
