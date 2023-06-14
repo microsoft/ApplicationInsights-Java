@@ -4,10 +4,9 @@
 package com.microsoft.applicationinsights.smoketestapp;
 
 import java.io.File;
-import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.security.MessageDigest;
 import java.util.Optional;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipException;
@@ -37,11 +36,11 @@ public class TestController {
         continue;
       }
 
-      File file = decompressFile(jfrFile.get().toFile());
+      Path decompressedFile = decompressFile(jfrFile.get());
 
       boolean hasTelemetry =
           com.microsoft.applicationinsights.jfrfile.JfrFileReader.hasEventOfType(
-              file, "com.microsoft.applicationinsights.diagnostics.jfr.Telemetry");
+              decompressedFile, "com.microsoft.applicationinsights.diagnostics.jfr.Telemetry");
 
       if (hasTelemetry) {
         return String.valueOf(true);
@@ -51,28 +50,21 @@ public class TestController {
     return String.valueOf(false);
   }
 
-  private File decompressFile(File jfrFile) throws Exception {
-    File outFile;
+  private Path decompressFile(Path jfrFile) {
     try {
-
-      MessageDigest md = MessageDigest.getInstance("MD5");
-
       byte[] buffer = new byte[1024];
-      try (GZIPInputStream stream = new GZIPInputStream(Files.newInputStream(jfrFile.toPath()))) {
-        String name = jfrFile.getAbsolutePath();
-        outFile = new File(name.substring(0, name.indexOf(".jfr") + 4));
-
-        try (FileOutputStream fos = new FileOutputStream(outFile)) {
+      try (GZIPInputStream stream = new GZIPInputStream(Files.newInputStream(jfrFile))) {
+        Path outFile = Files.createTempFile("", ".jfr");
+        try (OutputStream fos = Files.newOutputStream(outFile)) {
           int len;
           while ((len = stream.read(buffer)) > 0) {
             fos.write(buffer, 0, len);
-            md.update(buffer);
           }
         }
+        return outFile;
       }
-
-      return outFile;
     } catch (ZipException e) {
+      e.printStackTrace();
       return jfrFile;
     } catch (Exception e) {
       throw new RuntimeException(e);
