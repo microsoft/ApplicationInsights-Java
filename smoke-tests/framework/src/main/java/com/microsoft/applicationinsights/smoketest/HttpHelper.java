@@ -4,6 +4,7 @@
 package com.microsoft.applicationinsights.smoketest;
 
 import java.io.IOException;
+import java.util.Map;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -20,10 +21,13 @@ public class HttpHelper {
     return getResponseCode(httpGet);
   }
 
-  public static String get(String url, String userAgent) throws IOException {
+  public static String get(String url, String userAgent, Map<String, String> httpHeaders) throws IOException {
     HttpGet httpGet = new HttpGet(url);
     if (!userAgent.isEmpty()) {
       httpGet.setHeader("User-Agent", userAgent);
+    }
+    for (Map.Entry<String, String> entry : httpHeaders.entrySet()) {
+      httpGet.setHeader(entry.getKey(), entry.getValue());
     }
     return getBody(httpGet);
   }

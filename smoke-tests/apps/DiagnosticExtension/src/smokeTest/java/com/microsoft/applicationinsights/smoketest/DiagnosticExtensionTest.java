@@ -8,9 +8,11 @@ import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_19;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_20;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_8;
+import static java.util.Collections.emptyMap;
 
 import com.microsoft.applicationinsights.smoketest.fakeingestion.ProfilerState;
 import java.io.File;
+import java.util.Collections;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -28,7 +30,7 @@ abstract class DiagnosticExtensionTest {
   @TargetUri("/")
   void doDelayedDiagnosticExtensionTest() throws Exception {
     String url = testing.getBaseUrl() + "/detectIfExtensionInstalled";
-    String response = HttpHelper.get(url, "");
+    String response = HttpHelper.get(url, "", emptyMap());
 
     Assertions.assertTrue(Boolean.parseBoolean(response));
   }
