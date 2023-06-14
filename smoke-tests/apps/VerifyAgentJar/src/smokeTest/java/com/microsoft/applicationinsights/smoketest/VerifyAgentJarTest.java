@@ -11,13 +11,21 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 @Environment(JAVA_8)
 @UseAgent
-class VerifyShadingTest {
+class VerifyAgentJarTest {
 
   @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.create();
 
   @Test
-  @TargetUri("/verifyShading")
-  void verifyShading() throws Exception {
+  @TargetUri("/verifyAgentJarEntries")
+  void verifyAgentJarEntries() throws Exception {
+    Telemetry telemetry = testing.getTelemetry(0);
+
+    assertThat(telemetry.rd.getSuccess()).isTrue();
+  }
+
+  @Test
+  @TargetUri("/verifyAgentJarSize")
+  void verifyAgentJarSize() throws Exception {
     Telemetry telemetry = testing.getTelemetry(0);
 
     assertThat(telemetry.rd.getSuccess()).isTrue();

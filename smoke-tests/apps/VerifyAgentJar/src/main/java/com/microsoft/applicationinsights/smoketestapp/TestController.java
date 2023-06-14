@@ -6,6 +6,7 @@ package com.microsoft.applicationinsights.smoketestapp;
 import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -17,13 +18,17 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class TestController {
 
+  private static final File AGENT_JAR = getAgentJarFile();
+  private static final long ONE_MEGABYTE = 1024 * 1024;
+  private static final long CURRENT_AGENT_JAR_SIZE = 36692162;
+
   @GetMapping("/")
   public String root() {
     return "OK";
   }
 
-  @GetMapping("/verifyShading")
-  public String verifyShading() throws IOException {
+  @GetMapping("/verifyAgentJarEntries")
+  public String verifyAgentJarEntries() throws IOException {
 
     List<String> unexpectedEntries = getUnexpectedEntries();
     if (!unexpectedEntries.isEmpty()) {
@@ -38,8 +43,17 @@ public class TestController {
     return "OK";
   }
 
+  @SuppressWarnings("SystemOut")
+  @GetMapping("/verifyAgentJarSize")
+  public String verifyAgentJarSize() throws IOException {
+    long size = Files.size(AGENT_JAR.toPath()); // current jar size 36692162 version 3.4.14
+    if (size - CURRENT_AGENT_JAR_SIZE >= ONE_MEGABYTE) {
+      throw new AssertionError("Agent jar size" + size + " has exceeded more than 1 Megabyte.");
+    }
+    return "OK";
+  }
+
   public List<String> getUnexpectedEntries() throws IOException {
-    File agentJarFile = getAgentJarFile();
     List<String> expectedEntries = new ArrayList<>();
     expectedEntries.add("com/");
     expectedEntries.add("com/microsoft/");
@@ -72,7 +86,7 @@ public class TestController {
     expectedEntries.add("applicationinsights-java-etw-provider-x86-64\\.dll");
     expectedEntries.add("applicationinsights-java-etw-provider-x86\\.dll");
     expectedEntries.add("inst/.*");
-    JarFile jarFile = new JarFile(agentJarFile);
+    JarFile jarFile = new JarFile(AGENT_JAR);
     List<String> unexpected = new ArrayList<>();
     for (Enumeration<JarEntry> e = jarFile.entries(); e.hasMoreElements(); ) {
       JarEntry jarEntry = e.nextElement();

@@ -2,7 +2,7 @@ import org.apache.tools.ant.taskdefs.condition.Os
 
 pluginManagement {
   plugins {
-    id("com.github.ben-manes.versions") version "0.46.0"
+    id("com.github.ben-manes.versions") version "0.47.0"
     id("com.github.jk1.dependency-license-report") version "2.4"
     id("me.champeau.jmh") version "0.7.1"
     id("com.gradle.plugin-publish") version "1.2.0"
@@ -142,7 +142,7 @@ hideFromDependabot(":smoke-tests:apps:SpringScheduling")
 hideFromDependabot(":smoke-tests:apps:Statsbeat")
 hideFromDependabot(":smoke-tests:apps:SystemExit")
 hideFromDependabot(":smoke-tests:apps:TelemetryProcessors")
-hideFromDependabot(":smoke-tests:apps:VerifyShading")
+hideFromDependabot(":smoke-tests:apps:VerifyAgentJar")
 hideFromDependabot(":smoke-tests:apps:WebAuto")
 hideFromDependabot(":smoke-tests:apps:WebFlux")
 

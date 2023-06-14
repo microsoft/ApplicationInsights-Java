@@ -34,7 +34,7 @@ dependencies {
 
   implementation("org.owasp:dependency-check-gradle:8.2.1")
 
-  implementation("io.opentelemetry.instrumentation:gradle-plugins:1.26.0-alpha")
+  implementation("io.opentelemetry.instrumentation:gradle-plugins:1.27.0-alpha")
 
   implementation("net.ltgt.gradle:gradle-errorprone-plugin:3.1.0")
   implementation("net.ltgt.gradle:gradle-nullaway-plugin:1.6.0")
