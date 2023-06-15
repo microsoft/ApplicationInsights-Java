@@ -99,6 +99,7 @@ public class SmokeTestExtension
   private final String selfDiagnosticsLevel;
   private final File javaagentFile;
   private final File agentExtensionFile;
+  private final Map<String, String> httpHeaders;
 
   public static SmokeTestExtension create() {
     return builder().build();
@@ -119,7 +120,8 @@ public class SmokeTestExtension
       boolean useOld3xAgent,
       String selfDiagnosticsLevel,
       File agentExtensionFile,
-      ProfilerState profilerState) {
+      ProfilerState profilerState,
+      Map<String, String> httpHeaders) {
     this.skipHealthCheck = skipHealthCheck;
     this.readOnly = readOnly;
     this.dependencyContainer = dependencyContainer;
@@ -143,6 +145,8 @@ public class SmokeTestExtension
     String javaagentPathSystemProperty =
         useOld3xAgent ? "ai.smoke-test.old-3x-javaagent-file" : "ai.smoke-test.javaagent-file";
     javaagentFile = new File(System.getProperty(javaagentPathSystemProperty));
+
+    this.httpHeaders = httpHeaders;
   }
 
   private static String getProfilerEndpoint(ProfilerState profilerState) {
@@ -223,7 +227,7 @@ public class SmokeTestExtension
       System.out.println("calling " + url + " " + targetUri.callCount() + " times");
     }
     for (int i = 0; i < targetUri.callCount(); i++) {
-      HttpHelper.get(url, targetUri.userAgent());
+      HttpHelper.get(url, targetUri.userAgent(), httpHeaders);
     }
   }
 
