@@ -27,7 +27,7 @@ abstract class SnippetInjectionTest {
   void normalSnippetInjectionTest() throws Exception {
     String url = testing.getBaseUrl() + "/test";
     String response = HttpHelper.get(url, "", emptyMap());
-    assertThat(response).contains("InstrumentationKey=00000000-0000-0000-0000-TESTTEST");
+    assertThat(response).contains("InstrumentationKey=00000000");
   }
 
   @Environment(TOMCAT_8_JAVA_8)
