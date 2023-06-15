@@ -12,6 +12,7 @@ import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCA
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_8_OPENJ9;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.WILDFLY_13_JAVA_8;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.WILDFLY_13_JAVA_8_OPENJ9;
+import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
@@ -19,15 +20,13 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 @UseAgent
 abstract class SnippetInjectionTest {
-  @RegisterExtension
-  static final SmokeTestExtension testing =
-      SmokeTestExtension.builder().setSelfDiagnosticsLevel("trace").build();
+  @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.create();
 
   @Test
   @TargetUri("/test")
   void normalSnippetInjectionTest() throws Exception {
     String url = testing.getBaseUrl() + "/test";
-    String response = HttpHelper.get(url, "");
+    String response = HttpHelper.get(url, "", emptyMap());
     assertThat(response).contains("script");
   }
 
