@@ -27,6 +27,7 @@ class AlertConfigParserTest {
     assertThat(config.getCollectionPlanConfiguration().isSingle()).isFalse();
     assertThat(config.getMemoryAlert().isEnabled()).isFalse();
     assertThat(config.getDefaultConfiguration().getSamplingEnabled()).isFalse();
+    assertThat(config.getRequestAlertConfiguration()).isEmpty();
   }
 
   @Test
@@ -98,9 +99,9 @@ class AlertConfigParserTest {
             "--single --mode immediate --immediate-profiling-duration 120  --expiration 5249157885138288517 --settings-moniker a-settings-moniker",
             requestTriggers);
 
-    assertThat(config.getRequestAlerts()).isNotNull();
-    assertThat(config.getRequestAlerts().size()).isEqualTo(1);
-    assertThat(config.getRequestAlerts().get(0))
+    assertThat(config.getRequestAlertConfiguration()).isNotNull();
+    assertThat(config.getRequestAlertConfiguration().size()).isEqualTo(1);
+    assertThat(config.getRequestAlertConfiguration().get(0))
         .isEqualTo(
             AlertConfiguration.builder()
                 .setType(AlertMetricType.REQUEST)
@@ -108,6 +109,7 @@ class AlertConfigParserTest {
                 .setThreshold(0.75f)
                 .setProfileDurationSeconds(10)
                 .setCooldownSeconds(1800)
-                .setRequestTrigger(requestTrigger));
+                .setRequestTrigger(requestTrigger)
+                .build());
   }
 }

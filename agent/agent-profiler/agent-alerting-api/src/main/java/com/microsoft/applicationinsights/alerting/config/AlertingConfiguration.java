@@ -16,11 +16,11 @@ public abstract class AlertingConfiguration {
       AlertConfiguration memoryAlert,
       DefaultConfiguration defaultConfiguration,
       CollectionPlanConfiguration collectionPlanConfiguration,
-      List<AlertConfiguration> requestAlerts
+      List<AlertConfiguration> requestAlertConfiguration
       ) {
     return new AutoValue_AlertingConfiguration(
         cpuAlert, memoryAlert, defaultConfiguration, collectionPlanConfiguration,
-            requestAlerts);
+            requestAlertConfiguration);
   }
 
   public boolean hasAnEnabledTrigger() {
@@ -48,5 +48,5 @@ public abstract class AlertingConfiguration {
   public abstract CollectionPlanConfiguration getCollectionPlanConfiguration();
 
   // Alert configuration for SPAN telemetry
-  public abstract List<AlertConfiguration> getRequestAlerts();
+  public abstract List<AlertConfiguration> getRequestAlertConfiguration();
 }

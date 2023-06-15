@@ -47,22 +47,22 @@ public class AlertingSubsystem {
   // Current configuration of the alerting subsystem
   private AlertingConfiguration alertConfig;
 
-  private boolean requestTriggersFromConfig;
+  private boolean disableRequestTriggerUpdates;
 
   protected AlertingSubsystem(Consumer<AlertBreach> alertHandler) {
-    this(alertHandler, TimeSource.DEFAULT);
+    this(alertHandler, TimeSource.DEFAULT, false);
   }
 
-  protected AlertingSubsystem(Consumer<AlertBreach> alertHandler, TimeSource timeSource) {
+  protected AlertingSubsystem(Consumer<AlertBreach> alertHandler, TimeSource timeSource, boolean disableRequestTriggerUpdates) {
     this.alertHandler = alertHandler;
     this.alertPipelines = new AlertPipelines(alertHandler);
     this.timeSource = timeSource;
-    this.requestTriggersFromConfig = false;
+    this.disableRequestTriggerUpdates = disableRequestTriggerUpdates;
   }
 
   public static AlertingSubsystem create(
       Consumer<AlertBreach> alertHandler, TimeSource timeSource) {
-    AlertingSubsystem alertingSubsystem = new AlertingSubsystem(alertHandler, timeSource);
+    AlertingSubsystem alertingSubsystem = new AlertingSubsystem(alertHandler, timeSource, false);
     // init with disabled config
     alertingSubsystem.initialize(
         AlertingConfiguration.create(
@@ -115,13 +115,14 @@ public class AlertingSubsystem {
           this.alertConfig == null ? null : this.alertConfig.getMemoryAlert();
       updatePipelineConfig(alertingConfig.getMemoryAlert(), oldMemoryConfig);
 
-      if (!this.requestTriggersFromConfig && alertingConfig.getRequestAlerts() != null && !alertingConfig.getRequestAlerts().isEmpty()) {
+      if (!this.disableRequestTriggerUpdates && alertingConfig.getRequestAlertConfiguration() != null && !alertingConfig.getRequestAlertConfiguration().isEmpty()) {
         List<AlertConfiguration> oldRequestConfig =
-                this.alertConfig == null ? null : this.alertConfig.getRequestAlerts();
-        updateRequestPipelineConfig(alertingConfig.getRequestAlerts(), oldRequestConfig);
+                this.alertConfig == null ? null : this.alertConfig.getRequestAlertConfiguration();
+        updateRequestPipelineConfig(alertingConfig.getRequestAlertConfiguration(), oldRequestConfig);
       }
 
       evaluateManualTrigger(alertingConfig);
+
       this.alertConfig = alertingConfig;
     }
   }
@@ -176,7 +177,7 @@ public class AlertingSubsystem {
     alertPipelines.setAlertPipeline(type, alertPipeline);
   }
 
-  public void setRequestTriggersFromConfig(boolean requestTriggersFromConfig) {
-    this.requestTriggersFromConfig = requestTriggersFromConfig;
+  public void setDisableRequestTriggerUpdates(boolean disableRequestTriggerUpdates) {
+    this.disableRequestTriggerUpdates = disableRequestTriggerUpdates;
   }
 }

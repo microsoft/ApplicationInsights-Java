@@ -24,6 +24,8 @@ import com.microsoft.applicationinsights.alerting.analysis.pipelines.AlertPipeli
 import com.microsoft.applicationinsights.alerting.analysis.pipelines.AlertPipelineMultiplexer;
 import com.microsoft.applicationinsights.alerting.config.AlertMetricType;
 import com.microsoft.applicationinsights.diagnostics.DiagnosticEngine;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Map;
@@ -36,6 +38,8 @@ public class AlertingSubsystemInit {
 
   // TODO (trask) inject instead of using global
   private static volatile AlertingSubsystem alertingSubsystem;
+
+  private static final Logger logger = LoggerFactory.getLogger(AlertingSubsystem.class);
 
   public static AlertingSubsystem create(
       Configuration.ProfilerConfiguration configuration,
@@ -55,7 +59,8 @@ public class AlertingSubsystemInit {
 
     if (configuration.enableRequestTriggering) {
       if (!configuration.requestTriggerEndpoints.isEmpty()) {
-        alertingSubsystem.setRequestTriggersFromConfig(true);
+        alertingSubsystem.setDisableRequestTriggerUpdates(true);
+        logger.info("Request Trigger configuration has been provided in settings, trigger settings provided via the Portal UI will be ignored");
       }
 
       List<AlertPipeline> spanPipelines =
