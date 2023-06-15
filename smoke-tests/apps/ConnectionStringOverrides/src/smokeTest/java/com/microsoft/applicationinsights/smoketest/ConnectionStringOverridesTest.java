@@ -30,7 +30,9 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 @UseAgent
 abstract class ConnectionStringOverridesTest {
 
-  @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.create();
+  @RegisterExtension
+  static final SmokeTestExtension testing =
+      SmokeTestExtension.builder().otelResourceAttributesEnvVar("key1=value1,key2=value2").build();
 
   @Test
   @TargetUri("/app2")
@@ -45,6 +47,11 @@ abstract class ConnectionStringOverridesTest {
   }
 
   private static void testApp(String iKey) throws Exception {
+    // verify _OTELRESOURCE_ custom metric per connection string
+    List<Envelope> otelResourceMetrics =
+        testing.mockedIngestion.waitForMetricItems("_OTELRESOURCE_", iKey, 1, false);
+    verifyOtelResourceAttributeCustomMetric(otelResourceMetrics, iKey);
+
     List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
 
     Envelope rdEnvelope = rdList.get(0);
@@ -98,6 +105,22 @@ abstract class ConnectionStringOverridesTest {
 
     verifyHttpClientPreAggregatedMetrics(clientMetrics, iKey);
     verifyHttpServerPreAggregatedMetrics(serverMetrics, iKey);
+  }
+
+  private static void verifyOtelResourceAttributeCustomMetric(
+      List<Envelope> otelResourceMetrics, String iKey) {
+    Map<String, String> tags = otelResourceMetrics.get(0).getTags();
+    assertThat(otelResourceMetrics.get(0).getIKey()).isEqualTo(iKey);
+    assertThat(tags.get("ai.internal.sdkVersion")).isNotNull();
+    assertThat(tags.get("ai.cloud.roleInstance")).isNotNull();
+    assertThat(tags.get("ai.cloud.role")).isEqualTo("testrolename");
+
+    MetricData otelResourceMetricData =
+        (MetricData) ((Data<?>) otelResourceMetrics.get(0).getData()).getBaseData();
+    Map<String, String> properties = otelResourceMetricData.getProperties();
+    assertThat(properties.size()).isEqualTo(2);
+    assertThat(properties.get("key1")).isEqualTo("value1");
+    assertThat(properties.get("key2")).isEqualTo("value2");
   }
 
   private static void verifyHttpClientPreAggregatedMetrics(List<Envelope> metrics, String iKey) {

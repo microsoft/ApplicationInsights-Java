@@ -5,13 +5,14 @@ package com.microsoft.applicationinsights.jfrfile;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import jdk.jfr.EventType;
 import jdk.jfr.consumer.RecordingFile;
 
 public class JfrFileReader {
 
-  public static boolean hasEventOfType(File jfrFile, String event) throws IOException {
-    return new RecordingFile(jfrFile.toPath())
+  public static boolean hasEventOfType(Path jfrFile, String event) throws IOException {
+    return new RecordingFile(jfrFile)
         .readEventTypes()
         .stream().map(EventType::getName)
         .anyMatch(event::equals);

@@ -1,0 +1,17 @@
+{
+  "connectionString": "InstrumentationKey=00000000-0000-0000-0000-000000000000",
+  "role": {
+    "name": "testrolename",
+    "instance": "testroleinstance"
+  },
+  "sampling": {
+    "percentage": 100
+  },
+  "preview": {
+    "javaScriptSnippet":
+      {
+        "enabled": true
+      }
+  }
+}
+

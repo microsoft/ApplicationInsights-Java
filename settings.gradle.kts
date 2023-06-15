@@ -2,15 +2,15 @@ import org.apache.tools.ant.taskdefs.condition.Os
 
 pluginManagement {
   plugins {
-    id("com.github.ben-manes.versions") version "0.46.0"
-    id("com.github.jk1.dependency-license-report") version "2.2"
+    id("com.github.ben-manes.versions") version "0.47.0"
+    id("com.github.jk1.dependency-license-report") version "2.4"
     id("me.champeau.jmh") version "0.7.1"
     id("com.gradle.plugin-publish") version "1.2.0"
   }
 }
 
 plugins {
-  id("com.gradle.enterprise") version "3.13.2"
+  id("com.gradle.enterprise") version "3.13.3"
 }
 
 dependencyResolutionManagement {
@@ -93,6 +93,7 @@ hideFromDependabot(":smoke-tests:apps:CoreAndFilter3x")
 hideFromDependabot(":smoke-tests:apps:CoreAndFilter3xUsingOld3xAgent")
 hideFromDependabot(":smoke-tests:apps:CustomDimensions")
 hideFromDependabot(":smoke-tests:apps:CustomInstrumentation")
+hideFromDependabot(":smoke-tests:apps:DetectUnexpectedOtelMetrics")
 hideFromDependabot(":smoke-tests:apps:Diagnostics")
 hideFromDependabot(":smoke-tests:apps:Diagnostics:JfrFileReader")
 hideFromDependabot(":smoke-tests:apps:DiagnosticExtension:MockExtension")
@@ -124,12 +125,14 @@ hideFromDependabot(":smoke-tests:apps:NonDaemonThreads")
 hideFromDependabot(":smoke-tests:apps:OpenTelemetryApiSupport")
 hideFromDependabot(":smoke-tests:apps:OpenTelemetryMetric")
 hideFromDependabot(":smoke-tests:apps:PreAggMetricsWithRoleNameOverridesAndSampling")
+hideFromDependabot(":smoke-tests:apps:PreferForwardedUrlScheme")
 hideFromDependabot(":smoke-tests:apps:RateLimitedSampling")
 hideFromDependabot(":smoke-tests:apps:ReadOnly")
 hideFromDependabot(":smoke-tests:apps:RoleNameOverrides")
 hideFromDependabot(":smoke-tests:apps:RuntimeAttach")
 hideFromDependabot(":smoke-tests:apps:RuntimeAttachWithDelayedConnectionString")
 hideFromDependabot(":smoke-tests:apps:Sampling")
+hideFromDependabot(":smoke-tests:apps:SnippetInjection")
 hideFromDependabot(":smoke-tests:apps:SamplingOverrides")
 hideFromDependabot(":smoke-tests:apps:SamplingOverridesBackCompat")
 hideFromDependabot(":smoke-tests:apps:SpringBoot")
@@ -140,7 +143,7 @@ hideFromDependabot(":smoke-tests:apps:SpringScheduling")
 hideFromDependabot(":smoke-tests:apps:Statsbeat")
 hideFromDependabot(":smoke-tests:apps:SystemExit")
 hideFromDependabot(":smoke-tests:apps:TelemetryProcessors")
-hideFromDependabot(":smoke-tests:apps:VerifyShading")
+hideFromDependabot(":smoke-tests:apps:VerifyAgentJar")
 hideFromDependabot(":smoke-tests:apps:WebAuto")
 hideFromDependabot(":smoke-tests:apps:WebFlux")
 

@@ -95,9 +95,11 @@ public class SmokeTestExtension
   private final boolean usesGlobalIngestionEndpoint;
   private final boolean useOld3xAgent;
   private final String connectionString;
+  private final String otelResourceAttributesEnvVar;
   private final String selfDiagnosticsLevel;
   private final File javaagentFile;
   private final File agentExtensionFile;
+  private final Map<String, String> httpHeaders;
 
   public static SmokeTestExtension create() {
     return builder().build();
@@ -114,10 +116,12 @@ public class SmokeTestExtension
       boolean skipHealthCheck,
       boolean readOnly,
       boolean doNotSetConnectionString,
+      String otelResourceAttributesEnvVar,
       boolean useOld3xAgent,
       String selfDiagnosticsLevel,
       File agentExtensionFile,
-      ProfilerState profilerState) {
+      ProfilerState profilerState,
+      Map<String, String> httpHeaders) {
     this.skipHealthCheck = skipHealthCheck;
     this.readOnly = readOnly;
     this.dependencyContainer = dependencyContainer;
@@ -133,12 +137,16 @@ public class SmokeTestExtension
                 + FAKE_INGESTION_ENDPOINT
                 + ";ProfilerEndpoint="
                 + getProfilerEndpoint(profilerState);
+
+    this.otelResourceAttributesEnvVar = otelResourceAttributesEnvVar;
     this.selfDiagnosticsLevel = selfDiagnosticsLevel;
     this.agentExtensionFile = agentExtensionFile;
 
     String javaagentPathSystemProperty =
         useOld3xAgent ? "ai.smoke-test.old-3x-javaagent-file" : "ai.smoke-test.javaagent-file";
     javaagentFile = new File(System.getProperty(javaagentPathSystemProperty));
+
+    this.httpHeaders = httpHeaders;
   }
 
   private static String getProfilerEndpoint(ProfilerState profilerState) {
@@ -219,7 +227,7 @@ public class SmokeTestExtension
       System.out.println("calling " + url + " " + targetUri.callCount() + " times");
     }
     for (int i = 0; i < targetUri.callCount(); i++) {
-      HttpHelper.get(url, targetUri.userAgent());
+      HttpHelper.get(url, targetUri.userAgent(), httpHeaders);
     }
   }
 
@@ -389,6 +397,7 @@ public class SmokeTestExtension
             .withEnv(hostnameEnvVars)
             .withEnv("APPLICATIONINSIGHTS_CONNECTION_STRING", connectionString)
             .withEnv("APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_LEVEL", selfDiagnosticsLevel)
+            .withEnv("OTEL_RESOURCE_ATTRIBUTES", otelResourceAttributesEnvVar)
             .withNetwork(network)
             .withExposedPorts(8080)
             .withFileSystemBind(
@@ -610,6 +619,29 @@ public class SmokeTestExtension
       }
       MetricData md = getBaseData(input);
       return name.equals(md.getMetrics().get(0).getName());
+    };
+  }
+
+  public static Predicate<Envelope> getMetricPredicate(
+      String name, String secondPredicate, boolean isRolename) {
+    Objects.requireNonNull(name, "name");
+    Objects.requireNonNull(secondPredicate, "secondPredicate");
+
+    return input -> {
+      if (input == null) {
+        return false;
+      }
+      if (!input.getData().getBaseType().equals("MetricData")
+          || (isRolename && !input.getTags().get("ai.cloud.role").equals(secondPredicate))
+          || (!isRolename && !input.getIKey().equals(secondPredicate))) {
+        return false;
+      }
+      MetricData md = getBaseData(input);
+      boolean isSecondPredicateValid =
+          isRolename
+              ? secondPredicate.equals(input.getTags().get("ai.cloud.role"))
+              : secondPredicate.equals(input.getIKey());
+      return name.equals(md.getMetrics().get(0).getName()) && isSecondPredicateValid;
     };
   }
 }

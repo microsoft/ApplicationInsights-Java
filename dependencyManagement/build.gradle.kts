@@ -11,9 +11,9 @@ data class DependencySet(val group: String, val version: String, val modules: Li
 val dependencyVersions = hashMapOf<String, String>()
 rootProject.extra["versions"] = dependencyVersions
 
-val otelVersion = "1.26.0"
-val otelInstrumentationAlphaVersion = "1.26.0-alpha"
-val otelInstrumentationVersion = "1.26.0"
+val otelVersion = "1.27.0"
+val otelInstrumentationAlphaVersion = "1.27.0-alpha"
+val otelInstrumentationVersion = "1.27.0"
 val otelContribAlphaVersion = "1.18.0-alpha"
 
 rootProject.extra["otelVersion"] = otelVersion
@@ -22,19 +22,19 @@ rootProject.extra["otelInstrumentationAlphaVersion"] = otelInstrumentationAlphaV
 rootProject.extra["otelContribAlphaVersion"] = otelContribAlphaVersion
 
 val DEPENDENCY_BOMS = listOf(
-  "com.fasterxml.jackson:jackson-bom:2.15.1",
-  "com.google.guava:guava-bom:31.1-jre",
+  "com.fasterxml.jackson:jackson-bom:2.15.2",
+  "com.google.guava:guava-bom:32.0.1-jre",
   "io.opentelemetry:opentelemetry-bom:${otelVersion}",
   "io.opentelemetry:opentelemetry-bom-alpha:${otelVersion}-alpha",
   "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:${otelInstrumentationVersion}",
   "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${otelInstrumentationAlphaVersion}",
-  "com.azure:azure-sdk-bom:1.2.12",
-  "io.netty:netty-bom:4.1.92.Final",
+  "com.azure:azure-sdk-bom:1.2.13",
+  "io.netty:netty-bom:4.1.93.Final",
   "org.junit:junit-bom:5.9.3",
-  "org.testcontainers:testcontainers-bom:1.18.1",
+  "org.testcontainers:testcontainers-bom:1.18.3",
 )
 
-val autoServiceVersion = "1.0.1"
+val autoServiceVersion = "1.1.1"
 val autoValueVersion = "1.10.1"
 val errorProneVersion = "2.19.1"
 val byteBuddyVersion = "1.12.18"
@@ -72,7 +72,7 @@ val CORE_DEPENDENCIES = listOf(
   "io.opentelemetry.javaagent:opentelemetry-javaagent-tooling:${otelInstrumentationAlphaVersion}",
   // temporarily overriding transitive dependency from azure-core until next azure-bom release
   // which targets at least reactor-netty-http:1.1.1
-  "io.projectreactor.netty:reactor-netty-http:1.1.7",
+  "io.projectreactor.netty:reactor-netty-http:1.1.8",
 )
 
 val DEPENDENCIES = listOf(

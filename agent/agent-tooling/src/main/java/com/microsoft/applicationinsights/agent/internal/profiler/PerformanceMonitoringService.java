@@ -57,6 +57,7 @@ public class PerformanceMonitoringService {
   @Nullable private Profiler profiler;
   @Nullable private DiagnosticEngine diagnosticEngine;
   @Nullable private ScheduledExecutorService diagnosticEngineExecutorService;
+
   //////////////////////////////////////////////////////////
 
   public PerformanceMonitoringService(

@@ -5,6 +5,8 @@ package com.microsoft.applicationinsights.smoketest;
 
 import com.microsoft.applicationinsights.smoketest.fakeingestion.ProfilerState;
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 import org.testcontainers.containers.GenericContainer;
 
 public class SmokeTestExtensionBuilder {
@@ -15,10 +17,12 @@ public class SmokeTestExtensionBuilder {
   private boolean skipHealthCheck;
   private boolean readOnly;
   private boolean doNotSetConnectionString;
+  private String otelResourceAttributesEnvVar;
   private boolean useOld3xAgent;
   private String selfDiagnosticsLevel = "info";
   private File agentExtensionFile;
   private ProfilerState profilerEndpointPath = ProfilerState.unconfigured;
+  private final Map<String, String> httpHeaders = new HashMap<>();
 
   public SmokeTestExtensionBuilder setDependencyContainer(
       String envVarName, GenericContainer<?> container) {
@@ -47,6 +51,12 @@ public class SmokeTestExtensionBuilder {
     return this;
   }
 
+  public SmokeTestExtensionBuilder otelResourceAttributesEnvVar(
+      String otelResourceAttributesEnvVar) {
+    this.otelResourceAttributesEnvVar = otelResourceAttributesEnvVar;
+    return this;
+  }
+
   public SmokeTestExtensionBuilder useOld3xAgent() {
     useOld3xAgent = true;
     return this;
@@ -54,6 +64,21 @@ public class SmokeTestExtensionBuilder {
 
   public SmokeTestExtensionBuilder setSelfDiagnosticsLevel(String selfDiagnosticsLevel) {
     this.selfDiagnosticsLevel = selfDiagnosticsLevel;
+    return this;
+  }
+
+  public SmokeTestExtensionBuilder setAgentExtensionFile(File file) {
+    this.agentExtensionFile = file;
+    return this;
+  }
+
+  public SmokeTestExtensionBuilder setProfilerEndpoint(ProfilerState profilerEndpointPath) {
+    this.profilerEndpointPath = profilerEndpointPath;
+    return this;
+  }
+
+  public SmokeTestExtensionBuilder setHttpHeader(String key, String value) {
+    httpHeaders.put(key, value);
     return this;
   }
 
@@ -65,19 +90,11 @@ public class SmokeTestExtensionBuilder {
         skipHealthCheck,
         readOnly,
         doNotSetConnectionString,
+        otelResourceAttributesEnvVar,
         useOld3xAgent,
         selfDiagnosticsLevel,
         agentExtensionFile,
-        profilerEndpointPath);
-  }
-
-  public SmokeTestExtensionBuilder setAgentExtensionFile(File file) {
-    this.agentExtensionFile = file;
-    return this;
-  }
-
-  public SmokeTestExtensionBuilder setProfilerEndpoint(ProfilerState profilerEndpointPath) {
-    this.profilerEndpointPath = profilerEndpointPath;
-    return this;
+        profilerEndpointPath,
+        httpHeaders);
   }
 }

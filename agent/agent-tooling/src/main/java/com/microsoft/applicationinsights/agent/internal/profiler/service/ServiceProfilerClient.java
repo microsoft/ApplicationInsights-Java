@@ -64,18 +64,25 @@ public class ServiceProfilerClient {
   public Mono<BlobAccessPass> getUploadAccess(UUID profileId, String extension) {
     URL requestUrl = uploadRequestUri(profileId, extension);
 
-    return executePostWithRedirect(requestUrl)
-        .map(
-            response -> {
-              if (response.getStatusCode() >= 300) {
-                throw new HttpResponseException(response);
-              }
-              String location = response.getHeaderValue("Location");
-              if (location == null || location.isEmpty()) {
-                throw new AssertionError("response did not have a location");
-              }
-              return new BlobAccessPass(null, location, null);
-            });
+    return executePostWithRedirect(requestUrl).map(ServiceProfilerClient::getUploadAccess);
+  }
+
+  private static BlobAccessPass getUploadAccess(HttpResponse response) {
+    try {
+      if (response.getStatusCode() >= 300) {
+        throw new HttpResponseException(response);
+      }
+      String location = response.getHeaderValue("Location");
+      if (location == null || location.isEmpty()) {
+        throw new AssertionError("response did not have a location");
+      }
+      return new BlobAccessPass(null, location, null);
+    } finally {
+      // need to consume the body or close the response, otherwise get netty ByteBuf leak warnings:
+      // io.netty.util.ResourceLeakDetector - LEAK: ByteBuf.release() was not called before
+      // it's garbage-collected (see https://github.com/Azure/azure-sdk-for-java/issues/10467)
+      response.close();
+    }
   }
 
   public Mono<HttpResponse> executePostWithRedirect(URL requestUrl) {
@@ -94,21 +101,7 @@ public class ServiceProfilerClient {
     URL requestUrl = uploadFinishedRequestUrl(profileId, extension, etag);
 
     return executePostWithRedirect(requestUrl)
-        .flatMap(
-            response -> {
-              if (response == null) {
-                // this shouldn't happen, the mono should complete with a response or a failure
-                return Mono.error(new AssertionError("http response mono returned empty"));
-              }
-
-              int statusCode = response.getStatusCode();
-              if (statusCode != 201 && statusCode != 202) {
-                logger.error("Trace upload failed: {}", statusCode);
-                return Mono.error(new AssertionError("http request failed"));
-              }
-
-              return response.getBodyAsString();
-            })
+        .flatMap(ServiceProfilerClient::reportUploadFinish)
         .flatMap(
             json -> {
               if (json == null) {
@@ -128,6 +121,26 @@ public class ServiceProfilerClient {
             });
   }
 
+  private static Mono<String> reportUploadFinish(HttpResponse response) {
+    if (response == null) {
+      // this shouldn't happen, the mono should complete with a response or a failure
+      return Mono.error(new AssertionError("http response mono returned empty"));
+    }
+    try {
+      int statusCode = response.getStatusCode();
+      if (statusCode != 201 && statusCode != 202) {
+        logger.error("Trace upload failed: {}", statusCode);
+        return Mono.error(new AssertionError("http request failed"));
+      }
+      return response.getBodyAsString();
+    } finally {
+      // need to consume the body or close the response, otherwise get netty ByteBuf leak warnings:
+      // io.netty.util.ResourceLeakDetector - LEAK: ByteBuf.release() was not called before
+      // it's garbage-collected (see https://github.com/Azure/azure-sdk-for-java/issues/10467)
+      response.close();
+    }
+  }
+
   /** Obtain current settings that have been configured within the UI. */
   public Mono<ProfilerConfiguration> getSettings(Date oldTimeStamp) {
 
@@ -135,27 +148,28 @@ public class ServiceProfilerClient {
 
     HttpRequest request = new HttpRequest(HttpMethod.GET, requestUrl);
 
-    return httpPipeline
-        .send(request)
-        .flatMap(
-            response -> {
-              if (response.getStatusCode() >= 300) {
-                return Mono.error(
-                    new HttpResponseException(
-                        "Received error code " + response.getStatusCode() + " from " + requestUrl,
-                        response));
-              }
+    return httpPipeline.send(request).flatMap(response -> handle(response, requestUrl));
+  }
 
-              return response
-                  .getBodyAsString()
-                  .flatMap(
-                      body -> {
-                        try {
-                          return Mono.just(mapper.readValue(body, ProfilerConfiguration.class));
-                        } catch (IOException e) {
-                          return Mono.error(e);
-                        }
-                      });
+  private static Mono<ProfilerConfiguration> handle(HttpResponse response, URL requestUrl) {
+    if (response.getStatusCode() >= 300) {
+      // need to consume the body or close the response, otherwise get netty ByteBuf leak warnings:
+      // io.netty.util.ResourceLeakDetector - LEAK: ByteBuf.release() was not called before
+      // it's garbage-collected (see https://github.com/Azure/azure-sdk-for-java/issues/10467)
+      response.close();
+      return Mono.error(
+          new HttpResponseException(
+              "Received error code " + response.getStatusCode() + " from " + requestUrl, response));
+    }
+    return response
+        .getBodyAsString()
+        .flatMap(
+            body -> {
+              try {
+                return Mono.just(mapper.readValue(body, ProfilerConfiguration.class));
+              } catch (IOException e) {
+                return Mono.error(e);
+              }
             });
   }
 

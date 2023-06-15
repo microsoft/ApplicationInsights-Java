@@ -34,6 +34,7 @@ import com.microsoft.applicationinsights.agent.internal.configuration.Configurat
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.SamplingTelemetryType;
 import com.microsoft.applicationinsights.agent.internal.configuration.ConfigurationBuilder;
 import com.microsoft.applicationinsights.agent.internal.configuration.RpConfiguration;
+import com.microsoft.applicationinsights.agent.internal.configuration.SnippetConfiguration;
 import com.microsoft.applicationinsights.agent.internal.exporter.AgentLogExporter;
 import com.microsoft.applicationinsights.agent.internal.exporter.AgentMetricExporter;
 import com.microsoft.applicationinsights.agent.internal.exporter.AgentSpanExporter;
@@ -228,6 +229,12 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
           initStatsbeatFeatureSet(configuration));
     }
 
+    if (telemetryClient.getConnectionString() != null) {
+      if (configuration.preview.javaScriptSnippet.enabled) {
+        SnippetConfiguration.initializeSnippet(configuration.connectionString);
+      }
+    }
+
     // TODO (trask) add this method to AutoConfigurationCustomizer upstream?
     ((AutoConfiguredOpenTelemetrySdkBuilder) autoConfiguration).registerShutdownHook(false);
 
@@ -384,6 +391,9 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
     }
     if (!config.preview.instrumentation.jaxrsAnnotations.enabled) {
       featureList.add(Feature.JAXRS_ANNOTATIONS_DISABLED);
+    }
+    if (config.preview.javaScriptSnippet.enabled) {
+      featureList.add(Feature.JAVASCRIPT_SNIPPET);
     }
 
     // Statsbeat
