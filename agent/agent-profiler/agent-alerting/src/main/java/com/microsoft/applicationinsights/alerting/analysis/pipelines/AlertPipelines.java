@@ -18,7 +18,6 @@ import java.util.Map;
 import java.util.OptionalDouble;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,28 +63,33 @@ public class AlertPipelines {
         "Set alert configuration for {}: {}", newAlertConfig.getType(), newAlertConfig.toString());
   }
 
-  public void updateRequestAlertConfig(List<AlertConfiguration> newAlertConfig, TimeSource timeSource) {
-    List<AlertPipeline> requestPipelines = newAlertConfig.stream()
-            .map(alert -> {
-              AlertingConfig.RequestTrigger trigger = alert.getRequestTrigger();
+  public void updateRequestAlertConfig(
+      List<AlertConfiguration> newAlertConfig, TimeSource timeSource) {
+    List<AlertPipeline> requestPipelines =
+        newAlertConfig.stream()
+            .map(
+                alert -> {
+                  AlertingConfig.RequestTrigger trigger = alert.getRequestTrigger();
 
-              return SingleAlertPipeline.create(
+                  return SingleAlertPipeline.create(
                       new AlertRequestFilter.RegexRequestNameFilter(trigger.filter.value),
                       new ThresholdBreachRatioAggregation(
-                              trigger.aggregation.configuration.thresholdMillis,
-                              trigger.aggregation.configuration.minimumSamples,
-                              trigger.aggregation.windowSizeMillis / 1000,
-                              timeSource,
-                              false),
+                          trigger.aggregation.configuration.thresholdMillis,
+                          trigger.aggregation.configuration.minimumSamples,
+                          trigger.aggregation.windowSizeMillis / 1000,
+                          timeSource,
+                          false),
                       alert,
                       alertHandler);
-            })
+                })
             .collect(Collectors.toList());
 
     alertPipelines.put(AlertMetricType.REQUEST, new AlertPipelineMultiplexer(requestPipelines));
 
     LOGGER.debug(
-            "Set alert configuration for {}: {} pipelines updated", AlertMetricType.REQUEST, newAlertConfig.size());
+        "Set alert configuration for {}: {} pipelines updated",
+        AlertMetricType.REQUEST,
+        newAlertConfig.size());
   }
 
   /** Ensure that alerts contain the required metrics and notify upstream handler. */

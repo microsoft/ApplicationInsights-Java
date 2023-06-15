@@ -8,7 +8,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.util.StdDateFormat;
 import com.google.auto.value.AutoValue;
 import com.microsoft.applicationinsights.alerting.aiconfig.AlertingConfig;
-
 import java.text.ParseException;
 import java.util.Date;
 import java.util.List;
@@ -38,7 +37,8 @@ public abstract class ProfilerConfiguration {
       @JsonProperty("cpuTriggerConfiguration") String cpuTriggerConfiguration,
       @JsonProperty("memoryTriggerConfiguration") String memoryTriggerConfiguration,
       @JsonProperty("defaultConfiguration") String defaultConfiguration,
-      @JsonProperty("requestTriggerConfiguration") List<AlertingConfig.RequestTrigger> requestTriggerConfiguration) {
+      @JsonProperty("requestTriggerConfiguration")
+          List<AlertingConfig.RequestTrigger> requestTriggerConfiguration) {
 
     return new AutoValue_ProfilerConfiguration(
         lastModified,
@@ -49,6 +49,7 @@ public abstract class ProfilerConfiguration {
         defaultConfiguration,
         requestTriggerConfiguration);
   }
+
   public boolean hasBeenConfigured() {
     return getLastModified().compareTo(DEFAULT_DATE) != 0;
   }

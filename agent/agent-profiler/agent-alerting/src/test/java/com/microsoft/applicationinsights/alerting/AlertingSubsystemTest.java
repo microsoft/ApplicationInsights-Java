@@ -12,7 +12,6 @@ import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration;
 import com.microsoft.applicationinsights.alerting.config.CollectionPlanConfiguration;
 import com.microsoft.applicationinsights.alerting.config.CollectionPlanConfiguration.EngineMode;
 import com.microsoft.applicationinsights.alerting.config.DefaultConfiguration;
-
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -54,8 +53,7 @@ class AlertingSubsystemTest {
                 .setImmediateProfilingDurationSeconds(120)
                 .setSettingsMoniker("a-settings-moniker")
                 .build(),
-            new ArrayList<>()
-        ));
+            new ArrayList<>()));
     return monitor;
   }
 
@@ -114,8 +112,7 @@ class AlertingSubsystemTest {
                 .setImmediateProfilingDurationSeconds(120)
                 .setSettingsMoniker("a-settings-moniker")
                 .build(),
-            new ArrayList<>()
-        ));
+            new ArrayList<>()));
 
     assertThat(called.get().getType()).isEqualTo(AlertMetricType.MANUAL);
   }
@@ -156,8 +153,7 @@ class AlertingSubsystemTest {
                 .setImmediateProfilingDurationSeconds(120)
                 .setSettingsMoniker("a-settings-moniker")
                 .build(),
-            new ArrayList<>()
-        ));
+            new ArrayList<>()));
 
     assertThat(called.get()).isNull();
   }

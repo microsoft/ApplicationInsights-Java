@@ -11,7 +11,6 @@ import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration;
 import com.microsoft.applicationinsights.alerting.config.CollectionPlanConfiguration;
 import com.microsoft.applicationinsights.alerting.config.CollectionPlanConfiguration.EngineMode;
 import com.microsoft.applicationinsights.alerting.config.DefaultConfiguration;
-
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -39,11 +38,15 @@ public class AlertConfigParser {
         buildRequestTriggerConfiguration(requestTriggerConfig));
   }
 
-  private static List<AlertConfiguration> buildRequestTriggerConfiguration(List<AlertingConfig.RequestTrigger> requestTriggerConfig) {
+  private static List<AlertConfiguration> buildRequestTriggerConfiguration(
+      List<AlertingConfig.RequestTrigger> requestTriggerConfig) {
     if (requestTriggerConfig == null) {
-        return new ArrayList<>();
+      return new ArrayList<>();
     }
-    return requestTriggerConfig.stream().map(trigger -> AlertConfiguration.builder()
+    return requestTriggerConfig.stream()
+        .map(
+            trigger ->
+                AlertConfiguration.builder()
                     .setType(AlertMetricType.REQUEST)
                     .setEnabled(true)
                     .setThreshold(trigger.threshold.value)
@@ -51,7 +54,7 @@ public class AlertConfigParser {
                     .setCooldownSeconds((int) trigger.throttling.value)
                     .setRequestTrigger(trigger)
                     .build())
-            .collect(Collectors.toList());
+        .collect(Collectors.toList());
   }
 
   // --single --mode immediate --immediate-profiling-duration 120  --expiration 5249143304354868449

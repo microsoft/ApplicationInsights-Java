@@ -12,16 +12,14 @@ import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration;
 import com.microsoft.applicationinsights.alerting.config.CollectionPlanConfiguration;
 import com.microsoft.applicationinsights.alerting.config.CollectionPlanConfiguration.EngineMode;
 import com.microsoft.applicationinsights.alerting.config.DefaultConfiguration;
-import org.junit.jupiter.api.Test;
-
 import java.util.ArrayList;
 import java.util.List;
+import org.junit.jupiter.api.Test;
 
 class AlertConfigParserTest {
 
   @Test
   void nullsInConfigAreHandled() {
-
     AlertingConfiguration config = AlertConfigParser.parse(null, null, null, null, null);
     assertThat(config.getCpuAlert().isEnabled()).isFalse();
     assertThat(config.getCollectionPlanConfiguration().isSingle()).isFalse();
@@ -79,14 +77,20 @@ class AlertConfigParserTest {
 
   @Test
   void requestTriggerIsBuilt() {
-    AlertingConfig.RequestTrigger requestTrigger = new AlertingConfig.RequestTrigger(
+    AlertingConfig.RequestTrigger requestTrigger =
+        new AlertingConfig.RequestTrigger(
             "test",
             AlertingConfig.RequestTriggerType.LATENCY,
-            new AlertingConfig.RequestFilter(AlertingConfig.RequestFilterType.NAME_REGEX, "/api/users/.*"),
-            new AlertingConfig.RequestAggregation(AlertingConfig.RequestAggregationType.BREACH_RATIO, 7000,
-                    new AlertingConfig.RequestAggregationConfig(10000, 10)),
-            new AlertingConfig.RequestTriggerThreshold(AlertingConfig.RequestTriggerThresholdType.GREATER_THAN, 0.75f),
-            new AlertingConfig.RequestTriggerThrottling(AlertingConfig.RequestTriggerThrottlingType.FIXED_DURATION_COOLDOWN, 1800),
+            new AlertingConfig.RequestFilter(
+                AlertingConfig.RequestFilterType.NAME_REGEX, "/api/users/.*"),
+            new AlertingConfig.RequestAggregation(
+                AlertingConfig.RequestAggregationType.BREACH_RATIO,
+                7000,
+                new AlertingConfig.RequestAggregationConfig(10000, 10)),
+            new AlertingConfig.RequestTriggerThreshold(
+                AlertingConfig.RequestTriggerThresholdType.GREATER_THAN, 0.75f),
+            new AlertingConfig.RequestTriggerThrottling(
+                AlertingConfig.RequestTriggerThrottlingType.FIXED_DURATION_COOLDOWN, 1800),
             10);
     List<AlertingConfig.RequestTrigger> requestTriggers = new ArrayList<>();
     requestTriggers.add(requestTrigger);

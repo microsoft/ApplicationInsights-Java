@@ -16,11 +16,13 @@ public abstract class AlertingConfiguration {
       AlertConfiguration memoryAlert,
       DefaultConfiguration defaultConfiguration,
       CollectionPlanConfiguration collectionPlanConfiguration,
-      List<AlertConfiguration> requestAlertConfiguration
-      ) {
+      List<AlertConfiguration> requestAlertConfiguration) {
     return new AutoValue_AlertingConfiguration(
-        cpuAlert, memoryAlert, defaultConfiguration, collectionPlanConfiguration,
-            requestAlertConfiguration);
+        cpuAlert,
+        memoryAlert,
+        defaultConfiguration,
+        collectionPlanConfiguration,
+        requestAlertConfiguration);
   }
 
   public boolean hasAnEnabledTrigger() {
