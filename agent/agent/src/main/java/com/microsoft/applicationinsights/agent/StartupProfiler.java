@@ -42,14 +42,14 @@ final class StartupProfiler {
     start(printWriter);
   }
 
-  private static String getThreadDumpFilename() {
-    return "stacktrace-" + System.currentTimeMillis() + ".txt";
-  }
-
   private static void start(PrintWriter out) {
     Thread thread = new Thread(new ThreadDump(out), "StartupProfiler");
     thread.setDaemon(true);
     thread.start();
+  }
+
+  private static String getThreadDumpFilename() {
+    return "stacktrace-" + System.currentTimeMillis() + ".txt";
   }
 
   private static class ThreadDump implements Runnable {
