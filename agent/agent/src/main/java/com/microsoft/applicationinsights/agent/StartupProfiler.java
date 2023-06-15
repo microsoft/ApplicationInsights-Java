@@ -17,8 +17,6 @@ import java.nio.file.Files;
 
 final class StartupProfiler {
 
-  private static final String STACKTRACES = "stacktrace.txt";
-
   @SuppressWarnings("SystemOut")
   public static void start() {
     String tempDirectory = System.getProperty("java.io.tmpdir");
@@ -28,7 +26,7 @@ final class StartupProfiler {
       return;
     }
 
-    File dumpFile = new File(folder, STACKTRACES);
+    File dumpFile = new File(folder, getThreadDumpFilename());
     System.out.println("Writing startup profiler to '" + dumpFile.getPath() + "'");
 
     PrintWriter printWriter;
@@ -42,6 +40,10 @@ final class StartupProfiler {
     }
 
     start(printWriter);
+  }
+
+  private static String getThreadDumpFilename() {
+    return "stacktrace-" + System.currentTimeMillis() + ".txt";
   }
 
   private static void start(PrintWriter out) {
