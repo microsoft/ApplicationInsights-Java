@@ -21,7 +21,7 @@ public class SnippetConfiguration {
   // visible for testing
   static String readSnippet() {
     ClassLoader classLoader = SnippetConfiguration.class.getClassLoader();
-    String resourceName = "javascript-snippet.txt";
+    String resourceName = "browserSdkLoader-snippet.txt";
     InputStream inputStream = classLoader.getResourceAsStream(resourceName);
     if (inputStream == null) {
       LOGGER.error("Resource not found: " + resourceName);
