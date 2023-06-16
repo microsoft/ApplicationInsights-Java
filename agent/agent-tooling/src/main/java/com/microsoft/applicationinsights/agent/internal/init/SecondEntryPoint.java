@@ -230,7 +230,7 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
     }
 
     if (telemetryClient.getConnectionString() != null) {
-      if (configuration.preview.javaScriptSnippet.enabled) {
+      if (configuration.preview.browserSdkLoader.enabled) {
         SnippetConfiguration.initializeSnippet(configuration.connectionString);
       }
     }
@@ -392,8 +392,8 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
     if (!config.preview.instrumentation.jaxrsAnnotations.enabled) {
       featureList.add(Feature.JAXRS_ANNOTATIONS_DISABLED);
     }
-    if (config.preview.javaScriptSnippet.enabled) {
-      featureList.add(Feature.JAVASCRIPT_SNIPPET);
+    if (config.preview.browserSdkLoader.enabled) {
+      featureList.add(Feature.BROWSER_SDK_LOADER);
     }
 
     // Statsbeat

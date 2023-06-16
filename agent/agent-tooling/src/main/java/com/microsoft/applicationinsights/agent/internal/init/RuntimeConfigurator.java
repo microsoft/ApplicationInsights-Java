@@ -120,7 +120,7 @@ public class RuntimeConfigurator {
     boolean currentEnabled = !Strings.isNullOrEmpty(currentConfig.connectionString);
 
     updateConnectionString(runtimeConfig.connectionString);
-    if (initialConfig.preview.javaScriptSnippet.enabled) {
+    if (initialConfig.preview.browserSdkLoader.enabled) {
       SnippetConfiguration.initializeSnippet(runtimeConfig.connectionString);
     }
     updateRoleName(runtimeConfig.role.name);
