@@ -1,6 +1,6 @@
 {
   "preview": {
-    "javaScriptSnippet":
+    "browserSdkLoader":
     {
       "enabled": true
     }
