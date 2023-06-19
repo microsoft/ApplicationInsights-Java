@@ -21,6 +21,8 @@ import com.microsoft.applicationinsights.smoketest.schemav2.ExceptionDetails;
 import com.microsoft.applicationinsights.smoketest.schemav2.MessageData;
 import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
 import com.microsoft.applicationinsights.smoketest.schemav2.SeverityLevel;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Comparator;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -44,6 +46,16 @@ abstract class Log4j2Test {
     Envelope mdEnvelope2 = mdList.get(1);
     Envelope mdEnvelope3 = mdList.get(2);
     Envelope mdEnvelope4 = mdList.get(3);
+
+    Instant now = Instant.now();
+    assertThat(Instant.parse(mdEnvelope1.getTime()))
+        .isBetween(now.minus(1, ChronoUnit.MINUTES), now);
+    assertThat(Instant.parse(mdEnvelope2.getTime()))
+        .isBetween(now.minus(1, ChronoUnit.MINUTES), now);
+    assertThat(Instant.parse(mdEnvelope3.getTime()))
+        .isBetween(now.minus(1, ChronoUnit.MINUTES), now);
+    assertThat(Instant.parse(mdEnvelope4.getTime()))
+        .isBetween(now.minus(1, ChronoUnit.MINUTES), now);
 
     assertThat(rdEnvelope.getSampleRate()).isNull();
     assertThat(mdEnvelope1.getSampleRate()).isNull();
