@@ -1,5 +1,21 @@
 # CHANGELOG
 
+## Version 3.4.14 GA
+
+### Enhancements:
+
+* Update to OpenTelemetry Java Instrumentation 1.27
+  ([#3124](https://github.com/microsoft/ApplicationInsights-Java/pull/3124))
+* Add javascript snippet injection preview feature
+  ([#3132](https://github.com/microsoft/ApplicationInsights-Java/pull/3132))
+* Send _OTELRESOURCE_ custom metric for each batch
+  ([#3087](https://github.com/microsoft/ApplicationInsights-Java/pull/3087))
+
+### Bug fixes:
+
+* Fix netty ByteBuf leak
+  ([#3127](https://github.com/microsoft/ApplicationInsights-Java/pull/3127))
+
 ## Version 3.4.13 GA
 
 ### Enhancements:
