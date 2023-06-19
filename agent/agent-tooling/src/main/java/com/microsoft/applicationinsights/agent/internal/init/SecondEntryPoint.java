@@ -648,7 +648,7 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
               .setScheduleDelay(getBatchProcessorDelay())
               .build();
 
-      builder.addLogRecordProcessor(batchLogProcessor);
+      builder.addLogRecordProcessor(new TimestampingLogRecordProcessor(batchLogProcessor));
     }
 
     return builder;
