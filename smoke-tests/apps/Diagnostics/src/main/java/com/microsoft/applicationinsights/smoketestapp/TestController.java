@@ -46,7 +46,8 @@ public class TestController {
           return String.valueOf(true);
         }
       } catch (Exception e) {
-        // Ignore early exceptions, as to be expected, throw them if they are still happening towards the end
+        // Ignore early exceptions, as to be expected, throw them if they are still happening
+        // towards the end
         if (i > 55) {
           throw e;
         } else {
