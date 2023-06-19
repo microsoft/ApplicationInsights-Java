@@ -13,6 +13,8 @@
 
 * Fix netty ByteBuf leak
   ([#3127](https://github.com/microsoft/ApplicationInsights-Java/pull/3127))
+* Fix log4j timestamp
+  ([#3137](https://github.com/microsoft/ApplicationInsights-Java/pull/3137))
 
 ## Version 3.4.13 GA
 
