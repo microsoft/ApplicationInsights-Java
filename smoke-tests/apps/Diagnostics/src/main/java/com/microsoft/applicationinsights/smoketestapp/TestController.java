@@ -24,26 +24,35 @@ public class TestController {
   public String jfrFileHasDiagnostics() throws Exception {
     Optional<Path> jfrFile;
     for (int i = 0; i < 60; i++) {
+      try {
+        jfrFile =
+            Files.walk(new File("/tmp/root/applicationinsights").toPath())
+                .filter(Files::isRegularFile)
+                .filter(it -> it.toFile().getName().contains(".jfr"))
+                .findFirst();
 
-      jfrFile =
-          Files.walk(new File("/tmp/root/applicationinsights").toPath())
-              .filter(Files::isRegularFile)
-              .filter(it -> it.toFile().getName().contains(".jfr"))
-              .findFirst();
+        if (!jfrFile.isPresent()) {
+          Thread.sleep(1000, 0);
+          continue;
+        }
 
-      if (!jfrFile.isPresent()) {
-        Thread.sleep(1000, 0);
-        continue;
-      }
+        Path decompressedFile = decompressFile(jfrFile.get());
 
-      Path decompressedFile = decompressFile(jfrFile.get());
+        boolean hasTelemetry =
+            com.microsoft.applicationinsights.jfrfile.JfrFileReader.hasEventOfType(
+                decompressedFile, "com.microsoft.applicationinsights.diagnostics.jfr.Telemetry");
 
-      boolean hasTelemetry =
-          com.microsoft.applicationinsights.jfrfile.JfrFileReader.hasEventOfType(
-              decompressedFile, "com.microsoft.applicationinsights.diagnostics.jfr.Telemetry");
-
-      if (hasTelemetry) {
-        return String.valueOf(true);
+        if (hasTelemetry) {
+          return String.valueOf(true);
+        }
+      } catch (Exception e) {
+        // Ignore early exceptions, as to be expected, throw them if they are still happening
+        // towards the end
+        if (i > 55) {
+          throw e;
+        } else {
+          Thread.sleep(1000, 0);
+        }
       }
     }
 
