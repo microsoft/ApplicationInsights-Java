@@ -8,8 +8,6 @@
   ([#3124](https://github.com/microsoft/ApplicationInsights-Java/pull/3124))
 * Add javascript snippet injection preview feature
   ([#3132](https://github.com/microsoft/ApplicationInsights-Java/pull/3132))
-* Send _OTELRESOURCE_ custom metric for each batch
-  ([#3087](https://github.com/microsoft/ApplicationInsights-Java/pull/3087))
 
 ### Bug fixes:
 
