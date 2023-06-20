@@ -53,8 +53,12 @@ class AzureMonitorLogRecordExporter implements LogRecordExporter {
     for (LogRecordData log : logs) {
       LOGGER.verbose("exporting log: {}", log);
       try {
-        String stack = log.getAttributes().get(SemanticAttributes.EXCEPTION_STACKTRACE);
-        telemetryItems.add(mapper.map(log, stack, null));
+        String exceptionStacktace =
+            log.getAttributes().get(SemanticAttributes.EXCEPTION_STACKTRACE);
+        String exceptionType = log.getAttributes().get(SemanticAttributes.EXCEPTION_TYPE);
+        String exceptionMessage = log.getAttributes().get(SemanticAttributes.EXCEPTION_MESSAGE);
+        telemetryItems.add(
+            mapper.map(log, exceptionStacktace, exceptionType, exceptionMessage, null));
         OPERATION_LOGGER.recordSuccess();
       } catch (Throwable t) {
         OPERATION_LOGGER.recordFailure(t.getMessage(), t, EXPORTER_MAPPING_ERROR);

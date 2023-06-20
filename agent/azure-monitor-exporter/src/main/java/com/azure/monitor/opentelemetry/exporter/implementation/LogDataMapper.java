@@ -8,6 +8,7 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
 import com.azure.core.util.logging.ClientLogger;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.AbstractTelemetryBuilder;
+import com.azure.monitor.opentelemetry.exporter.implementation.builders.ExceptionDetailBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.ExceptionTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.Exceptions;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.MessageTelemetryBuilder;
@@ -21,6 +22,7 @@ import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.resources.Resource;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.BiConsumer;
 import reactor.util.annotation.Nullable;
@@ -100,11 +102,16 @@ public class LogDataMapper {
     this.telemetryInitializer = telemetryInitializer;
   }
 
-  public TelemetryItem map(LogRecordData log, @Nullable String stack, @Nullable Long itemCount) {
+  public TelemetryItem map(
+      LogRecordData log,
+      @Nullable String stack,
+      @Nullable String type,
+      @Nullable String message,
+      @Nullable Long itemCount) {
     if (stack == null) {
       return createMessageTelemetryItem(log, itemCount);
     } else {
-      return createExceptionTelemetryItem(log, itemCount, stack);
+      return createExceptionTelemetryItem(log, itemCount, stack, type, message);
     }
   }
 
@@ -138,7 +145,7 @@ public class LogDataMapper {
   }
 
   private TelemetryItem createExceptionTelemetryItem(
-      LogRecordData log, @Nullable Long itemCount, String stack) {
+      LogRecordData log, @Nullable Long itemCount, String stack, String type, String message) {
     ExceptionTelemetryBuilder telemetryBuilder = ExceptionTelemetryBuilder.create();
     telemetryInitializer.accept(telemetryBuilder, log.getResource());
 
@@ -151,7 +158,14 @@ public class LogDataMapper {
     Attributes attributes = log.getAttributes();
     MAPPINGS.map(attributes, telemetryBuilder);
 
-    telemetryBuilder.setExceptions(Exceptions.minimalParse(stack));
+    ExceptionDetailBuilder exceptionDetailBuilder = Exceptions.minimalParse(stack).get(0);
+    if (type != null && !type.isEmpty()) {
+      exceptionDetailBuilder.setTypeName(type);
+    }
+    if (message != null && !message.isEmpty()) {
+      exceptionDetailBuilder.setMessage(message);
+    }
+    telemetryBuilder.setExceptions(Collections.singletonList(exceptionDetailBuilder));
     telemetryBuilder.setSeverityLevel(toSeverityLevel(log.getSeverity()));
 
     // set exception-specific properties
