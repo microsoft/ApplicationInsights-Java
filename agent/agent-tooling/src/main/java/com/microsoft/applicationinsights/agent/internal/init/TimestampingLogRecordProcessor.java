@@ -135,5 +135,29 @@ class TimestampingLogRecordProcessor implements LogRecordProcessor {
     public int getTotalAttributeCount() {
       return delegate.getTotalAttributeCount();
     }
+
+    public String toString() {
+      return "SdkLogRecordData{resource="
+          + this.getResource()
+          + ", instrumentationScopeInfo="
+          + this.getInstrumentationScopeInfo()
+          + ", timestampEpochNanos="
+          + this.getTimestampEpochNanos()
+          + ", observedTimestampEpochNanos="
+          + this.getObservedTimestampEpochNanos()
+          + ", spanContext="
+          + this.getSpanContext()
+          + ", severity="
+          + this.getSeverity()
+          + ", severityText="
+          + this.getSeverityText()
+          + ", body="
+          + this.getBody()
+          + ", attributes="
+          + this.getAttributes()
+          + ", totalAttributeCount="
+          + this.getTotalAttributeCount()
+          + "}";
+    }
   }
 }
