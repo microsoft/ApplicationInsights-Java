@@ -136,6 +136,7 @@ class TimestampingLogRecordProcessor implements LogRecordProcessor {
       return delegate.getTotalAttributeCount();
     }
 
+    @Override
     public String toString() {
       return "SdkLogRecordData{resource="
           + this.getResource()
