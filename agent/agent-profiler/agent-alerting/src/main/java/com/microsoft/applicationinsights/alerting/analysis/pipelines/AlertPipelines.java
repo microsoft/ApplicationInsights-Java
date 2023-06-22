@@ -3,17 +3,21 @@
 
 package com.microsoft.applicationinsights.alerting.analysis.pipelines;
 
+import com.microsoft.applicationinsights.alerting.aiconfig.AlertingConfig;
 import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
 import com.microsoft.applicationinsights.alerting.analysis.TimeSource;
 import com.microsoft.applicationinsights.alerting.analysis.aggregations.RollingAverage;
+import com.microsoft.applicationinsights.alerting.analysis.aggregations.ThresholdBreachRatioAggregation;
 import com.microsoft.applicationinsights.alerting.analysis.data.TelemetryDataPoint;
 import com.microsoft.applicationinsights.alerting.analysis.filter.AlertRequestFilter;
 import com.microsoft.applicationinsights.alerting.config.AlertConfiguration;
 import com.microsoft.applicationinsights.alerting.config.AlertMetricType;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.OptionalDouble;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,6 +61,35 @@ public class AlertPipelines {
 
     LOGGER.debug(
         "Set alert configuration for {}: {}", newAlertConfig.getType(), newAlertConfig.toString());
+  }
+
+  public void updateRequestAlertConfig(
+      List<AlertConfiguration> newAlertConfig, TimeSource timeSource) {
+    List<AlertPipeline> requestPipelines =
+        newAlertConfig.stream()
+            .map(
+                alert -> {
+                  AlertingConfig.RequestTrigger trigger = alert.getRequestTrigger();
+
+                  return SingleAlertPipeline.create(
+                      new AlertRequestFilter.RegexRequestNameFilter(trigger.filter.value),
+                      new ThresholdBreachRatioAggregation(
+                          trigger.aggregation.configuration.thresholdMillis,
+                          trigger.aggregation.configuration.minimumSamples,
+                          trigger.aggregation.windowSizeMillis / 1000,
+                          timeSource,
+                          false),
+                      alert,
+                      alertHandler);
+                })
+            .collect(Collectors.toList());
+
+    alertPipelines.put(AlertMetricType.REQUEST, new AlertPipelineMultiplexer(requestPipelines));
+
+    LOGGER.debug(
+        "Set alert configuration for {}: {} pipelines updated",
+        AlertMetricType.REQUEST,
+        newAlertConfig.size());
   }
 
   /** Ensure that alerts contain the required metrics and notify upstream handler. */

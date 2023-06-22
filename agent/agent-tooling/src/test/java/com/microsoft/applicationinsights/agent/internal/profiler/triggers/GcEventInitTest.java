@@ -80,7 +80,8 @@ class GcEventInitTest {
             "--cpu-trigger-enabled true --cpu-threshold 80 --cpu-trigger-profilingDuration 30 --cpu-trigger-cooldown 14400",
             "--memory-trigger-enabled true --memory-threshold 20 --memory-trigger-profilingDuration 120 --memory-trigger-cooldown 14400",
             "--sampling-enabled true --sampling-rate 5 --sampling-profiling-duration 120",
-            "--single --mode immediate --immediate-profiling-duration 120  --expiration 5249157885138288517 --settings-moniker a-settings-moniker");
+            "--single --mode immediate --immediate-profiling-duration 120  --expiration 5249157885138288517 --settings-moniker a-settings-moniker",
+            null);
 
     alertingSubsystem.initialize(config);
     return alertingSubsystem;

@@ -7,8 +7,10 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.util.StdDateFormat;
 import com.google.auto.value.AutoValue;
+import com.microsoft.applicationinsights.alerting.aiconfig.AlertingConfig;
 import java.text.ParseException;
 import java.util.Date;
+import java.util.List;
 import javax.annotation.Nullable;
 
 @AutoValue
@@ -34,7 +36,9 @@ public abstract class ProfilerConfiguration {
       @JsonProperty("collectionPlan") String collectionPlan,
       @JsonProperty("cpuTriggerConfiguration") String cpuTriggerConfiguration,
       @JsonProperty("memoryTriggerConfiguration") String memoryTriggerConfiguration,
-      @JsonProperty("defaultConfiguration") String defaultConfiguration) {
+      @JsonProperty("defaultConfiguration") String defaultConfiguration,
+      @JsonProperty("requestTriggerConfiguration")
+          List<AlertingConfig.RequestTrigger> requestTriggerConfiguration) {
 
     return new AutoValue_ProfilerConfiguration(
         lastModified,
@@ -42,7 +46,8 @@ public abstract class ProfilerConfiguration {
         collectionPlan,
         cpuTriggerConfiguration,
         memoryTriggerConfiguration,
-        defaultConfiguration);
+        defaultConfiguration,
+        requestTriggerConfiguration);
   }
 
   public boolean hasBeenConfigured() {
@@ -64,4 +69,7 @@ public abstract class ProfilerConfiguration {
 
   @Nullable
   public abstract String getDefaultConfiguration();
+
+  @Nullable
+  public abstract List<AlertingConfig.RequestTrigger> getRequestTriggerConfiguration();
 }

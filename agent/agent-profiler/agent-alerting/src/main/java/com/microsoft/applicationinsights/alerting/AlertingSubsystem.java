@@ -15,7 +15,9 @@ import com.microsoft.applicationinsights.alerting.config.CollectionPlanConfigura
 import com.microsoft.applicationinsights.alerting.config.CollectionPlanConfiguration.EngineMode;
 import com.microsoft.applicationinsights.alerting.config.DefaultConfiguration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -44,19 +46,25 @@ public class AlertingSubsystem {
   // Current configuration of the alerting subsystem
   private AlertingConfiguration alertConfig;
 
+  private boolean enableRequestTriggerUpdates;
+
   protected AlertingSubsystem(Consumer<AlertBreach> alertHandler) {
-    this(alertHandler, TimeSource.DEFAULT);
+    this(alertHandler, TimeSource.DEFAULT, false);
   }
 
-  protected AlertingSubsystem(Consumer<AlertBreach> alertHandler, TimeSource timeSource) {
+  protected AlertingSubsystem(
+      Consumer<AlertBreach> alertHandler,
+      TimeSource timeSource,
+      boolean enableRequestTriggerUpdates) {
     this.alertHandler = alertHandler;
-    alertPipelines = new AlertPipelines(alertHandler);
+    this.alertPipelines = new AlertPipelines(alertHandler);
     this.timeSource = timeSource;
+    this.enableRequestTriggerUpdates = enableRequestTriggerUpdates;
   }
 
   public static AlertingSubsystem create(
       Consumer<AlertBreach> alertHandler, TimeSource timeSource) {
-    AlertingSubsystem alertingSubsystem = new AlertingSubsystem(alertHandler, timeSource);
+    AlertingSubsystem alertingSubsystem = new AlertingSubsystem(alertHandler, timeSource, true);
     // init with disabled config
     alertingSubsystem.initialize(
         AlertingConfiguration.create(
@@ -69,7 +77,8 @@ public class AlertingSubsystem {
                 .setExpiration(Instant.now())
                 .setImmediateProfilingDurationSeconds(0)
                 .setSettingsMoniker("")
-                .build()));
+                .build(),
+            new ArrayList<>()));
     return alertingSubsystem;
   }
 
@@ -108,7 +117,15 @@ public class AlertingSubsystem {
           this.alertConfig == null ? null : this.alertConfig.getMemoryAlert();
       updatePipelineConfig(alertingConfig.getMemoryAlert(), oldMemoryConfig);
 
+      if (this.enableRequestTriggerUpdates && alertingConfig.hasRequestAlertConfiguration()) {
+        List<AlertConfiguration> oldRequestConfig =
+            this.alertConfig == null ? null : this.alertConfig.getRequestAlertConfiguration();
+        updateRequestPipelineConfig(
+            alertingConfig.getRequestAlertConfiguration(), oldRequestConfig);
+      }
+
       evaluateManualTrigger(alertingConfig);
+
       this.alertConfig = alertingConfig;
     }
   }
@@ -118,6 +135,13 @@ public class AlertingSubsystem {
       AlertConfiguration newAlertConfig, @Nullable AlertConfiguration oldAlertConfig) {
     if (oldAlertConfig == null || !oldAlertConfig.equals(newAlertConfig)) {
       alertPipelines.updateAlertConfig(newAlertConfig, timeSource);
+    }
+  }
+
+  private void updateRequestPipelineConfig(
+      List<AlertConfiguration> newAlertConfig, @Nullable List<AlertConfiguration> oldAlertConfig) {
+    if (oldAlertConfig == null || !oldAlertConfig.equals(newAlertConfig)) {
+      alertPipelines.updateRequestAlertConfig(newAlertConfig, timeSource);
     }
   }
 
@@ -154,5 +178,9 @@ public class AlertingSubsystem {
 
   public void setPipeline(AlertMetricType type, AlertPipeline alertPipeline) {
     alertPipelines.setAlertPipeline(type, alertPipeline);
+  }
+
+  public void setEnableRequestTriggerUpdates(boolean enableRequestTriggerUpdates) {
+    this.enableRequestTriggerUpdates = enableRequestTriggerUpdates;
   }
 }

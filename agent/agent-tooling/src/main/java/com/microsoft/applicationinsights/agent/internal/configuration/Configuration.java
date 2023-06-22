@@ -1413,7 +1413,7 @@ public class Configuration {
     @Nullable public String serviceProfilerFrontEndPoint = null;
     public boolean enableDiagnostics = false;
     public boolean enableRequestTriggering = false;
-    public RequestTrigger[] requestTriggerEndpoints = {};
+    public List<RequestTrigger> requestTriggerEndpoints = new ArrayList<>();
   }
 
   public static class GcEventConfiguration {

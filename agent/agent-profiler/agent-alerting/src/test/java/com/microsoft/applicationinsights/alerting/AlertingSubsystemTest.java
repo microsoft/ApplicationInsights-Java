@@ -14,6 +14,7 @@ import com.microsoft.applicationinsights.alerting.config.CollectionPlanConfigura
 import com.microsoft.applicationinsights.alerting.config.DefaultConfiguration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import org.junit.jupiter.api.Test;
@@ -51,7 +52,8 @@ class AlertingSubsystemTest {
                 .setExpiration(Instant.now())
                 .setImmediateProfilingDurationSeconds(120)
                 .setSettingsMoniker("a-settings-moniker")
-                .build()));
+                .build(),
+            new ArrayList<>()));
     return monitor;
   }
 
@@ -109,7 +111,8 @@ class AlertingSubsystemTest {
                 .setExpiration(Instant.now().plus(100, ChronoUnit.SECONDS))
                 .setImmediateProfilingDurationSeconds(120)
                 .setSettingsMoniker("a-settings-moniker")
-                .build()));
+                .build(),
+            new ArrayList<>()));
 
     assertThat(called.get().getType()).isEqualTo(AlertMetricType.MANUAL);
   }
@@ -149,7 +152,8 @@ class AlertingSubsystemTest {
                 .setExpiration(Instant.now().minus(100, ChronoUnit.SECONDS))
                 .setImmediateProfilingDurationSeconds(120)
                 .setSettingsMoniker("a-settings-moniker")
-                .build()));
+                .build(),
+            new ArrayList<>()));
 
     assertThat(called.get()).isNull();
   }

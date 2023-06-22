@@ -24,18 +24,21 @@ import com.microsoft.applicationinsights.alerting.analysis.pipelines.AlertPipeli
 import com.microsoft.applicationinsights.alerting.analysis.pipelines.AlertPipelineMultiplexer;
 import com.microsoft.applicationinsights.alerting.config.AlertMetricType;
 import com.microsoft.applicationinsights.diagnostics.DiagnosticEngine;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /** Creates AlertMonitor and wires it up to observe telemetry. */
 public class AlertingSubsystemInit {
 
   // TODO (trask) inject instead of using global
   private static volatile AlertingSubsystem alertingSubsystem;
+
+  private static final Logger logger = LoggerFactory.getLogger(AlertingSubsystem.class);
 
   public static AlertingSubsystem create(
       Configuration.ProfilerConfiguration configuration,
@@ -54,8 +57,14 @@ public class AlertingSubsystemInit {
     alertingSubsystem = AlertingSubsystem.create(alertAction, TimeSource.DEFAULT);
 
     if (configuration.enableRequestTriggering) {
+      if (!configuration.requestTriggerEndpoints.isEmpty()) {
+        alertingSubsystem.setEnableRequestTriggerUpdates(false);
+        logger.info(
+            "Request Trigger configuration has been provided in settings, trigger settings provided via the Portal UI will be ignored");
+      }
+
       List<AlertPipeline> spanPipelines =
-          Arrays.stream(configuration.requestTriggerEndpoints)
+          configuration.requestTriggerEndpoints.stream()
               .map(it -> RequestAlertPipelineBuilder.build(it, alertAction, TimeSource.DEFAULT))
               .collect(Collectors.toList());
 
