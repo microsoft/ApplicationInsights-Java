@@ -11,6 +11,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.logging.Operation
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.QuickPulse;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.SamplingOverride;
+import com.microsoft.applicationinsights.agent.internal.init.TimestampingLogRecordProcessor;
 import com.microsoft.applicationinsights.agent.internal.sampling.SamplingOverrides;
 import com.microsoft.applicationinsights.agent.internal.telemetry.BatchItemProcessor;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
@@ -77,7 +78,9 @@ public class AgentLogExporter implements LogRecordExporter {
       return CompletableResultCode.ofFailure();
     }
     for (LogRecordData log : logs) {
-      logger.debug("exporting log: {}", log);
+      TimestampingLogRecordProcessor.TimestampedLogRecordData timestampedLogRecordData =
+          (TimestampingLogRecordProcessor.TimestampedLogRecordData) log;
+      logger.debug("exporting log: {}", timestampedLogRecordData);
       try {
         int severityNumber = log.getSeverity().getSeverityNumber();
         if (severityNumber < severityThreshold) {

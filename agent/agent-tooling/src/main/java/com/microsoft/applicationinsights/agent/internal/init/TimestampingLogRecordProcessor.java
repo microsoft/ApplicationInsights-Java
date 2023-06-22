@@ -22,7 +22,7 @@ import javax.annotation.Nullable;
 
 // this is just needed temporarily until
 // https://github.com/open-telemetry/opentelemetry-java-instrumentation/pull/8761
-class TimestampingLogRecordProcessor implements LogRecordProcessor {
+public class TimestampingLogRecordProcessor implements LogRecordProcessor {
 
   private final LogRecordProcessor delegate;
 
@@ -71,7 +71,7 @@ class TimestampingLogRecordProcessor implements LogRecordProcessor {
     }
   }
 
-  private static class TimestampedLogRecordData implements LogRecordData {
+  public static class TimestampedLogRecordData implements LogRecordData {
 
     private final LogRecordData delegate;
     private final Instant timestamp;
