@@ -58,7 +58,7 @@ public class AlertingSubsystemInit {
 
     if (configuration.enableRequestTriggering) {
       if (!configuration.requestTriggerEndpoints.isEmpty()) {
-        alertingSubsystem.setDisableRequestTriggerUpdates(true);
+        alertingSubsystem.setEnableRequestTriggerUpdates(false);
         logger.info(
             "Request Trigger configuration has been provided in settings, trigger settings provided via the Portal UI will be ignored");
       }

@@ -37,6 +37,10 @@ public abstract class AlertingConfiguration {
     // getDefaultConfiguration().getSamplingEnabled();
   }
 
+  public boolean hasRequestAlertConfiguration() {
+    return getRequestAlertConfiguration() != null && !getRequestAlertConfiguration().isEmpty();
+  }
+
   // Alert configuration for CPU telemetry
   public abstract AlertConfiguration getCpuAlert();
 

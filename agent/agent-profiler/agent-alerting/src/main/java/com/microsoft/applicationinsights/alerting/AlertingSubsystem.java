@@ -46,7 +46,7 @@ public class AlertingSubsystem {
   // Current configuration of the alerting subsystem
   private AlertingConfiguration alertConfig;
 
-  private boolean disableRequestTriggerUpdates;
+  private boolean enableRequestTriggerUpdates;
 
   protected AlertingSubsystem(Consumer<AlertBreach> alertHandler) {
     this(alertHandler, TimeSource.DEFAULT, false);
@@ -55,16 +55,16 @@ public class AlertingSubsystem {
   protected AlertingSubsystem(
       Consumer<AlertBreach> alertHandler,
       TimeSource timeSource,
-      boolean disableRequestTriggerUpdates) {
+      boolean enableRequestTriggerUpdates) {
     this.alertHandler = alertHandler;
     this.alertPipelines = new AlertPipelines(alertHandler);
     this.timeSource = timeSource;
-    this.disableRequestTriggerUpdates = disableRequestTriggerUpdates;
+    this.enableRequestTriggerUpdates = enableRequestTriggerUpdates;
   }
 
   public static AlertingSubsystem create(
       Consumer<AlertBreach> alertHandler, TimeSource timeSource) {
-    AlertingSubsystem alertingSubsystem = new AlertingSubsystem(alertHandler, timeSource, false);
+    AlertingSubsystem alertingSubsystem = new AlertingSubsystem(alertHandler, timeSource, true);
     // init with disabled config
     alertingSubsystem.initialize(
         AlertingConfiguration.create(
@@ -117,9 +117,7 @@ public class AlertingSubsystem {
           this.alertConfig == null ? null : this.alertConfig.getMemoryAlert();
       updatePipelineConfig(alertingConfig.getMemoryAlert(), oldMemoryConfig);
 
-      if (!this.disableRequestTriggerUpdates
-          && alertingConfig.getRequestAlertConfiguration() != null
-          && !alertingConfig.getRequestAlertConfiguration().isEmpty()) {
+      if (this.enableRequestTriggerUpdates && alertingConfig.hasRequestAlertConfiguration()) {
         List<AlertConfiguration> oldRequestConfig =
             this.alertConfig == null ? null : this.alertConfig.getRequestAlertConfiguration();
         updateRequestPipelineConfig(
@@ -182,7 +180,7 @@ public class AlertingSubsystem {
     alertPipelines.setAlertPipeline(type, alertPipeline);
   }
 
-  public void setDisableRequestTriggerUpdates(boolean disableRequestTriggerUpdates) {
-    this.disableRequestTriggerUpdates = disableRequestTriggerUpdates;
+  public void setEnableRequestTriggerUpdates(boolean enableRequestTriggerUpdates) {
+    this.enableRequestTriggerUpdates = enableRequestTriggerUpdates;
   }
 }
