@@ -78,9 +78,13 @@ public class AgentLogExporter implements LogRecordExporter {
       return CompletableResultCode.ofFailure();
     }
     for (LogRecordData log : logs) {
-      TimestampingLogRecordProcessor.TimestampedLogRecordData timestampedLogRecordData =
-          (TimestampingLogRecordProcessor.TimestampedLogRecordData) log;
-      logger.debug("exporting log: {}", timestampedLogRecordData);
+      if (log instanceof TimestampingLogRecordProcessor.TimestampedLogRecordData) {
+        TimestampingLogRecordProcessor.TimestampedLogRecordData timestampedLogRecordData =
+            (TimestampingLogRecordProcessor.TimestampedLogRecordData) log;
+        logger.debug("exporting log: {}", timestampedLogRecordData);
+      } else {
+        logger.debug("exporting log: {}", log);
+      }
       try {
         int severityNumber = log.getSeverity().getSeverityNumber();
         if (severityNumber < severityThreshold) {
