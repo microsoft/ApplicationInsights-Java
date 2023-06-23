@@ -215,6 +215,7 @@ public class Configuration {
     public EnabledByDefaultInstrumentation springScheduling = new EnabledByDefaultInstrumentation();
     public EnabledByDefaultInstrumentation log4jAppender = new EnabledByDefaultInstrumentation();
     public EnabledByDefaultInstrumentation logbackAppender = new EnabledByDefaultInstrumentation();
+  }
 
   public static class DatabaseInstrumentationWithMasking {
     public boolean enabled = true;
