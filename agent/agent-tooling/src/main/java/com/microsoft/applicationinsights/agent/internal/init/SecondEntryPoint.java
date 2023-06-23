@@ -369,6 +369,12 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
     if (!config.instrumentation.springScheduling.enabled) {
       featureList.add(Feature.SPRING_SCHEDULING_DISABLED);
     }
+    if (!config.instrumentation.log4jAppender.enabled) {
+      featureList.add(Feature.LOG4J_APPENDER_DISABLED);
+    }
+    if (!config.instrumentation.logbackAppender.enabled) {
+      featureList.add(Feature.LOGBACK_APPENDER_DISABLED);
+    }
 
     // preview instrumentation
     if (!config.preview.instrumentation.akka.enabled) {

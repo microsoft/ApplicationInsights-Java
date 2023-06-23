@@ -53,22 +53,38 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
         configuration.preview.captureHttpClientHeaders.responseHeaders);
 
     // enable capturing all mdc properties
-    properties.put(
-        "otel.instrumentation.logback-appender.experimental.capture-mdc-attributes", "*");
-    properties.put("otel.instrumentation.log4j-appender.experimental.capture-mdc-attributes", "*");
-    properties.put(
-        "otel.instrumentation.log4j-appender.experimental.capture-context-data-attributes", "*");
+    if (configuration.instrumentation.log4jAppender.enabled) {
+      properties.put("otel.instrumentation.log4j-appender.experimental.capture-mdc-attributes", "*");
+      properties.put(
+          "otel.instrumentation.log4j-appender.experimental.capture-context-data-attributes", "*");
+      properties.put(
+          "otel.instrumentation.log4j-appender.experimental.capture-map-message-attributes", "true");
+    } else {
+      properties.put(
+          "otel.instrumentation.log4j-appender.experimental.capture-map-message-attributes", "false");
+    }
+
+    if (configuration.instrumentation.logbackAppender.enabled) {
+      properties.put(
+          "otel.instrumentation.logback-appender.experimental.capture-mdc-attributes", "*");
+    }
     properties.put(
         "otel.instrumentation.jboss-logmanager.experimental.capture-mdc-attributes", "*");
-
-    properties.put(
-        "otel.instrumentation.log4j-appender.experimental.capture-map-message-attributes", "true");
 
     // enable thread.name
     properties.put("otel.instrumentation.java-util-logging.experimental-log-attributes", "true");
     properties.put("otel.instrumentation.jboss-logmanager.experimental-log-attributes", "true");
-    properties.put("otel.instrumentation.log4j-appender.experimental-log-attributes", "true");
-    properties.put("otel.instrumentation.logback-appender.experimental-log-attributes", "true");
+    if (configuration.instrumentation.log4jAppender.enabled) {
+      properties.put("otel.instrumentation.log4j-appender.experimental-log-attributes", "true");
+    } else {
+      properties.put("otel.instrumentation.log4j-appender.experimental-log-attributes", "false");
+    }
+
+    if (configuration.instrumentation.logbackAppender.enabled) {
+      properties.put("otel.instrumentation.logback-appender.experimental-log-attributes", "true");
+    } else {
+      properties.put("otel.instrumentation.logback-appender.experimental-log-attributes", "false");
+    }
 
     // custom instrumentation
     if (!configuration.preview.customInstrumentation.isEmpty()) {
@@ -150,10 +166,20 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
     properties.put("otel.instrumentation.kotlinx-coroutines.enabled", "true");
     properties.put("otel.instrumentation.liberty.enabled", "true");
     properties.put("otel.instrumentation.liberty-dispatcher.enabled", "true");
-    properties.put("otel.instrumentation.log4j-appender.enabled", "true");
-    if (otelConfig.getBoolean("otel.instrumentation.logback-appender.enabled", true)) {
-      properties.put("otel.instrumentation.logback-appender.enabled", "true");
+    if (config.instrumentation.log4jAppender.enabled) {
+      properties.put("otel.instrumentation.log4j-appender.enabled", "true");
+    } else {
+      properties.put("otel.instrumentation.log4j-appender.enabled", "false");
     }
+    if (config.instrumentation.logbackAppender.enabled) {
+      if (otelConfig.getBoolean("otel.instrumentation.logback-appender.enabled", true)) {
+        properties.put("otel.instrumentation.logback-appender.enabled", "true");
+      }
+    } else {
+      properties.put("otel.instrumentation.logback-appender.enabled", "false");
+    }
+
+    // TODO (heya) not sure about these 3 below
     properties.put("otel.instrumentation.log4j-mdc.enabled", "true");
     properties.put("otel.instrumentation.log4j-context-data.enabled", "true");
     properties.put("otel.instrumentation.logback-mdc.enabled", "true");

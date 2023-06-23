@@ -49,7 +49,9 @@ public enum Feature {
   TELEMETRY_PROCESSOR_ENABLED(33),
   SDK_2X_BRIDGE_VIA_3X_AGENT(34), // track 2.x bridge usage via 3.x codeless agent
   PROFILER_ENABLED(35),
-  BROWSER_SDK_LOADER(36); // track javascript snippet
+  BROWSER_SDK_LOADER(36), // track javascript snippet
+  LOG4J_APPENDER_DISABLED(37),
+  LOGBACK_APPENDER_DISABLED(38);
 
   private static final Map<String, Feature> javaVendorFeatureMap;
 
