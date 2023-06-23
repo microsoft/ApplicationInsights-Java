@@ -40,7 +40,7 @@ dependencies {
 
   testImplementation("com.azure:azure-data-appconfiguration:1.4.5")
   testImplementation("com.azure:azure-messaging-eventhubs:5.15.5")
-  testImplementation("com.azure:azure-messaging-eventhubs-checkpointstore-blob:1.16.6")
+  testImplementation("com.azure:azure-messaging-eventhubs-checkpointstore-blob:1.16.7")
 
   testImplementation("com.squareup.okio:okio:3.3.0")
 
