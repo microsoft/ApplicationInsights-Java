@@ -153,5 +153,3 @@ hideFromDependabot(":smoke-tests:apps:WebFlux")
 fun hideFromDependabot(projectPath: String) {
   include(projectPath)
 }
-include("smoke-tests:apps:OpenTelemetryApiLogBridge")
-findProject(":smoke-tests:apps:OpenTelemetryApiLogBridge")?.name = "OpenTelemetryApiLogBridge"
