@@ -102,16 +102,12 @@ public class LogDataMapper {
     this.telemetryInitializer = telemetryInitializer;
   }
 
-  public TelemetryItem map(
-      LogRecordData log,
-      @Nullable String stack,
-      @Nullable String type,
-      @Nullable String message,
-      @Nullable Long itemCount) {
+  public TelemetryItem map(LogRecordData log, @Nullable Long itemCount) {
+    String stack = log.getAttributes().get(SemanticAttributes.EXCEPTION_STACKTRACE);
     if (stack == null) {
       return createMessageTelemetryItem(log, itemCount);
     } else {
-      return createExceptionTelemetryItem(log, itemCount, stack, type, message);
+      return createExceptionTelemetryItem(log, itemCount);
     }
   }
 
@@ -144,8 +140,7 @@ public class LogDataMapper {
     return telemetryBuilder.build();
   }
 
-  private TelemetryItem createExceptionTelemetryItem(
-      LogRecordData log, @Nullable Long itemCount, String stack, String type, String message) {
+  private TelemetryItem createExceptionTelemetryItem(LogRecordData log, @Nullable Long itemCount) {
     ExceptionTelemetryBuilder telemetryBuilder = ExceptionTelemetryBuilder.create();
     telemetryInitializer.accept(telemetryBuilder, log.getResource());
 
@@ -158,10 +153,14 @@ public class LogDataMapper {
     Attributes attributes = log.getAttributes();
     MAPPINGS.map(attributes, telemetryBuilder);
 
-    ExceptionDetailBuilder exceptionDetailBuilder = Exceptions.minimalParse(stack).get(0);
+    String stack = log.getAttributes().get(SemanticAttributes.EXCEPTION_STACKTRACE);
+    List<ExceptionDetailBuilder> builders = Exceptions.minimalParse(stack);
+    ExceptionDetailBuilder exceptionDetailBuilder = builders.get(0);
+    String type = log.getAttributes().get(SemanticAttributes.EXCEPTION_TYPE);
     if (type != null && !type.isEmpty()) {
       exceptionDetailBuilder.setTypeName(type);
     }
+    String message = log.getAttributes().get(SemanticAttributes.EXCEPTION_MESSAGE);
     if (message != null && !message.isEmpty()) {
       exceptionDetailBuilder.setMessage(message);
     }

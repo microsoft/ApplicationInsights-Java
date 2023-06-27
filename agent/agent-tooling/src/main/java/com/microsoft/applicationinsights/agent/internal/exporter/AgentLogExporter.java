@@ -111,17 +111,7 @@ public class AgentLogExporter implements LogRecordExporter {
           itemCount = Math.round(100.0 / samplingPercentage);
         }
 
-        String type =
-            log.getAttributes()
-                .get(
-                    com.azure.monitor.opentelemetry.exporter.implementation.SemanticAttributes
-                        .EXCEPTION_TYPE);
-        String message =
-            log.getAttributes()
-                .get(
-                    com.azure.monitor.opentelemetry.exporter.implementation.SemanticAttributes
-                        .EXCEPTION_MESSAGE);
-        TelemetryItem telemetryItem = mapper.map(log, stack, type, message, itemCount);
+        TelemetryItem telemetryItem = mapper.map(log, itemCount);
         telemetryItemConsumer.accept(telemetryItem);
 
         exportingLogLogger.recordSuccess();
