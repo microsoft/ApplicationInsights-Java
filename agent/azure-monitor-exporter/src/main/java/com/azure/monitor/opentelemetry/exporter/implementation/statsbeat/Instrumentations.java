@@ -27,7 +27,7 @@ public class Instrumentations {
     // TODO (trask) start capturing this
     INSTRUMENTATION_MAP.put("io.opentelemetry.applicationinsights-web-2.3", 4);
     INSTRUMENTATION_MAP.put("io.opentelemetry.tomcat-7.0", 5);
-    INSTRUMENTATION_MAP.put("Azure-OpenTelemetry", 6); // bridged by azure-core-1.14 module
+    INSTRUMENTATION_MAP.put(AZURE_OPENTELEMETRY, 6); // bridged by azure-core-1.14 module
     INSTRUMENTATION_MAP.put("io.opentelemetry.cassandra-3.0", 7);
     INSTRUMENTATION_MAP.put("io.opentelemetry.cassandra-4.0", 8);
     INSTRUMENTATION_MAP.put("io.opentelemetry.java-http-client", 9);

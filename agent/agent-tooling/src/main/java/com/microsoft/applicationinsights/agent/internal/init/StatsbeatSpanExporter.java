@@ -3,13 +3,13 @@
 
 package com.microsoft.applicationinsights.agent.internal.init;
 
+import static com.azure.monitor.opentelemetry.exporter.implementation.statsbeat.Instrumentations.AZURE_OPENTELEMETRY;
+
 import com.azure.monitor.opentelemetry.exporter.implementation.statsbeat.StatsbeatModule;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.Collection;
-
-import static com.azure.monitor.opentelemetry.exporter.implementation.statsbeat.Instrumentations.AZURE_OPENTELEMETRY;
 
 public class StatsbeatSpanExporter implements SpanExporter {
 
@@ -28,9 +28,7 @@ public class StatsbeatSpanExporter implements SpanExporter {
       if (instrumentationScopeName.startsWith("com.azure")) {
         instrumentationScopeName = AZURE_OPENTELEMETRY;
       }
-      statsbeatModule
-          .getInstrumentationStatsbeat()
-          .addInstrumentation(instrumentationScopeName);
+      statsbeatModule.getInstrumentationStatsbeat().addInstrumentation(instrumentationScopeName);
     }
     return delegate.export(spans);
   }
