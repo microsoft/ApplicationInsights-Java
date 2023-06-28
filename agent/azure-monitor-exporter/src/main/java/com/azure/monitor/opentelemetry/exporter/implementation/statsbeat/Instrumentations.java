@@ -12,8 +12,9 @@ import org.slf4j.LoggerFactory;
 
 // this class is not currently implemented as an enum (similar to Feature)
 // because instrumentations may be more dynamic than features
-class Instrumentations {
+public class Instrumentations {
 
+  public static final String AZURE_OPENTELEMETRY = "Azure-OpenTelemetry";
   private static final Logger logger = LoggerFactory.getLogger(Instrumentations.class);
   private static final Map<String, Integer> INSTRUMENTATION_MAP;
 

@@ -9,6 +9,8 @@ import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.Collection;
 
+import static com.azure.monitor.opentelemetry.exporter.implementation.statsbeat.Instrumentations.AZURE_OPENTELEMETRY;
+
 public class StatsbeatSpanExporter implements SpanExporter {
 
   private final SpanExporter delegate;
@@ -22,9 +24,13 @@ public class StatsbeatSpanExporter implements SpanExporter {
   @Override
   public CompletableResultCode export(Collection<SpanData> spans) {
     for (SpanData span : spans) {
+      String instrumentationScopeName = span.getInstrumentationScopeInfo().getName();
+      if (instrumentationScopeName.startsWith("com.azure")) {
+        instrumentationScopeName = AZURE_OPENTELEMETRY;
+      }
       statsbeatModule
           .getInstrumentationStatsbeat()
-          .addInstrumentation(span.getInstrumentationScopeInfo().getName());
+          .addInstrumentation(instrumentationScopeName);
     }
     return delegate.export(spans);
   }
