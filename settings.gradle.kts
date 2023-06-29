@@ -33,7 +33,7 @@ gradleEnterprise {
   }
 }
 
-rootProject.name = "applicationinsights-java"
+rootProject.name = "ApplicationInsights-Java"
 
 val buildNative = System.getProperty("ai.etw.native.build") != null && Os.isFamily(Os.FAMILY_WINDOWS)
 if (buildNative) {
