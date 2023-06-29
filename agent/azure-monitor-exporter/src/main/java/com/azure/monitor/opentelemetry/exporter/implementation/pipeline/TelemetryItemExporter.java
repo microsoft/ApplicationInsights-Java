@@ -3,7 +3,6 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation.pipeline;
 
-import static com.azure.monitor.opentelemetry.exporter.implementation.utils.AksResourceAttributes.otelResourceAttributes;
 import static com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMsgId.TELEMETRY_ITEM_EXPORTER_ERROR;
 
 import com.azure.core.util.logging.ClientLogger;
@@ -12,6 +11,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.builders.MetricTe
 import com.azure.monitor.opentelemetry.exporter.implementation.logging.OperationLogger;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.AksResourceAttributes;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.io.SerializedString;
@@ -150,7 +150,8 @@ public class TelemetryItemExporter {
     // Don't send _OTELRESOURCE_ custom metric when OTEL_RESOURCE_ATTRIBUTES env var is empty
     // Don't send _OTELRESOURCE_ custom metric to Statsbeat yet
     // insert _OTELRESOURCE_ at the beginning of each batch
-    if (!otelResourceAttributes.isEmpty() && !"Statsbeat".equals(telemetryItems.get(0).getName())) {
+    if (!AksResourceAttributes.otelResourceAttributes.isEmpty()
+        && !"Statsbeat".equals(telemetryItems.get(0).getName())) {
       telemetryItems.add(
           0, createOtelResourceMetric(telemetryItems.get(0).getTags(), connectionString));
     }
@@ -180,7 +181,8 @@ public class TelemetryItemExporter {
         existingTags.get(ContextTagKeys.AI_INTERNAL_SDK_VERSION.toString()));
 
     // add attributes from OTEL_RESOURCE_ATTRIBUTES
-    for (Map.Entry<String, String> entry : otelResourceAttributes.entrySet()) {
+    for (Map.Entry<String, String> entry :
+        AksResourceAttributes.otelResourceAttributes.entrySet()) {
       builder.addProperty(entry.getKey(), entry.getValue());
     }
     return builder.build();

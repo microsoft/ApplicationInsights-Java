@@ -44,6 +44,7 @@ public final class AksResourceAttributes {
         && otelResourceAttributes.get(CLOUD_PLATFORM.toString()).equals(AZURE_AKS);
   }
 
+  // https://github.com/aep-health-and-standards/Telemetry-Collection-Spec/blob/main/OpenTelemetry/resource/resourceMapping.md#aicloudrole-1
   public static String getAksRoleName() {
     String serviceName = otelResourceAttributes.get(SERVICE_NAME.toString());
     if (!Strings.isNullOrEmpty(serviceName) && !serviceName.startsWith(UNKNOWN_SERVICE)) {
@@ -76,6 +77,7 @@ public final class AksResourceAttributes {
     return serviceName; // default to "unknown_service:java" when no attribute is available
   }
 
+  // https://github.com/aep-health-and-standards/Telemetry-Collection-Spec/blob/main/OpenTelemetry/resource/resourceMapping.md#aicloudroleinstance-1
   public static String getAksRoleInstance() {
     String serviceInstanceId = otelResourceAttributes.get(SERVICE_INSTANCE_ID.toString());
     if (!Strings.isNullOrEmpty(serviceInstanceId)) {
@@ -88,6 +90,8 @@ public final class AksResourceAttributes {
     return HostName.get(); // default to hostname
   }
 
+  // TODO remove manual parsing once SDK 1.28.0 is released
+  // (see https://github.com/open-telemetry/opentelemetry-java/pull/5554)
   // visible for testing
   public static Map<String, String> initOtelResourceAttributes() {
     Map<String, String> originalMap =
