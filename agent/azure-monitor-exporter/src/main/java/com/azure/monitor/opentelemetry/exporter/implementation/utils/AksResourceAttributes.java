@@ -40,8 +40,7 @@ public final class AksResourceAttributes {
   }
 
   public static boolean isAks() {
-    return otelResourceAttributes.get(CLOUD_PLATFORM.toString()) != null
-        && otelResourceAttributes.get(CLOUD_PLATFORM.toString()).equals(AZURE_AKS);
+    return AZURE_AKS.equals(otelResourceAttributes.get(CLOUD_PLATFORM.toString()));
   }
 
   // https://github.com/aep-health-and-standards/Telemetry-Collection-Spec/blob/main/OpenTelemetry/resource/resourceMapping.md#aicloudrole-1
