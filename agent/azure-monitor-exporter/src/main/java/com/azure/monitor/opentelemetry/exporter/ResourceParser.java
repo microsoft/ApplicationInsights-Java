@@ -3,6 +3,10 @@
 
 package com.azure.monitor.opentelemetry.exporter;
 
+import static com.azure.monitor.opentelemetry.exporter.implementation.utils.AksResourceAttributes.getAksRoleInstance;
+import static com.azure.monitor.opentelemetry.exporter.implementation.utils.AksResourceAttributes.getAksRoleName;
+import static com.azure.monitor.opentelemetry.exporter.implementation.utils.AksResourceAttributes.isAks;
+
 import com.azure.core.util.Configuration;
 import com.azure.monitor.opentelemetry.exporter.implementation.ResourceAttributes;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.AbstractTelemetryBuilder;
@@ -17,6 +21,13 @@ final class ResourceParser {
 
   static void updateRoleNameAndInstance(
       AbstractTelemetryBuilder builder, Resource resource, Configuration configuration) {
+
+    // update AKS role name and role instance
+    if (isAks()) {
+      builder.addTag(ContextTagKeys.AI_CLOUD_ROLE.toString(), getAksRoleName());
+      builder.addTag(ContextTagKeys.AI_CLOUD_ROLE_INSTANCE.toString(), getAksRoleInstance());
+      return;
+    }
 
     Map<String, String> existingTags = builder.build().getTags();
     if (existingTags == null

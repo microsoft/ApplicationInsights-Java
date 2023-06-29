@@ -3,6 +3,7 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation.pipeline;
 
+import static com.azure.monitor.opentelemetry.exporter.implementation.utils.AksResourceAttributes.OTEL_RESOURCE_ATTRIBUTES;
 import static com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMsgId.TELEMETRY_ITEM_EXPORTER_ERROR;
 
 import com.azure.core.util.logging.ClientLogger;
@@ -16,14 +17,10 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.io.SerializedString;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.io.IOException;
 import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -54,8 +51,6 @@ public class TelemetryItemExporter {
 
   private static final OperationLogger encodeBatchOperationLogger =
       new OperationLogger(TelemetryItemExporter.class, "Encoding telemetry batch into json");
-
-  private static final Map<String, String> OTEL_RESOURCE_ATTRIBUTES = initOtelResourceAttributes();
 
   private static ObjectMapper createObjectMapper() {
     ObjectMapper mapper = new ObjectMapper();
@@ -118,25 +113,6 @@ public class TelemetryItemExporter {
       result.addAll(roleNameGroupings.values());
     }
     return result;
-  }
-
-  // visible for testing
-  static Map<String, String> initOtelResourceAttributes() {
-    Map<String, String> originalMap =
-        DefaultConfigProperties.create(Collections.emptyMap()).getMap("otel.resource.attributes");
-    Map<String, String> decodedMap = new HashMap<>(originalMap.size());
-    // Attributes specified via otel.resource.attributes follow the W3C Baggage spec and
-    // characters outside the baggage-octet range are percent encoded
-    // https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/resource/sdk.md#specifying-resource-information-via-an-environment-variable
-    originalMap.forEach(
-        (key, value) -> {
-          try {
-            decodedMap.put(key, URLDecoder.decode(value, StandardCharsets.UTF_8.displayName()));
-          } catch (UnsupportedEncodingException e) {
-            logger.warning("Fail to decode OTEL_RESOURCE_ATTRIBUTES value.", e);
-          }
-        });
-    return decodedMap;
   }
 
   private CompletableResultCode maybeAddToActiveExportResults(List<CompletableResultCode> results) {
