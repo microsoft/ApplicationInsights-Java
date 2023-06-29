@@ -3,7 +3,7 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation.pipeline;
 
-import static com.azure.monitor.opentelemetry.exporter.implementation.utils.AksResourceAttributes.OTEL_RESOURCE_ATTRIBUTES;
+import static com.azure.monitor.opentelemetry.exporter.implementation.utils.AksResourceAttributes.otelResourceAttributes;
 import static com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMsgId.TELEMETRY_ITEM_EXPORTER_ERROR;
 
 import com.azure.core.util.logging.ClientLogger;
@@ -150,8 +150,7 @@ public class TelemetryItemExporter {
     // Don't send _OTELRESOURCE_ custom metric when OTEL_RESOURCE_ATTRIBUTES env var is empty
     // Don't send _OTELRESOURCE_ custom metric to Statsbeat yet
     // insert _OTELRESOURCE_ at the beginning of each batch
-    if (!OTEL_RESOURCE_ATTRIBUTES.isEmpty()
-        && !"Statsbeat".equals(telemetryItems.get(0).getName())) {
+    if (!otelResourceAttributes.isEmpty() && !"Statsbeat".equals(telemetryItems.get(0).getName())) {
       telemetryItems.add(
           0, createOtelResourceMetric(telemetryItems.get(0).getTags(), connectionString));
     }
@@ -181,7 +180,7 @@ public class TelemetryItemExporter {
         existingTags.get(ContextTagKeys.AI_INTERNAL_SDK_VERSION.toString()));
 
     // add attributes from OTEL_RESOURCE_ATTRIBUTES
-    for (Map.Entry<String, String> entry : OTEL_RESOURCE_ATTRIBUTES.entrySet()) {
+    for (Map.Entry<String, String> entry : otelResourceAttributes.entrySet()) {
       builder.addProperty(entry.getKey(), entry.getValue());
     }
     return builder.build();

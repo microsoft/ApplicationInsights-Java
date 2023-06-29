@@ -15,11 +15,12 @@ import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Map;
 
-final class ResourceParser {
+public final class ResourceParser {
 
   private static final String DEFAULT_SERVICE_NAME = "unknown_service:java";
 
-  static void updateRoleNameAndInstance(
+  // visible for testing
+  public static void updateRoleNameAndInstance(
       AbstractTelemetryBuilder builder, Resource resource, Configuration configuration) {
 
     // update AKS role name and role instance

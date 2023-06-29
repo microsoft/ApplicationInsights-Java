@@ -28,39 +28,48 @@ public final class AksResourceAttributes {
   private static final String AZURE_AKS = "azure_aks";
   private static final String UNKNOWN_SERVICE = "unknown_service";
   private static final ClientLogger logger = new ClientLogger(AksResourceAttributes.class);
-  public static final Map<String, String> OTEL_RESOURCE_ATTRIBUTES = initOtelResourceAttributes();
+  public static Map<String, String> otelResourceAttributes;
+
+  static {
+    otelResourceAttributes = initOtelResourceAttributes();
+  }
+
+  // visible for tests only
+  static void reloadOtelResourceAttributes() {
+    otelResourceAttributes = initOtelResourceAttributes();
+  }
 
   public static boolean isAks() {
-    return OTEL_RESOURCE_ATTRIBUTES.get(CLOUD_PLATFORM.toString()) != null
-        && OTEL_RESOURCE_ATTRIBUTES.get(CLOUD_PLATFORM.toString()).equals(AZURE_AKS);
+    return otelResourceAttributes.get(CLOUD_PLATFORM.toString()) != null
+        && otelResourceAttributes.get(CLOUD_PLATFORM.toString()).equals(AZURE_AKS);
   }
 
   public static String getAksRoleName() {
-    String serviceName = OTEL_RESOURCE_ATTRIBUTES.get(SERVICE_NAME.toString());
+    String serviceName = otelResourceAttributes.get(SERVICE_NAME.toString());
     if (!Strings.isNullOrEmpty(serviceName) && !serviceName.startsWith(UNKNOWN_SERVICE)) {
       return serviceName;
     }
-    String k8sDeploymentName = OTEL_RESOURCE_ATTRIBUTES.get(K8S_DEPLOYMENT_NAME.toString());
+    String k8sDeploymentName = otelResourceAttributes.get(K8S_DEPLOYMENT_NAME.toString());
     if (!Strings.isNullOrEmpty(k8sDeploymentName)) {
       return k8sDeploymentName;
     }
-    String k8sReplicaSetName = OTEL_RESOURCE_ATTRIBUTES.get(K8S_REPLICASET_NAME.toString());
+    String k8sReplicaSetName = otelResourceAttributes.get(K8S_REPLICASET_NAME.toString());
     if (!Strings.isNullOrEmpty(k8sReplicaSetName)) {
       return k8sReplicaSetName;
     }
-    String k8sStatefulSetName = OTEL_RESOURCE_ATTRIBUTES.get(K8S_STATEFULSET_NAME.toString());
+    String k8sStatefulSetName = otelResourceAttributes.get(K8S_STATEFULSET_NAME.toString());
     if (!Strings.isNullOrEmpty(k8sStatefulSetName)) {
       return k8sStatefulSetName;
     }
-    String k8sJobName = OTEL_RESOURCE_ATTRIBUTES.get(K8S_JOB_NAME.toString());
+    String k8sJobName = otelResourceAttributes.get(K8S_JOB_NAME.toString());
     if (!Strings.isNullOrEmpty(k8sJobName)) {
       return k8sJobName;
     }
-    String k8sCronJobName = OTEL_RESOURCE_ATTRIBUTES.get(K8S_CRONJOB_NAME.toString());
+    String k8sCronJobName = otelResourceAttributes.get(K8S_CRONJOB_NAME.toString());
     if (!Strings.isNullOrEmpty(k8sCronJobName)) {
       return k8sCronJobName;
     }
-    String k8sDaemonSetName = OTEL_RESOURCE_ATTRIBUTES.get(K8S_DAEMONSET_NAME.toString());
+    String k8sDaemonSetName = otelResourceAttributes.get(K8S_DAEMONSET_NAME.toString());
     if (!Strings.isNullOrEmpty(k8sDaemonSetName)) {
       return k8sDaemonSetName;
     }
@@ -68,11 +77,11 @@ public final class AksResourceAttributes {
   }
 
   public static String getAksRoleInstance() {
-    String serviceInstanceId = OTEL_RESOURCE_ATTRIBUTES.get(SERVICE_INSTANCE_ID.toString());
+    String serviceInstanceId = otelResourceAttributes.get(SERVICE_INSTANCE_ID.toString());
     if (!Strings.isNullOrEmpty(serviceInstanceId)) {
       return serviceInstanceId;
     }
-    String k8sPodName = OTEL_RESOURCE_ATTRIBUTES.get(K8S_POD_NAME.toString());
+    String k8sPodName = otelResourceAttributes.get(K8S_POD_NAME.toString());
     if (!Strings.isNullOrEmpty(k8sPodName)) {
       return k8sPodName;
     }
