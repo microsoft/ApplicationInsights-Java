@@ -25,7 +25,7 @@ public class StatsbeatSpanExporter implements SpanExporter {
   public CompletableResultCode export(Collection<SpanData> spans) {
     for (SpanData span : spans) {
       String instrumentationScopeName = span.getInstrumentationScopeInfo().getName();
-      if (instrumentationScopeName.startsWith("com.azure:")) {
+      if (instrumentationScopeName.startsWith("azure-")) {
         instrumentationScopeName = AZURE_OPENTELEMETRY;
       }
       statsbeatModule.getInstrumentationStatsbeat().addInstrumentation(instrumentationScopeName);
