@@ -4,6 +4,7 @@
 package com.microsoft.applicationinsights.agent.internal.telemetry;
 
 import com.azure.core.http.HttpPipeline;
+import com.azure.monitor.opentelemetry.exporter.ResourceParser;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.AbstractTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.AvailabilityTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.EventTelemetryBuilder;
@@ -323,6 +324,10 @@ public class TelemetryClient {
   public void populateDefaults(AbstractTelemetryBuilder telemetryBuilder, Resource resource) {
     // the agent does not currently factor the resource attributes into the cloud role
     populateDefaults(telemetryBuilder);
+    ResourceParser.updateRoleNameAndInstance(
+        telemetryBuilder,
+        Resource.getDefault(),
+        com.azure.core.util.Configuration.getGlobalConfiguration());
   }
 
   private void populateDefaults(AbstractTelemetryBuilder telemetryBuilder) {

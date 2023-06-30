@@ -3,6 +3,7 @@
 
 package com.azure.monitor.opentelemetry.exporter.implementation.pipeline;
 
+import static com.azure.monitor.opentelemetry.exporter.implementation.utils.AksResourceAttributes.initOtelResourceAttributes;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.azure.core.http.HttpClient;
@@ -238,7 +239,7 @@ public class TelemetryItemExporterTest {
   @Test
   public void initOtelResourceAttributesTest() {
     envVars.set("OTEL_RESOURCE_ATTRIBUTES", "key1=value%201,key2=value2,key3=value%203");
-    Map<String, String> attributes = TelemetryItemExporter.initOtelResourceAttributes();
+    Map<String, String> attributes = initOtelResourceAttributes();
     assertThat(attributes.size()).isEqualTo(3);
     assertThat(attributes.get("key1")).isEqualTo("value 1");
     assertThat(attributes.get("key2")).isEqualTo("value2");
