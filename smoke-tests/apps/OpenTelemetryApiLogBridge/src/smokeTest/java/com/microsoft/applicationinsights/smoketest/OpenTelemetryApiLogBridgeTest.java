@@ -16,6 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
+import com.microsoft.applicationinsights.smoketest.schemav2.ExceptionData;
 import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -50,6 +51,9 @@ abstract class OpenTelemetryApiLogBridgeTest {
     List<Envelope> edList =
         testing.mockedIngestion.waitForItemsInOperation("ExceptionData", 1, operationId);
     assertThat(edList.size()).isNotZero();
+    ExceptionData ed = (ExceptionData) ((Data<?>) rdEnvelope.getData()).getBaseData();
+    assertThat(ed.getExceptions().get(0).getTypeName()).isEqualTo("my exception type");
+    assertThat(ed.getExceptions().get(0).getMessage()).isEqualTo("This is an custom exception with custom exception type");
   }
 
   @Environment(TOMCAT_8_JAVA_8)
