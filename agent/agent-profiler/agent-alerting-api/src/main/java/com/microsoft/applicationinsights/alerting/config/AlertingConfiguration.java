@@ -5,6 +5,7 @@ package com.microsoft.applicationinsights.alerting.config;
 
 import com.google.auto.value.AutoValue;
 import java.time.Instant;
+import java.util.List;
 
 /** Contains the overall configuration of the entire alerting subsystem. */
 @AutoValue
@@ -14,9 +15,14 @@ public abstract class AlertingConfiguration {
       AlertConfiguration cpuAlert,
       AlertConfiguration memoryAlert,
       DefaultConfiguration defaultConfiguration,
-      CollectionPlanConfiguration collectionPlanConfiguration) {
+      CollectionPlanConfiguration collectionPlanConfiguration,
+      List<AlertConfiguration> requestAlertConfiguration) {
     return new AutoValue_AlertingConfiguration(
-        cpuAlert, memoryAlert, defaultConfiguration, collectionPlanConfiguration);
+        cpuAlert,
+        memoryAlert,
+        defaultConfiguration,
+        collectionPlanConfiguration,
+        requestAlertConfiguration);
   }
 
   public boolean hasAnEnabledTrigger() {
@@ -31,6 +37,10 @@ public abstract class AlertingConfiguration {
     // getDefaultConfiguration().getSamplingEnabled();
   }
 
+  public boolean hasRequestAlertConfiguration() {
+    return getRequestAlertConfiguration() != null && !getRequestAlertConfiguration().isEmpty();
+  }
+
   // Alert configuration for CPU telemetry
   public abstract AlertConfiguration getCpuAlert();
 
@@ -42,4 +52,7 @@ public abstract class AlertingConfiguration {
 
   // Alert configuration for manual profiling
   public abstract CollectionPlanConfiguration getCollectionPlanConfiguration();
+
+  // Alert configuration for SPAN telemetry
+  public abstract List<AlertConfiguration> getRequestAlertConfiguration();
 }

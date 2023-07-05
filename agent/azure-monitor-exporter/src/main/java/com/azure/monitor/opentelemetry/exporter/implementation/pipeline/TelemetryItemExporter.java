@@ -11,19 +11,16 @@ import com.azure.monitor.opentelemetry.exporter.implementation.builders.MetricTe
 import com.azure.monitor.opentelemetry.exporter.implementation.logging.OperationLogger;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.AksResourceAttributes;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.io.SerializedString;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.io.IOException;
 import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -54,8 +51,6 @@ public class TelemetryItemExporter {
 
   private static final OperationLogger encodeBatchOperationLogger =
       new OperationLogger(TelemetryItemExporter.class, "Encoding telemetry batch into json");
-
-  private static final Map<String, String> OTEL_RESOURCE_ATTRIBUTES = initOtelResourceAttributes();
 
   private static ObjectMapper createObjectMapper() {
     ObjectMapper mapper = new ObjectMapper();
@@ -120,25 +115,6 @@ public class TelemetryItemExporter {
     return result;
   }
 
-  // visible for testing
-  static Map<String, String> initOtelResourceAttributes() {
-    Map<String, String> originalMap =
-        DefaultConfigProperties.create(Collections.emptyMap()).getMap("otel.resource.attributes");
-    Map<String, String> decodedMap = new HashMap<>(originalMap.size());
-    // Attributes specified via otel.resource.attributes follow the W3C Baggage spec and
-    // characters outside the baggage-octet range are percent encoded
-    // https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/resource/sdk.md#specifying-resource-information-via-an-environment-variable
-    originalMap.forEach(
-        (key, value) -> {
-          try {
-            decodedMap.put(key, URLDecoder.decode(value, StandardCharsets.UTF_8.displayName()));
-          } catch (UnsupportedEncodingException e) {
-            logger.warning("Fail to decode OTEL_RESOURCE_ATTRIBUTES value.", e);
-          }
-        });
-    return decodedMap;
-  }
-
   private CompletableResultCode maybeAddToActiveExportResults(List<CompletableResultCode> results) {
     if (activeExportResults.size() >= MAX_CONCURRENT_EXPORTS) {
       // this is just a failsafe to limit concurrent exports, it's not ideal because it blocks
@@ -174,7 +150,7 @@ public class TelemetryItemExporter {
     // Don't send _OTELRESOURCE_ custom metric when OTEL_RESOURCE_ATTRIBUTES env var is empty
     // Don't send _OTELRESOURCE_ custom metric to Statsbeat yet
     // insert _OTELRESOURCE_ at the beginning of each batch
-    if (!OTEL_RESOURCE_ATTRIBUTES.isEmpty()
+    if (!AksResourceAttributes.otelResourceAttributes.isEmpty()
         && !"Statsbeat".equals(telemetryItems.get(0).getName())) {
       telemetryItems.add(
           0, createOtelResourceMetric(telemetryItems.get(0).getTags(), connectionString));
@@ -205,7 +181,8 @@ public class TelemetryItemExporter {
         existingTags.get(ContextTagKeys.AI_INTERNAL_SDK_VERSION.toString()));
 
     // add attributes from OTEL_RESOURCE_ATTRIBUTES
-    for (Map.Entry<String, String> entry : OTEL_RESOURCE_ATTRIBUTES.entrySet()) {
+    for (Map.Entry<String, String> entry :
+        AksResourceAttributes.otelResourceAttributes.entrySet()) {
       builder.addProperty(entry.getKey(), entry.getValue());
     }
     return builder.build();

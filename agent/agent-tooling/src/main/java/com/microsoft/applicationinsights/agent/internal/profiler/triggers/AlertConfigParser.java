@@ -4,6 +4,7 @@
 package com.microsoft.applicationinsights.agent.internal.profiler.triggers;
 
 import com.microsoft.applicationinsights.agent.internal.profiler.config.ProfilerConfiguration;
+import com.microsoft.applicationinsights.alerting.aiconfig.AlertingConfig;
 import com.microsoft.applicationinsights.alerting.config.AlertConfiguration;
 import com.microsoft.applicationinsights.alerting.config.AlertMetricType;
 import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration;
@@ -13,20 +14,47 @@ import com.microsoft.applicationinsights.alerting.config.DefaultConfiguration;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 /** Parses the configuration from the service profiler endpoint. */
 public class AlertConfigParser {
 
   static AlertingConfiguration parse(
-      String cpuConfig, String memoryConfig, String defaultConfig, String collectionPlan) {
+      String cpuConfig,
+      String memoryConfig,
+      String defaultConfig,
+      String collectionPlan,
+      List<AlertingConfig.RequestTrigger> requestTriggerConfig) {
     return AlertingConfiguration.create(
         parseFromCpu(cpuConfig),
         parseFromMemory(memoryConfig),
         parseDefaultConfiguration(defaultConfig),
-        parseCollectionPlan(collectionPlan));
+        parseCollectionPlan(collectionPlan),
+        buildRequestTriggerConfiguration(requestTriggerConfig));
+  }
+
+  private static List<AlertConfiguration> buildRequestTriggerConfiguration(
+      List<AlertingConfig.RequestTrigger> requestTriggerConfig) {
+    if (requestTriggerConfig == null) {
+      return new ArrayList<>();
+    }
+    return requestTriggerConfig.stream()
+        .map(
+            trigger ->
+                AlertConfiguration.builder()
+                    .setType(AlertMetricType.REQUEST)
+                    .setEnabled(true)
+                    .setThreshold(trigger.threshold.value)
+                    .setProfileDurationSeconds((int) trigger.profileDuration)
+                    .setCooldownSeconds((int) trigger.throttling.value)
+                    .setRequestTrigger(trigger)
+                    .build())
+        .collect(Collectors.toList());
   }
 
   // --single --mode immediate --immediate-profiling-duration 120  --expiration 5249143304354868449
@@ -204,7 +232,8 @@ public class AlertConfigParser {
         profilerConfiguration.getCpuTriggerConfiguration(),
         profilerConfiguration.getMemoryTriggerConfiguration(),
         profilerConfiguration.getDefaultConfiguration(),
-        profilerConfiguration.getCollectionPlan());
+        profilerConfiguration.getCollectionPlan(),
+        profilerConfiguration.getRequestTriggerConfiguration());
   }
 
   // visible for testing

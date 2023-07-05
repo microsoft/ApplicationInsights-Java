@@ -23,19 +23,19 @@ rootProject.extra["otelContribAlphaVersion"] = otelContribAlphaVersion
 
 val DEPENDENCY_BOMS = listOf(
   "com.fasterxml.jackson:jackson-bom:2.15.2",
-  "com.google.guava:guava-bom:32.0.1-jre",
+  "com.google.guava:guava-bom:32.1.1-jre",
   "io.opentelemetry:opentelemetry-bom:${otelVersion}",
   "io.opentelemetry:opentelemetry-bom-alpha:${otelVersion}-alpha",
   "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:${otelInstrumentationVersion}",
   "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${otelInstrumentationAlphaVersion}",
-  "com.azure:azure-sdk-bom:1.2.13",
-  "io.netty:netty-bom:4.1.93.Final",
+  "com.azure:azure-sdk-bom:1.2.14",
+  "io.netty:netty-bom:4.1.94.Final",
   "org.junit:junit-bom:5.9.3",
   "org.testcontainers:testcontainers-bom:1.18.3",
 )
 
 val autoServiceVersion = "1.1.1"
-val autoValueVersion = "1.10.1"
+val autoValueVersion = "1.10.2"
 val errorProneVersion = "2.19.1"
 val byteBuddyVersion = "1.12.18"
 val jmhVersion = "1.36"
@@ -78,8 +78,8 @@ val CORE_DEPENDENCIES = listOf(
 val DEPENDENCIES = listOf(
   "ch.qos.logback:logback-classic:1.2.12",
   "ch.qos.logback.contrib:logback-json-classic:0.1.5",
-  "com.uber.nullaway:nullaway:0.10.10",
-  "commons-codec:commons-codec:1.15",
+  "com.uber.nullaway:nullaway:0.10.11",
+  "commons-codec:commons-codec:1.16.0",
   "org.apache.commons:commons-text:1.10.0",
   "com.google.code.gson:gson:2.10.1",
   "com.azure:azure-core-test:1.17.0", // this is not included in azure-sdk-bom

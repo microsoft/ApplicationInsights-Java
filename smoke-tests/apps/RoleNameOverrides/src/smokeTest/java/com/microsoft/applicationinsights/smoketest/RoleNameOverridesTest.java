@@ -27,7 +27,7 @@ import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-@UseAgent
+@UseAgent("overrides_applicationinsights.json")
 abstract class RoleNameOverridesTest {
 
   @RegisterExtension

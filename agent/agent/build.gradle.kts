@@ -194,7 +194,7 @@ licenseReport {
   excludeBoms = true
 
   excludeGroups = arrayOf(
-    "applicationinsights-java.*",
+    "ApplicationInsights-Java.*",
   )
 
   excludes = arrayOf(

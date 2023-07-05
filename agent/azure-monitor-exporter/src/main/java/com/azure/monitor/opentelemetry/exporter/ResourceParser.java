@@ -3,6 +3,10 @@
 
 package com.azure.monitor.opentelemetry.exporter;
 
+import static com.azure.monitor.opentelemetry.exporter.implementation.utils.AksResourceAttributes.getAksRoleInstance;
+import static com.azure.monitor.opentelemetry.exporter.implementation.utils.AksResourceAttributes.getAksRoleName;
+import static com.azure.monitor.opentelemetry.exporter.implementation.utils.AksResourceAttributes.isAks;
+
 import com.azure.core.util.Configuration;
 import com.azure.monitor.opentelemetry.exporter.implementation.ResourceAttributes;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.AbstractTelemetryBuilder;
@@ -11,12 +15,20 @@ import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Map;
 
-final class ResourceParser {
+public final class ResourceParser {
 
   private static final String DEFAULT_SERVICE_NAME = "unknown_service:java";
 
-  static void updateRoleNameAndInstance(
+  // visible for testing
+  public static void updateRoleNameAndInstance(
       AbstractTelemetryBuilder builder, Resource resource, Configuration configuration) {
+
+    // update AKS role name and role instance
+    if (isAks()) {
+      builder.addTag(ContextTagKeys.AI_CLOUD_ROLE.toString(), getAksRoleName());
+      builder.addTag(ContextTagKeys.AI_CLOUD_ROLE_INSTANCE.toString(), getAksRoleInstance());
+      return;
+    }
 
     Map<String, String> existingTags = builder.build().getTags();
     if (existingTags == null
