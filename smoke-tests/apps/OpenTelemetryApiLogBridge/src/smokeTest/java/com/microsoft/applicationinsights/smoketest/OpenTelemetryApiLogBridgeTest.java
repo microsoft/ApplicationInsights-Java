@@ -34,7 +34,6 @@ abstract class OpenTelemetryApiLogBridgeTest {
     Envelope rdEnvelope = rdList.get(0);
 
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
-    assertThat(rd.getName()).isEqualTo("myspanname");
     assertThat(rd.getUrl())
         .matches("http://localhost:[0-9]+/OpenTelemetryApiLogBridge/test-custom-exception-type-and-message");
     assertThat(rd.getResponseCode()).isEqualTo("200");

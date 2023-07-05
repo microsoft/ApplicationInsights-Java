@@ -23,7 +23,6 @@ public class TestController {
 
   @GetMapping("/test-custom-exception-type-and-message")
   public String testCustomExceptionTypeAndMessage() {
-    Span.current().updateName("myspanname");
     StringWriter sw = new StringWriter();
     new Exception().printStackTrace(new PrintWriter(sw, true));
 
