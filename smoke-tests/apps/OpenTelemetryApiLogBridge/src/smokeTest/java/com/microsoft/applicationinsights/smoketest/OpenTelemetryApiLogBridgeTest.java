@@ -51,7 +51,7 @@ abstract class OpenTelemetryApiLogBridgeTest {
     List<Envelope> edList =
         testing.mockedIngestion.waitForItemsInOperation("ExceptionData", 1, operationId);
     assertThat(edList.size()).isNotZero();
-    ExceptionData ed = (ExceptionData) ((Data<?>) rdEnvelope.getData()).getBaseData();
+    ExceptionData ed = (ExceptionData) ((Data<?>) edList.get(0).getData()).getBaseData();
     assertThat(ed.getExceptions().get(0).getTypeName()).isEqualTo("my exception type");
     assertThat(ed.getExceptions().get(0).getMessage()).isEqualTo("This is an custom exception with custom exception type");
   }
