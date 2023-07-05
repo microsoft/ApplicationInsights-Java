@@ -7,6 +7,7 @@ import static com.azure.monitor.opentelemetry.exporter.implementation.utils.Azur
 
 import com.azure.core.util.logging.ClientLogger;
 import com.azure.monitor.opentelemetry.exporter.implementation.LogDataMapper;
+import com.azure.monitor.opentelemetry.exporter.implementation.SemanticAttributes;
 import com.azure.monitor.opentelemetry.exporter.implementation.logging.OperationLogger;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryItemExporter;
@@ -52,7 +53,8 @@ class AzureMonitorLogRecordExporter implements LogRecordExporter {
     for (LogRecordData log : logs) {
       LOGGER.verbose("exporting log: {}", log);
       try {
-        telemetryItems.add(mapper.map(log, null));
+        String stack = log.getAttributes().get(SemanticAttributes.EXCEPTION_STACKTRACE);
+        telemetryItems.add(mapper.map(log, null, stack));
         OPERATION_LOGGER.recordSuccess();
       } catch (Throwable t) {
         OPERATION_LOGGER.recordFailure(t.getMessage(), t, EXPORTER_MAPPING_ERROR);

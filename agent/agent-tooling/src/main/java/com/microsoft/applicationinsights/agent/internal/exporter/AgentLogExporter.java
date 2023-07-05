@@ -111,7 +111,7 @@ public class AgentLogExporter implements LogRecordExporter {
           itemCount = Math.round(100.0 / samplingPercentage);
         }
 
-        TelemetryItem telemetryItem = mapper.map(log, itemCount);
+        TelemetryItem telemetryItem = mapper.map(log, itemCount, stack);
         telemetryItemConsumer.accept(telemetryItem);
 
         exportingLogLogger.recordSuccess();

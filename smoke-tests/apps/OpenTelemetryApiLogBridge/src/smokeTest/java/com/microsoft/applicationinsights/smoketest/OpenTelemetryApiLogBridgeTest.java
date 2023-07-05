@@ -18,10 +18,9 @@ import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
 import com.microsoft.applicationinsights.smoketest.schemav2.ExceptionData;
 import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
-
-import java.util.List;
 
 @UseAgent
 abstract class OpenTelemetryApiLogBridgeTest {
@@ -36,7 +35,8 @@ abstract class OpenTelemetryApiLogBridgeTest {
 
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
     assertThat(rd.getUrl())
-        .matches("http://localhost:[0-9]+/OpenTelemetryApiLogBridge/test-custom-exception-type-and-message");
+        .matches(
+            "http://localhost:[0-9]+/OpenTelemetryApiLogBridge/test-custom-exception-type-and-message");
     assertThat(rd.getResponseCode()).isEqualTo("200");
     assertThat(rd.getSuccess()).isTrue();
     assertThat(rd.getSource()).isNull();
@@ -53,7 +53,8 @@ abstract class OpenTelemetryApiLogBridgeTest {
     assertThat(edList.size()).isNotZero();
     ExceptionData ed = (ExceptionData) ((Data<?>) edList.get(0).getData()).getBaseData();
     assertThat(ed.getExceptions().get(0).getTypeName()).isEqualTo("my exception type");
-    assertThat(ed.getExceptions().get(0).getMessage()).isEqualTo("This is an custom exception with custom exception type");
+    assertThat(ed.getExceptions().get(0).getMessage())
+        .isEqualTo("This is an custom exception with custom exception type");
   }
 
   @Environment(TOMCAT_8_JAVA_8)

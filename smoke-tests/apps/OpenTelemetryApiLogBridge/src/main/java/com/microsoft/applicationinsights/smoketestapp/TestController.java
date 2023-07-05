@@ -5,13 +5,11 @@ package com.microsoft.applicationinsights.smoketestapp;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.logs.Severity;
-import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class TestController {
@@ -26,10 +24,15 @@ public class TestController {
     StringWriter sw = new StringWriter();
     new Exception().printStackTrace(new PrintWriter(sw, true));
 
-    GlobalOpenTelemetry.get().getLogsBridge().get("my logger").logRecordBuilder()
+    GlobalOpenTelemetry.get()
+        .getLogsBridge()
+        .get("my logger")
+        .logRecordBuilder()
         .setSeverity(Severity.INFO)
         .setAttribute(SemanticAttributes.EXCEPTION_TYPE, "my exception type")
-        .setAttribute(SemanticAttributes.EXCEPTION_MESSAGE, "This is an custom exception with custom exception type")
+        .setAttribute(
+            SemanticAttributes.EXCEPTION_MESSAGE,
+            "This is an custom exception with custom exception type")
         .setAttribute(SemanticAttributes.EXCEPTION_STACKTRACE, sw.toString())
         .emit();
     return "OK!";

@@ -22,7 +22,6 @@ import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.resources.Resource;
-import java.util.Collections;
 import java.util.List;
 import java.util.function.BiConsumer;
 import reactor.util.annotation.Nullable;
@@ -102,12 +101,11 @@ public class LogDataMapper {
     this.telemetryInitializer = telemetryInitializer;
   }
 
-  public TelemetryItem map(LogRecordData log, @Nullable Long itemCount) {
-    String stack = log.getAttributes().get(SemanticAttributes.EXCEPTION_STACKTRACE);
+  public TelemetryItem map(LogRecordData log, @Nullable Long itemCount, @Nullable String stack) {
     if (stack == null) {
       return createMessageTelemetryItem(log, itemCount);
     } else {
-      return createExceptionTelemetryItem(log, itemCount);
+      return createExceptionTelemetryItem(log, itemCount, stack);
     }
   }
 
@@ -140,7 +138,8 @@ public class LogDataMapper {
     return telemetryBuilder.build();
   }
 
-  private TelemetryItem createExceptionTelemetryItem(LogRecordData log, @Nullable Long itemCount) {
+  private TelemetryItem createExceptionTelemetryItem(
+      LogRecordData log, @Nullable Long itemCount, @Nullable String stack) {
     ExceptionTelemetryBuilder telemetryBuilder = ExceptionTelemetryBuilder.create();
     telemetryInitializer.accept(telemetryBuilder, log.getResource());
 
@@ -153,7 +152,6 @@ public class LogDataMapper {
     Attributes attributes = log.getAttributes();
     MAPPINGS.map(attributes, telemetryBuilder);
 
-    String stack = log.getAttributes().get(SemanticAttributes.EXCEPTION_STACKTRACE);
     List<ExceptionDetailBuilder> builders = Exceptions.minimalParse(stack);
     ExceptionDetailBuilder exceptionDetailBuilder = builders.get(0);
     String type = log.getAttributes().get(SemanticAttributes.EXCEPTION_TYPE);
@@ -164,7 +162,7 @@ public class LogDataMapper {
     if (message != null && !message.isEmpty()) {
       exceptionDetailBuilder.setMessage(message);
     }
-    telemetryBuilder.setExceptions(Collections.singletonList(exceptionDetailBuilder));
+    telemetryBuilder.setExceptions(builders);
     telemetryBuilder.setSeverityLevel(toSeverityLevel(log.getSeverity()));
 
     // set exception-specific properties
