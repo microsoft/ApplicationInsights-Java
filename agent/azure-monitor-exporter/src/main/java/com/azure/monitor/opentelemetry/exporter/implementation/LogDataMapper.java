@@ -101,11 +101,11 @@ public class LogDataMapper {
     this.telemetryInitializer = telemetryInitializer;
   }
 
-  public TelemetryItem map(LogRecordData log, @Nullable Long itemCount, @Nullable String stack) {
+  public TelemetryItem map(LogRecordData log, @Nullable String stack, @Nullable Long itemCount) {
     if (stack == null) {
       return createMessageTelemetryItem(log, itemCount);
     } else {
-      return createExceptionTelemetryItem(log, itemCount, stack);
+      return createExceptionTelemetryItem(log, stack, itemCount);
     }
   }
 
@@ -139,7 +139,7 @@ public class LogDataMapper {
   }
 
   private TelemetryItem createExceptionTelemetryItem(
-      LogRecordData log, @Nullable Long itemCount, @Nullable String stack) {
+      LogRecordData log, @Nullable String stack, @Nullable Long itemCount) {
     ExceptionTelemetryBuilder telemetryBuilder = ExceptionTelemetryBuilder.create();
     telemetryInitializer.accept(telemetryBuilder, log.getResource());
 
