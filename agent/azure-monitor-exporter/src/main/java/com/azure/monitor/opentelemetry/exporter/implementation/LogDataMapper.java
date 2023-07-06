@@ -8,6 +8,7 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
 import com.azure.core.util.logging.ClientLogger;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.AbstractTelemetryBuilder;
+import com.azure.monitor.opentelemetry.exporter.implementation.builders.ExceptionDetailBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.ExceptionTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.Exceptions;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.MessageTelemetryBuilder;
@@ -104,7 +105,7 @@ public class LogDataMapper {
     if (stack == null) {
       return createMessageTelemetryItem(log, itemCount);
     } else {
-      return createExceptionTelemetryItem(log, itemCount, stack);
+      return createExceptionTelemetryItem(log, stack, itemCount);
     }
   }
 
@@ -138,7 +139,7 @@ public class LogDataMapper {
   }
 
   private TelemetryItem createExceptionTelemetryItem(
-      LogRecordData log, @Nullable Long itemCount, String stack) {
+      LogRecordData log, String stack, @Nullable Long itemCount) {
     ExceptionTelemetryBuilder telemetryBuilder = ExceptionTelemetryBuilder.create();
     telemetryInitializer.accept(telemetryBuilder, log.getResource());
 
@@ -151,7 +152,17 @@ public class LogDataMapper {
     Attributes attributes = log.getAttributes();
     MAPPINGS.map(attributes, telemetryBuilder);
 
-    telemetryBuilder.setExceptions(Exceptions.minimalParse(stack));
+    List<ExceptionDetailBuilder> builders = Exceptions.minimalParse(stack);
+    ExceptionDetailBuilder exceptionDetailBuilder = builders.get(0);
+    String type = log.getAttributes().get(SemanticAttributes.EXCEPTION_TYPE);
+    if (type != null && !type.isEmpty()) {
+      exceptionDetailBuilder.setTypeName(type);
+    }
+    String message = log.getAttributes().get(SemanticAttributes.EXCEPTION_MESSAGE);
+    if (message != null && !message.isEmpty()) {
+      exceptionDetailBuilder.setMessage(message);
+    }
+    telemetryBuilder.setExceptions(builders);
     telemetryBuilder.setSeverityLevel(toSeverityLevel(log.getSeverity()));
 
     // set exception-specific properties
