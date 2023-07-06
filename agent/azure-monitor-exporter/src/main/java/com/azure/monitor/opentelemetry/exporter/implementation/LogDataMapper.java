@@ -139,7 +139,7 @@ public class LogDataMapper {
   }
 
   private TelemetryItem createExceptionTelemetryItem(
-      LogRecordData log, @Nullable String stack, @Nullable Long itemCount) {
+      LogRecordData log, String stack, @Nullable Long itemCount) {
     ExceptionTelemetryBuilder telemetryBuilder = ExceptionTelemetryBuilder.create();
     telemetryInitializer.accept(telemetryBuilder, log.getResource());
 
