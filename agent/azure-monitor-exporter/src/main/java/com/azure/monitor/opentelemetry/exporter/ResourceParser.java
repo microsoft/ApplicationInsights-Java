@@ -11,6 +11,7 @@ import com.azure.core.util.Configuration;
 import com.azure.monitor.opentelemetry.exporter.implementation.ResourceAttributes;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.AbstractTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.HostName;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Map;
@@ -61,7 +62,7 @@ public final class ResourceParser {
         roleInstance = Strings.trimAndEmptyToNull(configuration.get("WEBSITE_INSTANCE_ID"));
       }
       if (roleInstance == null) {
-        roleInstance = configuration.get("HOSTNAME"); // default hostname
+        roleInstance = HostName.get(); // default hostname
       }
       if (roleInstance != null) {
         builder.addTag(ContextTagKeys.AI_CLOUD_ROLE_INSTANCE.toString(), roleInstance);
