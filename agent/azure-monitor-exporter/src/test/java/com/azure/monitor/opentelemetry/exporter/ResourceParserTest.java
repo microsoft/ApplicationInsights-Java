@@ -12,6 +12,7 @@ import com.azure.core.util.ConfigurationBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.ResourceAttributes;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.MetricTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.ContextTagKeys;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.HostName;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.sdk.resources.Resource;
@@ -22,7 +23,7 @@ import reactor.util.annotation.Nullable;
 
 class ResourceParserTest {
 
-  private static final String DEFAULT_ROLE_INSTANCE = "fake-hostname";
+  private static final String DEFAULT_ROLE_INSTANCE = HostName.get();
   private MetricTelemetryBuilder builder;
 
   @BeforeEach
