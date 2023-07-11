@@ -20,7 +20,7 @@ jobs:
           java-version: 17
 
       - name: Spotless
-        uses: gradle/gradle-build-action@v2.6.0
+        uses: gradle/gradle-build-action@v2
         with:
           arguments: spotlessCheck ${{ inputs.no-build-cache && '--no-build-cache' || '' }}
 
@@ -43,7 +43,7 @@ jobs:
           java-version: 17
 
       - name: Generate license report
-        uses: gradle/gradle-build-action@v2.6.0
+        uses: gradle/gradle-build-action@v2
         with:
           # ignore inputs.no-build-cache and always run with --no-build-cache
           # see https://github.com/jk1/Gradle-License-Report/issues/231
@@ -82,7 +82,7 @@ jobs:
           java-version: 17
 
       - name: Assemble
-        uses: gradle/gradle-build-action@v2.6.0
+        uses: gradle/gradle-build-action@v2
         with:
           # javadoc task fails sporadically fetching https://docs.oracle.com/javase/8/docs/api/
           arguments: assemble -Dai.etw.native.build=release -x javadoc ${{ inputs.no-build-cache && '--no-build-cache' || '' }}
@@ -130,7 +130,7 @@ jobs:
           java-version: 17
 
       - name: Test
-        uses: gradle/gradle-build-action@v2.6.0
+        uses: gradle/gradle-build-action@v2
         with:
           # spotless is checked separately since it's a common source of failure
           arguments: >
@@ -170,6 +170,6 @@ jobs:
           java-version: 17
 
       - name: Test
-        uses: gradle/gradle-build-action@v2.6.0
+        uses: gradle/gradle-build-action@v2
         with:
           arguments: ${{ matrix.module }}:smokeTest
