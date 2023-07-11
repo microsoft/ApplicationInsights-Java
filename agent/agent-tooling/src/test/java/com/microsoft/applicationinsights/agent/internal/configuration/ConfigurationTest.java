@@ -10,6 +10,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
+import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.JmxMetric;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.MatchType;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.PreviewConfiguration;
@@ -104,6 +105,7 @@ class ConfigurationTest {
 
   @Test
   void shouldThrowFromEnvVarIfEmbeddedConnectionString() {
+    DiagnosticsHelper.useAppSvcRpIntegrationLogging = true;
     String contentJson =
         "{\"connectionString\":\"InstrumentationKey=55555555-5555-5555-5555-555555555555\","
             + "\"role\":{\"name\":\"testrole\"}}";
