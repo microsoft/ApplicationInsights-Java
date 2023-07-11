@@ -3,7 +3,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.perfcounter;
 
-import static com.microsoft.applicationinsights.agent.bootstrap.diagnostics.MsgId.CUSTOM_JMX_METRIC_ERROR;
+import static com.microsoft.applicationinsights.agent.internal.diagnostics.MsgId.CUSTOM_JMX_METRIC_ERROR;
 
 import java.lang.management.ManagementFactory;
 import java.util.ArrayList;

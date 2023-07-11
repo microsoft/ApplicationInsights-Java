@@ -24,6 +24,7 @@ dependencies {
   implementation(project(":agent:azure-monitor-exporter")) {
     exclude("org.ow2.asm", "asm")
   }
+  implementation(project(":etw:java"))
 
   compileOnly("io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap")
   compileOnly("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling")
@@ -37,9 +38,8 @@ dependencies {
   // TODO (trask) this is probably still needed for above apache commons projects
   implementation("org.slf4j:jcl-over-slf4j")
 
-  // these are present in the bootstrap class loader
-  compileOnly("ch.qos.logback:logback-classic")
-  compileOnly("ch.qos.logback.contrib:logback-json-classic")
+  implementation("ch.qos.logback:logback-classic")
+  implementation("ch.qos.logback.contrib:logback-json-classic")
 
   implementation("com.azure:azure-core")
   implementation("com.azure:azure-identity") {
@@ -88,4 +88,6 @@ dependencies {
   testImplementation("org.mockito:mockito-core")
   testImplementation("uk.org.webcompere:system-stubs-jupiter:2.0.2")
   testImplementation("io.github.hakky54:logcaptor")
+
+  testCompileOnly("com.google.code.findbugs:jsr305")
 }

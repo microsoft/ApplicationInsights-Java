@@ -4,9 +4,9 @@
 package com.microsoft.applicationinsights.agent.internal.profiler;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.ThreadPoolUtils;
-import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.PidFinder;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.configuration.GcReportingLevel;
+import com.microsoft.applicationinsights.agent.internal.diagnostics.PidFinder;
 import com.microsoft.applicationinsights.agent.internal.profiler.service.ServiceProfilerClient;
 import com.microsoft.applicationinsights.agent.internal.profiler.triggers.AlertingSubsystemInit;
 import com.microsoft.applicationinsights.agent.internal.profiler.upload.UploadService;

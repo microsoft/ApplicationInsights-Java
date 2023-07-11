@@ -3,22 +3,22 @@
 
 package com.microsoft.applicationinsights.agent.internal.init;
 
-import static com.microsoft.applicationinsights.agent.bootstrap.diagnostics.MsgId.INITIALIZATION_SUCCESS;
-import static com.microsoft.applicationinsights.agent.bootstrap.diagnostics.MsgId.STARTUP_FAILURE_ERROR;
+import static com.microsoft.applicationinsights.agent.internal.diagnostics.MsgId.INITIALIZATION_SUCCESS;
+import static com.microsoft.applicationinsights.agent.internal.diagnostics.MsgId.STARTUP_FAILURE_ERROR;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.PropertyHelper;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.SystemInformation;
 import com.google.auto.service.AutoService;
-import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
-import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.PidFinder;
-import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.SdkVersionFinder;
-import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.status.StatusFile;
 import com.microsoft.applicationinsights.agent.internal.common.FriendlyException;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.SelfDiagnostics;
 import com.microsoft.applicationinsights.agent.internal.configuration.ConfigurationBuilder;
 import com.microsoft.applicationinsights.agent.internal.configuration.RpConfiguration;
 import com.microsoft.applicationinsights.agent.internal.configuration.RpConfigurationBuilder;
+import com.microsoft.applicationinsights.agent.internal.diagnostics.DiagnosticsHelper;
+import com.microsoft.applicationinsights.agent.internal.diagnostics.PidFinder;
+import com.microsoft.applicationinsights.agent.internal.diagnostics.SdkVersionFinder;
+import com.microsoft.applicationinsights.agent.internal.diagnostics.status.StatusFile;
 import io.opentelemetry.javaagent.bootstrap.InstrumentationHolder;
 import io.opentelemetry.javaagent.bootstrap.InternalLogger;
 import io.opentelemetry.javaagent.bootstrap.JavaagentFileHolder;

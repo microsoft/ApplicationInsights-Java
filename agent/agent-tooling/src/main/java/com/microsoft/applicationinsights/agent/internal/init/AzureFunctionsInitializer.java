@@ -4,7 +4,7 @@
 package com.microsoft.applicationinsights.agent.internal.init;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
-import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
+import com.microsoft.applicationinsights.agent.internal.diagnostics.DiagnosticsHelper;
 import io.opentelemetry.javaagent.bootstrap.ClassFileTransformerHolder;
 import io.opentelemetry.javaagent.bootstrap.InstrumentationHolder;
 import java.lang.instrument.ClassFileTransformer;

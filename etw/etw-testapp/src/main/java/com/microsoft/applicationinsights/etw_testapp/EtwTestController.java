@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.etw.DiagnosticsLoggerProxy;
+import com.microsoft.applicationinsights.agent.internal.diagnostics.etw.DiagnosticsLoggerProxy;
 
 @RestController
 public class EtwTestController {

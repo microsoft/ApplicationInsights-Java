@@ -9,9 +9,9 @@ import static java.util.concurrent.TimeUnit.MINUTES;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
-import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.status.StatusFile;
 import com.microsoft.applicationinsights.agent.internal.common.FriendlyException;
+import com.microsoft.applicationinsights.agent.internal.diagnostics.DiagnosticsHelper;
+import com.microsoft.applicationinsights.agent.internal.diagnostics.status.StatusFile;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.logs.Severity;
 import java.io.File;

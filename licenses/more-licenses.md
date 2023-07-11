@@ -1,7 +1,7 @@
 
 # agent
 ## Dependency License Report
-_2023-07-11 03:55:03 UTC_
+_2023-07-11 14:48:12 PDT_
 ## Apache License, Version 2.0
 
 **1** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-annotations` **Version:** `2.15.2` 
@@ -64,14 +64,14 @@ _2023-07-11 03:55:03 UTC_
 
 **11** **Group:** `com.squareup.moshi` **Name:** `moshi` **Version:** `1.11.0` 
 > - **POM Project URL**: [https://github.com/square/moshi/](https://github.com/square/moshi/)
-> - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
+> - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
 **12** **Group:** `com.squareup.moshi` **Name:** `moshi-adapters` **Version:** `1.11.0` 
 > - **POM Project URL**: [https://github.com/square/moshi/](https://github.com/square/moshi/)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
 **13** **Group:** `com.squareup.okio` **Name:** `okio` **Version:** `1.17.5` 
-> - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
+> - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
 **14** **Group:** `commons-codec` **Name:** `commons-codec` **Version:** `1.16.0` 
 > - **Project URL**: [https://commons.apache.org/proper/commons-codec/](https://commons.apache.org/proper/commons-codec/)

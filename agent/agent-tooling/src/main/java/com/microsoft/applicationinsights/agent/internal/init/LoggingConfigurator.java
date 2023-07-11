@@ -3,7 +3,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.init;
 
-import static com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper.LINUX_DEFAULT;
+import static com.microsoft.applicationinsights.agent.internal.diagnostics.DiagnosticsHelper.LINUX_DEFAULT;
 import static org.slf4j.Logger.ROOT_LOGGER_NAME;
 
 import ch.qos.logback.classic.Level;
@@ -20,13 +20,13 @@ import ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy;
 import ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy;
 import ch.qos.logback.core.util.FileSize;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.PropertyHelper;
-import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper;
-import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.etw.EtwAppender;
-import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.log.ApplicationInsightsCsvLayout;
-import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.log.ApplicationInsightsDiagnosticsLogFilter;
-import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.log.ApplicationInsightsJsonLayout;
-import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.log.MoshiJsonFormatter;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
+import com.microsoft.applicationinsights.agent.internal.diagnostics.DiagnosticsHelper;
+import com.microsoft.applicationinsights.agent.internal.diagnostics.etw.EtwAppender;
+import com.microsoft.applicationinsights.agent.internal.diagnostics.log.ApplicationInsightsCsvLayout;
+import com.microsoft.applicationinsights.agent.internal.diagnostics.log.ApplicationInsightsDiagnosticsLogFilter;
+import com.microsoft.applicationinsights.agent.internal.diagnostics.log.ApplicationInsightsJsonLayout;
+import com.microsoft.applicationinsights.agent.internal.diagnostics.log.MoshiJsonFormatter;
 import com.microsoft.applicationinsights.agent.internal.logbackpatch.FixedWindowRollingPolicy;
 import java.nio.file.Path;
 import org.slf4j.LoggerFactory;

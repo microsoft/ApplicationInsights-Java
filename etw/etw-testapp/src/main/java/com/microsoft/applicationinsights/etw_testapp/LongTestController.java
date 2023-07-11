@@ -12,7 +12,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BinaryOperator;
 
-import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.etw.DiagnosticsLoggerProxy;
+import com.microsoft.applicationinsights.agent.internal.diagnostics.etw.DiagnosticsLoggerProxy;
 
 import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
