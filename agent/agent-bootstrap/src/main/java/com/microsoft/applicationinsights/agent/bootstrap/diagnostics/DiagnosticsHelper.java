@@ -14,8 +14,8 @@ public class DiagnosticsHelper {
       "APPLICATIONINSIGHTS_DIAGNOSTICS_OUTPUT_DIRECTORY";
 
   // visible for testing
-  public static volatile boolean useAppSvcRpIntegrationLogging;
-  private static volatile boolean useFunctionsRpIntegrationLogging;
+  public static volatile boolean appSvcRpIntegration;
+  private static volatile boolean functionsRpIntegration;
 
   private static volatile char rpIntegrationChar;
 
@@ -37,18 +37,12 @@ public class DiagnosticsHelper {
 
   public static void setAgentJarFile(Path agentPath) {
     if (Files.exists(agentPath.resolveSibling("appsvc.codeless"))) {
-      // TODO we can remove this check after the new functions model is deployed.
-      if ("java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME"))) {
-        rpIntegrationChar = 'f';
-      } else {
-        rpIntegrationChar = 'a';
-      }
-      useAppSvcRpIntegrationLogging = true;
+      appSvcRpIntegration = true;
     } else if (Files.exists(agentPath.resolveSibling("aks.codeless"))) {
       rpIntegrationChar = 'k';
     } else if (Files.exists(agentPath.resolveSibling("functions.codeless"))) {
       rpIntegrationChar = 'f';
-      useFunctionsRpIntegrationLogging = true;
+      functionsRpIntegration = true;
     } else if (Files.exists(agentPath.resolveSibling("springcloud.codeless"))) {
       rpIntegrationChar = 's';
     }
@@ -65,13 +59,13 @@ public class DiagnosticsHelper {
   }
 
   // this also applies to Azure Functions running on App Services
-  public static boolean useAppSvcRpIntegrationLogging() {
-    return useAppSvcRpIntegrationLogging;
+  public static boolean isAppSvcRpIntegration() {
+    return appSvcRpIntegration;
   }
 
   // this also applies to Azure Functions running on App Services
-  public static boolean useFunctionsRpIntegrationLogging() {
-    return useFunctionsRpIntegrationLogging;
+  public static boolean isFunctionsRpIntegration() {
+    return functionsRpIntegration;
   }
 
   public static ApplicationMetadataFactory getMetadataFactory() {
