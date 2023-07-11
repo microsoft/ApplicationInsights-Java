@@ -14,7 +14,7 @@ public class DiagnosticsHelper {
       "APPLICATIONINSIGHTS_DIAGNOSTICS_OUTPUT_DIRECTORY";
 
   // visible for testing
-  static volatile boolean useAppSvcRpIntegrationLogging;
+  public static volatile boolean useAppSvcRpIntegrationLogging;
   private static volatile boolean useFunctionsRpIntegrationLogging;
 
   private static volatile char rpIntegrationChar;
