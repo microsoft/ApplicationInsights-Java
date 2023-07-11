@@ -104,13 +104,8 @@ tasks {
   val shadowJarWithDuplicates by registering(ShadowJar::class) {
     configurations = listOf(bootstrapLibs, upstreamAgent)
 
-    // this distro uses logback (and shaded slf4j in the bootstrap class loader
-    // so that it can be used prior to the agent starting up)
-    //
-    // the two exclusions below excludes slf4j and slf4j-simple from the agent class loader
-    // (which come from the upstream agent)
-    exclude("inst/io/opentelemetry/javaagent/slf4j/**")
-    exclude("inst/META-INF/services/io.opentelemetry.javaagent.slf4j.spi.SLF4JServiceProvider")
+    // this distro uses logback, so need to exclude slf4j-simple
+    exclude("inst/io/opentelemetry/javaagent/slf4j/simple/**")
 
     exclude("io/opentelemetry/javaagent/shaded/instrumentation/api/instrumenter/http/TemporaryMetricsView.class")
     exclude("io/opentelemetry/javaagent/shaded/instrumentation/api/instrumenter/InstrumenterBuilder.class")

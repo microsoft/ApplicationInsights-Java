@@ -1,7 +1,7 @@
 
 # agent
 ## Dependency License Report
-_2023-07-11 14:48:12 PDT_
+_2023-07-11 16:12:30 PDT_
 ## Apache License, Version 2.0
 
 **1** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-annotations` **Version:** `2.15.2` 
@@ -234,20 +234,22 @@ _2023-07-11 14:48:12 PDT_
 > - **Embedded license files**: [commons-text-1.10.0.jar/META-INF/LICENSE.txt](commons-text-1.10.0.jar/META-INF/LICENSE.txt) 
     - [commons-text-1.10.0.jar/META-INF/NOTICE.txt](commons-text-1.10.0.jar/META-INF/NOTICE.txt)
 
-**45** **Group:** `org.slf4j` **Name:** `jcl-over-slf4j` **Version:** `1.7.36` 
-> - **POM Project URL**: [http://www.slf4j.org](http://www.slf4j.org)
+**45** **Group:** `org.slf4j` **Name:** `jcl-over-slf4j` **Version:** `2.0.7` 
+> - **Project URL**: [http://www.slf4j.org](http://www.slf4j.org)
+> - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
+> - **Embedded license files**: [jcl-over-slf4j-2.0.7.jar/META-INF/LICENSE.txt](jcl-over-slf4j-2.0.7.jar/META-INF/LICENSE.txt)
 
 ## Eclipse Public License - v 1.0
 
-**46** **Group:** `ch.qos.logback` **Name:** `logback-classic` **Version:** `1.2.12` 
+**46** **Group:** `ch.qos.logback` **Name:** `logback-classic` **Version:** `1.3.8` 
 > - **Manifest Project URL**: [http://www.qos.ch](http://www.qos.ch)
 > - **Manifest License**: GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 (Not Packaged)
 > - **POM License**: Eclipse Public License - v 1.0 - [http://www.eclipse.org/legal/epl-v10.html](http://www.eclipse.org/legal/epl-v10.html)
 > - **POM License**: GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 - [https://www.gnu.org/licenses/lgpl-2.1](https://www.gnu.org/licenses/lgpl-2.1)
 
-**47** **Group:** `ch.qos.logback` **Name:** `logback-core` **Version:** `1.2.12` 
+**47** **Group:** `ch.qos.logback` **Name:** `logback-core` **Version:** `1.3.8` 
 > - **Manifest Project URL**: [http://www.qos.ch](http://www.qos.ch)
 > - **Manifest License**: GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 (Not Packaged)
 > - **POM License**: Eclipse Public License - v 1.0 - [http://www.eclipse.org/legal/epl-v10.html](http://www.eclipse.org/legal/epl-v10.html)
@@ -265,13 +267,13 @@ _2023-07-11 14:48:12 PDT_
 
 ## GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1
 
-**50** **Group:** `ch.qos.logback` **Name:** `logback-classic` **Version:** `1.2.12` 
+**50** **Group:** `ch.qos.logback` **Name:** `logback-classic` **Version:** `1.3.8` 
 > - **Manifest Project URL**: [http://www.qos.ch](http://www.qos.ch)
 > - **Manifest License**: GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 (Not Packaged)
 > - **POM License**: Eclipse Public License - v 1.0 - [http://www.eclipse.org/legal/epl-v10.html](http://www.eclipse.org/legal/epl-v10.html)
 > - **POM License**: GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 - [https://www.gnu.org/licenses/lgpl-2.1](https://www.gnu.org/licenses/lgpl-2.1)
 
-**51** **Group:** `ch.qos.logback` **Name:** `logback-core` **Version:** `1.2.12` 
+**51** **Group:** `ch.qos.logback` **Name:** `logback-core` **Version:** `1.3.8` 
 > - **Manifest Project URL**: [http://www.qos.ch](http://www.qos.ch)
 > - **Manifest License**: GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 (Not Packaged)
 > - **POM License**: Eclipse Public License - v 1.0 - [http://www.eclipse.org/legal/epl-v10.html](http://www.eclipse.org/legal/epl-v10.html)
@@ -347,14 +349,17 @@ _2023-07-11 14:48:12 PDT_
 > - **POM Project URL**: [https://github.com/Microsoft/jfr-streaming](https://github.com/Microsoft/jfr-streaming)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**67** **Group:** `org.slf4j` **Name:** `jcl-over-slf4j` **Version:** `1.7.36` 
-> - **POM Project URL**: [http://www.slf4j.org](http://www.slf4j.org)
+**67** **Group:** `org.slf4j` **Name:** `jcl-over-slf4j` **Version:** `2.0.7` 
+> - **Project URL**: [http://www.slf4j.org](http://www.slf4j.org)
+> - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
+> - **Embedded license files**: [jcl-over-slf4j-2.0.7.jar/META-INF/LICENSE.txt](jcl-over-slf4j-2.0.7.jar/META-INF/LICENSE.txt)
 
-**68** **Group:** `org.slf4j` **Name:** `slf4j-api` **Version:** `1.7.36` 
-> - **POM Project URL**: [http://www.slf4j.org](http://www.slf4j.org)
+**68** **Group:** `org.slf4j` **Name:** `slf4j-api` **Version:** `2.0.7` 
+> - **Project URL**: [http://www.slf4j.org](http://www.slf4j.org)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
+> - **Embedded license files**: [slf4j-api-2.0.7.jar/META-INF/LICENSE.txt](slf4j-api-2.0.7.jar/META-INF/LICENSE.txt)
 
 ## MIT-0
 
