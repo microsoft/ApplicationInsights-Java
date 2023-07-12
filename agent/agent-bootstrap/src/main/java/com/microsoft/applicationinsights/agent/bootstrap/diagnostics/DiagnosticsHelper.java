@@ -37,6 +37,7 @@ public class DiagnosticsHelper {
 
   public static void setAgentJarFile(Path agentPath) {
     if (Files.exists(agentPath.resolveSibling("appsvc.codeless"))) {
+      rpIntegrationChar = 'a';
       appSvcRpIntegration = true;
     } else if (Files.exists(agentPath.resolveSibling("aks.codeless"))) {
       rpIntegrationChar = 'k';
@@ -58,12 +59,10 @@ public class DiagnosticsHelper {
     return rpIntegrationChar;
   }
 
-  // this also applies to Azure Functions running on App Services
   public static boolean isAppSvcRpIntegration() {
     return appSvcRpIntegration;
   }
 
-  // this also applies to Azure Functions running on App Services
   public static boolean isFunctionsRpIntegration() {
     return functionsRpIntegration;
   }
