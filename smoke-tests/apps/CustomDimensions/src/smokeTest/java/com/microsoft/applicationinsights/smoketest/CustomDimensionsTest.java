@@ -24,7 +24,7 @@ abstract class CustomDimensionsTest {
   //  instead of this seemingly ad-hoc location
   @RegisterExtension
   static final SmokeTestExtension testing =
-      SmokeTestExtension.builder().setSelfDiagnosticsLevel("debug").build();
+      SmokeTestExtension.builder().setSelfDiagnosticsLevel("trace").build();
 
   @Test
   @TargetUri("/test")
