@@ -106,7 +106,12 @@ tasks {
 
     // this distro uses logback, so need to exclude slf4j-simple
     exclude("inst/io/opentelemetry/javaagent/slf4j/simple/**")
+    // unfortunately, this also excludes the same from our distro (which points to logback)
+    // and so we have to hackily re-add it via agent/agent/src/main/resources
+    exclude("inst/META-INF/services/io.opentelemetry.javaagent.slf4j.spi.SLF4JServiceProvider")
 
+    // this excludes the upstream classes, but not the distro classes since the exclusion step
+    // takes place before the transformation step
     exclude("io/opentelemetry/javaagent/shaded/instrumentation/api/instrumenter/http/TemporaryMetricsView.class")
     exclude("io/opentelemetry/javaagent/shaded/instrumentation/api/instrumenter/InstrumenterBuilder.class")
 
