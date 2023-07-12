@@ -188,9 +188,7 @@ public class StatusFile {
                 OutputStream b = null;
                 try {
                   b = getBuffer(file);
-                  new ObjectMapper()
-                      .writerWithDefaultPrettyPrinter()
-                      .writeValue(b, map);
+                  new ObjectMapper().writerWithDefaultPrettyPrinter().writeValue(b, map);
                   b.flush();
                 } catch (Exception e) {
                   if (logger != null) {

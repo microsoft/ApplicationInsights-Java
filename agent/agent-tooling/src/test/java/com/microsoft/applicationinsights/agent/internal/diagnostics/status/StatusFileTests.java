@@ -43,8 +43,8 @@ class StatusFileTests {
     // TODO these tests currently only pass on windows
     assumeTrue(DiagnosticsHelper.isOsWindows());
     envVars.set("APPINSIGHTS_INSTRUMENTATIONKEY", TEST_IKEY);
-    envVars.set(AgentExtensionVersionFinder.AGENT_EXTENSION_VERSION_ENVIRONMENT_VARIABLE,
-        FAKE_VERSION);
+    envVars.set(
+        AgentExtensionVersionFinder.AGENT_EXTENSION_VERSION_ENVIRONMENT_VARIABLE, FAKE_VERSION);
   }
 
   @AfterEach
@@ -92,8 +92,8 @@ class StatusFileTests {
     assertMapHasExpectedInformation(inputMap, null, null);
   }
 
-  void assertMapHasExpectedInformation(Map<String, Object> inputMap, @Nullable String key,
-      @Nullable String value) {
+  void assertMapHasExpectedInformation(
+      Map<String, Object> inputMap, @Nullable String key, @Nullable String value) {
     int size = 5;
     if (key != null && value != null) {
       size = 6;
@@ -145,8 +145,8 @@ class StatusFileTests {
   Map<?, ?> parseJsonFile(File tempFolder) throws IOException {
     ObjectMapper mapper = new ObjectMapper();
     String fileName = StatusFile.constructFileName(StatusFile.getJsonMap());
-    String contents = new String(Files.readAllBytes(new File(tempFolder, fileName).toPath()),
-        UTF_8);
+    String contents =
+        new String(Files.readAllBytes(new File(tempFolder, fileName).toPath()), UTF_8);
     return mapper.readValue(contents, Map.class);
   }
 
