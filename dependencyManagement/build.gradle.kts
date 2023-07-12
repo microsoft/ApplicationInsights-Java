@@ -40,12 +40,7 @@ val errorProneVersion = "2.19.1"
 val byteBuddyVersion = "1.12.18"
 val jmhVersion = "1.36"
 val mockitoVersion = "4.11.0"
-// moving to 2.0 is problematic because the SPI mechanism in 2.0 doesn't work in the
-// bootstrap class loader because, while we add the agent jar to the bootstrap class loader
-// via Instrumentation.appendToBootstrapClassLoaderSearch(), there's nothing similar for
-// resources (which is a known problem in the java agent world), and so the META-INF/services
-// resource is not found
-val slf4jVersion = "1.7.36"
+val slf4jVersion = "2.0.7"
 // 1.12.0 and above use okio 2.x which pulls in kotlin libs
 val moshiVersion = "1.11.0"
 
@@ -76,7 +71,7 @@ val CORE_DEPENDENCIES = listOf(
 )
 
 val DEPENDENCIES = listOf(
-  "ch.qos.logback:logback-classic:1.2.12",
+  "ch.qos.logback:logback-classic:1.3.8", // logback 1.4+ requires Java 11+
   "ch.qos.logback.contrib:logback-json-classic:0.1.5",
   "com.uber.nullaway:nullaway:0.10.11",
   "commons-codec:commons-codec:1.16.0",

@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-package com.microsoft.applicationinsights.agent.bootstrap.diagnostics.etw;
+package com.microsoft.applicationinsights.agent.internal.diagnostics.etw;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,7 +10,7 @@ import org.slf4j.Marker;
 // TODO (trask) ETW: is this really needed? if so, need to restore devtest configuration
 public class DiagnosticsLoggerProxy implements Logger {
   // Hardcoded to avoid dependency:
-  // com.microsoft.applicationinsights.agent.bootstrap.diagnostics.DiagnosticsHelper.DIAGNOSTICS_LOGGER_NAME
+  // com.microsoft.applicationinsights.agent.internal.diagnostics.DiagnosticsHelper.DIAGNOSTICS_LOGGER_NAME
   private static final Logger LOGGER =
       LoggerFactory.getLogger("applicationinsights.extension.diagnostics");
 

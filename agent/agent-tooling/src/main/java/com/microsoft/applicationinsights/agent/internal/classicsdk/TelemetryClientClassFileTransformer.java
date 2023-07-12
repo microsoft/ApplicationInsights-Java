@@ -30,7 +30,7 @@ import static org.objectweb.asm.Opcodes.ISTORE;
 import static org.objectweb.asm.Opcodes.NEW;
 import static org.objectweb.asm.Opcodes.RETURN;
 
-import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.status.StatusFile;
+import com.microsoft.applicationinsights.agent.internal.diagnostics.status.StatusFile;
 import java.lang.instrument.ClassFileTransformer;
 import java.security.ProtectionDomain;
 import javax.annotation.Nullable;

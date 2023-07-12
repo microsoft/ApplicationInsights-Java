@@ -3,7 +3,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.perfcounter;
 
-import static com.microsoft.applicationinsights.agent.bootstrap.diagnostics.MsgId.FREE_MEMORY_METRIC_ERROR;
+import static com.microsoft.applicationinsights.agent.internal.diagnostics.MsgId.FREE_MEMORY_METRIC_ERROR;
 
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import java.lang.management.ManagementFactory;

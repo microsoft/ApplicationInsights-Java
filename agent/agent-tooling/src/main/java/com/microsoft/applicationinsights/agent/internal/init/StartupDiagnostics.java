@@ -3,7 +3,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.init;
 
-import com.microsoft.applicationinsights.agent.bootstrap.diagnostics.PidFinder;
+import com.microsoft.applicationinsights.agent.internal.diagnostics.PidFinder;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.File;
 import java.io.IOException;
