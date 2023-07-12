@@ -104,15 +104,19 @@ class ConfigurationTest {
   }
 
   @Test
-  void shouldThrowFromEnvVarIfEmbeddedConnectionString() {
-    DiagnosticsHelper.useAppSvcRpIntegrationLogging = true;
-    String contentJson =
-        "{\"connectionString\":\"InstrumentationKey=55555555-5555-5555-5555-555555555555\","
-            + "\"role\":{\"name\":\"testrole\"}}";
-    envVars.set("APPLICATIONINSIGHTS_CONFIGURATION_CONTENT", contentJson);
+  void shouldThrowFromEnvVarIfEmbeddedConnectionStringAndAppSvcRpIntegration() {
+    DiagnosticsHelper.appSvcRpIntegration = true;
+    try {
+      String contentJson =
+          "{\"connectionString\":\"InstrumentationKey=55555555-5555-5555-5555-555555555555\","
+              + "\"role\":{\"name\":\"testrole\"}}";
+      envVars.set("APPLICATIONINSIGHTS_CONFIGURATION_CONTENT", contentJson);
 
-    assertThatThrownBy(() -> ConfigurationBuilder.create(Paths.get("."), null))
-        .isInstanceOf(ConfigurationBuilder.ConfigurationException.class);
+      assertThatThrownBy(() -> ConfigurationBuilder.create(Paths.get("."), null))
+          .isInstanceOf(ConfigurationBuilder.ConfigurationException.class);
+    } finally {
+      DiagnosticsHelper.appSvcRpIntegration = false;
+    }
   }
 
   @Test

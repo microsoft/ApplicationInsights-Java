@@ -57,9 +57,9 @@ public class LoggingConfigurator {
   void configure() {
     loggerContext.getLogger(ROOT_LOGGER_NAME).detachAndStopAllAppenders();
 
-    if (DiagnosticsHelper.useAppSvcRpIntegrationLogging()) {
+    if (DiagnosticsHelper.isAppSvcRpIntegration()) {
       configureAppSvc();
-    } else if (DiagnosticsHelper.useFunctionsRpIntegrationLogging()) {
+    } else if (DiagnosticsHelper.isFunctionsRpIntegration()) {
       configureFunctions();
     } else if (destination == null || destination.equalsIgnoreCase("file+console")) {
       configureFileAndConsole();
@@ -203,7 +203,7 @@ public class LoggingConfigurator {
     appender.setName("CONSOLE");
 
     // format Functions diagnostic log as comma separated
-    if (DiagnosticsHelper.useFunctionsRpIntegrationLogging()) {
+    if (DiagnosticsHelper.isFunctionsRpIntegration()) {
       appender.setLayout(
           new ApplicationInsightsCsvLayout(PropertyHelper.getQualifiedSdkVersionString()));
     } else {
