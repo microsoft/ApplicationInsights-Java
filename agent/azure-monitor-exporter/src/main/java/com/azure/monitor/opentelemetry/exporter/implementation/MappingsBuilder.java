@@ -21,7 +21,16 @@ class MappingsBuilder {
       new HashSet<>(
           asList(
               "http.",
-              "db.",
+
+              // specifically listing out all standard db.* attributes
+              // so that db.cosmosdb.* attributes will be preserved
+              SemanticAttributes.DB_SYSTEM.getKey(),
+              SemanticAttributes.DB_NAME.getKey(),
+              SemanticAttributes.DB_STATEMENT.getKey(),
+              SemanticAttributes.DB_OPERATION.getKey(),
+              SemanticAttributes.DB_CONNECTION_STRING.getKey(),
+              SemanticAttributes.DB_USER.getKey(),
+              SemanticAttributes.DB_SQL_TABLE.getKey(),
               "message.",
               "messaging.",
               "rpc.",
