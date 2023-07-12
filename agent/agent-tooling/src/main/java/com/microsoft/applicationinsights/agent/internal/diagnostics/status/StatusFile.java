@@ -6,17 +6,19 @@ package com.microsoft.applicationinsights.agent.internal.diagnostics.status;
 import static com.microsoft.applicationinsights.agent.internal.diagnostics.DiagnosticsHelper.LINUX_DEFAULT;
 import static com.microsoft.applicationinsights.agent.internal.diagnostics.MsgId.STATUS_FILE_ERROR;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.applicationinsights.agent.internal.diagnostics.ApplicationMetadataFactory;
 import com.microsoft.applicationinsights.agent.internal.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.internal.diagnostics.DiagnosticsValueFinder;
 import com.microsoft.applicationinsights.agent.internal.diagnostics.MachineNameFinder;
 import com.microsoft.applicationinsights.agent.internal.diagnostics.PidFinder;
-import com.squareup.moshi.Moshi;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
+import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -29,8 +31,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
-import okio.BufferedSink;
-import okio.Okio;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -81,7 +81,7 @@ public class StatusFile {
   private static String uniqueId;
 
   // guarded by lock
-  private static BufferedSink buffer;
+  private static OutputStream buffer;
 
   private static final ThreadPoolExecutor WRITER_THREAD =
       new ThreadPoolExecutor(
@@ -185,15 +185,12 @@ public class StatusFile {
               Logger logger = loggingInitialized ? LoggerFactory.getLogger(StatusFile.class) : null;
 
               if (dirsWereCreated || file.getParentFile().exists()) {
-                BufferedSink b = null;
+                OutputStream b = null;
                 try {
                   b = getBuffer(file);
-                  new Moshi.Builder()
-                      .build()
-                      .adapter(Map.class)
-                      .indent(" ")
-                      .nullSafe()
-                      .toJson(b, map);
+                  new ObjectMapper()
+                      .writerWithDefaultPrettyPrinter()
+                      .writeValue(b, map);
                   b.flush();
                 } catch (Exception e) {
                   if (logger != null) {
@@ -241,29 +238,27 @@ public class StatusFile {
     return new File(logDir).canWrite();
   }
 
-  private static BufferedSink getBuffer(File file) throws IOException {
+  private static OutputStream getBuffer(File file) throws IOException {
     synchronized (lock) {
       if (buffer != null) {
         buffer.close();
       }
       if (DiagnosticsHelper.isOsWindows()) {
         buffer =
-            Okio.buffer(
-                Okio.sink(
-                    file.toPath(),
-                    StandardOpenOption.CREATE,
-                    StandardOpenOption.DELETE_ON_CLOSE,
-                    StandardOpenOption.WRITE,
-                    StandardOpenOption.TRUNCATE_EXISTING));
+            Files.newOutputStream(
+                file.toPath(),
+                StandardOpenOption.CREATE,
+                StandardOpenOption.DELETE_ON_CLOSE,
+                StandardOpenOption.WRITE,
+                StandardOpenOption.TRUNCATE_EXISTING);
       } else { // on linux, the file is deleted/unlinked immediately using DELETE_ON_CLOSE making it
         // unavailable to other processes. Using shutdown hook instead.
         buffer =
-            Okio.buffer(
-                Okio.sink(
-                    file.toPath(),
-                    StandardOpenOption.CREATE,
-                    StandardOpenOption.WRITE,
-                    StandardOpenOption.TRUNCATE_EXISTING));
+            Files.newOutputStream(
+                file.toPath(),
+                StandardOpenOption.CREATE,
+                StandardOpenOption.WRITE,
+                StandardOpenOption.TRUNCATE_EXISTING);
         file.deleteOnExit();
       }
       return buffer;

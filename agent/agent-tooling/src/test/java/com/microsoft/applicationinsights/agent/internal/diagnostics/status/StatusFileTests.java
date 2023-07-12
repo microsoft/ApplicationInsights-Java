@@ -7,11 +7,10 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.applicationinsights.agent.internal.diagnostics.AgentExtensionVersionFinder;
 import com.microsoft.applicationinsights.agent.internal.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.internal.diagnostics.DiagnosticsTestHelper;
-import com.squareup.moshi.JsonAdapter;
-import com.squareup.moshi.Moshi;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -44,8 +43,8 @@ class StatusFileTests {
     // TODO these tests currently only pass on windows
     assumeTrue(DiagnosticsHelper.isOsWindows());
     envVars.set("APPINSIGHTS_INSTRUMENTATIONKEY", TEST_IKEY);
-    envVars.set(
-        AgentExtensionVersionFinder.AGENT_EXTENSION_VERSION_ENVIRONMENT_VARIABLE, FAKE_VERSION);
+    envVars.set(AgentExtensionVersionFinder.AGENT_EXTENSION_VERSION_ENVIRONMENT_VARIABLE,
+        FAKE_VERSION);
   }
 
   @AfterEach
@@ -93,8 +92,8 @@ class StatusFileTests {
     assertMapHasExpectedInformation(inputMap, null, null);
   }
 
-  void assertMapHasExpectedInformation(
-      Map<String, Object> inputMap, @Nullable String key, @Nullable String value) {
+  void assertMapHasExpectedInformation(Map<String, Object> inputMap, @Nullable String key,
+      @Nullable String value) {
     int size = 5;
     if (key != null && value != null) {
       size = 6;
@@ -143,12 +142,12 @@ class StatusFileTests {
     TimeUnit.SECONDS.sleep(5);
   }
 
-  Map parseJsonFile(File tempFolder) throws IOException {
-    JsonAdapter<Map> adapter = new Moshi.Builder().build().adapter(Map.class);
+  Map<?, ?> parseJsonFile(File tempFolder) throws IOException {
+    ObjectMapper mapper = new ObjectMapper();
     String fileName = StatusFile.constructFileName(StatusFile.getJsonMap());
-    String contents =
-        new String(Files.readAllBytes(new File(tempFolder, fileName).toPath()), UTF_8);
-    return adapter.fromJson(contents);
+    String contents = new String(Files.readAllBytes(new File(tempFolder, fileName).toPath()),
+        UTF_8);
+    return mapper.readValue(contents, Map.class);
   }
 
   @Test
