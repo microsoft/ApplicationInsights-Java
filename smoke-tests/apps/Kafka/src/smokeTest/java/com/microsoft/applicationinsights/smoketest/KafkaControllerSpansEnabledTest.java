@@ -41,7 +41,7 @@ class KafkaControllerSpansEnabledTest {
 
     Envelope rdEnvelope2 = getRequestEnvelope(rdList, "mytopic process");
     Envelope rddEnvelope1 = getDependencyEnvelope(rddList, "HelloController.sendMessage");
-    Envelope rddEnvelope2 = getDependencyEnvelope(rddList, "mytopic send");
+    Envelope rddEnvelope2 = getDependencyEnvelope(rddList, "mytopic publish");
     Envelope rddEnvelope3 = getDependencyEnvelope(rddList, "GET /");
 
     assertThat(rdEnvelope1.getSampleRate()).isNull();
@@ -72,7 +72,7 @@ class KafkaControllerSpansEnabledTest {
     assertThat(rdd1.getProperties()).isEmpty();
     assertThat(rdd1.getSuccess()).isTrue();
 
-    assertThat(rdd2.getName()).isEqualTo("mytopic send");
+    assertThat(rdd2.getName()).isEqualTo("mytopic publish");
     assertThat(rdd2.getData()).isNull();
     assertThat(rdd2.getType()).isEqualTo("Queue Message | kafka");
     assertThat(rdd2.getTarget()).isEqualTo("mytopic");

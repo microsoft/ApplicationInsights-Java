@@ -57,7 +57,7 @@ abstract class KafkaTest {
     }
 
     Envelope rdEnvelope2 = getRequestEnvelope(rdList, "mytopic process");
-    Envelope rddEnvelope1 = getDependencyEnvelope(rddList, "mytopic send");
+    Envelope rddEnvelope1 = getDependencyEnvelope(rddList, "mytopic publish");
     Envelope rddEnvelope2 = getDependencyEnvelope(rddList, "GET /");
 
     assertThat(rdEnvelope1.getSampleRate()).isNull();
@@ -78,7 +78,7 @@ abstract class KafkaTest {
         .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
     assertThat(rd1.getSuccess()).isTrue();
 
-    assertThat(rdd1.getName()).isEqualTo("mytopic send");
+    assertThat(rdd1.getName()).isEqualTo("mytopic publish");
     assertThat(rdd1.getData()).isNull();
     assertThat(rdd1.getType()).isEqualTo("Queue Message | kafka");
     assertThat(rdd1.getTarget()).isEqualTo("mytopic");

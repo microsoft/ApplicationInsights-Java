@@ -77,7 +77,7 @@ class SpringCloudStreamControllerSpansEnabledTest {
     assertThat(rdd1.getProperties()).isEmpty();
     assertThat(rdd1.getSuccess()).isTrue();
 
-    assertThat(rdd2.getName()).isEqualTo("greetings send");
+    assertThat(rdd2.getName()).isEqualTo("greetings publish");
     assertThat(rdd2.getData()).isNull();
     assertThat(rdd2.getType()).isEqualTo("Queue Message | kafka");
     assertThat(rdd2.getTarget()).isEqualTo("greetings");

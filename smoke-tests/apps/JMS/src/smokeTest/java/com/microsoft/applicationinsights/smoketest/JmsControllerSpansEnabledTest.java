@@ -34,7 +34,7 @@ class JmsControllerSpansEnabledTest {
 
     Envelope rdEnvelope2 = getRequestEnvelope(rdList, "message process");
     Envelope rddEnvelope1 = getDependencyEnvelope(rddList, "HelloController.sendMessage");
-    Envelope rddEnvelope2 = getDependencyEnvelope(rddList, "message send");
+    Envelope rddEnvelope2 = getDependencyEnvelope(rddList, "message publish");
     Envelope rddEnvelope3 = getDependencyEnvelope(rddList, "GET /");
 
     assertThat(rdEnvelope1.getSampleRate()).isNull();
@@ -65,7 +65,7 @@ class JmsControllerSpansEnabledTest {
     assertThat(rdd1.getProperties()).isEmpty();
     assertThat(rdd1.getSuccess()).isTrue();
 
-    assertThat(rdd2.getName()).isEqualTo("message send");
+    assertThat(rdd2.getName()).isEqualTo("message publish");
     assertThat(rdd2.getData()).isNull();
     assertThat(rdd2.getType()).isEqualTo("Queue Message | jms");
     assertThat(rdd2.getTarget()).isEqualTo("message");
