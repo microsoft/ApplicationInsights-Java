@@ -12,8 +12,6 @@ dependencies {
 
   implementation("com.microsoft.jfr:jfr-streaming")
   implementation("com.azure:azure-storage-blob")
-  implementation("com.squareup.moshi:moshi")
-  implementation("com.squareup.moshi:moshi-adapters")
 
   implementation(project(":agent:agent-profiler:agent-alerting-api"))
   implementation(project(":agent:agent-profiler:agent-alerting"))

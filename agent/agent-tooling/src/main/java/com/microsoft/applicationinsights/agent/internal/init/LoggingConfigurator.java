@@ -26,7 +26,7 @@ import com.microsoft.applicationinsights.agent.internal.diagnostics.etw.EtwAppen
 import com.microsoft.applicationinsights.agent.internal.diagnostics.log.ApplicationInsightsCsvLayout;
 import com.microsoft.applicationinsights.agent.internal.diagnostics.log.ApplicationInsightsDiagnosticsLogFilter;
 import com.microsoft.applicationinsights.agent.internal.diagnostics.log.ApplicationInsightsJsonLayout;
-import com.microsoft.applicationinsights.agent.internal.diagnostics.log.MoshiJsonFormatter;
+import com.microsoft.applicationinsights.agent.internal.diagnostics.log.JacksonJsonFormatter;
 import com.microsoft.applicationinsights.agent.internal.logbackpatch.FixedWindowRollingPolicy;
 import java.nio.file.Path;
 import org.slf4j.LoggerFactory;
@@ -242,8 +242,7 @@ public class LoggingConfigurator {
     layout.setTimestampFormatTimezoneId("Etc/UTC");
     layout.setAppendLineSeparator(true);
 
-    MoshiJsonFormatter jsonFormatter = new MoshiJsonFormatter();
-    jsonFormatter.setPrettyPrint(false);
+    JacksonJsonFormatter jsonFormatter = new JacksonJsonFormatter();
 
     layout.setJsonFormatter(jsonFormatter);
     layout.start();

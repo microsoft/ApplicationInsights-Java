@@ -35,17 +35,9 @@ tasks.withType<ShadowJar>().configureEach {
   relocate("io.opentelemetry.extension.aws", "io.opentelemetry.javaagent.shaded.io.opentelemetry.extension.aws")
   relocate("io.opentelemetry.extension.kotlin", "io.opentelemetry.javaagent.shaded.io.opentelemetry.extension.kotlin")
 
-  // from logback-classic
-  exclude("META-INF/services/javax.servlet.ServletContainerInitializer")
-  // from moshi
-  exclude("META-INF/proguard/**")
-  exclude("META-INF/moshi.kotlin_module")
-
   val shadowPrefix = "com.microsoft.applicationinsights.agent.shadow"
 
   relocate("ch.qos.logback", "$shadowPrefix.ch.qos.logback")
-  relocate("com.squareup.moshi", "$shadowPrefix.com.squareup.moshi")
-  relocate("okio", "$shadowPrefix.okio")
   relocate("javax.annotation", "$shadowPrefix.javax.annotation")
 
   // to prevent accidentally picking up from user's class path

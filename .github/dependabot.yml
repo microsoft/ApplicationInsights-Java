@@ -19,9 +19,6 @@ updates:
       - dependency-name: "ch.qos.logback:*"
         # logback 1.4+ requires Java 11+
         versions: [ "[1.4,)" ]
-      - dependency-name: "com.squareup.moshi:*"
-        # 1.12.0 and above use okio 2.x which pulls in kotlin libs (which are large)
-        versions: [ "[1.12,)" ]
       - dependency-name: "org.springframework.boot:spring-boot-gradle-plugin"
         # this is used for smoke tests
         # spring boot 3 requires Java 17, and we're not ready yet

@@ -41,8 +41,6 @@ val byteBuddyVersion = "1.12.18"
 val jmhVersion = "1.36"
 val mockitoVersion = "4.11.0"
 val slf4jVersion = "2.0.7"
-// 1.12.0 and above use okio 2.x which pulls in kotlin libs
-val moshiVersion = "1.11.0"
 
 val CORE_DEPENDENCIES = listOf(
   "com.google.auto.service:auto-service:${autoServiceVersion}",
@@ -60,8 +58,6 @@ val CORE_DEPENDENCIES = listOf(
   "org.slf4j:log4j-over-slf4j:${slf4jVersion}",
   "org.slf4j:jcl-over-slf4j:${slf4jVersion}",
   "org.slf4j:jul-to-slf4j:${slf4jVersion}",
-  "com.squareup.moshi:moshi:${moshiVersion}",
-  "com.squareup.moshi:moshi-adapters:${moshiVersion}",
   "io.opentelemetry.javaagent:opentelemetry-javaagent-extension-api:${otelInstrumentationAlphaVersion}",
   "io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap:${otelInstrumentationAlphaVersion}",
   "io.opentelemetry.javaagent:opentelemetry-javaagent-tooling:${otelInstrumentationAlphaVersion}",
