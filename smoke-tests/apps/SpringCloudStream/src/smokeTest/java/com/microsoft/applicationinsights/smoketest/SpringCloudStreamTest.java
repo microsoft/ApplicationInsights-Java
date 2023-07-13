@@ -63,7 +63,7 @@ abstract class SpringCloudStreamTest {
         .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
     assertThat(rd1.getSuccess()).isTrue();
 
-    assertThat(rdd1.getName()).isEqualTo("greetings send");
+    assertThat(rdd1.getName()).isEqualTo("greetings publish");
     assertThat(rdd1.getData()).isNull();
     assertThat(rdd1.getType()).isEqualTo("Queue Message | kafka");
     assertThat(rdd1.getTarget()).isEqualTo("greetings");

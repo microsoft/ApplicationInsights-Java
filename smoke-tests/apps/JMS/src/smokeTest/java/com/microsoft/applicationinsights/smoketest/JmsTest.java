@@ -40,7 +40,7 @@ abstract class JmsTest {
     assertThat(testing.mockedIngestion.getCountForType("EventData")).isZero();
 
     Envelope rdEnvelope2 = getRequestEnvelope(rdList, "message process");
-    Envelope rddEnvelope1 = getDependencyEnvelope(rddList, "message send");
+    Envelope rddEnvelope1 = getDependencyEnvelope(rddList, "message publish");
     Envelope rddEnvelope2 = getDependencyEnvelope(rddList, "GET /");
 
     assertThat(rdEnvelope1.getSampleRate()).isNull();
@@ -61,7 +61,7 @@ abstract class JmsTest {
         .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
     assertThat(rd1.getSuccess()).isTrue();
 
-    assertThat(rdd1.getName()).isEqualTo("message send");
+    assertThat(rdd1.getName()).isEqualTo("message publish");
     assertThat(rdd1.getData()).isNull();
     assertThat(rdd1.getType()).isEqualTo("Queue Message | jms");
     assertThat(rdd1.getTarget()).isEqualTo("message");

@@ -236,7 +236,7 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
     }
 
     // TODO (trask) add this method to AutoConfigurationCustomizer upstream?
-    ((AutoConfiguredOpenTelemetrySdkBuilder) autoConfiguration).registerShutdownHook(false);
+    ((AutoConfiguredOpenTelemetrySdkBuilder) autoConfiguration).disableShutdownHook();
 
     QuickPulse quickPulse;
     if (configuration.preview.liveMetrics.enabled) {
@@ -648,7 +648,7 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
               .setScheduleDelay(getBatchProcessorDelay())
               .build();
 
-      builder.addLogRecordProcessor(new TimestampingLogRecordProcessor(batchLogProcessor));
+      builder.addLogRecordProcessor(batchLogProcessor);
     }
 
     return builder;
