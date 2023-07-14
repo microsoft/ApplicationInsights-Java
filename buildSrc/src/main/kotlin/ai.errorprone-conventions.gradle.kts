@@ -59,6 +59,8 @@ tasks {
         disable("UnnecessaryDefaultInEnumSwitch")
         disable("InconsistentOverloads")
 
+        disable("CanIgnoreReturnValueSuggester")
+
         // YodaConditions may improve safety in some cases. The argument of increased
         // cognitive load is dubious.
         disable("YodaCondition")
