@@ -19,11 +19,9 @@ dependencies {
   implementation(project(":agent:agent-gc-monitor:gc-monitor-core"))
   implementation(project(":agent:agent-profiler:agent-diagnostics-api"))
   implementation(project(":agent:agent-profiler:agent-diagnostics"))
-  implementation(project(":agent:azure-monitor-exporter")) {
-    exclude("org.ow2.asm", "asm")
-  }
   implementation(project(":etw:java"))
 
+  implementation("com.azure:azure-monitor-opentelemetry-exporter:1.0.0-beta.9")
   compileOnly("io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap")
   compileOnly("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling")
   compileOnly("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-common-bootstrap")
