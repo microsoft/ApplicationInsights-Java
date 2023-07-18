@@ -4,6 +4,7 @@
 package io.opentelemetry.javaagent.instrumentation.micrometer.ai;
 
 import static com.microsoft.applicationinsights.agent.bootstrap.MicrometerUtil.trackMetric;
+import static java.util.logging.Level.WARNING;
 
 import io.micrometer.core.instrument.Clock;
 import io.micrometer.core.instrument.Counter;
@@ -23,8 +24,11 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
 
 public class AzureMonitorMeterRegistry extends StepMeterRegistry {
+
+  private static final Logger logger = Logger.getLogger(AzureMonitorMeterRegistry.class.getName());
 
   public static final AzureMonitorMeterRegistry INSTANCE =
       new AzureMonitorMeterRegistry(Clock.SYSTEM);
@@ -67,19 +71,25 @@ public class AzureMonitorMeterRegistry extends StepMeterRegistry {
   }
 
   private void trackTimeGauge(TimeGauge gauge) {
-    trackMetric(
-        getName(gauge),
-        getNamespace(),
-        gauge.value(getBaseTimeUnit()),
-        null,
-        null,
-        null,
-        getProperties(gauge));
+    double value;
+    try {
+      value = gauge.value(getBaseTimeUnit());
+    } catch (Exception e) {
+      logger.log(WARNING, "Error while reading micrometer gauge value", e);
+      return;
+    }
+    trackMetric(getName(gauge), getNamespace(), value, null, null, null, getProperties(gauge));
   }
 
   private void trackGauge(Gauge gauge) {
-    trackMetric(
-        getName(gauge), getNamespace(), gauge.value(), null, null, null, getProperties(gauge));
+    double value;
+    try {
+      value = gauge.value();
+    } catch (Exception e) {
+      logger.log(WARNING, "Error while reading micrometer gauge value", e);
+      return;
+    }
+    trackMetric(getName(gauge), getNamespace(), value, null, null, null, getProperties(gauge));
   }
 
   private void trackCounter(Counter counter) {
