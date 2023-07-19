@@ -86,7 +86,7 @@ public class FirstEntryPoint implements LoggingCustomizer {
       Path agentPath = javaagentFile.toPath();
       // need to initialize version before initializing DiagnosticsHelper
       agentVersion = SdkVersionFinder.initVersion(agentPath);
-      DiagnosticsHelper.setAgentJarFile(agentPath);
+
       // configuration is only read this early in order to extract logging configuration
       rpConfiguration = RpConfigurationBuilder.create(agentPath);
       configuration = ConfigurationBuilder.create(agentPath, rpConfiguration);

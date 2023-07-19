@@ -3,19 +3,20 @@
 
 package com.microsoft.applicationinsights.agent.internal.diagnostics;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.AksResourceAttributes;
+import jdk.internal.joptsimple.internal.Strings;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
 public class DiagnosticsHelper {
   private DiagnosticsHelper() {}
 
-  // Default is "" (meaning diagnostics file output is disabled)
-  public static final String APPLICATIONINSIGHTS_DIAGNOSTICS_OUTPUT_DIRECTORY =
-      "APPLICATIONINSIGHTS_DIAGNOSTICS_OUTPUT_DIRECTORY";
-
   // visible for testing
   public static volatile boolean appSvcRpIntegration;
   private static volatile boolean functionsRpIntegration;
+  private static volatile boolean aksRpIntegration;
+  private static volatile boolean vmRpIntegration;
+  private static volatile boolean springAppRpIntegration;
 
   private static volatile char rpIntegrationChar;
 
@@ -35,16 +36,18 @@ public class DiagnosticsHelper {
     isWindows = osName != null && osName.startsWith("Windows");
   }
 
-  public static void setAgentJarFile(Path agentPath) {
-    if (Files.exists(agentPath.resolveSibling("appsvc.codeless"))) {
+  public static void initRpIntegration() {
+    // XDT_MicrosoftApplicationInsights_Java can be used to determine auto vs manual attach
+    if (!Strings.isNullOrEmpty(System.getenv("WEBSITE_SITE_NAME"))) {
       rpIntegrationChar = 'a';
       appSvcRpIntegration = true;
-    } else if (Files.exists(agentPath.resolveSibling("aks.codeless"))) {
+    } else if (AksResourceAttributes.isAks()) {
       rpIntegrationChar = 'k';
-    } else if (Files.exists(agentPath.resolveSibling("functions.codeless"))) {
+      aksRpIntegration = true;
+    } else if ("java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME"))) {
       rpIntegrationChar = 'f';
       functionsRpIntegration = true;
-    } else if (Files.exists(agentPath.resolveSibling("springcloud.codeless"))) {
+    } else if (!Strings.isNullOrEmpty(System.getenv("APPLICATIONINSIGHTS_SPRINGCLOUD_SERVICE_ID"))) {
       rpIntegrationChar = 's';
     }
   }
