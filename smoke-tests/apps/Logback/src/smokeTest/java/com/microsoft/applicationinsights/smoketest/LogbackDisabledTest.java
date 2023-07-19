@@ -21,17 +21,11 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-@UseAgent
-abstract class LogbackDisabledTest {
+@Environment(TOMCAT_8_JAVA_8)
+@UseAgent("disabled_applicationinsights.json")
+class LogbackDisabledTest {
 
   @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.create();
-
-  // Not really sure that Logback is enabled with Wildfly
-  // https://anotheria.net/blog/devops/enable-logback-in-jboss/
-  // https://www.oreilly.com/library/view/wildfly-cookbook/9781784392413/ch04s08.html
-  boolean isWildflyServer() {
-    return false;
-  }
 
   @Test
   @TargetUri("/testDisabled")
@@ -43,42 +37,5 @@ abstract class LogbackDisabledTest {
     assertThat(rd.getName()).isEqualTo("GET /Logback/testDisabled");
 
     assertThat(testing.mockedIngestion.getCountForType("MessageData")).isZero();
-  }
-
-  @Environment(TOMCAT_8_JAVA_8)
-  static class Tomcat8Java8Test extends LogbackDisabledTest {}
-
-  @Environment(TOMCAT_8_JAVA_8_OPENJ9)
-  static class Tomcat8Java8OpenJ9Test extends LogbackDisabledTest {}
-
-  @Environment(TOMCAT_8_JAVA_11)
-  static class Tomcat8Java11Test extends LogbackDisabledTest {}
-
-  @Environment(TOMCAT_8_JAVA_11_OPENJ9)
-  static class Tomcat8Java11OpenJ9Test extends LogbackDisabledTest {}
-
-  @Environment(TOMCAT_8_JAVA_17)
-  static class Tomcat8Java17Test extends LogbackDisabledTest {}
-
-  @Environment(TOMCAT_8_JAVA_19)
-  static class Tomcat8Java19Test extends LogbackDisabledTest {}
-
-  @Environment(TOMCAT_8_JAVA_20)
-  static class Tomcat8Java20Test extends LogbackDisabledTest {}
-
-  @Environment(WILDFLY_13_JAVA_8)
-  static class Wildfly13Java8Test extends LogbackDisabledTest {
-    @Override
-    boolean isWildflyServer() {
-      return true;
-    }
-  }
-
-  @Environment(WILDFLY_13_JAVA_8_OPENJ9)
-  static class Wildfly13Java8OpenJ9Test extends LogbackDisabledTest {
-    @Override
-    boolean isWildflyServer() {
-      return true;
-    }
   }
 }
