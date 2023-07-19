@@ -325,7 +325,6 @@ public class FirstEntryPoint implements LoggingCustomizer {
           .warn("could not detect os: {}", System.getProperty("os.name"));
       sdkNamePrefix.append("u");
     }
-    sdkNamePrefix.append("r_"); // "r" is for "recommended"
     return sdkNamePrefix.toString();
   }
 

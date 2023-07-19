@@ -50,7 +50,7 @@ public class DiagnosticsHelper {
     } else if (!Strings.isNullOrEmpty(System.getenv("APPLICATIONINSIGHTS_SPRINGCLOUD_SERVICE_ID"))) {
       rpIntegrationChar = 's';
     }
-    // TODO (heya) detect VM environment
+    // TODO (heya) detect VM environment by checking the AzureMetadataService response
   }
 
   /** Is resource provider (Azure Spring Cloud, AppService, Azure Functions, AKS, VM...). */
