@@ -25,7 +25,7 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-@UseAgent
+@UseAgent("applicationinsights.json")
 abstract class JavaUtilLoggingTest {
 
   @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.create();
