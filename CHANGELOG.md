@@ -1,5 +1,27 @@
 # CHANGELOG
 
+## Version 3.4.15 GA
+
+### Enhancements:
+
+* Apply `exception.type` and `exception.message` attributes
+  ([#3148](https://github.com/microsoft/ApplicationInsights-Java/pull/3148))
+* Allow `"connectionString"` in `APPLICATIONINSIGHTS_CONFIGURATION_CONTENT`
+  except for app services integrated solution
+  ([#3191](https://github.com/microsoft/ApplicationInsights-Java/pull/3191))
+* Update to OpenTelemetry Java Instrumentation 1.28.0
+  ([#3199](https://github.com/microsoft/ApplicationInsights-Java/pull/3199))
+* Add config to disable logging instrumentation
+  (https://github.com/microsoft/ApplicationInsights-Java/pull/3208)
+
+### Bug fixes:
+
+* Fix log exporter self-diagnostics
+  ([#3140](https://github.com/microsoft/ApplicationInsights-Java/pull/3140))
+* Fix name of env var to match documentation
+  `APPLICATIONINSIGHTS_SAMPLING_REQUESTS_PER_SECOND`
+  ([#3161](https://github.com/microsoft/ApplicationInsights-Java/pull/3161))
+
 ## Version 3.4.14 GA
 
 ### Enhancements:
