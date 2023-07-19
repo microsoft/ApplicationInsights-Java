@@ -58,7 +58,6 @@ include(":agent:agent-profiler:agent-alerting")
 
 include(":agent:agent-bootstrap")
 include(":agent:agent-tooling")
-include(":agent:azure-monitor-exporter")
 include(":agent:agent-for-testing")
 hideFromDependabot(":agent:instrumentation:applicationinsights-web-2.3")
 include(":agent:instrumentation:azure-functions")
