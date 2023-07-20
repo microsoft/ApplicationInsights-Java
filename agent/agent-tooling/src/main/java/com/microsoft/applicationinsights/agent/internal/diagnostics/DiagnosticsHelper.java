@@ -4,7 +4,7 @@
 package com.microsoft.applicationinsights.agent.internal.diagnostics;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.AksResourceAttributes;
-import jdk.internal.joptsimple.internal.Strings;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
 
 public class DiagnosticsHelper {
   private DiagnosticsHelper() {}
@@ -12,6 +12,7 @@ public class DiagnosticsHelper {
   // visible for testing
   public static volatile boolean appSvcRpIntegration;
   private static volatile boolean functionsRpIntegration;
+
   private static volatile boolean aksRpIntegration;
   private static volatile boolean vmRpIntegration;
   private static volatile boolean springAppRpIntegration;
@@ -48,6 +49,7 @@ public class DiagnosticsHelper {
     } else if (!Strings.isNullOrEmpty(
         System.getenv("APPLICATIONINSIGHTS_SPRINGCLOUD_SERVICE_ID"))) {
       rpIntegrationChar = 's';
+      springAppRpIntegration = true;
     }
     // TODO (heya) detect VM environment by checking the AzureMetadataService response
   }
@@ -68,6 +70,18 @@ public class DiagnosticsHelper {
 
   public static boolean isFunctionsRpIntegration() {
     return functionsRpIntegration;
+  }
+
+  public static boolean isAksRpIntegration() {
+    return aksRpIntegration;
+  }
+
+  public static boolean isVmRpIntegration() {
+    return vmRpIntegration;
+  }
+
+  public static boolean isSpringAppRpIntegration() {
+    return springAppRpIntegration;
   }
 
   public static ApplicationMetadataFactory getMetadataFactory() {
