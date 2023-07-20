@@ -70,6 +70,13 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
     properties.put("otel.instrumentation.log4j-appender.experimental-log-attributes", "true");
     properties.put("otel.instrumentation.logback-appender.experimental-log-attributes", "true");
 
+    // disable logging appender
+    if (!configuration.instrumentation.logging.enabled) {
+      properties.put("otel.instrumentation.logback-appender.enabled", "false");
+      properties.put("otel.instrumentation.log4j-appender.enabled", "false");
+      properties.put("otel.instrumentation.java-util-logging.enabled", "false");
+    }
+
     // custom instrumentation
     if (!configuration.preview.customInstrumentation.isEmpty()) {
       StringBuilder sb = new StringBuilder();
