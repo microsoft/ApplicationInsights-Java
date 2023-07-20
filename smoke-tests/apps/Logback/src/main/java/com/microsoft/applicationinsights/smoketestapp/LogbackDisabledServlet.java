@@ -10,7 +10,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@WebServlet("/testWithException")
+@WebServlet("/testDisabled")
 public class LogbackDisabledServlet extends HttpServlet {
 
   private static final Logger logger = LoggerFactory.getLogger("smoketestapp");
