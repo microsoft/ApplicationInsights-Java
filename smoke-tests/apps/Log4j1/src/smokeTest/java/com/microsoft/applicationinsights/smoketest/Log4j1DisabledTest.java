@@ -15,7 +15,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 @Environment(TOMCAT_8_JAVA_8)
 @UseAgent("disabled_applicationinsights.json")
-class JavaUtilLoggingDisabledTest {
+class Log4j1DisabledTest {
 
   @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.create();
 
@@ -26,7 +26,7 @@ class JavaUtilLoggingDisabledTest {
 
     Envelope rdEnvelope = rdList.get(0);
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
-    assertThat(rd.getName()).isEqualTo("GET /JavaUtilLogging/test");
+    assertThat(rd.getName()).isEqualTo("GET /Log4j1/test");
 
     assertThat(testing.mockedIngestion.getCountForType("MessageData")).isZero();
   }

@@ -20,13 +20,13 @@ class Log4j2DisabledTest {
   @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.create();
 
   @Test
-  @TargetUri("/testDisabled")
+  @TargetUri("/test")
   void testDisabled() throws Exception {
     List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
 
     Envelope rdEnvelope = rdList.get(0);
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
-    assertThat(rd.getName()).isEqualTo("GET /Log4j2/testDisabled");
+    assertThat(rd.getName()).isEqualTo("GET /Log4j2/test");
 
     assertThat(testing.mockedIngestion.getCountForType("MessageData")).isZero();
   }
