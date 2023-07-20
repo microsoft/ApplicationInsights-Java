@@ -5,8 +5,6 @@ package com.microsoft.applicationinsights.agent.internal.diagnostics;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.AksResourceAttributes;
 import jdk.internal.joptsimple.internal.Strings;
-import java.nio.file.Files;
-import java.nio.file.Path;
 
 public class DiagnosticsHelper {
   private DiagnosticsHelper() {}
@@ -47,7 +45,8 @@ public class DiagnosticsHelper {
     } else if ("java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME"))) {
       rpIntegrationChar = 'f';
       functionsRpIntegration = true;
-    } else if (!Strings.isNullOrEmpty(System.getenv("APPLICATIONINSIGHTS_SPRINGCLOUD_SERVICE_ID"))) {
+    } else if (!Strings.isNullOrEmpty(
+        System.getenv("APPLICATIONINSIGHTS_SPRINGCLOUD_SERVICE_ID"))) {
       rpIntegrationChar = 's';
     }
     // TODO (heya) detect VM environment by checking the AzureMetadataService response
