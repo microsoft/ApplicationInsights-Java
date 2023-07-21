@@ -90,8 +90,8 @@
         "actions": [
           {
             "key": "httpPath",
-            "pattern": "(?<httpPath>.+)",
-            "replace": "*${httpPath}*",
+            "pattern": "^(?<userGroupName>[a-zA-Z.:\\/]+)\\d+",
+            "replace": "${userGroupName}**",
             "action": "mask"
           }
         ],
