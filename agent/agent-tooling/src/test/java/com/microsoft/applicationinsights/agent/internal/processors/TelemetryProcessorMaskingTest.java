@@ -32,7 +32,7 @@ import org.junit.jupiter.api.Test;
 class TelemetryProcessorMaskingTest {
 
   @Test
-  void should_mask_attribute() {
+  void shouldMaskAttribute() {
 
     String httpAttributeKey = "http.url";
     String httpUrl = "https://user/123456789";

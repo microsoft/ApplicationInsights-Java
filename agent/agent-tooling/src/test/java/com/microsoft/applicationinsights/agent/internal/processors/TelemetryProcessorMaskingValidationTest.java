@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 class TelemetryProcessorMaskingValidationTest {
 
   @Test
-  void an_invalid_reg_ex_should_throw_an_exception() {
+  void anInvalidRegRxShouldThrowAnException() {
 
     String invalidRegEx = "\\\\.\\";
 
@@ -34,7 +34,7 @@ class TelemetryProcessorMaskingValidationTest {
   }
 
   @Test
-  void no_attribute_key_should_throw_an_exception() {
+  void noAttributeKeyShouldThrowAnException() {
 
     String validRegEx = ".*";
     String noAttributeKey = null;
@@ -58,7 +58,7 @@ class TelemetryProcessorMaskingValidationTest {
   }
 
   @Test
-  void no_replace_should_throw_an_exception() {
+  void noReplaceShouldThrowAnException() {
     String validRegEx = ".*";
     String anAttributeKey = "http.url";
     String noReplace = null;
@@ -82,7 +82,7 @@ class TelemetryProcessorMaskingValidationTest {
   }
 
   @Test
-  void regex_should_contain_a_group_name_to_not_fail() {
+  void regexShouldContainAGroupNameToNotFail() {
     String validRegEx = "(?<groupName>.*)";
     String anAttributeKey = "http.url";
     String anyReplacementPattern = "";
@@ -105,7 +105,7 @@ class TelemetryProcessorMaskingValidationTest {
 
   @Test
   void
-      should_fail_if_the_group_name_does_not_match_the_replacement_value_indicated_between_dollar_curly_brace_and_curly_brace() {
+      shouldFailIfTheGroupGameDoesNotMatchTheReplacementValueIndicatedBetweenDollarCurlyBraceAndCurlyBrace() {
     String validRegEx = "(?<groupName>.*)";
     String anAttributeKey = "http.url";
     String replacementPattern = "${" + "replaceValueDifferentFromGroupName" + "}";
