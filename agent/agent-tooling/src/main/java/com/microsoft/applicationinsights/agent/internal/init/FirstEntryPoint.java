@@ -90,7 +90,7 @@ public class FirstEntryPoint implements LoggingCustomizer {
       // configuration is only read this early in order to extract logging configuration
       rpConfiguration = RpConfigurationBuilder.create(agentPath);
       configuration = ConfigurationBuilder.create(agentPath, rpConfiguration);
-
+      DiagnosticsHelper.initRpIntegration(agentPath);
       String codelessSdkNamePrefix = getCodelessSdkNamePrefix();
       if (codelessSdkNamePrefix != null) {
         PropertyHelper.setSdkNamePrefix(codelessSdkNamePrefix);

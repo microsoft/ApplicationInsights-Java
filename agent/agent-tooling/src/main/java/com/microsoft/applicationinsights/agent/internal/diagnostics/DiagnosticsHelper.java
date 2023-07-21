@@ -3,8 +3,13 @@
 
 package com.microsoft.applicationinsights.agent.internal.diagnostics;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.AksResourceAttributes;
+import static com.microsoft.applicationinsights.agent.internal.diagnostics.status.RpAttachHelper.AUTO_ATTACH;
+import static com.microsoft.applicationinsights.agent.internal.diagnostics.status.RpAttachHelper.MANUAL_ATTACH;
+
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
+import com.microsoft.applicationinsights.agent.internal.diagnostics.status.RpAttachHelper;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 public class DiagnosticsHelper {
   private DiagnosticsHelper() {}
@@ -18,7 +23,6 @@ public class DiagnosticsHelper {
   private static volatile boolean springAppRpIntegration;
 
   private static volatile char rpIntegrationChar;
-
   private static final boolean isWindows;
 
   public static final String LINUX_DEFAULT = "/var/log/applicationinsights";
@@ -35,23 +39,30 @@ public class DiagnosticsHelper {
     isWindows = osName != null && osName.startsWith("Windows");
   }
 
-  public static void initRpIntegration() {
-    // XDT_MicrosoftApplicationInsights_Java can be used to determine auto vs manual attach
+  public static void initRpIntegration(Path agentPath) {
     if (!Strings.isNullOrEmpty(System.getenv("WEBSITE_SITE_NAME"))) {
       rpIntegrationChar = 'a';
       appSvcRpIntegration = true;
-    } else if (AksResourceAttributes.isAks()) {
+      RpAttachHelper.setRpAttachType(
+          Files.exists(agentPath.resolveSibling("appsvc.codeless")) ? AUTO_ATTACH : MANUAL_ATTACH);
+    } else if (!Strings.isNullOrEmpty(System.getenv("KUBERNETES_SERVICE_HOST"))) {
       rpIntegrationChar = 'k';
       aksRpIntegration = true;
+      RpAttachHelper.setRpAttachType(
+          Files.exists(agentPath.resolveSibling("aks.codeless")) ? AUTO_ATTACH : MANUAL_ATTACH);
     } else if ("java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME"))) {
       rpIntegrationChar = 'f';
       functionsRpIntegration = true;
+      RpAttachHelper.setRpAttachType(
+          Files.exists(agentPath.resolveSibling("aks.codeless")) ? AUTO_ATTACH : MANUAL_ATTACH);
     } else if (!Strings.isNullOrEmpty(
         System.getenv("APPLICATIONINSIGHTS_SPRINGCLOUD_SERVICE_ID"))) {
       rpIntegrationChar = 's';
       springAppRpIntegration = true;
+      RpAttachHelper.setRpAttachType(
+          Files.exists(agentPath.resolveSibling("spring.codeless")) ? AUTO_ATTACH : MANUAL_ATTACH);
     }
-    // TODO (heya) detect VM environment by checking the AzureMetadataService response
+    // TODO (heya) detect VM environment by checking the AzureMetadataService response, manual only
   }
 
   /** Is resource provider (Azure Spring Cloud, AppService, Azure Functions, AKS, VM...). */
