@@ -18,10 +18,6 @@ public class DiagnosticsHelper {
   public static volatile boolean appSvcRpIntegration;
   private static volatile boolean functionsRpIntegration;
 
-  private static volatile boolean aksRpIntegration;
-  private static volatile boolean vmRpIntegration;
-  private static volatile boolean springAppRpIntegration;
-
   private static volatile char rpIntegrationChar;
   private static final boolean isWindows;
 
@@ -47,7 +43,6 @@ public class DiagnosticsHelper {
           Files.exists(agentPath.resolveSibling("appsvc.codeless")) ? AUTO_ATTACH : MANUAL_ATTACH);
     } else if (!Strings.isNullOrEmpty(System.getenv("KUBERNETES_SERVICE_HOST"))) {
       rpIntegrationChar = 'k';
-      aksRpIntegration = true;
       RpAttachHelper.setRpAttachType(
           Files.exists(agentPath.resolveSibling("aks.codeless")) ? AUTO_ATTACH : MANUAL_ATTACH);
     } else if ("java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME"))) {
@@ -58,7 +53,6 @@ public class DiagnosticsHelper {
     } else if (!Strings.isNullOrEmpty(
         System.getenv("APPLICATIONINSIGHTS_SPRINGCLOUD_SERVICE_ID"))) {
       rpIntegrationChar = 's';
-      springAppRpIntegration = true;
       RpAttachHelper.setRpAttachType(
           Files.exists(agentPath.resolveSibling("springcloud.codeless")) ? AUTO_ATTACH : MANUAL_ATTACH);
     }
@@ -81,18 +75,6 @@ public class DiagnosticsHelper {
 
   public static boolean isFunctionsRpIntegration() {
     return functionsRpIntegration;
-  }
-
-  public static boolean isAksRpIntegration() {
-    return aksRpIntegration;
-  }
-
-  public static boolean isVmRpIntegration() {
-    return vmRpIntegration;
-  }
-
-  public static boolean isSpringAppRpIntegration() {
-    return springAppRpIntegration;
   }
 
   public static ApplicationMetadataFactory getMetadataFactory() {
