@@ -86,11 +86,11 @@ public class FirstEntryPoint implements LoggingCustomizer {
       Path agentPath = javaagentFile.toPath();
       // need to initialize version before initializing DiagnosticsHelper
       agentVersion = SdkVersionFinder.initVersion(agentPath);
+      DiagnosticsHelper.initRpIntegration(agentPath);
 
       // configuration is only read this early in order to extract logging configuration
       rpConfiguration = RpConfigurationBuilder.create(agentPath);
       configuration = ConfigurationBuilder.create(agentPath, rpConfiguration);
-      DiagnosticsHelper.initRpIntegration(agentPath);
       String codelessSdkNamePrefix = getCodelessSdkNamePrefix();
       if (codelessSdkNamePrefix != null) {
         PropertyHelper.setSdkNamePrefix(codelessSdkNamePrefix);
