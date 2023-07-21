@@ -82,7 +82,7 @@ class TelemetryProcessorMaskingValidationTest {
   }
 
   @Test
-  void regexShouldContainAGroupNameToNotFail() {
+  void regexShouldContainAgroupNameToNotFail() {
     String validRegEx = "(?<groupName>.*)";
     String anAttributeKey = "http.url";
     String anyReplacementPattern = "";

@@ -48,7 +48,7 @@ class TelemetryProcessorMaskingTest {
     String replacementPattern = "${" + userGroupName + "}" + mask;
 
     SpanData newSpanData =
-        aMaskingAttributeProcessor(httpAttributeKey, regEx, replacementPattern)
+        maskingAttributeProcessor(httpAttributeKey, regEx, replacementPattern)
             .processActions(new RequestSpanData(httpUrl));
 
     Attributes newAttributes = newSpanData.getAttributes();
@@ -57,7 +57,7 @@ class TelemetryProcessorMaskingTest {
   }
 
   @NotNull
-  private static AttributeProcessor aMaskingAttributeProcessor(
+  private static AttributeProcessor maskingAttributeProcessor(
       String httpAttributeKey, String regEx, String replacementPattern) {
     Configuration.ProcessorAction maskingAction =
         new Configuration.ProcessorAction(
