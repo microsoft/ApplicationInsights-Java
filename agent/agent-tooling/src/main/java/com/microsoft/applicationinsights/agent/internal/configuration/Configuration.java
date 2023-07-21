@@ -226,6 +226,7 @@ public class Configuration {
 
   public static class LoggingInstrumentation {
     public String level = "INFO";
+    public boolean enabled = true;
 
     public int getSeverityThreshold() {
       return getSeverityThreshold(level);
