@@ -3,12 +3,8 @@
 
 package com.microsoft.applicationinsights.agent.internal.diagnostics;
 
-import static com.microsoft.applicationinsights.agent.internal.diagnostics.status.RpAttachHelper.AUTO_ATTACH;
-import static com.microsoft.applicationinsights.agent.internal.diagnostics.status.RpAttachHelper.MANUAL_ATTACH;
-
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
-import com.microsoft.applicationinsights.agent.internal.diagnostics.status.RpAttachHelper;
-import java.nio.file.Files;
+import com.microsoft.applicationinsights.agent.internal.diagnostics.status.RpAttachType;
 import java.nio.file.Path;
 
 public class DiagnosticsHelper {
@@ -39,24 +35,18 @@ public class DiagnosticsHelper {
     if (!Strings.isNullOrEmpty(System.getenv("WEBSITE_SITE_NAME"))) {
       rpIntegrationChar = 'a';
       appSvcRpIntegration = true;
-      RpAttachHelper.setRpAttachType(
-          Files.exists(agentPath.resolveSibling("appsvc.codeless")) ? AUTO_ATTACH : MANUAL_ATTACH);
+      RpAttachType.setRpAttachType(agentPath, "appsvc.codeless");
     } else if (!Strings.isNullOrEmpty(System.getenv("KUBERNETES_SERVICE_HOST"))) {
       rpIntegrationChar = 'k';
-      RpAttachHelper.setRpAttachType(
-          Files.exists(agentPath.resolveSibling("aks.codeless")) ? AUTO_ATTACH : MANUAL_ATTACH);
+      RpAttachType.setRpAttachType(agentPath, "aks.codeless");
     } else if ("java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME"))) {
       rpIntegrationChar = 'f';
       functionsRpIntegration = true;
-      RpAttachHelper.setRpAttachType(
-          Files.exists(agentPath.resolveSibling("aks.codeless")) ? AUTO_ATTACH : MANUAL_ATTACH);
+      RpAttachType.setRpAttachType(agentPath, "functions.codeless");
     } else if (!Strings.isNullOrEmpty(
         System.getenv("APPLICATIONINSIGHTS_SPRINGCLOUD_SERVICE_ID"))) {
       rpIntegrationChar = 's';
-      RpAttachHelper.setRpAttachType(
-          Files.exists(agentPath.resolveSibling("springcloud.codeless"))
-              ? AUTO_ATTACH
-              : MANUAL_ATTACH);
+      RpAttachType.setRpAttachType(agentPath, "springcloud.codeless");
     }
     // TODO (heya) detect VM environment by checking the AzureMetadataService response, manual only
   }
