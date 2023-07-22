@@ -86,7 +86,7 @@ public class FirstEntryPoint implements LoggingCustomizer {
       Path agentPath = javaagentFile.toPath();
       // need to initialize version before initializing DiagnosticsHelper
       agentVersion = SdkVersionFinder.initVersion(agentPath);
-      DiagnosticsHelper.setAgentJarFile(agentPath);
+      DiagnosticsHelper.initRpIntegration(agentPath);
       // configuration is only read this early in order to extract logging configuration
       rpConfiguration = RpConfigurationBuilder.create(agentPath);
       configuration = ConfigurationBuilder.create(agentPath, rpConfiguration);
@@ -325,7 +325,7 @@ public class FirstEntryPoint implements LoggingCustomizer {
           .warn("could not detect os: {}", System.getProperty("os.name"));
       sdkNamePrefix.append("u");
     }
-    sdkNamePrefix.append("r_"); // "r" is for "recommended"
+    sdkNamePrefix.append("_");
     return sdkNamePrefix.toString();
   }
 

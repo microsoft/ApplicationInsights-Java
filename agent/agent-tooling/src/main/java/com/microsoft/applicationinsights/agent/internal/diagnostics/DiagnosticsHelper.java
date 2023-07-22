@@ -3,22 +3,19 @@
 
 package com.microsoft.applicationinsights.agent.internal.diagnostics;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
+import com.microsoft.applicationinsights.agent.internal.diagnostics.status.RpAttachType;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
 public class DiagnosticsHelper {
   private DiagnosticsHelper() {}
 
-  // Default is "" (meaning diagnostics file output is disabled)
-  public static final String APPLICATIONINSIGHTS_DIAGNOSTICS_OUTPUT_DIRECTORY =
-      "APPLICATIONINSIGHTS_DIAGNOSTICS_OUTPUT_DIRECTORY";
-
   // visible for testing
   public static volatile boolean appSvcRpIntegration;
   private static volatile boolean functionsRpIntegration;
 
   private static volatile char rpIntegrationChar;
-
   private static final boolean isWindows;
 
   public static final String LINUX_DEFAULT = "/var/log/applicationinsights";
@@ -35,18 +32,24 @@ public class DiagnosticsHelper {
     isWindows = osName != null && osName.startsWith("Windows");
   }
 
-  public static void setAgentJarFile(Path agentPath) {
-    if (Files.exists(agentPath.resolveSibling("appsvc.codeless"))) {
+  public static void initRpIntegration(Path agentPath) {
+    if (!Strings.isNullOrEmpty(System.getenv("WEBSITE_SITE_NAME"))) {
       rpIntegrationChar = 'a';
       appSvcRpIntegration = true;
-    } else if (Files.exists(agentPath.resolveSibling("aks.codeless"))) {
+      setRpAttachType(agentPath, "appsvc.codeless");
+    } else if (!Strings.isNullOrEmpty(System.getenv("KUBERNETES_SERVICE_HOST"))) {
       rpIntegrationChar = 'k';
-    } else if (Files.exists(agentPath.resolveSibling("functions.codeless"))) {
+      setRpAttachType(agentPath, "aks.codeless");
+    } else if ("java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME"))) {
       rpIntegrationChar = 'f';
       functionsRpIntegration = true;
-    } else if (Files.exists(agentPath.resolveSibling("springcloud.codeless"))) {
+      setRpAttachType(agentPath, "functions.codeless");
+    } else if (!Strings.isNullOrEmpty(
+        System.getenv("APPLICATIONINSIGHTS_SPRINGCLOUD_SERVICE_ID"))) {
       rpIntegrationChar = 's';
+      setRpAttachType(agentPath, "springcloud.codeless");
     }
+    // TODO (heya) detect VM environment by checking the AzureMetadataService response, manual only
   }
 
   /** Is resource provider (Azure Spring Cloud, AppService, Azure Functions, AKS, VM...). */
@@ -73,5 +76,13 @@ public class DiagnosticsHelper {
 
   public static boolean isOsWindows() {
     return isWindows;
+  }
+
+  private static void setRpAttachType(Path agentPath, String markerFile) {
+    if (Files.exists(agentPath.resolveSibling(markerFile))) {
+      RpAttachType.setRpAttachType(RpAttachType.AUTO);
+    } else {
+      RpAttachType.setRpAttachType(RpAttachType.MANUAL);
+    }
   }
 }
