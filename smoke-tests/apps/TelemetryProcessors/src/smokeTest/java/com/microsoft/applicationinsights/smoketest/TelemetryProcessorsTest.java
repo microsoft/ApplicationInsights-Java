@@ -12,17 +12,19 @@ import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCA
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_8_OPENJ9;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.WILDFLY_13_JAVA_8;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.WILDFLY_13_JAVA_8_OPENJ9;
+import static org.assertj.core.api.Assertions.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.MessageData;
 import java.util.List;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 @UseAgent
 abstract class TelemetryProcessorsTest {
 
-  @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.create();
+  @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.builder().setSelfDiagnosticsLevel("DEBUG").build();;
 
   @Test
   @TargetUri("/test")
@@ -66,8 +68,11 @@ abstract class TelemetryProcessorsTest {
 
     Telemetry telemetry = testing.getTelemetry(0);
 
-    assertThat(telemetry.rd.getProperties().get("httpPath"))
-        .isEqualTo("/TelemetryProcessors/user/**");
+    String url = telemetry.rd.getUrl();
+
+    assertThat(url).startsWith("http://localhost:").endsWith("/TelemetryProcessors/user/***");
+    // We don't test the port that is different for each test execution
+
   }
 
   @Environment(TOMCAT_8_JAVA_8)

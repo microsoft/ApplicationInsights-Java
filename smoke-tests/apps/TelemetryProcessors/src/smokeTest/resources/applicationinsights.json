@@ -89,9 +89,9 @@
         "type": "attribute",
         "actions": [
           {
-            "key": "httpPath",
-            "pattern": "^(?<userGroupName>[a-zA-Z.:\\/]+)\\d+",
-            "replace": "${userGroupName}**",
+            "key": "http.url",
+            "pattern": "(?<userGroupName>http:\\/\\/localhost:\\d+\\/TelemetryProcessors\\/user\\/)\\d+",
+            "replace": "${userGroupName}***",
             "action": "mask"
           }
         ],
