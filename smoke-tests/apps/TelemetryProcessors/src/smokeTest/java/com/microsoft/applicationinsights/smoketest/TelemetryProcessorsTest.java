@@ -17,14 +17,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.MessageData;
 import java.util.List;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 @UseAgent
 abstract class TelemetryProcessorsTest {
 
-  @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.builder().setSelfDiagnosticsLevel("DEBUG").build();;
+  @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.create();
 
   @Test
   @TargetUri("/test")
