@@ -1116,7 +1116,7 @@ public class Configuration {
   }
 
   public static class MaskAttribute {
-    private static final Pattern replacePattern = Pattern.compile("\\$\\{[A-Za-z1-9]*\\}*");
+    private static final Pattern replacePatternWithGroupName = Pattern.compile("\\$\\{[A-Za-z1-9]*\\}*");
     public final Pattern pattern;
     public final List<String> groupNames;
     public final String replace;
@@ -1130,17 +1130,10 @@ public class Configuration {
 
     // TODO: Handle empty patterns or groupNames are not populated gracefully
     public void validate() {
-      if (groupNames.isEmpty()) {
-        throw new FriendlyException(
-            "An attribute processor configuration does not have valid regex to mask attributes: "
-                + pattern,
-            "Please provide a valid regex of the form (?<name>X) where X is the usual regular expression. "
-                + "Learn more about attribute processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
-      }
 
-      Matcher maskMatcher = replacePattern.matcher(replace);
-      while (maskMatcher.find()) {
-        String groupName = maskMatcher.group();
+      Matcher maskMatcherWithGroupName = replacePatternWithGroupName.matcher(replace);
+      while (maskMatcherWithGroupName.find()) {
+        String groupName = maskMatcherWithGroupName.group();
         String replacedString = "";
         if (groupName.length() > 3) {
           // to extract string of format ${foo}

@@ -82,7 +82,7 @@ class TelemetryProcessorMaskingValidationTest {
   }
 
   @Test
-  void regexShouldContainAgroupNameToNotFail() {
+  void regexWithAgroupNameShouldNotFail() {
     String validRegEx = "(?<groupName>.*)";
     String anAttributeKey = "http.url";
     String anyReplacementPattern = "";
@@ -100,6 +100,28 @@ class TelemetryProcessorMaskingValidationTest {
                         anyFromAttribute,
                         validRegEx,
                         anyReplacementPattern)
+                    .validate());
+  }
+
+  @Test
+  void regexWithoutAgroupNameShouldNotFail() {
+    String validRegEx = "user\\/\\d+";
+    String anAttributeKey = "http.url";
+    String replacementPattern = "user\\/****";
+
+    String anyValue = null;
+    String anyFromAttribute = null;
+
+    assertThatNoException()
+        .isThrownBy(
+            () ->
+                new Configuration.ProcessorAction(
+                    anAttributeKey,
+                    Configuration.ProcessorActionType.MASK,
+                    anyValue,
+                    anyFromAttribute,
+                    validRegEx,
+                    replacementPattern)
                     .validate());
   }
 

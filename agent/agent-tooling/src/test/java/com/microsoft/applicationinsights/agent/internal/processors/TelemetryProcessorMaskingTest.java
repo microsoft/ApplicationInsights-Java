@@ -35,6 +35,26 @@ class TelemetryProcessorMaskingTest {
   void shouldMaskAttribute() {
 
     String httpAttributeKey = "http.url";
+    String httpUrl = "http://localhost:8080/TelemetryProcessors/user/123456789";
+    String pattern = "user\\/\\d+";
+
+    String mask = "****";
+    String replacementPattern = "user\\/" + mask;
+
+    SpanData newSpanData =
+        maskingAttributeProcessor(httpAttributeKey, pattern, replacementPattern)
+            .processActions(new RequestSpanData(httpUrl));
+
+    Attributes newAttributes = newSpanData.getAttributes();
+    String newHttpUrlAttributeValue = newAttributes.get(SemanticAttributes.HTTP_URL);
+    assertThat(newHttpUrlAttributeValue).isEqualTo("http://localhost:8080/TelemetryProcessors/user/" + mask);
+
+  }
+
+  @Test
+  void shouldMaskAttributeWithGroupName() {
+
+    String httpAttributeKey = "http.url";
     String httpUrl = "https://user/123456789";
 
     String userGroupName = "userGroupName";

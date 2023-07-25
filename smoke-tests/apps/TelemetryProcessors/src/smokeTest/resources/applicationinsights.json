@@ -90,8 +90,8 @@
         "actions": [
           {
             "key": "http.url",
-            "pattern": "(?<userGroupName>http:\\/\\/localhost:\\d+\\/TelemetryProcessors\\/user\\/)\\d+",
-            "replace": "${userGroupName}***",
+            "pattern": "user\\/\\d+",
+            "replace": "user\\/***",
             "action": "mask"
           }
         ],
