@@ -1116,7 +1116,8 @@ public class Configuration {
   }
 
   public static class MaskAttribute {
-    private static final Pattern replacePatternWithGroupName = Pattern.compile("\\$\\{[A-Za-z1-9]*\\}*");
+    private static final Pattern replacePatternWithGroupName =
+        Pattern.compile("\\$\\{[A-Za-z1-9]*\\}*");
     public final Pattern pattern;
     public final List<String> groupNames;
     public final String replace;
