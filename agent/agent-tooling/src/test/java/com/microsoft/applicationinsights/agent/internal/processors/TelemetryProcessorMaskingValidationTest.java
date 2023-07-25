@@ -116,12 +116,12 @@ class TelemetryProcessorMaskingValidationTest {
         .isThrownBy(
             () ->
                 new Configuration.ProcessorAction(
-                    anAttributeKey,
-                    Configuration.ProcessorActionType.MASK,
-                    anyValue,
-                    anyFromAttribute,
-                    validRegEx,
-                    replacementPattern)
+                        anAttributeKey,
+                        Configuration.ProcessorActionType.MASK,
+                        anyValue,
+                        anyFromAttribute,
+                        validRegEx,
+                        replacementPattern)
                     .validate());
   }
 

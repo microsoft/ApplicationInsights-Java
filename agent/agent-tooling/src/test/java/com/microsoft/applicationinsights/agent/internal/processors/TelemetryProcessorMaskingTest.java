@@ -47,8 +47,8 @@ class TelemetryProcessorMaskingTest {
 
     Attributes newAttributes = newSpanData.getAttributes();
     String newHttpUrlAttributeValue = newAttributes.get(SemanticAttributes.HTTP_URL);
-    assertThat(newHttpUrlAttributeValue).isEqualTo("http://localhost:8080/TelemetryProcessors/user/" + mask);
-
+    assertThat(newHttpUrlAttributeValue)
+        .isEqualTo("http://localhost:8080/TelemetryProcessors/user/" + mask);
   }
 
   @Test
