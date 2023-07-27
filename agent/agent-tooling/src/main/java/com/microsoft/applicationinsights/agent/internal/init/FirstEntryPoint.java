@@ -7,7 +7,6 @@ import static com.microsoft.applicationinsights.agent.internal.diagnostics.MsgId
 import static com.microsoft.applicationinsights.agent.internal.diagnostics.MsgId.STARTUP_FAILURE_ERROR;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.PropertyHelper;
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.SystemInformation;
 import com.google.auto.service.AutoService;
 import com.microsoft.applicationinsights.agent.internal.common.FriendlyException;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
@@ -314,19 +313,7 @@ public class FirstEntryPoint implements LoggingCustomizer {
     if (!DiagnosticsHelper.isRpIntegration()) {
       return null;
     }
-    StringBuilder sdkNamePrefix = new StringBuilder(4);
-    sdkNamePrefix.append(DiagnosticsHelper.rpIntegrationChar());
-    if (SystemInformation.isWindows()) {
-      sdkNamePrefix.append("w");
-    } else if (SystemInformation.isLinux()) {
-      sdkNamePrefix.append("l");
-    } else {
-      LoggerFactory.getLogger("com.microsoft.applicationinsights.agent")
-          .warn("could not detect os: {}", System.getProperty("os.name"));
-      sdkNamePrefix.append("u");
-    }
-    sdkNamePrefix.append("_");
-    return sdkNamePrefix.toString();
+    return DiagnosticsHelper.getRpIntegrationSdkNamePrefix();
   }
 
   private static boolean isRuntimeAttached() {

@@ -3,10 +3,13 @@
 
 package com.microsoft.applicationinsights.agent.internal.diagnostics;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.statsbeat.RpAttachType;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.PropertyHelper;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
-import com.microsoft.applicationinsights.agent.internal.diagnostics.status.RpAttachType;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.SystemInformation;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import org.slf4j.LoggerFactory;
 
 public class DiagnosticsHelper {
   private DiagnosticsHelper() {}
@@ -70,6 +73,14 @@ public class DiagnosticsHelper {
     return functionsRpIntegration;
   }
 
+  public static void lazyUpdateVmRpIntegration() {
+    rpIntegrationChar = 'v';
+    PropertyHelper.setSdkNamePrefix(getRpIntegrationSdkNamePrefix());
+
+    // TODO (heya) update to RpAttachType.STANDALONE_AUTO when exporter beta.11 is released.
+    RpAttachType.setRpAttachType(RpAttachType.AUTO);
+  }
+
   public static ApplicationMetadataFactory getMetadataFactory() {
     return METADATA_FACTORY;
   }
@@ -80,9 +91,27 @@ public class DiagnosticsHelper {
 
   private static void setRpAttachType(Path agentPath, String markerFile) {
     if (Files.exists(agentPath.resolveSibling(markerFile))) {
+      // TODO (heya) update to RpAttachType.INTEGRATED_AUTO when exporter beta.11 is released.
       RpAttachType.setRpAttachType(RpAttachType.AUTO);
     } else {
+      // TODO (heya) update to RpAttachType.STANDALONE_AUTO when exporter beta.11 is released.
       RpAttachType.setRpAttachType(RpAttachType.MANUAL);
     }
+  }
+
+  public static String getRpIntegrationSdkNamePrefix() {
+    StringBuilder sdkNamePrefix = new StringBuilder(3);
+    sdkNamePrefix.append(DiagnosticsHelper.rpIntegrationChar());
+    if (SystemInformation.isWindows()) {
+      sdkNamePrefix.append("w");
+    } else if (SystemInformation.isLinux()) {
+      sdkNamePrefix.append("l");
+    } else {
+      LoggerFactory.getLogger("com.microsoft.applicationinsights.agent")
+          .warn("could not detect os: {}", System.getProperty("os.name"));
+      sdkNamePrefix.append("u");
+    }
+    sdkNamePrefix.append("_");
+    return sdkNamePrefix.toString();
   }
 }
