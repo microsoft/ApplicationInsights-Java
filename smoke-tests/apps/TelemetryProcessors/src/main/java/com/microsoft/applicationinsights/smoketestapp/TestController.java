@@ -28,4 +28,9 @@ public class TestController {
   public String sensitiveData() {
     return "some sensitive data!";
   }
+
+  @GetMapping("/user/1234")
+  public String sensitiveDataInUrl() {
+    return "Test sensitive data in URL";
+  }
 }

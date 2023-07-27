@@ -32,8 +32,7 @@ abstract class TelemetryProcessorsTest {
     assertThat(telemetry.rd.getProperties()).containsEntry("attribute1", "testValue1");
     assertThat(telemetry.rd.getProperties()).containsEntry("attribute2", "testValue2");
     assertThat(telemetry.rd.getProperties()).containsEntry("sensitiveAttribute1", "sensitiveData1");
-    assertThat(telemetry.rd.getProperties().get("httpPath"))
-        .isEqualTo("*/TelemetryProcessors/test*");
+    assertThat(telemetry.rd.getProperties().get("httpPath")).isEqualTo("/TelemetryProcessors/test");
     assertThat(telemetry.rd.getProperties()).hasSize(5);
     assertThat(telemetry.rd.getProperties())
         .containsEntry("_MS.ProcessedByMetricExtractors", "True");
@@ -54,11 +53,24 @@ abstract class TelemetryProcessorsTest {
     assertThat(telemetry.rd.getProperties()).containsEntry("attribute2", "testValue2");
     assertThat(telemetry.rd.getProperties()).containsEntry("sensitiveAttribute1", "redacted");
     assertThat(telemetry.rd.getProperties().get("httpPath"))
-        .isEqualTo("*/TelemetryProcessors/sensitivedata*");
+        .isEqualTo("/TelemetryProcessors/sensitivedata");
     assertThat(telemetry.rd.getProperties()).hasSize(5);
     assertThat(telemetry.rd.getProperties())
         .containsEntry("_MS.ProcessedByMetricExtractors", "True");
     assertThat(telemetry.rd.getSuccess()).isTrue();
+  }
+
+  @Test
+  @TargetUri("/user/123")
+  void shouldMask() throws Exception {
+
+    Telemetry telemetry = testing.getTelemetry(0);
+
+    String url = telemetry.rd.getUrl();
+
+    assertThat(url).startsWith("http://localhost:").endsWith("/TelemetryProcessors/user/***");
+    // We don't test the port that is different for each test execution
+
   }
 
   @Environment(TOMCAT_8_JAVA_8)
