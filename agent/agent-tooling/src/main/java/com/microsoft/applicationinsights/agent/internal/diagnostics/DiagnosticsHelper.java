@@ -3,6 +3,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.diagnostics;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.statsbeat.MetadataInstanceResponse;
 import com.azure.monitor.opentelemetry.exporter.implementation.statsbeat.RpAttachType;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.PropertyHelper;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
@@ -73,12 +74,10 @@ public class DiagnosticsHelper {
     return functionsRpIntegration;
   }
 
-  public static void lazyUpdateVmRpIntegration() {
+  public static void lazyUpdateVmRpIntegration(MetadataInstanceResponse response) {
     rpIntegrationChar = 'v';
     PropertyHelper.setSdkNamePrefix(getRpIntegrationSdkNamePrefix());
-
-    // TODO (heya) update to RpAttachType.STANDALONE_AUTO when exporter beta.11 is released.
-    RpAttachType.setRpAttachType(RpAttachType.AUTO);
+    RpAttachType.setRpAttachType(RpAttachType.STANDALONE_AUTO);
   }
 
   public static ApplicationMetadataFactory getMetadataFactory() {
@@ -91,11 +90,9 @@ public class DiagnosticsHelper {
 
   private static void setRpAttachType(Path agentPath, String markerFile) {
     if (Files.exists(agentPath.resolveSibling(markerFile))) {
-      // TODO (heya) update to RpAttachType.INTEGRATED_AUTO when exporter beta.11 is released.
-      RpAttachType.setRpAttachType(RpAttachType.AUTO);
+      RpAttachType.setRpAttachType(RpAttachType.INTEGRATED_AUTO);
     } else {
-      // TODO (heya) update to RpAttachType.STANDALONE_AUTO when exporter beta.11 is released.
-      RpAttachType.setRpAttachType(RpAttachType.MANUAL);
+      RpAttachType.setRpAttachType(RpAttachType.STANDALONE_AUTO);
     }
   }
 

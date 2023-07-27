@@ -133,7 +133,7 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
             .collect(Collectors.toList());
 
     StatsbeatModule statsbeatModule =
-        new StatsbeatModule(() -> DiagnosticsHelper.lazyUpdateVmRpIntegration());
+        new StatsbeatModule(DiagnosticsHelper::lazyUpdateVmRpIntegration);
     TelemetryClient telemetryClient =
         TelemetryClient.builder()
             .setCustomDimensions(configuration.customDimensions)
