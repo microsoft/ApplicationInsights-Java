@@ -24,7 +24,7 @@ public class ProcessorUtil {
     StringBuilder sb = new StringBuilder();
     int lastEnd = 0;
     // As of now we are considering only first match.
-    if (matcher.find()) {
+    while (matcher.find()) {
       sb.append(name, lastEnd, matcher.start());
       int innerLastEnd = matcher.start();
       for (int i = 1; i <= groupNamesList.size(); i++) {
