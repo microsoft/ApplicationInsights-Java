@@ -355,9 +355,9 @@ class ExporterWithSpanProcessorTest {
     assertThat(
             Objects.requireNonNull(
                 resultSpanA.getAttributes().get(AttributeKey.stringKey("password2"))))
-        .isEqualTo("555");
+        .isEqualTo("777");
     assertThat(resultSpanA.getName())
-        .isEqualTo("yyyPassword={password1} aba Pass={password2} xyx Pass=777 zzz");
+        .isEqualTo("yyyPassword={password1} aba Pass={password2} xyx Pass={password2} zzz");
     assertThat(
             Objects.requireNonNull(
                 resultSpanB.getAttributes().get(AttributeKey.stringKey("password1"))))
@@ -383,7 +383,7 @@ class ExporterWithSpanProcessorTest {
     config.exclude.matchType = MatchType.STRICT;
     config.exclude.spanNames = Arrays.asList("donot/change");
     config.name.toAttributes = new ToAttributeConfig();
-    config.name.toAttributes.rules = Arrays.asList("(?<operationwebsite>.*?)$");
+    config.name.toAttributes.rules = Arrays.asList("(?<operationwebsite>.*?)/.*$");
     SpanExporter exampleExporter = new ExporterWithSpanProcessor(config, mockSpanExporter);
 
     Span spanA =
@@ -439,20 +439,20 @@ class ExporterWithSpanProcessorTest {
     SpanData resultSpanB = result.get(1);
     SpanData resultSpanC = result.get(2);
     SpanData resultSpanD = result.get(3);
-    assertThat(resultSpanA.getName()).isEqualTo("{operationwebsite}");
+    assertThat(resultSpanA.getName()).isEqualTo("{operationwebsite}/test");
     assertThat(resultSpanA.getAttributes().get(AttributeKey.stringKey("operationwebsite")))
         .isNotNull();
     assertThat(
             Objects.requireNonNull(
                 resultSpanA.getAttributes().get(AttributeKey.stringKey("operationwebsite"))))
-        .isEqualTo("svcA/test");
-    assertThat(resultSpanB.getName()).isEqualTo("{operationwebsite}");
+        .isEqualTo("svcA");
+    assertThat(resultSpanB.getName()).isEqualTo("{operationwebsite}/test");
     assertThat(resultSpanB.getAttributes().get(AttributeKey.stringKey("operationwebsite")))
         .isNotNull();
     assertThat(
             Objects.requireNonNull(
                 resultSpanB.getAttributes().get(AttributeKey.stringKey("operationwebsite"))))
-        .isEqualTo("svcB/test");
+        .isEqualTo("svcB");
     assertThat(resultSpanC.getName()).isEqualTo("svcC");
     assertThat(resultSpanD.getName()).isEqualTo("donot/change");
   }
