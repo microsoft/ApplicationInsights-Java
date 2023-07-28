@@ -264,8 +264,7 @@ class ExporterWithLogProcessorTest {
     List<LogRecordData> result = mockExporter.getLogs();
     LogRecordData resultA = result.get(0);
 
-    assertThat(resultA.getBody().asString())
-        .isEqualTo("yyyPassword={x} aba Password={x} xyx");
+    assertThat(resultA.getBody().asString()).isEqualTo("yyyPassword={x} aba Password={x} xyx");
   }
 
   @Test
