@@ -4,8 +4,8 @@
 package com.microsoft.applicationinsights.diagnostics.collection.libos.os.linux;
 
 import com.microsoft.applicationinsights.diagnostics.collection.libos.process.Process;
-import com.microsoft.applicationinsights.diagnostics.collection.libos.process.ProcessCPUStats;
-import com.microsoft.applicationinsights.diagnostics.collection.libos.process.ProcessIOStats;
+import com.microsoft.applicationinsights.diagnostics.collection.libos.process.ProcessCpuStats;
+import com.microsoft.applicationinsights.diagnostics.collection.libos.process.ProcessIoStats;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.Closeable;
 import java.io.File;
@@ -53,8 +53,8 @@ public class LinuxProcess extends Process implements Closeable {
   private static final File DEFAULT_HSPERF_DIR =
       new File("/tmp/hsperfdata_" + System.getProperty("user.name"));
 
-  private final LinuxProcessIOStats ioStats;
-  private final LinuxProcessCPUStats cpuStats;
+  private final LinuxProcessIoStats ioStats;
+  private final LinuxProcessCpuStats cpuStats;
 
   public LinuxProcess(int pid, File candidate) throws IOException {
     this(pid, DEFAULT_HSPERF_DIR, parseFullName(Proc.TOP_DIR, pid), candidate);
@@ -63,8 +63,8 @@ public class LinuxProcess extends Process implements Closeable {
   public LinuxProcess(int pid, File hsperfDir, String fullName, File candidate) {
     super(parseName(fullName, checkJava(hsperfDir, pid), pid), pid);
     this.isJava = checkJava(hsperfDir, pid);
-    this.ioStats = new LinuxProcessIOStats(candidate);
-    this.cpuStats = new LinuxProcessCPUStats(candidate);
+    this.ioStats = new LinuxProcessIoStats(candidate);
+    this.cpuStats = new LinuxProcessCpuStats(candidate);
   }
 
   public static LinuxProcess create(File procDir, File hsperfDir, int pid, File candidate)
@@ -119,7 +119,7 @@ public class LinuxProcess extends Process implements Closeable {
 
   @SuppressFBWarnings(
       value = "SECPTI" // Potential Path Traversal
-      )
+  )
   protected static String parseFullName(File procDir, int pid) throws IOException {
     return Proc.read(new File(procDir + "/" + pid, "cmdline"));
   }
@@ -135,12 +135,12 @@ public class LinuxProcess extends Process implements Closeable {
   }
 
   @Override
-  public ProcessIOStats getIoStats() {
+  public ProcessIoStats getIoStats() {
     return ioStats;
   }
 
   @Override
-  public ProcessCPUStats getCpuStats() {
+  public ProcessCpuStats getCpuStats() {
     return cpuStats;
   }
 

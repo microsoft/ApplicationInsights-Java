@@ -7,7 +7,7 @@ import com.microsoft.applicationinsights.diagnostics.collection.libos.BigIncreme
 import com.microsoft.applicationinsights.diagnostics.collection.libos.os.linux.TwoStepProcReader;
 import java.io.File;
 
-@SuppressWarnings("checkstyle:AbbreviationAsWordInName")
+@SuppressWarnings({"checkstyle:AbbreviationAsWordInName", "MemberName"})
 public abstract class CGroupValueReader extends TwoStepProcReader {
   private final BigIncrementalCounter usage = new BigIncrementalCounter();
 

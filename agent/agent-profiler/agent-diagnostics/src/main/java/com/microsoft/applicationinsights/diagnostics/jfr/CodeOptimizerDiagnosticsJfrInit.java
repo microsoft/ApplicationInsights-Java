@@ -17,11 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /** Provides a JFR specific implementation of a diagnostics engine */
-@SuppressWarnings({
-  "checkstyle:MemberName",
-  "checkstyle:AbbreviationAsWordInName",
-  "Java8ApiChecker"
-})
+@SuppressWarnings("Java8ApiChecker")
 public class CodeOptimizerDiagnosticsJfrInit {
 
   private static final Logger LOGGER =

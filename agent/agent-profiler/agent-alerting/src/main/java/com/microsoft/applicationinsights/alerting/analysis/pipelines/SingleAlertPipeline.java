@@ -19,7 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /** Contains a pipeline that receives telemetry, feeds it into the analysis pipeline. */
-public class SingleAlertPipeline implements AlertPipeline, AlertPipelineMXBean {
+public class SingleAlertPipeline implements AlertPipeline, AlertPipelineMxBean {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SingleAlertPipeline.class);
   private static final String JMX_KEY = "com.microsoft:type=AI-alert,name=";

@@ -4,15 +4,14 @@
 package com.microsoft.applicationinsights.diagnostics.collection.libos.os.linux;
 
 import com.microsoft.applicationinsights.diagnostics.collection.libos.BigIncrementalCounter;
-import com.microsoft.applicationinsights.diagnostics.collection.libos.process.ProcessCPUStats;
+import com.microsoft.applicationinsights.diagnostics.collection.libos.process.ProcessCpuStats;
 import java.io.File;
 import java.math.BigInteger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /** Gathers CPU usage statistics for a given process */
-@SuppressWarnings("checkstyle:AbbreviationAsWordInName")
-public class LinuxProcessCPUStats extends TwoStepProcReader implements ProcessCPUStats {
+public class LinuxProcessCpuStats extends TwoStepProcReader implements ProcessCpuStats {
   private static final int USER_TIME_OFFSET_FROM_NAME = 12;
   private static final int SYSTEM_TIME_OFFSET_FROM_NAME = 13;
   private static final int PRIORITY_OFFSET_FROM_NAME = 16;
@@ -21,7 +20,7 @@ public class LinuxProcessCPUStats extends TwoStepProcReader implements ProcessCP
   private static final int VM_SIZE_OFFSET_FROM_NAME = 21;
   private static final int RSS_OFFSET_FROM_NAME = 22;
   private static final int N_SWAPPED_OFFSET_FROM_NAME = 34;
-  private static final Logger LOGGER = LoggerFactory.getLogger(LinuxProcessCPUStats.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(LinuxProcessCpuStats.class);
 
   private final BigIncrementalCounter userTime;
   private final BigIncrementalCounter systemTime;
@@ -32,7 +31,7 @@ public class LinuxProcessCPUStats extends TwoStepProcReader implements ProcessCP
   private final BigIncrementalCounter rss;
   private final BigIncrementalCounter swapped;
 
-  public LinuxProcessCPUStats(File candidate) {
+  public LinuxProcessCpuStats(File candidate) {
     super(new File(candidate, "stat"));
     this.userTime = new BigIncrementalCounter();
     this.systemTime = new BigIncrementalCounter();

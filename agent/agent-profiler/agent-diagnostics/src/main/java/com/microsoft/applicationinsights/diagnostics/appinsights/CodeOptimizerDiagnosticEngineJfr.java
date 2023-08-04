@@ -25,7 +25,6 @@ import org.slf4j.LoggerFactory;
  * Entry point for Code Optimizer diagnostics. Provides the functionality to initialize engine and
  * coordinate emitting diagnostics on a breach.
  */
-@SuppressWarnings({"checkstyle:MemberName", "checkstyle:AbbreviationAsWordInName"})
 public class CodeOptimizerDiagnosticEngineJfr implements DiagnosticEngine {
   private static final Logger LOGGER =
       LoggerFactory.getLogger(CodeOptimizerDiagnosticEngineJfr.class);

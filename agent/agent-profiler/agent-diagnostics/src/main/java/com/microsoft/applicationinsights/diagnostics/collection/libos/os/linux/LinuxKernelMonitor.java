@@ -8,7 +8,7 @@ import com.microsoft.applicationinsights.diagnostics.collection.libos.kernel.Glo
 import com.microsoft.applicationinsights.diagnostics.collection.libos.kernel.KernelCounters;
 import com.microsoft.applicationinsights.diagnostics.collection.libos.kernel.KernelMonitorDeviceDriver;
 import com.microsoft.applicationinsights.diagnostics.collection.libos.net.GlobalNetworkStats;
-import com.microsoft.applicationinsights.diagnostics.collection.libos.net.TCPStats;
+import com.microsoft.applicationinsights.diagnostics.collection.libos.net.TcpStats;
 import java.io.IOException;
 
 /** Brings together all the Linux readers to provide a Linux stats service */
@@ -19,13 +19,13 @@ public class LinuxKernelMonitor implements KernelMonitorDeviceDriver {
   private final LinuxGlobalNetworkStats netstats;
 
   private final LinuxGlobalDiskIoStats diskstats;
-  private final LinuxTCPStatsReader linuxTcpStatsReader;
+  private final LinuxTcpStatsReader linuxTcpStatsReader;
 
   public LinuxKernelMonitor() {
     diskstats = new LinuxGlobalDiskIoStats();
     netstats = new LinuxGlobalNetworkStats();
     kernelStatsReader = new LinuxKernelStats();
-    linuxTcpStatsReader = new LinuxTCPStatsReader();
+    linuxTcpStatsReader = new LinuxTcpStatsReader();
   }
 
   @Override
@@ -51,8 +51,8 @@ public class LinuxKernelMonitor implements KernelMonitorDeviceDriver {
   }
 
   @Override
-  public TCPStats getTcpStats() {
-    return linuxTcpStatsReader.getTCPStats();
+  public TcpStats getTcpStats() {
+    return linuxTcpStatsReader.getTcpStats();
   }
 
   @Override

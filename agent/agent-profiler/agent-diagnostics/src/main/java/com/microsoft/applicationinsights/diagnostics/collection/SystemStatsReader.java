@@ -11,9 +11,9 @@ import com.microsoft.applicationinsights.diagnostics.collection.libos.kernel.Glo
 import com.microsoft.applicationinsights.diagnostics.collection.libos.kernel.KernelCounters;
 import com.microsoft.applicationinsights.diagnostics.collection.libos.kernel.KernelMonitorDeviceDriver;
 import com.microsoft.applicationinsights.diagnostics.collection.libos.net.GlobalNetworkStats;
-import com.microsoft.applicationinsights.diagnostics.collection.libos.net.TCPStats;
-import com.microsoft.applicationinsights.diagnostics.collection.libos.process.ProcessCPUStats;
-import com.microsoft.applicationinsights.diagnostics.collection.libos.process.ProcessIOStats;
+import com.microsoft.applicationinsights.diagnostics.collection.libos.net.TcpStats;
+import com.microsoft.applicationinsights.diagnostics.collection.libos.process.ProcessCpuStats;
+import com.microsoft.applicationinsights.diagnostics.collection.libos.process.ProcessIoStats;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -30,9 +30,9 @@ public class SystemStatsReader implements Closeable {
   @SuppressWarnings("checkstyle:MemberName")
   private final CGroupUsageDataReader cGroupUsageDataReader;
 
-  private final ProcessCPUStats processCpuStats;
+  private final ProcessCpuStats processCpuStats;
   private final MemoryInfoReader memoryInfoReader;
-  private final ProcessIOStats ioStats;
+  private final ProcessIoStats ioStats;
   private boolean open;
 
   private final Object lock = new Object();
@@ -40,8 +40,8 @@ public class SystemStatsReader implements Closeable {
   public SystemStatsReader(
       KernelMonitorDeviceDriver driver,
       @SuppressWarnings("checkstyle:ParameterName") CGroupUsageDataReader cGroupUsageDataReader,
-      ProcessCPUStats processCpuStats,
-      ProcessIOStats ioStats,
+      ProcessCpuStats processCpuStats,
+      ProcessIoStats ioStats,
       MemoryInfoReader memoryInfoReader) {
     this.open = true;
     this.driver = driver;
@@ -73,7 +73,7 @@ public class SystemStatsReader implements Closeable {
       KernelCounters counters = driver.getCounters();
       GlobalDiskStats diskStats = driver.getDiskstats();
       GlobalNetworkStats netStats = driver.getNetworkStats();
-      TCPStats tcpStats = driver.getTcpStats();
+      TcpStats tcpStats = driver.getTcpStats();
 
       return makeMap(
           diskStats,
@@ -90,11 +90,11 @@ public class SystemStatsReader implements Closeable {
   public static List<Double> makeMap(
       GlobalDiskStats diskstats,
       KernelCounters counters,
-      TCPStats tcpStats,
+      TcpStats tcpStats,
       GlobalNetworkStats netStats,
-      ProcessCPUStats processCpuStats,
+      ProcessCpuStats processCpuStats,
       MemoryInfo memoryInfo,
-      ProcessIOStats ioStats,
+      ProcessIoStats ioStats,
       @Nullable List<Double> telemetry) {
 
     List<Double> data =
@@ -106,17 +106,17 @@ public class SystemStatsReader implements Closeable {
             (double) tcpStats.getTotalTransferredQueuesSize(),
             netStats.getTotalReceived().doubleValue(),
             netStats.getTotalWrite().doubleValue(),
-            (double) memoryInfo.getTotalInKB(),
-            (double) memoryInfo.getFreeInKB(),
-            (double) memoryInfo.getVirtualMemoryTotalInKB(),
-            (double) memoryInfo.getVirtualMemoryUsedInKB(),
+            (double) memoryInfo.getTotalInKb(),
+            (double) memoryInfo.getFreeInKb(),
+            (double) memoryInfo.getVirtualMemoryTotalInKb(),
+            (double) memoryInfo.getVirtualMemoryUsedInKb(),
             (double) counters.getUserTime(),
             (double) counters.getSystemTime(),
             (double) counters.getIdleTime(),
             (double) counters.getWaitTime(),
             (double) diskstats.getTotalRead(),
             (double) diskstats.getTotalWrite(),
-            (double) diskstats.getTotalIO(),
+            (double) diskstats.getTotalIo(),
             processCpuStats.getUserTime().doubleValue(),
             processCpuStats.getSystemTime().doubleValue(),
             processCpuStats.getPriority().doubleValue(),

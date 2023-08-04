@@ -20,8 +20,8 @@ import com.microsoft.applicationinsights.diagnostics.collection.libos.os.linux.L
 import com.microsoft.applicationinsights.diagnostics.collection.libos.os.linux.LinuxProcessDumper;
 import com.microsoft.applicationinsights.diagnostics.collection.libos.os.linux.cgroups.LinuxCGroupDataReader;
 import com.microsoft.applicationinsights.diagnostics.collection.libos.os.linux.cgroups.LinuxCGroupUsageDataReader;
-import com.microsoft.applicationinsights.diagnostics.collection.libos.os.nop.NoOpCgroupDataReader;
-import com.microsoft.applicationinsights.diagnostics.collection.libos.os.nop.NoOpCgroupUsageDataReader;
+import com.microsoft.applicationinsights.diagnostics.collection.libos.os.nop.NoOpCGroupDataReader;
+import com.microsoft.applicationinsights.diagnostics.collection.libos.os.nop.NoOpCGroupUsageDataReader;
 import com.microsoft.applicationinsights.diagnostics.collection.libos.os.nop.NoOpKernelMonitor;
 import com.microsoft.applicationinsights.diagnostics.collection.libos.os.nop.NoOpMemoryInfoReader;
 import com.microsoft.applicationinsights.diagnostics.collection.libos.os.nop.NoOpProcessDumper;
@@ -44,11 +44,7 @@ import org.slf4j.LoggerFactory;
  * Initializes components mostly as singletons, mostly required to aid the migration away from being
  * part of a DI framework which managed lifecycles.
  */
-@SuppressWarnings({
-  "checkstyle:MemberName",
-  "checkstyle:AbbreviationAsWordInName",
-  "Java8ApiChecker"
-})
+@SuppressWarnings("Java8ApiChecker")
 public class SystemStatsProvider {
   private static final Logger LOGGER = LoggerFactory.getLogger(SystemStatsProvider.class);
 
@@ -107,7 +103,7 @@ public class SystemStatsProvider {
     return current.get();
   }
 
-  @SuppressWarnings("checkstyle:AbbreviationAsWordInName")
+  @SuppressWarnings({"checkstyle:AbbreviationAsWordInName", "MemberName"})
   public static CGroupData getCGroupData() {
     return getSingleton(
         CGroupData.class,
@@ -169,7 +165,7 @@ public class SystemStatsProvider {
       case LINUX:
         return new LinuxCGroupDataReader();
       default:
-        return new NoOpCgroupDataReader();
+        return new NoOpCGroupDataReader();
     }
   }
 
@@ -192,7 +188,7 @@ public class SystemStatsProvider {
             case LINUX:
               return new LinuxCGroupUsageDataReader();
             default:
-              return new NoOpCgroupUsageDataReader();
+              return new NoOpCGroupUsageDataReader();
           }
         });
   }

@@ -10,7 +10,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.List;
 
-@SuppressWarnings("checkstyle:AbbreviationAsWordInName")
+@SuppressWarnings({"checkstyle:AbbreviationAsWordInName", "MemberName"})
 public class LinuxCGroupDataReader implements CGroupDataReader {
 
   private static final String CGROUP_DIR = "/sys/fs/cgroup";

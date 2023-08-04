@@ -17,8 +17,8 @@ import org.junit.jupiter.api.Test;
 
 class JmxDataFetcherTest {
 
-  @SuppressWarnings({"unused", "checkstyle:AbbreviationAsWordInName"})
-  public interface StubMXBean {
+  @SuppressWarnings("unused")
+  public interface StubMxBean {
     int getIntSample();
 
     double getDoubleSample();
@@ -27,7 +27,7 @@ class JmxDataFetcherTest {
   }
 
   @SuppressWarnings("unused")
-  public static class TestStub implements StubMXBean {
+  public static class TestStub implements StubMxBean {
     public int intSample;
     public double doubleSample;
     public long longSample;
