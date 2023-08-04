@@ -119,7 +119,7 @@ public class LinuxProcess extends Process implements Closeable {
 
   @SuppressFBWarnings(
       value = "SECPTI" // Potential Path Traversal
-  )
+      )
   protected static String parseFullName(File procDir, int pid) throws IOException {
     return Proc.read(new File(procDir + "/" + pid, "cmdline"));
   }

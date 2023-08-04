@@ -4,7 +4,7 @@
 package com.microsoft.applicationinsights.alerting.analysis.pipelines;
 
 // This class name must end in MXBean (case sensitive)
-public interface AlertPipelineMxBean {
+public interface AlertPipelineMXBean {
 
   // Attributes
   long getCooldownSeconds();

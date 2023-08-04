@@ -18,7 +18,8 @@ import org.junit.jupiter.api.Test;
 class JmxDataFetcherTest {
 
   @SuppressWarnings("unused")
-  public interface StubMxBean {
+  // This class name must end in MXBean (case sensitive)
+  public interface StubMXBean {
     int getIntSample();
 
     double getDoubleSample();
@@ -27,7 +28,7 @@ class JmxDataFetcherTest {
   }
 
   @SuppressWarnings("unused")
-  public static class TestStub implements StubMxBean {
+  public static class TestStub implements StubMXBean {
     public int intSample;
     public double doubleSample;
     public long longSample;
