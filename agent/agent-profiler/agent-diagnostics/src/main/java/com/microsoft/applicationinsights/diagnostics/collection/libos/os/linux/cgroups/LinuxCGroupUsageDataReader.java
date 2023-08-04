@@ -9,13 +9,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-@SuppressWarnings({"checkstyle:AbbreviationAsWordInName", "MemberName"})
+@SuppressWarnings("checkstyle:AbbreviationAsWordInName")
 public class LinuxCGroupUsageDataReader implements CGroupUsageDataReader {
 
-  @SuppressWarnings("checkstyle:MemberName")
   private final CGroupCpuUsageReader cGroupCpuUsageReader = new CGroupCpuUsageReader();
 
-  @SuppressWarnings("checkstyle:MemberName")
   private final CGroupCpuUserReader cGroupCpuUserReader = new CGroupCpuUserReader();
 
   @SuppressWarnings("checkstyle:MemberName")

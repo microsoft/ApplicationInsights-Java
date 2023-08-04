@@ -8,7 +8,7 @@ import java.io.Closeable;
 import java.util.List;
 import javax.annotation.Nullable;
 
-@SuppressWarnings({"checkstyle:AbbreviationAsWordInName", "MemberName"})
+@SuppressWarnings("checkstyle:AbbreviationAsWordInName")
 public interface CGroupUsageDataReader extends TwoStepUpdatable, Closeable {
   @Nullable
   List<Double> getTelemetry();

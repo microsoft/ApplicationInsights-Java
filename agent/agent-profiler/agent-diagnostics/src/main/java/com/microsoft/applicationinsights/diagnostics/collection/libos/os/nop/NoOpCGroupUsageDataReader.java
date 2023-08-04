@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.util.List;
 import javax.annotation.Nullable;
 
-@SuppressWarnings({"checkstyle:AbbreviationAsWordInName", "MemberName"})
+@SuppressWarnings("checkstyle:AbbreviationAsWordInName")
 public class NoOpCGroupUsageDataReader implements CGroupUsageDataReader {
   @Override
   @Nullable

@@ -3,7 +3,7 @@
 
 package com.microsoft.applicationinsights.diagnostics.collection.libos.os.linux.cgroups;
 
-@SuppressWarnings({"checkstyle:AbbreviationAsWordInName", "MemberName"})
+@SuppressWarnings("checkstyle:AbbreviationAsWordInName")
 public class CGroupCpuUserReader extends CGroupValueReader {
   // total user CPU time (in nanoseconds) consumed by all tasks in this cgroup
   public CGroupCpuUserReader() {
