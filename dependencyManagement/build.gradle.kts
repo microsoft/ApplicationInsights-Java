@@ -38,7 +38,7 @@ val autoServiceVersion = "1.1.1"
 val autoValueVersion = "1.10.2"
 val errorProneVersion = "2.19.1"
 val byteBuddyVersion = "1.12.18"
-val jmhVersion = "1.36"
+val jmhVersion = "1.37"
 val mockitoVersion = "4.11.0"
 val slf4jVersion = "2.0.7"
 
