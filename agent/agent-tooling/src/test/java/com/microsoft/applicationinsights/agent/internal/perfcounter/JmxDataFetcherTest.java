@@ -17,7 +17,7 @@ import org.junit.jupiter.api.Test;
 
 class JmxDataFetcherTest {
 
-  @SuppressWarnings("unused")
+  @SuppressWarnings({"unused", "checkstyle:AbbreviationAsWordInName"})
   // This class name must end in MXBean (case sensitive)
   public interface StubMXBean {
     int getIntSample();
