@@ -160,6 +160,7 @@ public class SystemStatsProvider {
         });
   }
 
+  @SuppressWarnings("checkstyle:AbbreviationAsWordInName")
   private static CGroupDataReader buildCGroupDataReader() {
     switch (OperatingSystemDetector.getOperatingSystem()) {
       case LINUX:
@@ -170,6 +171,7 @@ public class SystemStatsProvider {
   }
 
   @Nullable
+  @SuppressWarnings("checkstyle:AbbreviationAsWordInName")
   private static ProcessDumper getProcessDumper() {
     ThisPidSupplier pidSupplier = getSingleton(ThisPidSupplier.class);
     switch (OperatingSystemDetector.getOperatingSystem()) {
@@ -180,6 +182,7 @@ public class SystemStatsProvider {
     }
   }
 
+  @SuppressWarnings("checkstyle:AbbreviationAsWordInName")
   private static CGroupUsageDataReader buildCGroupUsageDataReader() {
     return getSingleton(
         CGroupUsageDataReader.class,

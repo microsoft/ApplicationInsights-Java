@@ -67,6 +67,7 @@ public class CodeOptimizerDiagnosticsJfrInit {
     count.incrementAndGet();
   }
 
+  @SuppressWarnings("checkstyle:AbbreviationAsWordInName")
   public static void emitCGroupData() {
     try {
       CGroupData cgroupData = SystemStatsProvider.getCGroupData();
