@@ -38,7 +38,7 @@ val autoServiceVersion = "1.1.1"
 val autoValueVersion = "1.10.2"
 val errorProneVersion = "2.21.0"
 val byteBuddyVersion = "1.12.18"
-val jmhVersion = "1.36"
+val jmhVersion = "1.37"
 val mockitoVersion = "4.11.0"
 val slf4jVersion = "2.0.7"
 
@@ -67,9 +67,9 @@ val CORE_DEPENDENCIES = listOf(
 )
 
 val DEPENDENCIES = listOf(
-  "ch.qos.logback:logback-classic:1.3.8", // logback 1.4+ requires Java 11+
+  "ch.qos.logback:logback-classic:1.3.9", // logback 1.4+ requires Java 11+
   "ch.qos.logback.contrib:logback-json-classic:0.1.5",
-  "com.uber.nullaway:nullaway:0.10.11",
+  "com.uber.nullaway:nullaway:0.10.12",
   "commons-codec:commons-codec:1.16.0",
   "org.apache.commons:commons-text:1.10.0",
   "com.google.code.gson:gson:2.10.1",
