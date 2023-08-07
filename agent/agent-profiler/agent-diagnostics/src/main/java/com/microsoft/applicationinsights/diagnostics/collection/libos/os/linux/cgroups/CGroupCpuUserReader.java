@@ -4,9 +4,9 @@
 package com.microsoft.applicationinsights.diagnostics.collection.libos.os.linux.cgroups;
 
 @SuppressWarnings("checkstyle:AbbreviationAsWordInName")
-public class CGroupCPUUsageReader extends CGroupValueReader {
-  // total CPU usage (in nanoseconds) consumed by all tasks in this cgroup
-  public CGroupCPUUsageReader() {
-    super("/sys/fs/cgroup/cpu,cpuacct/cpuacct.usage");
+public class CGroupCpuUserReader extends CGroupValueReader {
+  // total user CPU time (in nanoseconds) consumed by all tasks in this cgroup
+  public CGroupCpuUserReader() {
+    super("/sys/fs/cgroup/cpu,cpuacct/cpuacct.usage_user");
   }
 }

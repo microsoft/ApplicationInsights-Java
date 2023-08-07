@@ -10,7 +10,6 @@ import java.util.concurrent.ScheduledExecutorService;
 
 /** Factory for Code Optimizer diagnostics to be service loaded */
 @AutoService(DiagnosticEngineFactory.class)
-@SuppressWarnings("checkstyle:AbbreviationAsWordInName")
 public class CodeOptimizerApplicationInsightFactoryJfr implements DiagnosticEngineFactory {
   @Override
   public DiagnosticEngine create(ScheduledExecutorService executorService) {

@@ -4,7 +4,7 @@
 package com.microsoft.applicationinsights.diagnostics.collection.libos.os.linux;
 
 import com.microsoft.applicationinsights.diagnostics.collection.libos.BigIncrementalCounter;
-import com.microsoft.applicationinsights.diagnostics.collection.libos.process.ProcessIOStats;
+import com.microsoft.applicationinsights.diagnostics.collection.libos.process.ProcessIoStats;
 import java.io.File;
 import java.math.BigInteger;
 import java.util.regex.Matcher;
@@ -13,9 +13,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /** Obtains per-process IO statistics. */
-@SuppressWarnings("checkstyle:AbbreviationAsWordInName")
-public class LinuxProcessIOStats extends TwoStepProcReader implements ProcessIOStats {
-  private static final Logger LOGGER = LoggerFactory.getLogger(LinuxProcessIOStats.class);
+public class LinuxProcessIoStats extends TwoStepProcReader implements ProcessIoStats {
+  private static final Logger LOGGER = LoggerFactory.getLogger(LinuxProcessIoStats.class);
 
   private static final Pattern IO_READ_PATTERN =
       Pattern.compile("^rchar: (\\d+)$", Pattern.MULTILINE);
@@ -33,7 +32,7 @@ public class LinuxProcessIOStats extends TwoStepProcReader implements ProcessIOS
 
   private boolean canBeInspected = true;
 
-  public LinuxProcessIOStats(File candidate) {
+  public LinuxProcessIoStats(File candidate) {
     super(new File(candidate, "io"), true);
     if (this.file == null) {
       // Generally indicates this process cannot be probed by this user

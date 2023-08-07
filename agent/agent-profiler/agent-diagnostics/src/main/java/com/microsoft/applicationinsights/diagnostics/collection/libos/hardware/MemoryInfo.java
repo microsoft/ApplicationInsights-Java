@@ -6,43 +6,42 @@ package com.microsoft.applicationinsights.diagnostics.collection.libos.hardware;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-@SuppressWarnings({"checkstyle:AbbreviationAsWordInName", "checkstyle:MemberName"})
 public class MemoryInfo {
 
-  private final long totalInKB;
+  private final long totalInKb;
 
-  private final long freeInKB;
+  private final long freeInKb;
 
-  private final long virtualMemoryTotalInKB;
+  private final long virtualMemoryTotalInKb;
 
-  private final long virtualMemoryUsedInKB;
+  private final long virtualMemoryUsedInKb;
 
   @JsonCreator
   public MemoryInfo(
-      @JsonProperty("totalInKB") long totalInKB,
-      @JsonProperty("freeInKB") long freeInKB,
-      @JsonProperty("virtualMemoryTotalInKB") long virtualMemoryTotalInKB,
-      @JsonProperty("virtualMemoryUsedInKB") long virtualMemoryUsedInKB) {
+      @JsonProperty("totalInKB") long totalInKb,
+      @JsonProperty("freeInKB") long freeInKb,
+      @JsonProperty("virtualMemoryTotalInKB") long virtualMemoryTotalInKb,
+      @JsonProperty("virtualMemoryUsedInKB") long virtualMemoryUsedInKb) {
 
-    this.totalInKB = totalInKB;
-    this.freeInKB = freeInKB;
-    this.virtualMemoryTotalInKB = virtualMemoryTotalInKB;
-    this.virtualMemoryUsedInKB = virtualMemoryUsedInKB;
+    this.totalInKb = totalInKb;
+    this.freeInKb = freeInKb;
+    this.virtualMemoryTotalInKb = virtualMemoryTotalInKb;
+    this.virtualMemoryUsedInKb = virtualMemoryUsedInKb;
   }
 
-  public long getTotalInKB() {
-    return totalInKB;
+  public long getTotalInKb() {
+    return totalInKb;
   }
 
-  public long getFreeInKB() {
-    return freeInKB;
+  public long getFreeInKb() {
+    return freeInKb;
   }
 
-  public long getVirtualMemoryTotalInKB() {
-    return virtualMemoryTotalInKB;
+  public long getVirtualMemoryTotalInKb() {
+    return virtualMemoryTotalInKb;
   }
 
-  public long getVirtualMemoryUsedInKB() {
-    return virtualMemoryUsedInKB;
+  public long getVirtualMemoryUsedInKb() {
+    return virtualMemoryUsedInKb;
   }
 }

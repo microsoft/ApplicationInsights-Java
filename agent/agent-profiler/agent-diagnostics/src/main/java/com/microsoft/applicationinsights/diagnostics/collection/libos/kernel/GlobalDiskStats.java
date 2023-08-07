@@ -3,12 +3,11 @@
 
 package com.microsoft.applicationinsights.diagnostics.collection.libos.kernel;
 
-@SuppressWarnings({"checkstyle:AbbreviationAsWordInName"})
 public interface GlobalDiskStats {
 
   long getTotalWrite();
 
   long getTotalRead();
 
-  long getTotalIO();
+  long getTotalIo();
 }

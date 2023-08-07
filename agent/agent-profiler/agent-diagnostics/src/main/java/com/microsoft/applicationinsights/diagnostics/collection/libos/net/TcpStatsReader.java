@@ -3,8 +3,7 @@
 
 package com.microsoft.applicationinsights.diagnostics.collection.libos.net;
 
-@SuppressWarnings("checkstyle:AbbreviationAsWordInName")
-public interface TCPStatsReader {
+public interface TcpStatsReader {
 
-  TCPStats getTCPStats();
+  TcpStats getTcpStats();
 }

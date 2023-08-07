@@ -7,7 +7,7 @@ import com.microsoft.applicationinsights.diagnostics.collection.libos.kernel.Glo
 import com.microsoft.applicationinsights.diagnostics.collection.libos.kernel.KernelCounters;
 import com.microsoft.applicationinsights.diagnostics.collection.libos.kernel.KernelMonitorDeviceDriver;
 import com.microsoft.applicationinsights.diagnostics.collection.libos.net.GlobalNetworkStats;
-import com.microsoft.applicationinsights.diagnostics.collection.libos.net.TCPStats;
+import com.microsoft.applicationinsights.diagnostics.collection.libos.net.TcpStats;
 import java.io.IOException;
 import java.math.BigInteger;
 
@@ -52,15 +52,15 @@ public class NoOpKernelMonitor implements KernelMonitorDeviceDriver {
       }
 
       @Override
-      public long getTotalIO() {
+      public long getTotalIo() {
         return -1;
       }
     };
   }
 
   @Override
-  public TCPStats getTcpStats() {
-    return new TCPStats(-1, -1);
+  public TcpStats getTcpStats() {
+    return new TcpStats(-1, -1);
   }
 
   @Override

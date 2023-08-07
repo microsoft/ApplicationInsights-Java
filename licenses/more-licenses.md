@@ -41,7 +41,9 @@ _2023-08-07 03:45:44 UTC_
 > - **POM Project URL**: [http://findbugs.sourceforge.net/](http://findbugs.sourceforge.net/)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
-**7** **Group:** `com.google.errorprone` **Name:** `error_prone_annotations` **Version:** `2.19.1` 
+**7** **Group:** `com.google.errorprone` **Name:** `error_prone_annotations` **Version:** `2.21.0` 
+> - **Manifest Project URL**: [https://errorprone.info/error_prone_annotations](https://errorprone.info/error_prone_annotations)
+> - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
 **8** **Group:** `com.nimbusds` **Name:** `content-type` **Version:** `2.2` 
