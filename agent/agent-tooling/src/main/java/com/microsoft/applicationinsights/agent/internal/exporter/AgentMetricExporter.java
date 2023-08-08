@@ -22,6 +22,7 @@ import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,7 +59,17 @@ public class AgentMetricExporter implements MetricExporter {
       logger.debug("exporter is not active");
       return CompletableResultCode.ofSuccess();
     }
-    for (MetricData metricData : metrics) {
+    List<MetricData> backCompatMetrics = metrics.stream()
+        .map(metricData -> {
+          if (metricData.getInstrumentationScopeInfo().getName()
+              .equals("io.opentelemetry.micrometer-1.5")) {
+            return new BackCompatMetricData(metricData);
+          }
+          return metricData;
+        })
+        .collect(Collectors.toList());
+
+    for (MetricData metricData : backCompatMetrics) {
       if (MetricFilter.shouldSkip(metricData.getName(), metricFilters)) {
         continue;
       }
