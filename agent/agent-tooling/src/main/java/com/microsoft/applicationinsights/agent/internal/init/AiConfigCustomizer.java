@@ -282,6 +282,9 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
     if (config.preview.instrumentation.vertx.enabled) {
       properties.put("otel.instrumentation.vertx.enabled", "true");
     }
+    if (config.preview.instrumentation.ktor.enabled) {
+      properties.put("otel.instrumentation.ktor.enabled", "true");
+    }
     if (config.preview.instrumentation.jaxrsAnnotations.enabled) {
       properties.put("otel.instrumentation.jaxrs-1.0.enabled", "true");
       properties.put("otel.instrumentation.jaxrs-annotations.enabled", "true");

@@ -162,7 +162,9 @@ public class Configuration {
     @Nullable public Double requestsPerSecond;
 
     // this config option only existed in one BETA release (3.4.0-BETA)
-    @Deprecated @Nullable public Double limitPerSecond;
+    @Deprecated
+    @Nullable
+    public Double limitPerSecond;
   }
 
   public static class SamplingPreview {
@@ -477,6 +479,8 @@ public class Configuration {
 
     public DisabledByDefaultInstrumentation apacheCamel = new DisabledByDefaultInstrumentation();
 
+    public DisabledByDefaultInstrumentation ktor = new DisabledByDefaultInstrumentation();
+
     // this is just here to detect if using this old setting in order to give a helpful message
     @Deprecated
     public DisabledByDefaultInstrumentation azureSdk = new DisabledByDefaultInstrumentation();
@@ -635,17 +639,23 @@ public class Configuration {
   }
 
   public static class SamplingOverride {
-    @Deprecated @Nullable public SpanKind spanKind;
+    @Deprecated
+    @Nullable
+    public SpanKind spanKind;
 
     // TODO (trask) make this required when moving out of preview
     //   for now the default is both "request" and "dependency" for backwards compatibility
     @Nullable public SamplingTelemetryType telemetryType;
 
     // this config option existed in one GA release (3.4.0), and was then replaced by telemetryType
-    @Deprecated @Nullable public SamplingTelemetryType telemetryKind;
+    @Deprecated
+    @Nullable
+    public SamplingTelemetryType telemetryKind;
 
     // this config option only existed in one BETA release (3.4.0-BETA)
-    @Deprecated @Nullable public Boolean includingStandaloneTelemetry;
+    @Deprecated
+    @Nullable
+    public Boolean includingStandaloneTelemetry;
 
     // not using include/exclude, because you can still get exclude with this by adding a second
     // (exclude) override above it
