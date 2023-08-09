@@ -59,15 +59,19 @@ public class AgentMetricExporter implements MetricExporter {
       logger.debug("exporter is not active");
       return CompletableResultCode.ofSuccess();
     }
-    List<MetricData> backCompatMetrics = metrics.stream()
-        .map(metricData -> {
-          if (metricData.getInstrumentationScopeInfo().getName()
-              .equals("io.opentelemetry.micrometer-1.5")) {
-            return new BackCompatMetricData(metricData);
-          }
-          return metricData;
-        })
-        .collect(Collectors.toList());
+    List<MetricData> backCompatMetrics =
+        metrics.stream()
+            .map(
+                metricData -> {
+                  if (metricData
+                      .getInstrumentationScopeInfo()
+                      .getName()
+                      .equals("io.opentelemetry.micrometer-1.5")) {
+                    return new BackCompatMetricData(metricData);
+                  }
+                  return metricData;
+                })
+            .collect(Collectors.toList());
 
     for (MetricData metricData : backCompatMetrics) {
       if (MetricFilter.shouldSkip(metricData.getName(), metricFilters)) {

@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 package com.microsoft.applicationinsights.agent.internal.exporter;
 
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
@@ -28,7 +31,8 @@ class BackCompatMetricData implements MetricData {
 
   private static String toSnakeCase(String value) {
     // same logic as micrometer's NamingConvention.snakeCase
-    return Arrays.stream(value.split("\\.")).filter(Objects::nonNull)
+    return Arrays.stream(value.split("\\."))
+        .filter(Objects::nonNull)
         .collect(Collectors.joining("_"));
   }
 

@@ -47,7 +47,8 @@ abstract class ActuatorMetricsTest {
     assertThat(point.getCount()).isEqualTo(1);
     assertThat(point.getName()).isEqualTo("http_server_requests");
 
-    // actuator test is running with micrometer 1.5+ and so is using upstream micrometer instrumentation
+    // actuator test is running with micrometer 1.5+ and so is using upstream micrometer
+    // instrumentation
     assertThat(point.getMin()).isNotNull();
 
     assertThat(point.getMax()).isNotNull();
