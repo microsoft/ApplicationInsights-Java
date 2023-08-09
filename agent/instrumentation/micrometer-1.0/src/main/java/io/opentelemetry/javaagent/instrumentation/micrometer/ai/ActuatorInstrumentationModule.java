@@ -25,9 +25,10 @@ public class ActuatorInstrumentationModule extends InstrumentationModule {
 
   @Override
   public ElementMatcher.Junction<ClassLoader> classLoaderMatcher() {
-    return hasClassesNamed("io.micrometer.core.instrument.Metrics").and(
-        // added in micrometer 1.5
-        not(hasClassesNamed("io.micrometer.core.instrument.config.validate.Validated")));
+    return hasClassesNamed("io.micrometer.core.instrument.Metrics")
+        .and(
+            // added in micrometer 1.5
+            not(hasClassesNamed("io.micrometer.core.instrument.config.validate.Validated")));
   }
 
   @Override
