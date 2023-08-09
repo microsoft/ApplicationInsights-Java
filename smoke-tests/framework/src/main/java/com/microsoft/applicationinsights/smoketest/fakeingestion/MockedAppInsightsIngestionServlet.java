@@ -90,7 +90,10 @@ class MockedAppInsightsIngestionServlet extends HttpServlet {
           targetCollection.add(val);
         }
       }
-      if (targetCollection.size() >= numItems) {
+      if (targetCollection.size() > numItems) {
+        throw new AssertionError("Unexpected number of items");
+      }
+      if (targetCollection.size() == numItems) {
         return targetCollection;
       }
       TimeUnit.MILLISECONDS.sleep(75);
