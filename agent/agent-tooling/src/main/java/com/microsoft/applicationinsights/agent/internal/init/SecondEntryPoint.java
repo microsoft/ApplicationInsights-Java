@@ -744,7 +744,10 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
     PeriodicMetricReaderBuilder readerBuilder =
         PeriodicMetricReader.builder(
             new AgentMetricExporter(
-                metricFilters, mapper, telemetryClient.getMetricsBatchItemProcessor()));
+                metricFilters,
+                mapper,
+                telemetryClient.getMetricsBatchItemProcessor(),
+                configuration.instrumentation.micrometer.namespace));
     int intervalMillis =
         Integer.getInteger(
             "applicationinsights.testing.metric-reader-interval-millis",

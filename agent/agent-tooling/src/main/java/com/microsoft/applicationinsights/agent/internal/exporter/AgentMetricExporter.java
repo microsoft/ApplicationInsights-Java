@@ -7,6 +7,8 @@ import static com.azure.monitor.opentelemetry.exporter.implementation.utils.Azur
 
 import com.azure.monitor.opentelemetry.exporter.implementation.MetricDataMapper;
 import com.azure.monitor.opentelemetry.exporter.implementation.logging.OperationLogger;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricsData;
+import com.azure.monitor.opentelemetry.exporter.implementation.models.MonitorDomain;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
 import com.microsoft.applicationinsights.agent.internal.telemetry.BatchItemProcessor;
@@ -23,6 +25,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,14 +38,17 @@ public class AgentMetricExporter implements MetricExporter {
 
   private final List<MetricFilter> metricFilters;
   private final MetricDataMapper mapper;
+  @Nullable private final String micrometerMetricNamespace;
   private final Consumer<TelemetryItem> telemetryItemConsumer;
 
   public AgentMetricExporter(
       List<MetricFilter> metricFilters,
       MetricDataMapper mapper,
-      BatchItemProcessor batchItemProcessor) {
+      BatchItemProcessor batchItemProcessor,
+      @Nullable String micrometerMetricNamespace) {
     this.metricFilters = metricFilters;
     this.mapper = mapper;
+    this.micrometerMetricNamespace = micrometerMetricNamespace;
     this.telemetryItemConsumer =
         telemetryItem -> {
           TelemetryObservers.INSTANCE
@@ -79,7 +85,23 @@ public class AgentMetricExporter implements MetricExporter {
       }
       logger.debug("exporting metric: {}", metricData);
       try {
-        mapper.map(metricData, telemetryItemConsumer);
+        mapper.map(
+            metricData,
+            telemetryItem -> {
+              if (micrometerMetricNamespace != null
+                  && metricData
+                      .getInstrumentationScopeInfo()
+                      .getName()
+                      .equals("io.opentelemetry.micrometer-1.5")) {
+                MonitorDomain baseData = telemetryItem.getData().getBaseData();
+                if (baseData instanceof MetricsData) {
+                  ((MetricsData) baseData)
+                      .getMetrics()
+                      .forEach(md -> md.setNamespace(micrometerMetricNamespace));
+                }
+              }
+              telemetryItemConsumer.accept(telemetryItem);
+            });
         exportingMetricLogger.recordSuccess();
       } catch (Throwable t) {
         exportingMetricLogger.recordFailure(t.getMessage(), t, EXPORTER_MAPPING_ERROR);
