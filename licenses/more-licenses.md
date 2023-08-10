@@ -1,7 +1,7 @@
 
 # agent
 ## Dependency License Report
-_2023-08-07 22:30:41 UTC_
+_2023-08-10 03:36:36 UTC_
 ## Apache License, Version 2.0
 
 **1** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-annotations` **Version:** `2.15.2` 
@@ -288,13 +288,13 @@ _2023-08-07 22:30:41 UTC_
 
 ## Eclipse Public License - v 1.0
 
-**56** **Group:** `ch.qos.logback` **Name:** `logback-classic` **Version:** `1.3.9` 
+**56** **Group:** `ch.qos.logback` **Name:** `logback-classic` **Version:** `1.3.11` 
 > - **Manifest Project URL**: [http://www.qos.ch](http://www.qos.ch)
 > - **Manifest License**: GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 (Not Packaged)
 > - **POM License**: Eclipse Public License - v 1.0 - [http://www.eclipse.org/legal/epl-v10.html](http://www.eclipse.org/legal/epl-v10.html)
 > - **POM License**: GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 - [https://www.gnu.org/licenses/lgpl-2.1](https://www.gnu.org/licenses/lgpl-2.1)
 
-**57** **Group:** `ch.qos.logback` **Name:** `logback-core` **Version:** `1.3.9` 
+**57** **Group:** `ch.qos.logback` **Name:** `logback-core` **Version:** `1.3.11` 
 > - **Manifest Project URL**: [http://www.qos.ch](http://www.qos.ch)
 > - **Manifest License**: GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 (Not Packaged)
 > - **POM License**: Eclipse Public License - v 1.0 - [http://www.eclipse.org/legal/epl-v10.html](http://www.eclipse.org/legal/epl-v10.html)
@@ -312,13 +312,13 @@ _2023-08-07 22:30:41 UTC_
 
 ## GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1
 
-**60** **Group:** `ch.qos.logback` **Name:** `logback-classic` **Version:** `1.3.9` 
+**60** **Group:** `ch.qos.logback` **Name:** `logback-classic` **Version:** `1.3.11` 
 > - **Manifest Project URL**: [http://www.qos.ch](http://www.qos.ch)
 > - **Manifest License**: GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 (Not Packaged)
 > - **POM License**: Eclipse Public License - v 1.0 - [http://www.eclipse.org/legal/epl-v10.html](http://www.eclipse.org/legal/epl-v10.html)
 > - **POM License**: GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 - [https://www.gnu.org/licenses/lgpl-2.1](https://www.gnu.org/licenses/lgpl-2.1)
 
-**61** **Group:** `ch.qos.logback` **Name:** `logback-core` **Version:** `1.3.9` 
+**61** **Group:** `ch.qos.logback` **Name:** `logback-core` **Version:** `1.3.11` 
 > - **Manifest Project URL**: [http://www.qos.ch](http://www.qos.ch)
 > - **Manifest License**: GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 (Not Packaged)
 > - **POM License**: Eclipse Public License - v 1.0 - [http://www.eclipse.org/legal/epl-v10.html](http://www.eclipse.org/legal/epl-v10.html)
