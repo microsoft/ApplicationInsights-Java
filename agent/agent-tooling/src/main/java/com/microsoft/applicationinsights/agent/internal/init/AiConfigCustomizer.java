@@ -286,6 +286,9 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
       properties.put("otel.instrumentation.jaxrs-1.0.enabled", "true");
       properties.put("otel.instrumentation.jaxrs-annotations.enabled", "true");
     }
+    if (config.preview.instrumentation.r2dbc.enabled) {
+      properties.put("otel.instrumentation.r2dbc.enabled", "true");
+    }
   }
 
   private static void setHttpHeaderConfiguration(

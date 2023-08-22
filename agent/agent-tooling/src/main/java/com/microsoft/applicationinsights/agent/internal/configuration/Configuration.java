@@ -507,6 +507,8 @@ public class Configuration {
     // this is opt-in because it can cause startup slowness due to expensive matchers
     public DisabledByDefaultInstrumentation jaxrsAnnotations =
         new DisabledByDefaultInstrumentation();
+
+    public DisabledByDefaultInstrumentation r2dbc = new DisabledByDefaultInstrumentation();
   }
 
   public static class PreviewStatsbeat {
