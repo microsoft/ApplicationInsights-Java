@@ -184,7 +184,7 @@ class ExporterWithLogProcessorTest {
     LogRecordExporter logExporter = new ExporterWithLogProcessor(config, mockExporter);
     TestLogRecordData mockLogA =
         TestLogRecordData.builder()
-            .setBody("yyyPassword=123 aba Pass=555 xyx")
+            .setBody("yyyPassword=123 aba Pass=555 xyx Pass=777 zzz")
             .setAttributes(attributes)
             .build();
 
@@ -229,7 +229,7 @@ class ExporterWithLogProcessorTest {
                 resultA.getAttributes().get(AttributeKey.stringKey("password2"))))
         .isEqualTo("555");
     assertThat(resultA.getBody().asString())
-        .isEqualTo("yyyPassword={password1} aba Pass={password2} xyx");
+        .isEqualTo("yyyPassword={password1} aba Pass={password2} xyx Pass={password2} zzz");
     assertThat(
             Objects.requireNonNull(
                 resultB.getAttributes().get(AttributeKey.stringKey("password1"))))
