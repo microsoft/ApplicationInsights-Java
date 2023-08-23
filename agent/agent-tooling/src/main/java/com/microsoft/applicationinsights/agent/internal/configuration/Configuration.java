@@ -477,6 +477,8 @@ public class Configuration {
 
     public DisabledByDefaultInstrumentation apacheCamel = new DisabledByDefaultInstrumentation();
 
+    public DisabledByDefaultInstrumentation ktor = new DisabledByDefaultInstrumentation();
+
     // this is just here to detect if using this old setting in order to give a helpful message
     @Deprecated
     public DisabledByDefaultInstrumentation azureSdk = new DisabledByDefaultInstrumentation();
