@@ -33,17 +33,20 @@ public class DiagnosticsHelper {
   }
 
   public static void initRpIntegration(Path agentPath) {
-    if (!Strings.isNullOrEmpty(System.getenv("WEBSITE_SITE_NAME"))) {
+    // important to check FUNCTIONS_WORKER_RUNTIME before WEBSITE_SITE_NAME
+    // TODO (heya) how should we report functions windows users who are using app services
+    //  windows attach by manually setting the env vars (which was the old documented way)
+    if ("java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME"))) {
+      rpIntegrationChar = 'f';
+      functionsRpIntegration = true;
+      setRpAttachType(agentPath, "functions.codeless");
+    } else if (!Strings.isNullOrEmpty(System.getenv("WEBSITE_SITE_NAME"))) {
       rpIntegrationChar = 'a';
       appSvcRpIntegration = true;
       setRpAttachType(agentPath, "appsvc.codeless");
     } else if (!Strings.isNullOrEmpty(System.getenv("KUBERNETES_SERVICE_HOST"))) {
       rpIntegrationChar = 'k';
       setRpAttachType(agentPath, "aks.codeless");
-    } else if ("java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME"))) {
-      rpIntegrationChar = 'f';
-      functionsRpIntegration = true;
-      setRpAttachType(agentPath, "functions.codeless");
     } else if (!Strings.isNullOrEmpty(
         System.getenv("APPLICATIONINSIGHTS_SPRINGCLOUD_SERVICE_ID"))) {
       rpIntegrationChar = 's';
