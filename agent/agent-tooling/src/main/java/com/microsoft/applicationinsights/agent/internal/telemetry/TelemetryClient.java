@@ -94,7 +94,7 @@ public class TelemetryClient {
     return builder()
         .setCustomDimensions(new HashMap<>())
         .setMetricFilters(new ArrayList<>())
-        .setStatsbeatModule(new StatsbeatModule(null))
+        .setStatsbeatModule(new StatsbeatModule(response -> {}))
         .build();
   }
 
