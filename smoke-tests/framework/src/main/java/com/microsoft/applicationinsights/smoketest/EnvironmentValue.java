@@ -40,16 +40,15 @@ public enum EnvironmentValue {
       "/config/apps",
       "app.war"),
 
-  JAVA_8("openjdk:8", ""),
+  JAVA_8("eclipse-temurin:8", ""),
   JAVA_8_OPENJ9("ibm-semeru-runtimes:open-8-jdk", ""),
-  JAVA_11("openjdk:11", ""),
+  JAVA_11("eclipse-temurin:11", ""),
   JAVA_11_OPENJ9("ibm-semeru-runtimes:open-11-jdk", ""),
-  JAVA_17("openjdk:17", ""),
+  JAVA_17("eclipse-temurin:17", ""),
   JAVA_17_OPENJ9("ibm-semeru-runtimes:open-17-jdk", ""),
-  JAVA_19("openjdk:19", ""),
-  // ibm-semeru-runtimes:open-19-jdk has not been released yet
-  JAVA_18_OPENJ9("ibm-semeru-runtimes:open-18-jdk", ""),
-  JAVA_20("openjdk:20", "");
+  JAVA_20("eclipse-temurin:20", ""),
+  JAVA_20_OPENJ9("ibm-semeru-runtimes:open-20-jdk", ""),
+  JAVA_21("openjdk:21", ""); // still in preview
 
   private final String imageName;
   private final String imageAppDir;

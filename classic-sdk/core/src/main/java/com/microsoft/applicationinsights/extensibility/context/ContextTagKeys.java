@@ -3,7 +3,7 @@
 
 package com.microsoft.applicationinsights.extensibility.context;
 
-@SuppressWarnings("AbbreviationAsWordInName")
+@SuppressWarnings({"AbbreviationAsWordInName", "MemberName"})
 public final class ContextTagKeys {
 
   private static final ContextTagKeys INSTANCE = new ContextTagKeys();

@@ -5,8 +5,8 @@ package com.microsoft.applicationinsights.diagnostics.collection.libos.os.nop;
 
 import com.microsoft.applicationinsights.diagnostics.collection.libos.kernel.CGroupDataReader;
 
-@SuppressWarnings("checkstyle:AbbreviationAsWordInName")
-public class NoOpCgroupDataReader implements CGroupDataReader {
+@SuppressWarnings({"checkstyle:AbbreviationAsWordInName", "MemberName"})
+public class NoOpCGroupDataReader implements CGroupDataReader {
 
   @Override
   public long getKmemLimit() {

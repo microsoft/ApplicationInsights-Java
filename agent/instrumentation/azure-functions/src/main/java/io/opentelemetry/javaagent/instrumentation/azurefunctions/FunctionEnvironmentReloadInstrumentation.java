@@ -32,6 +32,12 @@ class FunctionEnvironmentReloadInstrumentation implements TypeInstrumentation {
   public static class ExecuteAdvice {
     @Advice.OnMethodExit(suppress = Throwable.class)
     public static void methodExit() {
+
+      if (System.getenv("AzureWebJobsStorage") == null) {
+        // specialization hasn't occurred yet, and this is just a fake warmup request
+        return;
+      }
+
       AzureFunctions.configureOnce();
     }
   }

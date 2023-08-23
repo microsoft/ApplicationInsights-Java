@@ -3,13 +3,12 @@
 
 package com.microsoft.applicationinsights.diagnostics.collection.libos.net;
 
-@SuppressWarnings("checkstyle:AbbreviationAsWordInName")
-public class TCPStats {
+public class TcpStats {
 
   private final long receivedQueue;
   private final long transferredQueue;
 
-  public TCPStats(long receivedQueue, long transferredQueue) {
+  public TcpStats(long receivedQueue, long transferredQueue) {
     this.receivedQueue = receivedQueue;
     this.transferredQueue = transferredQueue;
   }

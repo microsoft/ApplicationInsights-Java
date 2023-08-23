@@ -12,42 +12,38 @@ import java.util.stream.Stream;
 @SuppressWarnings("checkstyle:AbbreviationAsWordInName")
 public class LinuxCGroupUsageDataReader implements CGroupUsageDataReader {
 
-  @SuppressWarnings("checkstyle:MemberName")
-  private final CGroupCPUUsageReader cGroupCpuUsageReader = new CGroupCPUUsageReader();
+  private final CGroupCpuUsageReader cgroupCpuUsageReader = new CGroupCpuUsageReader();
 
-  @SuppressWarnings("checkstyle:MemberName")
-  private final CGroupCPUUserReader cGroupCpuUserReader = new CGroupCPUUserReader();
+  private final CGroupCpuUserReader cgroupCpuUserReader = new CGroupCpuUserReader();
 
-  @SuppressWarnings("checkstyle:MemberName")
-  private final CGroupCPUSystemReader cGroupCpuSystemReader = new CGroupCPUSystemReader();
+  private final CGroupCpuSystemReader cgroupCpuSystemReader = new CGroupCpuSystemReader();
 
-  @SuppressWarnings("checkstyle:MemberName")
-  private final CGroupStatReader cGroupStatReader = new CGroupStatReader();
+  private final CGroupStatReader cgroupStatReader = new CGroupStatReader();
 
   @Override
   public void poll() {
-    cGroupCpuSystemReader.poll();
-    cGroupCpuUsageReader.poll();
-    cGroupCpuUserReader.poll();
-    cGroupStatReader.poll();
+    cgroupCpuSystemReader.poll();
+    cgroupCpuUsageReader.poll();
+    cgroupCpuUserReader.poll();
+    cgroupStatReader.poll();
   }
 
   @Override
   public void update() {
-    cGroupCpuSystemReader.update();
-    cGroupCpuUsageReader.update();
-    cGroupCpuUserReader.update();
-    cGroupStatReader.update();
+    cgroupCpuSystemReader.update();
+    cgroupCpuUsageReader.update();
+    cgroupCpuUserReader.update();
+    cgroupStatReader.update();
   }
 
   @Override
   public List<Double> getTelemetry() {
     return Stream.of(
-            cGroupCpuUsageReader.getUsage().getIncrement(),
-            cGroupCpuUserReader.getUsage().getIncrement(),
-            cGroupCpuSystemReader.getUsage().getIncrement(),
-            cGroupStatReader.getUser().getIncrement(),
-            cGroupStatReader.getSystem().getIncrement())
+            cgroupCpuUsageReader.getUsage().getIncrement(),
+            cgroupCpuUserReader.getUsage().getIncrement(),
+            cgroupCpuSystemReader.getUsage().getIncrement(),
+            cgroupStatReader.getUser().getIncrement(),
+            cgroupStatReader.getSystem().getIncrement())
         .map(
             value -> {
               if (value == null) {
@@ -61,9 +57,9 @@ public class LinuxCGroupUsageDataReader implements CGroupUsageDataReader {
 
   @Override
   public void close() throws IOException {
-    cGroupCpuUsageReader.close();
-    cGroupCpuUserReader.close();
-    cGroupCpuSystemReader.close();
-    cGroupStatReader.close();
+    cgroupCpuUsageReader.close();
+    cgroupCpuUserReader.close();
+    cgroupCpuSystemReader.close();
+    cgroupStatReader.close();
   }
 }

@@ -7,8 +7,7 @@ import com.microsoft.applicationinsights.diagnostics.collection.libos.TwoStepUpd
 import java.io.Closeable;
 import java.math.BigInteger;
 
-@SuppressWarnings("checkstyle:AbbreviationAsWordInName")
-public interface ProcessIOStats extends TwoStepUpdatable, Closeable {
+public interface ProcessIoStats extends TwoStepUpdatable, Closeable {
   BigInteger getIoRead();
 
   BigInteger getIoWrite();

@@ -19,7 +19,7 @@ public abstract class Process extends ProcessData implements TwoStepUpdatable {
     return isJava;
   }
 
-  public abstract ProcessIOStats getIoStats();
+  public abstract ProcessIoStats getIoStats();
 
-  public abstract ProcessCPUStats getCpuStats();
+  public abstract ProcessCpuStats getCpuStats();
 }

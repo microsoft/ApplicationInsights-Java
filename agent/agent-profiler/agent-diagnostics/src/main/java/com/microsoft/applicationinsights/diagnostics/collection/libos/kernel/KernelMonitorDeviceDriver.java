@@ -6,7 +6,7 @@ package com.microsoft.applicationinsights.diagnostics.collection.libos.kernel;
 import com.microsoft.applicationinsights.diagnostics.collection.libos.OperatingSystemInteractionException;
 import com.microsoft.applicationinsights.diagnostics.collection.libos.TwoStepUpdatable;
 import com.microsoft.applicationinsights.diagnostics.collection.libos.net.GlobalNetworkStats;
-import com.microsoft.applicationinsights.diagnostics.collection.libos.net.TCPStats;
+import com.microsoft.applicationinsights.diagnostics.collection.libos.net.TcpStats;
 import java.io.Closeable;
 
 /** Device driver for abstracting away any kernel specific statistics */
@@ -18,5 +18,5 @@ public interface KernelMonitorDeviceDriver extends Closeable, TwoStepUpdatable {
 
   GlobalDiskStats getDiskstats();
 
-  TCPStats getTcpStats();
+  TcpStats getTcpStats();
 }

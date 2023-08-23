@@ -7,8 +7,7 @@ import com.microsoft.applicationinsights.diagnostics.collection.libos.TwoStepUpd
 import java.io.Closeable;
 import java.math.BigInteger;
 
-@SuppressWarnings("checkstyle:AbbreviationAsWordInName")
-public interface ProcessCPUStats extends Closeable, TwoStepUpdatable {
+public interface ProcessCpuStats extends Closeable, TwoStepUpdatable {
 
   BigInteger getUserTime();
 

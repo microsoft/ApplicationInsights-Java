@@ -7,9 +7,9 @@ import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_11_OPENJ9;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_17;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_17_OPENJ9;
-import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_18_OPENJ9;
-import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_19;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_20;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_20_OPENJ9;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_21;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_8;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_8_OPENJ9;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -127,12 +127,12 @@ abstract class JmsTest {
   @Environment(JAVA_17_OPENJ9)
   static class Java17OpenJ9Test extends JmsTest {}
 
-  @Environment(JAVA_19)
-  static class Java18Test extends JmsTest {}
-
-  @Environment(JAVA_18_OPENJ9)
-  static class Java18OpenJ9Test extends JmsTest {}
-
   @Environment(JAVA_20)
-  static class Java19Test extends JmsTest {}
+  static class JavaLatestTest extends JmsTest {}
+
+  @Environment(JAVA_20_OPENJ9)
+  static class JavaLatestOpenJ9Test extends JmsTest {}
+
+  @Environment(JAVA_21)
+  static class JavaPrereleaseTest extends JmsTest {}
 }

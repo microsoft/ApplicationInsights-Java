@@ -11,7 +11,7 @@ import jdk.jfr.Name;
 import jdk.jfr.Period;
 import jdk.jfr.StackTrace;
 
-@SuppressWarnings({"checkstyle:AbbreviationAsWordInName", "Java8ApiChecker"})
+@SuppressWarnings("Java8ApiChecker")
 @Name("com.microsoft.applicationinsights.diagnostics.jfr.MachineStats")
 @Label("MachineStats")
 @Category("Diagnostic")

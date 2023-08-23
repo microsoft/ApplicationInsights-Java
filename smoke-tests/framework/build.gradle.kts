@@ -11,7 +11,7 @@ tasks {
 dependencies {
   implementation("com.google.guava:guava")
   implementation("org.junit.jupiter:junit-jupiter")
-  implementation("org.apache.commons:commons-lang3:3.12.0")
+  implementation("org.apache.commons:commons-lang3:3.13.0")
 
   implementation("com.google.code.gson:gson")
   implementation("org.apache.httpcomponents:httpclient:4.5.14")
@@ -19,7 +19,7 @@ dependencies {
   implementation("org.eclipse.jetty:jetty-servlet:10.0.15")
 
   // this is exposed in SmokeTestExtension API
-  api("org.testcontainers:testcontainers:1.18.3")
+  api("org.testcontainers:testcontainers:1.19.0")
 
   implementation("org.awaitility:awaitility:4.2.0")
 
