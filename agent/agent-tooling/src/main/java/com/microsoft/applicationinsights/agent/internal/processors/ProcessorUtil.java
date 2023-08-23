@@ -15,7 +15,7 @@ import java.util.regex.Pattern;
 
 public class ProcessorUtil {
 
-  public static String applyRule(
+  public static String applyRuleOnFirstMatch(
       List<String> groupNamesList, Pattern pattern, String name, AttributesBuilder builder) {
     if (groupNamesList.isEmpty()) {
       return name;
@@ -23,24 +23,58 @@ public class ProcessorUtil {
     Matcher matcher = pattern.matcher(name);
     StringBuilder sb = new StringBuilder();
     int lastEnd = 0;
-    while (matcher.find()) {
-      sb.append(name, lastEnd, matcher.start());
-      int innerLastEnd = matcher.start();
-      for (int i = 1; i <= groupNamesList.size(); i++) {
-        sb.append(name, innerLastEnd, matcher.start(i));
-        sb.append("{");
-        sb.append(groupNamesList.get(i - 1));
-        // add attribute key=groupNames.get(i-1), value=matcher.group(i)
-        builder.put(groupNamesList.get(i - 1), matcher.group(i));
-        sb.append("}");
-        innerLastEnd = matcher.end(i);
-      }
-      sb.append(name, innerLastEnd, matcher.end());
-      lastEnd = matcher.end();
+    if (matcher.find()) {
+      boolean firstMatch = true;
+      lastEnd = applyRule(groupNamesList, name, builder, sb, lastEnd, matcher, firstMatch);
     }
     sb.append(name, lastEnd, name.length());
 
     return sb.toString();
+  }
+
+  // Rule applied on all matches for the returned String (not the attributes)
+  public static String applyRuleOnAllMatches(
+      List<String> groupNamesList, Pattern pattern, String name, AttributesBuilder builder) {
+    if (groupNamesList.isEmpty()) {
+      return name;
+    }
+    Matcher matcher = pattern.matcher(name);
+    StringBuilder sb = new StringBuilder();
+    int lastEnd = 0;
+    boolean firstMatch = true;
+    while (matcher.find()) {
+      lastEnd = applyRule(groupNamesList, name, builder, sb, lastEnd, matcher, firstMatch);
+      firstMatch = false;
+    }
+    sb.append(name, lastEnd, name.length());
+
+    return sb.toString();
+  }
+
+  private static int applyRule(
+      List<String> groupNamesList,
+      String name,
+      AttributesBuilder builder,
+      StringBuilder sb,
+      int lastEnd,
+      Matcher matcher,
+      boolean firstMatch) {
+    sb.append(name, lastEnd, matcher.start());
+    int innerLastEnd = matcher.start();
+    for (int i = 1; i <= groupNamesList.size(); i++) {
+      sb.append(name, innerLastEnd, matcher.start(i));
+      sb.append("{");
+      sb.append(groupNamesList.get(i - 1));
+      // add attribute key=groupNames.get(i-1), value=matcher.group(i)
+      if (firstMatch) {
+        builder.put(groupNamesList.get(i - 1), matcher.group(i));
+      }
+      sb.append("}");
+      innerLastEnd = matcher.end(i);
+    }
+    sb.append(name, innerLastEnd, matcher.end());
+    lastEnd = matcher.end();
+    return lastEnd;
   }
 
   public static List<List<String>> getGroupNamesList(List<String> toAttributeRules) {

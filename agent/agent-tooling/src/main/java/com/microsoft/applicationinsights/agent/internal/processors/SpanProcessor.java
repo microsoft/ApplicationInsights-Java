@@ -3,7 +3,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.processors;
 
-import static com.microsoft.applicationinsights.agent.internal.processors.ProcessorUtil.applyRule;
+import static com.microsoft.applicationinsights.agent.internal.processors.ProcessorUtil.applyRuleOnFirstMatch;
 import static com.microsoft.applicationinsights.agent.internal.processors.ProcessorUtil.getGroupNamesList;
 import static com.microsoft.applicationinsights.agent.internal.processors.ProcessorUtil.spanHasAllFromAttributeKeys;
 
@@ -101,7 +101,9 @@ public class SpanProcessor extends AgentProcessor {
     // they will be overwritten. Need a way to optimize this.
     AttributesBuilder builder = span.getAttributes().toBuilder();
     for (int i = 0; i < groupNames.size(); i++) {
-      spanName = applyRule(groupNames.get(i), toAttributeRulePatterns.get(i), spanName, builder);
+      spanName =
+          applyRuleOnFirstMatch(
+              groupNames.get(i), toAttributeRulePatterns.get(i), spanName, builder);
     }
     return new MySpanData(span, builder.build(), spanName);
   }
