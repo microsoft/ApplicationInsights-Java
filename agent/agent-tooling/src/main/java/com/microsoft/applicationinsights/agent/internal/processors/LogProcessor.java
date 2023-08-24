@@ -3,7 +3,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.processors;
 
-import static com.microsoft.applicationinsights.agent.internal.processors.ProcessorUtil.applyRuleOnAllMatches;
+import static com.microsoft.applicationinsights.agent.internal.processors.ProcessorUtil.applyRule;
 import static com.microsoft.applicationinsights.agent.internal.processors.ProcessorUtil.getGroupNamesList;
 
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.ProcessorConfig;
@@ -104,8 +104,7 @@ public class LogProcessor extends AgentProcessor {
     AttributesBuilder builder = log.getAttributes().toBuilder();
     for (int i = 0; i < groupNames.size(); i++) {
       bodyAsString =
-          applyRuleOnAllMatches(
-              groupNames.get(i), toAttributeRulePatterns.get(i), bodyAsString, builder);
+          applyRule(groupNames.get(i), toAttributeRulePatterns.get(i), bodyAsString, builder);
     }
 
     return new MyLogData(log, builder.build(), Body.string(bodyAsString));

@@ -227,7 +227,7 @@ class ExporterWithLogProcessorTest {
     assertThat(
             Objects.requireNonNull(
                 resultA.getAttributes().get(AttributeKey.stringKey("password2"))))
-        .isEqualTo("555");
+        .isEqualTo("555"); // The first match is taken to populate the attribute
     assertThat(resultA.getBody().asString())
         .isEqualTo("yyyPassword={password1} aba Pass={password2} xyx Pass={password2} zzz");
     assertThat(
