@@ -1,7 +1,7 @@
 
 # agent
 ## Dependency License Report
-_2023-08-24 03:27:55 UTC_
+_2023-08-24 15:22:21 UTC_
 ## Apache License, Version 2.0
 
 **1** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-annotations` **Version:** `2.15.2` 
@@ -352,34 +352,34 @@ _2023-08-24 03:27:55 UTC_
 
 ## MIT License
 
-**67** **Group:** `com.azure` **Name:** `azure-core` **Version:** `1.41.0` 
+**67** **Group:** `com.azure` **Name:** `azure-core` **Version:** `1.42.0` 
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**68** **Group:** `com.azure` **Name:** `azure-core-http-netty` **Version:** `1.13.5` 
+**68** **Group:** `com.azure` **Name:** `azure-core-http-netty` **Version:** `1.13.6` 
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**69** **Group:** `com.azure` **Name:** `azure-identity` **Version:** `1.9.2` 
+**69** **Group:** `com.azure` **Name:** `azure-identity` **Version:** `1.10.0` 
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**70** **Group:** `com.azure` **Name:** `azure-json` **Version:** `1.0.1` 
+**70** **Group:** `com.azure` **Name:** `azure-json` **Version:** `1.1.0` 
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
 **71** **Group:** `com.azure` **Name:** `azure-monitor-opentelemetry-exporter` **Version:** `1.0.0-beta.9` 
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**72** **Group:** `com.azure` **Name:** `azure-storage-blob` **Version:** `12.23.0` 
+**72** **Group:** `com.azure` **Name:** `azure-storage-blob` **Version:** `12.23.1` 
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**73** **Group:** `com.azure` **Name:** `azure-storage-common` **Version:** `12.22.0` 
+**73** **Group:** `com.azure` **Name:** `azure-storage-common` **Version:** `12.22.1` 
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**74** **Group:** `com.azure` **Name:** `azure-storage-internal-avro` **Version:** `12.8.0` 
+**74** **Group:** `com.azure` **Name:** `azure-storage-internal-avro` **Version:** `12.8.1` 
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
@@ -388,7 +388,7 @@ _2023-08-24 03:27:55 UTC_
 > - **Manifest License**: "SPDX-License-Identifier: MIT";link="https://opensource.org/licenses/MIT" (Not Packaged)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**76** **Group:** `com.microsoft.azure` **Name:** `msal4j` **Version:** `1.13.8` 
+**76** **Group:** `com.microsoft.azure` **Name:** `msal4j` **Version:** `1.13.9` 
 > - **Project URL**: [https://github.com/AzureAD/microsoft-authentication-library-for-java](https://github.com/AzureAD/microsoft-authentication-library-for-java)
 > - **Manifest License**: "MIT License" (Not Packaged)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
