@@ -227,9 +227,9 @@ class ExporterWithLogProcessorTest {
     assertThat(
             Objects.requireNonNull(
                 resultA.getAttributes().get(AttributeKey.stringKey("password2"))))
-        .isEqualTo("555");
+        .isEqualTo("555"); // The first match is taken to populate the attribute
     assertThat(resultA.getBody().asString())
-        .isEqualTo("yyyPassword={password1} aba Pass={password2} xyx Pass=777 zzz");
+        .isEqualTo("yyyPassword={password1} aba Pass={password2} xyx Pass={password2} zzz");
     assertThat(
             Objects.requireNonNull(
                 resultB.getAttributes().get(AttributeKey.stringKey("password1"))))
@@ -239,6 +239,32 @@ class ExporterWithLogProcessorTest {
                 resultB.getAttributes().get(AttributeKey.stringKey("password1"))))
         .isEqualTo("****");
     assertThat(resultB.getBody().asString()).isEqualTo("yyyPassword={password1} aba");
+  }
+
+  @Test
+  void multiMatch() {
+    config.id = "MultiRuleToAttributes";
+    config.body = new NameConfig();
+    ToAttributeConfig toAttributeConfig = new ToAttributeConfig();
+    toAttributeConfig.rules = new ArrayList<>();
+    toAttributeConfig.rules.add("Password=(?<x>[^ ]+)");
+    config.body.toAttributes = toAttributeConfig;
+    LogRecordExporter logExporter = new ExporterWithLogProcessor(config, mockExporter);
+    TestLogRecordData mockLogA =
+        TestLogRecordData.builder()
+            .setBody("yyyPassword=123 aba Password=555 xyx")
+            .setAttributes(attributes)
+            .build();
+
+    List<LogRecordData> logs = new ArrayList<>();
+    logs.add(mockLogA);
+    logExporter.export(logs);
+
+    // verify that resulting logs are filtered in the way we want
+    List<LogRecordData> result = mockExporter.getLogs();
+    LogRecordData resultA = result.get(0);
+
+    assertThat(resultA.getBody().asString()).isEqualTo("yyyPassword={x} aba Password={x} xyx");
   }
 
   @Test

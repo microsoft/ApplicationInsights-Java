@@ -32,9 +32,9 @@ dependencies {
   implementation("com.github.johnrengelman:shadow:8.1.1")
   implementation("com.gradle.enterprise:com.gradle.enterprise.gradle.plugin:3.14.1")
 
-  implementation("org.owasp:dependency-check-gradle:8.3.1")
+  implementation("org.owasp:dependency-check-gradle:8.4.0")
 
-  implementation("io.opentelemetry.instrumentation:gradle-plugins:1.28.0-alpha")
+  implementation("io.opentelemetry.instrumentation:gradle-plugins:1.29.0-alpha")
 
   implementation("net.ltgt.gradle:gradle-errorprone-plugin:3.1.0")
   implementation("net.ltgt.gradle:gradle-nullaway-plugin:1.6.0")
