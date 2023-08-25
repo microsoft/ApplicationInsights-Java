@@ -110,8 +110,6 @@ public class PreAggregatedMetricsTest {
       System.out.println("metric: " + metricData);
     }
 
-    assertThat(metricDataCollection.size()).isEqualTo(3);
-
     assertThat(metricDataCollection)
         .satisfiesExactly(
             metric ->
@@ -132,9 +130,7 @@ public class PreAggregatedMetricsTest {
                                             exemplar ->
                                                 exemplar
                                                     .hasTraceId("ff01020304050600ff0a0b0c0d0e0f00")
-                                                    .hasSpanId("090a0b0c0d0e0f00")))),
-            metric -> assertThat(metric).hasName("http.client.request.size"),
-            metric -> assertThat(metric).hasName("http.client.response.size"));
+                                                    .hasSpanId("090a0b0c0d0e0f00")))));
 
     MetricTelemetryBuilder builder = MetricTelemetryBuilder.create();
     MetricData metricData = metricDataCollection.iterator().next();

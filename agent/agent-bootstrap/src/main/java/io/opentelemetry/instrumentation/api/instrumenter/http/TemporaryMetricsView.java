@@ -12,12 +12,15 @@ package io.opentelemetry.instrumentation.api.instrumenter.http;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.instrumentation.api.instrumenter.http.internal.HttpAttributes;
+import io.opentelemetry.instrumentation.api.instrumenter.network.internal.NetworkAttributes;
+import io.opentelemetry.instrumentation.api.instrumenter.url.internal.UrlAttributes;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.BiConsumer;
 
-// copied from OpenTelemetry Instrumentation 1.18.0
+// copied from OpenTelemetry Instrumentation 1.29.0
 
 // this is temporary, see
 // https://github.com/open-telemetry/opentelemetry-java-instrumentation/issues/3962#issuecomment-906606325
@@ -35,7 +38,13 @@ final class TemporaryMetricsView {
     Set<AttributeKey> view = new HashSet<>();
     view.add(SemanticAttributes.HTTP_METHOD);
     view.add(SemanticAttributes.HTTP_STATUS_CODE); // Optional
-    view.add(SemanticAttributes.HTTP_FLAVOR); // Optional
+    view.add(SemanticAttributes.NET_PROTOCOL_NAME); // Optional
+    view.add(SemanticAttributes.NET_PROTOCOL_VERSION); // Optional
+    // stable semconv
+    view.add(HttpAttributes.HTTP_REQUEST_METHOD);
+    view.add(HttpAttributes.HTTP_RESPONSE_STATUS_CODE);
+    view.add(NetworkAttributes.NETWORK_PROTOCOL_NAME);
+    view.add(NetworkAttributes.NETWORK_PROTOCOL_VERSION);
     return view;
   }
 
@@ -47,6 +56,10 @@ final class TemporaryMetricsView {
     view.add(SemanticAttributes.NET_PEER_NAME);
     view.add(SemanticAttributes.NET_PEER_PORT);
     view.add(SemanticAttributes.NET_SOCK_PEER_ADDR);
+    // stable semconv
+    view.add(NetworkAttributes.SERVER_SOCKET_ADDRESS);
+    view.add(NetworkAttributes.SERVER_ADDRESS);
+    view.add(NetworkAttributes.SERVER_PORT);
     return view;
   }
 
@@ -61,6 +74,8 @@ final class TemporaryMetricsView {
     view.add(SemanticAttributes.NET_HOST_NAME);
     view.add(SemanticAttributes.NET_HOST_PORT);
     view.add(SemanticAttributes.HTTP_ROUTE);
+    // stable semconv
+    view.add(UrlAttributes.URL_SCHEME);
     // START APPLICATION INSIGHTS MODIFICATIONS
     view.add(SemanticAttributes.USER_AGENT_ORIGINAL);
     // END APPLICATION INSIGHTS MODIFICATIONS
@@ -73,9 +88,11 @@ final class TemporaryMetricsView {
     Set<AttributeKey> view = new HashSet<>();
     view.add(SemanticAttributes.HTTP_METHOD);
     view.add(SemanticAttributes.HTTP_SCHEME);
-    view.add(SemanticAttributes.HTTP_FLAVOR);
     view.add(SemanticAttributes.NET_HOST_NAME);
     view.add(SemanticAttributes.NET_HOST_PORT);
+    // stable semconv
+    view.add(HttpAttributes.HTTP_REQUEST_METHOD);
+    view.add(UrlAttributes.URL_SCHEME);
     return view;
   }
 
