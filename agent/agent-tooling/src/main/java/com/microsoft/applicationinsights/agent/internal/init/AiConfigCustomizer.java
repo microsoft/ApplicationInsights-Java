@@ -139,7 +139,7 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
     properties.put("otel.instrumentation.apache-httpasyncclient.enabled", "true");
     properties.put("otel.instrumentation.apache-httpclient.enabled", "true");
     properties.put("otel.instrumentation.async-http-client.enabled", "true");
-    properties.put("otel.instrumentation.executor.enabled", "true");
+    properties.put("otel.instrumentation.executors.enabled", "true");
     properties.put("otel.instrumentation.google-http-client.enabled", "true");
     properties.put("otel.instrumentation.grpc.enabled", "true");
     properties.put("otel.instrumentation.guava.enabled", "true");
