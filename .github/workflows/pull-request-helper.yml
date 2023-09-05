@@ -7,7 +7,7 @@ jobs:
     if: github.event.pull_request.user.login == 'dependabot[bot]'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           # this is the personal access token used for "git push" below
           # which is needed in order to trigger workflows
