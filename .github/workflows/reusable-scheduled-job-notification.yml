@@ -11,7 +11,7 @@ jobs:
   notify-if-needed:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Open issue or add comment if issue already open
         env:
