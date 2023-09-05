@@ -40,7 +40,7 @@ val errorProneVersion = "2.21.1"
 val byteBuddyVersion = "1.12.18"
 val jmhVersion = "1.37"
 val mockitoVersion = "4.11.0"
-val slf4jVersion = "2.0.7"
+val slf4jVersion = "2.0.9"
 
 val CORE_DEPENDENCIES = listOf(
   "com.google.auto.service:auto-service:${autoServiceVersion}",
