@@ -32,6 +32,9 @@ updates:
       - dependency-name: "org.mockito:*"
         # mockito 5 requires Java 11
         versions: [ "[5,)" ]
+      - dependency-name: "uk.org.webcompere:system-stubs-jupiter"
+        # system-stubs-jupiter 2.1+ requires Java 11+
+        versions: [ "[2.1,)" ]
     schedule:
       interval: "daily"
     open-pull-requests-limit: 10
