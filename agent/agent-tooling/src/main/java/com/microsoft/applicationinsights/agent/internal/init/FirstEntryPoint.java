@@ -17,6 +17,7 @@ import com.microsoft.applicationinsights.agent.internal.configuration.RpConfigur
 import com.microsoft.applicationinsights.agent.internal.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.internal.diagnostics.PidFinder;
 import com.microsoft.applicationinsights.agent.internal.diagnostics.SdkVersionFinder;
+import com.microsoft.applicationinsights.agent.internal.diagnostics.SdkVersionPrefixHelper;
 import com.microsoft.applicationinsights.agent.internal.diagnostics.status.StatusFile;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.opentelemetry.javaagent.bootstrap.InstrumentationHolder;
@@ -310,10 +311,10 @@ public class FirstEntryPoint implements LoggingCustomizer {
     if (isRuntimeAttached()) {
       return "ra_";
     }
-    if (!DiagnosticsHelper.isRpIntegration()) {
+    if (!SdkVersionPrefixHelper.isRpIntegration()) {
       return null;
     }
-    return DiagnosticsHelper.getRpIntegrationSdkNamePrefix();
+    return SdkVersionPrefixHelper.getRpIntegrationSdkNamePrefix();
   }
 
   private static boolean isRuntimeAttached() {

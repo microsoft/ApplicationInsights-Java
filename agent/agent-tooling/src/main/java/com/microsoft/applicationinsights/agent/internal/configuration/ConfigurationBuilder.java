@@ -19,6 +19,7 @@ import com.microsoft.applicationinsights.agent.internal.configuration.Configurat
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.JmxMetric;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.SamplingOverride;
 import com.microsoft.applicationinsights.agent.internal.diagnostics.DiagnosticsHelper;
+import com.microsoft.applicationinsights.agent.internal.diagnostics.SdkVersionPrefixHelper;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLDecoder;
@@ -473,7 +474,7 @@ public class ConfigurationBuilder {
       return getConfiguration(runtimeAttachedConfigurationContent, JsonOrigin.RUNTIME_ATTACHED);
     }
 
-    if (DiagnosticsHelper.isRpIntegration()) {
+    if (SdkVersionPrefixHelper.isRpIntegration()) {
       // users do not have write access to agent directory in rp integrations
       // and rp integrations should not use applicationinsights.json because that makes it difficult
       // to merge rp intent and user intent
