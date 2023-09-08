@@ -5,15 +5,14 @@ package com.microsoft.applicationinsights.diagnostics.collection.libos.os.linux;
 
 import static java.lang.Integer.parseInt;
 
-import com.microsoft.applicationinsights.diagnostics.collection.libos.net.TCPStats;
-import com.microsoft.applicationinsights.diagnostics.collection.libos.net.TCPStatsReader;
+import com.microsoft.applicationinsights.diagnostics.collection.libos.net.TcpStats;
+import com.microsoft.applicationinsights.diagnostics.collection.libos.net.TcpStatsReader;
 import java.io.File;
 import javax.annotation.concurrent.NotThreadSafe;
 
 /** Obtains per-process TCP statistics */
 @NotThreadSafe
-@SuppressWarnings("checkstyle:AbbreviationAsWordInName")
-public class LinuxTCPStatsReader extends TwoStepProcReader implements TCPStatsReader {
+public class LinuxTcpStatsReader extends TwoStepProcReader implements TcpStatsReader {
 
   private static final int RX_END = 54;
   private static final int RX_START = 47;
@@ -25,12 +24,12 @@ public class LinuxTCPStatsReader extends TwoStepProcReader implements TCPStatsRe
 
   private static final String PROC_FILE = "/proc/net/tcp";
 
-  private TCPStats stats;
+  private TcpStats stats;
 
   private long transferredQueue = 0;
   private long receivedQueue = 0;
 
-  public LinuxTCPStatsReader() {
+  public LinuxTcpStatsReader() {
     super(new File(PROC_FILE));
   }
 
@@ -55,11 +54,11 @@ public class LinuxTCPStatsReader extends TwoStepProcReader implements TCPStatsRe
 
     super.update();
 
-    stats = new TCPStats(receivedQueue, transferredQueue);
+    stats = new TcpStats(receivedQueue, transferredQueue);
   }
 
   @Override
-  public TCPStats getTCPStats() {
+  public TcpStats getTcpStats() {
     return stats;
   }
 

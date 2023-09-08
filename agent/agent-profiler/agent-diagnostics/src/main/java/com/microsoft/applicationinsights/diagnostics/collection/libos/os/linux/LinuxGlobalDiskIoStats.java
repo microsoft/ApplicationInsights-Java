@@ -100,7 +100,7 @@ public class LinuxGlobalDiskIoStats extends TwoStepProcReader implements GlobalD
   }
 
   @Override
-  public long getTotalIO() {
+  public long getTotalIo() {
     long accumulator = 0;
     for (DiskStats stat : stats.values()) {
       accumulator += stat.getIoTime();

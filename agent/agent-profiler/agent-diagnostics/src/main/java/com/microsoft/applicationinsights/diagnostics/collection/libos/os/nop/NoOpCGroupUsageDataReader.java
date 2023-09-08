@@ -9,7 +9,7 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 @SuppressWarnings("checkstyle:AbbreviationAsWordInName")
-public class NoOpCgroupUsageDataReader implements CGroupUsageDataReader {
+public class NoOpCGroupUsageDataReader implements CGroupUsageDataReader {
   @Override
   @Nullable
   public List<Double> getTelemetry() {

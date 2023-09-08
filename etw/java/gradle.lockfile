@@ -1,15 +1,15 @@
 # This is a Gradle generated file for dependency locking.
 # Manual edits can break the build and are not advised.
 # This file is expected to be part of source control.
-com.azure:azure-sdk-bom:1.2.15=runtimeClasspath
+com.azure:azure-sdk-bom:1.2.16=runtimeClasspath
 com.fasterxml.jackson:jackson-bom:2.15.2=runtimeClasspath
-com.google.guava:guava-bom:32.1.1-jre=runtimeClasspath
-io.netty:netty-bom:4.1.95.Final=runtimeClasspath
-io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:1.28.0-alpha=runtimeClasspath
-io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:1.28.0=runtimeClasspath
-io.opentelemetry:opentelemetry-bom-alpha:1.28.0-alpha=runtimeClasspath
-io.opentelemetry:opentelemetry-bom:1.28.0=runtimeClasspath
+com.google.guava:guava-bom:32.1.2-jre=runtimeClasspath
+io.netty:netty-bom:4.1.97.Final=runtimeClasspath
+io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:1.29.0-alpha=runtimeClasspath
+io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:1.29.0=runtimeClasspath
+io.opentelemetry:opentelemetry-bom-alpha:1.29.0-alpha=runtimeClasspath
+io.opentelemetry:opentelemetry-bom:1.29.0=runtimeClasspath
 org.junit:junit-bom:5.10.0=runtimeClasspath
-org.slf4j:slf4j-api:2.0.7=runtimeClasspath
-org.testcontainers:testcontainers-bom:1.18.3=runtimeClasspath
+org.slf4j:slf4j-api:2.0.9=runtimeClasspath
+org.testcontainers:testcontainers-bom:1.19.0=runtimeClasspath
 empty=

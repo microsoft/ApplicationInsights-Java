@@ -3,7 +3,6 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
-import static java.util.Collections.singleton;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
@@ -29,7 +28,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
@@ -47,7 +45,6 @@ import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.FixedHostPortGenericContainer;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
-import org.testcontainers.containers.wait.strategy.HostPortWaitStrategy;
 import org.testcontainers.utility.DockerImageName;
 
 @SuppressWarnings({"SystemOut", "InterruptedExceptionSwallowed"})
@@ -379,15 +376,7 @@ public class SmokeTestExtension
       container =
           new FixedHostPortGenericContainer<>(currentImageName)
               .withFixedExposedPort(5005, 5005)
-              .waitingFor(
-                  new HostPortWaitStrategy() {
-                    @Override
-                    protected Set<Integer> getLivenessCheckPorts() {
-                      // this prevents ping to 5005 which causes the JVM to log a warning
-                      // "Debugger failed to attach: handshake failed"
-                      return singleton(8080);
-                    }
-                  }.withStartupTimeout(Duration.ofMinutes(5)));
+              .withStartupTimeout(Duration.ofMinutes(5));
     } else {
       container = new GenericContainer<>(currentImageName);
     }
@@ -416,7 +405,8 @@ public class SmokeTestExtension
           "-Dapplicationinsights.testing.global-ingestion-endpoint=" + FAKE_INGESTION_ENDPOINT);
     }
     if (REMOTE_DEBUG) {
-      javaToolOptions.add("-agentlib:jdwp=transport=dt_socket,address=*:5005,server=y,suspend=y");
+      javaToolOptions.add(
+          "-agentlib:jdwp=transport=dt_socket,address=0.0.0.0:5005,server=y,suspend=y");
     }
     if (useAgent) {
       javaToolOptions.add("-javaagent:/applicationinsights-agent.jar");

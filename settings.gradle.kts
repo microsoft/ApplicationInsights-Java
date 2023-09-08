@@ -2,10 +2,10 @@ import org.apache.tools.ant.taskdefs.condition.Os
 
 pluginManagement {
   plugins {
-    id("com.github.ben-manes.versions") version "0.47.0"
+    id("com.github.ben-manes.versions") version "0.48.0"
     id("com.github.jk1.dependency-license-report") version "2.5"
     id("me.champeau.jmh") version "0.7.1"
-    id("com.gradle.plugin-publish") version "1.2.0"
+    id("com.gradle.plugin-publish") version "1.2.1"
   }
 }
 

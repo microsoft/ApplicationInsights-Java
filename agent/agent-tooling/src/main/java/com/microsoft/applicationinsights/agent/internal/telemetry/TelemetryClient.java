@@ -319,20 +319,11 @@ public class TelemetryClient {
 
   private <T extends AbstractTelemetryBuilder> T newTelemetryBuilder(Supplier<T> creator) {
     T telemetry = creator.get();
-    populateDefaults(telemetry);
+    populateDefaults(telemetry, Resource.getDefault());
     return telemetry;
   }
 
   public void populateDefaults(AbstractTelemetryBuilder telemetryBuilder, Resource resource) {
-    // the agent does not currently factor the resource attributes into the cloud role
-    populateDefaults(telemetryBuilder);
-    ResourceParser.updateRoleNameAndInstance(
-        telemetryBuilder,
-        Resource.getDefault(),
-        com.azure.core.util.Configuration.getGlobalConfiguration());
-  }
-
-  private void populateDefaults(AbstractTelemetryBuilder telemetryBuilder) {
     if (connectionString != null) {
       // not sure if connectionString can be null in Azure Functions
       telemetryBuilder.setConnectionString(connectionString);
@@ -343,6 +334,8 @@ public class TelemetryClient {
     for (Map.Entry<String, String> entry : globalProperties.entrySet()) {
       telemetryBuilder.addProperty(entry.getKey(), entry.getValue());
     }
+    ResourceParser.updateRoleNameAndInstance(
+        telemetryBuilder, resource, com.azure.core.util.Configuration.getGlobalConfiguration());
   }
 
   @Nullable

@@ -1,5 +1,18 @@
 # CHANGELOG
 
+## Version 3.4.16 GA
+
+### Enhancements:
+
+* Add r2dbc preview instrumentation
+  ([#3260](https://github.com/microsoft/ApplicationInsights-Java/pull/3260))
+* Fix azure functions consumption initialization
+  ([#3244](https://github.com/microsoft/ApplicationInsights-Java/pull/3244))
+* Add new ktor preview instrumentation
+  ([#3243](https://github.com/microsoft/ApplicationInsights-Java/pull/3243))
+* Telemetry processor - Allow multimatch on log body and span name
+  ([#3229](https://github.com/microsoft/ApplicationInsights-Java/pull/3229))
+
 ## Version 3.4.15 GA
 
 ### Enhancements:

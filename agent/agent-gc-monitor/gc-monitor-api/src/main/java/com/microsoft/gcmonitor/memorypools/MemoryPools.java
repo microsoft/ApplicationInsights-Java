@@ -300,7 +300,7 @@ public enum MemoryPools {
     }
   }
 
-  @SuppressWarnings("checkstyle:AbbreviationAsWordInName")
+  @SuppressWarnings({"checkstyle:AbbreviationAsWordInName", "MemberName"})
   public static class ZHeap extends MemoryPool {
     public static final String POOL_NAME = "ZHeap";
 
