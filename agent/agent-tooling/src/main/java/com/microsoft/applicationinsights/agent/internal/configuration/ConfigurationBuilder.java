@@ -230,7 +230,7 @@ public class ConfigurationBuilder {
         config.preview.connectionStringOverrides.add(newOverride);
       }
     }
-    if (config.preview.authentication.enabled) {
+    if (config.preview.authentication.enabled && !config.authentication.enabled) {
       configurationLogger.warn(
           "\"authentication\" is no longer in preview and it has been GA since 3.4.18");
       config.authentication = config.preview.authentication;
