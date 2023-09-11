@@ -242,15 +242,14 @@ class ConfigurationTest {
   void shouldParseAuthenticationConfiguration() throws IOException {
 
     Configuration configuration = loadConfiguration("applicationinsights_aadauth.json");
-    PreviewConfiguration preview = configuration.preview;
     assertThat(configuration.connectionString)
         .isEqualTo("InstrumentationKey=00000000-0000-0000-0000-000000000000");
-    assertThat(preview.authentication.enabled).isTrue();
-    assertThat(preview.authentication.type).isEqualTo(Configuration.AuthenticationType.SAMI);
-    assertThat(preview.authentication.clientId).isEqualTo("123xyz");
-    assertThat(preview.authentication.tenantId).isEqualTo("tenant123");
-    assertThat(preview.authentication.clientSecret).isEqualTo("clientsecret123");
-    assertThat(preview.authentication.authorityHost).isEqualTo("https://test.com/microsoft/");
+    assertThat(configuration.authentication.enabled).isTrue();
+    assertThat(configuration.authentication.type).isEqualTo(Configuration.AuthenticationType.SAMI);
+    assertThat(configuration.authentication.clientId).isEqualTo("123xyz");
+    assertThat(configuration.authentication.tenantId).isEqualTo("tenant123");
+    assertThat(configuration.authentication.clientSecret).isEqualTo("clientsecret123");
+    assertThat(configuration.authentication.authorityHost).isEqualTo("https://test.com/microsoft/");
   }
 
   @Test
@@ -624,22 +623,20 @@ class ConfigurationTest {
     Configuration configuration = loadConfiguration("applicationinsights_aadauthenv.json");
     ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
 
-    assertThat(configuration.preview.authentication.enabled).isTrue();
-    assertThat(configuration.preview.authentication.type)
-        .isEqualTo(Configuration.AuthenticationType.UAMI);
-    assertThat(configuration.preview.authentication.clientId).isEqualTo("12345678");
-    assertThat(configuration.preview.authentication.clientSecret).isNull();
+    assertThat(configuration.authentication.enabled).isTrue();
+    assertThat(configuration.authentication.type).isEqualTo(Configuration.AuthenticationType.UAMI);
+    assertThat(configuration.authentication.clientId).isEqualTo("12345678");
+    assertThat(configuration.authentication.clientSecret).isNull();
 
     envVars.set("APPLICATIONINSIGHTS_AUTHENTICATION_STRING", "Authorization=AAD;ClientId=");
 
     Configuration configuration2 = loadConfiguration("applicationinsights_aadauthenv.json");
     ConfigurationBuilder.overlayFromEnv(configuration2, Paths.get("."));
 
-    assertThat(configuration2.preview.authentication.enabled).isTrue();
-    assertThat(configuration2.preview.authentication.type)
-        .isEqualTo(Configuration.AuthenticationType.SAMI);
-    assertThat(configuration2.preview.authentication.clientId).isNull();
-    assertThat(configuration2.preview.authentication.clientSecret).isNull();
+    assertThat(configuration2.authentication.enabled).isTrue();
+    assertThat(configuration2.authentication.type).isEqualTo(Configuration.AuthenticationType.SAMI);
+    assertThat(configuration2.authentication.clientId).isNull();
+    assertThat(configuration2.authentication.clientSecret).isNull();
   }
 
   @Test

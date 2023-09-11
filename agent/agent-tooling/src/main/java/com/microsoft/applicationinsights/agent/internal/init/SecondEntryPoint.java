@@ -140,7 +140,7 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
             .setTempDir(tempDir)
             .setGeneralExportQueueSize(configuration.preview.generalExportQueueCapacity)
             .setMetricsExportQueueSize(configuration.preview.metricsExportQueueCapacity)
-            .setAadAuthentication(configuration.preview.authentication)
+            .setAadAuthentication(configuration.authentication)
             .setConnectionStrings(
                 configuration.connectionString,
                 configuration.internal.statsbeat.instrumentationKey,
@@ -242,8 +242,7 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
     if (configuration.preview.liveMetrics.enabled) {
       quickPulse =
           QuickPulse.create(
-              LazyHttpClient.newHttpPipeLineWithDefaultRedirect(
-                  configuration.preview.authentication),
+              LazyHttpClient.newHttpPipeLineWithDefaultRedirect(configuration.authentication),
               () -> {
                 ConnectionString connectionString = telemetryClient.getConnectionString();
                 return connectionString == null ? null : connectionString.getLiveEndpoint();
@@ -328,7 +327,7 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
 
   private static Set<Feature> initStatsbeatFeatureSet(Configuration config) {
     Set<Feature> featureList = new HashSet<>();
-    if (config.preview.authentication.enabled) {
+    if (config.authentication.enabled) {
       featureList.add(Feature.AAD);
     }
     if (config.preview.legacyRequestIdPropagation.enabled) {

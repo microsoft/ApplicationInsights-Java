@@ -50,6 +50,7 @@ public class Configuration {
   // not sure if we'll be able to have different metric intervals in future OpenTelemetry metrics
   // world, so safer to only allow single interval for now
   public int metricIntervalSeconds = 60;
+  public AadAuthentication authentication = new AadAuthentication();
   public PreviewConfiguration preview = new PreviewConfiguration();
   public InternalConfiguration internal = new InternalConfiguration();
 
@@ -62,6 +63,7 @@ public class Configuration {
 
   public void validate() {
     instrumentation.logging.getSeverityThreshold();
+    authentication.validate();
     preview.validate();
   }
 
@@ -345,7 +347,6 @@ public class Configuration {
 
     public ProfilerConfiguration profiler = new ProfilerConfiguration();
     public GcEventConfiguration gcEvents = new GcEventConfiguration();
-    public AadAuthentication authentication = new AadAuthentication();
     public PreviewStatsbeat statsbeat = new PreviewStatsbeat();
 
     public List<ConnectionStringOverride> connectionStringOverrides = new ArrayList<>();
@@ -394,8 +395,6 @@ public class Configuration {
       for (ProcessorConfig processorConfig : processors) {
         processorConfig.validate();
       }
-      authentication.validate();
-
       for (String additionalPropagator : additionalPropagators) {
         if (!VALID_ADDITIONAL_PROPAGATORS.contains(additionalPropagator)) {
           throw new FriendlyException(
