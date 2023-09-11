@@ -14,10 +14,10 @@ import com.microsoft.applicationinsights.agent.internal.configuration.Configurat
 import com.microsoft.applicationinsights.agent.internal.configuration.ConfigurationBuilder;
 import com.microsoft.applicationinsights.agent.internal.configuration.RpConfiguration;
 import com.microsoft.applicationinsights.agent.internal.configuration.RpConfigurationBuilder;
+import com.microsoft.applicationinsights.agent.internal.configuration.SdkVersionPrefixHelper;
 import com.microsoft.applicationinsights.agent.internal.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.internal.diagnostics.PidFinder;
 import com.microsoft.applicationinsights.agent.internal.diagnostics.SdkVersionFinder;
-import com.microsoft.applicationinsights.agent.internal.diagnostics.SdkVersionPrefixHelper;
 import com.microsoft.applicationinsights.agent.internal.diagnostics.status.StatusFile;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.opentelemetry.javaagent.bootstrap.InstrumentationHolder;

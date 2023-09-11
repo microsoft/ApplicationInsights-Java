@@ -19,7 +19,6 @@ import com.microsoft.applicationinsights.agent.internal.configuration.Configurat
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.JmxMetric;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.SamplingOverride;
 import com.microsoft.applicationinsights.agent.internal.diagnostics.DiagnosticsHelper;
-import com.microsoft.applicationinsights.agent.internal.diagnostics.SdkVersionPrefixHelper;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLDecoder;

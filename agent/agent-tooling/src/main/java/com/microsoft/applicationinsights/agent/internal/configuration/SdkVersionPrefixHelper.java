@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-package com.microsoft.applicationinsights.agent.internal.diagnostics;
+package com.microsoft.applicationinsights.agent.internal.configuration;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.statsbeat.MetadataInstanceResponse;
 import com.azure.monitor.opentelemetry.exporter.implementation.statsbeat.RpAttachType;

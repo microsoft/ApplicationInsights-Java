@@ -11,7 +11,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.applicationinsights.agent.internal.common.FriendlyException;
 import com.microsoft.applicationinsights.agent.internal.diagnostics.DiagnosticsHelper;
-import com.microsoft.applicationinsights.agent.internal.diagnostics.SdkVersionPrefixHelper;
 import com.microsoft.applicationinsights.agent.internal.diagnostics.status.StatusFile;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.logs.Severity;
