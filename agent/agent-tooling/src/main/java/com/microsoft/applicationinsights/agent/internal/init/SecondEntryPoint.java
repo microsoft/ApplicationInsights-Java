@@ -34,6 +34,7 @@ import com.microsoft.applicationinsights.agent.internal.configuration.Configurat
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.SamplingTelemetryType;
 import com.microsoft.applicationinsights.agent.internal.configuration.ConfigurationBuilder;
 import com.microsoft.applicationinsights.agent.internal.configuration.RpConfiguration;
+import com.microsoft.applicationinsights.agent.internal.configuration.SdkVersionPrefixHolder;
 import com.microsoft.applicationinsights.agent.internal.configuration.SnippetConfiguration;
 import com.microsoft.applicationinsights.agent.internal.exporter.AgentLogExporter;
 import com.microsoft.applicationinsights.agent.internal.exporter.AgentMetricExporter;
@@ -131,7 +132,8 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
             .map(MetricFilter::new)
             .collect(Collectors.toList());
 
-    StatsbeatModule statsbeatModule = new StatsbeatModule();
+    StatsbeatModule statsbeatModule =
+        new StatsbeatModule(SdkVersionPrefixHolder::lazyUpdateVmRpIntegration);
     TelemetryClient telemetryClient =
         TelemetryClient.builder()
             .setCustomDimensions(configuration.customDimensions)

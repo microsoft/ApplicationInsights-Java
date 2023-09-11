@@ -7,7 +7,6 @@ import static com.microsoft.applicationinsights.agent.internal.diagnostics.MsgId
 import static com.microsoft.applicationinsights.agent.internal.diagnostics.MsgId.STARTUP_FAILURE_ERROR;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.PropertyHelper;
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.SystemInformation;
 import com.google.auto.service.AutoService;
 import com.microsoft.applicationinsights.agent.internal.common.FriendlyException;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
@@ -15,6 +14,7 @@ import com.microsoft.applicationinsights.agent.internal.configuration.Configurat
 import com.microsoft.applicationinsights.agent.internal.configuration.ConfigurationBuilder;
 import com.microsoft.applicationinsights.agent.internal.configuration.RpConfiguration;
 import com.microsoft.applicationinsights.agent.internal.configuration.RpConfigurationBuilder;
+import com.microsoft.applicationinsights.agent.internal.configuration.SdkVersionPrefixHolder;
 import com.microsoft.applicationinsights.agent.internal.diagnostics.DiagnosticsHelper;
 import com.microsoft.applicationinsights.agent.internal.diagnostics.PidFinder;
 import com.microsoft.applicationinsights.agent.internal.diagnostics.SdkVersionFinder;
@@ -311,22 +311,10 @@ public class FirstEntryPoint implements LoggingCustomizer {
     if (isRuntimeAttached()) {
       return "ra_";
     }
-    if (!DiagnosticsHelper.isRpIntegration()) {
+    if (!SdkVersionPrefixHolder.isRpIntegration()) {
       return null;
     }
-    StringBuilder sdkNamePrefix = new StringBuilder(4);
-    sdkNamePrefix.append(DiagnosticsHelper.rpIntegrationChar());
-    if (SystemInformation.isWindows()) {
-      sdkNamePrefix.append("w");
-    } else if (SystemInformation.isLinux()) {
-      sdkNamePrefix.append("l");
-    } else {
-      LoggerFactory.getLogger("com.microsoft.applicationinsights.agent")
-          .warn("could not detect os: {}", System.getProperty("os.name"));
-      sdkNamePrefix.append("u");
-    }
-    sdkNamePrefix.append("_");
-    return sdkNamePrefix.toString();
+    return SdkVersionPrefixHolder.getRpIntegrationSdkNamePrefix();
   }
 
   private static boolean isRuntimeAttached() {

@@ -3,8 +3,9 @@
 
 package com.microsoft.applicationinsights.agent.internal.diagnostics;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.statsbeat.RpAttachType;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
-import com.microsoft.applicationinsights.agent.internal.diagnostics.status.RpAttachType;
+import com.microsoft.applicationinsights.agent.internal.configuration.SdkVersionPrefixHolder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -15,7 +16,6 @@ public class DiagnosticsHelper {
   public static volatile boolean appSvcRpIntegration;
   private static volatile boolean functionsRpIntegration;
 
-  private static volatile char rpIntegrationChar;
   private static final boolean isWindows;
 
   public static final String LINUX_DEFAULT = "/var/log/applicationinsights";
@@ -37,32 +37,22 @@ public class DiagnosticsHelper {
     // TODO (heya) how should we report functions windows users who are using app services
     //  windows attach by manually setting the env vars (which was the old documented way)
     if ("java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME"))) {
-      rpIntegrationChar = 'f';
+      SdkVersionPrefixHolder.setRpIntegrationChar('f');
       functionsRpIntegration = true;
       setRpAttachType(agentPath, "functions.codeless");
     } else if (!Strings.isNullOrEmpty(System.getenv("WEBSITE_SITE_NAME"))) {
-      rpIntegrationChar = 'a';
+      SdkVersionPrefixHolder.setRpIntegrationChar('a');
       appSvcRpIntegration = true;
       setRpAttachType(agentPath, "appsvc.codeless");
     } else if (!Strings.isNullOrEmpty(System.getenv("KUBERNETES_SERVICE_HOST"))) {
-      rpIntegrationChar = 'k';
+      SdkVersionPrefixHolder.setRpIntegrationChar('k');
       setRpAttachType(agentPath, "aks.codeless");
     } else if (!Strings.isNullOrEmpty(
         System.getenv("APPLICATIONINSIGHTS_SPRINGCLOUD_SERVICE_ID"))) {
-      rpIntegrationChar = 's';
+      SdkVersionPrefixHolder.setRpIntegrationChar('s');
       setRpAttachType(agentPath, "springcloud.codeless");
     }
     // TODO (heya) detect VM environment by checking the AzureMetadataService response, manual only
-  }
-
-  /** Is resource provider (Azure Spring Cloud, AppService, Azure Functions, AKS, VM...). */
-  public static boolean isRpIntegration() {
-    return rpIntegrationChar != 0;
-  }
-
-  // returns 0 if not rp integration
-  public static char rpIntegrationChar() {
-    return rpIntegrationChar;
   }
 
   public static boolean isAppSvcRpIntegration() {
@@ -83,9 +73,9 @@ public class DiagnosticsHelper {
 
   private static void setRpAttachType(Path agentPath, String markerFile) {
     if (Files.exists(agentPath.resolveSibling(markerFile))) {
-      RpAttachType.setRpAttachType(RpAttachType.AUTO);
+      RpAttachType.setRpAttachType(RpAttachType.INTEGRATED_AUTO);
     } else {
-      RpAttachType.setRpAttachType(RpAttachType.MANUAL);
+      RpAttachType.setRpAttachType(RpAttachType.STANDALONE_AUTO);
     }
   }
 }

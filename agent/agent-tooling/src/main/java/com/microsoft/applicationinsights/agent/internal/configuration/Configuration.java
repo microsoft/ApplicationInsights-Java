@@ -617,7 +617,7 @@ public class Configuration {
     public int maxHistory = 1;
 
     private static String getDefaultPath() {
-      if (!DiagnosticsHelper.isRpIntegration()) {
+      if (!SdkVersionPrefixHolder.isRpIntegration()) {
         if (isRuntimeAttached()) { // With runtime attachment, the agent jar is located in a temp
           // folder that is dropped when the JVM shuts down
           String userDir = System.getProperty("user.dir");
