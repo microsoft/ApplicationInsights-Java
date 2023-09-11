@@ -233,7 +233,7 @@ public class ConfigurationBuilder {
     if (config.preview.authentication.enabled) {
       configurationLogger.warn(
           "\"authentication\" is no longer in preview and it has been GA since 3.4.18");
-      config.authentication.enabled = true;
+      config.authentication = config.preview.authentication;
     }
     if (config.sampling.limitPerSecond != null) {
       configurationLogger.warn(
