@@ -5,7 +5,7 @@ package com.microsoft.applicationinsights.agent.internal.diagnostics;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.statsbeat.RpAttachType;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
-import com.microsoft.applicationinsights.agent.internal.configuration.SdkVersionPrefixHelper;
+import com.microsoft.applicationinsights.agent.internal.configuration.SdkVersionPrefixHolder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -37,19 +37,19 @@ public class DiagnosticsHelper {
     // TODO (heya) how should we report functions windows users who are using app services
     //  windows attach by manually setting the env vars (which was the old documented way)
     if ("java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME"))) {
-      SdkVersionPrefixHelper.setRpIntegrationChar('f');
+      SdkVersionPrefixHolder.setRpIntegrationChar('f');
       functionsRpIntegration = true;
       setRpAttachType(agentPath, "functions.codeless");
     } else if (!Strings.isNullOrEmpty(System.getenv("WEBSITE_SITE_NAME"))) {
-      SdkVersionPrefixHelper.setRpIntegrationChar('a');
+      SdkVersionPrefixHolder.setRpIntegrationChar('a');
       appSvcRpIntegration = true;
       setRpAttachType(agentPath, "appsvc.codeless");
     } else if (!Strings.isNullOrEmpty(System.getenv("KUBERNETES_SERVICE_HOST"))) {
-      SdkVersionPrefixHelper.setRpIntegrationChar('k');
+      SdkVersionPrefixHolder.setRpIntegrationChar('k');
       setRpAttachType(agentPath, "aks.codeless");
     } else if (!Strings.isNullOrEmpty(
         System.getenv("APPLICATIONINSIGHTS_SPRINGCLOUD_SERVICE_ID"))) {
-      SdkVersionPrefixHelper.setRpIntegrationChar('s');
+      SdkVersionPrefixHolder.setRpIntegrationChar('s');
       setRpAttachType(agentPath, "springcloud.codeless");
     }
     // TODO (heya) detect VM environment by checking the AzureMetadataService response, manual only

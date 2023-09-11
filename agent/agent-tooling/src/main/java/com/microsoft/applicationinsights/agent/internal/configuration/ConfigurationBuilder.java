@@ -473,7 +473,7 @@ public class ConfigurationBuilder {
       return getConfiguration(runtimeAttachedConfigurationContent, JsonOrigin.RUNTIME_ATTACHED);
     }
 
-    if (SdkVersionPrefixHelper.isRpIntegration()) {
+    if (SdkVersionPrefixHolder.isRpIntegration()) {
       // users do not have write access to agent directory in rp integrations
       // and rp integrations should not use applicationinsights.json because that makes it difficult
       // to merge rp intent and user intent

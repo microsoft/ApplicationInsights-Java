@@ -9,7 +9,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.utils.PropertyHel
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.SystemInformation;
 import org.slf4j.LoggerFactory;
 
-public final class SdkVersionPrefixHelper {
+public final class SdkVersionPrefixHolder {
 
   private static volatile char rpIntegrationChar;
 
@@ -24,7 +24,7 @@ public final class SdkVersionPrefixHelper {
 
   public static void lazyUpdateVmRpIntegration(MetadataInstanceResponse response) {
     rpIntegrationChar = 'v';
-    PropertyHelper.setSdkNamePrefix(SdkVersionPrefixHelper.getRpIntegrationSdkNamePrefix());
+    PropertyHelper.setSdkNamePrefix(SdkVersionPrefixHolder.getRpIntegrationSdkNamePrefix());
     RpAttachType.setRpAttachType(RpAttachType.STANDALONE_AUTO);
   }
 
@@ -44,5 +44,5 @@ public final class SdkVersionPrefixHelper {
     return sdkNamePrefix.toString();
   }
 
-  private SdkVersionPrefixHelper() {}
+  private SdkVersionPrefixHolder() {}
 }
