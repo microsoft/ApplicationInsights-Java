@@ -476,6 +476,7 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
         !configuration.preview.disablePropagation && enabled,
         configuration.preview.additionalPropagators,
         configuration.preview.legacyRequestIdPropagation.enabled);
+
     RuntimeConfigurator.updateSampling(
         enabled, configuration.sampling, configuration.preview.sampling);
 
