@@ -230,6 +230,11 @@ public class ConfigurationBuilder {
         config.preview.connectionStringOverrides.add(newOverride);
       }
     }
+    if (config.preview.authentication.enabled) {
+      configurationLogger.warn(
+          "\"authentication\" is no longer in preview and it has been GA since 3.4.18");
+      config.authentication.enabled = true;
+    }
     if (config.sampling.limitPerSecond != null) {
       configurationLogger.warn(
           "\"limitPerSecond\" (from 3.4.0-BETA) has been renamed to \"requestsPerSecond\""

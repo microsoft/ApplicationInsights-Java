@@ -347,8 +347,10 @@ public class Configuration {
 
     public ProfilerConfiguration profiler = new ProfilerConfiguration();
     public GcEventConfiguration gcEvents = new GcEventConfiguration();
-    public PreviewStatsbeat statsbeat = new PreviewStatsbeat();
 
+    @Deprecated public AadAuthentication authentication = new AadAuthentication();
+
+    public PreviewStatsbeat statsbeat = new PreviewStatsbeat();
     public List<ConnectionStringOverride> connectionStringOverrides = new ArrayList<>();
     public List<RoleNameOverride> roleNameOverrides = new ArrayList<>();
 
