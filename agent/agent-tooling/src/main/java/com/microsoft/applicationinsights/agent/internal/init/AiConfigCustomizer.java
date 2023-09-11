@@ -189,7 +189,8 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
     properties.put("otel.instrumentation.undertow.enabled", "true");
 
     if (config.instrumentation.micrometer.enabled) {
-      // ai micrometer instrumentation is still used for micrometer versions prior to 1.5
+      // upstream micrometer instrumentation only supports micrometer 1.5 and later
+      // so ai micrometer instrumentation is (still) used for micrometer versions prior to 1.5
       properties.put("otel.instrumentation.ai-micrometer.enabled", "true");
       properties.put("otel.instrumentation.ai-actuator-metrics.enabled", "true");
       // upstream micrometer instrumentation is used for micrometer versions 1.5+
