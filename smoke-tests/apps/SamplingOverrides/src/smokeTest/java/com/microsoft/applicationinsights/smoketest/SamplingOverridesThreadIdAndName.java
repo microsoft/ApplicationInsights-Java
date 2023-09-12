@@ -25,9 +25,9 @@ abstract class SamplingOverridesThreadIdAndName {
       SmokeTestExtension.builder().setSelfDiagnosticsLevel("debug").build();
 
   @Test
-  @TargetUri(value = "/threadIdAndName", callCount = 100)
+  @TargetUri(value = "/thread-id-and-name", callCount = 100)
   void testSampling() throws Exception {
-//    assertThat(testing.mockedIngestion.getCountForType("RequestData")).isZero();
+    assertThat(testing.mockedIngestion.getCountForType("RequestData")).isZero();
     assertThat(testing.mockedIngestion.getCountForType("MessageData")).isZero();
   }
 

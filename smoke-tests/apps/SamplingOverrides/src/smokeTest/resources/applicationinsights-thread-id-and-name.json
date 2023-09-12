@@ -17,6 +17,43 @@
               "key": "thread.name",
               "value": "http-nio-.*",
               "matchType": "regexp"
+            },
+            {
+              "key": "http.target",
+              "value": "/SamplingOverrides/health-check",
+              "matchType": "strict"
+            }
+          ],
+          "percentage": 100
+        },
+        {
+          "telemetryType": "request",
+          "attributes": [
+            {
+              "key": "thread.name",
+              "value": "http-nio-.*",
+              "matchType": "regexp"
+            },
+            {
+              "key": "http.target",
+              "value": "/SamplingOverrides/",
+              "matchType": "strict"
+            }
+          ],
+          "percentage": 100
+        },
+        {
+          "telemetryType": "request",
+          "attributes": [
+            {
+              "key": "thread.name",
+              "value": "http-nio-.*",
+              "matchType": "regexp"
+            },
+            {
+              "key": "http.target",
+              "value": "/SamplingOverrides/thread-id-and-name",
+              "matchType": "strict"
             }
           ],
           "percentage": 0

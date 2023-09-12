@@ -68,7 +68,7 @@ public class SamplingOverridesServlet extends HttpServlet {
       executeStatement(connection);
       connection.close();
       return 200;
-    } else if (pathInfo.equals("/threadIdAndName")) {
+    } else if (pathInfo.equals("/thread-id-and-name")) {
       Connection connection = getHsqldbConnection();
       executeStatement(connection);
       connection.close();
