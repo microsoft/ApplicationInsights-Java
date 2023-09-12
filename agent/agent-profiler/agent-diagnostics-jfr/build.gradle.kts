@@ -8,7 +8,7 @@ if (project.properties.containsKey("publish-diagnostics")) {
 }
 
 dependencies {
-  compileOnly("org.gradle.jfr.polyfill:jfr-polyfill:1.0.0")
+  compileOnly("org.gradle.jfr.polyfill:jfr-polyfill:1.0.1")
 
   compileOnly("com.fasterxml.jackson.core:jackson-annotations")
 
