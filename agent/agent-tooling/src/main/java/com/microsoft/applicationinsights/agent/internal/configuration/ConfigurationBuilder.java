@@ -230,6 +230,11 @@ public class ConfigurationBuilder {
         config.preview.connectionStringOverrides.add(newOverride);
       }
     }
+    if (config.preview.authentication.enabled && !config.authentication.enabled) {
+      configurationLogger.warn(
+          "\"authentication\" is no longer in preview and it has been GA since 3.4.18");
+      config.authentication = config.preview.authentication;
+    }
     if (config.sampling.limitPerSecond != null) {
       configurationLogger.warn(
           "\"limitPerSecond\" (from 3.4.0-BETA) has been renamed to \"requestsPerSecond\""
@@ -349,14 +354,14 @@ public class ConfigurationBuilder {
       String authorization = keyValueMap.get("Authorization");
       if (authorization != null && authorization.equals("AAD")) {
         // Override any configuration from json
-        config.preview.authentication = new Configuration.AadAuthentication();
-        config.preview.authentication.enabled = true;
-        config.preview.authentication.type = Configuration.AuthenticationType.SAMI;
+        config.authentication = new Configuration.AadAuthentication();
+        config.authentication.enabled = true;
+        config.authentication.type = Configuration.AuthenticationType.SAMI;
         String clientId = keyValueMap.get("ClientId");
         if (clientId != null && !clientId.isEmpty()) {
           // Override type to User Assigned Managed Identity
-          config.preview.authentication.type = Configuration.AuthenticationType.UAMI;
-          config.preview.authentication.clientId = clientId;
+          config.authentication.type = Configuration.AuthenticationType.UAMI;
+          config.authentication.clientId = clientId;
         }
       }
     }
