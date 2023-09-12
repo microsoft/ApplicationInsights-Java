@@ -16,7 +16,7 @@ dependencies {
   compileOnly("org.slf4j:slf4j-api")
   compileOnly("com.fasterxml.jackson.core:jackson-annotations")
   compileOnly("com.fasterxml.jackson.core:jackson-databind")
-  compileOnly("org.gradle.jfr.polyfill:jfr-polyfill:1.0.0")
+  compileOnly("org.gradle.jfr.polyfill:jfr-polyfill:1.0.1")
 
   compileOnly("com.google.auto.service:auto-service")
   annotationProcessor("com.google.auto.service:auto-service")
