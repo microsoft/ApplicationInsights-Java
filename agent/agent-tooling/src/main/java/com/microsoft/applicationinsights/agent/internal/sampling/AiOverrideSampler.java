@@ -38,26 +38,20 @@ class AiOverrideSampler implements Sampler {
       SpanKind spanKind,
       Attributes attributes,
       List<LinkData> parentLinks) {
-    Attributes threadAttributes =
-        Attributes.builder()
-            .putAll(attributes)
-            .put("thread.id", String.valueOf(Thread.currentThread().getId()))
-            .put("thread.name", Thread.currentThread().getName())
-            .build();
     SpanContext parentSpanContext = Span.fromContext(parentContext).getSpanContext();
     boolean isRequest =
-        RequestChecker.isRequest(spanKind, parentSpanContext, threadAttributes::get);
+        RequestChecker.isRequest(spanKind, parentSpanContext, attributes::get);
 
     SamplingOverrides samplingOverrides =
         isRequest ? requestSamplingOverrides : dependencySamplingOverrides;
 
-    Sampler override = samplingOverrides.getOverride(threadAttributes);
+    Sampler override = samplingOverrides.getOverride(attributes);
     if (override != null) {
       return override.shouldSample(
-          parentContext, traceId, name, spanKind, threadAttributes, parentLinks);
+          parentContext, traceId, name, spanKind, attributes, parentLinks);
     }
     return delegate.shouldSample(
-        parentContext, traceId, name, spanKind, threadAttributes, parentLinks);
+        parentContext, traceId, name, spanKind, attributes, parentLinks);
   }
 
   @Override
