@@ -480,8 +480,7 @@ public class ConfigurationBuilder {
     }
 
     // any manual RP integration will support loading user's applcationinsights.json
-    if (SdkVersionPrefixHolder.isRpIntegration()
-        && RpAttachType.getRpAttachType() != RpAttachType.MANUAL) {
+    if (RpAttachType.getRpAttachType() == RpAttachType.INTEGRATED_AUTO) {
       // users do not have write access to agent directory in rp integrations
       // and rp integrations should not use applicationinsights.json because that makes it difficult
       // to merge rp intent and user intent
