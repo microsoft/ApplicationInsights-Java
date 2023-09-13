@@ -27,9 +27,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 @UseAgent
 abstract class SamplingOverridesTest {
 
-  @RegisterExtension
-  static final SmokeTestExtension testing =
-      SmokeTestExtension.builder().setSelfDiagnosticsLevel("debug").build();
+  @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.create();
 
   @Test
   @TargetUri(value = "/health-check", callCount = 100)
@@ -45,7 +43,7 @@ abstract class SamplingOverridesTest {
     int logCount = testing.mockedIngestion.getCountForType("MessageData");
     // super super low chance that number of sampled requests/dependencies
     // is less than 25 or greater than 75
-    assertThat(requestCount).isGreaterThanOrEqualTo(100);
+    assertThat(requestCount).isGreaterThanOrEqualTo(25);
     assertThat(dependencyCount).isGreaterThanOrEqualTo(25);
     assertThat(requestCount).isLessThanOrEqualTo(75);
     assertThat(dependencyCount).isLessThanOrEqualTo(75);
