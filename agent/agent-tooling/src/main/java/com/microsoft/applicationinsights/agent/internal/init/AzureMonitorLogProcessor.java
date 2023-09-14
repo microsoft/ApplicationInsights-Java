@@ -9,12 +9,46 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.logs.LogRecordProcessor;
 import io.opentelemetry.sdk.logs.ReadWriteLogRecord;
+import io.opentelemetry.sdk.logs.data.Body;
 import io.opentelemetry.sdk.trace.ReadableSpan;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class AzureMonitorLogProcessor implements LogRecordProcessor {
 
+  private static final Logger logger = LoggerFactory.getLogger("duplicate.logging.detector");
+
+  private volatile String priorMessage;
+  private volatile StackTraceElement[] priorStackTraceElements;
+
+  private static String toString(StackTraceElement[] stackTraceElements) {
+    StringBuilder sb = new StringBuilder();
+    for (StackTraceElement stackTraceElement : stackTraceElements) {
+      sb.append("\n");
+      sb.append(stackTraceElement);
+    }
+    return sb.toString();
+  }
+
   @Override
   public void onEmit(Context context, ReadWriteLogRecord logRecord) {
+
+    Body body = logRecord.toLogRecordData().getBody();
+    String message = body.asString();
+    StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
+    if (message.equals(priorMessage)) {
+      logger.warn(
+          "FOUND A POSSIBLE DUPLICATE: "
+              + message
+              + "\nPRIOR STACK TRACE:"
+              + toString(priorStackTraceElements)
+              + "\nCURRENT STACK TRACE:"
+              + toString(stackTraceElements));
+    }
+
+    priorMessage = message;
+    priorStackTraceElements = stackTraceElements;
+
     Span currentSpan = Span.fromContext(context);
     if (!(currentSpan instanceof ReadableSpan)) {
       return;
