@@ -479,7 +479,7 @@ public class ConfigurationBuilder {
       return getConfiguration(runtimeAttachedConfigurationContent, JsonOrigin.RUNTIME_ATTACHED);
     }
 
-    // any manual RP integration will support loading user's applcationinsights.json
+    // only RP auto integrations do not support loading applicationinsights.json
     if (RpAttachType.getRpAttachType() == RpAttachType.INTEGRATED_AUTO) {
       // users do not have write access to agent directory in rp integrations
       // and rp integrations should not use applicationinsights.json because that makes it difficult
