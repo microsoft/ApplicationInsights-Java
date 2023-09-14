@@ -3,6 +3,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.configuration;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.statsbeat.RpAttachType;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.HostName;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
 import com.fasterxml.jackson.core.JsonParseException;
@@ -478,7 +479,8 @@ public class ConfigurationBuilder {
       return getConfiguration(runtimeAttachedConfigurationContent, JsonOrigin.RUNTIME_ATTACHED);
     }
 
-    if (SdkVersionPrefixHolder.isRpIntegration()) {
+    // only RP auto integrations do not support loading applicationinsights.json
+    if (RpAttachType.getRpAttachType() == RpAttachType.INTEGRATED_AUTO) {
       // users do not have write access to agent directory in rp integrations
       // and rp integrations should not use applicationinsights.json because that makes it difficult
       // to merge rp intent and user intent
