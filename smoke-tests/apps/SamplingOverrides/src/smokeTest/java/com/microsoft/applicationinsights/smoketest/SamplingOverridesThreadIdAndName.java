@@ -17,13 +17,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-@UseAgent("applicationinsights-thread-id-and-name.json")
+@UseAgent("applicationinsights-thread-name.json")
 abstract class SamplingOverridesThreadIdAndName {
 
   @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.create();
 
   @Test
-  @TargetUri(value = "/thread-id-and-name", callCount = 100)
+  @TargetUri(value = "/thread-name", callCount = 100)
   void testSampling() throws Exception {
     assertThat(testing.mockedIngestion.getCountForType("RequestData")).isZero();
     assertThat(testing.mockedIngestion.getCountForType("MessageData")).isZero();

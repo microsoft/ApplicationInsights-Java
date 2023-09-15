@@ -52,7 +52,7 @@
             },
             {
               "key": "http.target",
-              "value": "/SamplingOverrides/thread-id-and-name",
+              "value": "/SamplingOverrides/thread-name",
               "matchType": "strict"
             }
           ],
@@ -65,17 +65,6 @@
               "key": "thread.name",
               "value": "http-nio-.*",
               "matchType": "regexp"
-            }
-          ],
-          "percentage": 0
-        },
-        {
-          "telemetryType": "trace",
-          "attributes": [
-            {
-              "key": "thread.name",
-              "value": "main",
-              "matchType": "strict"
             }
           ],
           "percentage": 0

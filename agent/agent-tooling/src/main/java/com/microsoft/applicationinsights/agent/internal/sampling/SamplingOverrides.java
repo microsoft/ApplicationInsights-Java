@@ -83,10 +83,8 @@ public class SamplingOverrides {
       return true;
     }
 
-    static String getValue(Attributes attributes, AttributeKey<String> attributeKey) {
-      if (attributeKey.getKey().equals(SemanticAttributes.THREAD_ID.getKey())) {
-        return String.valueOf(Thread.currentThread().getId());
-      } else if (attributeKey.getKey().equals(SemanticAttributes.THREAD_NAME.getKey())) {
+    static String getValueIncludingThreadAttributes(Attributes attributes, AttributeKey<String> attributeKey) {
+     if (attributeKey.getKey().equals(SemanticAttributes.THREAD_NAME.getKey())) {
         return Thread.currentThread().getName();
       } else {
         return attributes.get(attributeKey);
@@ -131,7 +129,7 @@ public class SamplingOverrides {
 
     @Override
     public boolean test(Attributes attributes, LazyHttpUrl lazyHttpUrl) {
-      String val = MatcherGroup.getValue(attributes, AttributeKey.stringKey(key.getKey()));
+      String val = MatcherGroup.getValueIncludingThreadAttributes(attributes, key);
       if (val == null && key.getKey().equals(SemanticAttributes.HTTP_URL.getKey())) {
         val = lazyHttpUrl.get();
       }
@@ -166,7 +164,7 @@ public class SamplingOverrides {
 
     @Override
     public boolean test(Attributes attributes, @Nullable LazyHttpUrl lazyHttpUrl) {
-      String val = MatcherGroup.getValue(attributes, AttributeKey.stringKey(key.getKey()));
+      String val = MatcherGroup.getValueIncludingThreadAttributes(attributes, key);
       if (val == null
           && key.getKey().equals(SemanticAttributes.HTTP_URL.getKey())
           && lazyHttpUrl != null) {
@@ -209,7 +207,7 @@ public class SamplingOverrides {
 
     @Override
     public boolean test(Attributes attributes, @Nullable LazyHttpUrl lazyHttpUrl) {
-      String val = MatcherGroup.getValue(attributes, AttributeKey.stringKey(key.getKey()));
+      String val = MatcherGroup.getValueIncludingThreadAttributes(attributes, key);
       if (val == null
           && key.getKey().equals(SemanticAttributes.HTTP_URL.getKey())
           && lazyHttpUrl != null) {
