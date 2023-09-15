@@ -36,7 +36,7 @@ public class AzureMonitorLogProcessor implements LogRecordProcessor {
     Body body = logRecord.toLogRecordData().getBody();
     String message = body.asString();
     StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
-    if (message.equals(priorMessage)) {
+    if (message.contains("executionId") && message.equals(priorMessage)) {
       logger.warn(
           "FOUND A POSSIBLE DUPLICATE: "
               + message
