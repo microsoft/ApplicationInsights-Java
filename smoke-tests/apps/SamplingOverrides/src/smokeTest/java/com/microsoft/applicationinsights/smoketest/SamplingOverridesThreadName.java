@@ -18,7 +18,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 @UseAgent("applicationinsights-thread-name.json")
-abstract class SamplingOverridesThreadIdAndName {
+abstract class SamplingOverridesThreadName {
 
   @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.create();
 
@@ -30,29 +30,29 @@ abstract class SamplingOverridesThreadIdAndName {
   }
 
   @Environment(TOMCAT_8_JAVA_8)
-  static class Tomcat8Java8Test extends SamplingOverridesThreadIdAndName {}
+  static class Tomcat8Java8Test extends SamplingOverridesThreadName {}
 
   @Environment(TOMCAT_8_JAVA_8_OPENJ9)
-  static class Tomcat8Java8OpenJ9Test extends SamplingOverridesThreadIdAndName {}
+  static class Tomcat8Java8OpenJ9Test extends SamplingOverridesThreadName {}
 
   @Environment(TOMCAT_8_JAVA_11)
-  static class Tomcat8Java11Test extends SamplingOverridesThreadIdAndName {}
+  static class Tomcat8Java11Test extends SamplingOverridesThreadName {}
 
   @Environment(TOMCAT_8_JAVA_11_OPENJ9)
-  static class Tomcat8Java11OpenJ9Test extends SamplingOverridesThreadIdAndName {}
+  static class Tomcat8Java11OpenJ9Test extends SamplingOverridesThreadName {}
 
   @Environment(TOMCAT_8_JAVA_17)
-  static class Tomcat8Java17Test extends SamplingOverridesThreadIdAndName {}
+  static class Tomcat8Java17Test extends SamplingOverridesThreadName {}
 
   @Environment(TOMCAT_8_JAVA_19)
-  static class Tomcat8Java19Test extends SamplingOverridesThreadIdAndName {}
+  static class Tomcat8Java19Test extends SamplingOverridesThreadName {}
 
   @Environment(TOMCAT_8_JAVA_20)
-  static class Tomcat8Java20Test extends SamplingOverridesThreadIdAndName {}
+  static class Tomcat8Java20Test extends SamplingOverridesThreadName {}
 
   @Environment(WILDFLY_13_JAVA_8)
-  static class Wildfly13Java8Test extends SamplingOverridesThreadIdAndName {}
+  static class Wildfly13Java8Test extends SamplingOverridesThreadName {}
 
   @Environment(WILDFLY_13_JAVA_8_OPENJ9)
-  static class Wildfly13Java8OpenJ9Test extends SamplingOverridesThreadIdAndName {}
+  static class Wildfly13Java8OpenJ9Test extends SamplingOverridesThreadName {}
 }
