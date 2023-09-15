@@ -83,8 +83,9 @@ public class SamplingOverrides {
       return true;
     }
 
-    static String getValueIncludingThreadAttributes(Attributes attributes, AttributeKey<String> attributeKey) {
-     if (attributeKey.getKey().equals(SemanticAttributes.THREAD_NAME.getKey())) {
+    static String getValueIncludingThreadAttributes(
+        Attributes attributes, AttributeKey<String> attributeKey) {
+      if (attributeKey.getKey().equals(SemanticAttributes.THREAD_NAME.getKey())) {
         return Thread.currentThread().getName();
       } else {
         return attributes.get(attributeKey);
