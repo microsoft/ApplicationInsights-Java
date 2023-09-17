@@ -4,7 +4,7 @@
 package io.opentelemetry.sdk.metrics.internal.view;
 
 import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
+import io.opentelemetry.semconv.SemanticAttributes;
 import java.util.HashSet;
 import java.util.Set;
 
