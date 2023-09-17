@@ -19,7 +19,7 @@ import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
-import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
+import io.opentelemetry.semconv.SemanticAttributes;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
