@@ -127,6 +127,7 @@ tasks {
       attributes(
         "Agent-Class" to "com.microsoft.applicationinsights.agent.Agent",
         "Premain-Class" to "com.microsoft.applicationinsights.agent.Agent",
+        "Main-Class" to "com.microsoft.applicationinsights.agent.Agent",
         "Can-Redefine-Classes" to true,
         "Can-Retransform-Classes" to true,
       )
