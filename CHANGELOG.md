@@ -9,8 +9,7 @@
 
 ### Bug fixes:
 
-* Fix applicationinsights.json config is not loaded in manual rp attach scenario ([#3288](https://github.com/microsoft/ApplicationInsights-Java/pull/3288))
-* Fix Azure Kubernetes Service cloud_RoleName ([#3277](https://github.com/microsoft/ApplicationInsights-Java/pull/3277))
+* Fix regression in 3.4.16 where default applicationinsights.json config location is not loaded in AppServices, Azure Functions, and AKS ([#3288](https://github.com/microsoft/ApplicationInsights-Java/pull/3288))
 
 ## Version 3.4.16 GA
 
