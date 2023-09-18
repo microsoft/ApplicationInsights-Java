@@ -44,6 +44,7 @@ public class Agent {
     premain(agentArgs, inst);
   }
 
+  @SuppressWarnings("SystemOut")
   public static void main(String... args) {
     System.err.println(
         "*************************\n"
