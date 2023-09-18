@@ -1,5 +1,16 @@
 # CHANGELOG
 
+## Version 3.4.17 GA (09/18/2013)
+
+### Enhancements:
+
+* GA Azure Active Directory authentication ([#3284](https://github.com/microsoft/ApplicationInsights-Java/pull/3284))
+* Enable sampling overrides using thread.name ([#3285](https://github.com/microsoft/ApplicationInsights-Java/pull/3285))
+
+### Bug fixes:
+
+* Fix Azure Kubernetes Service cloud_RoleName ([#3277](https://github.com/microsoft/ApplicationInsights-Java/pull/3277))
+
 ## Version 3.4.16 GA
 
 ### Enhancements:
