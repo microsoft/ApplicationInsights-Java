@@ -83,6 +83,15 @@ public class SamplingOverrides {
       return true;
     }
 
+    static String getValueIncludingThreadName(
+        Attributes attributes, AttributeKey<String> attributeKey) {
+      if (attributeKey.getKey().equals(SemanticAttributes.THREAD_NAME.getKey())) {
+        return Thread.currentThread().getName();
+      } else {
+        return attributes.get(attributeKey);
+      }
+    }
+
     private static TempPredicate toPredicate(SamplingOverrideAttribute attribute) {
       if (attribute.matchType == MatchType.STRICT) {
         if (isHttpHeaderAttribute(attribute)) {
@@ -121,7 +130,7 @@ public class SamplingOverrides {
 
     @Override
     public boolean test(Attributes attributes, LazyHttpUrl lazyHttpUrl) {
-      String val = attributes.get(key);
+      String val = MatcherGroup.getValueIncludingThreadName(attributes, key);
       if (val == null && key.getKey().equals(SemanticAttributes.HTTP_URL.getKey())) {
         val = lazyHttpUrl.get();
       }
@@ -156,7 +165,7 @@ public class SamplingOverrides {
 
     @Override
     public boolean test(Attributes attributes, @Nullable LazyHttpUrl lazyHttpUrl) {
-      String val = attributes.get(key);
+      String val = MatcherGroup.getValueIncludingThreadName(attributes, key);
       if (val == null
           && key.getKey().equals(SemanticAttributes.HTTP_URL.getKey())
           && lazyHttpUrl != null) {
@@ -199,7 +208,7 @@ public class SamplingOverrides {
 
     @Override
     public boolean test(Attributes attributes, @Nullable LazyHttpUrl lazyHttpUrl) {
-      String val = attributes.get(key);
+      String val = MatcherGroup.getValueIncludingThreadName(attributes, key);
       if (val == null
           && key.getKey().equals(SemanticAttributes.HTTP_URL.getKey())
           && lazyHttpUrl != null) {
