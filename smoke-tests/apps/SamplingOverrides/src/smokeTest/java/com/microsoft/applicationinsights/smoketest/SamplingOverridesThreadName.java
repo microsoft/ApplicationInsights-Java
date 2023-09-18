@@ -10,8 +10,6 @@ import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCA
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_20;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_8;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_8_OPENJ9;
-import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.WILDFLY_13_JAVA_8;
-import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.WILDFLY_13_JAVA_8_OPENJ9;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
@@ -50,9 +48,5 @@ abstract class SamplingOverridesThreadName {
   @Environment(TOMCAT_8_JAVA_20)
   static class Tomcat8Java20Test extends SamplingOverridesThreadName {}
 
-  @Environment(WILDFLY_13_JAVA_8)
-  static class Wildfly13Java8Test extends SamplingOverridesThreadName {}
-
-  @Environment(WILDFLY_13_JAVA_8_OPENJ9)
-  static class Wildfly13Java8OpenJ9Test extends SamplingOverridesThreadName {}
+  // intentionally not including wildfly, since this test is set up for Tomcat thread names
 }
