@@ -3,6 +3,7 @@
 
 package com.microsoft.applicationinsights.agent.bootstrap;
 
+import java.util.Optional;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
@@ -21,12 +22,14 @@ public class AzureFunctions {
   }
 
   public static void configureOnce() {
-    if (configure != null) {
-      if (!hasConnectionString()) {
-        configure.run();
-      }
-      configure = null;
-    }
+    Optional.ofNullable(configure)
+            .ifPresent(result ->{
+              if (!hasConnectionString()) 
+              {
+                result.run();
+              }  
+              result=null;
+            });
   }
 
   private AzureFunctions() {}

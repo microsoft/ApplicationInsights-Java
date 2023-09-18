@@ -21,6 +21,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -1294,7 +1295,7 @@ public class Configuration {
                   + " action. "
                   + "Learn more about attribute processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
         }
-        extractAttribute.validate();
+        Optional.ofNullable(extractAttribute).ifPresent(ExtractAttribute::validate);
       }
 
       if (action == ProcessorActionType.MASK) {
