@@ -4,6 +4,7 @@
 
 ### Enhancements:
 
+* Update to OpenTelemetry 1.30 ([#3292](https://github.com/microsoft/ApplicationInsights-Java/pull/3292))
 * GA Azure Active Directory authentication ([#3284](https://github.com/microsoft/ApplicationInsights-Java/pull/3284))
 * Enable sampling overrides using thread.name ([#3285](https://github.com/microsoft/ApplicationInsights-Java/pull/3285))
 
