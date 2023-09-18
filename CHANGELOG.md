@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## Version 3.4.17 GA (09/18/2013)
+## Version 3.4.17 GA (09/18/2023)
 
 ### Enhancements:
 
