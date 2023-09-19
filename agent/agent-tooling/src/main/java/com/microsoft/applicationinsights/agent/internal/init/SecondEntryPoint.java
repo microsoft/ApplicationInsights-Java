@@ -256,6 +256,9 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
                 // in this case the spanExporter here is the noop spanExporter
                 return spanExporter;
               } else {
+                startupLogger.warning(
+                    "\"otel.traces.exporter\" has been set to something other than "
+                        + "\"otlp\". Azure Monitor Span exporter will not get created.");
                 return wrapSpanExporter(spanExporter, configuration);
               }
             })
@@ -268,6 +271,9 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
                 // in this case the logExporter here is the noop spanExporter
                 return logExporter;
               } else {
+                startupLogger.warning(
+                    "\"otel.logs.exporter\" has been set to something other than "
+                        + "\"otlp\". Azure Monitor Log exporter will not get created.");
                 return wrapLogExporter(logExporter, configuration);
               }
             })
