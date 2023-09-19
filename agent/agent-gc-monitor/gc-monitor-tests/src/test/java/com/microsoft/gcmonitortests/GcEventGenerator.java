@@ -28,9 +28,8 @@ public class GcEventGenerator {
   @SuppressWarnings("SystemOut")
   private void run() throws InterruptedException {
     System.out.println("Hit return to start");
-
-    try (// Block until consumer sends the ready signal
-    Scanner scanner = new Scanner(System.in, UTF_8.name())) {
+    // Block until consumer sends the ready signal
+    try (Scanner scanner = new Scanner(System.in, UTF_8.name())) {
       System.out.println(scanner.nextLine());
 
       // Allocate 1mb
