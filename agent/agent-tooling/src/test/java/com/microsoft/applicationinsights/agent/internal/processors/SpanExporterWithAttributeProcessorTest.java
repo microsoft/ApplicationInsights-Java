@@ -91,21 +91,22 @@ class SpanExporterWithAttributeProcessorTest {
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
-    try (SpanExporter exampleExporter = new SpanExporterWithAttributeProcessor(config, mockSpanExporter)) {
-        Span span =
-            tracer
-                .spanBuilder("my span")
-                .setAttribute("one", "1")
-                .setAttribute("two", 2L)
-                .setAttribute("testKey", "testValue")
-                .setAttribute("TESTKEY", "testValue2")
-                .startSpan();
+    try (SpanExporter exampleExporter =
+        new SpanExporterWithAttributeProcessor(config, mockSpanExporter)) {
+      Span span =
+          tracer
+              .spanBuilder("my span")
+              .setAttribute("one", "1")
+              .setAttribute("two", 2L)
+              .setAttribute("testKey", "testValue")
+              .setAttribute("TESTKEY", "testValue2")
+              .startSpan();
 
-        SpanData spanData = ((ReadableSpan) span).toSpanData();
+      SpanData spanData = ((ReadableSpan) span).toSpanData();
 
-        List<SpanData> spans = new ArrayList<>();
-        spans.add(spanData);
-        exampleExporter.export(spans);
+      List<SpanData> spans = new ArrayList<>();
+      spans.add(spanData);
+      exampleExporter.export(spans);
     }
 
     // verify that resulting spans are filtered in the way we want
@@ -129,21 +130,22 @@ class SpanExporterWithAttributeProcessorTest {
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
-    try (SpanExporter exampleExporter = new SpanExporterWithAttributeProcessor(config, mockSpanExporter)) {
-        Span span =
-            tracer
-                .spanBuilder("my span")
-                .setAttribute("one", "1")
-                .setAttribute("two", 2L)
-                .setAttribute("testKey", "testValue")
-                .setAttribute("TESTKEY", "testValue2")
-                .startSpan();
+    try (SpanExporter exampleExporter =
+        new SpanExporterWithAttributeProcessor(config, mockSpanExporter)) {
+      Span span =
+          tracer
+              .spanBuilder("my span")
+              .setAttribute("one", "1")
+              .setAttribute("two", 2L)
+              .setAttribute("testKey", "testValue")
+              .setAttribute("TESTKEY", "testValue2")
+              .startSpan();
 
-        SpanData spanData = ((ReadableSpan) span).toSpanData();
+      SpanData spanData = ((ReadableSpan) span).toSpanData();
 
-        List<SpanData> spans = new ArrayList<>();
-        spans.add(spanData);
-        exampleExporter.export(spans);
+      List<SpanData> spans = new ArrayList<>();
+      spans.add(spanData);
+      exampleExporter.export(spans);
     }
 
     // verify that resulting spans are filtered in the way we want
@@ -171,21 +173,22 @@ class SpanExporterWithAttributeProcessorTest {
     actions.add(action);
     actions.add(updateAction);
     config.actions = actions;
-    try (SpanExporter exampleExporter = new SpanExporterWithAttributeProcessor(config, mockSpanExporter)) {
-        Span span =
-            tracer
-                .spanBuilder("my span")
-                .setAttribute("one", "1")
-                .setAttribute("two", 2L)
-                .setAttribute("testKey", "testValue")
-                .setAttribute("TESTKEY", "testValue2")
-                .startSpan();
+    try (SpanExporter exampleExporter =
+        new SpanExporterWithAttributeProcessor(config, mockSpanExporter)) {
+      Span span =
+          tracer
+              .spanBuilder("my span")
+              .setAttribute("one", "1")
+              .setAttribute("two", 2L)
+              .setAttribute("testKey", "testValue")
+              .setAttribute("TESTKEY", "testValue2")
+              .startSpan();
 
-        SpanData spanData = ((ReadableSpan) span).toSpanData();
+      SpanData spanData = ((ReadableSpan) span).toSpanData();
 
-        List<SpanData> spans = new ArrayList<>();
-        spans.add(spanData);
-        exampleExporter.export(spans);
+      List<SpanData> spans = new ArrayList<>();
+      spans.add(spanData);
+      exampleExporter.export(spans);
     }
 
     // verify that resulting spans are filtered in the way we want
@@ -215,21 +218,22 @@ class SpanExporterWithAttributeProcessorTest {
     actions.add(action);
     actions.add(updateAction);
     config.actions = actions;
-    try (SpanExporter exampleExporter = new SpanExporterWithAttributeProcessor(config, mockSpanExporter)) {
-        Span span =
-            tracer
-                .spanBuilder("my span")
-                .setAttribute("one", "1")
-                .setAttribute("two", 2L)
-                .setAttribute("testKey", "testValue")
-                .setAttribute("TESTKEY", "testValue2")
-                .startSpan();
+    try (SpanExporter exampleExporter =
+        new SpanExporterWithAttributeProcessor(config, mockSpanExporter)) {
+      Span span =
+          tracer
+              .spanBuilder("my span")
+              .setAttribute("one", "1")
+              .setAttribute("two", 2L)
+              .setAttribute("testKey", "testValue")
+              .setAttribute("TESTKEY", "testValue2")
+              .startSpan();
 
-        SpanData spanData = ((ReadableSpan) span).toSpanData();
+      SpanData spanData = ((ReadableSpan) span).toSpanData();
 
-        List<SpanData> spans = new ArrayList<>();
-        spans.add(spanData);
-        exampleExporter.export(spans);
+      List<SpanData> spans = new ArrayList<>();
+      spans.add(spanData);
+      exampleExporter.export(spans);
     }
 
     // verify that resulting spans are filtered in the way we want
@@ -253,21 +257,22 @@ class SpanExporterWithAttributeProcessorTest {
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
-    try (SpanExporter exampleExporter = new SpanExporterWithAttributeProcessor(config, mockSpanExporter)) {
-        Span span =
-            tracer
-                .spanBuilder("my span")
-                .setAttribute("one", "1")
-                .setAttribute("two", 2L)
-                .setAttribute("testKey", "testValue")
-                .setAttribute("TESTKEY", "testValue2")
-                .startSpan();
+    try (SpanExporter exampleExporter =
+        new SpanExporterWithAttributeProcessor(config, mockSpanExporter)) {
+      Span span =
+          tracer
+              .spanBuilder("my span")
+              .setAttribute("one", "1")
+              .setAttribute("two", 2L)
+              .setAttribute("testKey", "testValue")
+              .setAttribute("TESTKEY", "testValue2")
+              .startSpan();
 
-        SpanData spanData = ((ReadableSpan) span).toSpanData();
+      SpanData spanData = ((ReadableSpan) span).toSpanData();
 
-        List<SpanData> spans = new ArrayList<>();
-        spans.add(spanData);
-        exampleExporter.export(spans);
+      List<SpanData> spans = new ArrayList<>();
+      spans.add(spanData);
+      exampleExporter.export(spans);
     }
 
     // verify that resulting spans are filtered in the way we want
@@ -292,22 +297,23 @@ class SpanExporterWithAttributeProcessorTest {
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
-    try (SpanExporter exampleExporter = new SpanExporterWithAttributeProcessor(config, mockSpanExporter)) {
-        Span span =
-            tracer
-                .spanBuilder("my span")
-                .setAttribute("one", "1")
-                .setAttribute("two", 2L)
-                .setAttribute("testKey", "testValue")
-                .setAttribute("TESTKEY", "testValue2")
-                .setAttribute("testKey2", "testValue2")
-                .startSpan();
+    try (SpanExporter exampleExporter =
+        new SpanExporterWithAttributeProcessor(config, mockSpanExporter)) {
+      Span span =
+          tracer
+              .spanBuilder("my span")
+              .setAttribute("one", "1")
+              .setAttribute("two", 2L)
+              .setAttribute("testKey", "testValue")
+              .setAttribute("TESTKEY", "testValue2")
+              .setAttribute("testKey2", "testValue2")
+              .startSpan();
 
-        SpanData spanData = ((ReadableSpan) span).toSpanData();
+      SpanData spanData = ((ReadableSpan) span).toSpanData();
 
-        List<SpanData> spans = new ArrayList<>();
-        spans.add(spanData);
-        exampleExporter.export(spans);
+      List<SpanData> spans = new ArrayList<>();
+      spans.add(spanData);
+      exampleExporter.export(spans);
     }
 
     // verify that resulting spans are filtered in the way we want
@@ -332,33 +338,34 @@ class SpanExporterWithAttributeProcessorTest {
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
-    try (SpanExporter exampleExporter = new SpanExporterWithAttributeProcessor(config, mockSpanExporter)) {
-        Span span =
-            tracer
-                .spanBuilder("my span")
-                .setAttribute("one", "1")
-                .setAttribute("two", 2L)
-                .setAttribute("testKey", "testValue")
-                .setAttribute("TESTKEY", "testValue2")
-                .startSpan();
+    try (SpanExporter exampleExporter =
+        new SpanExporterWithAttributeProcessor(config, mockSpanExporter)) {
+      Span span =
+          tracer
+              .spanBuilder("my span")
+              .setAttribute("one", "1")
+              .setAttribute("two", 2L)
+              .setAttribute("testKey", "testValue")
+              .setAttribute("TESTKEY", "testValue2")
+              .startSpan();
 
-        Span log =
-            tracer
-                .spanBuilder("my log")
-                .setAttribute("one", "1")
-                .setAttribute("two", 2L)
-                .setAttribute("testKey", "testValue")
-                .setAttribute("TESTKEY", "testValue2")
-                .setAttribute("applicationinsights.internal.log", true)
-                .startSpan();
+      Span log =
+          tracer
+              .spanBuilder("my log")
+              .setAttribute("one", "1")
+              .setAttribute("two", 2L)
+              .setAttribute("testKey", "testValue")
+              .setAttribute("TESTKEY", "testValue2")
+              .setAttribute("applicationinsights.internal.log", true)
+              .startSpan();
 
-        SpanData spanData = ((ReadableSpan) span).toSpanData();
-        SpanData logData = ((ReadableSpan) log).toSpanData();
+      SpanData spanData = ((ReadableSpan) span).toSpanData();
+      SpanData logData = ((ReadableSpan) log).toSpanData();
 
-        List<SpanData> spans = new ArrayList<>();
-        spans.add(spanData);
-        spans.add(logData);
-        exampleExporter.export(spans);
+      List<SpanData> spans = new ArrayList<>();
+      spans.add(spanData);
+      spans.add(logData);
+      exampleExporter.export(spans);
     }
 
     // verify that resulting spans are filtered in the way we want
@@ -383,21 +390,22 @@ class SpanExporterWithAttributeProcessorTest {
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
-    try (SpanExporter exampleExporter = new SpanExporterWithAttributeProcessor(config, mockSpanExporter)) {
-        Span span =
-            tracer
-                .spanBuilder("my span")
-                .setAttribute("one", "1")
-                .setAttribute("two", 2L)
-                .setAttribute("testKey", "testValue")
-                .setAttribute("testKey2", "testValue2")
-                .startSpan();
+    try (SpanExporter exampleExporter =
+        new SpanExporterWithAttributeProcessor(config, mockSpanExporter)) {
+      Span span =
+          tracer
+              .spanBuilder("my span")
+              .setAttribute("one", "1")
+              .setAttribute("two", 2L)
+              .setAttribute("testKey", "testValue")
+              .setAttribute("testKey2", "testValue2")
+              .startSpan();
 
-        SpanData spanData = ((ReadableSpan) span).toSpanData();
+      SpanData spanData = ((ReadableSpan) span).toSpanData();
 
-        List<SpanData> spans = new ArrayList<>();
-        spans.add(spanData);
-        exampleExporter.export(spans);
+      List<SpanData> spans = new ArrayList<>();
+      spans.add(spanData);
+      exampleExporter.export(spans);
     }
 
     // verify that resulting spans are filtered in the way we want
@@ -422,21 +430,22 @@ class SpanExporterWithAttributeProcessorTest {
     actions.add(updateAction);
     actions.add(deleteAction);
     config.actions = actions;
-    try (SpanExporter exampleExporter = new SpanExporterWithAttributeProcessor(config, mockSpanExporter)) {
-        Span span =
-            tracer
-                .spanBuilder("my span")
-                .setAttribute("one", "1")
-                .setAttribute("two", 2L)
-                .setAttribute("testKey", "testValue")
-                .setAttribute("testKey2", "testValue2")
-                .startSpan();
+    try (SpanExporter exampleExporter =
+        new SpanExporterWithAttributeProcessor(config, mockSpanExporter)) {
+      Span span =
+          tracer
+              .spanBuilder("my span")
+              .setAttribute("one", "1")
+              .setAttribute("two", 2L)
+              .setAttribute("testKey", "testValue")
+              .setAttribute("testKey2", "testValue2")
+              .startSpan();
 
-        SpanData spanData = ((ReadableSpan) span).toSpanData();
+      SpanData spanData = ((ReadableSpan) span).toSpanData();
 
-        List<SpanData> spans = new ArrayList<>();
-        spans.add(spanData);
-        exampleExporter.export(spans);
+      List<SpanData> spans = new ArrayList<>();
+      spans.add(spanData);
+      exampleExporter.export(spans);
     }
 
     // verify that resulting spans are filtered in the way we want
@@ -462,45 +471,46 @@ class SpanExporterWithAttributeProcessorTest {
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
-    try (SpanExporter exampleExporter = new SpanExporterWithAttributeProcessor(config, mockSpanExporter)) {
-        Span spanA =
-            tracer
-                .spanBuilder("svcA")
-                .setAttribute("one", "1")
-                .setAttribute("two", 2L)
-                .setAttribute("testKey", "testValue")
-                .setAttribute("testKey2", "testValue2")
-                .startSpan();
-        Span spanB =
-            tracer
-                .spanBuilder("svcB")
-                .setAttribute("one", "1")
-                .setAttribute("testKey", "testValue")
-                .setAttribute("testKey2", "testValue2")
-                .startSpan();
-        Span spanC =
-            tracer
-                .spanBuilder("svcC")
-                .setAttribute("two", 2L)
-                .setAttribute("testKey", "testValue")
-                .setAttribute("testKey2", "testValue2")
-                .startSpan();
-        Span spanD =
-            tracer
-                .spanBuilder("svcD")
-                .setAttribute("one", "1")
-                .setAttribute("two", 2L)
-                .setAttribute("testKey", "testValue")
-                .setAttribute("testKey2", "testValue2")
-                .startSpan();
+    try (SpanExporter exampleExporter =
+        new SpanExporterWithAttributeProcessor(config, mockSpanExporter)) {
+      Span spanA =
+          tracer
+              .spanBuilder("svcA")
+              .setAttribute("one", "1")
+              .setAttribute("two", 2L)
+              .setAttribute("testKey", "testValue")
+              .setAttribute("testKey2", "testValue2")
+              .startSpan();
+      Span spanB =
+          tracer
+              .spanBuilder("svcB")
+              .setAttribute("one", "1")
+              .setAttribute("testKey", "testValue")
+              .setAttribute("testKey2", "testValue2")
+              .startSpan();
+      Span spanC =
+          tracer
+              .spanBuilder("svcC")
+              .setAttribute("two", 2L)
+              .setAttribute("testKey", "testValue")
+              .setAttribute("testKey2", "testValue2")
+              .startSpan();
+      Span spanD =
+          tracer
+              .spanBuilder("svcD")
+              .setAttribute("one", "1")
+              .setAttribute("two", 2L)
+              .setAttribute("testKey", "testValue")
+              .setAttribute("testKey2", "testValue2")
+              .startSpan();
 
-        List<SpanData> spans = new ArrayList<>();
-        spans.add(((ReadableSpan) spanA).toSpanData());
-        spans.add(((ReadableSpan) spanB).toSpanData());
-        spans.add(((ReadableSpan) spanC).toSpanData());
-        spans.add(((ReadableSpan) spanD).toSpanData());
+      List<SpanData> spans = new ArrayList<>();
+      spans.add(((ReadableSpan) spanA).toSpanData());
+      spans.add(((ReadableSpan) spanB).toSpanData());
+      spans.add(((ReadableSpan) spanC).toSpanData());
+      spans.add(((ReadableSpan) spanD).toSpanData());
 
-        exampleExporter.export(spans);
+      exampleExporter.export(spans);
     }
 
     // verify that resulting spans are filtered in the way we want
@@ -534,55 +544,56 @@ class SpanExporterWithAttributeProcessorTest {
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
-    try (SpanExporter exampleExporter = new SpanExporterWithAttributeProcessor(config, mockSpanExporter)) {
-        Span spanA =
-            tracer
-                .spanBuilder("svcA")
-                .setAttribute("one", "1")
-                .setAttribute("two", 2L)
-                .setAttribute("testKey", "testValue")
-                .setAttribute("testKey2", "testValue2")
-                .startSpan();
-        Span spanB =
-            tracer
-                .spanBuilder("svcB")
-                .setAttribute("one", "1")
-                .setAttribute("testKey", "testValue")
-                .setAttribute("testKey2", "testValue2")
-                .startSpan();
-        Span spanC =
-            tracer
-                .spanBuilder("svcC")
-                .setAttribute("two", 2L)
-                .setAttribute("testKey", "testValue")
-                .setAttribute("testKey2", "testValue2")
-                .startSpan();
-        Span spanD =
-            tracer
-                .spanBuilder("svcD")
-                .setAttribute("one", "1")
-                .setAttribute("two", 2L)
-                .setAttribute("testKey", "testValue")
-                .setAttribute("testKey2", "testValue2")
-                .startSpan();
-        Span logA =
-            tracer
-                .spanBuilder("svcA")
-                .setAttribute("one", "1")
-                .setAttribute("two", 2L)
-                .setAttribute("testKey", "testValue")
-                .setAttribute("testKey2", "testValue2")
-                .setAttribute("applicationinsights.internal.log", true)
-                .startSpan();
+    try (SpanExporter exampleExporter =
+        new SpanExporterWithAttributeProcessor(config, mockSpanExporter)) {
+      Span spanA =
+          tracer
+              .spanBuilder("svcA")
+              .setAttribute("one", "1")
+              .setAttribute("two", 2L)
+              .setAttribute("testKey", "testValue")
+              .setAttribute("testKey2", "testValue2")
+              .startSpan();
+      Span spanB =
+          tracer
+              .spanBuilder("svcB")
+              .setAttribute("one", "1")
+              .setAttribute("testKey", "testValue")
+              .setAttribute("testKey2", "testValue2")
+              .startSpan();
+      Span spanC =
+          tracer
+              .spanBuilder("svcC")
+              .setAttribute("two", 2L)
+              .setAttribute("testKey", "testValue")
+              .setAttribute("testKey2", "testValue2")
+              .startSpan();
+      Span spanD =
+          tracer
+              .spanBuilder("svcD")
+              .setAttribute("one", "1")
+              .setAttribute("two", 2L)
+              .setAttribute("testKey", "testValue")
+              .setAttribute("testKey2", "testValue2")
+              .startSpan();
+      Span logA =
+          tracer
+              .spanBuilder("svcA")
+              .setAttribute("one", "1")
+              .setAttribute("two", 2L)
+              .setAttribute("testKey", "testValue")
+              .setAttribute("testKey2", "testValue2")
+              .setAttribute("applicationinsights.internal.log", true)
+              .startSpan();
 
-        List<SpanData> spans = new ArrayList<>();
-        spans.add(((ReadableSpan) spanA).toSpanData());
-        spans.add(((ReadableSpan) spanB).toSpanData());
-        spans.add(((ReadableSpan) spanC).toSpanData());
-        spans.add(((ReadableSpan) spanD).toSpanData());
-        spans.add(((ReadableSpan) logA).toSpanData());
+      List<SpanData> spans = new ArrayList<>();
+      spans.add(((ReadableSpan) spanA).toSpanData());
+      spans.add(((ReadableSpan) spanB).toSpanData());
+      spans.add(((ReadableSpan) spanC).toSpanData());
+      spans.add(((ReadableSpan) spanD).toSpanData());
+      spans.add(((ReadableSpan) logA).toSpanData());
 
-        exampleExporter.export(spans);
+      exampleExporter.export(spans);
     }
 
     // verify that resulting spans are filtered in the way we want
@@ -617,45 +628,46 @@ class SpanExporterWithAttributeProcessorTest {
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
-    try (SpanExporter exampleExporter = new SpanExporterWithAttributeProcessor(config, mockSpanExporter)) {
-        Span spanA =
-            tracer
-                .spanBuilder("svcA")
-                .setAttribute("one", "1")
-                .setAttribute("two", 2L)
-                .setAttribute("testKey", "testValue")
-                .setAttribute("testKey2", "testValue2")
-                .startSpan();
-        Span spanB =
-            tracer
-                .spanBuilder("svcB")
-                .setAttribute("one", "1")
-                .setAttribute("testKey", "testValue")
-                .setAttribute("testKey2", "testValue2")
-                .startSpan();
-        Span spanC =
-            tracer
-                .spanBuilder("serviceC")
-                .setAttribute("two", 2L)
-                .setAttribute("testKey", "testValue")
-                .setAttribute("testKey2", "testValue2")
-                .startSpan();
-        Span spanD =
-            tracer
-                .spanBuilder("serviceD")
-                .setAttribute("one", "1")
-                .setAttribute("two", 2L)
-                .setAttribute("testKey", "testValue")
-                .setAttribute("testKey2", "testValue2")
-                .startSpan();
+    try (SpanExporter exampleExporter =
+        new SpanExporterWithAttributeProcessor(config, mockSpanExporter)) {
+      Span spanA =
+          tracer
+              .spanBuilder("svcA")
+              .setAttribute("one", "1")
+              .setAttribute("two", 2L)
+              .setAttribute("testKey", "testValue")
+              .setAttribute("testKey2", "testValue2")
+              .startSpan();
+      Span spanB =
+          tracer
+              .spanBuilder("svcB")
+              .setAttribute("one", "1")
+              .setAttribute("testKey", "testValue")
+              .setAttribute("testKey2", "testValue2")
+              .startSpan();
+      Span spanC =
+          tracer
+              .spanBuilder("serviceC")
+              .setAttribute("two", 2L)
+              .setAttribute("testKey", "testValue")
+              .setAttribute("testKey2", "testValue2")
+              .startSpan();
+      Span spanD =
+          tracer
+              .spanBuilder("serviceD")
+              .setAttribute("one", "1")
+              .setAttribute("two", 2L)
+              .setAttribute("testKey", "testValue")
+              .setAttribute("testKey2", "testValue2")
+              .startSpan();
 
-        List<SpanData> spans = new ArrayList<>();
-        spans.add(((ReadableSpan) spanA).toSpanData());
-        spans.add(((ReadableSpan) spanB).toSpanData());
-        spans.add(((ReadableSpan) spanC).toSpanData());
-        spans.add(((ReadableSpan) spanD).toSpanData());
+      List<SpanData> spans = new ArrayList<>();
+      spans.add(((ReadableSpan) spanA).toSpanData());
+      spans.add(((ReadableSpan) spanB).toSpanData());
+      spans.add(((ReadableSpan) spanC).toSpanData());
+      spans.add(((ReadableSpan) spanD).toSpanData());
 
-        exampleExporter.export(spans);
+      exampleExporter.export(spans);
     }
 
     // verify that resulting spans are filtered in the way we want
@@ -713,53 +725,54 @@ class SpanExporterWithAttributeProcessorTest {
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
-    try (SpanExporter exampleExporter = new SpanExporterWithAttributeProcessor(config, mockSpanExporter)) {
-        Span spanA =
-            tracer
-                .spanBuilder("svcA")
-                .setAttribute("one", "1")
-                .setAttribute("two", 2L)
-                .setAttribute("testKey", "testValue1")
-                .setAttribute("testKey2", "testValue2")
-                .startSpan();
-        Span spanB =
-            tracer
-                .spanBuilder("svcB")
-                .setAttribute("one", "1")
-                .setAttribute("testKey", "testValue2")
-                .setAttribute("testKey2", "testValue2")
-                .startSpan();
-        Span spanC =
-            tracer
-                .spanBuilder("serviceC")
-                .setAttribute("two", 2L)
-                .setAttribute("testKey", "testValue")
-                .setAttribute("testKey2", "testValue2")
-                .startSpan();
-        Span spanD =
-            tracer
-                .spanBuilder("serviceD")
-                .setAttribute("one", "1")
-                .setAttribute("two", 2L)
-                .setAttribute("testKey", "testValue")
-                .setAttribute("testKey2", "testValue2")
-                .startSpan();
-        Span spanE =
-            tracer
-                .spanBuilder("svcE")
-                .setAttribute("one", "1")
-                .setAttribute("two", 2L)
-                .setAttribute("testKey", "testV1")
-                .setAttribute("testKey2", "testValue2")
-                .startSpan();
-        List<SpanData> spans = new ArrayList<>();
-        spans.add(((ReadableSpan) spanA).toSpanData());
-        spans.add(((ReadableSpan) spanB).toSpanData());
-        spans.add(((ReadableSpan) spanC).toSpanData());
-        spans.add(((ReadableSpan) spanD).toSpanData());
-        spans.add(((ReadableSpan) spanE).toSpanData());
+    try (SpanExporter exampleExporter =
+        new SpanExporterWithAttributeProcessor(config, mockSpanExporter)) {
+      Span spanA =
+          tracer
+              .spanBuilder("svcA")
+              .setAttribute("one", "1")
+              .setAttribute("two", 2L)
+              .setAttribute("testKey", "testValue1")
+              .setAttribute("testKey2", "testValue2")
+              .startSpan();
+      Span spanB =
+          tracer
+              .spanBuilder("svcB")
+              .setAttribute("one", "1")
+              .setAttribute("testKey", "testValue2")
+              .setAttribute("testKey2", "testValue2")
+              .startSpan();
+      Span spanC =
+          tracer
+              .spanBuilder("serviceC")
+              .setAttribute("two", 2L)
+              .setAttribute("testKey", "testValue")
+              .setAttribute("testKey2", "testValue2")
+              .startSpan();
+      Span spanD =
+          tracer
+              .spanBuilder("serviceD")
+              .setAttribute("one", "1")
+              .setAttribute("two", 2L)
+              .setAttribute("testKey", "testValue")
+              .setAttribute("testKey2", "testValue2")
+              .startSpan();
+      Span spanE =
+          tracer
+              .spanBuilder("svcE")
+              .setAttribute("one", "1")
+              .setAttribute("two", 2L)
+              .setAttribute("testKey", "testV1")
+              .setAttribute("testKey2", "testValue2")
+              .startSpan();
+      List<SpanData> spans = new ArrayList<>();
+      spans.add(((ReadableSpan) spanA).toSpanData());
+      spans.add(((ReadableSpan) spanB).toSpanData());
+      spans.add(((ReadableSpan) spanC).toSpanData());
+      spans.add(((ReadableSpan) spanD).toSpanData());
+      spans.add(((ReadableSpan) spanE).toSpanData());
 
-        exampleExporter.export(spans);
+      exampleExporter.export(spans);
     }
 
     // verify that resulting spans are filtered in the way we want
@@ -800,53 +813,54 @@ class SpanExporterWithAttributeProcessorTest {
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
-    try (SpanExporter exampleExporter = new SpanExporterWithAttributeProcessor(config, mockSpanExporter)) {
-        Span spanA =
-            tracer
-                .spanBuilder("svcA")
-                .setAttribute("one", "1")
-                .setAttribute("two", 2L)
-                .setAttribute("testKey", "testValue1")
-                .setAttribute("testKey2", "testValue2")
-                .startSpan();
-        Span spanB =
-            tracer
-                .spanBuilder("svcB")
-                .setAttribute("one", "1")
-                .setAttribute("testKey", "testValue2")
-                .setAttribute("testKey2", "testValue2")
-                .startSpan();
-        Span spanC =
-            tracer
-                .spanBuilder("serviceC")
-                .setAttribute("two", 2L)
-                .setAttribute("testKey", "testValue")
-                .setAttribute("testKey2", "testValue2")
-                .startSpan();
-        Span spanD =
-            tracer
-                .spanBuilder("serviceD")
-                .setAttribute("one", "1")
-                .setAttribute("two", 2L)
-                .setAttribute("testKey", "testValue")
-                .setAttribute("testKey2", "testValue2")
-                .startSpan();
-        Span spanE =
-            tracer
-                .spanBuilder("svcE")
-                .setAttribute("one", "1")
-                .setAttribute("two", 2L)
-                .setAttribute("testKey", "testV1")
-                .setAttribute("testKey2", "testValue2")
-                .startSpan();
-        List<SpanData> spans = new ArrayList<>();
-        spans.add(((ReadableSpan) spanA).toSpanData());
-        spans.add(((ReadableSpan) spanB).toSpanData());
-        spans.add(((ReadableSpan) spanC).toSpanData());
-        spans.add(((ReadableSpan) spanD).toSpanData());
-        spans.add(((ReadableSpan) spanE).toSpanData());
+    try (SpanExporter exampleExporter =
+        new SpanExporterWithAttributeProcessor(config, mockSpanExporter)) {
+      Span spanA =
+          tracer
+              .spanBuilder("svcA")
+              .setAttribute("one", "1")
+              .setAttribute("two", 2L)
+              .setAttribute("testKey", "testValue1")
+              .setAttribute("testKey2", "testValue2")
+              .startSpan();
+      Span spanB =
+          tracer
+              .spanBuilder("svcB")
+              .setAttribute("one", "1")
+              .setAttribute("testKey", "testValue2")
+              .setAttribute("testKey2", "testValue2")
+              .startSpan();
+      Span spanC =
+          tracer
+              .spanBuilder("serviceC")
+              .setAttribute("two", 2L)
+              .setAttribute("testKey", "testValue")
+              .setAttribute("testKey2", "testValue2")
+              .startSpan();
+      Span spanD =
+          tracer
+              .spanBuilder("serviceD")
+              .setAttribute("one", "1")
+              .setAttribute("two", 2L)
+              .setAttribute("testKey", "testValue")
+              .setAttribute("testKey2", "testValue2")
+              .startSpan();
+      Span spanE =
+          tracer
+              .spanBuilder("svcE")
+              .setAttribute("one", "1")
+              .setAttribute("two", 2L)
+              .setAttribute("testKey", "testV1")
+              .setAttribute("testKey2", "testValue2")
+              .startSpan();
+      List<SpanData> spans = new ArrayList<>();
+      spans.add(((ReadableSpan) spanA).toSpanData());
+      spans.add(((ReadableSpan) spanB).toSpanData());
+      spans.add(((ReadableSpan) spanC).toSpanData());
+      spans.add(((ReadableSpan) spanD).toSpanData());
+      spans.add(((ReadableSpan) spanE).toSpanData());
 
-        exampleExporter.export(spans);
+      exampleExporter.export(spans);
     }
 
     // verify that resulting spans are filtered in the way we want
@@ -883,45 +897,46 @@ class SpanExporterWithAttributeProcessorTest {
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
-    try (SpanExporter exampleExporter = new SpanExporterWithAttributeProcessor(config, mockSpanExporter)) {
-        Span spanA =
-            tracer
-                .spanBuilder("svcA")
-                .setAttribute("one", "1")
-                .setAttribute("two", 2L)
-                .setAttribute("testKey", "testValue")
-                .setAttribute("testKey2", "testValue2")
-                .startSpan();
-        Span spanB =
-            tracer
-                .spanBuilder("svcB")
-                .setAttribute("one", "1")
-                .setAttribute("testKey", 2L)
-                .setAttribute("testKey2", "testValue2")
-                .startSpan();
-        Span spanC =
-            tracer
-                .spanBuilder("svcC")
-                .setAttribute("two", 2L)
-                .setAttribute("testKey", "testValue")
-                .setAttribute("testKey2", "testValue2")
-                .startSpan();
-        Span spanD =
-            tracer
-                .spanBuilder("svcD")
-                .setAttribute("one", "1")
-                .setAttribute("two", 2L)
-                .setAttribute("testKey", "testValue")
-                .setAttribute("testKey2", "testValue2")
-                .startSpan();
+    try (SpanExporter exampleExporter =
+        new SpanExporterWithAttributeProcessor(config, mockSpanExporter)) {
+      Span spanA =
+          tracer
+              .spanBuilder("svcA")
+              .setAttribute("one", "1")
+              .setAttribute("two", 2L)
+              .setAttribute("testKey", "testValue")
+              .setAttribute("testKey2", "testValue2")
+              .startSpan();
+      Span spanB =
+          tracer
+              .spanBuilder("svcB")
+              .setAttribute("one", "1")
+              .setAttribute("testKey", 2L)
+              .setAttribute("testKey2", "testValue2")
+              .startSpan();
+      Span spanC =
+          tracer
+              .spanBuilder("svcC")
+              .setAttribute("two", 2L)
+              .setAttribute("testKey", "testValue")
+              .setAttribute("testKey2", "testValue2")
+              .startSpan();
+      Span spanD =
+          tracer
+              .spanBuilder("svcD")
+              .setAttribute("one", "1")
+              .setAttribute("two", 2L)
+              .setAttribute("testKey", "testValue")
+              .setAttribute("testKey2", "testValue2")
+              .startSpan();
 
-        List<SpanData> spans = new ArrayList<>();
-        spans.add(((ReadableSpan) spanA).toSpanData());
-        spans.add(((ReadableSpan) spanB).toSpanData());
-        spans.add(((ReadableSpan) spanC).toSpanData());
-        spans.add(((ReadableSpan) spanD).toSpanData());
+      List<SpanData> spans = new ArrayList<>();
+      spans.add(((ReadableSpan) spanA).toSpanData());
+      spans.add(((ReadableSpan) spanB).toSpanData());
+      spans.add(((ReadableSpan) spanC).toSpanData());
+      spans.add(((ReadableSpan) spanD).toSpanData());
 
-        exampleExporter.export(spans);
+      exampleExporter.export(spans);
     }
 
     // verify that resulting spans are filtered in the way we want
@@ -955,45 +970,46 @@ class SpanExporterWithAttributeProcessorTest {
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
-    try (SpanExporter exampleExporter = new SpanExporterWithAttributeProcessor(config, mockSpanExporter)) {
-        Span spanA =
-            tracer
-                .spanBuilder("svcA")
-                .setAttribute("one", "1")
-                .setAttribute("two", 2L)
-                .setAttribute("testKey", "testValue")
-                .setAttribute("testKey2", "testValue2")
-                .startSpan();
-        Span spanB =
-            tracer
-                .spanBuilder("svcB")
-                .setAttribute("one", "1")
-                .setAttribute("testKey", "testValue")
-                .setAttribute("testKey2", "testValue2")
-                .startSpan();
-        Span spanC =
-            tracer
-                .spanBuilder("svcC")
-                .setAttribute("two", 2L)
-                .setAttribute("testKey", "testValue")
-                .setAttribute("testKey2", "testValue2")
-                .startSpan();
-        Span spanD =
-            tracer
-                .spanBuilder("svcD")
-                .setAttribute("one", "1")
-                .setAttribute("two", 2L)
-                .setAttribute("testKey", "testValue")
-                .setAttribute("testKey2", "testValue2")
-                .startSpan();
+    try (SpanExporter exampleExporter =
+        new SpanExporterWithAttributeProcessor(config, mockSpanExporter)) {
+      Span spanA =
+          tracer
+              .spanBuilder("svcA")
+              .setAttribute("one", "1")
+              .setAttribute("two", 2L)
+              .setAttribute("testKey", "testValue")
+              .setAttribute("testKey2", "testValue2")
+              .startSpan();
+      Span spanB =
+          tracer
+              .spanBuilder("svcB")
+              .setAttribute("one", "1")
+              .setAttribute("testKey", "testValue")
+              .setAttribute("testKey2", "testValue2")
+              .startSpan();
+      Span spanC =
+          tracer
+              .spanBuilder("svcC")
+              .setAttribute("two", 2L)
+              .setAttribute("testKey", "testValue")
+              .setAttribute("testKey2", "testValue2")
+              .startSpan();
+      Span spanD =
+          tracer
+              .spanBuilder("svcD")
+              .setAttribute("one", "1")
+              .setAttribute("two", 2L)
+              .setAttribute("testKey", "testValue")
+              .setAttribute("testKey2", "testValue2")
+              .startSpan();
 
-        List<SpanData> spans = new ArrayList<>();
-        spans.add(((ReadableSpan) spanA).toSpanData());
-        spans.add(((ReadableSpan) spanB).toSpanData());
-        spans.add(((ReadableSpan) spanC).toSpanData());
-        spans.add(((ReadableSpan) spanD).toSpanData());
+      List<SpanData> spans = new ArrayList<>();
+      spans.add(((ReadableSpan) spanA).toSpanData());
+      spans.add(((ReadableSpan) spanB).toSpanData());
+      spans.add(((ReadableSpan) spanC).toSpanData());
+      spans.add(((ReadableSpan) spanD).toSpanData());
 
-        exampleExporter.export(spans);
+      exampleExporter.export(spans);
     }
 
     // verify that resulting spans are filtered in the way we want
@@ -1027,45 +1043,46 @@ class SpanExporterWithAttributeProcessorTest {
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
-    try (SpanExporter exampleExporter = new SpanExporterWithAttributeProcessor(config, mockSpanExporter)) {
-        Span spanA =
-            tracer
-                .spanBuilder("svcA")
-                .setAttribute("one", "1")
-                .setAttribute("two", 2L)
-                .setAttribute("testKey", "testValue")
-                .setAttribute("testKey2", "testValue2")
-                .startSpan();
-        Span spanB =
-            tracer
-                .spanBuilder("svcB")
-                .setAttribute("one", "1")
-                .setAttribute("testKey", "testValue")
-                .setAttribute("testKey2", "testValue2")
-                .startSpan();
-        Span spanC =
-            tracer
-                .spanBuilder("serviceC")
-                .setAttribute("two", 2L)
-                .setAttribute("testKey", "testValue")
-                .setAttribute("testKey2", "testValue2")
-                .startSpan();
-        Span spanD =
-            tracer
-                .spanBuilder("serviceD")
-                .setAttribute("one", "1")
-                .setAttribute("two", 2L)
-                .setAttribute("testKey", "testValue")
-                .setAttribute("testKey2", "testValue2")
-                .startSpan();
+    try (SpanExporter exampleExporter =
+        new SpanExporterWithAttributeProcessor(config, mockSpanExporter)) {
+      Span spanA =
+          tracer
+              .spanBuilder("svcA")
+              .setAttribute("one", "1")
+              .setAttribute("two", 2L)
+              .setAttribute("testKey", "testValue")
+              .setAttribute("testKey2", "testValue2")
+              .startSpan();
+      Span spanB =
+          tracer
+              .spanBuilder("svcB")
+              .setAttribute("one", "1")
+              .setAttribute("testKey", "testValue")
+              .setAttribute("testKey2", "testValue2")
+              .startSpan();
+      Span spanC =
+          tracer
+              .spanBuilder("serviceC")
+              .setAttribute("two", 2L)
+              .setAttribute("testKey", "testValue")
+              .setAttribute("testKey2", "testValue2")
+              .startSpan();
+      Span spanD =
+          tracer
+              .spanBuilder("serviceD")
+              .setAttribute("one", "1")
+              .setAttribute("two", 2L)
+              .setAttribute("testKey", "testValue")
+              .setAttribute("testKey2", "testValue2")
+              .startSpan();
 
-        List<SpanData> spans = new ArrayList<>();
-        spans.add(((ReadableSpan) spanA).toSpanData());
-        spans.add(((ReadableSpan) spanB).toSpanData());
-        spans.add(((ReadableSpan) spanC).toSpanData());
-        spans.add(((ReadableSpan) spanD).toSpanData());
+      List<SpanData> spans = new ArrayList<>();
+      spans.add(((ReadableSpan) spanA).toSpanData());
+      spans.add(((ReadableSpan) spanB).toSpanData());
+      spans.add(((ReadableSpan) spanC).toSpanData());
+      spans.add(((ReadableSpan) spanD).toSpanData());
 
-        exampleExporter.export(spans);
+      exampleExporter.export(spans);
     }
 
     // verify that resulting spans are filtered in the way we want
@@ -1107,45 +1124,46 @@ class SpanExporterWithAttributeProcessorTest {
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
-    try (SpanExporter exampleExporter = new SpanExporterWithAttributeProcessor(config, mockSpanExporter)) {
-        Span spanA =
-            tracer
-                .spanBuilder("svcA")
-                .setAttribute("one", "1")
-                .setAttribute("two", 2L)
-                .setAttribute("testKey", "testValue")
-                .setAttribute("testKey2", "testValue2")
-                .startSpan();
-        Span spanB =
-            tracer
-                .spanBuilder("svcB")
-                .setAttribute("one", "1")
-                .setAttribute("testKey", "testValue")
-                .setAttribute("testKey3", "testValue3")
-                .startSpan();
-        Span spanC =
-            tracer
-                .spanBuilder("svcC")
-                .setAttribute("two", 2L)
-                .setAttribute("testKey", "testValue")
-                .setAttribute("testKey2", "testValue2")
-                .startSpan();
-        Span spanD =
-            tracer
-                .spanBuilder("svcD")
-                .setAttribute("one", "1")
-                .setAttribute("two", 2L)
-                .setAttribute("testKey", "testValue")
-                .setAttribute("testKey2", "testValue2")
-                .startSpan();
+    try (SpanExporter exampleExporter =
+        new SpanExporterWithAttributeProcessor(config, mockSpanExporter)) {
+      Span spanA =
+          tracer
+              .spanBuilder("svcA")
+              .setAttribute("one", "1")
+              .setAttribute("two", 2L)
+              .setAttribute("testKey", "testValue")
+              .setAttribute("testKey2", "testValue2")
+              .startSpan();
+      Span spanB =
+          tracer
+              .spanBuilder("svcB")
+              .setAttribute("one", "1")
+              .setAttribute("testKey", "testValue")
+              .setAttribute("testKey3", "testValue3")
+              .startSpan();
+      Span spanC =
+          tracer
+              .spanBuilder("svcC")
+              .setAttribute("two", 2L)
+              .setAttribute("testKey", "testValue")
+              .setAttribute("testKey2", "testValue2")
+              .startSpan();
+      Span spanD =
+          tracer
+              .spanBuilder("svcD")
+              .setAttribute("one", "1")
+              .setAttribute("two", 2L)
+              .setAttribute("testKey", "testValue")
+              .setAttribute("testKey2", "testValue2")
+              .startSpan();
 
-        List<SpanData> spans = new ArrayList<>();
-        spans.add(((ReadableSpan) spanA).toSpanData());
-        spans.add(((ReadableSpan) spanB).toSpanData());
-        spans.add(((ReadableSpan) spanC).toSpanData());
-        spans.add(((ReadableSpan) spanD).toSpanData());
+      List<SpanData> spans = new ArrayList<>();
+      spans.add(((ReadableSpan) spanA).toSpanData());
+      spans.add(((ReadableSpan) spanB).toSpanData());
+      spans.add(((ReadableSpan) spanC).toSpanData());
+      spans.add(((ReadableSpan) spanD).toSpanData());
 
-        exampleExporter.export(spans);
+      exampleExporter.export(spans);
     }
 
     // verify that resulting spans are filtered in the way we want
@@ -1186,45 +1204,46 @@ class SpanExporterWithAttributeProcessorTest {
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
-    try (SpanExporter exampleExporter = new SpanExporterWithAttributeProcessor(config, mockSpanExporter)) {
-        Span spanA =
-            tracer
-                .spanBuilder("svcA")
-                .setAttribute("one", "1")
-                .setAttribute("two", 2L)
-                .setAttribute("testKey", "testValue")
-                .setAttribute("testKey2", "testValue2")
-                .startSpan();
-        Span spanB =
-            tracer
-                .spanBuilder("svcB")
-                .setAttribute("one", "1")
-                .setAttribute("testKey", "testValue")
-                .setAttribute("testKey3", "testValue2")
-                .startSpan();
-        Span spanC =
-            tracer
-                .spanBuilder("svcC")
-                .setAttribute("two", 2L)
-                .setAttribute("testKey", "testValue")
-                .setAttribute("testKey2", "testValue2")
-                .startSpan();
-        Span spanD =
-            tracer
-                .spanBuilder("svcD")
-                .setAttribute("one", "1")
-                .setAttribute("two", 2L)
-                .setAttribute("testKey", "testValue")
-                .setAttribute("testKey2", "testValue2")
-                .startSpan();
+    try (SpanExporter exampleExporter =
+        new SpanExporterWithAttributeProcessor(config, mockSpanExporter)) {
+      Span spanA =
+          tracer
+              .spanBuilder("svcA")
+              .setAttribute("one", "1")
+              .setAttribute("two", 2L)
+              .setAttribute("testKey", "testValue")
+              .setAttribute("testKey2", "testValue2")
+              .startSpan();
+      Span spanB =
+          tracer
+              .spanBuilder("svcB")
+              .setAttribute("one", "1")
+              .setAttribute("testKey", "testValue")
+              .setAttribute("testKey3", "testValue2")
+              .startSpan();
+      Span spanC =
+          tracer
+              .spanBuilder("svcC")
+              .setAttribute("two", 2L)
+              .setAttribute("testKey", "testValue")
+              .setAttribute("testKey2", "testValue2")
+              .startSpan();
+      Span spanD =
+          tracer
+              .spanBuilder("svcD")
+              .setAttribute("one", "1")
+              .setAttribute("two", 2L)
+              .setAttribute("testKey", "testValue")
+              .setAttribute("testKey2", "testValue2")
+              .startSpan();
 
-        List<SpanData> spans = new ArrayList<>();
-        spans.add(((ReadableSpan) spanA).toSpanData());
-        spans.add(((ReadableSpan) spanB).toSpanData());
-        spans.add(((ReadableSpan) spanC).toSpanData());
-        spans.add(((ReadableSpan) spanD).toSpanData());
+      List<SpanData> spans = new ArrayList<>();
+      spans.add(((ReadableSpan) spanA).toSpanData());
+      spans.add(((ReadableSpan) spanB).toSpanData());
+      spans.add(((ReadableSpan) spanC).toSpanData());
+      spans.add(((ReadableSpan) spanD).toSpanData());
 
-        exampleExporter.export(spans);
+      exampleExporter.export(spans);
     }
 
     // verify that resulting spans are filtered in the way we want
@@ -1262,45 +1281,46 @@ class SpanExporterWithAttributeProcessorTest {
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
-    try (SpanExporter exampleExporter = new SpanExporterWithAttributeProcessor(config, mockSpanExporter)) {
-        Span spanA =
-            tracer
-                .spanBuilder("svcA")
-                .setAttribute("one", "1")
-                .setAttribute("two", 2L)
-                .setAttribute("testKey", "testValue")
-                .setAttribute("testKey2", "testValue2")
-                .startSpan();
-        Span spanB =
-            tracer
-                .spanBuilder("svcB")
-                .setAttribute("one", "1")
-                .setAttribute("testKey", "testValue1")
-                .setAttribute("testKey2", "testValue2")
-                .startSpan();
-        Span spanC =
-            tracer
-                .spanBuilder("svcC")
-                .setAttribute("two", 2L)
-                .setAttribute("testKey", "testValue")
-                .setAttribute("testKey2", "testValue2")
-                .startSpan();
-        Span spanD =
-            tracer
-                .spanBuilder("svcD")
-                .setAttribute("one", "1")
-                .setAttribute("two", 2L)
-                .setAttribute("testKey", "testValue")
-                .setAttribute("testKey2", "testValue2")
-                .startSpan();
+    try (SpanExporter exampleExporter =
+        new SpanExporterWithAttributeProcessor(config, mockSpanExporter)) {
+      Span spanA =
+          tracer
+              .spanBuilder("svcA")
+              .setAttribute("one", "1")
+              .setAttribute("two", 2L)
+              .setAttribute("testKey", "testValue")
+              .setAttribute("testKey2", "testValue2")
+              .startSpan();
+      Span spanB =
+          tracer
+              .spanBuilder("svcB")
+              .setAttribute("one", "1")
+              .setAttribute("testKey", "testValue1")
+              .setAttribute("testKey2", "testValue2")
+              .startSpan();
+      Span spanC =
+          tracer
+              .spanBuilder("svcC")
+              .setAttribute("two", 2L)
+              .setAttribute("testKey", "testValue")
+              .setAttribute("testKey2", "testValue2")
+              .startSpan();
+      Span spanD =
+          tracer
+              .spanBuilder("svcD")
+              .setAttribute("one", "1")
+              .setAttribute("two", 2L)
+              .setAttribute("testKey", "testValue")
+              .setAttribute("testKey2", "testValue2")
+              .startSpan();
 
-        List<SpanData> spans = new ArrayList<>();
-        spans.add(((ReadableSpan) spanA).toSpanData());
-        spans.add(((ReadableSpan) spanB).toSpanData());
-        spans.add(((ReadableSpan) spanC).toSpanData());
-        spans.add(((ReadableSpan) spanD).toSpanData());
+      List<SpanData> spans = new ArrayList<>();
+      spans.add(((ReadableSpan) spanA).toSpanData());
+      spans.add(((ReadableSpan) spanB).toSpanData());
+      spans.add(((ReadableSpan) spanC).toSpanData());
+      spans.add(((ReadableSpan) spanD).toSpanData());
 
-        exampleExporter.export(spans);
+      exampleExporter.export(spans);
     }
 
     // verify that resulting spans are filtered in the way we want
@@ -1332,22 +1352,23 @@ class SpanExporterWithAttributeProcessorTest {
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
-    try (SpanExporter exampleExporter = new SpanExporterWithAttributeProcessor(config, mockSpanExporter)) {
-        Span span =
-            tracer
-                .spanBuilder("my span")
-                .setAttribute("one", "1")
-                .setAttribute("two", 2L)
-                .setAttribute(
-                    "testKey", "http://example.com/path?queryParam1=value1,queryParam2=value2")
-                .setAttribute("TESTKEY", "testValue2")
-                .startSpan();
+    try (SpanExporter exampleExporter =
+        new SpanExporterWithAttributeProcessor(config, mockSpanExporter)) {
+      Span span =
+          tracer
+              .spanBuilder("my span")
+              .setAttribute("one", "1")
+              .setAttribute("two", 2L)
+              .setAttribute(
+                  "testKey", "http://example.com/path?queryParam1=value1,queryParam2=value2")
+              .setAttribute("TESTKEY", "testValue2")
+              .startSpan();
 
-        SpanData spanData = ((ReadableSpan) span).toSpanData();
+      SpanData spanData = ((ReadableSpan) span).toSpanData();
 
-        List<SpanData> spans = new ArrayList<>();
-        spans.add(spanData);
-        exampleExporter.export(spans);
+      List<SpanData> spans = new ArrayList<>();
+      spans.add(spanData);
+      exampleExporter.export(spans);
     }
 
     // verify that resulting spans are filtered in the way we want
@@ -1379,22 +1400,23 @@ class SpanExporterWithAttributeProcessorTest {
     List<ProcessorAction> actions = new ArrayList<>();
     actions.add(action);
     config.actions = actions;
-    try (SpanExporter exampleExporter = new SpanExporterWithAttributeProcessor(config, mockSpanExporter)) {
-        Span span =
-            tracer
-                .spanBuilder("my span")
-                .setAttribute("one", "1")
-                .setAttribute("two", 2L)
-                .setAttribute(
-                    "testKey", "http://example.com/path?queryParam1=value1,queryParam2=value2")
-                .setAttribute("httpPath", "oldPath")
-                .startSpan();
+    try (SpanExporter exampleExporter =
+        new SpanExporterWithAttributeProcessor(config, mockSpanExporter)) {
+      Span span =
+          tracer
+              .spanBuilder("my span")
+              .setAttribute("one", "1")
+              .setAttribute("two", 2L)
+              .setAttribute(
+                  "testKey", "http://example.com/path?queryParam1=value1,queryParam2=value2")
+              .setAttribute("httpPath", "oldPath")
+              .startSpan();
 
-        SpanData spanData = ((ReadableSpan) span).toSpanData();
+      SpanData spanData = ((ReadableSpan) span).toSpanData();
 
-        List<SpanData> spans = new ArrayList<>();
-        spans.add(spanData);
-        exampleExporter.export(spans);
+      List<SpanData> spans = new ArrayList<>();
+      spans.add(spanData);
+      exampleExporter.export(spans);
     }
 
     // verify that resulting spans are filtered in the way we want
@@ -1457,25 +1479,26 @@ class SpanExporterWithAttributeProcessorTest {
     actions.add(action4);
     actions.add(action5);
     config.actions = actions;
-    try (SpanExporter exampleExporter = new SpanExporterWithAttributeProcessor(config, mockSpanExporter)) {
-        Span span =
-            tracer
-                .spanBuilder("my span")
-                .setAttribute("one", "1")
-                .setAttribute("two", 2L)
-                .setAttribute("testKey", "http://example.com/cardid/1234562222227899")
-                .setAttribute("testKey2", "http://example.com/cardid/1234562222227899")
-                .setAttribute("testKey3", "http://example.com/cardid/1234562222227899")
-                .setAttribute("TESTKEY2", "testValue2")
-                .setAttribute("testKey4", "/TelemetryProcessors/test")
-                .setAttribute("testKey5", "/abc/xyz")
-                .startSpan();
+    try (SpanExporter exampleExporter =
+        new SpanExporterWithAttributeProcessor(config, mockSpanExporter)) {
+      Span span =
+          tracer
+              .spanBuilder("my span")
+              .setAttribute("one", "1")
+              .setAttribute("two", 2L)
+              .setAttribute("testKey", "http://example.com/cardid/1234562222227899")
+              .setAttribute("testKey2", "http://example.com/cardid/1234562222227899")
+              .setAttribute("testKey3", "http://example.com/cardid/1234562222227899")
+              .setAttribute("TESTKEY2", "testValue2")
+              .setAttribute("testKey4", "/TelemetryProcessors/test")
+              .setAttribute("testKey5", "/abc/xyz")
+              .startSpan();
 
-        SpanData spanData = ((ReadableSpan) span).toSpanData();
+      SpanData spanData = ((ReadableSpan) span).toSpanData();
 
-        List<SpanData> spans = new ArrayList<>();
-        spans.add(spanData);
-        exampleExporter.export(spans);
+      List<SpanData> spans = new ArrayList<>();
+      spans.add(spanData);
+      exampleExporter.export(spans);
     }
 
     // verify that resulting spans are filtered in the way we want

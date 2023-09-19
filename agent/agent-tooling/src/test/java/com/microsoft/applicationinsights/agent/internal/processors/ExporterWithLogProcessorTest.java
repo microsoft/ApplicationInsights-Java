@@ -76,11 +76,11 @@ class ExporterWithLogProcessorTest {
     config.body = new NameConfig();
     config.body.fromAttributes = Arrays.asList("db.svc", "operation", "id");
     try (LogRecordExporter logExporter = new ExporterWithLogProcessor(config, mockExporter)) {
-        TestLogRecordData mockLog =
-            TestLogRecordData.builder().setBody("logA").setAttributes(attributes).build();
-        List<LogRecordData> logs = new ArrayList<>();
-        logs.add(mockLog);
-        logExporter.export(logs);
+      TestLogRecordData mockLog =
+          TestLogRecordData.builder().setBody("logA").setAttributes(attributes).build();
+      List<LogRecordData> logs = new ArrayList<>();
+      logs.add(mockLog);
+      logExporter.export(logs);
     }
     // verify that resulting logs are filtered in the way we want
     List<LogRecordData> result = mockExporter.getLogs();
@@ -95,11 +95,11 @@ class ExporterWithLogProcessorTest {
     config.body.fromAttributes = Arrays.asList("db.svc", "operation", "id");
     config.body.separator = "::";
     try (LogRecordExporter logExporter = new ExporterWithLogProcessor(config, mockExporter)) {
-        TestLogRecordData mockLog =
-            TestLogRecordData.builder().setBody("svcA").setAttributes(attributes).build();
-        List<LogRecordData> logs = new ArrayList<>();
-        logs.add(mockLog);
-        logExporter.export(logs);
+      TestLogRecordData mockLog =
+          TestLogRecordData.builder().setBody("svcA").setAttributes(attributes).build();
+      List<LogRecordData> logs = new ArrayList<>();
+      logs.add(mockLog);
+      logExporter.export(logs);
     }
     // verify that resulting logs are filtered in the way we want
     List<LogRecordData> result = mockExporter.getLogs();
@@ -114,11 +114,11 @@ class ExporterWithLogProcessorTest {
     config.body.fromAttributes = Arrays.asList("db.svc", "operation", "id");
     config.body.separator = "::";
     try (LogRecordExporter logExporter = new ExporterWithLogProcessor(config, mockExporter)) {
-        TestLogRecordData mockLog =
-            TestLogRecordData.builder().setBody("svcA").setAttributes(attributes).build();
-        List<LogRecordData> logs = new ArrayList<>();
-        logs.add(mockLog);
-        logExporter.export(logs);
+      TestLogRecordData mockLog =
+          TestLogRecordData.builder().setBody("svcA").setAttributes(attributes).build();
+      List<LogRecordData> logs = new ArrayList<>();
+      logs.add(mockLog);
+      logExporter.export(logs);
     }
 
     // verify that resulting logs are filtered in the way we want
@@ -149,14 +149,14 @@ class ExporterWithLogProcessorTest {
     toAttributeConfig.rules.add("^/api/v1/document/(?<documentId>.*)/update$");
     config.body.toAttributes = toAttributeConfig;
     try (LogRecordExporter logExporter = new ExporterWithLogProcessor(config, mockExporter)) {
-        TestLogRecordData mockLog =
-            TestLogRecordData.builder()
-                .setBody("/api/v1/document/12345678/update")
-                .setAttributes(attributes)
-                .build();
-        List<LogRecordData> logs = new ArrayList<>();
-        logs.add(mockLog);
-        logExporter.export(logs);
+      TestLogRecordData mockLog =
+          TestLogRecordData.builder()
+              .setBody("/api/v1/document/12345678/update")
+              .setAttributes(attributes)
+              .build();
+      List<LogRecordData> logs = new ArrayList<>();
+      logs.add(mockLog);
+      logExporter.export(logs);
     }
     // verify that resulting logs are filtered in the way we want
     List<LogRecordData> result = mockExporter.getLogs();
@@ -182,31 +182,31 @@ class ExporterWithLogProcessorTest {
     toAttributeConfig.rules.add("Pass=(?<password2>[^ ]+)");
     config.body.toAttributes = toAttributeConfig;
     try (LogRecordExporter logExporter = new ExporterWithLogProcessor(config, mockExporter)) {
-        TestLogRecordData mockLogA =
-            TestLogRecordData.builder()
-                .setBody("yyyPassword=123 aba Pass=555 xyx Pass=777 zzz")
-                .setAttributes(attributes)
-                .build();
+      TestLogRecordData mockLogA =
+          TestLogRecordData.builder()
+              .setBody("yyyPassword=123 aba Pass=555 xyx Pass=777 zzz")
+              .setAttributes(attributes)
+              .build();
 
-        Attributes attributesB =
-            Attributes.builder()
-                .put("one", "1")
-                .put("two", 2L)
-                .put("db.svc", "location")
-                .put("operation", "get")
-                .put("id", "1234")
-                .put("password", "234")
-                .build();
-        TestLogRecordData mockLogB =
-            TestLogRecordData.builder()
-                .setBody("yyyPassword=**** aba")
-                .setAttributes(attributesB)
-                .build();
+      Attributes attributesB =
+          Attributes.builder()
+              .put("one", "1")
+              .put("two", 2L)
+              .put("db.svc", "location")
+              .put("operation", "get")
+              .put("id", "1234")
+              .put("password", "234")
+              .build();
+      TestLogRecordData mockLogB =
+          TestLogRecordData.builder()
+              .setBody("yyyPassword=**** aba")
+              .setAttributes(attributesB)
+              .build();
 
-        List<LogRecordData> logs = new ArrayList<>();
-        logs.add(mockLogA);
-        logs.add(mockLogB);
-        logExporter.export(logs);
+      List<LogRecordData> logs = new ArrayList<>();
+      logs.add(mockLogA);
+      logs.add(mockLogB);
+      logExporter.export(logs);
     }
     // verify that resulting logs are filtered in the way we want
     List<LogRecordData> result = mockExporter.getLogs();
@@ -250,15 +250,15 @@ class ExporterWithLogProcessorTest {
     toAttributeConfig.rules.add("Password=(?<x>[^ ]+)");
     config.body.toAttributes = toAttributeConfig;
     try (LogRecordExporter logExporter = new ExporterWithLogProcessor(config, mockExporter)) {
-        TestLogRecordData mockLogA =
-            TestLogRecordData.builder()
-                .setBody("yyyPassword=123 aba Password=555 xyx")
-                .setAttributes(attributes)
-                .build();
+      TestLogRecordData mockLogA =
+          TestLogRecordData.builder()
+              .setBody("yyyPassword=123 aba Password=555 xyx")
+              .setAttributes(attributes)
+              .build();
 
-        List<LogRecordData> logs = new ArrayList<>();
-        logs.add(mockLogA);
-        logExporter.export(logs);
+      List<LogRecordData> logs = new ArrayList<>();
+      logs.add(mockLogA);
+      logExporter.export(logs);
     }
     // verify that resulting logs are filtered in the way we want
     List<LogRecordData> result = mockExporter.getLogs();
@@ -273,20 +273,20 @@ class ExporterWithLogProcessorTest {
     config.body = new NameConfig();
     config.body.fromAttributes = Arrays.asList("db.svc", "operation", "id");
     try (LogRecordExporter logExporter = new ExporterWithLogProcessor(config, mockExporter)) {
-        Attributes newAttributes =
-            Attributes.builder()
-                .put("one", "1")
-                .put("two", 2L)
-                .put("db.svc", "location")
-                .put("operation", "get")
-                .put("id", "1234")
-                .build();
-        TestLogRecordData mockLog =
-            TestLogRecordData.builder().setBody("svcA").setAttributes(newAttributes).build();
+      Attributes newAttributes =
+          Attributes.builder()
+              .put("one", "1")
+              .put("two", 2L)
+              .put("db.svc", "location")
+              .put("operation", "get")
+              .put("id", "1234")
+              .build();
+      TestLogRecordData mockLog =
+          TestLogRecordData.builder().setBody("svcA").setAttributes(newAttributes).build();
 
-        List<LogRecordData> logs = new ArrayList<>();
-        logs.add(mockLog);
-        logExporter.export(logs);
+      List<LogRecordData> logs = new ArrayList<>();
+      logs.add(mockLog);
+      logExporter.export(logs);
     }
 
     // verify that resulting logs are not modified

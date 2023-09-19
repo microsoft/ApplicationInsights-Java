@@ -75,21 +75,21 @@ class ExporterWithSpanProcessorTest {
     config.name = new NameConfig();
     config.name.fromAttributes = Arrays.asList("db.svc", "operation", "id");
     try (SpanExporter exampleExporter = new ExporterWithSpanProcessor(config, mockSpanExporter)) {
-        Span span =
-            tracer
-                .spanBuilder("svcA")
-                .setAttribute("one", "1")
-                .setAttribute("two", 2L)
-                .setAttribute("db.svc", "location")
-                .setAttribute("operation", "get")
-                .setAttribute("id", "1234")
-                .startSpan();
+      Span span =
+          tracer
+              .spanBuilder("svcA")
+              .setAttribute("one", "1")
+              .setAttribute("two", 2L)
+              .setAttribute("db.svc", "location")
+              .setAttribute("operation", "get")
+              .setAttribute("id", "1234")
+              .startSpan();
 
-        SpanData spanData = ((ReadableSpan) span).toSpanData();
+      SpanData spanData = ((ReadableSpan) span).toSpanData();
 
-        List<SpanData> spans = new ArrayList<>();
-        spans.add(spanData);
-        exampleExporter.export(spans);
+      List<SpanData> spans = new ArrayList<>();
+      spans.add(spanData);
+      exampleExporter.export(spans);
     }
 
     // verify that resulting spans are filtered in the way we want
@@ -108,21 +108,21 @@ class ExporterWithSpanProcessorTest {
     config.name.fromAttributes = Arrays.asList("db.svc", "operation", "id");
     config.name.separator = "::";
     try (SpanExporter exampleExporter = new ExporterWithSpanProcessor(config, mockSpanExporter)) {
-        Span span =
-            tracer
-                .spanBuilder("svcA")
-                .setAttribute("one", "1")
-                .setAttribute("two", 2L)
-                .setAttribute("db.svc", "location")
-                .setAttribute("operation", "get")
-                .setAttribute("id", "1234")
-                .startSpan();
+      Span span =
+          tracer
+              .spanBuilder("svcA")
+              .setAttribute("one", "1")
+              .setAttribute("two", 2L)
+              .setAttribute("db.svc", "location")
+              .setAttribute("operation", "get")
+              .setAttribute("id", "1234")
+              .startSpan();
 
-        SpanData spanData = ((ReadableSpan) span).toSpanData();
+      SpanData spanData = ((ReadableSpan) span).toSpanData();
 
-        List<SpanData> spans = new ArrayList<>();
-        spans.add(spanData);
-        exampleExporter.export(spans);
+      List<SpanData> spans = new ArrayList<>();
+      spans.add(spanData);
+      exampleExporter.export(spans);
     }
 
     // verify that resulting spans are filtered in the way we want
@@ -141,20 +141,20 @@ class ExporterWithSpanProcessorTest {
     config.name.fromAttributes = Arrays.asList("db.svc", "operation", "id");
     config.name.separator = "::";
     try (SpanExporter exampleExporter = new ExporterWithSpanProcessor(config, mockSpanExporter)) {
-        Span span =
-            tracer
-                .spanBuilder("svcA")
-                .setAttribute("one", "1")
-                .setAttribute("two", 2L)
-                .setAttribute("db.svc", "location")
-                .setAttribute("operation", "get")
-                .startSpan();
+      Span span =
+          tracer
+              .spanBuilder("svcA")
+              .setAttribute("one", "1")
+              .setAttribute("two", 2L)
+              .setAttribute("db.svc", "location")
+              .setAttribute("operation", "get")
+              .startSpan();
 
-        SpanData spanData = ((ReadableSpan) span).toSpanData();
+      SpanData spanData = ((ReadableSpan) span).toSpanData();
 
-        List<SpanData> spans = new ArrayList<>();
-        spans.add(spanData);
-        exampleExporter.export(spans);
+      List<SpanData> spans = new ArrayList<>();
+      spans.add(spanData);
+      exampleExporter.export(spans);
     }
 
     // verify that resulting spans are filtered in the way we want
@@ -175,52 +175,52 @@ class ExporterWithSpanProcessorTest {
     config.include.matchType = MatchType.STRICT;
     config.include.spanNames = Arrays.asList("svcA", "svcB");
     try (SpanExporter exampleExporter = new ExporterWithSpanProcessor(config, mockSpanExporter)) {
-        Span spanA =
-            tracer
-                .spanBuilder("svcA")
-                .setAttribute("one", "1")
-                .setAttribute("two", 2L)
-                .setAttribute("db.svc", "location")
-                .setAttribute("operation", "get")
-                .setAttribute("id", "1234")
-                .startSpan();
+      Span spanA =
+          tracer
+              .spanBuilder("svcA")
+              .setAttribute("one", "1")
+              .setAttribute("two", 2L)
+              .setAttribute("db.svc", "location")
+              .setAttribute("operation", "get")
+              .setAttribute("id", "1234")
+              .startSpan();
 
-        Span spanB =
-            tracer
-                .spanBuilder("svcB")
-                .setAttribute("one", "1")
-                .setAttribute("testKey", "testValue")
-                .setAttribute("testKey2", "testValue2")
-                .setAttribute("db.svc", "location")
-                .setAttribute("operation", "get")
-                .setAttribute("id", "1234")
-                .startSpan();
-        Span spanC =
-            tracer
-                .spanBuilder("svcC")
-                .setAttribute("two", 2L)
-                .setAttribute("testKey", "testValue")
-                .setAttribute("testKey2", "testValue2")
-                .setAttribute("db.svc", "location")
-                .setAttribute("operation", "get")
-                .setAttribute("id", "1234")
-                .startSpan();
-        Span spanD =
-            tracer
-                .spanBuilder("svcD")
-                .setAttribute("one", "1")
-                .setAttribute("two", 2L)
-                .setAttribute("testKey", "testValue")
-                .setAttribute("testKey2", "testValue2")
-                .startSpan();
+      Span spanB =
+          tracer
+              .spanBuilder("svcB")
+              .setAttribute("one", "1")
+              .setAttribute("testKey", "testValue")
+              .setAttribute("testKey2", "testValue2")
+              .setAttribute("db.svc", "location")
+              .setAttribute("operation", "get")
+              .setAttribute("id", "1234")
+              .startSpan();
+      Span spanC =
+          tracer
+              .spanBuilder("svcC")
+              .setAttribute("two", 2L)
+              .setAttribute("testKey", "testValue")
+              .setAttribute("testKey2", "testValue2")
+              .setAttribute("db.svc", "location")
+              .setAttribute("operation", "get")
+              .setAttribute("id", "1234")
+              .startSpan();
+      Span spanD =
+          tracer
+              .spanBuilder("svcD")
+              .setAttribute("one", "1")
+              .setAttribute("two", 2L)
+              .setAttribute("testKey", "testValue")
+              .setAttribute("testKey2", "testValue2")
+              .startSpan();
 
-        List<SpanData> spans = new ArrayList<>();
-        spans.add(((ReadableSpan) spanA).toSpanData());
-        spans.add(((ReadableSpan) spanB).toSpanData());
-        spans.add(((ReadableSpan) spanC).toSpanData());
-        spans.add(((ReadableSpan) spanD).toSpanData());
+      List<SpanData> spans = new ArrayList<>();
+      spans.add(((ReadableSpan) spanA).toSpanData());
+      spans.add(((ReadableSpan) spanB).toSpanData());
+      spans.add(((ReadableSpan) spanC).toSpanData());
+      spans.add(((ReadableSpan) spanD).toSpanData());
 
-        exampleExporter.export(spans);
+      exampleExporter.export(spans);
     }
 
     // verify that resulting spans are filtered in the way we want
@@ -263,21 +263,21 @@ class ExporterWithSpanProcessorTest {
     toAttributeConfig.rules.add("^/api/v1/document/(?<documentId>.*)/update$");
     config.name.toAttributes = toAttributeConfig;
     try (SpanExporter exampleExporter = new ExporterWithSpanProcessor(config, mockSpanExporter)) {
-        Span span =
-            tracer
-                .spanBuilder("/api/v1/document/12345678/update")
-                .setAttribute("one", "1")
-                .setAttribute("two", 2L)
-                .setAttribute("db.svc", "location")
-                .setAttribute("operation", "get")
-                .setAttribute("id", "1234")
-                .startSpan();
+      Span span =
+          tracer
+              .spanBuilder("/api/v1/document/12345678/update")
+              .setAttribute("one", "1")
+              .setAttribute("two", 2L)
+              .setAttribute("db.svc", "location")
+              .setAttribute("operation", "get")
+              .setAttribute("id", "1234")
+              .startSpan();
 
-        SpanData spanData = ((ReadableSpan) span).toSpanData();
+      SpanData spanData = ((ReadableSpan) span).toSpanData();
 
-        List<SpanData> spans = new ArrayList<>();
-        spans.add(spanData);
-        exampleExporter.export(spans);
+      List<SpanData> spans = new ArrayList<>();
+      spans.add(spanData);
+      exampleExporter.export(spans);
     }
 
     // verify that resulting spans are filtered in the way we want
@@ -307,33 +307,33 @@ class ExporterWithSpanProcessorTest {
     toAttributeConfig.rules.add("Pass=(?<password2>[^ ]+)");
     config.name.toAttributes = toAttributeConfig;
     try (SpanExporter exampleExporter = new ExporterWithSpanProcessor(config, mockSpanExporter)) {
-        Span spanA =
-            tracer
-                .spanBuilder("yyyPassword=123 aba Pass=555 xyx Pass=777 zzz")
-                .setAttribute("one", "1")
-                .setAttribute("two", 2L)
-                .setAttribute("db.svc", "location")
-                .setAttribute("operation", "get")
-                .setAttribute("id", "1234")
-                .startSpan();
-        Span spanB =
-            tracer
-                .spanBuilder("yyyPassword=**** aba")
-                .setAttribute("one", "1")
-                .setAttribute("two", 2L)
-                .setAttribute("db.svc", "location")
-                .setAttribute("operation", "get")
-                .setAttribute("id", "1234")
-                .setAttribute("password", "234")
-                .startSpan();
+      Span spanA =
+          tracer
+              .spanBuilder("yyyPassword=123 aba Pass=555 xyx Pass=777 zzz")
+              .setAttribute("one", "1")
+              .setAttribute("two", 2L)
+              .setAttribute("db.svc", "location")
+              .setAttribute("operation", "get")
+              .setAttribute("id", "1234")
+              .startSpan();
+      Span spanB =
+          tracer
+              .spanBuilder("yyyPassword=**** aba")
+              .setAttribute("one", "1")
+              .setAttribute("two", 2L)
+              .setAttribute("db.svc", "location")
+              .setAttribute("operation", "get")
+              .setAttribute("id", "1234")
+              .setAttribute("password", "234")
+              .startSpan();
 
-        SpanData spanDataA = ((ReadableSpan) spanA).toSpanData();
-        SpanData spanDataB = ((ReadableSpan) spanB).toSpanData();
+      SpanData spanDataA = ((ReadableSpan) spanA).toSpanData();
+      SpanData spanDataB = ((ReadableSpan) spanB).toSpanData();
 
-        List<SpanData> spans = new ArrayList<>();
-        spans.add(spanDataA);
-        spans.add(spanDataB);
-        exampleExporter.export(spans);
+      List<SpanData> spans = new ArrayList<>();
+      spans.add(spanDataA);
+      spans.add(spanDataB);
+      exampleExporter.export(spans);
     }
 
     // verify that resulting spans are filtered in the way we want
@@ -385,52 +385,52 @@ class ExporterWithSpanProcessorTest {
     config.name.toAttributes = new ToAttributeConfig();
     config.name.toAttributes.rules = Arrays.asList("(?<operationwebsite>.*?)/.*$");
     try (SpanExporter exampleExporter = new ExporterWithSpanProcessor(config, mockSpanExporter)) {
-        Span spanA =
-            tracer
-                .spanBuilder("svcA/test")
-                .setAttribute("one", "1")
-                .setAttribute("two", 2L)
-                .setAttribute("db.svc", "location")
-                .setAttribute("operation", "get")
-                .setAttribute("id", "1234")
-                .startSpan();
+      Span spanA =
+          tracer
+              .spanBuilder("svcA/test")
+              .setAttribute("one", "1")
+              .setAttribute("two", 2L)
+              .setAttribute("db.svc", "location")
+              .setAttribute("operation", "get")
+              .setAttribute("id", "1234")
+              .startSpan();
 
-        Span spanB =
-            tracer
-                .spanBuilder("svcB/test")
-                .setAttribute("one", "1")
-                .setAttribute("testKey", "testValue")
-                .setAttribute("testKey2", "testValue2")
-                .setAttribute("db.svc", "location")
-                .setAttribute("operation", "get")
-                .setAttribute("id", "1234")
-                .startSpan();
-        Span spanC =
-            tracer
-                .spanBuilder("svcC")
-                .setAttribute("two", 2L)
-                .setAttribute("testKey", "testValue")
-                .setAttribute("testKey2", "testValue2")
-                .setAttribute("db.svc", "location")
-                .setAttribute("operation", "get")
-                .setAttribute("id", "1234")
-                .startSpan();
-        Span spanD =
-            tracer
-                .spanBuilder("donot/change")
-                .setAttribute("one", "1")
-                .setAttribute("two", 2L)
-                .setAttribute("testKey", "testValue")
-                .setAttribute("testKey2", "testValue2")
-                .startSpan();
+      Span spanB =
+          tracer
+              .spanBuilder("svcB/test")
+              .setAttribute("one", "1")
+              .setAttribute("testKey", "testValue")
+              .setAttribute("testKey2", "testValue2")
+              .setAttribute("db.svc", "location")
+              .setAttribute("operation", "get")
+              .setAttribute("id", "1234")
+              .startSpan();
+      Span spanC =
+          tracer
+              .spanBuilder("svcC")
+              .setAttribute("two", 2L)
+              .setAttribute("testKey", "testValue")
+              .setAttribute("testKey2", "testValue2")
+              .setAttribute("db.svc", "location")
+              .setAttribute("operation", "get")
+              .setAttribute("id", "1234")
+              .startSpan();
+      Span spanD =
+          tracer
+              .spanBuilder("donot/change")
+              .setAttribute("one", "1")
+              .setAttribute("two", 2L)
+              .setAttribute("testKey", "testValue")
+              .setAttribute("testKey2", "testValue2")
+              .startSpan();
 
-        List<SpanData> spans = new ArrayList<>();
-        spans.add(((ReadableSpan) spanA).toSpanData());
-        spans.add(((ReadableSpan) spanB).toSpanData());
-        spans.add(((ReadableSpan) spanC).toSpanData());
-        spans.add(((ReadableSpan) spanD).toSpanData());
+      List<SpanData> spans = new ArrayList<>();
+      spans.add(((ReadableSpan) spanA).toSpanData());
+      spans.add(((ReadableSpan) spanB).toSpanData());
+      spans.add(((ReadableSpan) spanC).toSpanData());
+      spans.add(((ReadableSpan) spanD).toSpanData());
 
-        exampleExporter.export(spans);
+      exampleExporter.export(spans);
     }
 
     // verify that resulting spans are filtered in the way we want
