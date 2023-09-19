@@ -1,5 +1,17 @@
 # CHANGELOG
 
+## Version 3.4.17 GA (09/18/2023)
+
+### Enhancements:
+
+* Update to OpenTelemetry Java 1.30 ([#3292](https://github.com/microsoft/ApplicationInsights-Java/pull/3292))
+* GA Azure Active Directory authentication ([#3284](https://github.com/microsoft/ApplicationInsights-Java/pull/3284))
+* Enable sampling overrides using thread.name ([#3285](https://github.com/microsoft/ApplicationInsights-Java/pull/3285))
+
+### Bug fixes:
+
+* Fix regression in 3.4.16 where default applicationinsights.json config location is not loaded in AppServices, Azure Functions, and AKS ([#3288](https://github.com/microsoft/ApplicationInsights-Java/pull/3288))
+
 ## Version 3.4.16 GA
 
 ### Enhancements:
