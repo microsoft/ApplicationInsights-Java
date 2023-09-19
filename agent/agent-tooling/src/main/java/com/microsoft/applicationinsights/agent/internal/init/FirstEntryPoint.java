@@ -167,7 +167,7 @@ public class FirstEntryPoint implements LoggingCustomizer {
           "Logging params cannot be controlled by an end user of the instrumented application")
   public void onStartupSuccess() {
     startupLogger.info(
-        "Application Insights Java Agent {} started successfully (PID {}, JVM running for {} s)",
+        "[duplicate-logging-detector-v2] Application Insights Java Agent {} started successfully (PID {}, JVM running for {} s)",
         agentVersion,
         new PidFinder().getValue(),
         findJvmUptimeInSeconds());
