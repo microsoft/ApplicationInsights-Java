@@ -98,8 +98,8 @@ public class Profiler {
    *     enabled.
    */
   public void initialize(
-      UploadService uploadService, ScheduledExecutorService scheduledExecutorService) throws IOException, InstanceNotFoundException, JfrStreamingException
-       {
+      UploadService uploadService, ScheduledExecutorService scheduledExecutorService)
+      throws IOException, InstanceNotFoundException, JfrStreamingException {
     this.uploadService = uploadService;
     this.scheduledExecutorService = scheduledExecutorService;
 
@@ -273,10 +273,10 @@ public class Profiler {
       Files.delete(recordingFile.toPath());
     }
 
-    if(!recordingFile.createNewFile()){
+    if (!recordingFile.createNewFile()) {
       logger.error("File creation failed");
     }
-    
+
     try (BufferedInputStream stream = new BufferedInputStream(recording.getStream(null, null));
         FileOutputStream fos = new FileOutputStream(recordingFile)) {
       int read;
@@ -290,16 +290,18 @@ public class Profiler {
   private void clearActiveRecording() {
     synchronized (activeRecordingLock) {
       activeRecording = null;
-      Optional.of(activeRecordingFile).ifPresent(result -> {
-        if(result.exists()) {
-           try {
-            Files.delete(result.toPath());
-          } catch (IOException e) {
-            logger.error("Failed to remove file {}" , result.getAbsolutePath());
-          }
-        }
-      });
-      
+      Optional.of(activeRecordingFile)
+          .ifPresent(
+              result -> {
+                if (result.exists()) {
+                  try {
+                    Files.delete(result.toPath());
+                  } catch (IOException e) {
+                    logger.error("Failed to remove file {}", result.getAbsolutePath());
+                  }
+                }
+              });
+
       activeRecordingFile = null;
     }
   }

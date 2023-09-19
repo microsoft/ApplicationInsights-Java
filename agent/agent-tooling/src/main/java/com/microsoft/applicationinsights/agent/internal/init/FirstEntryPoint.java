@@ -79,7 +79,7 @@ public class FirstEntryPoint implements LoggingCustomizer {
       if (DEBUG_SIGNED_JAR_ACCESS) {
         JarVerifierClassFileTransformer transformer = new JarVerifierClassFileTransformer();
         Instrumentation instrumentation = InstrumentationHolder.getInstrumentation();
-        if(instrumentation != null) {
+        if (instrumentation != null) {
           instrumentation.addTransformer(transformer, true);
           instrumentation.retransformClasses(Class.forName("java.util.jar.JarVerifier"));
           instrumentation.removeTransformer(transformer);
@@ -113,24 +113,24 @@ public class FirstEntryPoint implements LoggingCustomizer {
       checkTlsConnectionsToVirtualServersEnabled();
       if (startupLogger.isDebugEnabled()) {
         startupLogger.debug(
-            "Input arguments: {} " , ManagementFactory.getRuntimeMXBean().getInputArguments());
-        startupLogger.debug("_JAVA_OPTIONS: {}" , System.getenv("_JAVA_OPTIONS"));
-        startupLogger.debug("JAVA_TOOL_OPTIONS: {}" , System.getenv("JAVA_TOOL_OPTIONS"));
+            "Input arguments: {} ", ManagementFactory.getRuntimeMXBean().getInputArguments());
+        startupLogger.debug("_JAVA_OPTIONS: {}", System.getenv("_JAVA_OPTIONS"));
+        startupLogger.debug("JAVA_TOOL_OPTIONS: {}", System.getenv("JAVA_TOOL_OPTIONS"));
       }
 
       if (startupLogger.isTraceEnabled()) {
-        startupLogger.trace("OS: {}" , System.getProperty("os.name"));
-        startupLogger.trace("Classpath: {}" , System.getProperty("java.class.path"));
-        startupLogger.trace("Netty versions: {} " , NettyVersions.extract());
-        startupLogger.trace("Env: {}" , System.getenv());
-        startupLogger.trace("System properties: {} " , findSystemProperties());
+        startupLogger.trace("OS: {}", System.getProperty("os.name"));
+        startupLogger.trace("Classpath: {}", System.getProperty("java.class.path"));
+        startupLogger.trace("Netty versions: {} ", NettyVersions.extract());
+        startupLogger.trace("Env: {}", System.getenv());
+        startupLogger.trace("System properties: {} ", findSystemProperties());
       }
 
       if (startupLogger.isTraceEnabled()) {
         AppInsightsCertificate appInsightsCertificate = new AppInsightsCertificate(startupLogger);
         startupLogger.trace(
-            "Application Insights root certificate in the Java keystore: {}"
-                , appInsightsCertificate.isInJavaKeystore());
+            "Application Insights root certificate in the Java keystore: {}",
+            appInsightsCertificate.isInJavaKeystore());
       }
 
     } catch (Exception e) {

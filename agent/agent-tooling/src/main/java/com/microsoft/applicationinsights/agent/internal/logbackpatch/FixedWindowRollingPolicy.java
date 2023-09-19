@@ -150,7 +150,7 @@ public class FixedWindowRollingPolicy extends RollingPolicyBase {
         try {
           Files.delete(file.toPath());
         } catch (IOException e) {
-         addError("File deletaion failed.",e);
+          addError("File deletaion failed.", e);
         }
       }
 
