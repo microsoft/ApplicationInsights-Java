@@ -16,7 +16,8 @@ import net.bytebuddy.matcher.ElementMatcher;
 @AutoService(InstrumentationModule.class)
 public class MicrometerInstrumentationModule extends InstrumentationModule {
 
-  // this instrumentation name is important since it is used to disable micrometer instrumentation
+  // this instrumentation name is important since it is used when disabling micrometer
+  // instrumentation
   public MicrometerInstrumentationModule() {
     super("ai-micrometer");
   }
