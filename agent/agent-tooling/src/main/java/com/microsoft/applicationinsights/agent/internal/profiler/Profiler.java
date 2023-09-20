@@ -92,7 +92,6 @@ public class Profiler {
    * Call init before run.
    *
    * @throws IOException Trouble communicating with MBean server
-   * @throws JfrStreamingException
    * @throws InstanceNotFoundException The JVM does not support JFR, or experimental option is not
    *     enabled.
    */
