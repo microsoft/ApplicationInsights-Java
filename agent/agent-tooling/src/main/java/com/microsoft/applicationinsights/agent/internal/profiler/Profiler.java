@@ -25,7 +25,6 @@ import java.nio.file.Files;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ScheduledExecutorService;
@@ -290,18 +289,13 @@ public class Profiler {
   private void clearActiveRecording() {
     synchronized (activeRecordingLock) {
       activeRecording = null;
-      Optional.of(activeRecordingFile)
-          .ifPresent(
-              result -> {
-                if (result.exists()) {
-                  try {
-                    Files.delete(result.toPath());
-                  } catch (IOException e) {
-                    logger.error("Failed to remove file {}", result.getAbsolutePath());
-                  }
-                }
-              });
 
+      // delete uploaded profile
+      if (activeRecordingFile != null && activeRecordingFile.exists()) {
+        if (!activeRecordingFile.delete()) {
+          logger.error("Failed to remove file {}",activeRecordingFile.getAbsolutePath());
+        }
+      }
       activeRecordingFile = null;
     }
   }
