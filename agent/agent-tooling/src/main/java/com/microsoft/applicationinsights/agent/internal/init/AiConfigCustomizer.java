@@ -3,6 +3,10 @@
 
 package com.microsoft.applicationinsights.agent.internal.init;
 
+import static com.microsoft.applicationinsights.agent.internal.common.Constants.NONE;
+import static com.microsoft.applicationinsights.agent.internal.common.Constants.OTEL_LOGS_EXPORTER;
+import static com.microsoft.applicationinsights.agent.internal.common.Constants.OTEL_METRICS_EXPORTER;
+import static com.microsoft.applicationinsights.agent.internal.common.Constants.OTEL_TRACES_EXPORTER;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
@@ -103,22 +107,22 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
 
     properties.put("otel.traces.sampler", DelegatingSamplerProvider.NAME);
 
-    String tracesExporter = otelConfig.getString("otel.traces.exporter");
+    String tracesExporter = otelConfig.getString(OTEL_TRACES_EXPORTER);
     if (tracesExporter == null) {
       // this overrides the default "otlp" so the exporter can be configured later
-      properties.put("otel.traces.exporter", "none");
+      properties.put(OTEL_TRACES_EXPORTER, NONE);
     }
 
-    String metricsExporter = otelConfig.getString("otel.metrics.exporter");
+    String metricsExporter = otelConfig.getString(OTEL_METRICS_EXPORTER);
     if (metricsExporter == null) {
       // this overrides the default "otlp" so the exporter can be configured later
-      properties.put("otel.metrics.exporter", "none");
+      properties.put(OTEL_METRICS_EXPORTER, NONE);
     }
 
-    String logsExporter = otelConfig.getString("otel.logs.exporter");
+    String logsExporter = otelConfig.getString(OTEL_LOGS_EXPORTER);
     if (logsExporter == null) {
       // this overrides the default "otlp" so the exporter can be configured later
-      properties.put("otel.logs.exporter", "none");
+      properties.put(OTEL_LOGS_EXPORTER, NONE);
     }
 
     if (configuration.role.name != null) {

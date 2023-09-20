@@ -3,6 +3,11 @@
 
 package com.microsoft.applicationinsights.agent.internal.init;
 
+import static com.microsoft.applicationinsights.agent.internal.common.Constants.NONE;
+import static com.microsoft.applicationinsights.agent.internal.common.Constants.OTEL_LOGS_EXPORTER;
+import static com.microsoft.applicationinsights.agent.internal.common.Constants.OTEL_METRICS_EXPORTER;
+import static com.microsoft.applicationinsights.agent.internal.common.Constants.OTEL_TRACES_EXPORTER;
+import static com.microsoft.applicationinsights.agent.internal.common.Constants.OTLP;
 import static java.util.concurrent.TimeUnit.MINUTES;
 
 import com.azure.core.http.HttpPipeline;
@@ -252,7 +257,7 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
         .addPropertiesCustomizer(new AiConfigCustomizer())
         .addSpanExporterCustomizer(
             (spanExporter, otelConfig) -> {
-              if ("none".equals(otelConfig.getString("otel.traces.exporter"))) {
+              if (NONE.equals(otelConfig.getString(OTEL_TRACES_EXPORTER))) {
                 // in this case the spanExporter here is the noop spanExporter
                 return spanExporter;
               } else {
@@ -267,7 +272,7 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
                 configureTracing(builder, telemetryClient, quickPulse, otelConfig, configuration))
         .addLogRecordExporterCustomizer(
             (logExporter, otelConfig) -> {
-              if ("none".equals(otelConfig.getString("otel.logs.exporter"))) {
+              if (NONE.equals(otelConfig.getString(OTEL_LOGS_EXPORTER))) {
                 // in this case the logExporter here is the noop spanExporter
                 return logExporter;
               } else {
@@ -282,7 +287,8 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
                 configureLogging(builder, telemetryClient, quickPulse, otelConfig, configuration))
         .addMeterProviderCustomizer(
             (builder, otelConfig) ->
-                configureMetrics(metricFilters, builder, telemetryClient, configuration));
+                configureMetrics(
+                    metricFilters, builder, telemetryClient, configuration, otelConfig));
 
     AiContextCustomizerHolder.setInstance(
         new AiContextCustomizer<>(
@@ -551,8 +557,8 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
       tracerProvider.addSpanProcessor(new AiLegacyHeaderSpanProcessor());
     }
 
-    String tracesExporter = otelConfig.getString("otel.traces.exporter");
-    if ("none".equals(tracesExporter)) { // "none" is the default set in AiConfigCustomizer
+    String tracesExporter = otelConfig.getString(OTEL_TRACES_EXPORTER);
+    if (NONE.equals(tracesExporter)) { // NONE is the default set in AiConfigCustomizer
       List<Configuration.SamplingOverride> exceptionSamplingOverrides =
           configuration.preview.sampling.overrides.stream()
               .filter(override -> override.telemetryType == SamplingTelemetryType.EXCEPTION)
@@ -686,8 +692,8 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
     // "ai.preview.service_name" being set programmatically on CONSUMER spans
     builder.addLogRecordProcessor(new InheritedRoleNameLogProcessor());
 
-    String logsExporter = otelConfig.getString("otel.logs.exporter");
-    if ("none".equals(logsExporter)) { // "none" is the default set in AiConfigCustomizer
+    String logsExporter = otelConfig.getString(OTEL_LOGS_EXPORTER);
+    if (NONE.equals(logsExporter)) { // NONE is the default set in AiConfigCustomizer
       LogRecordExporter logExporter = createLogExporter(telemetryClient, quickPulse, configuration);
 
       logExporter = wrapLogExporter(logExporter, configuration);
@@ -785,26 +791,32 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
       List<MetricFilter> metricFilters,
       SdkMeterProviderBuilder builder,
       TelemetryClient telemetryClient,
-      Configuration configuration) {
-
-    MetricDataMapper mapper =
-        new MetricDataMapper(
-            telemetryClient::populateDefaults, configuration.preview.captureHttpServer4xxAsError);
-    PeriodicMetricReaderBuilder readerBuilder =
-        PeriodicMetricReader.builder(
-            new AgentMetricExporter(
-                metricFilters, mapper, telemetryClient.getMetricsBatchItemProcessor()));
-    int intervalMillis =
-        Integer.getInteger(
-            "applicationinsights.testing.metric-reader-interval-millis",
-            configuration.metricIntervalSeconds * 1000);
-    metricReader = readerBuilder.setInterval(Duration.ofMillis(intervalMillis)).build();
-
-    if (configuration.internal.preAggregatedStandardMetrics.enabled) {
-      AiViewRegistry.registerViews(builder);
-    }
-
-    return builder.registerMetricReader(metricReader);
+      Configuration configuration,
+      ConfigProperties otelConfig) {
+    String otelMetricExporterConfig = otelConfig.getString(OTEL_METRICS_EXPORTER);
+    if (NONE.equals(otelMetricExporterConfig)) {
+      MetricDataMapper mapper =
+          new MetricDataMapper(
+              telemetryClient::populateDefaults, configuration.preview.captureHttpServer4xxAsError);
+      PeriodicMetricReaderBuilder readerBuilder =
+          PeriodicMetricReader.builder(
+              new AgentMetricExporter(
+                  metricFilters, mapper, telemetryClient.getMetricsBatchItemProcessor()));
+      int intervalMillis =
+          Integer.getInteger(
+              "applicationinsights.testing.metric-reader-interval-millis",
+              configuration.metricIntervalSeconds * 1000);
+      metricReader = readerBuilder.setInterval(Duration.ofMillis(intervalMillis)).build();
+      if (configuration.internal.preAggregatedStandardMetrics.enabled) {
+        AiViewRegistry.registerViews(builder);
+      }
+      return builder.registerMetricReader(metricReader);
+    } else if (!OTLP.equals(otelMetricExporterConfig)) {
+      startupLogger.warning(
+          "\"otel.metrics.exporter\" has been set to something other than "
+              + "\"otlp\". Azure Monitor Metrics exporter will not get created.");
+    } // else use the default OTLP metric exporter generated by OpenTelemetry SDK Autoconfigure
+    return builder;
   }
 
   private static class BackCompatHttpUrlProcessor implements SpanExporter {
