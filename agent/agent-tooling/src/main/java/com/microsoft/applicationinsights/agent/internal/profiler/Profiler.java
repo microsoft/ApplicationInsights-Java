@@ -293,7 +293,7 @@ public class Profiler {
       // delete uploaded profile
       if (activeRecordingFile != null && activeRecordingFile.exists()) {
         if (!activeRecordingFile.delete()) {
-          logger.error("Failed to remove file {}",activeRecordingFile.getAbsolutePath());
+          logger.error("Failed to remove file {}", activeRecordingFile.getAbsolutePath());
         }
       }
       activeRecordingFile = null;
