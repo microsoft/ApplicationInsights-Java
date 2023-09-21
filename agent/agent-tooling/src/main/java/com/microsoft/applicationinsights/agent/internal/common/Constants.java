@@ -9,7 +9,7 @@ public final class Constants {
   public static final String OTLP = "otlp";
   public static final String OTEL_TRACES_EXPORTER = "otel.traces.exporter";
   public static final String OTEL_LOGS_EXPORTER = "otel.logs.exporter";
-  public static final String OTEL_METRICS_EXPORTER = OTEL_METRICS_EXPORTER;
+  public static final String OTEL_METRICS_EXPORTER = "otel.metrics.exporter";
 
   private Constants() {}
 }
