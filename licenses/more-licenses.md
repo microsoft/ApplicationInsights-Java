@@ -1,7 +1,7 @@
 
 # agent
 ## Dependency License Report
-_2023-09-17 16:49:31 UTC_
+_2023-09-22 03:46:43 UTC_
 ## Apache License, Version 2.0
 
 **1** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-annotations` **Version:** `2.15.2` 
@@ -41,7 +41,7 @@ _2023-09-17 16:49:31 UTC_
 > - **POM Project URL**: [http://findbugs.sourceforge.net/](http://findbugs.sourceforge.net/)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
-**7** **Group:** `com.google.errorprone` **Name:** `error_prone_annotations` **Version:** `2.21.1` 
+**7** **Group:** `com.google.errorprone` **Name:** `error_prone_annotations` **Version:** `2.22.0` 
 > - **Manifest Project URL**: [https://errorprone.info/error_prone_annotations](https://errorprone.info/error_prone_annotations)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
