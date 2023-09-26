@@ -52,6 +52,7 @@ dependencies {
 
   compileOnly("org.slf4j:slf4j-api")
 
+  compileOnly("io.opentelemetry:opentelemetry-exporter-otlp")
   compileOnly("io.opentelemetry:opentelemetry-sdk")
   compileOnly("io.opentelemetry:opentelemetry-sdk-metrics")
   compileOnly("io.opentelemetry:opentelemetry-sdk-logs")
