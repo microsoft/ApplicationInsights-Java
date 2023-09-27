@@ -5,6 +5,8 @@ package com.microsoft.applicationinsights.agent.internal.init;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.AiSemanticAttributes;
 import com.azure.monitor.opentelemetry.exporter.implementation.OperationNames;
+import com.microsoft.applicationinsights.agent.bootstrap.AzureFunctionsCustomDimensions;
+import com.microsoft.applicationinsights.agent.internal.configuration.ConfigurationBuilder;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
@@ -28,9 +30,16 @@ public class AzureMonitorSpanProcessor implements SpanProcessor {
       return;
     }
     ReadableSpan parentReadableSpan = (ReadableSpan) parentSpan;
-
-    span.setAttribute(
-        AiSemanticAttributes.OPERATION_NAME, OperationNames.getOperationName(parentReadableSpan));
+    if (ConfigurationBuilder.inAzureFunctionsWorker()) {
+      AzureFunctionsCustomDimensions customDimensions =
+          AzureFunctionsCustomDimensions.fromContext(parentContext);
+      if (customDimensions != null && customDimensions.operationName != null) {
+        span.setAttribute(AiSemanticAttributes.OPERATION_NAME, customDimensions.operationName);
+      }
+    } else {
+      span.setAttribute(
+          AiSemanticAttributes.OPERATION_NAME, OperationNames.getOperationName(parentReadableSpan));
+    }
   }
 
   @Override

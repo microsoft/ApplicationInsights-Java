@@ -5,6 +5,8 @@ package com.microsoft.applicationinsights.agent.internal.init;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.AiSemanticAttributes;
 import com.azure.monitor.opentelemetry.exporter.implementation.OperationNames;
+import com.microsoft.applicationinsights.agent.bootstrap.AzureFunctionsCustomDimensions;
+import com.microsoft.applicationinsights.agent.internal.configuration.ConfigurationBuilder;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.logs.LogRecordProcessor;
@@ -21,9 +23,16 @@ public class AzureMonitorLogProcessor implements LogRecordProcessor {
     }
 
     ReadableSpan readableSpan = (ReadableSpan) currentSpan;
-
-    logRecord.setAttribute(
-        AiSemanticAttributes.OPERATION_NAME, OperationNames.getOperationName(readableSpan));
+    if (ConfigurationBuilder.inAzureFunctionsWorker()) {
+      AzureFunctionsCustomDimensions customDimensions =
+          AzureFunctionsCustomDimensions.fromContext(context);
+      if (customDimensions != null && customDimensions.operationName != null) {
+        logRecord.setAttribute(AiSemanticAttributes.OPERATION_NAME, customDimensions.operationName);
+      }
+    } else {
+      logRecord.setAttribute(
+          AiSemanticAttributes.OPERATION_NAME, OperationNames.getOperationName(readableSpan));
+    }
     Long itemCount = readableSpan.getAttribute(AiSemanticAttributes.ITEM_COUNT);
     if (itemCount != null) {
       logRecord.setAttribute(AiSemanticAttributes.ITEM_COUNT, itemCount);
