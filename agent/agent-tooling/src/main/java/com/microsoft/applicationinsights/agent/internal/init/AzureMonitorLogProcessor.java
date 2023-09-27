@@ -18,6 +18,8 @@ public class AzureMonitorLogProcessor implements LogRecordProcessor {
 
   private static final Logger logger = LoggerFactory.getLogger("duplicate.logging.detector");
 
+  private static final String text = System.getProperty("logging.detector.filter", "executionId");
+
   private volatile String priorMessage;
   private volatile StackTraceElement[] priorStackTraceElements;
 
@@ -33,21 +35,7 @@ public class AzureMonitorLogProcessor implements LogRecordProcessor {
   @Override
   public void onEmit(Context context, ReadWriteLogRecord logRecord) {
 
-    Body body = logRecord.toLogRecordData().getBody();
-    String message = body.asString();
-    StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
-    if (message.contains("executionId") && message.equals(priorMessage)) {
-      logger.warn(
-          "FOUND A POSSIBLE DUPLICATE: "
-              + message
-              + "\nPRIOR STACK TRACE:"
-              + toString(priorStackTraceElements)
-              + "\nCURRENT STACK TRACE:"
-              + toString(stackTraceElements));
-    }
-
-    priorMessage = message;
-    priorStackTraceElements = stackTraceElements;
+    detect2(logRecord);
 
     Span currentSpan = Span.fromContext(context);
     if (!(currentSpan instanceof ReadableSpan)) {
@@ -61,6 +49,38 @@ public class AzureMonitorLogProcessor implements LogRecordProcessor {
     Long itemCount = readableSpan.getAttribute(AiSemanticAttributes.ITEM_COUNT);
     if (itemCount != null) {
       logRecord.setAttribute(AiSemanticAttributes.ITEM_COUNT, itemCount);
+    }
+  }
+
+  @SuppressWarnings("unused")
+  private void detect(ReadWriteLogRecord logRecord) {
+    Body body = logRecord.toLogRecordData().getBody();
+    String message = body.asString();
+    StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
+    if (message.contains(text) && message.equals(priorMessage)) {
+      logger.warn(
+          "FOUND A POSSIBLE DUPLICATE: "
+              + message
+              + "\nPRIOR STACK TRACE:"
+              + toString(priorStackTraceElements)
+              + "\nCURRENT STACK TRACE:"
+              + toString(stackTraceElements));
+    }
+
+    priorMessage = message;
+    priorStackTraceElements = stackTraceElements;
+  }
+
+  private static void detect2(ReadWriteLogRecord logRecord) {
+    Body body = logRecord.toLogRecordData().getBody();
+    String message = body.asString();
+    StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
+    if (message.contains(text)) {
+      logger.warn(
+          "FOUND A MESSAGE WITH TEXT \"executionId\": "
+              + message
+              + "\nCURRENT STACK TRACE:"
+              + toString(stackTraceElements));
     }
   }
 }
