@@ -5,9 +5,9 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.api.trace.SpanKind.INTERNAL;
 import static io.opentelemetry.api.trace.SpanKind.SERVER;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo;
-import static io.opentelemetry.semconv.trace.attributes.SemanticAttributes.CODE_FUNCTION;
-import static io.opentelemetry.semconv.trace.attributes.SemanticAttributes.CODE_NAMESPACE;
-import static io.opentelemetry.semconv.trace.attributes.SemanticAttributes.ENDUSER_ID;
+import static io.opentelemetry.semconv.SemanticAttributes.CODE_FUNCTION;
+import static io.opentelemetry.semconv.SemanticAttributes.CODE_NAMESPACE;
+import static io.opentelemetry.semconv.SemanticAttributes.ENDUSER_ID;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.microsoft.applicationinsights.web.internal.correlation.TraceContextCorrelation;

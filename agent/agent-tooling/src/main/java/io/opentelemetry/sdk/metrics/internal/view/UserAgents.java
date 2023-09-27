@@ -4,7 +4,7 @@
 package io.opentelemetry.sdk.metrics.internal.view;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
+import io.opentelemetry.semconv.SemanticAttributes;
 
 final class UserAgents {
 

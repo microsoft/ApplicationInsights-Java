@@ -44,5 +44,16 @@ public class Agent {
     premain(agentArgs, inst);
   }
 
+  @SuppressWarnings("SystemOut")
+  public static void main(String... args) {
+    System.err.println(
+        "*************************\n"
+            + "Application Insights Java agent should be attached to an existing Java application"
+            + " using the -javaagent flag.\n"
+            + "*************************\n\n"
+            + "For more information, see"
+            + " https://learn.microsoft.com/azure/azure-monitor/app/opentelemetry-enable?tabs=java#modify-your-application\n");
+  }
+
   private Agent() {}
 }

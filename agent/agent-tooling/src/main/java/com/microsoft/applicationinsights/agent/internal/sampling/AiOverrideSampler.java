@@ -38,7 +38,6 @@ class AiOverrideSampler implements Sampler {
       SpanKind spanKind,
       Attributes attributes,
       List<LinkData> parentLinks) {
-
     SpanContext parentSpanContext = Span.fromContext(parentContext).getSpanContext();
     boolean isRequest = RequestChecker.isRequest(spanKind, parentSpanContext, attributes::get);
 

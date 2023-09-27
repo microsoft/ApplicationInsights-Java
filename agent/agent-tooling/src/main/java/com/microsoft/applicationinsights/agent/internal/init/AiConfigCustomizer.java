@@ -281,6 +281,9 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
     }
     if (config.preview.instrumentation.vertx.enabled) {
       properties.put("otel.instrumentation.vertx.enabled", "true");
+      // the hibernate-reactive instrumentation is needed
+      // in order to propagate context to vertx-sql-client
+      properties.put("otel.instrumentation.hibernate-reactive.enabled", "true");
     }
     if (config.preview.instrumentation.ktor.enabled) {
       properties.put("otel.instrumentation.ktor.enabled", "true");

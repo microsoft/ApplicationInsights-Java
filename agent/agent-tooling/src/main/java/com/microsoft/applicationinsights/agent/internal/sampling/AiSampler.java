@@ -56,7 +56,6 @@ public class AiSampler implements Sampler {
       SpanKind spanKind,
       Attributes attributes,
       List<LinkData> parentLinks) {
-
     if (localParentBased) {
       SamplingResult samplingResult = useLocalParentDecisionIfPossible(parentContext);
       if (samplingResult != null) {
@@ -71,7 +70,6 @@ public class AiSampler implements Sampler {
     } else {
       SpanContext parentSpanContext = Span.fromContext(parentContext).getSpanContext();
       boolean isRequest = RequestChecker.isRequest(spanKind, parentSpanContext, attributes::get);
-
       sp =
           isRequest
               ? requestSamplingPercentage.get()
