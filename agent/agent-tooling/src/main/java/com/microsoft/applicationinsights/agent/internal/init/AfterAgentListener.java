@@ -30,8 +30,9 @@ public class AfterAgentListener implements AgentListener {
 
     PerformanceCounterInitializer.initialize(configuration);
 
-    if (configuration.preview.profiler.enabled && telemetryClient != null &&
-        telemetryClient.getConnectionString() != null) {
+    if (configuration.preview.profiler.enabled
+        && telemetryClient != null
+        && telemetryClient.getConnectionString() != null) {
       try {
         ProfilingInitializer.initialize(
             SecondEntryPoint.getTempDir(),

@@ -106,10 +106,11 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
 
   @Override
   public void customize(AutoConfigurationCustomizer autoConfiguration) {
-    tempDir = TempDirs.getApplicationInsightsTempDir(
-        startupLogger,
-        "Telemetry will not be stored to disk and retried later"
-            + " on sporadic network failures");
+    tempDir =
+        TempDirs.getApplicationInsightsTempDir(
+            startupLogger,
+            "Telemetry will not be stored to disk and retried later"
+                + " on sporadic network failures");
 
     Configuration configuration = FirstEntryPoint.getConfiguration();
     if (Strings.isNullOrEmpty(configuration.connectionString)) {
@@ -178,10 +179,7 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
     // TODO (heya) remove duplicate code in both RuntimeConfigurator and SecondEntryPoint
     RuntimeConfigurator runtimeConfigurator =
         new RuntimeConfigurator(
-            telemetryClient,
-            () -> agentLogExporter,
-            configuration,
-            heartbeatTelemetryItemConsumer);
+            telemetryClient, () -> agentLogExporter, configuration, heartbeatTelemetryItemConsumer);
 
     if (configuration.sampling.percentage != null) {
       BytecodeUtilImpl.samplingPercentage = configuration.sampling.percentage.floatValue();
