@@ -4,12 +4,19 @@
 package com.microsoft.applicationinsights.agent.internal.init;
 
 import com.google.auto.service.AutoService;
+import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
+import com.microsoft.applicationinsights.agent.internal.profiler.ProfilingInitializer;
+import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import io.opentelemetry.javaagent.extension.AgentListener;
 import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @AutoService(AgentListener.class)
 public class AfterAgentListener implements AgentListener {
+
+  private static final Logger logger = LoggerFactory.getLogger(AfterAgentListener.class);
 
   @Override
   public void afterAgent(AutoConfiguredOpenTelemetrySdk autoConfiguredOpenTelemetrySdk) {
@@ -18,6 +25,24 @@ public class AfterAgentListener implements AgentListener {
     // and JBoss/Wildfly need to install their own JUL manager before JUL is initialized.
     LazyHttpClient.safeToInitLatch.countDown();
 
-    PerformanceCounterInitializer.initialize(FirstEntryPoint.getConfiguration());
+    Configuration configuration = FirstEntryPoint.getConfiguration();
+    TelemetryClient telemetryClient = TelemetryClient.getActive();
+
+    PerformanceCounterInitializer.initialize(configuration);
+
+    if (configuration.preview.profiler.enabled && telemetryClient != null &&
+        telemetryClient.getConnectionString() != null) {
+      try {
+        ProfilingInitializer.initialize(
+            SecondEntryPoint.getTempDir(),
+            configuration.preview.profiler,
+            configuration.preview.gcEvents.reportingLevel,
+            configuration.role.name,
+            configuration.role.instance,
+            TelemetryClient.getActive());
+      } catch (RuntimeException e) {
+        logger.warn("Failed to initialize profiler", e);
+      }
+    }
   }
 }

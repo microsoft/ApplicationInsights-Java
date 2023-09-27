@@ -14,11 +14,9 @@ import com.microsoft.applicationinsights.agent.internal.configuration.Configurat
 import com.microsoft.applicationinsights.agent.internal.configuration.SnippetConfiguration;
 import com.microsoft.applicationinsights.agent.internal.exporter.AgentLogExporter;
 import com.microsoft.applicationinsights.agent.internal.legacyheaders.DelegatingPropagator;
-import com.microsoft.applicationinsights.agent.internal.profiler.ProfilingInitializer;
 import com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampler;
 import com.microsoft.applicationinsights.agent.internal.sampling.Samplers;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -38,23 +36,18 @@ public class RuntimeConfigurator {
   private final Configuration initialConfig;
   private volatile RuntimeConfiguration currentConfig;
   private final Consumer<List<TelemetryItem>> heartbeatTelemetryItemsConsumer;
-  private final File tempDir;
-
-  private final AtomicBoolean profilerStarted = new AtomicBoolean();
   private final AtomicBoolean heartbeatStarted = new AtomicBoolean();
 
   RuntimeConfigurator(
       TelemetryClient telemetryClient,
       Supplier<AgentLogExporter> agentLogExporter,
       Configuration initialConfig,
-      Consumer<List<TelemetryItem>> heartbeatTelemetryItemConsumer,
-      File tempDir) {
+      Consumer<List<TelemetryItem>> heartbeatTelemetryItemConsumer) {
     this.telemetryClient = telemetryClient;
     this.agentLogExporter = agentLogExporter;
     this.initialConfig = initialConfig;
     currentConfig = captureInitialConfig(initialConfig);
     this.heartbeatTelemetryItemsConsumer = heartbeatTelemetryItemConsumer;
-    this.tempDir = tempDir;
   }
 
   private static RuntimeConfiguration captureInitialConfig(Configuration initialConfig) {
@@ -139,26 +132,6 @@ public class RuntimeConfigurator {
         || !Objects.equals(
             runtimeConfig.sampling.requestsPerSecond, currentConfig.sampling.requestsPerSecond)) {
       updateSampling(enabled, runtimeConfig.sampling, runtimeConfig.samplingPreview);
-    }
-
-    // initialize Profiler
-    if (runtimeConfig.profilerEnabled && telemetryClient.getConnectionString() != null) {
-      // this prevents profiler being initialized more than once in Azure Spring App
-      if (!profilerStarted.getAndSet(true)) {
-        try {
-          ProfilingInitializer.initialize(
-              tempDir,
-              initialConfig.preview.profiler,
-              initialConfig.preview.gcEvents.reportingLevel,
-              runtimeConfig.role.name,
-              runtimeConfig.role.instance,
-              telemetryClient);
-        } catch (RuntimeException e) {
-          logger.warn("Failed to initialize profiler", e);
-        }
-      } else {
-        logger.debug("Profiler has already been initialized.");
-      }
     }
 
     // enable Heartbeat

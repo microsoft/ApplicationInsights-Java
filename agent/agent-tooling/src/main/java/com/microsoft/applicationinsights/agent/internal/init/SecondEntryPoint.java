@@ -47,7 +47,6 @@ import com.microsoft.applicationinsights.agent.internal.processors.ExporterWithS
 import com.microsoft.applicationinsights.agent.internal.processors.LogExporterWithAttributeProcessor;
 import com.microsoft.applicationinsights.agent.internal.processors.MySpanData;
 import com.microsoft.applicationinsights.agent.internal.processors.SpanExporterWithAttributeProcessor;
-import com.microsoft.applicationinsights.agent.internal.profiler.ProfilingInitializer;
 import com.microsoft.applicationinsights.agent.internal.profiler.triggers.AlertTriggerSpanProcessor;
 import com.microsoft.applicationinsights.agent.internal.sampling.SamplingOverrides;
 import com.microsoft.applicationinsights.agent.internal.telemetry.BatchItemProcessor;
@@ -92,8 +91,8 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
 
   private static final ClientLogger startupLogger =
       new ClientLogger("com.microsoft.applicationinsights.agent");
-
   private static final String STATSBEAT_FOLDER_NAME = "statsbeat";
+  private static File tempDir;
 
   @Nullable public static AgentLogExporter agentLogExporter;
 
@@ -101,13 +100,16 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
   @Nullable private static BatchSpanProcessor batchSpanProcessor;
   @Nullable private static MetricReader metricReader;
 
+  public static File getTempDir() {
+    return tempDir;
+  }
+
   @Override
   public void customize(AutoConfigurationCustomizer autoConfiguration) {
-    File tempDir =
-        TempDirs.getApplicationInsightsTempDir(
-            startupLogger,
-            "Telemetry will not be stored to disk and retried later"
-                + " on sporadic network failures");
+    tempDir = TempDirs.getApplicationInsightsTempDir(
+        startupLogger,
+        "Telemetry will not be stored to disk and retried later"
+            + " on sporadic network failures");
 
     Configuration configuration = FirstEntryPoint.getConfiguration();
     if (Strings.isNullOrEmpty(configuration.connectionString)) {
@@ -173,28 +175,13 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
 
     TelemetryClient.setActive(telemetryClient);
 
-    if (configuration.preview.profiler.enabled && telemetryClient.getConnectionString() != null) {
-      try {
-        ProfilingInitializer.initialize(
-            tempDir,
-            configuration.preview.profiler,
-            configuration.preview.gcEvents.reportingLevel,
-            configuration.role.name,
-            configuration.role.instance,
-            telemetryClient);
-      } catch (RuntimeException e) {
-        startupLogger.warning("Failed to initialize profiler", e);
-      }
-    }
-
     // TODO (heya) remove duplicate code in both RuntimeConfigurator and SecondEntryPoint
     RuntimeConfigurator runtimeConfigurator =
         new RuntimeConfigurator(
             telemetryClient,
             () -> agentLogExporter,
             configuration,
-            heartbeatTelemetryItemConsumer,
-            tempDir);
+            heartbeatTelemetryItemConsumer);
 
     if (configuration.sampling.percentage != null) {
       BytecodeUtilImpl.samplingPercentage = configuration.sampling.percentage.floatValue();
