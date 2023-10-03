@@ -26,7 +26,7 @@ public class AzureMonitorLogProcessor implements LogRecordProcessor {
     if (ConfigurationBuilder.inAzureFunctionsWorker()) {
       AzureFunctionsCustomDimensions customDimensions =
           AzureFunctionsCustomDimensions.fromContext(context);
-      if (customDimensions != null && customDimensions.operationName != null) {
+      if (customDimensions != null) {
         logRecord.setAttribute(AiSemanticAttributes.OPERATION_NAME, customDimensions.operationName);
       }
     } else {
