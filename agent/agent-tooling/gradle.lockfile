@@ -87,5 +87,5 @@ org.junit:junit-bom:5.10.0=runtimeClasspath
 org.reactivestreams:reactive-streams:1.0.4=runtimeClasspath
 org.slf4j:jcl-over-slf4j:2.0.9=runtimeClasspath
 org.slf4j:slf4j-api:2.0.9=runtimeClasspath
-org.testcontainers:testcontainers-bom:1.19.0=runtimeClasspath
+org.testcontainers:testcontainers-bom:1.19.1=runtimeClasspath
 empty=
