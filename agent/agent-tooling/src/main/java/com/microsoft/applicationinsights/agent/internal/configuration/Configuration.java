@@ -63,7 +63,6 @@ public class Configuration {
 
   public void validate() {
     instrumentation.logging.getSeverityThreshold();
-    authentication.validate();
     preview.validate();
   }
 
@@ -1421,63 +1420,15 @@ public class Configuration {
   }
 
   public static class AadAuthentication {
+    // AAD is disabled when APPLICATIONINSIGHTS_AUTHENTICATION_STRING is not set
     public boolean enabled;
-    public AuthenticationType type;
     public String clientId;
-    public String tenantId;
-    public String clientSecret;
-    public String authorityHost;
-
-    public void validate() {
-      if (!enabled) {
-        return;
-      }
-      if (type == null) {
-        throw new FriendlyException(
-            "AAD Authentication configuration is missing authentication \"type\".",
-            "Please provide a valid authentication \"type\" under the \"authentication\" configuration. "
-                + "Learn more about authentication configuration here: https://docs.microsoft.com/en-us/azure/azure-monitor/app/java-standalone-config");
-      }
-
-      if (type == AuthenticationType.UAMI) {
-        if (isEmpty(clientId)) {
-          throw new FriendlyException(
-              "AAD Authentication configuration of type User Assigned Managed Identity is missing \"clientId\".",
-              "Please provide a valid \"clientId\" under the \"authentication\" configuration. "
-                  + "Learn more about authentication configuration here: https://docs.microsoft.com/en-us/azure/azure-monitor/app/java-standalone-config");
-        }
-      }
-
-      if (type == AuthenticationType.CLIENTSECRET) {
-        if (isEmpty(clientId)) {
-          throw new FriendlyException(
-              "AAD Authentication configuration of type Client Secret Identity is missing \"clientId\".",
-              "Please provide a valid \"clientId\" under the \"authentication\" configuration. "
-                  + "Learn more about authentication configuration here: https://docs.microsoft.com/en-us/azure/azure-monitor/app/java-standalone-config");
-        }
-
-        if (isEmpty(tenantId)) {
-          throw new FriendlyException(
-              "AAD Authentication configuration of type Client Secret Identity is missing \"tenantId\".",
-              "Please provide a valid \"tenantId\" under the \"authentication\" configuration. "
-                  + "Learn more about authentication configuration here: https://docs.microsoft.com/en-us/azure/azure-monitor/app/java-standalone-config");
-        }
-
-        if (isEmpty(clientSecret)) {
-          throw new FriendlyException(
-              "AAD Authentication configuration of type Client Secret Identity is missing \"clientSecret\".",
-              "Please provide a valid \"clientSecret\" under the \"authentication\" configuration. "
-                  + "Learn more about authentication configuration here: https://docs.microsoft.com/en-us/azure/azure-monitor/app/java-standalone-config");
-        }
-      }
-    }
+    public AuthenticationType type;
   }
 
   public enum AuthenticationType {
-    // TODO (kyralama) should these use @JsonProperty to bind lowercase like other enums?
-    UAMI,
-    SAMI,
-    VSCODE,
-    CLIENTSECRET
+    UAMI, // APPLICATIONINSIGHTS_AUTHENTICATION_STRING=Authorization=AAD;ClientId={Client id of the
+    // User-Assigned Identity}
+    SAMI // APPLICATIONINSIGHTS_AUTHENTICATION_STRING=Authorization=AAD
   }
 }
