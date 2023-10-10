@@ -44,7 +44,9 @@ public class DiagnosticsHelper {
       SdkVersionPrefixHolder.setRpIntegrationChar('a');
       appSvcRpIntegration = true;
       setRpAttachType(agentPath, "appsvc.codeless");
-    } else if (!Strings.isNullOrEmpty(System.getenv("KUBERNETES_SERVICE_HOST"))) {
+    } else if (!Strings.isNullOrEmpty(System.getenv("AKS_ARM_NAMESPACE_ID"))) {
+      // AKS_ARM_NAMESPACE_ID is an env var available in AKS only and it's also used as the AKS
+      // attach rate numerator
       SdkVersionPrefixHolder.setRpIntegrationChar('k');
       setRpAttachType(agentPath, "aks.codeless");
     } else if (!Strings.isNullOrEmpty(
