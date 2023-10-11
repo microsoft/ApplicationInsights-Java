@@ -21,11 +21,9 @@ public class AzureMonitorSpanProcessor implements SpanProcessor {
 
   @Override
   public void onStart(Context parentContext, ReadWriteSpan span) {
-
     // if user wants to change operation name, they should change operation name on the parent span
     // first before creating child span
 
-    Span parentSpan = Span.fromContextOrNull(parentContext);
     // Azure function host is emitting request, java agent doesn't.
     // parentSpan is not an instanceof ReadableSpan here, thus need to update operationName before
     // checking for ReadableSpan
@@ -36,6 +34,7 @@ public class AzureMonitorSpanProcessor implements SpanProcessor {
         span.setAttribute(AiSemanticAttributes.OPERATION_NAME, customDimensions.operationName);
       }
     }
+    Span parentSpan = Span.fromContextOrNull(parentContext);
     if (!(parentSpan instanceof ReadableSpan)) {
       return;
     }
