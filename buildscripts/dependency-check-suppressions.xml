@@ -7,4 +7,12 @@
     </notes>
     <cve>CVE-2023-35116</cve>
   </suppress>
+  <suppress>
+    <notes><![CDATA[
+      we use reactor-netty, which sets up hostname verification by default:
+      https://github.com/reactor/reactor-netty/blob/main/reactor-netty-http/src/main/java/reactor/netty/http/client/HttpClientSecure.java
+    ]]></notes>
+    <packageUrl regex="true">^pkg:maven/io\.netty/netty-.*@.*$</packageUrl>
+    <cve>CVE-2023-4586</cve>
+  </suppress>
 </suppressions>
