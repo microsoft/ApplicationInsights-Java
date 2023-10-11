@@ -26,20 +26,22 @@ public class AzureMonitorSpanProcessor implements SpanProcessor {
     // first before creating child span
 
     Span parentSpan = Span.fromContextOrNull(parentContext);
-    if (!(parentSpan instanceof ReadableSpan)) {
-      return;
-    }
-    ReadableSpan parentReadableSpan = (ReadableSpan) parentSpan;
+    // Azure function host is emitting request, java agent doesn't.
+    // parentSpan is not an instanceof ReadableSpan here, thus need to update operationName before
+    // checking for ReadableSpan
     if (ConfigurationBuilder.inAzureFunctionsWorker()) {
       AzureFunctionsCustomDimensions customDimensions =
           AzureFunctionsCustomDimensions.fromContext(parentContext);
       if (customDimensions != null && customDimensions.operationName != null) {
         span.setAttribute(AiSemanticAttributes.OPERATION_NAME, customDimensions.operationName);
       }
-    } else {
-      span.setAttribute(
-          AiSemanticAttributes.OPERATION_NAME, OperationNames.getOperationName(parentReadableSpan));
     }
+    if (!(parentSpan instanceof ReadableSpan)) {
+      return;
+    }
+    span.setAttribute(
+        AiSemanticAttributes.OPERATION_NAME,
+        OperationNames.getOperationName((ReadableSpan) parentSpan));
   }
 
   @Override
