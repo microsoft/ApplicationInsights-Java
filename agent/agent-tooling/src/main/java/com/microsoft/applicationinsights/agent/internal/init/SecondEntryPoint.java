@@ -47,7 +47,6 @@ import com.microsoft.applicationinsights.agent.internal.processors.ExporterWithS
 import com.microsoft.applicationinsights.agent.internal.processors.LogExporterWithAttributeProcessor;
 import com.microsoft.applicationinsights.agent.internal.processors.MySpanData;
 import com.microsoft.applicationinsights.agent.internal.processors.SpanExporterWithAttributeProcessor;
-import com.microsoft.applicationinsights.agent.internal.profiler.ProfilingInitializer;
 import com.microsoft.applicationinsights.agent.internal.profiler.triggers.AlertTriggerSpanProcessor;
 import com.microsoft.applicationinsights.agent.internal.sampling.SamplingOverrides;
 import com.microsoft.applicationinsights.agent.internal.telemetry.BatchItemProcessor;
@@ -92,8 +91,8 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
 
   private static final ClientLogger startupLogger =
       new ClientLogger("com.microsoft.applicationinsights.agent");
-
   private static final String STATSBEAT_FOLDER_NAME = "statsbeat";
+  private static File tempDir;
 
   @Nullable public static AgentLogExporter agentLogExporter;
 
@@ -101,9 +100,13 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
   @Nullable private static BatchSpanProcessor batchSpanProcessor;
   @Nullable private static MetricReader metricReader;
 
+  static File getTempDir() {
+    return tempDir;
+  }
+
   @Override
   public void customize(AutoConfigurationCustomizer autoConfiguration) {
-    File tempDir =
+    tempDir =
         TempDirs.getApplicationInsightsTempDir(
             startupLogger,
             "Telemetry will not be stored to disk and retried later"
@@ -172,20 +175,6 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
     }
 
     TelemetryClient.setActive(telemetryClient);
-
-    if (configuration.preview.profiler.enabled && telemetryClient.getConnectionString() != null) {
-      try {
-        ProfilingInitializer.initialize(
-            tempDir,
-            configuration.preview.profiler,
-            configuration.preview.gcEvents.reportingLevel,
-            configuration.role.name,
-            configuration.role.instance,
-            telemetryClient);
-      } catch (RuntimeException e) {
-        startupLogger.warning("Failed to initialize profiler", e);
-      }
-    }
 
     // TODO (heya) remove duplicate code in both RuntimeConfigurator and SecondEntryPoint
     RuntimeConfigurator runtimeConfigurator =
