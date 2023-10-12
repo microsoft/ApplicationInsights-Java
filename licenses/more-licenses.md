@@ -1,7 +1,7 @@
 
 # agent
 ## Dependency License Report
-_2023-10-11 09:41:58 UTC_
+_2023-10-12 03:26:19 UTC_
 ## Apache License, Version 2.0
 
 **1** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-annotations` **Version:** `2.15.2` 
@@ -330,7 +330,7 @@ _2023-10-11 09:41:58 UTC_
 > - **POM License**: Eclipse Public License - v 1.0 - [http://www.eclipse.org/legal/epl-v10.html](http://www.eclipse.org/legal/epl-v10.html)
 > - **POM License**: GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 - [https://www.gnu.org/licenses/lgpl-2.1](https://www.gnu.org/licenses/lgpl-2.1)
 
-**63** **Group:** `com.github.spotbugs` **Name:** `spotbugs-annotations` **Version:** `4.7.3` 
+**63** **Group:** `com.github.spotbugs` **Name:** `spotbugs-annotations` **Version:** `4.8.0` 
 > - **POM Project URL**: [https://spotbugs.github.io/](https://spotbugs.github.io/)
 > - **POM License**: GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 - [https://www.gnu.org/licenses/lgpl-2.1](https://www.gnu.org/licenses/lgpl-2.1)
 
