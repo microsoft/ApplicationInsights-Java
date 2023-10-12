@@ -26,10 +26,9 @@ public class AfterAgentListener implements AgentListener {
     LazyHttpClient.safeToInitLatch.countDown();
 
     Configuration configuration = FirstEntryPoint.getConfiguration();
-    TelemetryClient telemetryClient = TelemetryClient.getActive();
-
     PerformanceCounterInitializer.initialize(configuration);
 
+    TelemetryClient telemetryClient = TelemetryClient.getActive();
     if (configuration.preview.profiler.enabled
         && telemetryClient != null
         && telemetryClient.getConnectionString() != null) {

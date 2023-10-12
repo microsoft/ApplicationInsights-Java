@@ -100,7 +100,7 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
   @Nullable private static BatchSpanProcessor batchSpanProcessor;
   @Nullable private static MetricReader metricReader;
 
-  public static File getTempDir() {
+  static File getTempDir() {
     return tempDir;
   }
 
@@ -179,7 +179,11 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
     // TODO (heya) remove duplicate code in both RuntimeConfigurator and SecondEntryPoint
     RuntimeConfigurator runtimeConfigurator =
         new RuntimeConfigurator(
-            telemetryClient, () -> agentLogExporter, configuration, heartbeatTelemetryItemConsumer);
+            telemetryClient,
+            () -> agentLogExporter,
+            configuration,
+            heartbeatTelemetryItemConsumer,
+            tempDir);
 
     if (configuration.sampling.percentage != null) {
       BytecodeUtilImpl.samplingPercentage = configuration.sampling.percentage.floatValue();
