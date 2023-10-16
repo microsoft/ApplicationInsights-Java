@@ -19,7 +19,8 @@ spotbugs {
     "Naming",
     "RuntimeExceptionCapture",
     "UnreadFields",
-    "DumbMethodInvocations"
+    "DumbMethodInvocations",
+    "DontReusePublicIdentifiers"
   )
 }
 
