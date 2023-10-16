@@ -94,7 +94,7 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
   private static final String STATSBEAT_FOLDER_NAME = "statsbeat";
   private static File tempDir;
 
-  @Nullable public static AgentLogExporter agentLogExporter;
+  @Nullable private static AgentLogExporter agentLogExporter;
 
   @Nullable private static BatchLogRecordProcessor batchLogProcessor;
   @Nullable private static BatchSpanProcessor batchSpanProcessor;
