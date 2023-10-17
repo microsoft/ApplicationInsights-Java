@@ -5,6 +5,8 @@ package com.microsoft.applicationinsights.agent.internal.init;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.AiSemanticAttributes;
 import com.azure.monitor.opentelemetry.exporter.implementation.OperationNames;
+import com.microsoft.applicationinsights.agent.bootstrap.AzureFunctionsCustomDimensions;
+import com.microsoft.applicationinsights.agent.internal.configuration.ConfigurationBuilder;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
@@ -19,18 +21,26 @@ public class AzureMonitorSpanProcessor implements SpanProcessor {
 
   @Override
   public void onStart(Context parentContext, ReadWriteSpan span) {
-
     // if user wants to change operation name, they should change operation name on the parent span
     // first before creating child span
 
+    // Azure function host is emitting request, java agent doesn't.
+    // parentSpan is not an instanceof ReadableSpan here, thus need to update operationName before
+    // checking for ReadableSpan
+    if (ConfigurationBuilder.inAzureFunctionsWorker()) {
+      AzureFunctionsCustomDimensions customDimensions =
+          AzureFunctionsCustomDimensions.fromContext(parentContext);
+      if (customDimensions != null && customDimensions.operationName != null) {
+        span.setAttribute(AiSemanticAttributes.OPERATION_NAME, customDimensions.operationName);
+      }
+    }
     Span parentSpan = Span.fromContextOrNull(parentContext);
     if (!(parentSpan instanceof ReadableSpan)) {
       return;
     }
-    ReadableSpan parentReadableSpan = (ReadableSpan) parentSpan;
-
     span.setAttribute(
-        AiSemanticAttributes.OPERATION_NAME, OperationNames.getOperationName(parentReadableSpan));
+        AiSemanticAttributes.OPERATION_NAME,
+        OperationNames.getOperationName((ReadableSpan) parentSpan));
   }
 
   @Override
