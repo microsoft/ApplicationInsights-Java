@@ -11,9 +11,9 @@ data class DependencySet(val group: String, val version: String, val modules: Li
 val dependencyVersions = hashMapOf<String, String>()
 rootProject.extra["versions"] = dependencyVersions
 
-val otelVersion = "1.30.1"
-val otelInstrumentationAlphaVersion = "1.30.0-alpha"
-val otelInstrumentationVersion = "1.30.0"
+val otelVersion = "1.31.0"
+val otelInstrumentationAlphaVersion = "1.31.0-alpha"
+val otelInstrumentationVersion = "1.31.0"
 val otelContribAlphaVersion = "1.30.0-alpha"
 
 rootProject.extra["otelVersion"] = otelVersion
@@ -43,6 +43,7 @@ val mockitoVersion = "4.11.0"
 val slf4jVersion = "2.0.9"
 
 val CORE_DEPENDENCIES = listOf(
+  "io.opentelemetry:opentelemetry-semconv:1.30.1-alpha",
   "com.google.auto.service:auto-service:${autoServiceVersion}",
   "com.google.auto.service:auto-service-annotations:${autoServiceVersion}",
   "com.google.auto.value:auto-value:${autoValueVersion}",

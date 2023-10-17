@@ -44,5 +44,8 @@ public final class AzureFunctionsLogProcessor implements LogRecordProcessor {
           AiSemanticAttributes.AZ_FN_LIVE_LOGS_SESSION_ID,
           customDimensions.azFunctionLiveLogsSessionId);
     }
+    if (customDimensions.operationName != null) {
+      logRecord.setAttribute(AiSemanticAttributes.OPERATION_NAME, customDimensions.operationName);
+    }
   }
 }

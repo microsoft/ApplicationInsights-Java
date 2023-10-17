@@ -82,7 +82,8 @@ class InvocationInstrumentation implements TypeInstrumentation {
               attributesMap.get("LogLevel"),
               attributesMap.get("Category"),
               attributesMap.get("HostInstanceId"),
-              attributesMap.get("#AzFuncLiveLogsSessionId"));
+              attributesMap.get("#AzFuncLiveLogsSessionId"),
+              attributesMap.get("OperationName"));
 
       return Context.current().with(Span.wrap(spanContext)).with(customDimensions).makeCurrent();
     }
