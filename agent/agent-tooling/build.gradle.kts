@@ -87,3 +87,8 @@ dependencies {
 
   testCompileOnly("com.google.code.findbugs:jsr305")
 }
+
+configurations.all {
+  // temporarily overriding version until next azure-bom release in order to address CVE
+  resolutionStrategy.force("com.azure:azure-identity:1.10.3")
+}
