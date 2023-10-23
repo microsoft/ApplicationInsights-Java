@@ -290,7 +290,7 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
   private static TelemetryItemExporter initStatsbeatTelemetryItemExporter(
       StatsbeatModule statsbeatModule, File tempDir, int diskPersistenceMaxSizeMb) {
     HttpPipeline httpPipeline = LazyHttpClient.newHttpPipeLine(null);
-    TelemetryPipeline telemetryPipeline = new TelemetryPipeline(httpPipeline);
+    TelemetryPipeline telemetryPipeline = new TelemetryPipeline(httpPipeline, statsbeatModule);
 
     TelemetryPipelineListener telemetryPipelineListener;
     if (tempDir == null) {
