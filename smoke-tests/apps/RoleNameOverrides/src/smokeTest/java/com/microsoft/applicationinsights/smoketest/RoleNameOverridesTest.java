@@ -35,6 +35,7 @@ abstract class RoleNameOverridesTest {
       SmokeTestExtension.builder()
           .otelResourceAttributesEnvVar(
               "fakeOtelResourceKey1=fakeValue1,fakeOtelResourceKey2=fakeValue2,fakeOtelResourceKey3=fakeValue3")
+          .setSelfDiagnosticsLevel("DEBUG")
           .build();
 
   @Test
