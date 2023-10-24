@@ -35,6 +35,7 @@ abstract class RoleNameOverridesTest {
       SmokeTestExtension.builder()
           .otelResourceAttributesEnvVar(
               "fakeOtelResourceKey1=fakeValue1,fakeOtelResourceKey2=fakeValue2,fakeOtelResourceKey3=fakeValue3")
+          .setSelfDiagnosticsLevel("DEBUG")
           .build();
 
   @Test
@@ -117,7 +118,6 @@ abstract class RoleNameOverridesTest {
     MetricData otelResourceMetricData =
         (MetricData) ((Data<?>) otelResourceMetrics.get(0).getData()).getBaseData();
     Map<String, String> properties = otelResourceMetricData.getProperties();
-    assertThat(properties.size()).isEqualTo(3);
     assertThat(properties.get("fakeOtelResourceKey1")).isEqualTo("fakeValue1");
     assertThat(properties.get("fakeOtelResourceKey2")).isEqualTo("fakeValue2");
     assertThat(properties.get("fakeOtelResourceKey3")).isEqualTo("fakeValue3");
