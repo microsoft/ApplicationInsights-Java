@@ -385,12 +385,66 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
     if (config.preview.browserSdkLoader.enabled) {
       featureList.add(Feature.BROWSER_SDK_LOADER);
     }
-
-    // Statsbeat
+    if (!config.preview.sampling.overrides.isEmpty()) {
+      featureList.add(Feature.PREVIEW_SAMPLING);
+    }
+    if (config.preview.captureControllerSpans) {
+      featureList.add(Feature.PREVIEW_CAPTURE_CONTROLLER_SPANS);
+    }
+    if (!config.preview.liveMetrics.enabled) {
+      featureList.add(Feature.PREVIEW_LIVE_METRICS);
+    }
+    if (config.preview.legacyRequestIdPropagation.enabled) {
+      featureList.add(Feature.PREVIEW_LEGACY_REQUEST_ID_PROPAGATION);
+    }
+    if (config.preview.disablePropagation) {
+      featureList.add(Feature.PREVIEW_DISABLE_PROPAGATION);
+    }
+    if (config.preview.captureLoggingLevelAsCustomDimension) {
+      featureList.add(Feature.PREVIEW_CAPTURE_LOGGING_LEVEL_AS_CUSTOM_DIMENSION);
+    }
+    if (config.preview.captureLogbackCodeAttributes) {
+      featureList.add(Feature.PREVIEW_CAPTURE_LOGBACK_CODE_ATTRIBUTES);
+    }
+    if (config.preview.captureLogbackMarker) {
+      featureList.add(Feature.PREVIEW_CAPTURE_LOGBACK_MARKER);
+    }
+    if (config.preview.captureLog4jMarker) {
+      featureList.add(Feature.PREVIEW_CAPTURE_LOG4J_MARKER);
+    }
+    if (!config.preview.additionalPropagators.isEmpty()) {
+      featureList.add(Feature.PREVIEW_ADDITIONAL_PROPAGATORS);
+    }
+    if (!config.preview.inheritedAttributes.isEmpty()) {
+      featureList.add(Feature.PREVIEW_INHERITED_ATTRIBUTES);
+    }
+    if (config.preview.gcEvents.reportingLevel != null) {
+      featureList.add(Feature.PREVIEW_GC_EVENTS);
+    }
+    if (!config.preview.connectionStringOverrides.isEmpty()) {
+      featureList.add(Feature.PREVIEW_CONNECTION_STRING_OVERRIDES);
+    }
+    if (!config.preview.roleNameOverrides.isEmpty()) {
+      featureList.add(Feature.PREVIEW_ROLE_NAME_OVERRIDES);
+    }
+    if (config.preview.generalExportQueueCapacity != 2048) {
+      featureList.add(Feature.PREVIEW_GENERAL_EXPORT_QUEUE_CAPACITY);
+    }
+    if (config.preview.metricsExportQueueCapacity != 65536) {
+      featureList.add(Feature.PREVIEW_METRICS_EXPORT_QUEUE_CAPACITY);
+    }
+    if (config.preview.diskPersistenceMaxSizeMb != 50) {
+      featureList.add((Feature.PREVIEW_DISK_PERSISTENCE_MAX_SIZE_MB));
+    }
+    if (!config.preview.useNormalizedValueForNonNormalizedCpuPercentage) {
+      featureList.add(Feature.PREVIEW_USE_NORMALIZED_VALUE_FOR_NON_NORMALIZED_CPU_PERCENTAGE);
+    }
+    if (!config.preview.customInstrumentation.isEmpty()) {
+      featureList.add(Feature.PREVIEW_CUSTOM_INSTRUMENTATION);
+    }
     if (config.preview.statsbeat.disabled) {
       featureList.add(Feature.STATSBEAT_DISABLED);
     }
-
     if (config.preview.disablePropagation) {
       featureList.add(Feature.PROPAGATION_DISABLED);
     }
