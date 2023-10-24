@@ -7,6 +7,7 @@ import static java.util.Arrays.asList;
 import static java.util.concurrent.TimeUnit.DAYS;
 import static java.util.concurrent.TimeUnit.MINUTES;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.PropertyHelper;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.applicationinsights.agent.internal.common.FriendlyException;
@@ -618,7 +619,7 @@ public class Configuration {
     public int maxHistory = 1;
 
     private static String getDefaultPath() {
-      if (!SdkVersionPrefixHolder.isRpIntegration()) {
+      if (!PropertyHelper.isRpIntegration()) {
         if (isRuntimeAttached()) { // With runtime attachment, the agent jar is located in a temp
           // folder that is dropped when the JVM shuts down
           String userDir = System.getProperty("user.dir");

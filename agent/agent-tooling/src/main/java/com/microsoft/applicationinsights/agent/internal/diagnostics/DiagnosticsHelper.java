@@ -6,7 +6,6 @@ package com.microsoft.applicationinsights.agent.internal.diagnostics;
 import com.azure.monitor.opentelemetry.exporter.implementation.statsbeat.RpAttachType;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.PropertyHelper;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
-
 import java.nio.file.Files;
 import java.nio.file.Path;
 
