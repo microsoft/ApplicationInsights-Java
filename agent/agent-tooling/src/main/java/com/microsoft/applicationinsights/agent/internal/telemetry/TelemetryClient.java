@@ -330,6 +330,7 @@ public class TelemetryClient {
       // not sure if connectionString can be null in Azure Functions
       telemetryBuilder.setConnectionString(connectionString);
     }
+    telemetryBuilder.setResource(resource);
     for (Map.Entry<String, String> entry : globalTags.entrySet()) {
       telemetryBuilder.addTag(entry.getKey(), entry.getValue());
     }
