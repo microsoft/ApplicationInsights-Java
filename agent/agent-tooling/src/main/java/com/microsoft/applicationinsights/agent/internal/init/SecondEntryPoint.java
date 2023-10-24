@@ -22,6 +22,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.QuickP
 import com.azure.monitor.opentelemetry.exporter.implementation.statsbeat.Feature;
 import com.azure.monitor.opentelemetry.exporter.implementation.statsbeat.StatsbeatModule;
 import com.azure.monitor.opentelemetry.exporter.implementation.statsbeat.StatsbeatTelemetryPipelineListener;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.PropertyHelper;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.TempDirs;
 import com.google.auto.service.AutoService;
@@ -34,7 +35,6 @@ import com.microsoft.applicationinsights.agent.internal.configuration.Configurat
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.SamplingTelemetryType;
 import com.microsoft.applicationinsights.agent.internal.configuration.ConfigurationBuilder;
 import com.microsoft.applicationinsights.agent.internal.configuration.RpConfiguration;
-import com.microsoft.applicationinsights.agent.internal.configuration.SdkVersionPrefixHolder;
 import com.microsoft.applicationinsights.agent.internal.configuration.SnippetConfiguration;
 import com.microsoft.applicationinsights.agent.internal.exporter.AgentLogExporter;
 import com.microsoft.applicationinsights.agent.internal.exporter.AgentMetricExporter;
@@ -136,7 +136,7 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
             .collect(Collectors.toList());
 
     StatsbeatModule statsbeatModule =
-        new StatsbeatModule(SdkVersionPrefixHolder::lazyUpdateVmRpIntegration);
+        new StatsbeatModule(PropertyHelper::lazyUpdateVmRpIntegration);
     TelemetryClient telemetryClient =
         TelemetryClient.builder()
             .setCustomDimensions(configuration.customDimensions)
