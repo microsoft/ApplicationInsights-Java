@@ -35,13 +35,7 @@ abstract class AksRoleNameOverridesTest {
   @Test
   @TargetUri("/testAks")
   void test() throws Exception {
-    String jbossHome = System.getenv("JBOSS_HOME");
-    if (jbossHome != null) {
-      // jboss/wildfly has a default service.name="jboss-modules"
-      verifyRoleNameAndInstance("jboss-modules", "test-pod-name");
-    } else {
-      verifyRoleNameAndInstance("test-deployment-name", "test-pod-name");
-    }
+    verifyRoleNameAndInstance("test-deployment-name", "test-pod-name");
   }
 
   private static void verifyRoleNameAndInstance(String roleName, String roleInstance)
