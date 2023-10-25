@@ -437,7 +437,7 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
       featureList.add(Feature.PREVIEW_DISK_PERSISTENCE_MAX_SIZE_MB);
     }
     if (!config.preview.useNormalizedValueForNonNormalizedCpuPercentage) {
-      featureList.add(Feature.PREVIEW_USE_NORMALIZED_VALUE_FOR_NON_NORMALIZED_CPU_PERCENTAGE);
+      featureList.add(Feature.PREVIEW_DONT_USE_NORMALIZED);
     }
     if (!config.preview.customInstrumentation.isEmpty()) {
       featureList.add(Feature.PREVIEW_CUSTOM_INSTRUMENTATION);

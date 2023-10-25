@@ -27,7 +27,8 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
 
     enableInstrumentations(otelConfig, configuration, properties);
 
-    // enable OTEL_JAVA_ENABLED_RESOURCE_PROVIDERS only. It enables all resource provider by default
+    // enable "io.opentelemetry.sdk.autoconfigure.internal.EnvironmentResourceProvider" only. It
+    // enables all resource provider by default
     properties.put(
         "otel.java.enabled.resource.providers",
         "io.opentelemetry.sdk.autoconfigure.internal.EnvironmentResourceProvider");

@@ -53,8 +53,9 @@ public class DiagnosticsHelper {
         System.getenv("APPLICATIONINSIGHTS_SPRINGCLOUD_SERVICE_ID"))) {
       PropertyHelper.setRpIntegrationChar('s');
       setRpAttachType(agentPath, "springcloud.codeless");
+    } else {
+      RpAttachType.setRpAttachType(RpAttachType.STANDALONE_AUTO); // default
     }
-    // TODO (heya) detect VM environment by checking the AzureMetadataService response, manual only
   }
 
   public static boolean isAppSvcRpIntegration() {
