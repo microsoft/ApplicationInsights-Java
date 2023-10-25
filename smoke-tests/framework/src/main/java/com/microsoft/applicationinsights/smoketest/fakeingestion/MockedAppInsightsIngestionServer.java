@@ -255,7 +255,8 @@ public class MockedAppInsightsIngestionServer {
               return false;
             }
             MetricData md = (MetricData) ((Data<?>) input.getData()).getBaseData();
-            if ("_OTELRESOURCE_".equals(md.getMetrics().get(0).getName()) || md.getProperties().containsKey("_MS.MetricId")) {
+            if ("_OTELRESOURCE_".equals(md.getMetrics().get(0).getName())
+                || md.getProperties().containsKey("_MS.MetricId")) {
               return false;
             }
             return condition.test(input);
