@@ -34,8 +34,7 @@ public class DiagnosticsHelper {
 
   public static void initRpIntegration(Path agentPath) {
     // important to check FUNCTIONS_WORKER_RUNTIME before WEBSITE_SITE_NAME
-    // TODO (heya) how should we report functions windows users who are using app services
-    //  windows attach by manually setting the env vars (which was the old documented way)
+    // TODO (heya) refactor PropertyHelper and ResourceProvider to simplify logic for rp
     if ("java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME"))) {
       PropertyHelper.setRpIntegrationChar('f');
       functionsRpIntegration = true;
