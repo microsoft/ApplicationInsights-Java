@@ -7,6 +7,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
 import com.google.common.base.Stopwatch;
+import com.microsoft.applicationinsights.smoketest.fakeingestion.MockedOtlpIngestionServer;
 import com.microsoft.applicationinsights.smoketest.fakeingestion.MockedAppInsightsIngestionServer;
 import com.microsoft.applicationinsights.smoketest.fakeingestion.ProfilerState;
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
@@ -70,6 +71,8 @@ public class SmokeTestExtension
   protected final MockedAppInsightsIngestionServer mockedIngestion =
       new MockedAppInsightsIngestionServer();
 
+  protected final MockedOtlpIngestionServer mockedOtlpIngestion = new MockedOtlpIngestionServer();
+
   private boolean useAgent;
   @Nullable private String agentConfigurationPath;
   @Nullable private List<DependencyContainer> dependencyImages;
@@ -97,6 +100,7 @@ public class SmokeTestExtension
   private final File javaagentFile;
   private final File agentExtensionFile;
   private final Map<String, String> httpHeaders;
+  private final boolean useOtlpEndpoint;
 
   public static SmokeTestExtension create() {
     return builder().build();
@@ -118,7 +122,8 @@ public class SmokeTestExtension
       String selfDiagnosticsLevel,
       File agentExtensionFile,
       ProfilerState profilerState,
-      Map<String, String> httpHeaders) {
+      Map<String, String> httpHeaders,
+      boolean useOtlpEndpoint) {
     this.skipHealthCheck = skipHealthCheck;
     this.readOnly = readOnly;
     this.dependencyContainer = dependencyContainer;
@@ -144,6 +149,7 @@ public class SmokeTestExtension
     javaagentFile = new File(System.getProperty(javaagentPathSystemProperty));
 
     this.httpHeaders = httpHeaders;
+    this.useOtlpEndpoint = useOtlpEndpoint;
   }
 
   private static String getProfilerEndpoint(ProfilerState profilerState) {
@@ -199,13 +205,16 @@ public class SmokeTestExtension
       currentImageAppFileName = appFile.getName();
     }
     mockedIngestion.startServer();
+    mockedIngestion.setRequestLoggingEnabled(true);
+    if (useOtlpEndpoint) {
+      mockedOtlpIngestion.startServer();
+    }
     network = Network.newNetwork();
     allContainers = new ArrayList<>();
     hostnameEnvVars = new HashMap<>();
     startDependencyContainers();
     startTestApplicationContainer();
     clearOutAnyInitLogs();
-    mockedIngestion.setRequestLoggingEnabled(true);
   }
 
   @Override
@@ -404,6 +413,12 @@ public class SmokeTestExtension
       javaToolOptions.add(
           "-Dapplicationinsights.testing.global-ingestion-endpoint=" + FAKE_INGESTION_ENDPOINT);
     }
+    if (useOtlpEndpoint) {
+      javaToolOptions.add("-Dotel.metrics.exporter=otlp");
+      javaToolOptions.add("-Dotel.exporter.otlp.metrics.endpoint=http://localhost:4317");
+      javaToolOptions.add("-Dotel.exporter.otlp.protocol=grpc");
+      javaToolOptions.add("-Dotel.metric.export.interval=1000");
+    }
     if (REMOTE_DEBUG) {
       javaToolOptions.add(
           "-agentlib:jdwp=transport=dt_socket,address=0.0.0.0:5005,server=y,suspend=y");
@@ -456,6 +471,11 @@ public class SmokeTestExtension
     appServerPort = container.getMappedPort(8080);
 
     targetContainer = container;
+    System.out.println("###### add container #######");
+    System.out.println("###### javaToolOptions: ######");
+    javaToolOptions.forEach(System.out::println);
+    System.out.println("###### end javaToolOptions: #######");
+    System.out.println("###### javaAgentFile: " + javaagentFile.getAbsolutePath());
     allContainers.add(container);
   }
 
@@ -486,8 +506,12 @@ public class SmokeTestExtension
     if (network != null) {
       network.close();
     }
+
     mockedIngestion.stopServer();
     mockedIngestion.setRequestLoggingEnabled(false);
+    if (useOtlpEndpoint) {
+      mockedOtlpIngestion.stopServer();
+    }
   }
 
   @SuppressWarnings("TypeParameterUnusedInFormals")
