@@ -1,7 +1,7 @@
 
 # agent
 ## Dependency License Report
-_2023-10-25 13:15:52 PDT_
+_2023-10-25 16:26:04 PDT_
 ## Apache License, Version 2.0
 
 **1** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-annotations` **Version:** `2.15.3` 
@@ -206,74 +206,73 @@ _2023-10-25 13:15:52 PDT_
 > - **POM Project URL**: [https://github.com/open-telemetry/opentelemetry-java](https://github.com/open-telemetry/opentelemetry-java)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
-**40** **Group:** `io.opentelemetry` **Name:** `opentelemetry-sdk-extension-autoconfigure-spi` **Version:** `1.31.0` 
+**40** **Group:** `io.opentelemetry` **Name:** `opentelemetry-sdk-extension-autoconfigure` **Version:** `1.31.0` 
 > - **POM Project URL**: [https://github.com/open-telemetry/opentelemetry-java](https://github.com/open-telemetry/opentelemetry-java)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
-**41** **Group:** `io.opentelemetry` **Name:** `opentelemetry-sdk-logs` **Version:** `1.31.0` 
+**41** **Group:** `io.opentelemetry` **Name:** `opentelemetry-sdk-extension-autoconfigure-spi` **Version:** `1.31.0` 
 > - **POM Project URL**: [https://github.com/open-telemetry/opentelemetry-java](https://github.com/open-telemetry/opentelemetry-java)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
-**42** **Group:** `io.opentelemetry` **Name:** `opentelemetry-sdk-metrics` **Version:** `1.31.0` 
+**42** **Group:** `io.opentelemetry` **Name:** `opentelemetry-sdk-logs` **Version:** `1.31.0` 
 > - **POM Project URL**: [https://github.com/open-telemetry/opentelemetry-java](https://github.com/open-telemetry/opentelemetry-java)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
-**43** **Group:** `io.opentelemetry` **Name:** `opentelemetry-sdk-trace` **Version:** `1.31.0` 
+**43** **Group:** `io.opentelemetry` **Name:** `opentelemetry-sdk-metrics` **Version:** `1.31.0` 
 > - **POM Project URL**: [https://github.com/open-telemetry/opentelemetry-java](https://github.com/open-telemetry/opentelemetry-java)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
-**44** **Group:** `io.projectreactor` **Name:** `reactor-core` **Version:** `3.5.11` 
+**44** **Group:** `io.opentelemetry` **Name:** `opentelemetry-sdk-trace` **Version:** `1.31.0` 
+> - **POM Project URL**: [https://github.com/open-telemetry/opentelemetry-java](https://github.com/open-telemetry/opentelemetry-java)
+> - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
+
+**45** **Group:** `io.projectreactor` **Name:** `reactor-core` **Version:** `3.5.11` 
 > - **POM Project URL**: [https://github.com/reactor/reactor-core](https://github.com/reactor/reactor-core)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
 
-**45** **Group:** `io.projectreactor.netty` **Name:** `reactor-netty-core` **Version:** `1.1.12` 
+**46** **Group:** `io.projectreactor.netty` **Name:** `reactor-netty-core` **Version:** `1.1.12` 
 > - **POM Project URL**: [https://github.com/reactor/reactor-netty](https://github.com/reactor/reactor-netty)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
-**46** **Group:** `io.projectreactor.netty` **Name:** `reactor-netty-http` **Version:** `1.1.12` 
+**47** **Group:** `io.projectreactor.netty` **Name:** `reactor-netty-http` **Version:** `1.1.12` 
 > - **POM Project URL**: [https://github.com/reactor/reactor-netty](https://github.com/reactor/reactor-netty)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
-**47** **Group:** `net.java.dev.jna` **Name:** `jna` **Version:** `5.13.0` 
+**48** **Group:** `net.java.dev.jna` **Name:** `jna` **Version:** `5.13.0` 
 > - **POM Project URL**: [https://github.com/java-native-access/jna](https://github.com/java-native-access/jna)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 > - **POM License**: GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 - [https://www.gnu.org/licenses/lgpl-2.1](https://www.gnu.org/licenses/lgpl-2.1)
 > - **Embedded license files**: [jna-5.13.0.jar/META-INF/LICENSE](jna-5.13.0.jar/META-INF/LICENSE)
 
-**48** **Group:** `net.java.dev.jna` **Name:** `jna-platform` **Version:** `5.13.0` 
+**49** **Group:** `net.java.dev.jna` **Name:** `jna-platform` **Version:** `5.13.0` 
 > - **POM Project URL**: [https://github.com/java-native-access/jna](https://github.com/java-native-access/jna)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 > - **POM License**: GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 - [https://www.gnu.org/licenses/lgpl-2.1](https://www.gnu.org/licenses/lgpl-2.1)
 > - **Embedded license files**: [jna-platform-5.13.0.jar/META-INF/LICENSE](jna-platform-5.13.0.jar/META-INF/LICENSE)
 
-**49** **Group:** `net.minidev` **Name:** `accessors-smart` **Version:** `2.4.9` 
+**50** **Group:** `net.minidev` **Name:** `accessors-smart` **Version:** `2.4.9` 
 > - **Project URL**: [https://urielch.github.io/](https://urielch.github.io/)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
-**50** **Group:** `net.minidev` **Name:** `json-smart` **Version:** `2.4.10` 
+**51** **Group:** `net.minidev` **Name:** `json-smart` **Version:** `2.4.10` 
 > - **Project URL**: [https://urielch.github.io/](https://urielch.github.io/)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
-**51** **Group:** `org.apache.commons` **Name:** `commons-lang3` **Version:** `3.12.0` 
+**52** **Group:** `org.apache.commons` **Name:** `commons-lang3` **Version:** `3.12.0` 
 > - **Project URL**: [https://commons.apache.org/proper/commons-lang/](https://commons.apache.org/proper/commons-lang/)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
 > - **Embedded license files**: [commons-lang3-3.12.0.jar/META-INF/LICENSE.txt](commons-lang3-3.12.0.jar/META-INF/LICENSE.txt) 
     - [commons-lang3-3.12.0.jar/META-INF/NOTICE.txt](commons-lang3-3.12.0.jar/META-INF/NOTICE.txt)
 
-**52** **Group:** `org.apache.commons` **Name:** `commons-text` **Version:** `1.10.0` 
+**53** **Group:** `org.apache.commons` **Name:** `commons-text` **Version:** `1.10.0` 
 > - **Project URL**: [https://commons.apache.org/proper/commons-text](https://commons.apache.org/proper/commons-text)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
 > - **Embedded license files**: [commons-text-1.10.0.jar/META-INF/LICENSE.txt](commons-text-1.10.0.jar/META-INF/LICENSE.txt) 
     - [commons-text-1.10.0.jar/META-INF/NOTICE.txt](commons-text-1.10.0.jar/META-INF/NOTICE.txt)
-
-**53** **Group:** `org.awaitility` **Name:** `awaitility` **Version:** `4.2.0` 
-> - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
-> - **POM Project URL**: [http://awaitility.org](http://awaitility.org)
-> - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
 **54** **Group:** `org.slf4j` **Name:** `jcl-over-slf4j` **Version:** `2.0.9` 
 > - **Project URL**: [http://www.slf4j.org](http://www.slf4j.org)
@@ -364,7 +363,7 @@ _2023-10-25 13:15:52 PDT_
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**70** **Group:** `com.azure` **Name:** `azure-monitor-opentelemetry-exporter` **Version:** `1.0.0-beta.11` 
+**70** **Group:** `com.azure` **Name:** `azure-monitor-opentelemetry-exporter` **Version:** `1.0.0-beta.13` 
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
 **71** **Group:** `com.azure` **Name:** `azure-storage-blob` **Version:** `12.24.0` 
@@ -415,11 +414,5 @@ _2023-10-25 13:15:52 PDT_
 > - **Manifest Project URL**: [http://reactive-streams.org](http://reactive-streams.org)
 > - **POM Project URL**: [http://www.reactive-streams.org/](http://www.reactive-streams.org/)
 > - **POM License**: MIT-0 - [https://spdx.org/licenses/MIT-0.html](https://spdx.org/licenses/MIT-0.html)
-
-## The 3-Clause BSD License
-
-**81** **Group:** `org.hamcrest` **Name:** `hamcrest` **Version:** `2.1` 
-> - **POM Project URL**: [http://hamcrest.org/JavaHamcrest/](http://hamcrest.org/JavaHamcrest/)
-> - **POM License**: The 3-Clause BSD License - [https://opensource.org/licenses/BSD-3-Clause](https://opensource.org/licenses/BSD-3-Clause)
 
 

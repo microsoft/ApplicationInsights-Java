@@ -118,7 +118,6 @@ abstract class ConnectionStringOverridesTest {
     MetricData otelResourceMetricData =
         (MetricData) ((Data<?>) otelResourceMetrics.get(0).getData()).getBaseData();
     Map<String, String> properties = otelResourceMetricData.getProperties();
-    assertThat(properties.size()).isEqualTo(2);
     assertThat(properties.get("key1")).isEqualTo("value1");
     assertThat(properties.get("key2")).isEqualTo("value2");
   }

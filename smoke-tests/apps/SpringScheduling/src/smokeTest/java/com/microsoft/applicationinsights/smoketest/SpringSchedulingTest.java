@@ -25,11 +25,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 @UseAgent
 abstract class SpringSchedulingTest {
 
-  @RegisterExtension
-  static final SmokeTestExtension testing =
-      SmokeTestExtension.builder()
-          .setSelfDiagnosticsLevel("debug")
-          .build(); // SmokeTestExtension.create();
+  @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.create();
 
   @Test
   @TargetUri("/should-ignore")
