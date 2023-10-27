@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 package com.microsoft.applicationinsights.smoketest;
 
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_11;
@@ -13,12 +16,11 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 @UseAgent
 abstract class OtlpTest {
 
-  @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.builder()
-      .useOtlpEndpoint()
-      .setSelfDiagnosticsLevel("DEBUG")
-      .build();
+  @RegisterExtension
+  static final SmokeTestExtension testing =
+      SmokeTestExtension.builder().useOtlpEndpoint().setSelfDiagnosticsLevel("DEBUG").build();
 
-//  @Autowired TestRestTemplate template;
+  //  @Autowired TestRestTemplate template;
 
   @Test
   @TargetUri("/ping")
@@ -28,14 +30,13 @@ abstract class OtlpTest {
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
     assertThat(rd.getName()).isEqualTo("GET /OTLP/");
 
-//    template.getForObject(URI.create("http://localhost:4317/ping"), String.class);
+    //    template.getForObject(URI.create("http://localhost:4317/ping"), String.class);
 
-//    Thread.sleep(10000);
+    //    Thread.sleep(10000);
 
-//    testing.mockedOtlpIngestion.verify();
+    //    testing.mockedOtlpIngestion.verify();
   }
 
   @Environment(TOMCAT_8_JAVA_11)
   static class Tomcat8Java11Test extends OtlpTest {}
 }
-

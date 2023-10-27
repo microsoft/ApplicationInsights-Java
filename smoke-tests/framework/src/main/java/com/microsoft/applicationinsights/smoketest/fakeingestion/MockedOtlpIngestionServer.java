@@ -1,25 +1,27 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 package com.microsoft.applicationinsights.smoketest.fakeingestion;
-
-import com.google.protobuf.InvalidProtocolBufferException;
-import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
-import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
-import io.opentelemetry.proto.metrics.v1.Metric;
-import io.opentelemetry.proto.trace.v1.Span;
-import org.mockserver.integration.ClientAndServer;
-import org.mockserver.model.Body;
-import org.mockserver.model.HttpRequest;
-
-import javax.annotation.Nullable;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockserver.integration.ClientAndServer.startClientAndServer;
 import static org.mockserver.model.HttpRequest.request;
 import static org.mockserver.model.HttpResponse.response;
 import static org.mockserver.stop.Stop.stopQuietly;
+
+import com.google.protobuf.InvalidProtocolBufferException;
+import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
+import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
+import io.opentelemetry.proto.metrics.v1.Metric;
+import io.opentelemetry.proto.trace.v1.Span;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+import javax.annotation.Nullable;
+import org.mockserver.integration.ClientAndServer;
+import org.mockserver.model.Body;
+import org.mockserver.model.HttpRequest;
 
 public class MockedOtlpIngestionServer {
   static final int EXPORTER_ENDPOINT_PORT = 4317;
@@ -43,9 +45,7 @@ public class MockedOtlpIngestionServer {
 
     // verify traces
     List<Span> spans = extractSpansFromRequests(requests);
-    assertThat(spans)
-        .extracting(Span::getName)
-        .contains("Controller.doWork", "Controller.ping");
+    assertThat(spans).extracting(Span::getName).contains("Controller.doWork", "Controller.ping");
 
     // verify metrics
     List<Metric> metrics = extractMetricsFromRequests(requests);
@@ -61,7 +61,11 @@ public class MockedOtlpIngestionServer {
   private static List<Span> extractSpansFromRequests(HttpRequest[] requests) {
     return Arrays.stream(requests)
         .map(HttpRequest::getBody)
-        .flatMap(body -> Objects.requireNonNull(getExportTraceServiceRequest(body)).getResourceSpansList().stream())
+        .flatMap(
+            body ->
+                Objects.requireNonNull(getExportTraceServiceRequest(body))
+                    .getResourceSpansList()
+                    .stream())
         .flatMap(r -> r.getInstrumentationLibrarySpansList().stream())
         .flatMap(r -> r.getSpansList().stream())
         .collect(Collectors.toList());
@@ -85,7 +89,11 @@ public class MockedOtlpIngestionServer {
   private static List<Metric> extractMetricsFromRequests(HttpRequest[] requests) {
     return Arrays.stream(requests)
         .map(HttpRequest::getBody)
-        .flatMap(body -> Objects.requireNonNull(getExportMetricsServiceRequest(body)).getResourceMetricsList().stream())
+        .flatMap(
+            body ->
+                Objects.requireNonNull(getExportMetricsServiceRequest(body))
+                    .getResourceMetricsList()
+                    .stream())
         .flatMap(r -> r.getInstrumentationLibraryMetricsList().stream())
         .flatMap(r -> r.getMetricsList().stream())
         .collect(Collectors.toList());

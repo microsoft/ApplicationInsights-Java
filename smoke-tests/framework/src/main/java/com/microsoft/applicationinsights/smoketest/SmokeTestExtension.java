@@ -7,8 +7,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
 import com.google.common.base.Stopwatch;
-import com.microsoft.applicationinsights.smoketest.fakeingestion.MockedOtlpIngestionServer;
 import com.microsoft.applicationinsights.smoketest.fakeingestion.MockedAppInsightsIngestionServer;
+import com.microsoft.applicationinsights.smoketest.fakeingestion.MockedOtlpIngestionServer;
 import com.microsoft.applicationinsights.smoketest.fakeingestion.ProfilerState;
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.Domain;
@@ -59,7 +59,7 @@ public class SmokeTestExtension
   // add -PsmokeTestRemoteDebug=true to the gradle args to enable (see ai.smoke-test.gradle.kts)
   private static final boolean REMOTE_DEBUG = Boolean.getBoolean("ai.smoke-test.remote-debug");
 
-  private static final int TELEMETRY_RECEIVE_TIMEOUT_SECONDS = 60;
+  private static final int TELEMETRY_RECEIVE_TIMEOUT_SECONDS = 60 * 5;
 
   private static final String FAKE_INGESTION_ENDPOINT = "http://host.testcontainers.internal:6060/";
   private static final String FAKE_PROFILER_ENDPOINT =
@@ -310,7 +310,7 @@ public class SmokeTestExtension
       dependencyContainer
           .withNetwork(network)
           .withNetworkAliases(containerName)
-          .withStartupTimeout(Duration.ofSeconds(90));
+          .withStartupTimeout(Duration.ofMinutes(5));
 
       Stopwatch stopwatch = Stopwatch.createStarted();
       dependencyContainer.start();
@@ -341,7 +341,7 @@ public class SmokeTestExtension
               .withNetwork(network)
               .withNetworkAliases(containerName)
               .withExposedPorts(dc.exposedPort())
-              .withStartupTimeout(Duration.ofSeconds(90));
+              .withStartupTimeout(Duration.ofMinutes(10));
       Stopwatch stopwatch = Stopwatch.createStarted();
       container.start();
       System.out.printf(
@@ -415,7 +415,8 @@ public class SmokeTestExtension
     }
     if (useOtlpEndpoint) {
       javaToolOptions.add("-Dotel.metrics.exporter=otlp");
-      javaToolOptions.add("-Dotel.exporter.otlp.metrics.endpoint=http://localhost:4317");
+      javaToolOptions.add(
+          "-Dotel.exporter.otlp.metrics.endpoint=http://host.testcontainers.internal:4317");
       javaToolOptions.add("-Dotel.exporter.otlp.protocol=grpc");
       javaToolOptions.add("-Dotel.metric.export.interval=1000");
     }

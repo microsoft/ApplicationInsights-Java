@@ -12,7 +12,7 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-test:2.7.16")
   implementation("io.spring.dependency-management:io.spring.dependency-management.gradle.plugin:1.1.3")
 
-  //spring modules
+  // spring modules
   smokeTestImplementation("org.springframework.boot:spring-boot-starter-test:2.7.16")
   smokeTestImplementation("org.junit.jupiter:junit-jupiter-api:5.10.0")
   smokeTestImplementation("org.junit.jupiter:junit-jupiter-engine:5.10.0")
