@@ -794,6 +794,7 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
     }
   }
 
+  @Nullable
   private static SdkMeterProviderBuilder configureOtlpMetrics(
       SdkMeterProviderBuilder builder, ConfigProperties otelConfig) {
     String otelMetricExporterConfig = otelConfig.getString(OTEL_METRICS_EXPORTER);

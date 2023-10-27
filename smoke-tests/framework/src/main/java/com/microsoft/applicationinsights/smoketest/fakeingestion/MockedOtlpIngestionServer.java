@@ -3,7 +3,9 @@
 
 package com.microsoft.applicationinsights.smoketest.fakeingestion;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 import static org.mockserver.integration.ClientAndServer.startClientAndServer;
 import static org.mockserver.model.HttpRequest.request;
 import static org.mockserver.model.HttpResponse.response;
@@ -39,17 +41,24 @@ public class MockedOtlpIngestionServer {
     stopQuietly(collectorServer);
   }
 
+  @SuppressWarnings("PreferJavaTimeOverload")
   public void verify() {
-    collectorServer.retrieveRecordedRequests(request());
-    HttpRequest[] requests = collectorServer.retrieveRecordedRequests(request());
+    await()
+        .atMost(60, SECONDS)
+        .untilAsserted(
+            () -> {
+              HttpRequest[] requests = collectorServer.retrieveRecordedRequests(request());
 
-    // verify traces
-    List<Span> spans = extractSpansFromRequests(requests);
-    assertThat(spans).extracting(Span::getName).contains("Controller.doWork", "Controller.ping");
+              // verify traces
+              List<Span> spans = extractSpansFromRequests(requests);
+              assertThat(spans)
+                  .extracting(Span::getName)
+                  .contains("OtlpController.ping");
 
-    // verify metrics
-    List<Metric> metrics = extractMetricsFromRequests(requests);
-    assertThat(metrics).extracting(Metric::getName).contains("apiCounter");
+              // verify metrics
+              List<Metric> metrics = extractMetricsFromRequests(requests);
+              assertThat(metrics).extracting(Metric::getName).contains("histogram-test-otlp-exporter");
+            });
   }
 
   /**

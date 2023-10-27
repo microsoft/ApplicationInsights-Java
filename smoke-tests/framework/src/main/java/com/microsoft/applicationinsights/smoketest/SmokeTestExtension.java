@@ -59,7 +59,7 @@ public class SmokeTestExtension
   // add -PsmokeTestRemoteDebug=true to the gradle args to enable (see ai.smoke-test.gradle.kts)
   private static final boolean REMOTE_DEBUG = Boolean.getBoolean("ai.smoke-test.remote-debug");
 
-  private static final int TELEMETRY_RECEIVE_TIMEOUT_SECONDS = 60 * 5;
+  private static final int TELEMETRY_RECEIVE_TIMEOUT_SECONDS = 60;
 
   private static final String FAKE_INGESTION_ENDPOINT = "http://host.testcontainers.internal:6060/";
   private static final String FAKE_PROFILER_ENDPOINT =
@@ -385,7 +385,7 @@ public class SmokeTestExtension
       container =
           new FixedHostPortGenericContainer<>(currentImageName)
               .withFixedExposedPort(5005, 5005)
-              .withStartupTimeout(Duration.ofMinutes(5));
+              .withStartupTimeout(Duration.ofMinutes(10));
     } else {
       container = new GenericContainer<>(currentImageName);
     }
@@ -415,8 +415,7 @@ public class SmokeTestExtension
     }
     if (useOtlpEndpoint) {
       javaToolOptions.add("-Dotel.metrics.exporter=otlp");
-      javaToolOptions.add(
-          "-Dotel.exporter.otlp.metrics.endpoint=http://host.testcontainers.internal:4317");
+      javaToolOptions.add("-Dotel.exporter.otlp.metrics.endpoint=http://host.testcontainers.internal:4317");
       javaToolOptions.add("-Dotel.exporter.otlp.protocol=grpc");
       javaToolOptions.add("-Dotel.metric.export.interval=1000");
     }
@@ -472,11 +471,7 @@ public class SmokeTestExtension
     appServerPort = container.getMappedPort(8080);
 
     targetContainer = container;
-    System.out.println("###### add container #######");
-    System.out.println("###### javaToolOptions: ######");
     javaToolOptions.forEach(System.out::println);
-    System.out.println("###### end javaToolOptions: #######");
-    System.out.println("###### javaAgentFile: " + javaagentFile.getAbsolutePath());
     allContainers.add(container);
   }
 
