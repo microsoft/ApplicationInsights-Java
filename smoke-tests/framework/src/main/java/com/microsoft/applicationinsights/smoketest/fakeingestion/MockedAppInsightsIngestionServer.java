@@ -41,13 +41,13 @@ public class MockedAppInsightsIngestionServer {
 
   @SuppressWarnings("SystemOut")
   public void startServer() throws Exception {
-    System.out.println("Starting fake ingestion...");
+    System.out.println("Starting fake AppInsights ingestion...");
     server.start();
   }
 
   @SuppressWarnings("SystemOut")
   public void stopServer() throws Exception {
-    System.out.println("Stopping fake ingestion...");
+    System.out.println("Stopping fake AppInsights ingestion...");
     server.stop();
     server.join();
   }
@@ -139,23 +139,23 @@ public class MockedAppInsightsIngestionServer {
 
   public List<Envelope> waitForItems(String type, int numItems)
       throws ExecutionException, InterruptedException, TimeoutException {
-    return waitForItems(type, numItems, null, false);
+    return waitForItems(type, numItems, null);
   }
 
-  public List<Envelope> waitForItems(String type, int numItems, boolean usedOtlpEndpoint)
+  public List<Envelope> waitForItems(String type, Predicate<Envelope> condition, int numItems)
       throws ExecutionException, InterruptedException, TimeoutException {
-    return waitForItems(type, numItems, null, usedOtlpEndpoint);
+    return waitForItems(type, numItems, null, condition);
   }
 
   // if operationId is null, then matches all items, otherwise only matches items with that
   // operationId
-  public List<Envelope> waitForItems(String type, int numItems, @Nullable String operationId, boolean usedOtlpEndpoint)
+  public List<Envelope> waitForItems(String type, int numItems, @Nullable String operationId)
       throws InterruptedException, ExecutionException, TimeoutException {
-    return waitForItems(type, numItems, operationId, envelope -> true, usedOtlpEndpoint);
+    return waitForItems(type, numItems, operationId, envelope -> true);
   }
 
   public List<Envelope> waitForItems(
-      String type, int numItems, @Nullable String operationId, Predicate<Envelope> condition, boolean usedOtlpEndpoint)
+      String type, int numItems, @Nullable String operationId, Predicate<Envelope> condition)
       throws InterruptedException, ExecutionException, TimeoutException {
     List<Envelope> items =
         waitForItems(
@@ -164,13 +164,6 @@ public class MockedAppInsightsIngestionServer {
               public boolean test(Envelope input) {
                 if (!input.getData().getBaseType().equals(type)) {
                   return false;
-                }
-                if ("MetricData".equals(type) && usedOtlpEndpoint) {
-                  MetricData md = (MetricData) ((Data<?>) input.getData()).getBaseData();
-                  if ("_OTELRESOURCE_".equals(md.getMetrics().get(0).getName())
-                      || "http.server.duration".equals(md.getMetrics().get(0).getName())) {
-                    return false;
-                  }
                 }
                 if (operationId != null
                     && !operationId.equals(input.getTags().get("ai.operation.id"))) {
@@ -247,13 +240,13 @@ public class MockedAppInsightsIngestionServer {
   // requests
   public List<Envelope> waitForItemsInOperation(String type, int numItems, String operationId)
       throws ExecutionException, InterruptedException, TimeoutException {
-    return waitForItems(type, numItems, operationId, false);
+    return waitForItems(type, numItems, operationId);
   }
 
   public List<Envelope> waitForItemsInOperation(
       String type, int numItems, String operationId, Predicate<Envelope> condition)
       throws ExecutionException, InterruptedException, TimeoutException {
-    return waitForItems(type, numItems, operationId, condition, false);
+    return waitForItems(type, numItems, operationId, condition);
   }
 
   // wait for at least one unexpected otel metrics for failure case or timeout for success

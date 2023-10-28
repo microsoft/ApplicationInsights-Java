@@ -61,7 +61,10 @@ public class SmokeTestExtension
 
   private static final int TELEMETRY_RECEIVE_TIMEOUT_SECONDS = 60;
 
-  private static final String FAKE_INGESTION_ENDPOINT = "http://host.testcontainers.internal:6060/";
+  private static final String FAKE_APPINSIGHTS_INGESTION_ENDPOINT =
+      "http://host.testcontainers.internal:6060/";
+  private static final String FAKE_OTLP_INGESTION_ENDPOINT =
+      "http://host.testcontainers.internal:4318";
   private static final String FAKE_PROFILER_ENDPOINT =
       "http://host.testcontainers.internal:6060/profiler/";
 
@@ -134,9 +137,9 @@ public class SmokeTestExtension
         doNotSetConnectionString
             ? ""
             : "InstrumentationKey=00000000-0000-0000-0000-0FEEDDADBEEF;IngestionEndpoint="
-                + FAKE_INGESTION_ENDPOINT
+                + FAKE_APPINSIGHTS_INGESTION_ENDPOINT
                 + ";LiveEndpoint="
-                + FAKE_INGESTION_ENDPOINT
+                + FAKE_APPINSIGHTS_INGESTION_ENDPOINT
                 + ";ProfilerEndpoint="
                 + getProfilerEndpoint(profilerState);
 
@@ -341,7 +344,7 @@ public class SmokeTestExtension
               .withNetwork(network)
               .withNetworkAliases(containerName)
               .withExposedPorts(dc.exposedPort())
-              .withStartupTimeout(Duration.ofMinutes(10));
+              .withStartupTimeout(Duration.ofMinutes(5));
       Stopwatch stopwatch = Stopwatch.createStarted();
       container.start();
       System.out.printf(
@@ -379,6 +382,7 @@ public class SmokeTestExtension
 
     // TODO (trask) make this port dynamic so can run tests in parallel
     Testcontainers.exposeHostPorts(6060);
+    Testcontainers.exposeHostPorts(4318);
 
     GenericContainer<?> container;
     if (REMOTE_DEBUG) {
@@ -411,13 +415,14 @@ public class SmokeTestExtension
     }
     if (usesGlobalIngestionEndpoint) {
       javaToolOptions.add(
-          "-Dapplicationinsights.testing.global-ingestion-endpoint=" + FAKE_INGESTION_ENDPOINT);
+          "-Dapplicationinsights.testing.global-ingestion-endpoint="
+              + FAKE_APPINSIGHTS_INGESTION_ENDPOINT);
     }
     if (useOtlpEndpoint) {
       javaToolOptions.add("-Dotel.metrics.exporter=otlp");
-      javaToolOptions.add("-Dotel.exporter.otlp.metrics.endpoint=http://host.testcontainers.internal:4317");
-      javaToolOptions.add("-Dotel.exporter.otlp.protocol=grpc");
-      javaToolOptions.add("-Dotel.metric.export.interval=1000");
+      javaToolOptions.add("-Dotel.exporter.otlp.metrics.endpoint=" + FAKE_OTLP_INGESTION_ENDPOINT);
+      javaToolOptions.add("-Dotel.exporter.otlp.protocol=http/protobuf");
+      javaToolOptions.add("-Dotel.metric.export.interval=5000");
     }
     if (REMOTE_DEBUG) {
       javaToolOptions.add(

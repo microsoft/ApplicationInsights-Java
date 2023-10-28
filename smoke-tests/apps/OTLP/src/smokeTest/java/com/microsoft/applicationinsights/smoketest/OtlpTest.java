@@ -11,14 +11,10 @@ import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
 import com.microsoft.applicationinsights.smoketest.schemav2.MetricData;
 import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
-import java.net.URI;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.boot.test.web.server.LocalServerPort;
 
 @SpringBootTest(
     classes = {OtlpApplication.class},
@@ -26,29 +22,36 @@ import org.springframework.boot.test.web.server.LocalServerPort;
 @UseAgent
 abstract class OtlpTest {
 
-  @LocalServerPort private int port;
-
   @RegisterExtension
   static final SmokeTestExtension testing =
       SmokeTestExtension.builder().useOtlpEndpoint().setSelfDiagnosticsLevel("DEBUG").build();
 
-  @Autowired TestRestTemplate template;
-
   @Test
   @TargetUri("/ping")
   public void testOtlpTelemetry() throws Exception {
+    // verify request sent to Application Insights endpoint
     List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
     Envelope rdEnvelope = rdList.get(0);
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
     assertThat(rd.getName()).isEqualTo("GET /OTLP/ping");
 
-    List<Envelope> metricList = testing.mockedIngestion.waitForItems("MetricData", 1, true);
+    // verify metric sent to OTLP endpoint
+    List<Envelope> metricList =
+        testing.mockedIngestion.waitForItems("MetricData", OtlpTest::isHistogramMetric, 1);
     Envelope metricEnvelope = metricList.get(0);
     MetricData metricData = (MetricData) ((Data<?>) metricEnvelope.getData()).getBaseData();
     assertThat(metricData.getMetrics().get(0).getName()).isEqualTo("histogram-test-otlp-exporter");
 
-    template.getForEntity(URI.create("http://host.testcontainers.internal:" + port + "/ping"), String.class);
+    // verify metrics sent to OTLP endpoint
     testing.mockedOtlpIngestion.verify();
+  }
+
+  private static boolean isHistogramMetric(Envelope envelope) {
+    if (envelope.getData().getBaseType().equals("MetricData")) {
+      MetricData data = (MetricData) ((Data<?>) envelope.getData()).getBaseData();
+      return data.getMetrics().get(0).getName().equals("histogram-test-otlp-exporter");
+    }
+    return false;
   }
 
   @Environment(TOMCAT_8_JAVA_11)

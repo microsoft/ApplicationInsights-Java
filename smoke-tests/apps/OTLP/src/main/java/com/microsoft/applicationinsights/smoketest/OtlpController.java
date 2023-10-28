@@ -4,6 +4,7 @@
 package com.microsoft.applicationinsights.smoketest;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.instrumentation.annotations.WithSpan;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -18,11 +19,12 @@ public class OtlpController {
 
   @GetMapping("/ping")
   public String ping() {
-    sendLongHistogramMetric();
+    doWork();
     return "pong";
   }
 
-  private void sendLongHistogramMetric() {
+  @WithSpan
+  private void doWork() {
     GlobalOpenTelemetry.get()
         .getMeter(OtlpController.class.getName())
         .histogramBuilder("histogram-test-otlp-exporter")
