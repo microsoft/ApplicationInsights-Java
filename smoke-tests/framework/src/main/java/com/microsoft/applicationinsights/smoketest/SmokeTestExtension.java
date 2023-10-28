@@ -389,7 +389,7 @@ public class SmokeTestExtension
       container =
           new FixedHostPortGenericContainer<>(currentImageName)
               .withFixedExposedPort(5005, 5005)
-              .withStartupTimeout(Duration.ofMinutes(10));
+              .withStartupTimeout(Duration.ofMinutes(5));
     } else {
       container = new GenericContainer<>(currentImageName);
     }

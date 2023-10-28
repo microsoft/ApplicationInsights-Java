@@ -47,12 +47,6 @@ public class MockedOtlpIngestionServer {
             () -> {
               HttpRequest[] requests = collectorServer.retrieveRecordedRequests(request());
 
-              // verify span
-              //              List<Span> spans = extractSpansFromRequests(requests);
-              //              assertThat(spans)
-              //                  .extracting(Span::getName)
-              //                  .contains("OtlpController.doWork", "OtlpController.ping");
-
               // verify metrics
               List<Metric> metrics = extractMetricsFromRequests(requests);
               assertThat(metrics)
@@ -60,34 +54,6 @@ public class MockedOtlpIngestionServer {
                   .contains("histogram-test-otlp-exporter");
             });
   }
-
-  //  /**
-  //   * Extract spans from http requests received by a telemetry collector.
-  //   *
-  //   * @param requests Request received by a http server trace collector
-  //   * @return spans extracted from the request body
-  //   */
-  //  private static List<Span> extractSpansFromRequests(HttpRequest[] requests) {
-  //    return Arrays.stream(requests)
-  //        .map(HttpRequest::getBody)
-  //        .flatMap(
-  //            body ->
-  //                Objects.requireNonNull(getExportTraceServiceRequest(body))
-  //                    .getResourceSpansList()
-  //                    .stream())
-  //        .flatMap(r -> r.getInstrumentationLibrarySpansList().stream())
-  //        .flatMap(r -> r.getSpansList().stream())
-  //        .collect(Collectors.toList());
-  //  }
-
-  //  @Nullable
-  //  private static ExportTraceServiceRequest getExportTraceServiceRequest(Body body) {
-  //    try {
-  //      return ExportTraceServiceRequest.parseFrom(body.getRawBytes());
-  //    } catch (InvalidProtocolBufferException e) {
-  //      return null;
-  //    }
-  //  }
 
   /**
    * Extract metrics from http requests received by a telemetry collector.
