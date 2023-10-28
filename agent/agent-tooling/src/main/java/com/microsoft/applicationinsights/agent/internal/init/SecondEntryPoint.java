@@ -259,7 +259,6 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
             (spanExporter, otelConfig) -> {
               if (NONE.equals(otelConfig.getString(OTEL_TRACES_EXPORTER))) {
                 // in this case the spanExporter here is the noop spanExporter
-                System.out.println("#### use breeze span exporter");
                 return spanExporter;
               } else if (!OTLP.equals(otelConfig.getString(OTEL_TRACES_EXPORTER))) {
                 startupLogger.warning(
@@ -267,7 +266,6 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
                         + "\"otlp\". Azure Monitor Span exporter will not get created.");
                 return wrapSpanExporter(spanExporter, configuration);
               }
-              System.out.println("#### return otlp span exporter");
               return spanExporter;
             })
         .addTracerProviderCustomizer(
@@ -277,7 +275,6 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
             (logExporter, otelConfig) -> {
               if (NONE.equals(otelConfig.getString(OTEL_LOGS_EXPORTER))) {
                 // in this case the logExporter here is the noop spanExporter
-                System.out.println("##### return breeze log exporter");
                 return logExporter;
               } else if (!OTLP.equals(otelConfig.getString(OTEL_LOGS_EXPORTER))) {
                 startupLogger.warning(
@@ -286,7 +283,6 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
                 return wrapLogExporter(logExporter, configuration);
               }
 
-              System.out.println("#### return otlp log exporter");
               return logExporter;
             })
         .addLoggerProviderCustomizer(
