@@ -256,7 +256,9 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
                 // in this case the spanExporter here is the noop spanExporter
                 return spanExporter;
               } else if (!"otlp".equals(otelConfig.getString("otel.traces.exporter"))) {
-                startupLogger.verbose("Unsupported otel.traces.exporter: {}", otelConfig.getString("otel.traces.exporter"));
+                startupLogger.verbose(
+                    "Unsupported otel.traces.exporter: {}",
+                    otelConfig.getString("otel.traces.exporter"));
                 return wrapSpanExporter(spanExporter, configuration);
               }
               return spanExporter;
@@ -270,7 +272,9 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
                 // in this case the logExporter here is the noop spanExporter
                 return logExporter;
               } else if (!"otlp".equals(otelConfig.getString("otel.logs.exporter"))) {
-                startupLogger.verbose("Unsupported otel.logs.exporter: {}", otelConfig.getString("otel.logs.exporter"));
+                startupLogger.verbose(
+                    "Unsupported otel.logs.exporter: {}",
+                    otelConfig.getString("otel.logs.exporter"));
                 return wrapLogExporter(logExporter, configuration);
               }
 
