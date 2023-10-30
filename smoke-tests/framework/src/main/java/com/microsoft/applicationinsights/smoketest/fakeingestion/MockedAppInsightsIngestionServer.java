@@ -41,13 +41,13 @@ public class MockedAppInsightsIngestionServer {
 
   @SuppressWarnings("SystemOut")
   public void startServer() throws Exception {
-    System.out.println("Starting fake AppInsights ingestion...");
+    System.out.println("Starting fake Breeze ingestion...");
     server.start();
   }
 
   @SuppressWarnings("SystemOut")
   public void stopServer() throws Exception {
-    System.out.println("Stopping fake AppInsights ingestion...");
+    System.out.println("Stopping fake Breeze ingestion...");
     server.stop();
     server.join();
   }
