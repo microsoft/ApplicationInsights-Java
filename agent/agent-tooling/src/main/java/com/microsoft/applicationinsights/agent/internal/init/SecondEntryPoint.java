@@ -255,12 +255,9 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
               if ("none".equals(otelConfig.getString("otel.traces.exporter"))) {
                 // in this case the spanExporter here is the noop spanExporter
                 return spanExporter;
-              } else if (!"otlp".equals(otelConfig.getString("otel.traces.exporter"))) {
-                startupLogger.verbose(
-                    "Unsupported otel.traces.exporter: {}",
-                    otelConfig.getString("otel.traces.exporter"));
+              } else {
+                return wrapSpanExporter(spanExporter, configuration);
               }
-              return wrapSpanExporter(spanExporter, configuration);
             })
         .addTracerProviderCustomizer(
             (builder, otelConfig) ->
@@ -270,20 +267,16 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
               if ("none".equals(otelConfig.getString("otel.logs.exporter"))) {
                 // in this case the logExporter here is the noop spanExporter
                 return logExporter;
-              } else if (!"otlp".equals(otelConfig.getString("otel.logs.exporter"))) {
-                startupLogger.verbose(
-                    "Unsupported otel.logs.exporter: {}",
-                    otelConfig.getString("otel.logs.exporter"));
+              } else {
+                return wrapLogExporter(logExporter, configuration);
               }
-              return wrapLogExporter(logExporter, configuration);
             })
         .addLoggerProviderCustomizer(
             (builder, otelConfig) ->
                 configureLogging(builder, telemetryClient, quickPulse, otelConfig, configuration))
         .addMeterProviderCustomizer(
             (builder, otelConfig) ->
-                configureMetrics(
-                    metricFilters, builder, telemetryClient, otelConfig, configuration));
+                configureMetrics(metricFilters, builder, telemetryClient, configuration));
 
     AiContextCustomizerHolder.setInstance(
         new AiContextCustomizer<>(
@@ -782,20 +775,11 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
     }
   }
 
-  private static void logInvalidOtlpMetricExporter(ConfigProperties otelConfig) {
-    String otelMetricExporterConfig = otelConfig.getString("otel.metrics.exporter");
-    if (otelMetricExporterConfig != null && !"otlp".equals(otelMetricExporterConfig)) {
-      startupLogger.verbose("Unsupported otel.metrics.exporter: {}", otelMetricExporterConfig);
-    }
-  }
-
   private static SdkMeterProviderBuilder configureMetrics(
       List<MetricFilter> metricFilters,
       SdkMeterProviderBuilder builder,
       TelemetryClient telemetryClient,
-      ConfigProperties otelConfig,
       Configuration configuration) {
-    logInvalidOtlpMetricExporter(otelConfig);
     MetricDataMapper mapper =
         new MetricDataMapper(
             telemetryClient::populateDefaults, configuration.preview.captureHttpServer4xxAsError);

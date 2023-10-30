@@ -24,7 +24,7 @@ abstract class OtlpTest {
 
   @RegisterExtension
   static final SmokeTestExtension testing =
-      SmokeTestExtension.builder().useOtlpEndpoint().setSelfDiagnosticsLevel("DEBUG").build();
+      SmokeTestExtension.builder().useOtlpEndpoint().setSelfDiagnosticsLevel("TRACE").build();
 
   @Test
   @TargetUri("/ping")
@@ -40,7 +40,7 @@ abstract class OtlpTest {
         testing.mockedIngestion.waitForItems("MetricData", OtlpTest::isHistogramMetric, 1);
     Envelope metricEnvelope = metricList.get(0);
     MetricData metricData = (MetricData) ((Data<?>) metricEnvelope.getData()).getBaseData();
-    assertThat(metricData.getMetrics().get(0).getName()).isEqualTo("histogram-test-otlp-exporter");
+    assertThat(metricData.getMetrics().get(0).getName()).isEqualTo("histogram-test--exporter");
 
     // verify pre-aggregated standard metric sent to Application Insights endpoint
     List<Envelope> standardMetricsList =
