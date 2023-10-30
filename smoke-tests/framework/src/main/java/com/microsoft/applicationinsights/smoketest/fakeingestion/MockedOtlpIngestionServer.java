@@ -27,6 +27,7 @@ public class MockedOtlpIngestionServer {
   static final int EXPORTER_ENDPOINT_PORT = 4318;
   static ClientAndServer collectorServer;
 
+  @SuppressWarnings("SystemOut")
   public void startServer() throws Exception {
     System.out.println("Starting fake OTLP ingestion...");
     collectorServer = startClientAndServer(EXPORTER_ENDPOINT_PORT);

@@ -799,7 +799,7 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
     }
     startupLogger.warning(
         "\"otel.metrics.exporter\" has been set to something other than "
-            + "\"otlp\". Azure Monitor Metrics exporter will not get created.");
+            + "\"otlp\". OTLP Metrics exporter will not get created.");
     return null;
   }
 

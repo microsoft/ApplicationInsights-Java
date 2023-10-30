@@ -476,7 +476,6 @@ public class SmokeTestExtension
     appServerPort = container.getMappedPort(8080);
 
     targetContainer = container;
-    javaToolOptions.forEach(System.out::println);
     allContainers.add(container);
   }
 

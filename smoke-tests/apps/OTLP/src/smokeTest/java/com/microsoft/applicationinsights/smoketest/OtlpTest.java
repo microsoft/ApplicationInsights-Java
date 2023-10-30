@@ -35,7 +35,7 @@ abstract class OtlpTest {
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
     assertThat(rd.getName()).isEqualTo("GET /OTLP/ping");
 
-    // verify metric sent to OTLP endpoint
+    // verify metric sent to Application Insights endpoint
     List<Envelope> metricList =
         testing.mockedIngestion.waitForItems("MetricData", OtlpTest::isHistogramMetric, 1);
     Envelope metricEnvelope = metricList.get(0);
