@@ -256,9 +256,7 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
                 // in this case the spanExporter here is the noop spanExporter
                 return spanExporter;
               } else if (!"otlp".equals(otelConfig.getString("otel.traces.exporter"))) {
-                startupLogger.warning(
-                    "\"otel.traces.exporter\" has been set to something other than "
-                        + "\"otlp\". Azure Monitor Span exporter will not get created.");
+                startupLogger.warning("Unsupported otel.traces.exporter: {}", otelConfig.getString("otel.traces.exporter"));
                 return wrapSpanExporter(spanExporter, configuration);
               }
               return spanExporter;
@@ -272,9 +270,7 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
                 // in this case the logExporter here is the noop spanExporter
                 return logExporter;
               } else if (!"otlp".equals(otelConfig.getString("otel.logs.exporter"))) {
-                startupLogger.warning(
-                    "\"otel.logs.exporter\" has been set to something other than "
-                        + "\"otlp\". Azure Monitor Log exporter will not get created.");
+                startupLogger.warning("Unsupported otel.logs.exporter: {}", otelConfig.getString("otel.logs.exporter"));
                 return wrapLogExporter(logExporter, configuration);
               }
 
@@ -788,9 +784,7 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
   private static void logInvalidOtlpMetricExporter(ConfigProperties otelConfig) {
     String otelMetricExporterConfig = otelConfig.getString("otel.metrics.exporter");
     if (otelMetricExporterConfig != null && !"otlp".equals(otelMetricExporterConfig)) {
-      startupLogger.warning(
-          "\"otel.metrics.exporter\" has been set to something other than "
-              + "\"otlp\". OTLP Metrics exporter will not get created.");
+      startupLogger.warning("Unsupported otel.metrics.exporter: {}", otelConfig.getString("otel.metrics.exporter"));
     }
   }
 
