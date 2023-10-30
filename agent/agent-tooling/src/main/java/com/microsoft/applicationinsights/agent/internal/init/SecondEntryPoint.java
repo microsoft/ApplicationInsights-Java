@@ -290,8 +290,7 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
                 configureLogging(builder, telemetryClient, quickPulse, otelConfig, configuration))
         .addMeterProviderCustomizer(
             (builder, otelConfig) ->
-                configureMetrics(metricFilters, builder, telemetryClient, configuration))
-        .addMeterProviderCustomizer(SecondEntryPoint::configureOtlpMetrics);
+              configureMetrics(metricFilters, builder, telemetryClient, otelConfig, configuration));
 
     AiContextCustomizerHolder.setInstance(
         new AiContextCustomizer<>(
@@ -790,24 +789,22 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
     }
   }
 
-  @Nullable
-  private static SdkMeterProviderBuilder configureOtlpMetrics(
-      SdkMeterProviderBuilder builder, ConfigProperties otelConfig) {
+  private static void logInvalidOtlpMetricExporter(ConfigProperties otelConfig) {
     String otelMetricExporterConfig = otelConfig.getString(OTEL_METRICS_EXPORTER);
-    if (OTLP.equals(otelMetricExporterConfig)) {
-      return builder;
+    if (otelMetricExporterConfig != null && !OTLP.equals(otelMetricExporterConfig)) {
+      startupLogger.warning(
+          "\"otel.metrics.exporter\" has been set to something other than "
+              + "\"otlp\". OTLP Metrics exporter will not get created.");
     }
-    startupLogger.warning(
-        "\"otel.metrics.exporter\" has been set to something other than "
-            + "\"otlp\". OTLP Metrics exporter will not get created.");
-    return null;
   }
 
   private static SdkMeterProviderBuilder configureMetrics(
       List<MetricFilter> metricFilters,
       SdkMeterProviderBuilder builder,
       TelemetryClient telemetryClient,
+      ConfigProperties otelConfig,
       Configuration configuration) {
+    logInvalidOtlpMetricExporter(otelConfig);
     MetricDataMapper mapper =
         new MetricDataMapper(
             telemetryClient::populateDefaults, configuration.preview.captureHttpServer4xxAsError);
