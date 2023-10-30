@@ -259,9 +259,8 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
                 startupLogger.verbose(
                     "Unsupported otel.traces.exporter: {}",
                     otelConfig.getString("otel.traces.exporter"));
-                return wrapSpanExporter(spanExporter, configuration);
               }
-              return spanExporter;
+              return wrapSpanExporter(spanExporter, configuration);
             })
         .addTracerProviderCustomizer(
             (builder, otelConfig) ->
@@ -275,10 +274,8 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
                 startupLogger.verbose(
                     "Unsupported otel.logs.exporter: {}",
                     otelConfig.getString("otel.logs.exporter"));
-                return wrapLogExporter(logExporter, configuration);
               }
-
-              return logExporter;
+              return wrapLogExporter(logExporter, configuration);
             })
         .addLoggerProviderCustomizer(
             (builder, otelConfig) ->
