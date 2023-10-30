@@ -61,7 +61,7 @@ public class SmokeTestExtension
 
   private static final int TELEMETRY_RECEIVE_TIMEOUT_SECONDS = 60;
 
-  private static final String FAKE_APPINSIGHTS_INGESTION_ENDPOINT =
+  private static final String FAKE_BREEZE_INGESTION_ENDPOINT =
       "http://host.testcontainers.internal:6060/";
   private static final String FAKE_OTLP_INGESTION_ENDPOINT =
       "http://host.testcontainers.internal:4318";
@@ -137,9 +137,9 @@ public class SmokeTestExtension
         doNotSetConnectionString
             ? ""
             : "InstrumentationKey=00000000-0000-0000-0000-0FEEDDADBEEF;IngestionEndpoint="
-                + FAKE_APPINSIGHTS_INGESTION_ENDPOINT
+                + FAKE_BREEZE_INGESTION_ENDPOINT
                 + ";LiveEndpoint="
-                + FAKE_APPINSIGHTS_INGESTION_ENDPOINT
+                + FAKE_BREEZE_INGESTION_ENDPOINT
                 + ";ProfilerEndpoint="
                 + getProfilerEndpoint(profilerState);
 
@@ -416,7 +416,7 @@ public class SmokeTestExtension
     if (usesGlobalIngestionEndpoint) {
       javaToolOptions.add(
           "-Dapplicationinsights.testing.global-ingestion-endpoint="
-              + FAKE_APPINSIGHTS_INGESTION_ENDPOINT);
+              + FAKE_BREEZE_INGESTION_ENDPOINT);
     }
     if (useOtlpEndpoint) {
       javaToolOptions.add("-Dotel.metrics.exporter=otlp");
