@@ -3,11 +3,6 @@
 
 package com.microsoft.applicationinsights.agent.internal.init;
 
-import static com.microsoft.applicationinsights.agent.internal.common.Constants.NONE;
-import static com.microsoft.applicationinsights.agent.internal.common.Constants.OTEL_LOGS_EXPORTER;
-import static com.microsoft.applicationinsights.agent.internal.common.Constants.OTEL_METRICS_EXPORTER;
-import static com.microsoft.applicationinsights.agent.internal.common.Constants.OTEL_TRACES_EXPORTER;
-import static com.microsoft.applicationinsights.agent.internal.common.Constants.OTLP;
 import static java.util.concurrent.TimeUnit.MINUTES;
 
 import com.azure.core.http.HttpPipeline;
@@ -257,10 +252,10 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
         .addPropertiesCustomizer(new AiConfigCustomizer())
         .addSpanExporterCustomizer(
             (spanExporter, otelConfig) -> {
-              if (NONE.equals(otelConfig.getString(OTEL_TRACES_EXPORTER))) {
+              if ("none".equals(otelConfig.getString("otel.traces.exporter"))) {
                 // in this case the spanExporter here is the noop spanExporter
                 return spanExporter;
-              } else if (!OTLP.equals(otelConfig.getString(OTEL_TRACES_EXPORTER))) {
+              } else if (!"otlp".equals(otelConfig.getString("otel.traces.exporter"))) {
                 startupLogger.warning(
                     "\"otel.traces.exporter\" has been set to something other than "
                         + "\"otlp\". Azure Monitor Span exporter will not get created.");
@@ -273,10 +268,10 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
                 configureTracing(builder, telemetryClient, quickPulse, otelConfig, configuration))
         .addLogRecordExporterCustomizer(
             (logExporter, otelConfig) -> {
-              if (NONE.equals(otelConfig.getString(OTEL_LOGS_EXPORTER))) {
+              if ("none".equals(otelConfig.getString("otel.logs.exporter"))) {
                 // in this case the logExporter here is the noop spanExporter
                 return logExporter;
-              } else if (!OTLP.equals(otelConfig.getString(OTEL_LOGS_EXPORTER))) {
+              } else if (!"otlp".equals(otelConfig.getString("otel.logs.exporter"))) {
                 startupLogger.warning(
                     "\"otel.logs.exporter\" has been set to something other than "
                         + "\"otlp\". Azure Monitor Log exporter will not get created.");
@@ -560,8 +555,8 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
       tracerProvider.addSpanProcessor(new AiLegacyHeaderSpanProcessor());
     }
 
-    String tracesExporter = otelConfig.getString(OTEL_TRACES_EXPORTER);
-    if (NONE.equals(tracesExporter)) { // NONE is the default set in AiConfigCustomizer
+    String tracesExporter = otelConfig.getString("otel.traces.exporter");
+    if ("none".equals(tracesExporter)) { // "none" is the default set in AiConfigCustomizer
       List<Configuration.SamplingOverride> exceptionSamplingOverrides =
           configuration.preview.sampling.overrides.stream()
               .filter(override -> override.telemetryType == SamplingTelemetryType.EXCEPTION)
@@ -695,8 +690,8 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
     // "ai.preview.service_name" being set programmatically on CONSUMER spans
     builder.addLogRecordProcessor(new InheritedRoleNameLogProcessor());
 
-    String logsExporter = otelConfig.getString(OTEL_LOGS_EXPORTER);
-    if (NONE.equals(logsExporter)) { // NONE is the default set in AiConfigCustomizer
+    String logsExporter = otelConfig.getString("otel.logs.exporter");
+    if ("none".equals(logsExporter)) { // "none" is the default set in AiConfigCustomizer
       LogRecordExporter logExporter = createLogExporter(telemetryClient, quickPulse, configuration);
 
       logExporter = wrapLogExporter(logExporter, configuration);
@@ -791,8 +786,8 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
   }
 
   private static void logInvalidOtlpMetricExporter(ConfigProperties otelConfig) {
-    String otelMetricExporterConfig = otelConfig.getString(OTEL_METRICS_EXPORTER);
-    if (otelMetricExporterConfig != null && !OTLP.equals(otelMetricExporterConfig)) {
+    String otelMetricExporterConfig = otelConfig.getString("otel.metrics.exporter");
+    if (otelMetricExporterConfig != null && !"otlp".equals(otelMetricExporterConfig)) {
       startupLogger.warning(
           "\"otel.metrics.exporter\" has been set to something other than "
               + "\"otlp\". OTLP Metrics exporter will not get created.");
