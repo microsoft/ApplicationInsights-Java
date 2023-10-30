@@ -290,7 +290,8 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
                 configureLogging(builder, telemetryClient, quickPulse, otelConfig, configuration))
         .addMeterProviderCustomizer(
             (builder, otelConfig) ->
-              configureMetrics(metricFilters, builder, telemetryClient, otelConfig, configuration));
+                configureMetrics(
+                    metricFilters, builder, telemetryClient, otelConfig, configuration));
 
     AiContextCustomizerHolder.setInstance(
         new AiContextCustomizer<>(
