@@ -35,14 +35,24 @@ abstract class OtlpTest {
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
     assertThat(rd.getName()).isEqualTo("GET /OTLP/ping");
 
-    // verify metric sent to Application Insights endpoint
+    // verify custom histogram metric sent to Application Insights endpoint
     List<Envelope> metricList =
         testing.mockedIngestion.waitForItems("MetricData", OtlpTest::isHistogramMetric, 1);
     Envelope metricEnvelope = metricList.get(0);
     MetricData metricData = (MetricData) ((Data<?>) metricEnvelope.getData()).getBaseData();
     assertThat(metricData.getMetrics().get(0).getName()).isEqualTo("histogram-test-otlp-exporter");
 
-    // verify metrics sent to OTLP endpoint
+    // verify pre-aggregated standard metric sent to Application Insights endpoint
+    List<Envelope> standardMetricsList =
+        testing.mockedIngestion.waitForItems("MetricData", OtlpTest::isStandardMetric, 1);
+    Envelope standardMetricEnvelope = standardMetricsList.get(0);
+    MetricData standardMetricData =
+        (MetricData) ((Data<?>) standardMetricEnvelope.getData()).getBaseData();
+    assertThat(standardMetricData.getMetrics().get(0).getName()).isEqualTo("http.server.duration");
+    assertThat(standardMetricData.getProperties().get("_MS.IsAutocollected")).isEqualTo("True");
+
+    // verify custom histogram metric 'histogram-test-otlp-exporter' and otel metric
+    // 'http.server.duration' sent to OTLP endpoint
     testing.mockedOtlpIngestion.verify();
   }
 
@@ -50,6 +60,14 @@ abstract class OtlpTest {
     if (envelope.getData().getBaseType().equals("MetricData")) {
       MetricData data = (MetricData) ((Data<?>) envelope.getData()).getBaseData();
       return data.getMetrics().get(0).getName().equals("histogram-test-otlp-exporter");
+    }
+    return false;
+  }
+
+  private static boolean isStandardMetric(Envelope envelope) {
+    if (envelope.getData().getBaseType().equals("MetricData")) {
+      MetricData data = (MetricData) ((Data<?>) envelope.getData()).getBaseData();
+      return data.getMetrics().get(0).getName().equals("http.server.duration");
     }
     return false;
   }

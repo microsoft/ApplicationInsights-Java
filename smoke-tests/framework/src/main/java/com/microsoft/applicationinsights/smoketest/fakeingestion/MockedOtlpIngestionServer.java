@@ -52,7 +52,7 @@ public class MockedOtlpIngestionServer {
               List<Metric> metrics = extractMetricsFromRequests(requests);
               assertThat(metrics)
                   .extracting(Metric::getName)
-                  .contains("histogram-test-otlp-exporter");
+                  .contains("histogram-test-otlp-exporter", "http.server.duration");
             });
   }
 
