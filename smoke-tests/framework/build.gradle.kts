@@ -18,6 +18,9 @@ dependencies {
 
   implementation("org.eclipse.jetty:jetty-servlet:10.0.17")
 
+  implementation("org.mock-server:mockserver-netty:5.15.0:shaded")
+  implementation("io.opentelemetry.proto:opentelemetry-proto:0.14.0-alpha")
+
   // this is exposed in SmokeTestExtension API
   api("org.testcontainers:testcontainers:1.19.1")
 

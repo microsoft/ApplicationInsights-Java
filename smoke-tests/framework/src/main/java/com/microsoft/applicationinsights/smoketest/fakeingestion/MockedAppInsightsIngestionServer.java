@@ -41,13 +41,13 @@ public class MockedAppInsightsIngestionServer {
 
   @SuppressWarnings("SystemOut")
   public void startServer() throws Exception {
-    System.out.println("Starting fake ingestion...");
+    System.out.println("Starting fake Breeze ingestion...");
     server.start();
   }
 
   @SuppressWarnings("SystemOut")
   public void stopServer() throws Exception {
-    System.out.println("Stopping fake ingestion...");
+    System.out.println("Stopping fake Breeze ingestion...");
     server.stop();
     server.join();
   }
@@ -140,6 +140,11 @@ public class MockedAppInsightsIngestionServer {
   public List<Envelope> waitForItems(String type, int numItems)
       throws ExecutionException, InterruptedException, TimeoutException {
     return waitForItems(type, numItems, null);
+  }
+
+  public List<Envelope> waitForItems(String type, Predicate<Envelope> condition, int numItems)
+      throws ExecutionException, InterruptedException, TimeoutException {
+    return waitForItems(type, numItems, null, condition);
   }
 
   // if operationId is null, then matches all items, otherwise only matches items with that

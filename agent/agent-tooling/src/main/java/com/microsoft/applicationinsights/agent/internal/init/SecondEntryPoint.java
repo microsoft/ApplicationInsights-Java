@@ -780,7 +780,6 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
       SdkMeterProviderBuilder builder,
       TelemetryClient telemetryClient,
       Configuration configuration) {
-
     MetricDataMapper mapper =
         new MetricDataMapper(
             telemetryClient::populateDefaults, configuration.preview.captureHttpServer4xxAsError);
@@ -793,11 +792,9 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
             "applicationinsights.testing.metric-reader-interval-millis",
             configuration.metricIntervalSeconds * 1000);
     metricReader = readerBuilder.setInterval(Duration.ofMillis(intervalMillis)).build();
-
     if (configuration.internal.preAggregatedStandardMetrics.enabled) {
       AiViewRegistry.registerViews(builder);
     }
-
     return builder.registerMetricReader(metricReader);
   }
 
