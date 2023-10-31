@@ -1,5 +1,17 @@
 # CHANGELOG
 
+## Version 3.4.18 GA (10/30/2023)
+
+### Enhancements:
+
+* Update to OpenTelemetry Java 1.31 ([#3341](https://github.com/microsoft/ApplicationInsights-Java/pull/3341))
+* Update to azure-monitor-opentelemetry-exporter to 1.0.0-beta.13 ([#3356](https://github.com/microsoft/ApplicationInsights-Java/pull/3356))
+* Collect operation name for Azure Function ([#3311](https://github.com/microsoft/ApplicationInsights-Java/pull/3311))
+
+### Bug fixes:
+
+* Fix Statsbeat when using dormant Application Insights instrumentation keys ([#37176](https://github.com/Azure/azure-sdk-for-java/pull/37176))
+
 ## Version 3.4.17 GA (09/18/2023)
 
 ### Enhancements:
