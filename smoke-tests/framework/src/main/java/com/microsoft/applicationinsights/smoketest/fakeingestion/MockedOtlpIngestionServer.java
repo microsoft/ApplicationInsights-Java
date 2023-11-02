@@ -70,7 +70,7 @@ public class MockedOtlpIngestionServer {
                 Objects.requireNonNull(getExportMetricsServiceRequest(body))
                     .getResourceMetricsList()
                     .stream())
-        .flatMap(r -> r.getInstrumentationLibraryMetricsList().stream())
+        .flatMap(r -> r.getScopeMetricsList().stream())
         .flatMap(r -> r.getMetricsList().stream())
         .collect(Collectors.toList());
   }
