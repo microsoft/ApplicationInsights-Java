@@ -21,7 +21,7 @@ public abstract class AbstractJmxPerformanceCounter implements PerformanceCounte
   private static final Logger logger = LoggerFactory.getLogger(AbstractJmxPerformanceCounter.class);
 
   private final String objectName;
-  private final Collection<JmxAttributeData> attributes;
+  protected final Collection<JmxAttributeData> attributes;
   private boolean alreadyLogged = false;
 
   /**
