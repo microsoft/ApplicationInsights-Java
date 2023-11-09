@@ -478,11 +478,7 @@ public class TelemetryClient {
       return this;
     }
 
-    public Builder setConnectionStrings(
-        @Nullable String connectionString,
-        @Nullable String statsbeatInstrumentationKey,
-        @Nullable String statsbeatEndpoint) {
-
+    public Builder setConnectionStrings(@Nullable String connectionString) {
       if (Strings.isNullOrEmpty(connectionString)) {
         this.connectionString = null;
         this.statsbeatConnectionString = null;
@@ -490,7 +486,9 @@ public class TelemetryClient {
         this.connectionString = ConnectionString.parse(connectionString);
         this.statsbeatConnectionString =
             StatsbeatConnectionString.create(
-                this.connectionString, statsbeatInstrumentationKey, statsbeatEndpoint);
+                this.connectionString,
+                System.getProperty("statsbeat.ikey"),
+                System.getProperty("statsbeat.endpoint"));
         if (this.statsbeatConnectionString == null) {
           statsbeatModule.shutdown();
         }

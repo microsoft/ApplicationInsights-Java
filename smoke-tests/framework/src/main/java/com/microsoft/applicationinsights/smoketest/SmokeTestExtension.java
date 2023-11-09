@@ -430,6 +430,8 @@ public class SmokeTestExtension
     }
     if (useAgent) {
       javaToolOptions.add("-javaagent:/applicationinsights-agent.jar");
+      javaToolOptions.add("-Dstatsbeat.ikey=00000000-0000-0000-0000-0FEEDDADBEEG");
+      javaToolOptions.add("-Dstatsbeat.endpoint=http://host.testcontainers.internal:6060/");
     }
     container.withEnv("JAVA_TOOL_OPTIONS", String.join(" ", javaToolOptions));
 
