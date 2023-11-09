@@ -53,7 +53,7 @@ abstract class OtlpTest {
 
     // verify custom histogram metric 'histogram-test-otlp-exporter' and otel metric
     // 'http.server.duration' sent to OTLP endpoint
-    testing.mockedOtlpIngestion.verify();
+    testing.mockedOtlpIngestion.verify("histogram-test-otlp-exporter", "http.server.duration");
   }
 
   private static boolean isHistogramMetric(Envelope envelope) {

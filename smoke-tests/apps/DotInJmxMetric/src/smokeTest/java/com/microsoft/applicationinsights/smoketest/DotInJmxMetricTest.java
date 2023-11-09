@@ -8,7 +8,9 @@ import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCA
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_19;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_20;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_8;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.testcontainers.shaded.org.awaitility.Awaitility.await;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.DataPoint;
@@ -24,7 +26,7 @@ abstract class DotInJmxMetricTest {
 
   @RegisterExtension
   static final SmokeTestExtension testing =
-      SmokeTestExtension.builder().setSelfDiagnosticsLevel("debug").build();
+      SmokeTestExtension.builder().useOtlpEndpoint().setSelfDiagnosticsLevel("TRACE").build();
 
   @Test
   @TargetUri("/test")
@@ -41,6 +43,9 @@ abstract class DotInJmxMetricTest {
 
     DataPoint point = points.get(0);
     assertThat(point.getValue()).isEqualTo(5);
+
+    testing.mockedOtlpIngestion.verify("NameWithDot");
+
   }
 
   private static boolean isMetricWithName(Envelope envelope, String metricName) {

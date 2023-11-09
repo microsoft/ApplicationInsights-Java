@@ -41,7 +41,7 @@ public class MockedOtlpIngestionServer {
   }
 
   @SuppressWarnings("PreferJavaTimeOverload")
-  public void verify() {
+  public void verify(String... metricNames) { // this param didn't exist earlier
     await()
         .atMost(60, SECONDS)
         .untilAsserted(
@@ -52,7 +52,7 @@ public class MockedOtlpIngestionServer {
               List<Metric> metrics = extractMetricsFromRequests(requests);
               assertThat(metrics)
                   .extracting(Metric::getName)
-                  .contains("histogram-test-otlp-exporter", "http.server.duration");
+                  .contains(metricNames); //.contains("histogram-test-otlp-exporter", "http.server.duration");
             });
   }
 
@@ -62,7 +62,7 @@ public class MockedOtlpIngestionServer {
    * @param requests Request received by an http server telemetry collector
    * @return metrics extracted from the request body
    */
-  private static List<Metric> extractMetricsFromRequests(HttpRequest[] requests) {
+  private static List<Metric> extractMetricsFromRequests(HttpRequest[] requests) { //was private
     return Arrays.stream(requests)
         .map(HttpRequest::getBody)
         .flatMap(
