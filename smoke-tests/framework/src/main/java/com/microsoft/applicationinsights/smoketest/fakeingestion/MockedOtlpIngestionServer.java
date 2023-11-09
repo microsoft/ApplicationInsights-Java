@@ -3,9 +3,6 @@
 
 package com.microsoft.applicationinsights.smoketest.fakeingestion;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
 import static org.mockserver.integration.ClientAndServer.startClientAndServer;
 import static org.mockserver.model.HttpRequest.request;
 import static org.mockserver.model.HttpResponse.response;
@@ -24,8 +21,8 @@ import org.mockserver.model.Body;
 import org.mockserver.model.HttpRequest;
 
 public class MockedOtlpIngestionServer {
-  static final int EXPORTER_ENDPOINT_PORT = 4318;
-  static ClientAndServer collectorServer;
+  private static final int EXPORTER_ENDPOINT_PORT = 4318;
+  private static ClientAndServer collectorServer;
 
   @SuppressWarnings("SystemOut")
   public void startServer() throws Exception {
@@ -40,20 +37,8 @@ public class MockedOtlpIngestionServer {
     stopQuietly(collectorServer);
   }
 
-  @SuppressWarnings("PreferJavaTimeOverload")
-  public void verify() {
-    await()
-        .atMost(60, SECONDS)
-        .untilAsserted(
-            () -> {
-              HttpRequest[] requests = collectorServer.retrieveRecordedRequests(request());
-
-              // verify metrics
-              List<Metric> metrics = extractMetricsFromRequests(requests);
-              assertThat(metrics)
-                  .extracting(Metric::getName)
-                  .contains("histogram-test-otlp-exporter", "http.server.duration");
-            });
+  public ClientAndServer getCollectorServer() {
+    return collectorServer;
   }
 
   /**
@@ -62,7 +47,8 @@ public class MockedOtlpIngestionServer {
    * @param requests Request received by an http server telemetry collector
    * @return metrics extracted from the request body
    */
-  private static List<Metric> extractMetricsFromRequests(HttpRequest[] requests) {
+  @SuppressWarnings("AvoidObjectArrays")
+  public List<Metric> extractMetricsFromRequests(HttpRequest[] requests) {
     return Arrays.stream(requests)
         .map(HttpRequest::getBody)
         .flatMap(
