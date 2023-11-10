@@ -231,7 +231,8 @@ public class TelemetryClient {
             new NetworkStatsbeatHttpPipelinePolicy(statsbeatModule.getNetworkStatsbeat()));
     // TODO (heya) refactor the following by using AzureMonitorHelper.createTelemetryItemExporter by
     // passing in getNonessentialStatsbeat
-    TelemetryPipeline telemetryPipeline = new TelemetryPipeline(httpPipeline, statsbeatModule::shutdown);
+    TelemetryPipeline telemetryPipeline =
+        new TelemetryPipeline(httpPipeline, statsbeatModule::shutdown);
 
     TelemetryPipelineListener telemetryPipelineListener;
     if (tempDir == null) {
