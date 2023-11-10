@@ -209,8 +209,7 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
     // initialize StatsbeatModule
     if (telemetryClient.getConnectionString() != null) {
       statsbeatModule.start(
-          initStatsbeatTelemetryItemExporter(
-              statsbeatModule, tempDir, configuration.preview.diskPersistenceMaxSizeMb),
+          initStatsbeatTelemetryItemExporter(statsbeatModule, tempDir),
           telemetryClient::getStatsbeatConnectionString,
           telemetryClient::getInstrumentationKey,
           configuration.internal.statsbeat.disabledAll,
@@ -288,9 +287,9 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
   }
 
   private static TelemetryItemExporter initStatsbeatTelemetryItemExporter(
-      StatsbeatModule statsbeatModule, File tempDir, int diskPersistenceMaxSizeMb) {
+      StatsbeatModule statsbeatModule, File tempDir) {
     HttpPipeline httpPipeline = LazyHttpClient.newHttpPipeLine(null);
-    TelemetryPipeline telemetryPipeline = new TelemetryPipeline(httpPipeline, statsbeatModule);
+    TelemetryPipeline telemetryPipeline = new TelemetryPipeline(httpPipeline, null);
 
     TelemetryPipelineListener telemetryPipelineListener;
     if (tempDir == null) {
@@ -298,7 +297,7 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
     } else {
       LocalStorageTelemetryPipelineListener localStorageTelemetryPipelineListener =
           new LocalStorageTelemetryPipelineListener(
-              diskPersistenceMaxSizeMb,
+              1, // only store at most 1mb of statsbeat telemetry
               TempDirs.getSubDir(tempDir, STATSBEAT_FOLDER_NAME),
               telemetryPipeline,
               LocalStorageStats.noop(),
