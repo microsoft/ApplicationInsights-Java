@@ -282,8 +282,6 @@ public class Configuration {
     // when something goes wrong.
     public boolean disabledAll = false;
 
-    public String instrumentationKey;
-    public String endpoint;
     public long shortIntervalSeconds = MINUTES.toSeconds(15); // default to 15 minutes
     public long longIntervalSeconds = DAYS.toSeconds(1); // default to daily
   }

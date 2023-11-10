@@ -146,10 +146,7 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
             .setGeneralExportQueueSize(configuration.preview.generalExportQueueCapacity)
             .setMetricsExportQueueSize(configuration.preview.metricsExportQueueCapacity)
             .setAadAuthentication(configuration.authentication)
-            .setConnectionStrings(
-                configuration.connectionString,
-                configuration.internal.statsbeat.instrumentationKey,
-                configuration.internal.statsbeat.endpoint)
+            .setConnectionStrings(configuration.connectionString)
             .setRoleName(configuration.role.name)
             .setRoleInstance(configuration.role.instance)
             .setDiskPersistenceMaxSizeMb(configuration.preview.diskPersistenceMaxSizeMb)
