@@ -487,8 +487,8 @@ public class TelemetryClient {
         this.statsbeatConnectionString =
             StatsbeatConnectionString.create(
                 this.connectionString,
-                System.getProperty("statsbeat.ikey"),
-                System.getProperty("statsbeat.endpoint"));
+                System.getProperty("applicationinsights.testing.statsbeat.ikey"),
+                System.getProperty("applicationinsights.testing.statsbeat.endpoint"));
         if (this.statsbeatConnectionString == null) {
           statsbeatModule.shutdown();
         }
