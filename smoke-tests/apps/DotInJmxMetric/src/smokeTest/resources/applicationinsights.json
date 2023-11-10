@@ -11,6 +11,11 @@
       "name": "NameWithDot",
       "objectName": "test:name=X",
       "attribute": "NestedObject\\.Value"
+    },
+    {
+      "name": "DemoThreadCount",
+      "objectName": "java.lang:type=Threading",
+      "attribute": "ThreadCount"
     }
   ],
   "metricIntervalSeconds": 5

@@ -44,7 +44,7 @@ abstract class DotInJmxMetricTest {
     DataPoint point = points.get(0);
     assertThat(point.getValue()).isEqualTo(5);
 
-    testing.mockedOtlpIngestion.verify("NameWithDot");
+    testing.mockedOtlpIngestion.verify("NameWithDot", "DemoThreadCount");
 
   }
 
