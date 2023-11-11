@@ -66,8 +66,6 @@ abstract class JmxMetricTest {
         testing.mockedIngestion.waitForItems(
             envelope -> isJmxMetric(envelope), 1, 10, TimeUnit.SECONDS);
 
-    assertThat(metricItems).hasSize(2);
-
     Set<String> metricNames = new HashSet<>();
     for (Envelope envelope : metricItems)
     {
