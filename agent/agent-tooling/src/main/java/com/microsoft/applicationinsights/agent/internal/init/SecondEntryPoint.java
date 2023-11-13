@@ -5,23 +5,17 @@ package com.microsoft.applicationinsights.agent.internal.init;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
 
-import com.azure.core.http.HttpPipeline;
 import com.azure.core.util.logging.ClientLogger;
 import com.azure.monitor.opentelemetry.exporter.implementation.LogDataMapper;
 import com.azure.monitor.opentelemetry.exporter.implementation.MetricDataMapper;
 import com.azure.monitor.opentelemetry.exporter.implementation.SpanDataMapper;
 import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
 import com.azure.monitor.opentelemetry.exporter.implementation.heartbeat.HeartbeatExporter;
-import com.azure.monitor.opentelemetry.exporter.implementation.localstorage.LocalStorageStats;
-import com.azure.monitor.opentelemetry.exporter.implementation.localstorage.LocalStorageTelemetryPipelineListener;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
-import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryItemExporter;
-import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipeline;
-import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryPipelineListener;
 import com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.QuickPulse;
 import com.azure.monitor.opentelemetry.exporter.implementation.statsbeat.Feature;
 import com.azure.monitor.opentelemetry.exporter.implementation.statsbeat.StatsbeatModule;
-import com.azure.monitor.opentelemetry.exporter.implementation.statsbeat.StatsbeatTelemetryPipelineListener;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorHelper;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.PropertyHelper;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.TempDirs;
@@ -91,7 +85,6 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
 
   private static final ClientLogger startupLogger =
       new ClientLogger("com.microsoft.applicationinsights.agent");
-  private static final String STATSBEAT_FOLDER_NAME = "statsbeat";
   private static File tempDir;
 
   @Nullable public static AgentLogExporter agentLogExporter;
@@ -206,7 +199,8 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
     // initialize StatsbeatModule
     if (telemetryClient.getConnectionString() != null) {
       statsbeatModule.start(
-          initStatsbeatTelemetryItemExporter(statsbeatModule, tempDir),
+          AzureMonitorHelper.createStatsbeatTelemetryItemExporter(
+              LazyHttpClient.newHttpPipeLine(null), statsbeatModule, tempDir),
           telemetryClient::getStatsbeatConnectionString,
           telemetryClient::getInstrumentationKey,
           configuration.internal.statsbeat.disabledAll,
@@ -281,35 +275,6 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
 
     Runtime.getRuntime()
         .addShutdownHook(new Thread(() -> flushAll(telemetryClient).join(10, TimeUnit.SECONDS)));
-  }
-
-  private static TelemetryItemExporter initStatsbeatTelemetryItemExporter(
-      StatsbeatModule statsbeatModule, File tempDir) {
-    HttpPipeline httpPipeline = LazyHttpClient.newHttpPipeLine(null);
-    TelemetryPipeline telemetryPipeline = new TelemetryPipeline(httpPipeline, null);
-
-    TelemetryPipelineListener telemetryPipelineListener;
-    if (tempDir == null) {
-      telemetryPipelineListener = new StatsbeatTelemetryPipelineListener(statsbeatModule::shutdown);
-    } else {
-      LocalStorageTelemetryPipelineListener localStorageTelemetryPipelineListener =
-          new LocalStorageTelemetryPipelineListener(
-              1, // only store at most 1mb of statsbeat telemetry
-              TempDirs.getSubDir(tempDir, STATSBEAT_FOLDER_NAME),
-              telemetryPipeline,
-              LocalStorageStats.noop(),
-              true);
-      telemetryPipelineListener =
-          TelemetryPipelineListener.composite(
-              new StatsbeatTelemetryPipelineListener(
-                  () -> {
-                    statsbeatModule.shutdown();
-                    localStorageTelemetryPipelineListener.shutdown();
-                  }),
-              localStorageTelemetryPipelineListener);
-    }
-
-    return new TelemetryItemExporter(telemetryPipeline, telemetryPipelineListener);
   }
 
   private static Set<Feature> initStatsbeatFeatureSet(Configuration config) {

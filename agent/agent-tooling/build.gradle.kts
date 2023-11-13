@@ -21,7 +21,7 @@ dependencies {
   implementation(project(":agent:agent-profiler:agent-diagnostics"))
   implementation(project(":etw:java"))
 
-  implementation("com.azure:azure-monitor-opentelemetry-exporter:1.0.0-beta.13")
+  implementation("com.azure:azure-monitor-opentelemetry-exporter:1.0.0-beta.14")
   compileOnly("io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap")
   compileOnly("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling")
   compileOnly("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-common-bootstrap")

@@ -229,7 +229,10 @@ public class TelemetryClient {
         LazyHttpClient.newHttpPipeLine(
             aadAuthentication,
             new NetworkStatsbeatHttpPipelinePolicy(statsbeatModule.getNetworkStatsbeat()));
-    TelemetryPipeline telemetryPipeline = new TelemetryPipeline(httpPipeline, statsbeatModule);
+    // TODO (heya) refactor the following by using AzureMonitorHelper.createTelemetryItemExporter by
+    // passing in getNonessentialStatsbeat
+    TelemetryPipeline telemetryPipeline =
+        new TelemetryPipeline(httpPipeline, statsbeatModule::shutdown);
 
     TelemetryPipelineListener telemetryPipelineListener;
     if (tempDir == null) {
