@@ -935,7 +935,7 @@ public class Configuration {
                   + " processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
         }
         if (matchType == MatchType.REGEXP && attribute.value != null) {
-          validateRegex(attribute.value, processorType);
+          validateRegex(String.valueOf(attribute.value), processorType);
         }
       }
 
@@ -1094,7 +1094,30 @@ public class Configuration {
 
   public static class ProcessorAttribute {
     public String key;
-    public String value;
+    public Object value;
+    public AttributeType type;
+
+    public AttributeKey<?> getAttributeKey() {
+      switch (type) {
+        case STRING:
+          return AttributeKey.stringKey(key);
+        case BOOLEAN:
+          return AttributeKey.booleanKey(key);
+        case LONG:
+          return AttributeKey.longKey(key);
+        case DOUBLE:
+          return AttributeKey.doubleKey(key);
+        case STRING_ARRAY:
+          return AttributeKey.stringArrayKey(key);
+        case BOOLEAN_ARRAY:
+          return AttributeKey.booleanArrayKey(key);
+        case LONG_ARRAY:
+          return AttributeKey.longArrayKey(key);
+        case DOUBLE_ARRAY:
+          return AttributeKey.doubleArrayKey(key);
+      }
+      throw new IllegalStateException("Unexpected attribute key type: " + type);
+    }
   }
 
   public static class ExtractAttribute {

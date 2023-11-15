@@ -1,0 +1,38 @@
+{
+  "role": {
+    "name": "testrolename",
+    "instance": "testroleinstance"
+  },
+  "sampling": {
+    "percentage": 100
+  },
+  "preview": {
+    "processors": [
+      {
+        "type": "attribute",
+        "include": {
+          "matchType": "strict",
+          "attributes": [
+            {
+              "key": "myLongAttributeKey",
+              "value": 1234
+            },
+            {
+              "key": "myBooleanAttributeKey",
+              "value": true
+            }
+          ]
+        },
+        "actions": [
+          {
+            "key": "myNewAttributeKey",
+            "value": "myNewAttributeValue",
+            "action": "insert"
+          }
+        ],
+        "id": "attributes/insertMyNewAttributeKey"
+      }
+    ]
+  }
+}
+

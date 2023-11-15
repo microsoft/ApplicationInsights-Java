@@ -3,6 +3,7 @@
 
 package com.microsoft.applicationinsights.smoketestapp;
 
+import io.opentelemetry.api.trace.Span;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,5 +33,13 @@ public class TestController {
   @GetMapping("/user/1234")
   public String sensitiveDataInUrl() {
     return "Test sensitive data in URL";
+  }
+
+  @GetMapping("/test-non-string-span-attributes")
+  public String testNonStringSpanAttributes() {
+    Span.current()
+        .setAttribute("myLongAttributeKey", 1234)
+        .setAttribute("myBooleanAttributeKey", true);
+    return "Test non string type span attributes";
   }
 }

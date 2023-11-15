@@ -123,7 +123,7 @@ public abstract class AgentProcessor {
         for (ProcessorAttribute attribute : attributes) {
           if (attribute.value != null) {
             attributeKeyValuePatterns.put(
-                AttributeKey.stringKey(attribute.key), Pattern.compile(attribute.value));
+                attribute.getAttributeKey(), Pattern.compile(String.valueOf(attribute.value)));
           }
         }
       }
