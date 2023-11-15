@@ -30,6 +30,7 @@ abstract class TelemetryProcessorsNonStringAttributesTest {
     Map<String, String> properties = telemetry.rd.getProperties();
     assertThat(properties.get("myLongAttributeKey")).isEqualTo("1234");
     assertThat(properties.get("myBooleanAttributeKey")).isEqualTo("true");
+    assertThat(properties.get("myNewAttributeKey")).isEqualTo("myNewAttributeValue");
   }
 
   @Environment(TOMCAT_8_JAVA_8)
