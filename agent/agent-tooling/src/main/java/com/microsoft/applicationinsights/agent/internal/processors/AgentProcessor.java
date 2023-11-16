@@ -3,6 +3,11 @@
 
 package com.microsoft.applicationinsights.agent.internal.processors;
 
+import static com.microsoft.applicationinsights.agent.internal.configuration.Configuration.AttributeType.BOOLEAN_ARRAY;
+import static com.microsoft.applicationinsights.agent.internal.configuration.Configuration.AttributeType.DOUBLE_ARRAY;
+import static com.microsoft.applicationinsights.agent.internal.configuration.Configuration.AttributeType.LONG_ARRAY;
+import static com.microsoft.applicationinsights.agent.internal.configuration.Configuration.AttributeType.STRING_ARRAY;
+
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.MatchType;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.ProcessorAttribute;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.ProcessorIncludeExclude;
@@ -85,8 +90,18 @@ public abstract class AgentProcessor {
     private boolean checkAttributes(Attributes attributes) {
       for (ProcessorAttribute attribute : processorAttributes) {
         // All of these attributes must match exactly for a match to occur.
-        Object existingAttributeValue = String.valueOf(attributes.get(attribute.getAttributeKey()));
-        if (attribute.value != null && !existingAttributeValue.equals(attribute.getStringValue())) {
+        String existingAttributeValue;
+        Object valueObject = attributes.get(attribute.getAttributeKey());
+        if (attribute.type == BOOLEAN_ARRAY
+            || attribute.type == LONG_ARRAY
+            || attribute.type == DOUBLE_ARRAY
+            || attribute.type == STRING_ARRAY) {
+          existingAttributeValue = valueObject != null ? valueObject.toString() : null;
+        } else {
+          existingAttributeValue = String.valueOf(valueObject);
+        }
+        if (existingAttributeValue != null
+            && !existingAttributeValue.equals(attribute.getStringValue())) {
           // user specified value doesn't match
           return false;
         }

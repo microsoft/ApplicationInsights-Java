@@ -22,6 +22,11 @@
               "key": "myBooleanAttributeKey",
               "value": true,
               "type": "boolean"
+            },
+            {
+              "key": "myDoubleArrayAttributeKey",
+              "value": [1.0, 2.0, 3.0, 4.0],
+              "type": "double-array"
             }
           ]
         },

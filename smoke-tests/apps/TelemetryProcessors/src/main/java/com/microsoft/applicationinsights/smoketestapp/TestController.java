@@ -3,7 +3,10 @@
 
 package com.microsoft.applicationinsights.smoketestapp;
 
+import static io.opentelemetry.api.common.AttributeKey.doubleArrayKey;
+
 import io.opentelemetry.api.trace.Span;
+import java.util.Arrays;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -39,7 +42,9 @@ public class TestController {
   public String testNonStringSpanAttributes() {
     Span.current()
         .setAttribute("myLongAttributeKey", 1234)
-        .setAttribute("myBooleanAttributeKey", true);
+        .setAttribute("myBooleanAttributeKey", true)
+        .setAttribute(
+            doubleArrayKey("myDoubleArrayAttributeKey"), Arrays.asList(1.0, 2.0, 3.0, 4.0));
     return "Test non string type span attributes";
   }
 }
