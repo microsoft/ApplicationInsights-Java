@@ -1118,6 +1118,36 @@ public class Configuration {
       }
       throw new IllegalStateException("Unexpected attribute key type: " + type);
     }
+
+    @Nullable
+    // TODO (heya) will reuse the standalone exporter Mappings.convertToString, need to make it
+    // public
+    public String getStringValue() {
+      switch (type) {
+        case STRING:
+        case BOOLEAN:
+        case LONG:
+        case DOUBLE:
+          return String.valueOf(value);
+        case STRING_ARRAY:
+        case BOOLEAN_ARRAY:
+        case LONG_ARRAY:
+        case DOUBLE_ARRAY:
+          return join((List<?>) value);
+      }
+      return null;
+    }
+
+    private static <T> String join(List<T> values) {
+      StringBuilder sb = new StringBuilder();
+      for (Object val : values) {
+        if (sb.length() > 0) {
+          sb.append(", ");
+        }
+        sb.append(val);
+      }
+      return sb.toString();
+    }
   }
 
   public static class ExtractAttribute {

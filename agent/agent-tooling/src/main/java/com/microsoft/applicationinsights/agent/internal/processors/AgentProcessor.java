@@ -85,15 +85,8 @@ public abstract class AgentProcessor {
     private boolean checkAttributes(Attributes attributes) {
       for (ProcessorAttribute attribute : processorAttributes) {
         // All of these attributes must match exactly for a match to occur.
-        Object existingAttributeValue = attributes.get(AttributeKey.stringKey(attribute.key));
-        // to get the string value
-        // existingAttributeValue.toString()
-        // String.valueOf(existingAttributeValue);
-        if (!(existingAttributeValue instanceof String)) {
-          // user specified key not found
-          return false;
-        }
-        if (attribute.value != null && !existingAttributeValue.equals(attribute.value)) {
+        Object existingAttributeValue = String.valueOf(attributes.get(attribute.getAttributeKey()));
+        if (attribute.value != null && !existingAttributeValue.equals(attribute.getStringValue())) {
           // user specified value doesn't match
           return false;
         }

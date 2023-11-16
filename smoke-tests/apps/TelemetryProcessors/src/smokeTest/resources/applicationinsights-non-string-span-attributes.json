@@ -15,11 +15,13 @@
           "attributes": [
             {
               "key": "myLongAttributeKey",
-              "value": 1234
+              "value": 1234,
+              "type": "long"
             },
             {
               "key": "myBooleanAttributeKey",
-              "value": true
+              "value": true,
+              "type": "boolean"
             }
           ]
         },
