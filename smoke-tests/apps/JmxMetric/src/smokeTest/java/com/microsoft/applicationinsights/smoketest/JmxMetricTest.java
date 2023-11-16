@@ -17,6 +17,7 @@ import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.DataPoint;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
 import com.microsoft.applicationinsights.smoketest.schemav2.MetricData;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -57,7 +58,7 @@ abstract class JmxMetricTest {
                   testing.mockedOtlpIngestion.extractMetricsFromRequests(requests);
               assertThat(metrics)
                   .extracting(Metric::getName)
-                  .contains("NameWithDot", "DemoThreadCount");
+                  .contains("NameWithDot", "DemoThreadCount","DemoCurrentThreadCpuTime");
             });
   }
 
@@ -78,16 +79,18 @@ abstract class JmxMetricTest {
       }
       metricNames.add(metricName);
     }
-    assertThat(metricNames).contains("NameWithDot", "DemoThreadCount");
+    assertThat(metricNames).contains("NameWithDot", "DemoThreadCount", "DemoCurrentThreadCpuTime");
   }
 
   private static boolean isJmxMetric(Envelope envelope) {
+    Set<String> allowedMetrics = new HashSet<>(
+        Arrays.asList("NameWithDot", "DemoThreadCount", "DemoCurrentThreadCpuTime"));
     if (!envelope.getData().getBaseType().equals("MetricData")) {
       return false;
     }
     MetricData md = SmokeTestExtension.getBaseData(envelope);
     String incomingMetricName = md.getMetrics().get(0).getName();
-    return incomingMetricName.equals("NameWithDot") || incomingMetricName.equals("DemoThreadCount");
+    return allowedMetrics.contains(incomingMetricName);
   }
 
   @Environment(TOMCAT_8_JAVA_8)

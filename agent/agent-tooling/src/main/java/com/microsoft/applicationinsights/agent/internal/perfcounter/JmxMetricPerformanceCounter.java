@@ -19,13 +19,13 @@ public final class JmxMetricPerformanceCounter extends AbstractJmxPerformanceCou
 
   @Override
   protected void send(TelemetryClient telemetryClient, String displayName, double value) {
-    logger.debug("Metric JMX: displayName:{}, value:{} from send", displayName, value);
 
     //telemetryClient.trackAsync(telemetryClient.newMetricTelemetry(displayName, value));
     for (JmxAttributeData attribute : attributes) {
       logger.debug("Metric JMX: displayName:{}, attribute:{}, value:{} from send forloop", displayName, attribute.attribute, value);
-      GlobalOpenTelemetry.getMeter("jmx")
-          .gaugeBuilder(attribute.metricName)
+      GlobalOpenTelemetry.meterBuilder("jmx")//.setSchemaUrl(attribute.metricName) // we want to export with the spaces name, but error is because we have spaces
+          .build()
+          .gaugeBuilder(attribute.metricName) // replace them with underscores
           .buildWithCallback(observableDoubleMeasurement -> {
             logger.debug("Metric JMX: displayName:{},  attribute.metricName{}, value:{} from callback", displayName, attribute.metricName, value);
             observableDoubleMeasurement.record(value);

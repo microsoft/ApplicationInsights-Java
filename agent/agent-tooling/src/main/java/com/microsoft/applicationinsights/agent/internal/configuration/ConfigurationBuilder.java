@@ -394,6 +394,10 @@ public class ConfigurationBuilder {
   }
 
   private static void addDefaultJmxMetricsIfNotPresent(Configuration config) {
+    for (JmxMetric metric : config.jmxMetrics) {
+      configurationLogger.debug("addDefaultJmxMetricsIfNotPresent passed in config jmx element- attribute:{} objectName:{} name:{}", metric.attribute, metric.objectName, metric.name);
+    }
+
     if (!jmxMetricExists(config.jmxMetrics, "java.lang:type=Threading", "ThreadCount")) {
       JmxMetric threadCountJmxMetric = new JmxMetric();
       threadCountJmxMetric.name = "Current Thread Count";
@@ -407,6 +411,10 @@ public class ConfigurationBuilder {
       classCountJmxMetric.objectName = "java.lang:type=ClassLoading";
       classCountJmxMetric.attribute = "LoadedClassCount";
       config.jmxMetrics.add(classCountJmxMetric);
+    }
+
+    for (JmxMetric metric : config.jmxMetrics) {
+      configurationLogger.debug("addDefaultJmxMetricsIfNotPresent final result jmx element- attribute:{} objectName:{} name:{}", metric.attribute, metric.objectName, metric.name);
     }
   }
 

@@ -66,6 +66,32 @@ public class JmxDataFetcher {
     return result;
   }
 
+  public static List<Object> fetch(String objectName, String attribute) throws Exception {
+    List<Object> result = new ArrayList<>();
+
+    MBeanServer server = ManagementFactory.getPlatformMBeanServer();
+    Set<ObjectName> objects = server.queryNames(new ObjectName(objectName), null);
+    if (objects.isEmpty()) {
+      String errorMsg = String.format("Cannot find object name '%s'", objectName);
+      throw new IllegalArgumentException(errorMsg);
+    }
+
+    try {
+      List<Object> resultForAttribute = fetch(server, objects, attribute);
+      result.add(resultForAttribute);
+    } catch (Exception e) {
+      try (MDC.MDCCloseable ignored = CUSTOM_JMX_METRIC_ERROR.makeActive()) {
+        logger.warn(
+            "Failed to fetch JMX object '{}' with attribute '{}': ",
+            objectName,
+            attribute);
+      }
+      throw e;
+    }
+
+    return result;
+  }
+
   private static List<Object> fetch(
       MBeanServer server, Set<ObjectName> objects, String attributeName)
       throws AttributeNotFoundException,

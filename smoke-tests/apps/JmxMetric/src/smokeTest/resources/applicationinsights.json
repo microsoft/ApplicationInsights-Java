@@ -16,6 +16,11 @@
       "name": "DemoThreadCount",
       "objectName": "java.lang:type=Threading",
       "attribute": "ThreadCount"
+    },
+    {
+      "name": "DemoCurrentThreadCpuTime",
+      "objectName": "java.lang:type=Threading",
+      "attribute": "CurrentThreadCpuTime"
     }
   ],
   "metricIntervalSeconds": 5

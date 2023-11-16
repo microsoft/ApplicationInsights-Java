@@ -12,6 +12,7 @@ import com.microsoft.applicationinsights.agent.internal.perfcounter.DeadLockDete
 import com.microsoft.applicationinsights.agent.internal.perfcounter.FreeMemoryPerformanceCounter;
 import com.microsoft.applicationinsights.agent.internal.perfcounter.GcPerformanceCounter;
 import com.microsoft.applicationinsights.agent.internal.perfcounter.JmxAttributeData;
+import com.microsoft.applicationinsights.agent.internal.perfcounter.JmxDataFetcher;
 import com.microsoft.applicationinsights.agent.internal.perfcounter.JmxMetricPerformanceCounter;
 import com.microsoft.applicationinsights.agent.internal.perfcounter.JvmHeapMemoryUsedPerformanceCounter;
 import com.microsoft.applicationinsights.agent.internal.perfcounter.OshiPerformanceCounter;
@@ -25,6 +26,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import io.opentelemetry.api.GlobalOpenTelemetry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -85,6 +87,8 @@ public class PerformanceCounterInitializer {
         Collection<JmxAttributeData> collection =
             data.computeIfAbsent(jmxElement.objectName, k -> new ArrayList<>());
 
+        logger.debug("from loadCustomJmxPerfCounters- attribute: {}, objectName: {}, name: {}", jmxElement.attribute, jmxElement.objectName, jmxElement.name);
+
         if (Strings.isNullOrEmpty(jmxElement.objectName)) {
           try (MDC.MDCCloseable ignored = CUSTOM_JMX_METRIC_ERROR.makeActive()) {
             logger.error("JMX object name is empty, will be ignored");
@@ -109,11 +113,45 @@ public class PerformanceCounterInitializer {
         collection.add(new JmxAttributeData(jmxElement.name, jmxElement.attribute));
       }
 
+      logger.debug("loadcustomjmxperfcounters- data.entryset: {}", data.entrySet().toString());
+
       // Register each entry in the performance container
       for (Map.Entry<String, Collection<JmxAttributeData>> entry : data.entrySet()) {
         try {
-          PerformanceCounterContainer.INSTANCE.register(
-              new JmxMetricPerformanceCounter(entry.getKey(), entry.getValue()));
+          //PerformanceCounterContainer.INSTANCE.register(
+              //new JmxMetricPerformanceCounter(entry.getKey(), entry.getValue()));
+          String objectName = entry.getKey();
+          Collection<JmxAttributeData> attributes = entry.getValue();
+          for(JmxAttributeData jmxAttributeData : entry.getValue())
+          {
+
+              GlobalOpenTelemetry.meterBuilder(
+                      "jmx")//.setSchemaUrl(attribute.metricName) // we want to export with the spaces name, but error is because we have spaces
+                  .build()
+                  .gaugeBuilder(jmxAttributeData.metricName) // replace them with underscores
+                  .buildWithCallback(observableDoubleMeasurement -> {
+                    logger.debug(
+                        "Metric JMX from callback: objectName:{},  attribute.metricName{}, value:{} from callback",
+                        objectName, jmxAttributeData.metricName);
+
+
+                    try {
+                      List<Object> result = JmxDataFetcher.fetch(objectName,
+                          jmxAttributeData.attribute); // should return the [val] here
+
+
+                    } catch (Exception e) {
+
+                    }
+                    // calculate value here
+
+
+
+
+                    observableDoubleMeasurement.record(value);
+                  });
+
+          }
         } catch (RuntimeException e) {
           try (MDC.MDCCloseable ignored = CUSTOM_JMX_METRIC_ERROR.makeActive()) {
             logger.error(
