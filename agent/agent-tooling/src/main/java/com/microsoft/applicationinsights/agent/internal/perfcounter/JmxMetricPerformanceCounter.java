@@ -5,7 +5,6 @@ package com.microsoft.applicationinsights.agent.internal.perfcounter;
 
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import java.util.Collection;
-import io.opentelemetry.api.GlobalOpenTelemetry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,17 +18,7 @@ public final class JmxMetricPerformanceCounter extends AbstractJmxPerformanceCou
 
   @Override
   protected void send(TelemetryClient telemetryClient, String displayName, double value) {
-
-    //telemetryClient.trackAsync(telemetryClient.newMetricTelemetry(displayName, value));
-    for (JmxAttributeData attribute : attributes) {
-      logger.debug("Metric JMX: displayName:{}, attribute:{}, value:{} from send forloop", displayName, attribute.attribute, value);
-      GlobalOpenTelemetry.meterBuilder("jmx")//.setSchemaUrl(attribute.metricName) // we want to export with the spaces name, but error is because we have spaces
-          .build()
-          .gaugeBuilder(attribute.metricName) // replace them with underscores
-          .buildWithCallback(observableDoubleMeasurement -> {
-            logger.debug("Metric JMX: displayName:{},  attribute.metricName{}, value:{} from callback", displayName, attribute.metricName, value);
-            observableDoubleMeasurement.record(value);
-          });
-    }
+    logger.trace("Metric JMX: {}, {}", displayName, value);
+    telemetryClient.trackAsync(telemetryClient.newMetricTelemetry(displayName, value));
   }
 }

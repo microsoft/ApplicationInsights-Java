@@ -66,8 +66,16 @@ public class JmxDataFetcher {
     return result;
   }
 
+  /**
+   * Gets an object name and an attribute to fetch and will return the data.
+   *
+   * @param objectName The object name to search.
+   * @param attribute An attribute that belongs to the object name
+   * @return A List of values found for that attribute
+   * @throws Exception In case the object name is not found.
+   */
   public static List<Object> fetch(String objectName, String attribute) throws Exception {
-    List<Object> result = new ArrayList<>();
+    List<Object> resultForAttribute = new ArrayList<>();
 
     MBeanServer server = ManagementFactory.getPlatformMBeanServer();
     Set<ObjectName> objects = server.queryNames(new ObjectName(objectName), null);
@@ -77,8 +85,7 @@ public class JmxDataFetcher {
     }
 
     try {
-      List<Object> resultForAttribute = fetch(server, objects, attribute);
-      result.add(resultForAttribute);
+      resultForAttribute = fetch(server, objects, attribute);
     } catch (Exception e) {
       try (MDC.MDCCloseable ignored = CUSTOM_JMX_METRIC_ERROR.makeActive()) {
         logger.warn(
@@ -89,7 +96,7 @@ public class JmxDataFetcher {
       throw e;
     }
 
-    return result;
+    return resultForAttribute;
   }
 
   private static List<Object> fetch(

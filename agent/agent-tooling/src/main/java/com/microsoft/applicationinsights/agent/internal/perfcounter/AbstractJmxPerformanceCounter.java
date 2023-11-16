@@ -21,7 +21,7 @@ public abstract class AbstractJmxPerformanceCounter implements PerformanceCounte
   private static final Logger logger = LoggerFactory.getLogger(AbstractJmxPerformanceCounter.class);
 
   private final String objectName;
-  protected final Collection<JmxAttributeData> attributes;
+  private final Collection<JmxAttributeData> attributes;
   private boolean alreadyLogged = false;
 
   /**
@@ -34,8 +34,6 @@ public abstract class AbstractJmxPerformanceCounter implements PerformanceCounte
   public synchronized void report(TelemetryClient telemetryClient) {
     try {
       Map<String, Collection<Object>> result = JmxDataFetcher.fetch(objectName, attributes);
-      logger.debug("jmx data fetcher result: {}",result.toString());
-
 
       for (Map.Entry<String, Collection<Object>> displayAndValues : result.entrySet()) {
         boolean ok = true;

@@ -13,7 +13,6 @@ import com.microsoft.applicationinsights.agent.internal.perfcounter.FreeMemoryPe
 import com.microsoft.applicationinsights.agent.internal.perfcounter.GcPerformanceCounter;
 import com.microsoft.applicationinsights.agent.internal.perfcounter.JmxAttributeData;
 import com.microsoft.applicationinsights.agent.internal.perfcounter.JmxDataFetcher;
-import com.microsoft.applicationinsights.agent.internal.perfcounter.JmxMetricPerformanceCounter;
 import com.microsoft.applicationinsights.agent.internal.perfcounter.JvmHeapMemoryUsedPerformanceCounter;
 import com.microsoft.applicationinsights.agent.internal.perfcounter.OshiPerformanceCounter;
 import com.microsoft.applicationinsights.agent.internal.perfcounter.PerformanceCounterContainer;
@@ -27,6 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -75,8 +75,8 @@ public class PerformanceCounterInitializer {
    * a map where the key is the Jmx object name and the value is a list of requested attributes. 2.
    * Go through all the requested Jmx counters: a. If the object name is not in the map, add it with
    * an empty list Else get the list b. Add the attribute to the list. 3. Go through the map For
-   * every entry (object name and attributes) Build a {@link JmxMetricPerformanceCounter} Register
-   * the Performance Counter in the {@link PerformanceCounterContainer}
+   * every entry (object name and attributes) to build a meter per attribute & for each meter
+   * register a callback to report the metric value.
    */
   private static void loadCustomJmxPerfCounters(List<Configuration.JmxMetric> jmxXmlElements) {
     try {
@@ -86,8 +86,6 @@ public class PerformanceCounterInitializer {
       for (Configuration.JmxMetric jmxElement : jmxXmlElements) {
         Collection<JmxAttributeData> collection =
             data.computeIfAbsent(jmxElement.objectName, k -> new ArrayList<>());
-
-        logger.debug("from loadCustomJmxPerfCounters- attribute: {}, objectName: {}, name: {}", jmxElement.attribute, jmxElement.objectName, jmxElement.name);
 
         if (Strings.isNullOrEmpty(jmxElement.objectName)) {
           try (MDC.MDCCloseable ignored = CUSTOM_JMX_METRIC_ERROR.makeActive()) {
@@ -113,54 +111,10 @@ public class PerformanceCounterInitializer {
         collection.add(new JmxAttributeData(jmxElement.name, jmxElement.attribute));
       }
 
-      logger.debug("loadcustomjmxperfcounters- data.entryset: {}", data.entrySet().toString());
+      logger.debug("keys in jmx object to attributes map: {}", data.keySet().toString());
 
-      // Register each entry in the performance container
-      for (Map.Entry<String, Collection<JmxAttributeData>> entry : data.entrySet()) {
-        try {
-          //PerformanceCounterContainer.INSTANCE.register(
-              //new JmxMetricPerformanceCounter(entry.getKey(), entry.getValue()));
-          String objectName = entry.getKey();
-          Collection<JmxAttributeData> attributes = entry.getValue();
-          for(JmxAttributeData jmxAttributeData : entry.getValue())
-          {
+      createMeterPerAttribute(data);
 
-              GlobalOpenTelemetry.meterBuilder(
-                      "jmx")//.setSchemaUrl(attribute.metricName) // we want to export with the spaces name, but error is because we have spaces
-                  .build()
-                  .gaugeBuilder(jmxAttributeData.metricName) // replace them with underscores
-                  .buildWithCallback(observableDoubleMeasurement -> {
-                    logger.debug(
-                        "Metric JMX from callback: objectName:{},  attribute.metricName{}, value:{} from callback",
-                        objectName, jmxAttributeData.metricName);
-
-
-                    try {
-                      List<Object> result = JmxDataFetcher.fetch(objectName,
-                          jmxAttributeData.attribute); // should return the [val] here
-
-
-                    } catch (Exception e) {
-
-                    }
-                    // calculate value here
-
-
-
-
-                    observableDoubleMeasurement.record(value);
-                  });
-
-          }
-        } catch (RuntimeException e) {
-          try (MDC.MDCCloseable ignored = CUSTOM_JMX_METRIC_ERROR.makeActive()) {
-            logger.error(
-                "Failed to register JMX performance counter: '{}' : '{}'",
-                entry.getKey(),
-                e.toString());
-          }
-        }
-      }
     } catch (RuntimeException e) {
       try (MDC.MDCCloseable ignored = CUSTOM_JMX_METRIC_ERROR.makeActive()) {
         logger.error("Failed to register JMX performance counters: '{}'", e.toString());
@@ -168,5 +122,63 @@ public class PerformanceCounterInitializer {
     }
   }
 
+  // Create a meter for each attribute & declare the callback that reports the metric in the meter.
+  private static void createMeterPerAttribute(Map<String, Collection<JmxAttributeData>> objectAndAttributesMap) {
+    for (Map.Entry<String, Collection<JmxAttributeData>> entry : objectAndAttributesMap.entrySet()) {
+        String objectName = entry.getKey();
+        for(JmxAttributeData jmxAttributeData : entry.getValue())
+        {
+          logger.debug("Creating meter for objectName {} and attribute.metricName {}", objectName, jmxAttributeData.metricName);
+//.setSchemaUrl(attribute.metricName) // we want to export with the spaces name, but error is because we have spaces
+          GlobalOpenTelemetry.meterBuilder( //was getMeter
+                  "jmx")
+              .setSchemaUrl(jmxAttributeData.metricName)
+              .build()
+              .gaugeBuilder(jmxAttributeData.metricName.replaceAll(" ", "_")) // replace them with underscores
+              .buildWithCallback(observableDoubleMeasurement -> {
+                logger.debug("meter calling callback");
+                calculateAndRecordValueForAttribute(observableDoubleMeasurement, objectName, jmxAttributeData);
+              });
+        }
+    }
+  }
+
+  private static void calculateAndRecordValueForAttribute(ObservableDoubleMeasurement observableDoubleMeasurement, String objectName, JmxAttributeData jmxAttributeData) {
+    logger.debug(
+        "Metric JMX from callback: objectName:{},  attribute.metricName{}, from callback",
+        objectName, jmxAttributeData.metricName);
+
+    try {
+      List<Object> result = JmxDataFetcher.fetch(objectName,
+          jmxAttributeData.attribute); // should return the [val, ...] here
+
+      logger.debug("list size: {} for objectName:{} and metricName{}", result.size(), objectName, jmxAttributeData.metricName);
+
+      boolean ok = true;
+      double value = 0.0;
+      for (Object obj : result) {
+        try {
+          if (obj instanceof Boolean) {
+            value = ((Boolean) obj).booleanValue() ? 1 : 0;
+          } else {
+            value += Double.parseDouble(String.valueOf(obj));
+          }
+        } catch (RuntimeException e) {
+          ok = false;
+          break;
+        }
+      }
+      if (ok) {
+        logger.debug("value {} for objectName:{} and metricName{}", value, objectName, jmxAttributeData.metricName);
+        observableDoubleMeasurement.record(value);
+      }
+    } catch (Exception e) {
+      try (MDC.MDCCloseable ignored = CUSTOM_JMX_METRIC_ERROR.makeActive()) {
+        logger.error("Failed to calculate the metric value for objectName {} and metric name {}",
+            objectName, jmxAttributeData.metricName);
+        logger.error("Exception: {}", e.toString());
+      }
+    }
+  }
   private PerformanceCounterInitializer() {}
 }
