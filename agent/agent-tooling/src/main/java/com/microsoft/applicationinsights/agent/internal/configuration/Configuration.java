@@ -1095,7 +1095,8 @@ public class Configuration {
   public static class ProcessorAttribute {
     public String key;
     public Object value;
-    public AttributeType type;
+    public AttributeType type =
+        AttributeType.STRING; // default to string for backward compatibility
 
     public AttributeKey<?> getAttributeKey() {
       switch (type) {
