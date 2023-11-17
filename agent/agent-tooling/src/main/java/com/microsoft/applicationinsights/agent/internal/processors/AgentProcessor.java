@@ -104,8 +104,7 @@ public abstract class AgentProcessor {
         } else {
           existingAttributeValue = String.valueOf(valueObject);
         }
-        if (attribute.value != null
-            && !existingAttributeValue.equals(attribute.getStringValue())) {
+        if (attribute.value != null && !existingAttributeValue.equals(attribute.getStringValue())) {
           // user specified value doesn't match
           return false;
         }
