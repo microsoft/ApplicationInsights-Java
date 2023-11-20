@@ -129,14 +129,21 @@ public class PerformanceCounterInitializer {
         for(JmxAttributeData jmxAttributeData : entry.getValue())
         {
           logger.debug("Creating meter for objectName {} and attribute.metricName {}", objectName, jmxAttributeData.metricName);
-//.setSchemaUrl(attribute.metricName) // we want to export with the spaces name, but error is because we have spaces
-          GlobalOpenTelemetry.meterBuilder( //was getMeter
+          /*GlobalOpenTelemetry.meterBuilder( //was getMeter
                   "jmx")
               .setSchemaUrl(jmxAttributeData.metricName)
               .build()
               .gaugeBuilder(jmxAttributeData.metricName.replaceAll(" ", "_")) // replace them with underscores
               .buildWithCallback(observableDoubleMeasurement -> {
-                logger.debug("meter calling callback");
+                calculateAndRecordValueForAttribute(observableDoubleMeasurement, objectName, jmxAttributeData);
+              });*/
+
+          GlobalOpenTelemetry.getMeter(
+                  "jmx")
+              .gaugeBuilder(jmxAttributeData.metricName.replaceAll(" ", "_")) // replace them with underscores
+              .buildWithCallback(observableDoubleMeasurement -> {
+                Exception e = new Exception();
+                e.printStackTrace();
                 calculateAndRecordValueForAttribute(observableDoubleMeasurement, objectName, jmxAttributeData);
               });
         }
@@ -151,8 +158,6 @@ public class PerformanceCounterInitializer {
     try {
       List<Object> result = JmxDataFetcher.fetch(objectName,
           jmxAttributeData.attribute); // should return the [val, ...] here
-
-      logger.debug("list size: {} for objectName:{} and metricName{}", result.size(), objectName, jmxAttributeData.metricName);
 
       boolean ok = true;
       double value = 0.0;
