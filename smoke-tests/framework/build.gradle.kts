@@ -11,7 +11,7 @@ tasks {
 dependencies {
   implementation("com.google.guava:guava")
   implementation("org.junit.jupiter:junit-jupiter")
-  implementation("org.apache.commons:commons-lang3:3.13.0")
+  implementation("org.apache.commons:commons-lang3:3.14.0")
 
   implementation("com.google.code.gson:gson")
   implementation("org.apache.httpcomponents:httpclient:4.5.14")
