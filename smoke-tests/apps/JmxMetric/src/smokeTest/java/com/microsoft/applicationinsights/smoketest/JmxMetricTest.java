@@ -18,10 +18,13 @@ import com.microsoft.applicationinsights.smoketest.schemav2.DataPoint;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
 import com.microsoft.applicationinsights.smoketest.schemav2.MetricData;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import org.assertj.core.api.Condition;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.mockserver.model.HttpRequest;
@@ -56,9 +59,33 @@ abstract class JmxMetricTest {
               // verify metrics
               List<Metric> metrics =
                   testing.mockedOtlpIngestion.extractMetricsFromRequests(requests);
-              assertThat(metrics)
+
+              Map<String, Integer> occurrences = new HashMap<>();
+              Set<String> allowedMetrics = new HashSet<>(
+                  Arrays.asList("NameWithDot", "DemoThreadCount", "DemoCurrentThreadCpuTime", "Loaded_Class_Count"));
+
+              // counting all occurrences of each jmx metric
+              for (Metric metric : metrics) {
+                String metricName = metric.getName();
+                if (allowedMetrics.contains(metricName))
+                {
+                  if (occurrences.containsKey(metricName)) {
+                    occurrences.put(metricName, occurrences.get(metricName) + 1);
+                  } else {
+                    occurrences.put(metricName, 1);
+                  }
+                }
+              }
+
+              // confirm that all metrics recieved once or twice (depending on timing)
+              assertThat(occurrences.keySet()).hasSize(4);
+              for(int value : occurrences.values()) {
+                assertThat(value).isBetween(1,2);
+              }
+
+              /*assertThat(metrics)
                   .extracting(Metric::getName)
-                  .contains("NameWithDot", "DemoThreadCount","DemoCurrentThreadCpuTime");
+                  .contains("NameWithDot", "DemoThreadCount","DemoCurrentThreadCpuTime", "Loaded_Class_Count");*/
             });
   }
 
@@ -66,6 +93,8 @@ abstract class JmxMetricTest {
     List<Envelope> metricItems =
         testing.mockedIngestion.waitForItems(
             envelope -> isJmxMetric(envelope), 1, 10, TimeUnit.SECONDS);
+
+    assertThat(metricItems).hasSizeBetween(4,8);
 
     Set<String> metricNames = new HashSet<>();
     for (Envelope envelope : metricItems)
@@ -79,12 +108,12 @@ abstract class JmxMetricTest {
       }
       metricNames.add(metricName);
     }
-    assertThat(metricNames).contains("NameWithDot", "DemoThreadCount", "DemoCurrentThreadCpuTime");
+    assertThat(metricNames).contains("NameWithDot", "DemoThreadCount", "DemoCurrentThreadCpuTime", "Loaded_Class_Count");
   }
 
   private static boolean isJmxMetric(Envelope envelope) {
     Set<String> allowedMetrics = new HashSet<>(
-        Arrays.asList("NameWithDot", "DemoThreadCount", "DemoCurrentThreadCpuTime"));
+        Arrays.asList("NameWithDot", "DemoThreadCount", "DemoCurrentThreadCpuTime", "Loaded_Class_Count"));
     if (!envelope.getData().getBaseType().equals("MetricData")) {
       return false;
     }

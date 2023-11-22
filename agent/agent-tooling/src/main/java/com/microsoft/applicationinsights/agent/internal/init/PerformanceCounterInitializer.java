@@ -44,7 +44,7 @@ public class PerformanceCounterInitializer {
       PerformanceCounterContainer.INSTANCE.setLogAvailableJmxMetrics();
     }
 
-    loadCustomJmxPerfCounters(configuration.jmxMetrics);
+    loadCustomJmxPerfCounters(configuration.jmxMetrics, configuration.metricIntervalSeconds);
 
     PerformanceCounterContainer.INSTANCE.register(
         new ProcessCpuPerformanceCounter(
@@ -78,7 +78,7 @@ public class PerformanceCounterInitializer {
    * every entry (object name and attributes) to build a meter per attribute & for each meter
    * register a callback to report the metric value.
    */
-  private static void loadCustomJmxPerfCounters(List<Configuration.JmxMetric> jmxXmlElements) {
+  private static void loadCustomJmxPerfCounters(List<Configuration.JmxMetric> jmxXmlElements, int metricIntervalSeconds) {
     try {
       HashMap<String, Collection<JmxAttributeData>> data = new HashMap<>();
 
@@ -111,8 +111,9 @@ public class PerformanceCounterInitializer {
         collection.add(new JmxAttributeData(jmxElement.name, jmxElement.attribute));
       }
 
-      logger.debug("keys in jmx object to attributes map: {}", data.keySet().toString());
-
+      if (!data.isEmpty()) {
+        System.setProperty("otel.metric.export.interval", Long.toString(metricIntervalSeconds * 1000L));
+      }
       createMeterPerAttribute(data);
 
     } catch (RuntimeException e) {
@@ -128,22 +129,10 @@ public class PerformanceCounterInitializer {
         String objectName = entry.getKey();
         for(JmxAttributeData jmxAttributeData : entry.getValue())
         {
-          logger.debug("Creating meter for objectName {} and attribute.metricName {}", objectName, jmxAttributeData.metricName);
-          /*GlobalOpenTelemetry.meterBuilder( //was getMeter
-                  "jmx")
-              .setSchemaUrl(jmxAttributeData.metricName)
-              .build()
-              .gaugeBuilder(jmxAttributeData.metricName.replaceAll(" ", "_")) // replace them with underscores
-              .buildWithCallback(observableDoubleMeasurement -> {
-                calculateAndRecordValueForAttribute(observableDoubleMeasurement, objectName, jmxAttributeData);
-              });*/
-
           GlobalOpenTelemetry.getMeter(
                   "jmx")
               .gaugeBuilder(jmxAttributeData.metricName.replaceAll(" ", "_")) // replace them with underscores
               .buildWithCallback(observableDoubleMeasurement -> {
-                Exception e = new Exception();
-                e.printStackTrace();
                 calculateAndRecordValueForAttribute(observableDoubleMeasurement, objectName, jmxAttributeData);
               });
         }
@@ -151,10 +140,6 @@ public class PerformanceCounterInitializer {
   }
 
   private static void calculateAndRecordValueForAttribute(ObservableDoubleMeasurement observableDoubleMeasurement, String objectName, JmxAttributeData jmxAttributeData) {
-    logger.debug(
-        "Metric JMX from callback: objectName:{},  attribute.metricName{}, from callback",
-        objectName, jmxAttributeData.metricName);
-
     try {
       List<Object> result = JmxDataFetcher.fetch(objectName,
           jmxAttributeData.attribute); // should return the [val, ...] here
@@ -174,7 +159,7 @@ public class PerformanceCounterInitializer {
         }
       }
       if (ok) {
-        logger.debug("value {} for objectName:{} and metricName{}", value, objectName, jmxAttributeData.metricName);
+        logger.trace("value {} for objectName:{} and metricName{}", value, objectName, jmxAttributeData.metricName);
         observableDoubleMeasurement.record(value);
       }
     } catch (Exception e) {
