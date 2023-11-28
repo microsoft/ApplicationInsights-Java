@@ -41,6 +41,16 @@
       "name": "GCYoung",
       "objectName": "java.lang:name=G1 Young Generation,type=GarbageCollector",
       "attribute": "CollectionCount"
+    },
+    {
+      "name": "PSScavenge",
+      "objectName": "java.lang:type=GarbageCollector,name=PS Scavenge",
+      "attribute": "CollectionCount"
+    },
+    {
+      "name": "PSMarkSweep",
+      "objectName": "java.lang:type=GarbageCollector,name=PS MarkSweep",
+      "attribute": "CollectionCount"
     }
   ],
   "metricIntervalSeconds": 5

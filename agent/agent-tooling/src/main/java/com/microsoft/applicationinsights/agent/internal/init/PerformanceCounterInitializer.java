@@ -44,7 +44,7 @@ public class PerformanceCounterInitializer {
       PerformanceCounterContainer.INSTANCE.setLogAvailableJmxMetrics();
     }
 
-    loadCustomJmxPerfCounters(configuration.jmxMetrics, configuration.metricIntervalSeconds);
+    loadCustomJmxPerfCounters(configuration.jmxMetrics);
 
     PerformanceCounterContainer.INSTANCE.register(
         new ProcessCpuPerformanceCounter(
@@ -78,7 +78,7 @@ public class PerformanceCounterInitializer {
    * every entry (object name and attributes) to build a meter per attribute & for each meter
    * register a callback to report the metric value.
    */
-  private static void loadCustomJmxPerfCounters(List<Configuration.JmxMetric> jmxXmlElements, int metricIntervalSeconds) {
+  private static void loadCustomJmxPerfCounters(List<Configuration.JmxMetric> jmxXmlElements) {
     try {
       HashMap<String, Collection<JmxAttributeData>> data = new HashMap<>();
 
@@ -111,9 +111,6 @@ public class PerformanceCounterInitializer {
         collection.add(new JmxAttributeData(jmxElement.name, jmxElement.attribute));
       }
 
-      if (!data.isEmpty()) {
-        System.setProperty("otel.metric.export.interval", Long.toString(metricIntervalSeconds * 1000L));
-      }
       createMeterPerAttribute(data);
 
     } catch (RuntimeException e) {

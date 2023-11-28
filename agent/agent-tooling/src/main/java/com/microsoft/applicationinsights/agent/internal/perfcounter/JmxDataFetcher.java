@@ -79,6 +79,7 @@ public class JmxDataFetcher {
 
     MBeanServer server = ManagementFactory.getPlatformMBeanServer();
     Set<ObjectName> objects = server.queryNames(new ObjectName(objectName), null);
+    logger.trace("Matching object names for pattern {}: {}", objectName,  objects.toString());
     if (objects.isEmpty()) {
       String errorMsg = String.format("Cannot find object name '%s'", objectName);
       throw new IllegalArgumentException(errorMsg);
