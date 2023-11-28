@@ -2,7 +2,7 @@
 # Manual edits can break the build and are not advised.
 # This file is expected to be part of source control.
 com.azure:azure-sdk-bom:1.2.18=runtimeClasspath
-com.fasterxml.jackson:jackson-bom:2.15.3=runtimeClasspath
+com.fasterxml.jackson:jackson-bom:2.16.0=runtimeClasspath
 com.google.guava:guava-bom:32.1.3-jre=runtimeClasspath
 io.netty:netty-bom:4.1.100.Final=runtimeClasspath
 io.opentelemetry.contrib:opentelemetry-runtime-attach-core:1.30.0-alpha=runtimeClasspath
@@ -12,5 +12,5 @@ io.opentelemetry:opentelemetry-bom-alpha:1.31.0-alpha=runtimeClasspath
 io.opentelemetry:opentelemetry-bom:1.31.0=runtimeClasspath
 net.bytebuddy:byte-buddy-agent:1.14.8=runtimeClasspath
 org.junit:junit-bom:5.10.1=runtimeClasspath
-org.testcontainers:testcontainers-bom:1.19.1=runtimeClasspath
+org.testcontainers:testcontainers-bom:1.19.3=runtimeClasspath
 empty=
