@@ -144,6 +144,8 @@ public class PerformanceCounterInitializer {
       List<Object> result = JmxDataFetcher.fetch(objectName,
           jmxAttributeData.attribute); // should return the [val, ...] here
 
+      logger.trace("Size of the JmxDataFetcher.fetch result: {}, for objectName:{} and metricName:{}", result.size(), objectName, jmxAttributeData.metricName);
+
       boolean ok = true;
       double value = 0.0;
       for (Object obj : result) {

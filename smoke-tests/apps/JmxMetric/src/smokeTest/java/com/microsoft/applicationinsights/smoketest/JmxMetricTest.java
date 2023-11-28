@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import org.assertj.core.api.Condition;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.mockserver.model.HttpRequest;
@@ -37,6 +36,22 @@ abstract class JmxMetricTest {
   static final SmokeTestExtension testing =
       SmokeTestExtension.builder().useOtlpEndpoint().setSelfDiagnosticsLevel("TRACE").build();
 
+  /* These are the jmx metric names we have configured to collect in the applicationInsights.json:
+   NameWithDot: An edge case where a dot in the mbean is not a path separator in the attribute, specifically when using org.weakref.jmx package
+   DefaultJmxMetricNameOverride: If a customer overrides the default ThreadCount metric with their own metric name, we should be collecting the metric with the name the customer specified
+   WildcardJmxMetric: This covers the case of ? and * in the objectName, with multiple matching object names. The expected metric value here is the sum of all the CollectionCount attribute values for each matching object name.
+        The matching objectNames are: G1 Young Generation,type=GarbageCollector and G1 Old Generation,type=GarbageCollector.
+   Loaded_Class_Count: This covers the case of collecting a default jmx metric that the customer did not specify in applicationInsights.json. Also note that there are underscores
+        instead of spaces, as we are emitting the metric via OpenTelemetry now. When the upstream fixes the related bug (https://github.com/open-telemetry/opentelemetry-specification/issues/3422#issuecomment-1678116597),
+        then we can fix the code to not use underscores as a replacement.
+   BooleanJmxMetric: This covers the case of a jmx metric attribute with a boolean value.
+   DotInAttributeNameAsPathSeparator: This covers the case of an attribute having a dot in the name as a path separator.
+   GCOld: This is the G1 Old Generation,type=GarbageCollector object name & CollectionCount attribute. Used to verify the value of WildcardJmxMetric.
+   GCYoung: This is the G1 Young Generation,type=GarbageCollector object name & CollectionCount attribute. Used to verify the value of WildcardJmxMetric
+   */
+  static final Set<String> allowedMetrics = new HashSet<>(
+      Arrays.asList("NameWithDot", "DefaultJmxMetricNameOverride", "WildcardJmxMetric", "Loaded_Class_Count", "BooleanJmxMetric", "DotInAttributeNameAsPathSeparator","GCOld", "GCYoung"));
+
   @Test
   @TargetUri("/test")
   void doMostBasicTest() throws Exception {
@@ -47,7 +62,7 @@ abstract class JmxMetricTest {
   @SuppressWarnings("PreferJavaTimeOverload")
   private void verifyJmxMetricsSentToOtlpEndpoint() {
     await()
-        .atMost(60, SECONDS)
+        .atMost(10, SECONDS)
         .untilAsserted(
             () -> {
               HttpRequest[] requests =
@@ -61,8 +76,6 @@ abstract class JmxMetricTest {
                   testing.mockedOtlpIngestion.extractMetricsFromRequests(requests);
 
               Map<String, Integer> occurrences = new HashMap<>();
-              Set<String> allowedMetrics = new HashSet<>(
-                  Arrays.asList("NameWithDot", "DemoThreadCount", "DemoCurrentThreadCpuTime", "Loaded_Class_Count"));
 
               // counting all occurrences of each jmx metric
               for (Metric metric : metrics) {
@@ -77,15 +90,12 @@ abstract class JmxMetricTest {
                 }
               }
 
-              // confirm that all metrics recieved once or twice (depending on timing)
-              assertThat(occurrences.keySet()).hasSize(4);
+              // confirm that all metrics received once or twice in the span of 10s
+              assertThat(occurrences.keySet()).hasSize(8);
               for(int value : occurrences.values()) {
                 assertThat(value).isBetween(1,2);
               }
 
-              /*assertThat(metrics)
-                  .extracting(Metric::getName)
-                  .contains("NameWithDot", "DemoThreadCount","DemoCurrentThreadCpuTime", "Loaded_Class_Count");*/
             });
   }
 
@@ -94,26 +104,39 @@ abstract class JmxMetricTest {
         testing.mockedIngestion.waitForItems(
             envelope -> isJmxMetric(envelope), 1, 10, TimeUnit.SECONDS);
 
-    assertThat(metricItems).hasSizeBetween(4,8);
+    assertThat(metricItems).hasSizeBetween(8,16);
 
     Set<String> metricNames = new HashSet<>();
+    double wildcardValueSum = 0;
+    double gcOldSum = 0;
+    double gcYoungSum = 0;
     for (Envelope envelope : metricItems)
     {
       MetricData metricData = (MetricData) ((Data<?>) envelope.getData()).getBaseData();
       List<DataPoint> points = metricData.getMetrics();
       assertThat(points).hasSize(1);
       String metricName = points.get(0).getName();
-      if (metricName.equals("NameWithDot")) {
-        assertThat(points.get(0).getValue()).isEqualTo(5);
-      }
       metricNames.add(metricName);
+
+      // verifying values of some metrics
+      double value = points.get(0).getValue();
+      if (metricName.equals("NameWithDot")) {
+        assertThat(value).isEqualTo(5);
+      } if (metricName.equals("GCOld")) {
+        gcOldSum += value;
+      } if (metricName.equals("GCYoung")) {
+        gcYoungSum += value;
+      } if (metricName.equals("WildcardJmxMetric")) {
+        wildcardValueSum += value;
+      } if (metricName.equals("BooleanJmxMetric")) {
+        assertThat(value == 1.0 || value == 0.0);
+      }
     }
-    assertThat(metricNames).contains("NameWithDot", "DemoThreadCount", "DemoCurrentThreadCpuTime", "Loaded_Class_Count");
+    assertThat(wildcardValueSum == gcOldSum + gcYoungSum);
+    assertThat(metricNames).containsAll(allowedMetrics);
   }
 
   private static boolean isJmxMetric(Envelope envelope) {
-    Set<String> allowedMetrics = new HashSet<>(
-        Arrays.asList("NameWithDot", "DemoThreadCount", "DemoCurrentThreadCpuTime", "Loaded_Class_Count"));
     if (!envelope.getData().getBaseType().equals("MetricData")) {
       return false;
     }

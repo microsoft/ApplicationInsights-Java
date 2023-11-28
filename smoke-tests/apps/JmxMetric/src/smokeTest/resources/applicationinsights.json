@@ -13,14 +13,34 @@
       "attribute": "NestedObject\\.Value"
     },
     {
-      "name": "DemoThreadCount",
+      "name": "DefaultJmxMetricNameOverride",
       "objectName": "java.lang:type=Threading",
       "attribute": "ThreadCount"
     },
     {
-      "name": "DemoCurrentThreadCpuTime",
+      "name": "WildcardJmxMetric",
+      "objectName": "java.lang:name=*,type=GarbageColl?ctor",
+      "attribute": "CollectionCount"
+    },
+    {
+      "name": "BooleanJmxMetric",
       "objectName": "java.lang:type=Threading",
-      "attribute": "CurrentThreadCpuTime"
+      "attribute": "ThreadAllocatedMemoryEnabled"
+    },
+    {
+      "name": "DotInAttributeNameAsPathSeparator",
+      "objectName": "java.lang:type=Memory",
+      "attribute": "HeapMemoryUsage.committed"
+    },
+    {
+      "name": "GCOld",
+      "objectName": "java.lang:name=G1 Old Generation,type=GarbageCollector",
+      "attribute": "CollectionCount"
+    },
+    {
+      "name": "GCYoung",
+      "objectName": "java.lang:name=G1 Young Generation,type=GarbageCollector",
+      "attribute": "CollectionCount"
     }
   ],
   "metricIntervalSeconds": 5
