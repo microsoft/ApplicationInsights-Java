@@ -3,11 +3,6 @@
 
 package com.microsoft.applicationinsights.agent.internal.processors;
 
-import static com.microsoft.applicationinsights.agent.internal.configuration.Configuration.AttributeType.BOOLEAN_ARRAY;
-import static com.microsoft.applicationinsights.agent.internal.configuration.Configuration.AttributeType.DOUBLE_ARRAY;
-import static com.microsoft.applicationinsights.agent.internal.configuration.Configuration.AttributeType.LONG_ARRAY;
-import static com.microsoft.applicationinsights.agent.internal.configuration.Configuration.AttributeType.STRING_ARRAY;
-
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.MatchType;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.ProcessorAttribute;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.ProcessorIncludeExclude;
@@ -95,15 +90,7 @@ public abstract class AgentProcessor {
           // user specified key not found
           return false;
         }
-        String existingAttributeValue;
-        if (attribute.type == BOOLEAN_ARRAY
-            || attribute.type == LONG_ARRAY
-            || attribute.type == DOUBLE_ARRAY
-            || attribute.type == STRING_ARRAY) {
-          existingAttributeValue = valueObject.toString();
-        } else {
-          existingAttributeValue = String.valueOf(valueObject);
-        }
+        String existingAttributeValue = String.valueOf(valueObject);
         if (attribute.value != null && !existingAttributeValue.equals(attribute.getStringValue())) {
           // user specified value doesn't match
           return false;
