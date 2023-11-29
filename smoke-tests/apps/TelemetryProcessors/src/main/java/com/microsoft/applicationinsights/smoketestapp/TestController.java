@@ -27,7 +27,6 @@ public class TestController {
     return "OK!";
   }
 
-  // span name: GET /sensitivedata
   @GetMapping("/sensitivedata")
   public String sensitiveData() {
     return "some sensitive data!";
@@ -38,13 +37,19 @@ public class TestController {
     return "Test sensitive data in URL";
   }
 
-  @GetMapping("/test-non-string-span-attributes")
-  public String testNonStringSpanAttributes() {
+  @GetMapping("/test-non-string-strict-span-attributes")
+  public String testNonStringStrictSpanAttributes() {
     Span.current()
         .setAttribute("myLongAttributeKey", 1234)
         .setAttribute("myBooleanAttributeKey", true)
         .setAttribute(
             doubleArrayKey("myDoubleArrayAttributeKey"), Arrays.asList(1.0, 2.0, 3.0, 4.0));
-    return "Test non string type span attributes";
+    return "Test non string strict type span attributes";
+  }
+
+  @GetMapping("/test-non-string-regex-span-attributes")
+  public String testNonStringRegexSpanAttributes() {
+    Span.current().setAttribute("myLongRegexAttributeKey", 428);
+    return "Test non string regex type span attributes";
   }
 }

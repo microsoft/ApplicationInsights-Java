@@ -24,15 +24,26 @@ abstract class TelemetryProcessorsNonStringAttributesTest {
   @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.create();
 
   @Test
-  @TargetUri("/test-non-string-span-attributes")
-  void testNonStringSpanAttributes() throws Exception {
+  @TargetUri("/test-non-string-strict-span-attributes")
+  void testNonStringStrictSpanAttributes() throws Exception {
     Telemetry telemetry = testing.getTelemetry(0);
     Map<String, String> properties = telemetry.rd.getProperties();
+
     assertThat(properties.get("myLongAttributeKey")).isEqualTo("1234");
     assertThat(properties.get("myBooleanAttributeKey")).isEqualTo("true");
     assertThat(properties.get("myDoubleArrayAttributeKey"))
         .containsAnyOf("1.0", "2.0", "3.0", "4.0");
-    assertThat(properties.get("myNewAttributeKey")).isEqualTo("myNewAttributeValue");
+    assertThat(properties.get("myNewAttributeKeyStrict")).isEqualTo("myNewAttributeValueStrict");
+  }
+
+  @Test
+  @TargetUri("/test-non-string-regex-span-attributes")
+  void testNonStringRegexSpanAttributes() throws Exception {
+    Telemetry telemetry = testing.getTelemetry(0);
+    Map<String, String> properties = telemetry.rd.getProperties();
+
+    assertThat(properties.get("myLongRegexAttributeKey")).isEqualTo("428");
+    assertThat(properties.get("myNewAttributeKeyRegex")).isEqualTo("myNewAttributeValueRegex");
   }
 
   @Environment(TOMCAT_8_JAVA_8)
