@@ -79,7 +79,7 @@ public class JmxDataFetcher {
 
     MBeanServer server = ManagementFactory.getPlatformMBeanServer();
     Set<ObjectName> objects = server.queryNames(new ObjectName(objectName), null);
-    logger.trace("Matching object names for pattern {}: {}", objectName,  objects.toString());
+    logger.trace("Matching object names for pattern {}: {}", objectName, objects.toString());
     if (objects.isEmpty()) {
       String errorMsg = String.format("Cannot find object name '%s'", objectName);
       throw new IllegalArgumentException(errorMsg);
@@ -89,10 +89,7 @@ public class JmxDataFetcher {
       resultForAttribute = fetch(server, objects, attribute);
     } catch (Exception e) {
       try (MDC.MDCCloseable ignored = CUSTOM_JMX_METRIC_ERROR.makeActive()) {
-        logger.warn(
-            "Failed to fetch JMX object '{}' with attribute '{}': ",
-            objectName,
-            attribute);
+        logger.warn("Failed to fetch JMX object '{}' with attribute '{}': ", objectName, attribute);
       }
       throw e;
     }

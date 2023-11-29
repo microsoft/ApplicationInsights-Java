@@ -409,7 +409,6 @@ public class ConfigurationBuilder {
       classCountJmxMetric.attribute = "LoadedClassCount";
       config.jmxMetrics.add(classCountJmxMetric);
     }
-
   }
 
   private static boolean jmxMetricExists(

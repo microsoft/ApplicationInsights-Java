@@ -25,7 +25,9 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
         "applicationinsights.internal.micrometer.step.millis",
         Long.toString(SECONDS.toMillis(configuration.metricIntervalSeconds)));
 
-    properties.put("otel.metric.export.interval", Long.toString(SECONDS.toMillis(configuration.metricIntervalSeconds)));
+    properties.put(
+        "otel.metric.export.interval",
+        Long.toString(SECONDS.toMillis(configuration.metricIntervalSeconds)));
 
     enableInstrumentations(otelConfig, configuration, properties);
 

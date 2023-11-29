@@ -70,11 +70,11 @@ class JmxDataFetcherTest {
         .isInstanceOf(Exception.class);
 
     // Test the other fetch method
-    for (JmxAttributeData attribute:  attributes) {
-      assertThatThrownBy(() -> JmxDataFetcher.fetch("JSDKTests:type=TestStub3", attribute.attribute))
+    for (JmxAttributeData attribute : attributes) {
+      assertThatThrownBy(
+              () -> JmxDataFetcher.fetch("JSDKTests:type=TestStub3", attribute.attribute))
           .isInstanceOf(Exception.class);
     }
-
   }
 
   @Test
@@ -90,7 +90,8 @@ class JmxDataFetcherTest {
         .isInstanceOf(IllegalArgumentException.class);
 
     // Test the other fetch method
-    assertThatThrownBy(() -> JmxDataFetcher.fetch("JSDKTests:type=TestStub", attributes.get(0).attribute))
+    assertThatThrownBy(
+            () -> JmxDataFetcher.fetch("JSDKTests:type=TestStub", attributes.get(0).attribute))
         .isInstanceOf(IllegalArgumentException.class);
   }
 
@@ -132,8 +133,9 @@ class JmxDataFetcherTest {
     verify(result, "Long", expectedLong);
 
     // verify the other fetch
-    for (int i= 0; i < attributes.size(); i++) {
-      List<Object> singleAttributeResult = JmxDataFetcher.fetch("JSDKTests:type=TestStub", attributes.get(i).attribute);
+    for (int i = 0; i < attributes.size(); i++) {
+      List<Object> singleAttributeResult =
+          JmxDataFetcher.fetch("JSDKTests:type=TestStub", attributes.get(i).attribute);
       assertThat(singleAttributeResult).isNotNull();
       assertThat(singleAttributeResult.size()).isEqualTo(1);
 
@@ -142,16 +144,14 @@ class JmxDataFetcherTest {
         value += Double.parseDouble(String.valueOf(obj));
       }
 
-      if(i == 0) {
+      if (i == 0) {
         assertThat(value).isEqualTo(expectedInt);
       } else if (i == 1) {
         assertThat(value).isEqualTo(expectedDouble);
       } else {
         assertThat(value).isEqualTo(expectedLong);
       }
-
     }
-
   }
 
   private static void verify(

@@ -18,6 +18,8 @@ import com.microsoft.applicationinsights.agent.internal.perfcounter.OshiPerforma
 import com.microsoft.applicationinsights.agent.internal.perfcounter.PerformanceCounterContainer;
 import com.microsoft.applicationinsights.agent.internal.perfcounter.ProcessCpuPerformanceCounter;
 import com.microsoft.applicationinsights.agent.internal.perfcounter.ProcessMemoryPerformanceCounter;
+import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
 import java.util.ArrayList;
@@ -25,8 +27,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import io.opentelemetry.api.GlobalOpenTelemetry;
-import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -121,27 +121,38 @@ public class PerformanceCounterInitializer {
   }
 
   // Create a meter for each attribute & declare the callback that reports the metric in the meter.
-  private static void createMeterPerAttribute(Map<String, Collection<JmxAttributeData>> objectAndAttributesMap) {
-    for (Map.Entry<String, Collection<JmxAttributeData>> entry : objectAndAttributesMap.entrySet()) {
-        String objectName = entry.getKey();
-        for(JmxAttributeData jmxAttributeData : entry.getValue())
-        {
-          GlobalOpenTelemetry.getMeter(
-                  "jmx")
-              .gaugeBuilder(jmxAttributeData.metricName.replaceAll(" ", "_")) // replace them with underscores
-              .buildWithCallback(observableDoubleMeasurement -> {
-                calculateAndRecordValueForAttribute(observableDoubleMeasurement, objectName, jmxAttributeData);
-              });
-        }
+  private static void createMeterPerAttribute(
+      Map<String, Collection<JmxAttributeData>> objectAndAttributesMap) {
+    for (Map.Entry<String, Collection<JmxAttributeData>> entry :
+        objectAndAttributesMap.entrySet()) {
+      String objectName = entry.getKey();
+      for (JmxAttributeData jmxAttributeData : entry.getValue()) {
+        GlobalOpenTelemetry.getMeter("jmx")
+            .gaugeBuilder(
+                jmxAttributeData.metricName.replaceAll(" ", "_")) // replace them with underscores
+            .buildWithCallback(
+                observableDoubleMeasurement -> {
+                  calculateAndRecordValueForAttribute(
+                      observableDoubleMeasurement, objectName, jmxAttributeData);
+                });
+      }
     }
   }
 
-  private static void calculateAndRecordValueForAttribute(ObservableDoubleMeasurement observableDoubleMeasurement, String objectName, JmxAttributeData jmxAttributeData) {
+  private static void calculateAndRecordValueForAttribute(
+      ObservableDoubleMeasurement observableDoubleMeasurement,
+      String objectName,
+      JmxAttributeData jmxAttributeData) {
     try {
-      List<Object> result = JmxDataFetcher.fetch(objectName,
-          jmxAttributeData.attribute); // should return the [val, ...] here
+      List<Object> result =
+          JmxDataFetcher.fetch(
+              objectName, jmxAttributeData.attribute); // should return the [val, ...] here
 
-      logger.trace("Size of the JmxDataFetcher.fetch result: {}, for objectName:{} and metricName:{}", result.size(), objectName, jmxAttributeData.metricName);
+      logger.trace(
+          "Size of the JmxDataFetcher.fetch result: {}, for objectName:{} and metricName:{}",
+          result.size(),
+          objectName,
+          jmxAttributeData.metricName);
 
       boolean ok = true;
       double value = 0.0;
@@ -158,16 +169,23 @@ public class PerformanceCounterInitializer {
         }
       }
       if (ok) {
-        logger.trace("value {} for objectName:{} and metricName{}", value, objectName, jmxAttributeData.metricName);
+        logger.trace(
+            "value {} for objectName:{} and metricName{}",
+            value,
+            objectName,
+            jmxAttributeData.metricName);
         observableDoubleMeasurement.record(value);
       }
     } catch (Exception e) {
       try (MDC.MDCCloseable ignored = CUSTOM_JMX_METRIC_ERROR.makeActive()) {
-        logger.error("Failed to calculate the metric value for objectName {} and metric name {}",
-            objectName, jmxAttributeData.metricName);
+        logger.error(
+            "Failed to calculate the metric value for objectName {} and metric name {}",
+            objectName,
+            jmxAttributeData.metricName);
         logger.error("Exception: {}", e.toString());
       }
     }
   }
+
   private PerformanceCounterInitializer() {}
 }
