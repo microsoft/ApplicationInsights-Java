@@ -90,7 +90,6 @@ public class LogProcessor extends AgentProcessor {
     return log;
   }
 
-  @SuppressWarnings("SystemOut")
   // The following function extracts attributes from log name and replaces extracted parts with
   // attribute names
   public LogRecordData processToAttributes(LogRecordData log) {
@@ -98,9 +97,6 @@ public class LogProcessor extends AgentProcessor {
       return log;
     }
     String bodyAsString = log.getBody().asString();
-    if (bodyAsString.startsWith("User account with userId")) {
-      System.out.println("#### bodyAsString: " + bodyAsString);
-    }
     // copy existing attributes.
     // According to Collector docs, The matched portion
     // in the log name is replaced by extracted attribute name. If the attributes exist
