@@ -1,0 +1,55 @@
+{
+  "role": {
+    "name": "testrolename",
+    "instance": "testroleinstance"
+  },
+  "sampling": {
+    "percentage": 100
+  },
+  "preview": {
+    "processors": [
+      {
+        "type": "log",
+        "body": {
+          "toAttributes": {
+            "rules": [
+              "^User account with userId (?<redactedUserId>\\d+.*)[\\w\\s]+$"
+            ]
+          }
+        },
+        "id": "/log/extractRedactedUserId"
+      },
+      {
+        "type": "attribute",
+        "actions": [
+          {
+            "key": "redactedUserId",
+            "action": "delete"
+          }
+        ],
+        "id": "/attribute/deleteRedactedUserId"
+      },
+      {
+        "type": "log",
+        "body": {
+          "toAttributes": {
+            "rules": [
+              "This is my \"email\" : \"(?<redactedEmail>.*)\""
+            ]
+          }
+        },
+        "id": "/log/extractRedactedEmail"
+      },
+      {
+        "type": "attribute",
+        "actions": [
+          {
+            "key": "redactedEmail",
+            "action": "delete"
+          }
+        ],
+        "id": "/attribute/deleteRedactedEmail"
+      }
+    ]
+  }
+}
