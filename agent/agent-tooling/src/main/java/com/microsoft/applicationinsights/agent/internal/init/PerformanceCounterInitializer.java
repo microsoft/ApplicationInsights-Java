@@ -136,7 +136,6 @@ public class PerformanceCounterInitializer {
                   calculateAndRecordValueForAttribute(
                       observableDoubleMeasurement, objectName, jmxAttributeData);
                 });
-
       }
     }
   }
