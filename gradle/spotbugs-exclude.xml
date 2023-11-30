@@ -31,7 +31,7 @@
   </Match>
 
   <Match>
-    <Class name="com.microsoft.applicationinsights.diagnostics.collection.libos.os.linux.LinuxProces"/>
+    <Class name="com.microsoft.applicationinsights.diagnostics.collection.libos.os.linux.LinuxProcess"/>
     <Bug pattern="CT_CONSTRUCTOR_THROW"/> <!-- inner class exception thrown in constructor can be ignored -->
   </Match>
 
