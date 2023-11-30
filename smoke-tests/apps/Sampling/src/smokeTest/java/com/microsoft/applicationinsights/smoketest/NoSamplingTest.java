@@ -34,6 +34,7 @@ abstract class NoSamplingTest {
       // just wait and do nothing
     }
 
+    assertThat(testing.mockedIngestion.getCountForType("RequestData")).isEqualTo(10000);
     List<Envelope> requestEnvelopes =
         testing.mockedIngestion.getItemsEnvelopeDataType("RequestData");
     assertThat(requestEnvelopes.size()).isEqualTo(10000);
