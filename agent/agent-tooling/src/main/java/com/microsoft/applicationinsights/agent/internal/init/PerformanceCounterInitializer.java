@@ -127,14 +127,16 @@ public class PerformanceCounterInitializer {
         objectAndAttributesMap.entrySet()) {
       String objectName = entry.getKey();
       for (JmxAttributeData jmxAttributeData : entry.getValue()) {
-        GlobalOpenTelemetry.getMeter("jmx")
-            .gaugeBuilder(
-                jmxAttributeData.metricName.replaceAll(" ", "_")) // replace them with underscores
+        GlobalOpenTelemetry.meterBuilder("jmx")
+            .setSchemaUrl(jmxAttributeData.metricName)
+            .build()
+            .gaugeBuilder(jmxAttributeData.metricName.replaceAll(" ", "_"))
             .buildWithCallback(
                 observableDoubleMeasurement -> {
                   calculateAndRecordValueForAttribute(
                       observableDoubleMeasurement, objectName, jmxAttributeData);
                 });
+
       }
     }
   }
