@@ -21,6 +21,11 @@
   </Match>
 
   <Match>
+    <Class name="com.microsoft.gcmonitor.collectors.JmxGarbageCollectorStats"/>
+    <Bug pattern="CT_CONSTRUCTOR_THROW"/> <!-- inner class exception thrown in constructor can be ignored -->
+  </Match>
+
+  <Match>
     <Class name="com.microsoft.applicationinsights.agent.internal.diagnostics.DiagnosticsHelper"/>
     <Bug pattern="PA_PUBLIC_PRIMITIVE_ATTRIBUTE"/> <!-- inner class make primitive field public can be ignored -->
   </Match>
