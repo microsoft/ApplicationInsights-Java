@@ -3,6 +3,9 @@ plugins {
 }
 
 spotbugs {
+  excludeFilter.set(
+    file("${rootProject.rootDir}/gradle/spotbugs-exclude.xml")
+  )
   omitVisitors.addAll(
     // we only use spotbugs for the findsecbugs plugin, and suppress anything else that gets flagged
     // since we use errorprone instead for this kind of static analysis
