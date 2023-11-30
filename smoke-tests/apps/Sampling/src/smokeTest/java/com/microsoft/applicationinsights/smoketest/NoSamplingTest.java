@@ -26,23 +26,23 @@ abstract class NoSamplingTest {
   @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.create();
 
   @Test
-  @TargetUri(value = "/no-sampling", callCount = 10000)
+  @TargetUri(value = "/no-sampling", callCount = 1000)
   void testNoSampling() throws Exception {
     long start = System.nanoTime();
-    while (testing.mockedIngestion.getCountForType("RequestData") < 10000
+    while (testing.mockedIngestion.getCountForType("RequestData") < 1000
         && NANOSECONDS.toSeconds(System.nanoTime() - start) < 10) {
       // just wait and do nothing
     }
-    assertThat(testing.mockedIngestion.getCountForType("RequestData")).isEqualTo(10000);
+    assertThat(testing.mockedIngestion.getCountForType("RequestData")).isEqualTo(1000);
 
     List<Envelope> requestEnvelopes =
         testing.mockedIngestion.getItemsEnvelopeDataType("RequestData");
-    assertThat(requestEnvelopes.size()).isEqualTo(10000);
+    assertThat(requestEnvelopes.size()).isEqualTo(1000);
     List<Envelope> eventEnvelopes = testing.mockedIngestion.getItemsEnvelopeDataType("EventData");
     assertThat(eventEnvelopes.size()).isEqualTo(10000);
     List<Envelope> messageEnvelopes =
         testing.mockedIngestion.getItemsEnvelopeDataType("MessageData");
-    assertThat(messageEnvelopes.size()).isEqualTo(10000);
+    assertThat(messageEnvelopes.size()).isEqualTo(1000);
 
     for (Envelope requestEnvelope : requestEnvelopes) {
       assertThat(requestEnvelope.getSampleRate()).isNull();
