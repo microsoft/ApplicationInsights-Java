@@ -33,11 +33,26 @@ abstract class NoSamplingTest {
         && NANOSECONDS.toSeconds(System.nanoTime() - start) < 10) {
       // just wait and do nothing
     }
-
     assertThat(testing.mockedIngestion.getCountForType("RequestData")).isEqualTo(10000);
+
     List<Envelope> requestEnvelopes =
         testing.mockedIngestion.getItemsEnvelopeDataType("RequestData");
     assertThat(requestEnvelopes.size()).isEqualTo(10000);
+    List<Envelope> eventEnvelopes = testing.mockedIngestion.getItemsEnvelopeDataType("EventData");
+    assertThat(eventEnvelopes.size()).isEqualTo(10000);
+    List<Envelope> messageEnvelopes =
+        testing.mockedIngestion.getItemsEnvelopeDataType("MessageData");
+    assertThat(messageEnvelopes.size()).isEqualTo(10000);
+
+    for (Envelope requestEnvelope : requestEnvelopes) {
+      assertThat(requestEnvelope.getSampleRate()).isNull();
+    }
+    for (Envelope eventEnvelope : eventEnvelopes) {
+      assertThat(eventEnvelope.getSampleRate()).isNull();
+    }
+    for (Envelope messageEnvelope : messageEnvelopes) {
+      assertThat(messageEnvelope.getSampleRate()).isNull();
+    }
   }
 
   @Environment(TOMCAT_8_JAVA_8)
