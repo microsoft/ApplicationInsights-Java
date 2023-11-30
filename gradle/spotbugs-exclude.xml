@@ -1,7 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <FindBugsFilter>
   <Match>
-    <Class name="com.microsoft.applicationinsights.agent.internal.*"/>
+    <Class name="com.microsoft.applicationinsights.agent.internal.init.LoggingLevelConfigurator"/>
+    <Bug pattern="CT_CONSTRUCTOR_THROW"/> <!-- inner class exception thrown in constructor can be ignored -->
+  </Match>
+
+  <Match>
+    <Class name="com.microsoft.applicationinsights.agent.internal.sampling.RateLimitedSamplingPercentage"/>
+    <Bug pattern="CT_CONSTRUCTOR_THROW"/> <!-- inner class exception thrown in constructor can be ignored -->
+  </Match>
+
+  <Match>
+    <Class name="com.microsoft.applicationinsights.agent.internal.telemetry.MetricFilter$IncludeExclude"/>
+    <Bug pattern="CT_CONSTRUCTOR_THROW"/> <!-- inner class exception thrown in constructor can be ignored -->
+  </Match>
+
+  <Match>
+    <Class name="com.microsoft.applicationinsights.agent.internal.configuration.Configuration$ProcessorAction"/>
     <Bug pattern="CT_CONSTRUCTOR_THROW"/> <!-- inner class exception thrown in constructor can be ignored -->
   </Match>
 
