@@ -127,8 +127,8 @@ public class PerformanceCounterInitializer {
         objectAndAttributesMap.entrySet()) {
       String objectName = entry.getKey();
       for (JmxAttributeData jmxAttributeData : entry.getValue()) {
-        GlobalOpenTelemetry.meterBuilder("jmx")
-            .setSchemaUrl(jmxAttributeData.metricName)
+        GlobalOpenTelemetry.meterBuilder("com.microsoft.applicationinsights.jmx")
+            .setSchemaUrl("app_insights_" + jmxAttributeData.metricName)
             .build()
             .gaugeBuilder(jmxAttributeData.metricName.replaceAll(" ", "_"))
             .buildWithCallback(

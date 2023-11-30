@@ -394,7 +394,6 @@ public class ConfigurationBuilder {
   }
 
   private static void addDefaultJmxMetricsIfNotPresent(Configuration config) {
-
     if (!jmxMetricExists(config.jmxMetrics, "java.lang:type=Threading", "ThreadCount")) {
       JmxMetric threadCountJmxMetric = new JmxMetric();
       threadCountJmxMetric.name = "Current Thread Count";
