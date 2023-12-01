@@ -13,7 +13,7 @@
         "body": {
           "toAttributes": {
             "rules": [
-              "userId (?<redactedUserId>[\\da-zA-Z]+)"
+              "userId (?<redactedUserId>[0-9a-zA-Z]+)"
             ]
           }
         },
