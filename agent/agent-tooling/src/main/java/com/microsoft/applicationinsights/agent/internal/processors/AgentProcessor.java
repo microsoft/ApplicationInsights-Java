@@ -90,8 +90,7 @@ public abstract class AgentProcessor {
           // user specified key not found
           return false;
         }
-        String existingAttributeValue = String.valueOf(valueObject);
-        if (attribute.value != null && !existingAttributeValue.equals(attribute.getStringValue())) {
+        if (!valueObject.equals(attribute.getAttributeValue())) {
           // user specified value doesn't match
           return false;
         }

@@ -934,6 +934,7 @@ public class Configuration {
                   + processorType
                   + " processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
         }
+        // TODO (heya) validate attribute value matches value
         if (matchType == MatchType.REGEXP && attribute.value != null) {
           validateRegex(String.valueOf(attribute.value), processorType);
         }
@@ -1137,6 +1138,17 @@ public class Configuration {
           return join((List<?>) value);
       }
       return null;
+    }
+
+    public Object getAttributeValue() {
+      if (value instanceof Integer) {
+        if (type == AttributeType.LONG) {
+          return ((Integer) value).longValue();
+        } else if (type == AttributeType.DOUBLE) {
+          return ((Integer) value).doubleValue();
+        }
+      }
+      return value;
     }
 
     private static <T> String join(List<T> values) {
