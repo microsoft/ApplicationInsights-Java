@@ -126,11 +126,12 @@ public class PerformanceCounterInitializer {
     for (Map.Entry<String, Collection<JmxAttributeData>> entry :
         objectAndAttributesMap.entrySet()) {
       String objectName = entry.getKey();
+
       for (JmxAttributeData jmxAttributeData : entry.getValue()) {
         GlobalOpenTelemetry.meterBuilder("com.microsoft.applicationinsights.jmx")
-            .setSchemaUrl("app_insights_" + jmxAttributeData.metricName)
+            .setSchemaUrl("internal_metric_name_" + jmxAttributeData.metricName)
             .build()
-            .gaugeBuilder(jmxAttributeData.metricName.replaceAll(" ", "_"))
+            .gaugeBuilder(jmxAttributeData.metricName.replaceAll("[^a-zA-z0-9_.-/]", "_"))
             .buildWithCallback(
                 observableDoubleMeasurement -> {
                   calculateAndRecordValueForAttribute(
