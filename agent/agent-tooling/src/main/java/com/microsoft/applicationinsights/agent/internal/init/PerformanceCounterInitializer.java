@@ -19,6 +19,8 @@ import com.microsoft.applicationinsights.agent.internal.perfcounter.PerformanceC
 import com.microsoft.applicationinsights.agent.internal.perfcounter.ProcessCpuPerformanceCounter;
 import com.microsoft.applicationinsights.agent.internal.perfcounter.ProcessMemoryPerformanceCounter;
 import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
@@ -128,10 +130,16 @@ public class PerformanceCounterInitializer {
       String objectName = entry.getKey();
 
       for (JmxAttributeData jmxAttributeData : entry.getValue()) {
-        GlobalOpenTelemetry.meterBuilder("com.microsoft.applicationinsights.jmx")
-            .setSchemaUrl("internal_metric_name_" + jmxAttributeData.metricName)
-            .build()
-            .gaugeBuilder(jmxAttributeData.metricName.replaceAll("[^a-zA-z0-9_.-/]", "_"))
+
+        String otelMetricName;
+        if(jmxAttributeData.metricName.matches("[a-zA-z0-9_.-/]+")) {
+          otelMetricName = jmxAttributeData.metricName;
+        } else {
+          otelMetricName = jmxAttributeData.metricName.replaceAll("[^a-zA-z0-9_.-/]", "_");
+        }
+
+        GlobalOpenTelemetry.getMeter("com.microsoft.applicationinsights.jmx")
+            .gaugeBuilder(otelMetricName)
             .buildWithCallback(
                 observableDoubleMeasurement -> {
                   calculateAndRecordValueForAttribute(
@@ -176,7 +184,7 @@ public class PerformanceCounterInitializer {
             value,
             objectName,
             jmxAttributeData.metricName);
-        observableDoubleMeasurement.record(value);
+        observableDoubleMeasurement.record(value, Attributes.of(AttributeKey.stringKey("real name"), jmxAttributeData.metricName));
       }
     } catch (Exception e) {
       try (MDC.MDCCloseable ignored = CUSTOM_JMX_METRIC_ERROR.makeActive()) {

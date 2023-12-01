@@ -48,7 +48,7 @@ abstract class JmxMetricTest {
    *              - the corrresponding metric names are GCYoung and GCOld
    *   Loaded_Class_Count: This covers the case of collecting a default jmx metric that the customer did not specify in applicationInsights.json. Also note that there are underscores
    *        instead of spaces, as we are emitting the metric via OpenTelemetry now. We intend to implement a change in azure-sdk-for-java repo to have the metrics still emit with spaces to Breeze,
-   *        but the OTEL collector will still get the metric names with _. When that change gets merged & incorporated, we will need to change this/DetectUnexpectedOtelMetrics test so that the Breeze verification expects this metric
+   *        but the OTEL collector will still get the metric names with _. When that change gets merged & incorporated, we will need to change this/DetectUnexpectedOtelMetrics test so that the Breeze verification expects our default jmx metrics
    *        with spaces.
    *   BooleanJmxMetric: This covers the case of a jmx metric attribute with a boolean value.
    *   DotInAttributeNameAsPathSeparator: This covers the case of an attribute having a dot in the name as a path separator.
