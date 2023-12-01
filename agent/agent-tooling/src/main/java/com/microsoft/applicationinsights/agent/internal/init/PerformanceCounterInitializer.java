@@ -187,7 +187,8 @@ public class PerformanceCounterInitializer {
         observableDoubleMeasurement.record(
             value,
             Attributes.of(
-                AttributeKey.stringKey("app_insights_internal_jmx_metric"), jmxAttributeData.metricName));
+                AttributeKey.stringKey("app_insights_internal_jmx_metric"),
+                jmxAttributeData.metricName));
       }
     } catch (Exception e) {
       try (MDC.MDCCloseable ignored = CUSTOM_JMX_METRIC_ERROR.makeActive()) {
