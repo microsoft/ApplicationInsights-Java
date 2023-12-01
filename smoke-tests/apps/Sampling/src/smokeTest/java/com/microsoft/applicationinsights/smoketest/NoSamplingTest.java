@@ -13,6 +13,7 @@ import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCA
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.WILDFLY_13_JAVA_8;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.WILDFLY_13_JAVA_8_OPENJ9;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
@@ -33,6 +34,8 @@ abstract class NoSamplingTest {
         && NANOSECONDS.toSeconds(System.nanoTime() - start) < 10) {
       // just wait and do nothing
     }
+    Thread.sleep(SECONDS.toMillis(10));
+
     assertThat(testing.mockedIngestion.getCountForType("RequestData")).isEqualTo(1000);
 
     List<Envelope> requestEnvelopes =
