@@ -33,26 +33,30 @@ import org.mockserver.model.HttpRequest;
 abstract class JmxMetricTest {
 
   @RegisterExtension
-  static final SmokeTestExtension testing =
-      SmokeTestExtension.builder().useOtlpEndpoint().build();
+  static final SmokeTestExtension testing = SmokeTestExtension.builder().useOtlpEndpoint().build();
 
   /**
-   * Note about jmx metrics in this test suite:
-   *   NameWithDot: An edge case where a dot in the mbean is not a path separator in the attribute, specifically when using org.weakref.jmx package
-   *   DefaultJmxMetricNameOverride: If a customer overrides the default ThreadCount metric with their own metric name, we should be collecting the metric with the name the customer specified
-   *   WildcardJmxMetric: This covers the case of ? and * in the objectName, with multiple matching object names. The expected metric value here is the sum of all the CollectionCount attribute values for each matching object name.
-   *        The matching objectNames are:
-   *        - Java 8: java.lang:type=GarbageCollector,name=PS Scavenge, java.lang:type=GarbageCollector,name=PS MarkSweep
-   *              - the corresponding metric names are PSScavenge and PSMarksweep
-   *        - Higher than Java 8: G1 Young Generation,type=GarbageCollector and G1 Old Generation,type=GarbageCollector.
-   *              - the corrresponding metric names are GCYoung and GCOld
-   *   Loaded_Class_Count: This covers the case of collecting a default jmx metric that the customer did not specify in applicationInsights.json. Also note that there are underscores
-   *        instead of spaces, as we are emitting the metric via OpenTelemetry now. We intend to implement a change in azure-sdk-for-java repo to have the metrics still emit with spaces to Breeze,
-   *        but the OTEL collector will still get the metric names with _. When that change gets merged & incorporated, we will need to change this/DetectUnexpectedOtelMetrics test so that the Breeze verification expects our default jmx metrics
-   *        with spaces.
-   *   BooleanJmxMetric: This covers the case of a jmx metric attribute with a boolean value.
-   *   DotInAttributeNameAsPathSeparator: This covers the case of an attribute having a dot in the name as a path separator.
-  */
+   * Note about jmx metrics in this test suite: NameWithDot: An edge case where a dot in the mbean
+   * is not a path separator in the attribute, specifically when using org.weakref.jmx package
+   * DefaultJmxMetricNameOverride: If a customer overrides the default ThreadCount metric with their
+   * own metric name, we should be collecting the metric with the name the customer specified
+   * WildcardJmxMetric: This covers the case of ? and * in the objectName, with multiple matching
+   * object names. The expected metric value here is the sum of all the CollectionCount attribute
+   * values for each matching object name. The matching objectNames are: - Java 8:
+   * java.lang:type=GarbageCollector,name=PS Scavenge, java.lang:type=GarbageCollector,name=PS
+   * MarkSweep - the corresponding metric names are PSScavenge and PSMarksweep - Higher than Java 8:
+   * G1 Young Generation,type=GarbageCollector and G1 Old Generation,type=GarbageCollector. - the
+   * corrresponding metric names are GCYoung and GCOld Loaded_Class_Count: This covers the case of
+   * collecting a default jmx metric that the customer did not specify in applicationInsights.json.
+   * Also note that there are underscores instead of spaces, as we are emitting the metric via
+   * OpenTelemetry now. We intend to implement a change in azure-sdk-for-java repo to have the
+   * metrics still emit with spaces to Breeze, but the OTEL collector will still get the metric
+   * names with _. When that change gets merged & incorporated, we will need to change
+   * this/DetectUnexpectedOtelMetrics test so that the Breeze verification expects our default jmx
+   * metrics with spaces. BooleanJmxMetric: This covers the case of a jmx metric attribute with a
+   * boolean value. DotInAttributeNameAsPathSeparator: This covers the case of an attribute having a
+   * dot in the name as a path separator.
+   */
   static final Set<String> jmxMetricsAllJavaVersions =
       new HashSet<>(
           Arrays.asList(
@@ -62,6 +66,7 @@ abstract class JmxMetricTest {
               "Loaded_Class_Count",
               "BooleanJmxMetric",
               "DotInAttributeNameAsPathSeparator"));
+
   static final Set<String> gcOptionalJmxMetrics =
       new HashSet<>(Arrays.asList("PSScavenge", "PSMarkSweep", "GCOld", "GCYoung"));
 

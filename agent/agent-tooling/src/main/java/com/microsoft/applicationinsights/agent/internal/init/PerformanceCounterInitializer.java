@@ -132,7 +132,7 @@ public class PerformanceCounterInitializer {
       for (JmxAttributeData jmxAttributeData : entry.getValue()) {
 
         String otelMetricName;
-        if(jmxAttributeData.metricName.matches("[a-zA-z0-9_.-/]+")) {
+        if (jmxAttributeData.metricName.matches("[a-zA-z0-9_.-/]+")) {
           otelMetricName = jmxAttributeData.metricName;
         } else {
           otelMetricName = jmxAttributeData.metricName.replaceAll("[^a-zA-z0-9_.-/]", "_");
@@ -184,7 +184,10 @@ public class PerformanceCounterInitializer {
             value,
             objectName,
             jmxAttributeData.metricName);
-        observableDoubleMeasurement.record(value, Attributes.of(AttributeKey.stringKey("real jmx metric name"), jmxAttributeData.metricName));
+        observableDoubleMeasurement.record(
+            value,
+            Attributes.of(
+                AttributeKey.stringKey("real jmx metric name"), jmxAttributeData.metricName));
       }
     } catch (Exception e) {
       try (MDC.MDCCloseable ignored = CUSTOM_JMX_METRIC_ERROR.makeActive()) {
