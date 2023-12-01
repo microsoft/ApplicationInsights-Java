@@ -39,7 +39,7 @@ abstract class NoSamplingTest {
         testing.mockedIngestion.getItemsEnvelopeDataType("RequestData");
     assertThat(requestEnvelopes.size()).isEqualTo(1000);
     List<Envelope> eventEnvelopes = testing.mockedIngestion.getItemsEnvelopeDataType("EventData");
-    assertThat(eventEnvelopes.size()).isEqualTo(10000);
+    assertThat(eventEnvelopes.size()).isEqualTo(1000);
     List<Envelope> messageEnvelopes =
         testing.mockedIngestion.getItemsEnvelopeDataType("MessageData");
     assertThat(messageEnvelopes.size()).isEqualTo(1000);
