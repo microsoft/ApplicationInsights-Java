@@ -85,7 +85,7 @@ public class LinuxProcessDumper implements ProcessDumper, Closeable {
     LinuxProcess process = usage.get(pid);
 
     if (process == null) {
-      process = new LinuxProcess(pid, candidate);
+      process = LinuxProcess.create(pid, candidate);
     }
     process.poll();
     process.update();
