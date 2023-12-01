@@ -46,7 +46,7 @@
           "attributes": [
             {
               "key": "myLongRegexAttributeKey",
-              "value": "(4[0-9][0-9])",
+              "value": "4[0-9][0-9]",
               "type": "long"
             }
           ]
