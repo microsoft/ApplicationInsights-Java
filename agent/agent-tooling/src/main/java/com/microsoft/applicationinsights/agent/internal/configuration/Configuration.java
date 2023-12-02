@@ -1099,6 +1099,8 @@ public class Configuration {
     public AttributeType type =
         AttributeType.STRING; // default to string for backward compatibility
 
+    // TODO (heya) remove this and reuse the standalone exporter Mappings.convertToString, need to
+    // make it public
     public AttributeKey<?> getAttributeKey() {
       switch (type) {
         case STRING:
@@ -1121,25 +1123,6 @@ public class Configuration {
       throw new IllegalStateException("Unexpected attribute key type: " + type);
     }
 
-    // TODO (heya) remove this and reuse the standalone exporter Mappings.convertToString, need to
-    // make it public
-    @Nullable
-    public String getStringValue() {
-      switch (type) {
-        case STRING:
-        case BOOLEAN:
-        case LONG:
-        case DOUBLE:
-          return String.valueOf(value);
-        case STRING_ARRAY:
-        case BOOLEAN_ARRAY:
-        case LONG_ARRAY:
-        case DOUBLE_ARRAY:
-          return join((List<?>) value);
-      }
-      return null;
-    }
-
     public Object getAttributeValue() {
       if (value instanceof Integer) {
         if (type == AttributeType.LONG) {
@@ -1149,19 +1132,6 @@ public class Configuration {
         }
       }
       return value;
-    }
-
-    private static <T> String join(List<T> values) {
-      StringBuilder sb = new StringBuilder();
-      sb.append("[");
-      for (int i = 0; i < values.size(); i++) {
-        if (i > 0) {
-          sb.append(", ");
-        }
-        sb.append(values.get(i));
-      }
-      sb.append("]");
-      return sb.toString();
     }
   }
 
