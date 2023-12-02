@@ -1,8 +1,4 @@
-import com.google.protobuf.gradle.generateProtoTasks
-import com.google.protobuf.gradle.id
-import com.google.protobuf.gradle.plugins
-import com.google.protobuf.gradle.protobuf
-import com.google.protobuf.gradle.protoc
+import com.google.protobuf.gradle.*
 
 plugins {
   id("ai.smoke-test-jar")
@@ -10,6 +6,7 @@ plugins {
 }
 
 val grpcVersion = "1.16.1"
+val nettyVersion = "4.1.30.Final"
 
 protobuf {
   protoc {
@@ -37,6 +34,8 @@ dependencies {
   implementation("io.grpc:grpc-netty:$grpcVersion")
   implementation("io.grpc:grpc-protobuf:$grpcVersion")
   implementation("io.grpc:grpc-stub:$grpcVersion")
+  // need to use netty version aligned with grpc version, and not managed version used in agent
+  implementation(enforcedPlatform("io.netty:netty-bom:$nettyVersion"))
 }
 
 afterEvaluate {

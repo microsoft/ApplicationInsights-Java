@@ -51,5 +51,17 @@ public class TestController {
   public String testNonStringRegexSpanAttributes() {
     Span.current().setAttribute("myLongRegexAttributeKey", 428);
     return "Test non string regex type span attributes";
+
+  @GetMapping("/mask-user-id-in-log-body")
+  public String maskUserIdInLogBody() {
+    logger.info("User account with userId 123456xx failed to login");
+    return "OK!";
+  }
+
+  @GetMapping("/mask-email-in-log-body")
+  public String maskEmailInLogBody() {
+    logger.info(
+        "This is my \"email\" : \"someone@example.com\" and my \"phone\" : \"123-456-7890\"");
+    return "OK!";
   }
 }

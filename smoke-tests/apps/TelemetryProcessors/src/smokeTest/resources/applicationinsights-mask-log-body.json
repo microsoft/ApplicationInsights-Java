@@ -1,0 +1,59 @@
+{
+  "role": {
+    "name": "testrolename",
+    "instance": "testroleinstance"
+  },
+  "sampling": {
+    "percentage": 100
+  },
+  "preview": {
+    "processors": [
+      {
+        "type": "log",
+        "body": {
+          "toAttributes": {
+            "rules": [
+              "userId (?<redactedUserId>[0-9a-zA-Z]+)"
+            ]
+          }
+        },
+        "id": "/log/extractRedactedUserId"
+      },
+      {
+        "type": "attribute",
+        "actions": [
+          {
+            "key": "redactedUserId",
+            "action": "delete"
+          }
+        ],
+        "id": "/attribute/deleteRedactedUserId"
+      },
+      {
+        "type": "log",
+        "body": {
+          "toAttributes": {
+            "rules": [
+              "This is my \"email\" : \"(?<redactedEmail>[^\"]*)\" and my \"phone\" : \"(?<redactedPhone>[^\"]*)\""
+            ]
+          }
+        },
+        "id": "/log/extractRedactedEmail"
+      },
+      {
+        "type": "attribute",
+        "actions": [
+          {
+            "key": "redactedEmail",
+            "action": "delete"
+          },
+          {
+            "key": "redactedPhone",
+            "action": "delete"
+          }
+        ],
+        "id": "/attribute/deleteRedactedEmail"
+      }
+    ]
+  }
+}
