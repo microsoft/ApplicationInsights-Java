@@ -115,7 +115,7 @@ class ConfigurationTest {
       assertThatThrownBy(() -> ConfigurationBuilder.create(Paths.get("."), null))
           .isInstanceOf(ConfigurationBuilder.ConfigurationException.class);
     } finally {
-      DiagnosticsHelper.appSvcRpIntegration = false;
+      DiagnosticsHelper.setAppSvcRpIntegration(false);
     }
   }
 
