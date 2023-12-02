@@ -33,4 +33,17 @@ public class TestController {
   public String sensitiveDataInUrl() {
     return "Test sensitive data in URL";
   }
+
+  @GetMapping("/mask-user-id-in-log-body")
+  public String maskUserIdInLogBody() {
+    logger.info("User account with userId 123456xx failed to login");
+    return "OK!";
+  }
+
+  @GetMapping("/mask-email-in-log-body")
+  public String maskEmailInLogBody() {
+    logger.info(
+        "This is my \"email\" : \"someone@example.com\" and my \"phone\" : \"123-456-7890\"");
+    return "OK!";
+  }
 }
