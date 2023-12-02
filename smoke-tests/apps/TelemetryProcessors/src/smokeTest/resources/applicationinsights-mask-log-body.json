@@ -34,7 +34,7 @@
         "body": {
           "toAttributes": {
             "rules": [
-              "This is my \"email\" : \"(?<redactedEmail>.*)\""
+              "This is my \"email\" : \"(?<redactedEmail>[^\"]*)\" and my \"phone\" : \"(?<redactedPhone>[^\"]*)\""
             ]
           }
         },
@@ -45,6 +45,10 @@
         "actions": [
           {
             "key": "redactedEmail",
+            "action": "delete"
+          },
+          {
+            "key": "redactedPhone",
             "action": "delete"
           }
         ],

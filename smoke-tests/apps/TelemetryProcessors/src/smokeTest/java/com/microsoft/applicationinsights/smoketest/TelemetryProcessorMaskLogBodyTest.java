@@ -39,8 +39,11 @@ abstract class TelemetryProcessorMaskLogBodyTest {
   void masEmailInLogBody() throws Exception {
     List<MessageData> logs = testing.mockedIngestion.getMessageDataInRequest(1);
     MessageData md1 = logs.get(0);
-    assertThat(md1.getMessage()).isEqualTo("This is my \"email\" : \"{redactedEmail}\"");
+    assertThat(md1.getMessage())
+        .isEqualTo(
+            "This is my \"email\" : \"{redactedEmail}\" and my \"phone\" : \"{redactedPhone}\"");
     assertThat(md1.getProperties().get("redactedEmail")).isNull();
+    assertThat(md1.getProperties().get("redactedPhone")).isNull();
   }
 
   @Environment(TOMCAT_8_JAVA_8)

@@ -42,7 +42,8 @@ public class TestController {
 
   @GetMapping("/mask-email-in-log-body")
   public String maskEmailInLogBody() {
-    logger.info("This is my \"email\" : \"someone@example.com\"");
+    logger.info(
+        "This is my \"email\" : \"someone@example.com\" and my \"phone\" : \"123-456-7890\"");
     return "OK!";
   }
 }
