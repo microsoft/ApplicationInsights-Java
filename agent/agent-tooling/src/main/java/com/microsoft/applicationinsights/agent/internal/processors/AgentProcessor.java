@@ -90,7 +90,7 @@ public abstract class AgentProcessor {
           // user specified key not found
           return false;
         }
-        if (!valueObject.equals(attribute.getAttributeValue())) {
+        if (attribute.value != null && !valueObject.equals(attribute.getAttributeValue())) {
           // user specified value doesn't match
           return false;
         }
