@@ -6,7 +6,6 @@ package com.microsoft.applicationinsights.agent.internal.processors;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.SemanticAttributes;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanContext;
@@ -22,6 +21,7 @@ import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
+import io.opentelemetry.semconv.SemanticAttributes;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -46,7 +46,7 @@ class TelemetryProcessorMaskingTest {
             .processActions(new RequestSpanData(httpUrl));
 
     Attributes newAttributes = newSpanData.getAttributes();
-    String newHttpUrlAttributeValue = newAttributes.get(SemanticAttributes.HTTP_URL);
+    String newHttpUrlAttributeValue = newAttributes.get(SemanticAttributes.URL_FULL);
     assertThat(newHttpUrlAttributeValue)
         .isEqualTo("http://localhost:8080/TelemetryProcessors/user/" + mask);
   }
@@ -72,7 +72,7 @@ class TelemetryProcessorMaskingTest {
             .processActions(new RequestSpanData(httpUrl));
 
     Attributes newAttributes = newSpanData.getAttributes();
-    String newHttpUrlAttributeValue = newAttributes.get(SemanticAttributes.HTTP_URL);
+    String newHttpUrlAttributeValue = newAttributes.get(SemanticAttributes.URL_FULL);
     assertThat(newHttpUrlAttributeValue).isEqualTo("https://user/" + mask);
   }
 

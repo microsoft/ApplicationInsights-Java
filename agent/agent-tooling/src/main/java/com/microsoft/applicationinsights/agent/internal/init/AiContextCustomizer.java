@@ -5,6 +5,7 @@ package com.microsoft.applicationinsights.agent.internal.init;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.AiSemanticAttributes;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
@@ -39,9 +40,11 @@ public class AiContextCustomizer<R> implements ContextCustomizer<R> {
 
     Context newContext = context;
 
-    String target = startAttributes.get(SemanticAttributes.HTTP_TARGET);
+    String path =
+        getStableAttribute(
+            startAttributes, SemanticAttributes.URL_PATH, SemanticAttributes.HTTP_TARGET);
 
-    String connectionStringOverride = getConnectionStringOverride(target);
+    String connectionStringOverride = getConnectionStringOverride(path);
     if (connectionStringOverride != null) {
       newContext = newContext.with(AiContextKeys.CONNECTION_STRING, connectionStringOverride);
       // InheritedConnectionStringSpanProcessor will stamp connection string attribute from the
@@ -51,7 +54,7 @@ public class AiContextCustomizer<R> implements ContextCustomizer<R> {
       span.setAttribute(AiSemanticAttributes.INTERNAL_CONNECTION_STRING, connectionStringOverride);
     }
 
-    String roleNameOverride = getRoleNameOverride(target);
+    String roleNameOverride = getRoleNameOverride(path);
     if (roleNameOverride != null) {
       newContext = newContext.with(AiContextKeys.ROLE_NAME, roleNameOverride);
       // InheritedRoleNameSpanProcessor will stamp role name attribute from the
@@ -88,5 +91,14 @@ public class AiContextCustomizer<R> implements ContextCustomizer<R> {
       }
     }
     return null;
+  }
+
+  private static <T> T getStableAttribute(
+      Attributes attributes, AttributeKey<T> stable, AttributeKey<T> old) {
+    T value = attributes.get(stable);
+    if (value != null) {
+      return value;
+    }
+    return attributes.get(old);
   }
 }

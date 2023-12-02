@@ -46,9 +46,9 @@ abstract class HttpPreaggregatedMetricsTest {
     verifyHttpclientRequestsAndDependencies("https://mock.codes/200?q=spaces%20test");
 
     List<Envelope> clientMetrics =
-        testing.mockedIngestion.waitForMetricItems("http.client.duration", 3);
+        testing.mockedIngestion.waitForMetricItems("http.client.request.duration", 3);
     List<Envelope> serverMetrics =
-        testing.mockedIngestion.waitForMetricItems("http.server.duration", 1);
+        testing.mockedIngestion.waitForMetricItems("http.server.request.duration", 1);
 
     verifyHttpClientPreAggregatedMetrics(clientMetrics);
     verifyHttpServerPreAggregatedMetrics(serverMetrics, synthetic);

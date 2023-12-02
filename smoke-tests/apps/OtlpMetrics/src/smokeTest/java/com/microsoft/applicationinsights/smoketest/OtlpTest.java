@@ -53,14 +53,15 @@ abstract class OtlpTest {
     Envelope standardMetricEnvelope = standardMetricsList.get(0);
     MetricData standardMetricData =
         (MetricData) ((Data<?>) standardMetricEnvelope.getData()).getBaseData();
-    assertThat(standardMetricData.getMetrics().get(0).getName()).isEqualTo("http.server.duration");
+    assertThat(standardMetricData.getMetrics().get(0).getName())
+        .isEqualTo("http.server.request.duration");
     assertThat(standardMetricData.getProperties().get("_MS.IsAutocollected")).isEqualTo("True");
 
     // verify Statsbeat sent to the breeze endpoint
     verifyStatsbeatSentToBreezeEndpoint();
 
     // verify custom histogram metric 'histogram-test-otlp-exporter' and otel metric
-    // 'http.server.duration' sent to OTLP endpoint
+    // 'http.server.request.duration' sent to OTLP endpoint
     // verify Statsbeat doesn't get sent to OTLP endpoint
     verifyMetricsSentToOtlpEndpoint();
   }
@@ -82,7 +83,7 @@ abstract class OtlpTest {
                   testing.mockedOtlpIngestion.extractMetricsFromRequests(requests);
               assertThat(metrics)
                   .extracting(Metric::getName)
-                  .contains("histogram-test-otlp-exporter", "http.server.duration")
+                  .contains("histogram-test-otlp-exporter", "http.server.request.duration")
                   .doesNotContain("Attach", "Feature"); // statsbeat
             });
   }
@@ -98,7 +99,7 @@ abstract class OtlpTest {
   private static boolean isStandardMetric(Envelope envelope) {
     if (envelope.getData().getBaseType().equals("MetricData")) {
       MetricData data = (MetricData) ((Data<?>) envelope.getData()).getBaseData();
-      return data.getMetrics().get(0).getName().equals("http.server.duration");
+      return data.getMetrics().get(0).getName().equals("http.server.request.duration");
     }
     return false;
   }

@@ -21,6 +21,8 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
     Configuration configuration = FirstEntryPoint.getConfiguration();
 
     Map<String, String> properties = new HashMap<>();
+    properties.put("otel.semconv-stability.opt-in", "http,jvm");
+
     properties.put(
         "applicationinsights.internal.micrometer.step.millis",
         Long.toString(SECONDS.toMillis(configuration.metricIntervalSeconds)));

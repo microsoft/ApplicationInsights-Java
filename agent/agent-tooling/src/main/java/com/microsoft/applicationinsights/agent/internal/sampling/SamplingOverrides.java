@@ -3,7 +3,6 @@
 
 package com.microsoft.applicationinsights.agent.internal.sampling;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.SpanDataMapper;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.MatchType;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.SamplingOverride;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.SamplingOverrideAttribute;
@@ -13,6 +12,7 @@ import io.opentelemetry.sdk.trace.samplers.Sampler;
 import io.opentelemetry.semconv.SemanticAttributes;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 import org.slf4j.Logger;
@@ -33,9 +33,8 @@ public class SamplingOverrides {
 
   @Nullable
   public Sampler getOverride(Attributes attributes) {
-    LazyHttpUrl lazyHttpUrl = new LazyHttpUrl(attributes);
     for (MatcherGroup matcherGroups : matcherGroups) {
-      if (matcherGroups.matches(attributes, lazyHttpUrl)) {
+      if (matcherGroups.matches(attributes)) {
         return matcherGroups.getSampler();
       }
     }
@@ -46,7 +45,7 @@ public class SamplingOverrides {
   @Nullable
   public Double getOverridePercentage(Attributes attributes) {
     for (MatcherGroup matcherGroups : matcherGroups) {
-      if (matcherGroups.matches(attributes, null)) {
+      if (matcherGroups.matches(attributes)) {
         return matcherGroups.getPercentage();
       }
     }
@@ -54,7 +53,7 @@ public class SamplingOverrides {
   }
 
   private static class MatcherGroup {
-    private final List<TempPredicate> predicates;
+    private final List<Predicate<Attributes>> predicates;
     private final Sampler sampler;
     // for now only support fixed percentage, but could extend sampling overrides to support
     // rate-limited sampling
@@ -63,7 +62,7 @@ public class SamplingOverrides {
     private MatcherGroup(SamplingOverride override) {
       predicates = new ArrayList<>();
       for (SamplingOverrideAttribute attribute : override.attributes) {
-        TempPredicate predicate = toPredicate(attribute);
+        Predicate<Attributes> predicate = toPredicate(attribute);
         if (predicate != null) {
           predicates.add(predicate);
         }
@@ -80,9 +79,9 @@ public class SamplingOverrides {
       return samplingPercentage.get();
     }
 
-    private boolean matches(Attributes attributes, @Nullable LazyHttpUrl lazyHttpUrl) {
-      for (TempPredicate predicate : predicates) {
-        if (!predicate.test(attributes, lazyHttpUrl)) {
+    private boolean matches(Attributes attributes) {
+      for (Predicate<Attributes> predicate : predicates) {
+        if (!predicate.test(attributes)) {
           return false;
         }
       }
@@ -99,7 +98,7 @@ public class SamplingOverrides {
     }
 
     @Nullable
-    private static TempPredicate toPredicate(SamplingOverrideAttribute attribute) {
+    private static Predicate<Attributes> toPredicate(SamplingOverrideAttribute attribute) {
       if (attribute.matchType == MatchType.STRICT) {
         if (isHttpHeaderAttribute(attribute)) {
           return new StrictArrayContainsMatcher(attribute.key, attribute.value);
@@ -126,7 +125,7 @@ public class SamplingOverrides {
     }
   }
 
-  private static class StrictMatcher implements TempPredicate {
+  private static class StrictMatcher implements Predicate<Attributes> {
     private final AttributeKey<String> key;
     private final String value;
 
@@ -136,16 +135,13 @@ public class SamplingOverrides {
     }
 
     @Override
-    public boolean test(Attributes attributes, LazyHttpUrl lazyHttpUrl) {
+    public boolean test(Attributes attributes) {
       String val = MatcherGroup.getValueIncludingThreadName(attributes, key);
-      if (val == null && key.getKey().equals(SemanticAttributes.HTTP_URL.getKey())) {
-        val = lazyHttpUrl.get();
-      }
       return value.equals(val);
     }
   }
 
-  private static class StrictArrayContainsMatcher implements TempPredicate {
+  private static class StrictArrayContainsMatcher implements Predicate<Attributes> {
     private final AttributeKey<List<String>> key;
     private final String value;
 
@@ -155,13 +151,13 @@ public class SamplingOverrides {
     }
 
     @Override
-    public boolean test(Attributes attributes, LazyHttpUrl lazyHttpUrl) {
+    public boolean test(Attributes attributes) {
       List<String> val = attributes.get(key);
       return val != null && val.contains(value);
     }
   }
 
-  private static class RegexpMatcher implements TempPredicate {
+  private static class RegexpMatcher implements Predicate<Attributes> {
     private final AttributeKey<String> key;
     private final Pattern value;
 
@@ -171,18 +167,13 @@ public class SamplingOverrides {
     }
 
     @Override
-    public boolean test(Attributes attributes, @Nullable LazyHttpUrl lazyHttpUrl) {
+    public boolean test(Attributes attributes) {
       String val = MatcherGroup.getValueIncludingThreadName(attributes, key);
-      if (val == null
-          && key.getKey().equals(SemanticAttributes.HTTP_URL.getKey())
-          && lazyHttpUrl != null) {
-        val = lazyHttpUrl.get();
-      }
       return val != null && value.matcher(val).matches();
     }
   }
 
-  private static class RegexpArrayContainsMatcher implements TempPredicate {
+  private static class RegexpArrayContainsMatcher implements Predicate<Attributes> {
     private final AttributeKey<List<String>> key;
     private final Pattern value;
 
@@ -192,7 +183,7 @@ public class SamplingOverrides {
     }
 
     @Override
-    public boolean test(Attributes attributes, @Nullable LazyHttpUrl lazyHttpUrl) {
+    public boolean test(Attributes attributes) {
       List<String> val = attributes.get(key);
       if (val == null) {
         return false;
@@ -206,7 +197,7 @@ public class SamplingOverrides {
     }
   }
 
-  private static class KeyOnlyMatcher implements TempPredicate {
+  private static class KeyOnlyMatcher implements Predicate<Attributes> {
     private final AttributeKey<String> key;
 
     private KeyOnlyMatcher(String key) {
@@ -214,39 +205,9 @@ public class SamplingOverrides {
     }
 
     @Override
-    public boolean test(Attributes attributes, @Nullable LazyHttpUrl lazyHttpUrl) {
+    public boolean test(Attributes attributes) {
       String val = MatcherGroup.getValueIncludingThreadName(attributes, key);
-      if (val == null
-          && key.getKey().equals(SemanticAttributes.HTTP_URL.getKey())
-          && lazyHttpUrl != null) {
-        val = lazyHttpUrl.get();
-      }
       return val != null;
     }
-  }
-
-  // this is temporary until semantic attributes stabilize and we make breaking change
-  private static class LazyHttpUrl {
-    private final Attributes attributes;
-    private boolean initialized;
-    @Nullable private String value;
-
-    private LazyHttpUrl(Attributes attributes) {
-      this.attributes = attributes;
-    }
-
-    private String get() {
-      if (!initialized) {
-        value = SpanDataMapper.getHttpUrlFromServerSpan(attributes);
-        initialized = true;
-      }
-      return value;
-    }
-  }
-
-  // this is temporary until semantic attributes stabilize and we make breaking change
-  // then can use java.util.functions.Predicate<Attributes>
-  private interface TempPredicate {
-    boolean test(Attributes attributes, @Nullable LazyHttpUrl lazyHttpUrl);
   }
 }

@@ -35,7 +35,7 @@ public class TestController {
       GlobalOpenTelemetry.get()
           .getMeter("trackDoubleHistogramMetric")
           .histogramBuilder("trackDoubleHistogramMetric")
-          .setDescription("http.client.duration")
+          .setDescription("http.client.request.duration")
           .setUnit("ms")
           .build();
 
@@ -44,7 +44,7 @@ public class TestController {
           .getMeter("trackLongHistogramMetric")
           .histogramBuilder("trackLongHistogramMetric")
           .ofLongs()
-          .setDescription("http.client.duration")
+          .setDescription("http.client.request.duration")
           .setUnit("ms")
           .build();
 

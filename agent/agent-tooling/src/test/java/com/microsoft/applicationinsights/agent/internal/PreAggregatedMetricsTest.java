@@ -114,7 +114,7 @@ public class PreAggregatedMetricsTest {
         .satisfiesExactly(
             metric ->
                 assertThat(metric)
-                    .hasName("http.client.duration")
+                    .hasName("http.client.request.duration")
                     .hasUnit("ms")
                     .hasHistogramSatisfying(
                         histogram ->
@@ -123,9 +123,10 @@ public class PreAggregatedMetricsTest {
                                     point
                                         .hasSum(150 /* millis */)
                                         .hasAttributesSatisfying(
-                                            equalTo(SemanticAttributes.NET_PEER_NAME, "localhost"),
-                                            equalTo(SemanticAttributes.NET_PEER_PORT, 1234),
-                                            equalTo(SemanticAttributes.HTTP_STATUS_CODE, 200))
+                                            equalTo(SemanticAttributes.SERVER_ADDRESS, "localhost"),
+                                            equalTo(SemanticAttributes.SERVER_PORT, 1234),
+                                            equalTo(
+                                                SemanticAttributes.HTTP_RESPONSE_STATUS_CODE, 200))
                                         .hasExemplarsSatisfying(
                                             exemplar ->
                                                 exemplar
@@ -158,10 +159,8 @@ public class PreAggregatedMetricsTest {
 
     Attributes responseAttributes1 =
         Attributes.builder()
-            .put(SemanticAttributes.NET_PEER_NAME, "example.com")
-            .put(SemanticAttributes.NET_PEER_IP, "127.0.0.1")
-            .put(SemanticAttributes.NET_PEER_PORT, 8080)
-            .put(SemanticAttributes.NET_TRANSPORT, "ip_tcp")
+            .put(SemanticAttributes.SERVER_ADDRESS, "example.com")
+            .put(SemanticAttributes.SERVER_PORT, 8080)
             .build();
 
     Context parent =
@@ -202,8 +201,8 @@ public class PreAggregatedMetricsTest {
                                         .hasAttributesSatisfying(
                                             equalTo(SemanticAttributes.RPC_SYSTEM, "grpc"),
                                             equalTo(
-                                                SemanticAttributes.NET_PEER_NAME, "example.com"),
-                                            equalTo(SemanticAttributes.NET_PEER_PORT, 8080))
+                                                SemanticAttributes.SERVER_ADDRESS, "example.com"),
+                                            equalTo(SemanticAttributes.SERVER_PORT, 8080))
                                         .hasExemplarsSatisfying(
                                             exemplar ->
                                                 exemplar
@@ -259,7 +258,7 @@ public class PreAggregatedMetricsTest {
     Collection<MetricData> metricDataCollection = metricReader.collectAllMetrics();
     MetricData target = null;
     for (MetricData metricData : metricDataCollection) {
-      if ("http.server.duration".equals(metricData.getName())) {
+      if ("http.server.request.duration".equals(metricData.getName())) {
         target = metricData;
         System.out.println("metric: " + metricData);
       }
@@ -269,7 +268,7 @@ public class PreAggregatedMetricsTest {
         .satisfies(
             metric ->
                 assertThat(metric)
-                    .hasName("http.server.duration")
+                    .hasName("http.server.request.duration")
                     .hasUnit("ms")
                     .hasHistogramSatisfying(
                         histogram ->
@@ -278,7 +277,8 @@ public class PreAggregatedMetricsTest {
                                     point
                                         .hasSum(150 /* millis */)
                                         .hasAttributesSatisfying(
-                                            equalTo(SemanticAttributes.HTTP_STATUS_CODE, 200),
+                                            equalTo(
+                                                SemanticAttributes.HTTP_RESPONSE_STATUS_CODE, 200),
                                             equalTo(
                                                 AttributeKey.booleanKey(
                                                     "applicationinsights.internal.is_synthetic"),
