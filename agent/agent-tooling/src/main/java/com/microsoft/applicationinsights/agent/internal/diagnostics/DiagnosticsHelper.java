@@ -13,7 +13,7 @@ public class DiagnosticsHelper {
   private DiagnosticsHelper() {}
 
   // visible for testing
-  public static volatile boolean appSvcRpIntegration;
+  private static volatile boolean appSvcRpIntegration;
   private static volatile boolean functionsRpIntegration;
 
   private static final boolean isWindows;
@@ -79,5 +79,10 @@ public class DiagnosticsHelper {
     } else {
       RpAttachType.setRpAttachType(RpAttachType.STANDALONE_AUTO);
     }
+  }
+
+  // only used by tests
+  public static void setAppSvcRpIntegration(boolean appSvcRpIntegration) {
+    DiagnosticsHelper.appSvcRpIntegration = appSvcRpIntegration;
   }
 }

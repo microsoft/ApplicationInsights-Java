@@ -56,21 +56,15 @@ public class LinuxProcess extends Process implements Closeable {
   private final LinuxProcessIoStats ioStats;
   private final LinuxProcessCpuStats cpuStats;
 
-  public LinuxProcess(int pid, File candidate) throws IOException {
-    this(pid, DEFAULT_HSPERF_DIR, parseFullName(Proc.TOP_DIR, pid), candidate);
+  public static LinuxProcess create(int pid, File candidate) throws IOException {
+    return new LinuxProcess(pid, DEFAULT_HSPERF_DIR, parseFullName(Proc.TOP_DIR, pid), candidate);
   }
 
-  public LinuxProcess(int pid, File hsperfDir, String fullName, File candidate) {
+  private LinuxProcess(int pid, File hsperfDir, String fullName, File candidate) {
     super(parseName(fullName, checkJava(hsperfDir, pid), pid), pid);
     this.isJava = checkJava(hsperfDir, pid);
     this.ioStats = new LinuxProcessIoStats(candidate);
     this.cpuStats = new LinuxProcessCpuStats(candidate);
-  }
-
-  public static LinuxProcess create(File procDir, File hsperfDir, int pid, File candidate)
-      throws IOException {
-    String fullName = parseFullName(procDir, pid);
-    return new LinuxProcess(pid, hsperfDir, fullName, candidate);
   }
 
   protected static String parseName(String fullName, boolean isJava, int pid) {
