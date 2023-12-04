@@ -7,7 +7,7 @@ public class DiagnosticsTestHelper {
   private DiagnosticsTestHelper() {}
 
   public static void setIsAppSvcAttachForLoggingPurposes(boolean appSvcAttachForLoggingPurposes) {
-    DiagnosticsHelper.appSvcRpIntegration = appSvcAttachForLoggingPurposes;
+    DiagnosticsHelper.setAppSvcRpIntegration(appSvcAttachForLoggingPurposes);
   }
 
   public static void reset() {
