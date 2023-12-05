@@ -1137,36 +1137,52 @@ public class Configuration {
     public void validate() {
       if (type == AttributeType.STRING && !(value instanceof String)) {
         throw new FriendlyException(
-            "Attribute type is String, but value is not a string.",
-            "Please provide a valid String attribute value.");
+            "Telemetry processor attribute '"
+                + key
+                + "' has type of String, but the value is not a String.",
+            "Please provide a json value which matches the attribute type.");
       } else if (type == AttributeType.LONG && !(getAttributeValue() instanceof Long)) {
         throw new FriendlyException(
-            "Attribute type is Long, but value is not a Long object.",
-            "Please provide a valid Long or Integer attribute value.");
+            "Telemetry processor attribute '"
+                + key
+                + "' has type of Long or Integer, but the value is not a Long nor an Integer.",
+            "Please provide a json value which matches the attribute type.");
       } else if (type == AttributeType.DOUBLE && !(getAttributeValue() instanceof Double)) {
         throw new FriendlyException(
-            "Attribute type is Double, but value is not a Double object.",
-            "Please provide a valid Double or Integer attribute value.");
+            "Telemetry processor attribute '"
+                + key
+                + "' has type of Double or Integer, but the value is not a Double nor an Integer.",
+            "Please provide a json value which matches the attribute type.");
       } else if (type == AttributeType.BOOLEAN && !(value instanceof Boolean)) {
         throw new FriendlyException(
-            "Attribute type is Boolean, but value is not a Boolean object.",
-            "Please provide a valid Boolean attribute value.");
+            "Telemetry processor attribute '"
+                + key
+                + "' has type of Boolean, but the value is not a Boolean.",
+            "Please provide a json value which matches the attribute type.");
       } else if (type == AttributeType.STRING_ARRAY && !(value instanceof List)) {
         throw new FriendlyException(
-            "Attribute type is StringArray, but value is not a List object.",
-            "Please provide a valid List<String> attribute value.");
+            "Telemetry processor attribute '"
+                + key
+                + "' has type of an array of String, but the value is not an array of String.",
+            "Please provide a json value which matches the attribute type.");
       } else if (type == AttributeType.LONG_ARRAY && !(value instanceof List)) {
         throw new FriendlyException(
-            "Attribute type is LongArray, but value is not a List object.",
-            "Please provide a valid List<Long> attribute value.");
+            "Telemetry processor attribute '"
+                + key
+                + "' has type of an array of Long or Integer, but the value is not an array of Long nor Integer.",
+            "Please provide a json value which matches the attribute type.");
       } else if (type == AttributeType.DOUBLE_ARRAY && !(value instanceof List)) {
         throw new FriendlyException(
-            "Attribute type is DoubleArray, but value is not a List object.",
-            "Please provide a valid List<Double> attribute value.");
+            "Telemetry processor attribute '"
+                + key
+                + "' has type of an array of Double or Integer, but the value is not an array of Double nor Integer.",
+            "Please provide a json value which matches the attribute type.");
       } else if (type == AttributeType.BOOLEAN_ARRAY && !(value instanceof List)) {
         throw new FriendlyException(
-            "Attribute type is BooleanArray, but value is not a List object.",
-            "Please provide a valid List<Boolean> attribute value.");
+            "Telemetry processor attribute '"
+                + key
+                + "' has type of an array of Boolean, but the value is not an array of Boolean.",
+            "Please provide a json value which matches the attribute type.");
       }
     }
   }
