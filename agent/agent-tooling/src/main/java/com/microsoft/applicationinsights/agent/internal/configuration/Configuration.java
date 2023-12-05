@@ -1135,7 +1135,7 @@ public class Configuration {
     }
 
     public void validate() {
-      if (type == AttributeType.STRING && !(value instanceof String)) {
+      if (type == AttributeType.STRING && value != null && !(value instanceof String)) {
         throw new FriendlyException(
             "Telemetry processor attribute '"
                 + key
