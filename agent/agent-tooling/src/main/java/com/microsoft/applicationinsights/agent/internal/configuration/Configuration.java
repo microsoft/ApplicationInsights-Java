@@ -938,6 +938,8 @@ public class Configuration {
           validateRegex(String.valueOf(attribute.value), processorType);
         }
 
+        // regex matches always convert the value to string first, so no need to validate the regex
+        // type.
         if (matchType == MatchType.STRICT) {
           attribute.validate();
         }
