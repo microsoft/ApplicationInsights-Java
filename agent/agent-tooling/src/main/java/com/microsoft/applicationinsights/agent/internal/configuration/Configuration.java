@@ -937,7 +937,10 @@ public class Configuration {
         if (matchType == MatchType.REGEXP && attribute.value != null) {
           validateRegex(String.valueOf(attribute.value), processorType);
         }
-        attribute.validate();
+
+        if (matchType == MatchType.STRICT) {
+          attribute.validate();
+        }
       }
 
       switch (processorType) {
