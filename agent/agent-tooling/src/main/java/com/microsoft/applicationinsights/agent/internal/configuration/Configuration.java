@@ -934,10 +934,10 @@ public class Configuration {
                   + processorType
                   + " processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
         }
-        // TODO (heya) validate attribute value matches value
         if (matchType == MatchType.REGEXP && attribute.value != null) {
           validateRegex(String.valueOf(attribute.value), processorType);
         }
+        attribute.validate();
       }
 
       switch (processorType) {
@@ -1132,6 +1132,42 @@ public class Configuration {
         }
       }
       return value;
+    }
+
+    public void validate() {
+      if (type == AttributeType.STRING && !(value instanceof String)) {
+        throw new FriendlyException(
+            "Attribute type is String, but value is not a string.",
+            "Please provide a valid String attribute value.");
+      } else if (type == AttributeType.LONG && !(getAttributeValue() instanceof Long)) {
+        throw new FriendlyException(
+            "Attribute type is Long, but value is not a Long object.",
+            "Please provide a valid Long or Integer attribute value.");
+      } else if (type == AttributeType.DOUBLE && !(getAttributeValue() instanceof Double)) {
+        throw new FriendlyException(
+            "Attribute type is Double, but value is not a Double object.",
+            "Please provide a valid Double or Integer attribute value.");
+      } else if (type == AttributeType.BOOLEAN && !(value instanceof Boolean)) {
+        throw new FriendlyException(
+            "Attribute type is Boolean, but value is not a Boolean object.",
+            "Please provide a valid Boolean attribute value.");
+      } else if (type == AttributeType.STRING_ARRAY && !(value instanceof List)) {
+        throw new FriendlyException(
+            "Attribute type is StringArray, but value is not a List object.",
+            "Please provide a valid List<String> attribute value.");
+      } else if (type == AttributeType.LONG_ARRAY && !(value instanceof List)) {
+        throw new FriendlyException(
+            "Attribute type is LongArray, but value is not a List object.",
+            "Please provide a valid List<Long> attribute value.");
+      } else if (type == AttributeType.DOUBLE_ARRAY && !(value instanceof List)) {
+        throw new FriendlyException(
+            "Attribute type is DoubleArray, but value is not a List object.",
+            "Please provide a valid List<Double> attribute value.");
+      } else if (type == AttributeType.BOOLEAN_ARRAY && !(value instanceof List)) {
+        throw new FriendlyException(
+            "Attribute type is BooleanArray, but value is not a List object.",
+            "Please provide a valid List<Boolean> attribute value.");
+      }
     }
   }
 
