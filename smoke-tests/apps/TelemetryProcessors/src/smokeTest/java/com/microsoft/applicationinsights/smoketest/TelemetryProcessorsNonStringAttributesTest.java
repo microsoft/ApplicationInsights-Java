@@ -31,8 +31,7 @@ abstract class TelemetryProcessorsNonStringAttributesTest {
 
     assertThat(properties.get("myLongAttributeKey")).isEqualTo("1234");
     assertThat(properties.get("myBooleanAttributeKey")).isEqualTo("true");
-    assertThat(properties.get("myDoubleArrayAttributeKey"))
-        .containsAnyOf("1.0", "2.0", "3.0", "4.0");
+    assertThat(properties.get("myDoubleArrayAttributeKey")).contains("1.0", "2.0", "3.0", "4.0");
     assertThat(properties.get("myNewAttributeKeyStrict")).isEqualTo("myNewAttributeValueStrict");
   }
 
