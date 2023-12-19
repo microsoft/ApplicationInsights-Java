@@ -8,6 +8,7 @@ import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCA
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_19;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_20;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_8;
+import static java.util.Map.*;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockserver.model.HttpRequest.request;
@@ -122,8 +123,7 @@ abstract class JmxMetricTest {
 
   private void verifyJmxMetricsSentToBreeze() throws Exception {
     List<Envelope> metricItems =
-        testing.mockedIngestion.waitForItems(
-            envelope -> isJmxMetric(envelope), 1, 10, TimeUnit.SECONDS);
+        testing.mockedIngestion.waitForItems(JmxMetricTest::isJmxMetric, 1, 10, TimeUnit.SECONDS);
 
     assertThat(metricItems).hasSizeBetween(8, 16);
 
@@ -155,13 +155,25 @@ abstract class JmxMetricTest {
       if (metricName.equals("BooleanJmxMetric")) {
         assertThat(value == 1.0 || value == 0.0);
       }
+
+      assertThat(verifyNoInternalAttributes(envelope)).isTrue();
     }
 
     // This will indirectly check the occurrences of the optional gc metrics
     // and confirm that the wildcard metric has the expected value
-    assertThat(wildcardValueSum == gcFirstMatch + gcSecondMatch);
+    assertThat(wildcardValueSum).isEqualTo(gcFirstMatch + gcSecondMatch);
 
     assertThat(metricNames).containsAll(jmxMetricsAllJavaVersions);
+  }
+
+  private static boolean verifyNoInternalAttributes(Envelope envelope) {
+    MetricData metricData = (MetricData) ((Data<?>) envelope.getData()).getBaseData();
+    for (String key : metricData.getProperties().keySet()) {
+      if (key.startsWith("applicationinsights.internal.")) {
+        return false;
+      }
+    }
+    return true;
   }
 
   private static boolean isJmxMetric(Envelope envelope) {
