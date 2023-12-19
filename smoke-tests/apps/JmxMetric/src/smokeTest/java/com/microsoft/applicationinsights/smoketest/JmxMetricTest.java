@@ -152,7 +152,7 @@ abstract class JmxMetricTest {
         wildcardValueSum += value;
       }
       if (metricName.equals("BooleanJmxMetric")) {
-        assertThat(value == 1.0 || value == 0.0);
+        assertThat(value).isEqualTo(1.0);
       }
 
       assertThat(verifyNoInternalAttributes(envelope)).isTrue();
