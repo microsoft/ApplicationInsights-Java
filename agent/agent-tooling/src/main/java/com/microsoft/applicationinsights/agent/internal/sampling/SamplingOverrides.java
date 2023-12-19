@@ -15,10 +15,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 import javax.annotation.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 // TODO find a better name for this class (and MatcherGroup too)
 public class SamplingOverrides {
 
+  private static final Logger logger = LoggerFactory.getLogger(SamplingOverrides.class);
   private final List<MatcherGroup> matcherGroups;
 
   public SamplingOverrides(List<SamplingOverride> overrides) {
@@ -60,7 +63,10 @@ public class SamplingOverrides {
     private MatcherGroup(SamplingOverride override) {
       predicates = new ArrayList<>();
       for (SamplingOverrideAttribute attribute : override.attributes) {
-        predicates.add(toPredicate(attribute));
+        TempPredicate predicate = toPredicate(attribute);
+        if (predicate != null) {
+          predicates.add(predicate);
+        }
       }
       samplingPercentage = SamplingPercentage.fixed(override.percentage);
       sampler = new AiSampler(samplingPercentage, samplingPercentage, false);
@@ -92,6 +98,7 @@ public class SamplingOverrides {
       }
     }
 
+    @Nullable
     private static TempPredicate toPredicate(SamplingOverrideAttribute attribute) {
       if (attribute.matchType == MatchType.STRICT) {
         if (isHttpHeaderAttribute(attribute)) {
@@ -107,9 +114,9 @@ public class SamplingOverrides {
         }
       } else if (attribute.matchType == null) {
         return new KeyOnlyMatcher(attribute.key);
-      } else {
-        throw new IllegalStateException("Unexpected match type: " + attribute.matchType);
       }
+      logger.error("Unexpected match type: " + attribute.matchType);
+      return null;
     }
 
     private static boolean isHttpHeaderAttribute(SamplingOverrideAttribute attribute) {

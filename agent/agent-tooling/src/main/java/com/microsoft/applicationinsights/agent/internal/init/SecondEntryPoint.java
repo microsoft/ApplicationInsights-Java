@@ -87,7 +87,7 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
       new ClientLogger("com.microsoft.applicationinsights.agent");
   private static File tempDir;
 
-  @Nullable public static AgentLogExporter agentLogExporter;
+  @Nullable private static AgentLogExporter agentLogExporter;
 
   @Nullable private static BatchLogRecordProcessor batchLogProcessor;
   @Nullable private static BatchSpanProcessor batchSpanProcessor;
