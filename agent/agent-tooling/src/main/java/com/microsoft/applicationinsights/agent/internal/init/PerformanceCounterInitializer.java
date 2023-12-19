@@ -138,12 +138,15 @@ public class PerformanceCounterInitializer {
           otelMetricName = jmxAttributeData.metricName.replaceAll("[^a-zA-z0-9_.-/]", "_");
         }
 
+        JmxAttributeData newJmxAttributeData =
+            new JmxAttributeData(otelMetricName, jmxAttributeData.attribute);
+
         GlobalOpenTelemetry.getMeter("com.microsoft.applicationinsights.jmx")
             .gaugeBuilder(otelMetricName)
             .buildWithCallback(
                 observableDoubleMeasurement -> {
                   calculateAndRecordValueForAttribute(
-                      observableDoubleMeasurement, objectName, jmxAttributeData);
+                      observableDoubleMeasurement, objectName, newJmxAttributeData);
                 });
       }
     }
