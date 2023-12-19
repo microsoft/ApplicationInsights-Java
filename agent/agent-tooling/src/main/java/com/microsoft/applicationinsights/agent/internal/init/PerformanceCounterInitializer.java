@@ -187,7 +187,7 @@ public class PerformanceCounterInitializer {
         observableDoubleMeasurement.record(
             value,
             Attributes.of(
-                AttributeKey.stringKey("app_insights_internal_jmx_metric"),
+                AttributeKey.stringKey("applicationinsights.internal.metric_name"),
                 jmxAttributeData.metricName));
       }
     } catch (Exception e) {
