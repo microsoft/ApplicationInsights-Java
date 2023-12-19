@@ -11,9 +11,9 @@ data class DependencySet(val group: String, val version: String, val modules: Li
 val dependencyVersions = hashMapOf<String, String>()
 rootProject.extra["versions"] = dependencyVersions
 
-val otelVersion = "1.31.0"
-val otelInstrumentationAlphaVersion = "1.31.0-alpha"
-val otelInstrumentationVersion = "1.31.0"
+val otelVersion = "1.32.0"
+val otelInstrumentationAlphaVersion = "1.32.0-alpha"
+val otelInstrumentationVersion = "1.32.0"
 val otelContribAlphaVersion = "1.30.0-alpha"
 
 rootProject.extra["otelVersion"] = otelVersion
@@ -23,13 +23,13 @@ rootProject.extra["otelContribAlphaVersion"] = otelContribAlphaVersion
 
 val DEPENDENCY_BOMS = listOf(
   "com.fasterxml.jackson:jackson-bom:2.16.0",
-  "com.google.guava:guava-bom:32.1.3-jre",
+  "com.google.guava:guava-bom:33.0.0-jre",
   "io.opentelemetry:opentelemetry-bom:${otelVersion}",
   "io.opentelemetry:opentelemetry-bom-alpha:${otelVersion}-alpha",
   "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:${otelInstrumentationVersion}",
   "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${otelInstrumentationAlphaVersion}",
-  "com.azure:azure-sdk-bom:1.2.18",
-  "io.netty:netty-bom:4.1.100.Final",
+  "com.azure:azure-sdk-bom:1.2.19",
+  "io.netty:netty-bom:4.1.101.Final",
   "org.junit:junit-bom:5.10.1",
   "org.testcontainers:testcontainers-bom:1.19.3",
 )
@@ -64,23 +64,23 @@ val CORE_DEPENDENCIES = listOf(
   "io.opentelemetry.javaagent:opentelemetry-javaagent-tooling:${otelInstrumentationAlphaVersion}",
   // temporarily overriding transitive dependency from azure-core until next azure-bom release
   // which targets at least reactor-netty-http:1.1.1
-  "io.projectreactor.netty:reactor-netty-http:1.1.13",
+  "io.projectreactor.netty:reactor-netty-http:1.1.14",
 )
 
 val DEPENDENCIES = listOf(
-  "ch.qos.logback:logback-classic:1.3.12", // logback 1.4+ requires Java 11+
+  "ch.qos.logback:logback-classic:1.3.14", // logback 1.4+ requires Java 11+
   "ch.qos.logback.contrib:logback-json-classic:0.1.5",
-  "com.uber.nullaway:nullaway:0.10.17",
+  "com.uber.nullaway:nullaway:0.10.18",
   "commons-codec:commons-codec:1.16.0",
   "org.apache.commons:commons-text:1.11.0",
   "com.google.code.gson:gson:2.10.1",
-  "com.azure:azure-core-test:1.22.0", // this is not included in azure-sdk-bom
+  "com.azure:azure-core-test:1.22.1", // this is not included in azure-sdk-bom
   "org.assertj:assertj-core:3.24.2",
   "org.awaitility:awaitility:4.2.0",
-  "io.github.hakky54:logcaptor:2.9.1",
+  "io.github.hakky54:logcaptor:2.9.2",
   "com.microsoft.jfr:jfr-streaming:1.2.0",
   "com.google.code.findbugs:jsr305:3.0.2",
-  "com.github.spotbugs:spotbugs-annotations:4.8.1"
+  "com.github.spotbugs:spotbugs-annotations:4.8.3"
 )
 
 javaPlatform {

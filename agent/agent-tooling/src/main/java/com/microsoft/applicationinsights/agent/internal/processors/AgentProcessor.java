@@ -85,15 +85,12 @@ public abstract class AgentProcessor {
     private boolean checkAttributes(Attributes attributes) {
       for (ProcessorAttribute attribute : processorAttributes) {
         // All of these attributes must match exactly for a match to occur.
-        Object existingAttributeValue = attributes.get(AttributeKey.stringKey(attribute.key));
-        // to get the string value
-        // existingAttributeValue.toString()
-        // String.valueOf(existingAttributeValue);
-        if (!(existingAttributeValue instanceof String)) {
+        Object valueObject = attributes.get(attribute.getAttributeKey());
+        if (valueObject == null) {
           // user specified key not found
           return false;
         }
-        if (attribute.value != null && !existingAttributeValue.equals(attribute.value)) {
+        if (attribute.value != null && !valueObject.equals(attribute.getAttributeValue())) {
           // user specified value doesn't match
           return false;
         }
@@ -123,7 +120,7 @@ public abstract class AgentProcessor {
         for (ProcessorAttribute attribute : attributes) {
           if (attribute.value != null) {
             attributeKeyValuePatterns.put(
-                AttributeKey.stringKey(attribute.key), Pattern.compile(attribute.value));
+                attribute.getAttributeKey(), Pattern.compile(String.valueOf(attribute.value)));
           }
         }
       }
@@ -176,13 +173,11 @@ public abstract class AgentProcessor {
     private boolean checkAttributes(Attributes attributes) {
       for (Entry<AttributeKey<?>, Pattern> attributeEntry : attributeValuePatterns.entrySet()) {
         // All of these attributes must match exactly for a match to occur.
+
         Object existingAttributeValue = attributes.get(attributeEntry.getKey());
-        if (!(existingAttributeValue instanceof String)) {
-          // user specified key not found
-          return false;
-        }
         if (attributeEntry.getValue() != null
-            && !isAttributeValueMatch((String) existingAttributeValue, attributeEntry.getValue())) {
+            && !isAttributeValueMatch(
+                String.valueOf(existingAttributeValue), attributeEntry.getValue())) {
           // user specified value doesn't match
           return false;
         }
