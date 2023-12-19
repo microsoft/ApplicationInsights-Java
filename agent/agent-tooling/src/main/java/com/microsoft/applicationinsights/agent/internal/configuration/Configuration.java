@@ -166,6 +166,8 @@ public class Configuration {
 
     // this config option only existed in one BETA release (3.4.0-BETA)
     @Deprecated @Nullable public Double limitPerSecond;
+
+    public List<SamplingOverride> overrides = new ArrayList<>();
   }
 
   public static class SamplingPreview {
@@ -192,7 +194,7 @@ public class Configuration {
     // future goal: make parentBased sampling the default if item count is received via tracestate
     public boolean parentBased;
 
-    public List<SamplingOverride> overrides = new ArrayList<>();
+    @Deprecated public List<SamplingOverride> overrides = new ArrayList<>();
   }
 
   public static class JmxMetric {

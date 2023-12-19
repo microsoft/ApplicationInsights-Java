@@ -349,6 +349,10 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
     if (!config.preview.sampling.overrides.isEmpty()) {
       featureList.add(Feature.PREVIEW_SAMPLING);
     }
+    // TODO (heya) track sampling overrides GA feature after updating the standalone exporter
+    //    if (!config.sampling.overrides.isEmpty()) {
+    //      featureList.add(Feature.SAMPLING);
+    //    }
     if (config.preview.captureControllerSpans) {
       featureList.add(Feature.PREVIEW_CAPTURE_CONTROLLER_SPANS);
     }
@@ -509,7 +513,7 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
     String tracesExporter = otelConfig.getString("otel.traces.exporter");
     if ("none".equals(tracesExporter)) { // "none" is the default set in AiConfigCustomizer
       List<Configuration.SamplingOverride> exceptionSamplingOverrides =
-          configuration.preview.sampling.overrides.stream()
+          configuration.sampling.overrides.stream()
               .filter(override -> override.telemetryType == SamplingTelemetryType.EXCEPTION)
               .collect(Collectors.toList());
       SpanExporter spanExporter =
@@ -671,11 +675,11 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
             telemetryClient::populateDefaults);
 
     List<Configuration.SamplingOverride> logSamplingOverrides =
-        configuration.preview.sampling.overrides.stream()
+        configuration.sampling.overrides.stream()
             .filter(override -> override.telemetryType == SamplingTelemetryType.TRACE)
             .collect(Collectors.toList());
     List<Configuration.SamplingOverride> exceptionSamplingOverrides =
-        configuration.preview.sampling.overrides.stream()
+        configuration.sampling.overrides.stream()
             .filter(override -> override.telemetryType == SamplingTelemetryType.EXCEPTION)
             .collect(Collectors.toList());
 

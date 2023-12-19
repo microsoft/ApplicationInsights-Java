@@ -28,11 +28,11 @@ public class Samplers {
     }
 
     List<SamplingOverride> requestSamplingOverrides =
-        samplingPreview.overrides.stream()
+        sampling.overrides.stream()
             .filter(SamplingOverride::isForRequestTelemetry)
             .collect(Collectors.toList());
     List<SamplingOverride> dependencySamplingOverrides =
-        samplingPreview.overrides.stream()
+        sampling.overrides.stream()
             .filter(SamplingOverride::isForDependencyTelemetry)
             .collect(Collectors.toList());
 

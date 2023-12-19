@@ -191,7 +191,13 @@ public class ConfigurationBuilder {
               + " and it is now enabled by default,"
               + " so no need to enable it under preview configuration");
     }
-    for (SamplingOverride override : config.preview.sampling.overrides) {
+
+    if (!config.preview.sampling.overrides.isEmpty()) {
+      configurationLogger.warn(
+          "\"Sampling overrides\" is no longer in preview and it has been GA since 3.5 GA,");
+      config.sampling.overrides = config.preview.sampling.overrides;
+    }
+    for (SamplingOverride override : config.sampling.overrides) {
       if (override.telemetryKind != null) {
         configurationLogger.warn(
             "Sampling overrides \"telemetryKind\" has been deprecated,"
@@ -252,7 +258,7 @@ public class ConfigurationBuilder {
       Path agentJarPath, RpConfiguration rpConfiguration, Configuration config) throws IOException {
     overlayFromEnv(config, agentJarPath.getParent());
     config.sampling.percentage = roundToNearest(config.sampling.percentage, true);
-    for (SamplingOverride override : config.preview.sampling.overrides) {
+    for (SamplingOverride override : config.sampling.overrides) {
       override.percentage = roundToNearest(override.percentage, true);
     }
     // rp configuration should always be last (so it takes precedence)
@@ -289,7 +295,7 @@ public class ConfigurationBuilder {
         }
       }
     }
-    for (SamplingOverride override : config.preview.sampling.overrides) {
+    for (SamplingOverride override : config.sampling.overrides) {
       for (Configuration.SamplingOverrideAttribute attribute : override.attributes) {
         logWarningIfUsingInternalAttributes(attribute.key);
       }
