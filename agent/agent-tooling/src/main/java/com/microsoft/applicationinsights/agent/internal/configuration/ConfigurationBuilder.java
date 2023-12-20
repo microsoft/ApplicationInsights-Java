@@ -460,6 +460,14 @@ public class ConfigurationBuilder {
         overlayWithEnvVar(
             "APPLICATIONINSIGHTS_INSTRUMENTATION_SPRING_SCHEDULING_ENABLED",
             config.instrumentation.springScheduling.enabled);
+    config.instrumentation.reactor.enabled =
+        overlayWithEnvVar(
+            "APPLICATIONINSIGHTS_INSTRUMENTATION_REACTOR_ENABLED",
+            config.instrumentation.reactor.enabled);
+    config.instrumentation.reactorNetty.enabled =
+        overlayWithEnvVar(
+            "APPLICATIONINSIGHTS_INSTRUMENTATION_REACTOR_NETTY_ENABLED",
+            config.instrumentation.reactorNetty.enabled);
   }
 
   private static Configuration loadConfigurationFile(Path agentJarPath) {

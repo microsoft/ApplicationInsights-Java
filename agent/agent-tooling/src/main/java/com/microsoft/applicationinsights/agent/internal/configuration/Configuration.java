@@ -216,6 +216,8 @@ public class Configuration {
     public EnabledByDefaultInstrumentation rabbitmq = new EnabledByDefaultInstrumentation();
     public EnabledByDefaultInstrumentation redis = new EnabledByDefaultInstrumentation();
     public EnabledByDefaultInstrumentation springScheduling = new EnabledByDefaultInstrumentation();
+    public EnabledByDefaultInstrumentation reactor = new EnabledByDefaultInstrumentation();
+    public EnabledByDefaultInstrumentation reactorNetty = new EnabledByDefaultInstrumentation();
   }
 
   public static class DatabaseInstrumentationWithMasking {
