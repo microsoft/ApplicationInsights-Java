@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## Version 3.4.19 GA (12/20/2023)
+
+### Enhancements:
+
+* Update to OpenTelemetry Java 1.32 ([#3394](https://github.com/microsoft/ApplicationInsights-Java/pull/3394))
+* Update to azure-monitor-opentelemetry-exporter to 1.0.0-beta.15 ([#3360](https://github.com/microsoft/ApplicationInsights-Java/pull/3360))
+* Support non-string type telemetry processor attributes ([#3388](https://github.com/microsoft/ApplicationInsights-Java/pull/3388)
+* Double pumping JMX metrics to OTLP and Breeze ([#3406](https://github.com/microsoft/ApplicationInsights-Java/pull/3406)
+
 ## Version 3.4.18 GA (10/30/2023)
 
 ### Enhancements:
