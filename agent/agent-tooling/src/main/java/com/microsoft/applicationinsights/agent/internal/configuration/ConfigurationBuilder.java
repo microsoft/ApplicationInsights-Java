@@ -540,8 +540,19 @@ public class ConfigurationBuilder {
     StringLookup stringLookup =
         StringLookupFactory.INSTANCE.interpolatorStringLookup(stringLookupMap, null, false);
     StringSubstitutor stringSubstitutor = new StringSubstitutor(stringLookup);
-    config.connectionString =
-        overlayConnectionStringFromEnv(stringSubstitutor.replace(config.connectionString));
+    String replacedConnectionString = stringSubstitutor.replace(config.connectionString);
+    if (replacedConnectionString != null
+        && !replacedConnectionString.startsWith("InstrumentationKey=")
+        && config.connectionString.equals(replacedConnectionString)) {
+      throw new FriendlyException(
+          "Error loading connection string from a file (\""
+              + config.connectionString
+              + "\").\n"
+              + "Please use this format instead:"
+              + "\n{ \"connectionString\": \"${file:connection-string-file.txt}\" }\n",
+          "Learn more about configuration options here: " + CONFIGURATION_OPTIONS_LINK);
+    }
+    config.connectionString = overlayConnectionStringFromEnv(replacedConnectionString);
     if (isTrimEmpty(config.role.name)) {
       // only use WEBSITE_SITE_NAME as a fallback
       config.role.name = getWebsiteSiteNameEnvVar();
