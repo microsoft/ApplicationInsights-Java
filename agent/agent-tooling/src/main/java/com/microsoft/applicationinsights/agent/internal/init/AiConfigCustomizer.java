@@ -182,10 +182,13 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
         "otel.instrumentation.opentelemetry-instrumentation-annotations.enabled", "true");
     properties.put("otel.instrumentation.opentelemetry-api.enabled", "true");
     properties.put("otel.instrumentation.opentelemetry-instrumentation-api.enabled", "true");
-    if (otelConfig.getBoolean("otel.instrumentation.reactor.enabled", true)) {
+    if (otelConfig.getBoolean("otel.instrumentation.reactor.enabled", true)
+        && !"false".equalsIgnoreCase(System.getenv("OTEL_INSTRUMENTATION_REACTOR_ENABLED"))) {
       properties.put("otel.instrumentation.reactor.enabled", "true");
     }
-    if (otelConfig.getBoolean("otel.instrumentation.reactor-netty.enabled", true)) {
+
+    if (otelConfig.getBoolean("otel.instrumentation.reactor-netty.enabled", true)
+        && !"false".equalsIgnoreCase(System.getenv("OTEL_INSTRUMENTATION_REACTOR_NETTY_ENABLED"))) {
       properties.put("otel.instrumentation.reactor-netty.enabled", "true");
     }
     properties.put("otel.instrumentation.rxjava.enabled", "true");
