@@ -57,13 +57,23 @@ abstract class JmxMetricTest {
    * boolean value. DotInAttributeNameAsPathSeparator: This covers the case of an attribute having a
    * dot in the name as a path separator.
    */
-  static final Set<String> jmxMetricsAllJavaVersions =
+  private static final Set<String> jmxMetricsAllJavaVersionsBreeze =
       new HashSet<>(
           Arrays.asList(
               "NameWithDot",
               "DefaultJmxMetricNameOverride",
               "WildcardJmxMetric",
               "Loaded Class Count",
+              "BooleanJmxMetric",
+              "DotInAttributeNameAsPathSeparator"));
+
+  private static final Set<String> jmxMetricsAllJavaVersionsOtlp =
+      new HashSet<>(
+          Arrays.asList(
+              "NameWithDot",
+              "DefaultJmxMetricNameOverride",
+              "WildcardJmxMetric",
+              "Loaded_Class_Count",
               "BooleanJmxMetric",
               "DotInAttributeNameAsPathSeparator"));
 
@@ -74,11 +84,6 @@ abstract class JmxMetricTest {
   @TargetUri("/test")
   void doMostBasicTest() throws Exception {
     verifyJmxMetricsSentToBreeze();
-
-    Thread.sleep(
-        2000); // CI test is flaky without this. Set gets updated before line 76 is completed.
-    jmxMetricsAllJavaVersions.remove("Loaded Class Count");
-    jmxMetricsAllJavaVersions.add("Loaded_Class_Count");
     verifyJmxMetricsSentToOtlpEndpoint();
   }
 
@@ -104,7 +109,7 @@ abstract class JmxMetricTest {
               // versions
               for (Metric metric : metrics) {
                 String metricName = metric.getName();
-                if (jmxMetricsAllJavaVersions.contains(metricName)) {
+                if (jmxMetricsAllJavaVersionsOtlp.contains(metricName)) {
                   if (occurrences.containsKey(metricName)) {
                     occurrences.put(metricName, occurrences.get(metricName) + 1);
                   } else {
@@ -167,7 +172,7 @@ abstract class JmxMetricTest {
     // and confirm that the wildcard metric has the expected value
     assertThat(wildcardValueSum).isEqualTo(gcFirstMatch + gcSecondMatch);
 
-    assertThat(metricNames).containsAll(jmxMetricsAllJavaVersions);
+    assertThat(metricNames).containsAll(jmxMetricsAllJavaVersionsBreeze);
   }
 
   private static boolean verifyNoInternalAttributes(Envelope envelope) {
@@ -186,7 +191,7 @@ abstract class JmxMetricTest {
     }
     MetricData md = SmokeTestExtension.getBaseData(envelope);
     String incomingMetricName = md.getMetrics().get(0).getName();
-    return jmxMetricsAllJavaVersions.contains(incomingMetricName)
+    return jmxMetricsAllJavaVersionsBreeze.contains(incomingMetricName)
         || gcOptionalJmxMetrics.contains(incomingMetricName);
   }
 
