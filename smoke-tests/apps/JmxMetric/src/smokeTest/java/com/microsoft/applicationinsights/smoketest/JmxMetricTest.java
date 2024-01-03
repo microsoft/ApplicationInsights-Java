@@ -75,6 +75,8 @@ abstract class JmxMetricTest {
   void doMostBasicTest() throws Exception {
     verifyJmxMetricsSentToBreeze();
 
+    Thread.sleep(
+        1000); // CI test is flaky without this. Set gets updated before line 76 is completed.
     jmxMetricsAllJavaVersions.remove("Loaded Class Count");
     jmxMetricsAllJavaVersions.add("Loaded_Class_Count");
     verifyJmxMetricsSentToOtlpEndpoint();
