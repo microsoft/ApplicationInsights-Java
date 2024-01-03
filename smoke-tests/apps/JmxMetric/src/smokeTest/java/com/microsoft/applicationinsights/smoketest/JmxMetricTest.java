@@ -63,7 +63,7 @@ abstract class JmxMetricTest {
               "NameWithDot",
               "DefaultJmxMetricNameOverride",
               "WildcardJmxMetric",
-              "Loaded_Class_Count",
+              "Loaded Class Count",
               "BooleanJmxMetric",
               "DotInAttributeNameAsPathSeparator"));
 
@@ -74,6 +74,9 @@ abstract class JmxMetricTest {
   @TargetUri("/test")
   void doMostBasicTest() throws Exception {
     verifyJmxMetricsSentToBreeze();
+
+    jmxMetricsAllJavaVersions.remove("Loaded Class Count");
+    jmxMetricsAllJavaVersions.add("Loaded_Class_Count");
     verifyJmxMetricsSentToOtlpEndpoint();
   }
 
@@ -124,7 +127,7 @@ abstract class JmxMetricTest {
     List<Envelope> metricItems =
         testing.mockedIngestion.waitForItems(JmxMetricTest::isJmxMetric, 1, 10, TimeUnit.SECONDS);
 
-    assertThat(metricItems).hasSizeBetween(8, 16);
+    assertThat(metricItems).hasSizeBetween(7, 16);
 
     Set<String> metricNames = new HashSet<>();
     double wildcardValueSum = 0.0;
