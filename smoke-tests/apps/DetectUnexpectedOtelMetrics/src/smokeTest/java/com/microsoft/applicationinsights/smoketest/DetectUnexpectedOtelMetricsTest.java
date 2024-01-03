@@ -29,8 +29,8 @@ abstract class DetectUnexpectedOtelMetricsTest {
 
   static {
     EXPECTED_METRIC_NAMES.add("_OTELRESOURCE_");
-    EXPECTED_METRIC_NAMES.add("Current_Thread_Count");
-    EXPECTED_METRIC_NAMES.add("Loaded_Class_Count");
+    EXPECTED_METRIC_NAMES.add("Current Thread Count");
+    EXPECTED_METRIC_NAMES.add("Loaded Class Count");
   }
 
   @Test
