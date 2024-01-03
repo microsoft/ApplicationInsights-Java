@@ -2,6 +2,12 @@
 <suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
   <suppress>
     <notes>
+      CVE-2023-36052 only affects Azure CLI (it does not affect any Java libraries)
+    </notes>
+    <cve>CVE-2023-36052</cve>
+  </suppress>
+  <suppress>
+    <notes>
       CVE-2023-35116 is not a valid CVE, see comment from library maintainer
       https://github.com/FasterXML/jackson-databind/issues/3972#issuecomment-1596308216
     </notes>
