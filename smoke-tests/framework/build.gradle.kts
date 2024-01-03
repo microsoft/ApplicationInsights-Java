@@ -16,7 +16,7 @@ dependencies {
   implementation("com.google.code.gson:gson")
   implementation("org.apache.httpcomponents:httpclient:4.5.14")
 
-  implementation("org.eclipse.jetty:jetty-servlet:10.0.18")
+  implementation("org.eclipse.jetty:jetty-servlet:10.0.19")
 
   implementation("org.mock-server:mockserver-netty:5.15.0:shaded")
   implementation("io.opentelemetry.proto:opentelemetry-proto:1.0.0-alpha")

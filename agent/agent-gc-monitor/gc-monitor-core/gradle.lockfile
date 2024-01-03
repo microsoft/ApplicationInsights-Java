@@ -2,15 +2,15 @@
 # Manual edits can break the build and are not advised.
 # This file is expected to be part of source control.
 com.azure:azure-sdk-bom:1.2.19=runtimeClasspath
-com.fasterxml.jackson:jackson-bom:2.16.0=runtimeClasspath
-com.google.errorprone:error_prone_annotations:2.23.0=runtimeClasspath
+com.fasterxml.jackson:jackson-bom:2.16.1=runtimeClasspath
+com.google.errorprone:error_prone_annotations:2.24.0=runtimeClasspath
 com.google.guava:guava-bom:33.0.0-jre=runtimeClasspath
-io.netty:netty-bom:4.1.101.Final=runtimeClasspath
+io.netty:netty-bom:4.1.104.Final=runtimeClasspath
 io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:1.32.0-alpha=runtimeClasspath
 io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:1.32.0=runtimeClasspath
 io.opentelemetry:opentelemetry-bom-alpha:1.32.0-alpha=runtimeClasspath
 io.opentelemetry:opentelemetry-bom:1.32.0=runtimeClasspath
 org.junit:junit-bom:5.10.1=runtimeClasspath
-org.slf4j:slf4j-api:2.0.9=runtimeClasspath
+org.slf4j:slf4j-api:2.0.10=runtimeClasspath
 org.testcontainers:testcontainers-bom:1.19.3=runtimeClasspath
 empty=
