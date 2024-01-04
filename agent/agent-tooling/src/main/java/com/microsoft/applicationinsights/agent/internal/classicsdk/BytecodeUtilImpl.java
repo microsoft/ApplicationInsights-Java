@@ -3,6 +3,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.classicsdk;
 
+import static com.microsoft.applicationinsights.agent.internal.configuration.ConfigurationBuilder.*;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
@@ -27,7 +28,6 @@ import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedDu
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedTime;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
 import com.microsoft.applicationinsights.agent.bootstrap.BytecodeUtil.BytecodeUtilDelegate;
-import com.microsoft.applicationinsights.agent.internal.configuration.ConfigurationBuilder;
 import com.microsoft.applicationinsights.agent.internal.init.RuntimeConfiguration;
 import com.microsoft.applicationinsights.agent.internal.init.RuntimeConfigurator;
 import com.microsoft.applicationinsights.agent.internal.legacyheaders.AiLegacyPropagator;
@@ -70,17 +70,15 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
       return;
     }
     if (connectionStringProgrammaticallySet.getAndSet(true)) {
-      String applicationInsightsConnectionStringEnv =
-          ConfigurationBuilder.APPLICATIONINSIGHTS_CONNECTION_STRING_ENV;
       logger.info(
           "The connection string is programmatically set. It will take precedence over the value defined from the applicationinsights.json file or the "
-              + applicationInsightsConnectionStringEnv
+              + APPLICATIONINSIGHTS_CONNECTION_STRING_ENV
               + " environment variable.");
-      if (Strings.trimAndEmptyToNull(System.getenv(applicationInsightsConnectionStringEnv))
+      if (Strings.trimAndEmptyToNull(System.getenv(APPLICATIONINSIGHTS_CONNECTION_STRING_ENV))
           != null) {
         logger.info(
             "The connection string is programmatically set and the "
-                + applicationInsightsConnectionStringEnv
+                + APPLICATIONINSIGHTS_CONNECTION_STRING_ENV
                 + " environment variable is also set. This environment variable is not taken into account.");
       }
     }
