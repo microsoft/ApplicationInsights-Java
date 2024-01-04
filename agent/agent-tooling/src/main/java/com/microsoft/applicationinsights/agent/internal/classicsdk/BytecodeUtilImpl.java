@@ -3,7 +3,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.classicsdk;
 
-import static com.microsoft.applicationinsights.agent.internal.configuration.ConfigurationBuilder.*;
+import static com.microsoft.applicationinsights.agent.internal.configuration.ConfigurationBuilder.APPLICATIONINSIGHTS_CONNECTION_STRING_ENV;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
