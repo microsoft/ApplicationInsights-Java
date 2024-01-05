@@ -69,18 +69,13 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
               + " \"connectionStringConfiguredAtRuntime\" to true");
       return;
     }
-    if (connectionStringProgrammaticallySet.getAndSet(true)) {
+
+    if (connectionStringProgrammaticallySet.getAndSet(true)
+        && TelemetryClient.getActive().getConnectionString() != null) {
       logger.info(
           "The connection string is programmatically set. It will take precedence over the value defined from the applicationinsights.json file or the "
               + APPLICATIONINSIGHTS_CONNECTION_STRING_ENV
               + " environment variable.");
-      if (Strings.trimAndEmptyToNull(System.getenv(APPLICATIONINSIGHTS_CONNECTION_STRING_ENV))
-          != null) {
-        logger.info(
-            "The connection string is programmatically set and the "
-                + APPLICATIONINSIGHTS_CONNECTION_STRING_ENV
-                + " environment variable is also set. This environment variable is not taken into account.");
-      }
     }
 
     if (runtimeConfigurator != null) {
