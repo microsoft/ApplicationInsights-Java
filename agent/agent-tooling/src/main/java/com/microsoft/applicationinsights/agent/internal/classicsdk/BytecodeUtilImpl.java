@@ -70,7 +70,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
       return;
     }
 
-    if (connectionStringProgrammaticallySet.getAndSet(true)
+    if (!connectionStringProgrammaticallySet.getAndSet(true)
         && TelemetryClient.getActive().getConnectionString() != null) {
       logger.info(
           "The connection string is programmatically set. It will take precedence over the value defined from the applicationinsights.json file or the "
