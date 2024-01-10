@@ -1,7 +1,7 @@
 
 # agent
 ## Dependency License Report
-_2024-01-09 03:29:36 UTC_
+_2024-01-10 03:07:53 UTC_
 ## Apache License, Version 2.0
 
 **1** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-annotations` **Version:** `2.16.1` 
@@ -226,15 +226,15 @@ _2024-01-09 03:29:36 UTC_
 > - **POM Project URL**: [https://github.com/open-telemetry/opentelemetry-java](https://github.com/open-telemetry/opentelemetry-java)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
-**45** **Group:** `io.projectreactor` **Name:** `reactor-core` **Version:** `3.5.13` 
+**45** **Group:** `io.projectreactor` **Name:** `reactor-core` **Version:** `3.5.14` 
 > - **POM Project URL**: [https://github.com/reactor/reactor-core](https://github.com/reactor/reactor-core)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
 
-**46** **Group:** `io.projectreactor.netty` **Name:** `reactor-netty-core` **Version:** `1.1.14` 
+**46** **Group:** `io.projectreactor.netty` **Name:** `reactor-netty-core` **Version:** `1.1.15` 
 > - **POM Project URL**: [https://github.com/reactor/reactor-netty](https://github.com/reactor/reactor-netty)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
-**47** **Group:** `io.projectreactor.netty` **Name:** `reactor-netty-http` **Version:** `1.1.14` 
+**47** **Group:** `io.projectreactor.netty` **Name:** `reactor-netty-http` **Version:** `1.1.15` 
 > - **POM Project URL**: [https://github.com/reactor/reactor-netty](https://github.com/reactor/reactor-netty)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
