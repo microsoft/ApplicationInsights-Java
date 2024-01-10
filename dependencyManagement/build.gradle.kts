@@ -64,7 +64,7 @@ val CORE_DEPENDENCIES = listOf(
   "io.opentelemetry.javaagent:opentelemetry-javaagent-tooling:${otelInstrumentationAlphaVersion}",
   // temporarily overriding transitive dependency from azure-core until next azure-bom release
   // which targets at least reactor-netty-http:1.1.1
-  "io.projectreactor.netty:reactor-netty-http:1.1.14",
+  "io.projectreactor.netty:reactor-netty-http:1.1.15",
 )
 
 val DEPENDENCIES = listOf(
