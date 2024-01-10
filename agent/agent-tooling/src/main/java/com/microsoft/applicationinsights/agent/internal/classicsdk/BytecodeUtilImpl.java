@@ -58,7 +58,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
 
   public static volatile RuntimeConfigurator runtimeConfigurator;
   public static volatile boolean connectionStringConfiguredAtRuntime;
-  private static final AtomicBoolean connectionStringProgrammaticallySet = new AtomicBoolean();
+  private static final AtomicBoolean connectionStringInfoMessageToShow = new AtomicBoolean(true);
 
   @Override
   public void setConnectionString(String connectionString) {
@@ -70,7 +70,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
       return;
     }
 
-    if (firstCall.getAndSet(false)
+    if (connectionStringInfoMessageToShow.getAndSet(false)
         && TelemetryClient.getActive().getConnectionString() != null) {
       logger.info(
           "The connection string is programmatically set. It will take precedence over the value defined from the applicationinsights.json file or the "
