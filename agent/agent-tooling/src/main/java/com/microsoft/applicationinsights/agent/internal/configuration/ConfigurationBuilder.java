@@ -46,7 +46,7 @@ public class ConfigurationBuilder {
   private static final String APPLICATIONINSIGHTS_RUNTIME_ATTACHED_CONFIGURATION_CONTENT =
       "applicationinsights.internal.runtime.attached.json";
 
-  private static final String APPLICATIONINSIGHTS_CONNECTION_STRING_ENV =
+  public static final String APPLICATIONINSIGHTS_CONNECTION_STRING_ENV =
       "APPLICATIONINSIGHTS_CONNECTION_STRING";
 
   private static final String APPLICATIONINSIGHTS_CONNECTION_STRING_SYS =
