@@ -3,6 +3,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.classicsdk;
 
+import static com.microsoft.applicationinsights.agent.internal.configuration.ConfigurationBuilder.APPLICATIONINSIGHTS_CONNECTION_STRING_ENV;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
@@ -57,6 +58,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
 
   public static volatile RuntimeConfigurator runtimeConfigurator;
   public static volatile boolean connectionStringConfiguredAtRuntime;
+  private static final AtomicBoolean connectionStringInfoMessageToShow = new AtomicBoolean(true);
 
   @Override
   public void setConnectionString(String connectionString) {
@@ -67,10 +69,15 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
               + " \"connectionStringConfiguredAtRuntime\" to true");
       return;
     }
-    if (TelemetryClient.getActive().getConnectionString() != null) {
-      logger.warn("Connection string is already set");
-      return;
+
+    if (TelemetryClient.getActive().getConnectionString() != null
+        && connectionStringInfoMessageToShow.getAndSet(false)) {
+      logger.info(
+          "The connection string is programmatically set. It will take precedence over the value defined from the applicationinsights.json file or the "
+              + APPLICATIONINSIGHTS_CONNECTION_STRING_ENV
+              + " environment variable.");
     }
+
     if (runtimeConfigurator != null) {
       RuntimeConfiguration runtimeConfig = runtimeConfigurator.getCurrentConfigCopy();
       runtimeConfig.connectionString = connectionString;
