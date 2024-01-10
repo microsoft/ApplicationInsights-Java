@@ -400,6 +400,7 @@ public class SmokeTestExtension
             .withEnv("APPLICATIONINSIGHTS_CONNECTION_STRING", connectionString)
             .withEnv("APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_LEVEL", selfDiagnosticsLevel)
             .withEnv("OTEL_RESOURCE_ATTRIBUTES", otelResourceAttributesEnvVar)
+            .withEnv("APPLICATIONINSIGHTS_METRIC_INTERVAL_SECONDS", "1")
             .withNetwork(network)
             .withExposedPorts(8080)
             .withFileSystemBind(
@@ -409,7 +410,6 @@ public class SmokeTestExtension
 
     List<String> javaToolOptions = new ArrayList<>();
     javaToolOptions.add("-Dapplicationinsights.testing.batch-schedule-delay-millis=500");
-    javaToolOptions.add("-Dapplicationinsights.testing.metric-reader-interval-millis=500");
     if (agentExtensionFile != null) {
       javaToolOptions.add("-Dotel.javaagent.extensions=/" + agentExtensionFile.getName());
     }
@@ -422,7 +422,6 @@ public class SmokeTestExtension
       javaToolOptions.add("-Dotel.metrics.exporter=otlp");
       javaToolOptions.add("-Dotel.exporter.otlp.metrics.endpoint=" + FAKE_OTLP_INGESTION_ENDPOINT);
       javaToolOptions.add("-Dotel.exporter.otlp.protocol=http/protobuf");
-      javaToolOptions.add("-Dotel.metric.export.interval=5000");
     }
     if (REMOTE_DEBUG) {
       javaToolOptions.add(
