@@ -36,6 +36,8 @@ import org.slf4j.MDC;
 public class PerformanceCounterInitializer {
 
   private static final Logger logger = LoggerFactory.getLogger(PerformanceCounterInitializer.class);
+  private static final String METRIC_NAME_REGEXP = "[a-zA-z0-9_.-/]+";
+  private static final String INVALID_CHARACTER_REGEXP = "[^a-zA-z0-9_.-/]";
 
   public static void initialize(Configuration configuration) {
 
@@ -132,10 +134,10 @@ public class PerformanceCounterInitializer {
       for (JmxAttributeData jmxAttributeData : entry.getValue()) {
 
         String otelMetricName;
-        if (jmxAttributeData.metricName.matches("[a-zA-z0-9_.-/]+")) {
+        if (jmxAttributeData.metricName.matches(METRIC_NAME_REGEXP)) {
           otelMetricName = jmxAttributeData.metricName;
         } else {
-          otelMetricName = jmxAttributeData.metricName.replaceAll("[^a-zA-z0-9_.-/]", "_");
+          otelMetricName = jmxAttributeData.metricName.replaceAll(INVALID_CHARACTER_REGEXP, "_");
         }
 
         GlobalOpenTelemetry.getMeter("com.microsoft.applicationinsights.jmx")
