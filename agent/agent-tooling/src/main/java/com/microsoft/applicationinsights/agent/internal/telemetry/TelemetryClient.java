@@ -338,7 +338,7 @@ public class TelemetryClient {
     for (Map.Entry<String, String> entry : globalProperties.entrySet()) {
       telemetryBuilder.addProperty(entry.getKey(), entry.getValue());
     }
-    new ResourceParser().setRoleNameAndInstance(telemetryBuilder, resource);
+    new ResourceParser().updateRoleNameAndInstance(telemetryBuilder, resource);
   }
 
   @Nullable
