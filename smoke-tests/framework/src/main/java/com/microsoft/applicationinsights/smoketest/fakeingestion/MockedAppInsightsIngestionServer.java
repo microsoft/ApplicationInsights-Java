@@ -7,7 +7,6 @@ import com.microsoft.applicationinsights.smoketest.SmokeTestExtension;
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.Domain;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
-import com.microsoft.applicationinsights.smoketest.schemav2.MetricData;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -247,29 +246,6 @@ public class MockedAppInsightsIngestionServer {
       String type, int numItems, String operationId, Predicate<Envelope> condition)
       throws ExecutionException, InterruptedException, TimeoutException {
     return waitForItems(type, numItems, operationId, condition);
-  }
-
-  // wait for at least one unexpected otel metrics for failure case or timeout for success
-  public List<Envelope> waitForItemsUnexpectedOtelMetric(String type, Predicate<Envelope> condition)
-      throws InterruptedException, ExecutionException, TimeoutException {
-    return waitForItems(
-        new Predicate<Envelope>() {
-          @Override
-          public boolean test(Envelope input) {
-            if (!input.getData().getBaseType().equals(type)) {
-              return false;
-            }
-            MetricData md = (MetricData) ((Data<?>) input.getData()).getBaseData();
-            if ("_OTELRESOURCE_".equals(md.getMetrics().get(0).getName())
-                || md.getProperties().containsKey("_MS.MetricId")) {
-              return false;
-            }
-            return condition.test(input);
-          }
-        },
-        1,
-        10,
-        TimeUnit.SECONDS);
   }
 
   // this is used to filter out some sporadic messages that are captured via java.util.logging

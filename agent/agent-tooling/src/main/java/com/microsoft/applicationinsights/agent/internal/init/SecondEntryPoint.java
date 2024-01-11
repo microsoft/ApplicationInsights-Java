@@ -61,7 +61,10 @@ import io.opentelemetry.sdk.autoconfigure.spi.internal.AutoConfigureListener;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
+import io.opentelemetry.sdk.metrics.Aggregation;
+import io.opentelemetry.sdk.metrics.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
+import io.opentelemetry.sdk.metrics.View;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.metrics.internal.view.AiViewRegistry;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
@@ -704,10 +707,23 @@ public class SecondEntryPoint
   private static SdkMeterProviderBuilder configureMetrics(
       SdkMeterProviderBuilder builder, Configuration configuration) {
 
+    // drop internal OpenTelemetry SDK metrics
+    drop(builder, "io.opentelemetry.sdk.trace", "queueSize");
+    drop(builder, "io.opentelemetry.sdk.trace", "processedSpans");
+    drop(builder, "io.opentelemetry.sdk.logs", "queueSize");
+    drop(builder, "io.opentelemetry.sdk.logs", "processedLogs");
+
     if (configuration.internal.preAggregatedStandardMetrics.enabled) {
       AiViewRegistry.registerViews(builder);
     }
     return builder;
+  }
+
+  private static void drop(
+      SdkMeterProviderBuilder builder, String meterName, String processedSpans) {
+    builder.registerView(
+        InstrumentSelector.builder().setMeterName(meterName).setName(processedSpans).build(),
+        View.builder().setAggregation(Aggregation.drop()).build());
   }
 
   @Override
