@@ -53,9 +53,11 @@ import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClien
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryObservers;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdkBuilder;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizer;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizerProvider;
+import io.opentelemetry.sdk.autoconfigure.spi.internal.AutoConfigureListener;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
@@ -75,12 +77,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 @AutoService(AutoConfigurationCustomizerProvider.class)
-public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
+public class SecondEntryPoint
+    implements AutoConfigurationCustomizerProvider, AutoConfigureListener {
 
   private static final ClientLogger startupLogger =
       new ClientLogger("com.microsoft.applicationinsights.agent");
@@ -706,6 +710,35 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
       AiViewRegistry.registerViews(builder);
     }
     return builder;
+  }
+
+  @Override
+  public void afterAutoConfigure(OpenTelemetrySdk sdk) {
+    Runtime.getRuntime()
+        .addShutdownHook(
+            new Thread(
+                () -> flushAll(sdk, TelemetryClient.getActive()).join(10, TimeUnit.SECONDS)));
+  }
+
+  private static CompletableResultCode flushAll(
+      OpenTelemetrySdk sdk, TelemetryClient telemetryClient) {
+    CompletableResultCode sdkShutdownResult = sdk.shutdown();
+    CompletableResultCode overallResult = new CompletableResultCode();
+    sdkShutdownResult.whenComplete(
+        () -> {
+          // IMPORTANT: the metric reader flush will fail if the periodic metric reader is already
+          // mid-exporter
+          CompletableResultCode telemetryClientResult = telemetryClient.forceFlush();
+          telemetryClientResult.whenComplete(
+              () -> {
+                if (sdkShutdownResult.isSuccess() && telemetryClientResult.isSuccess()) {
+                  overallResult.succeed();
+                } else {
+                  overallResult.fail();
+                }
+              });
+        });
+    return overallResult;
   }
 
   private static class BackCompatHttpUrlProcessor implements SpanExporter {
