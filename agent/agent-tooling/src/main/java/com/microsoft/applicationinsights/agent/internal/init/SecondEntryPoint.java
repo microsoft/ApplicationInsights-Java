@@ -255,6 +255,7 @@ public class SecondEntryPoint
               // (not using batch size 1 because that seems to cause poor performance on small
               // containers)
               props.put("otel.bsp.schedule.delay", "100");
+              props.put("otel.blrp.schedule.delay", "100");
               return props;
             })
         .addPropertiesCustomizer(new AiConfigCustomizer())
@@ -699,9 +700,6 @@ public class SecondEntryPoint
                     || processor.type == Configuration.ProcessorType.LOG)
         .collect(Collectors.toCollection(ArrayList::new));
   }
-
-  // TODO (trask)
-  // APPLICATIONINSIGHTS_PREVIEW_BSP_SCHEDULE_DELAY renamed to OTEL_BSP_SCHEDULE_DELAY
 
   private static SdkMeterProviderBuilder configureMetrics(
       SdkMeterProviderBuilder builder, Configuration configuration) {
