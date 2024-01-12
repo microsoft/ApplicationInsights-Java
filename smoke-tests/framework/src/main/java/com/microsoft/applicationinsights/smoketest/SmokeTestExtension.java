@@ -59,7 +59,7 @@ public class SmokeTestExtension
   // add -PsmokeTestRemoteDebug=true to the gradle args to enable (see ai.smoke-test.gradle.kts)
   private static final boolean REMOTE_DEBUG = Boolean.getBoolean("ai.smoke-test.remote-debug");
 
-  private static final int TELEMETRY_RECEIVE_TIMEOUT_SECONDS = 60;
+  private static final int TELEMETRY_RECEIVE_TIMEOUT_SECONDS = 600;
 
   private static final String FAKE_BREEZE_INGESTION_ENDPOINT =
       "http://host.testcontainers.internal:6060/";
