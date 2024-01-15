@@ -12,7 +12,7 @@ val dependencyVersions = hashMapOf<String, String>()
 rootProject.extra["versions"] = dependencyVersions
 
 val otelVersion = "1.32.0"
-val otelInstrumentationAlphaVersion = "1.32.0-alpha"
+val otelInstrumentationAlphaVersion = "2.0.0-alpha"
 val otelInstrumentationVersion = "1.32.0"
 val otelContribAlphaVersion = "1.30.0-alpha"
 
