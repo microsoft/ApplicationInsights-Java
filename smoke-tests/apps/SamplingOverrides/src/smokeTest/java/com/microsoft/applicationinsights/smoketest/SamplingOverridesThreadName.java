@@ -18,7 +18,8 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 @UseAgent("applicationinsights-thread-name.json")
 abstract class SamplingOverridesThreadName {
 
-  @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.create();
+  @RegisterExtension
+  static final SmokeTestExtension testing = SmokeTestExtension.create();
 
   @Test
   @TargetUri(value = "/thread-name", callCount = 100)

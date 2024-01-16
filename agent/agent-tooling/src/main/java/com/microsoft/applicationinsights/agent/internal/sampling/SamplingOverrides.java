@@ -34,8 +34,9 @@ public class SamplingOverrides {
   @Nullable
   public Sampler getOverride(Attributes attributes) {
     LazyHttpUrl lazyHttpUrl = new LazyHttpUrl(attributes);
+    LazyHttpTarget lazyHttpTarget = new LazyHttpTarget(attributes);
     for (MatcherGroup matcherGroups : matcherGroups) {
-      if (matcherGroups.matches(attributes, lazyHttpUrl)) {
+      if (matcherGroups.matches(attributes, lazyHttpUrl, lazyHttpTarget)) {
         return matcherGroups.getSampler();
       }
     }
@@ -46,7 +47,7 @@ public class SamplingOverrides {
   @Nullable
   public Double getOverridePercentage(Attributes attributes) {
     for (MatcherGroup matcherGroups : matcherGroups) {
-      if (matcherGroups.matches(attributes, null)) {
+      if (matcherGroups.matches(attributes, null, null)) {
         return matcherGroups.getPercentage();
       }
     }
@@ -80,9 +81,12 @@ public class SamplingOverrides {
       return samplingPercentage.get();
     }
 
-    private boolean matches(Attributes attributes, @Nullable LazyHttpUrl lazyHttpUrl) {
+    private boolean matches(
+        Attributes attributes,
+        @Nullable LazyHttpUrl lazyHttpUrl,
+        @Nullable LazyHttpTarget lazyHttpTarget) {
       for (TempPredicate predicate : predicates) {
-        if (!predicate.test(attributes, lazyHttpUrl)) {
+        if (!predicate.test(attributes, lazyHttpUrl, lazyHttpTarget)) {
           return false;
         }
       }
@@ -135,10 +139,15 @@ public class SamplingOverrides {
       this.value = value;
     }
 
+    @SuppressWarnings("SystemOut")
     @Override
-    public boolean test(Attributes attributes, LazyHttpUrl lazyHttpUrl) {
+    public boolean test(
+        Attributes attributes, LazyHttpUrl lazyHttpUrl, LazyHttpTarget lazyHttpTarget) {
       String val = MatcherGroup.getValueIncludingThreadName(attributes, key);
-      if (val == null && key.getKey().equals(SemanticAttributes.HTTP_URL.getKey())) {
+      if (key.getKey().equals(SemanticAttributes.HTTP_TARGET.getKey())) {
+        val = lazyHttpTarget.get();
+      }
+      if (val == null && getHttpUrlKeyOldOrStableSemconv(key)) {
         val = lazyHttpUrl.get();
       }
       return value.equals(val);
@@ -155,7 +164,8 @@ public class SamplingOverrides {
     }
 
     @Override
-    public boolean test(Attributes attributes, LazyHttpUrl lazyHttpUrl) {
+    public boolean test(
+        Attributes attributes, LazyHttpUrl lazyHttpUrl, LazyHttpTarget lazyHttpTarget) {
       List<String> val = attributes.get(key);
       return val != null && val.contains(value);
     }
@@ -170,14 +180,20 @@ public class SamplingOverrides {
       this.value = Pattern.compile(value);
     }
 
+    @SuppressWarnings("SystemOut")
     @Override
-    public boolean test(Attributes attributes, @Nullable LazyHttpUrl lazyHttpUrl) {
+    public boolean test(
+        Attributes attributes,
+        @Nullable LazyHttpUrl lazyHttpUrl,
+        @Nullable LazyHttpTarget lazyHttpTarget) {
       String val = MatcherGroup.getValueIncludingThreadName(attributes, key);
-      if (val == null
-          && key.getKey().equals(SemanticAttributes.HTTP_URL.getKey())
-          && lazyHttpUrl != null) {
+      if (key.getKey().equals(SemanticAttributes.HTTP_TARGET.getKey())) {
+        val = lazyHttpTarget.get();
+      }
+      if (val == null && getHttpUrlKeyOldOrStableSemconv(key) && lazyHttpUrl != null) {
         val = lazyHttpUrl.get();
       }
+
       return val != null && value.matcher(val).matches();
     }
   }
@@ -192,7 +208,10 @@ public class SamplingOverrides {
     }
 
     @Override
-    public boolean test(Attributes attributes, @Nullable LazyHttpUrl lazyHttpUrl) {
+    public boolean test(
+        Attributes attributes,
+        @Nullable LazyHttpUrl lazyHttpUrl,
+        @Nullable LazyHttpTarget lazyHttpTarget) {
       List<String> val = attributes.get(key);
       if (val == null) {
         return false;
@@ -214,18 +233,22 @@ public class SamplingOverrides {
     }
 
     @Override
-    public boolean test(Attributes attributes, @Nullable LazyHttpUrl lazyHttpUrl) {
+    public boolean test(
+        Attributes attributes,
+        @Nullable LazyHttpUrl lazyHttpUrl,
+        @Nullable LazyHttpTarget lazyHttpTarget) {
       String val = MatcherGroup.getValueIncludingThreadName(attributes, key);
-      if (val == null
-          && key.getKey().equals(SemanticAttributes.HTTP_URL.getKey())
-          && lazyHttpUrl != null) {
+      if (key.getKey().equals(SemanticAttributes.HTTP_TARGET.getKey())) {
+        val = lazyHttpTarget.get();
+      }
+      if (val == null && getHttpUrlKeyOldOrStableSemconv(key) && lazyHttpUrl != null) {
         val = lazyHttpUrl.get();
       }
       return val != null;
     }
   }
 
-  // this is temporary until semantic attributes stabilize and we make breaking change
+  // this is for backward compatibility with existing sampling override logic
   private static class LazyHttpUrl {
     private final Attributes attributes;
     private boolean initialized;
@@ -244,9 +267,40 @@ public class SamplingOverrides {
     }
   }
 
+  private static boolean getHttpUrlKeyOldOrStableSemconv(AttributeKey<String> key) {
+    String keyString = key.getKey();
+    return keyString.equals(SemanticAttributes.HTTP_URL.getKey())
+        || keyString.equals(SemanticAttributes.URL_PATH.getKey())
+        || keyString.equals(SemanticAttributes.URL_FULL.getKey());
+  }
+
   // this is temporary until semantic attributes stabilize and we make breaking change
   // then can use java.util.functions.Predicate<Attributes>
   private interface TempPredicate {
-    boolean test(Attributes attributes, @Nullable LazyHttpUrl lazyHttpUrl);
+    boolean test(
+        Attributes attributes,
+        @Nullable LazyHttpUrl lazyHttpUrl,
+        @Nullable LazyHttpTarget lazyHttpTarget);
+  }
+
+  // this is for backward compatibility with existing sampling override logic
+  // http.target -> url.path and url.query
+  private static class LazyHttpTarget {
+    private final Attributes attributes;
+    private boolean initialized;
+    @Nullable private String value;
+
+    private LazyHttpTarget(Attributes attributes) {
+      this.attributes = attributes;
+    }
+
+    private String get() {
+      if (!initialized) {
+        String urlQuery = attributes.get(SemanticAttributes.URL_QUERY);
+        value = attributes.get(SemanticAttributes.URL_PATH) + (urlQuery != null ? urlQuery : "");
+        initialized = true;
+      }
+      return value;
+    }
   }
 }
