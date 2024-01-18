@@ -22,14 +22,11 @@ jobs:
         uses: gradle/gradle-build-action@v2
         with:
           arguments: assemble
-
-      - name: Perf test folder
-        run: cd perf-tests
-
+          
       - name: Run perf test
         env:
           PERF_TEST_URL_PATTERN: ${{ secrets.PERF_TEST_URL_PATTERN }}
-        run: ./gradlew test
+        run: ../gradlew test
 
 
 
