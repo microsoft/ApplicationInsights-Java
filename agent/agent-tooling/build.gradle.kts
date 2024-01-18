@@ -66,7 +66,7 @@ dependencies {
 
   compileOnly(project(":agent:agent-bootstrap"))
   compileOnly("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api")
-  compileOnly("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-incubator:")
+  compileOnly("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-incubator")
   compileOnly("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations-support")
 
   compileOnly("com.google.auto.value:auto-value-annotations")
