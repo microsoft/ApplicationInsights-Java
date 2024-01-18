@@ -44,7 +44,7 @@ val slf4jVersion = "2.0.11"
 
 val CORE_DEPENDENCIES = listOf(
   "io.opentelemetry:opentelemetry-semconv:1.30.1-alpha",
-  "io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-semconv:${otelContribAlphaVersion}",
+  "io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-incubator:${otelInstrumentationAlphaVersion}",
   "com.google.auto.service:auto-service:${autoServiceVersion}",
   "com.google.auto.service:auto-service-annotations:${autoServiceVersion}",
   "com.google.auto.value:auto-value:${autoValueVersion}",
