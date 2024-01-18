@@ -114,7 +114,7 @@ public class PreAggregatedMetricsTest {
         .satisfiesExactly(
             metric ->
                 assertThat(metric)
-                    .hasName("http.client.duration")
+                    .hasName("http.client.request.duration")
                     .hasUnit("ms")
                     .hasHistogramSatisfying(
                         histogram ->
@@ -259,7 +259,7 @@ public class PreAggregatedMetricsTest {
     Collection<MetricData> metricDataCollection = metricReader.collectAllMetrics();
     MetricData target = null;
     for (MetricData metricData : metricDataCollection) {
-      if ("http.server.duration".equals(metricData.getName())) {
+      if ("http.server.request.duration".equals(metricData.getName())) {
         target = metricData;
         System.out.println("metric: " + metricData);
       }
