@@ -26,7 +26,7 @@ jobs:
       - name: Run perf test
         env:
           PERF_TEST_URL_PATTERN: ${{ secrets.PERF_TEST_URL_PATTERN }}
-        run: ../gradlew test
+        run: perf-tests/gradlew test
 
 
 
