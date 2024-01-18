@@ -18,25 +18,19 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      - name: Assemble
+      - name: Build Application Insights Java agent
         uses: gradle/gradle-build-action@v2
         with:
           arguments: assemble
 
-  perf-test:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-    
-    - name: Set up JDK 17
-      uses: actions/setup-java@v4
-      with:
-        java-version: 17
+      - name: Perf test folder
+        run: cd perf-tests
 
-    - name: Perf test folder
-      run: cd perf-tests
+      - name: Run perf test
+        env:
+          PERF_TEST_URL_PATTERN: ${{ secrets.PERF_TEST_URL_PATTERN }}
+        run: ./gradlew test
 
-    - name: Run perf test
-      env:
-        PERF_TEST_URL_PATTERN: ${{ secrets.PERF_TEST_URL_PATTERN }}
-      run: ./gradlew test
+
+
+
