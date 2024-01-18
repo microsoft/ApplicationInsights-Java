@@ -45,6 +45,4 @@ class AiStartUpTest {
     PerfResultSender.send(
         date, "SDKPerfJavaAllocAtStartUp", "AllocationStartUpJava", allocationValue, "MB");
   }
-
-
 }
