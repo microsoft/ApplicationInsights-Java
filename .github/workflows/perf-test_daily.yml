@@ -36,4 +36,6 @@ jobs:
       run: cd perf-tests
 
     - name: Run perf test
-      run: ./gradlew assemble
+      env:
+        PERF_TEST_URL_PATTERN: ${{ secrets.PERF_TEST_URL_PATTERN }}
+      run: ./gradlew test
