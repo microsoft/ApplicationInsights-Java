@@ -9,8 +9,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 enum MetricView {
-  HTTP_CLIENT_VIEW("http.client.duration", httpClientDurationAttributeKeys(), false),
-  HTTP_SERVER_VIEW("http.server.duration", httpServerDurationAttributeKeys(), true),
+  HTTP_CLIENT_VIEW("http.client.request.duration", httpClientDurationAttributeKeys(), false),
+  HTTP_SERVER_VIEW("http.server.request.duration", httpServerDurationAttributeKeys(), true),
   RPC_CLIENT_VIEW("rpc.client.duration", rpcClientDurationAttributeKeys(), false),
   RPC_SERVER_VIEW("rpc.server.duration", rpcServerDurationAttributeKeys(), false);
 

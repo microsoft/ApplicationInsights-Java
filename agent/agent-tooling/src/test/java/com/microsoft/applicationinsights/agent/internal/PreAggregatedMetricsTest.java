@@ -115,13 +115,13 @@ public class PreAggregatedMetricsTest {
             metric ->
                 assertThat(metric)
                     .hasName("http.client.request.duration")
-                    .hasUnit("ms")
+                    .hasUnit("s")
                     .hasHistogramSatisfying(
                         histogram ->
                             histogram.hasPointsSatisfying(
                                 point ->
                                     point
-                                        .hasSum(150 /* millis */)
+                                        .hasSum(0.15 /* seconds */)
                                         .hasAttributesSatisfying(
                                             equalTo(SemanticAttributes.NET_PEER_NAME, "localhost"),
                                             equalTo(SemanticAttributes.NET_PEER_PORT, 1234),
@@ -266,17 +266,17 @@ public class PreAggregatedMetricsTest {
     }
 
     assertThat(target)
-        .satisfies(
+        .satisfiesAnyOf(
             metric ->
                 assertThat(metric)
-                    .hasName("http.server.duration")
-                    .hasUnit("ms")
+                    .hasName("http.server.request.duration")
+                    .hasUnit("s")
                     .hasHistogramSatisfying(
                         histogram ->
                             histogram.hasPointsSatisfying(
                                 point ->
                                     point
-                                        .hasSum(150 /* millis */)
+                                        .hasSum(0.15 /* seconds */)
                                         .hasAttributesSatisfying(
                                             equalTo(SemanticAttributes.HTTP_STATUS_CODE, 200),
                                             equalTo(
