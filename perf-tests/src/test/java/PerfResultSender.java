@@ -43,6 +43,9 @@ class PerfResultSender {
     }
   }
 
+
+  static class UnableToFindUrlPatternException extends IllegalStateException {
+  }
   private static String formatHttpUrlWithTestValues(
       String urlEncodedDate,
       String testName,
@@ -52,7 +55,7 @@ class PerfResultSender {
 
     String perfTestUrlPattern = System.getenv("PERF_TEST_URL_PATTERN");
     if(perfTestUrlPattern == null || perfTestUrlPattern.isEmpty()) {
-      throw new IllegalStateException("Unable to find the perf test url pattern");
+      throw new UnableToFindUrlPatternException();
     }
 
     return perfTestUrlPattern
