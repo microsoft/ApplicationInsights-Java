@@ -8,17 +8,19 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Calendar;
 import java.util.Date;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.quickperf.junit5.QuickPerfTest;
 import org.quickperf.jvm.annotations.JvmOptions;
 import org.quickperf.jvm.annotations.MeasureHeapAllocation;
 import org.quickperf.writer.WriterFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.Order;
 import org.springframework.samples.petclinic.PetClinicApplication;
 
 @QuickPerfTest
 class AiStartUpTest {
+  private static final Logger LOG = LoggerFactory.getLogger(AiStartUpTest.class);
 
   @Test
   @Order(1)
@@ -39,6 +41,9 @@ class AiStartUpTest {
   @Order(2)
   void sendResults() throws IOException {
     String formattedAllocation = Files.readString(Path.of("build/allocation-at-startup.txt"));
+
+    LOG.info(formattedAllocation);
+
     String allocationValue = formattedAllocation.split(" Mega bytes")[0];
 
     Calendar calendar = Calendar.getInstance();
