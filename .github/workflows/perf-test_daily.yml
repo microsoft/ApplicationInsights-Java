@@ -23,7 +23,6 @@ jobs:
         with:
           arguments: assemble
 
-
       - name: Run chmod to make gradlew executable
         run: chmod +x perf-tests/gradlew
       
