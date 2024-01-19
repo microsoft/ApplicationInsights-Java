@@ -22,7 +22,11 @@ jobs:
         uses: gradle/gradle-build-action@v2
         with:
           arguments: assemble
-          
+
+
+      - name: Run chmod to make gradlew executable
+        run: chmod +x perf-tests/gradlew
+      
       - name: Run perf test
         env:
           PERF_TEST_URL_PATTERN: ${{ secrets.PERF_TEST_URL_PATTERN }}
