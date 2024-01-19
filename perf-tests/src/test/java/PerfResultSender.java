@@ -51,7 +51,7 @@ class PerfResultSender {
       String metricUnit) {
 
     String perfTestUrlPattern = System.getenv("PERF_TEST_URL_PATTERN");
-    if(perfTestUrlPattern == null) {
+    if(perfTestUrlPattern == null || perfTestUrlPattern.isEmpty()) {
       throw new IllegalStateException("Unable to find the perf test url pattern");
     }
 
