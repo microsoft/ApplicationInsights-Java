@@ -14,12 +14,14 @@ import org.quickperf.junit5.QuickPerfTest;
 import org.quickperf.jvm.annotations.JvmOptions;
 import org.quickperf.jvm.annotations.MeasureHeapAllocation;
 import org.quickperf.writer.WriterFactory;
+import org.springframework.core.annotation.Order;
 import org.springframework.samples.petclinic.PetClinicApplication;
 
 @QuickPerfTest
 class AiStartUpTest {
 
   @Test
+  @Order(1)
   @JvmOptions("-javaagent:" + "build/applicationinsights-agent.jar")
   @MeasureHeapAllocation(writerFactory = FileWriterFactory.class, format = "%s")
   void heap_allocation_main_thread_spring_boot() {
@@ -33,7 +35,8 @@ class AiStartUpTest {
     }
   }
 
-  @AfterEach
+  @Test
+  @Order(2)
   void sendResults() throws IOException {
     String formattedAllocation = Files.readString(Path.of("build/allocation-at-startup.txt"));
     String allocationValue = formattedAllocation.split(" Mega bytes")[0];
