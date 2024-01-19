@@ -35,7 +35,7 @@ class PerfResultSender {
 
     int responseCode = connection.getResponseCode();
     if (responseCode != 200) {
-      throw new IllegalStateException(
+      throw new PerfSendingException(
           "Error sending the perf result. Response code: "
               + responseCode
               + ". Encoded date: "
@@ -43,9 +43,14 @@ class PerfResultSender {
     }
   }
 
-
+  static class PerfSendingException extends IllegalStateException {
+    public PerfSendingException(String message) {
+      super(message);
+    }
+  }
   static class UnableToFindUrlPatternException extends IllegalStateException {
   }
+
   private static String formatHttpUrlWithTestValues(
       String urlEncodedDate,
       String testName,
