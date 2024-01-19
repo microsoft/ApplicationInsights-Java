@@ -28,4 +28,5 @@ jobs:
           PERF_TEST_URL_PATTERN: ${{ secrets.PERF_TEST_URL_PATTERN }}
         uses: gradle/gradle-build-action@v2
         with:
-          arguments: test perf-tests
+          build-root-directory: ./perf-tests
+          arguments: test
