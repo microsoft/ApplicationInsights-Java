@@ -45,7 +45,7 @@ abstract class LettuceTest {
     assertThat(telemetry.rdd1.getName()).isEqualTo("GET");
     assertThat(telemetry.rdd1.getData()).isEqualTo("GET test");
     assertThat(telemetry.rdd1.getType()).isEqualTo("redis");
-    assertThat(telemetry.rdd1.getTarget()).matches("[0-9.]+");
+    assertThat(telemetry.rdd1.getTarget()).matches("dependency[0-9.]+");
     assertThat(telemetry.rdd1.getProperties()).isEmpty();
     assertThat(telemetry.rdd1.getSuccess()).isTrue();
 
