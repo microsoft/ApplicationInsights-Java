@@ -46,7 +46,7 @@ class TelemetryProcessorMaskingTest {
             .processActions(new RequestSpanData(httpUrl));
 
     Attributes newAttributes = newSpanData.getAttributes();
-    String newHttpUrlAttributeValue = newAttributes.get(SemanticAttributes.URL_FULL);
+    String newHttpUrlAttributeValue = newAttributes.get(SemanticAttributes.URL_PATH);
     assertThat(newHttpUrlAttributeValue)
         .isEqualTo("http://localhost:8080/TelemetryProcessors/user/" + mask);
   }
@@ -72,7 +72,7 @@ class TelemetryProcessorMaskingTest {
             .processActions(new RequestSpanData(httpUrl));
 
     Attributes newAttributes = newSpanData.getAttributes();
-    String newHttpUrlAttributeValue = newAttributes.get(SemanticAttributes.URL_FULL);
+    String newHttpUrlAttributeValue = newAttributes.get(SemanticAttributes.URL_PATH);
     assertThat(newHttpUrlAttributeValue).isEqualTo("https://user/" + mask);
   }
 
@@ -166,7 +166,7 @@ class TelemetryProcessorMaskingTest {
     @Override
     public Attributes getAttributes() {
       return Attributes.builder()
-          .put("http.status_code", 200L)
+          .put("http.response.status_code", 200L)
           .put("http.url", httpUrl)
           .put("http.method", "GET")
           .put("ai.sampling.percentage", 100.0)
