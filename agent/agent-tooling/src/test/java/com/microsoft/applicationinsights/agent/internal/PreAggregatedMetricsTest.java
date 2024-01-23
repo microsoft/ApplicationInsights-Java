@@ -74,9 +74,8 @@ public class PreAggregatedMetricsTest {
             .put("http.host", "host")
             .put("http.target", "/")
             .put("http.scheme", "https")
-            .put("net.peer.name", "localhost")
-            .put("net.peer.ip", "0.0.0.0")
-            .put("net.peer.port", 1234)
+            .put("server.address", "localhost")
+            .put("server.port", 1234)
             .put("http.request_content_length", 100)
             .build();
 
@@ -84,7 +83,7 @@ public class PreAggregatedMetricsTest {
         Attributes.builder()
             .put("http.flavor", "2.0")
             .put("http.server_name", "server")
-            .put("http.status_code", 200)
+            .put("http.response.status_code", 200)
             .put("http.response_content_length", 200)
             .build();
 
@@ -232,8 +231,8 @@ public class PreAggregatedMetricsTest {
             .put("http.host", "host")
             .put("http.target", "/")
             .put("http.scheme", "https")
-            .put("net.host.name", "localhost")
-            .put("net.host.port", 1234)
+            .put("server.address", "localhost")
+            .put("server.port", 1234)
             .put("http.request_content_length", 100)
             .build();
 
@@ -241,7 +240,7 @@ public class PreAggregatedMetricsTest {
         Attributes.builder()
             .put("http.flavor", "2.0")
             .put("http.server_name", "server")
-            .put("http.status_code", 200)
+            .put("http.response.status_code", 200)
             .put("http.response_content_length", 200)
             .build();
 
