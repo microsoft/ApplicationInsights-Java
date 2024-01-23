@@ -35,9 +35,9 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
         "otel.java.enabled.resource.providers",
         "io.opentelemetry.sdk.autoconfigure.internal.EnvironmentResourceProvider");
 
-    if (!configuration.preview.captureControllerSpans) {
+    if (configuration.preview.captureControllerSpans) {
       properties.put(
-          "otel.instrumentation.common.experimental.controller-telemetry.enabled", "false");
+          "otel.instrumentation.common.experimental.controller-telemetry.enabled", "true");
     }
     properties.put("otel.instrumentation.common.experimental.view-telemetry.enabled", "false");
     properties.put(
