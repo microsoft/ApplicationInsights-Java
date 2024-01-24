@@ -84,6 +84,8 @@ tasks {
       exclude(dependency("io.opentelemetry:opentelemetry-api"))
       exclude(dependency("io.opentelemetry:opentelemetry-api-metrics"))
       exclude(dependency("io.opentelemetry:opentelemetry-context"))
+      // excluding unused dependencies for size (~6.5mb)
+      exclude(dependency("io.opentelemetry:opentelemetry-exporter-prometheus"))
     }
   }
 
