@@ -23,7 +23,9 @@ dependencies {
 
   implementation("com.azure:azure-monitor-opentelemetry-exporter:1.0.0-beta.16")
   compileOnly("io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap")
-  compileOnly("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling")
+  compileOnly("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling") {
+    exclude("io.opentelemetry", "opentelemetry-exporter-prometheus")
+  }
   compileOnly("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-common-bootstrap")
   testImplementation("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling")
 
