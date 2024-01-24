@@ -511,6 +511,8 @@ public class Configuration {
         new DisabledByDefaultInstrumentation();
 
     public DisabledByDefaultInstrumentation r2dbc = new DisabledByDefaultInstrumentation();
+
+    public DisabledByDefaultInstrumentation pekko = new DisabledByDefaultInstrumentation();
   }
 
   public static class PreviewStatsbeat {
