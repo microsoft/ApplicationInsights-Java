@@ -27,8 +27,8 @@ public class HttpPreaggregatedMetricsServlet extends HttpServlet {
     if (!pathInfo.equals("/httpUrlConnection")) {
       throw new ServletException("Unexpected url: " + pathInfo);
     }
-    httpUrlConnection("https://mock.codes/200?q=spaces%20test");
     try {
+      httpUrlConnection("https://mock.codes/200?q=spaces%20test");
       httpUrlConnection("https://mock.codes/404");
     } catch (Exception e) {
       // HttpURLConnection throws exception on 404 and 500
@@ -40,9 +40,10 @@ public class HttpPreaggregatedMetricsServlet extends HttpServlet {
     }
   }
 
-  private void httpUrlConnection(String url) throws IOException {
+  private void httpUrlConnection(String url) throws IOException, InterruptedException {
     URL obj = new URL(url);
     HttpURLConnection connection = (HttpURLConnection) obj.openConnection();
+    Thread.sleep(200);
     InputStream content = connection.getInputStream();
     // drain the content
     byte[] buffer = new byte[1024];
