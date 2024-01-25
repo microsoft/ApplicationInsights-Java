@@ -422,7 +422,6 @@ public class SmokeTestExtension
       javaToolOptions.add("-Dotel.metrics.exporter=otlp");
       javaToolOptions.add("-Dotel.exporter.otlp.metrics.endpoint=" + FAKE_OTLP_INGESTION_ENDPOINT);
       javaToolOptions.add("-Dotel.exporter.otlp.protocol=http/protobuf");
-      javaToolOptions.add("-Dotel.metric.export.interval=5000");
     }
     if (REMOTE_DEBUG) {
       javaToolOptions.add(
