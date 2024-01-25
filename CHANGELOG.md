@@ -6,7 +6,6 @@
 
 * Update to OpenTelemetry Java 2.0.0 ([#3418](https://github.com/microsoft/ApplicationInsights-Java/pull/3418))
 * Support stable HTTP semantic conventions ([#3418](https://github.com/microsoft/ApplicationInsights-Java/pull/3418))
-* Drop support for CLIENTSECRET typed of AAD Authentication ([#3325](https://github.com/microsoft/ApplicationInsights-Java/pull/3325))
 * GA sampling overrides ([#3463](https://github.com/microsoft/ApplicationInsights-Java/pull/3463))
 * Collect JMX metrics via OTLP ([#3406](https://github.com/microsoft/ApplicationInsights-Java/pull/3406))
 * Support OpenTelemetry Java instrumentation Agent Extension ([#3493](https://github.com/microsoft/ApplicationInsights-Java/pull/3493))
