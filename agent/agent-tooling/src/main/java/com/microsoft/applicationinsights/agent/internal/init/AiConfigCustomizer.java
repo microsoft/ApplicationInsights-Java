@@ -274,6 +274,11 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
       properties.put("otel.instrumentation.akka-http.enabled", "true");
       properties.put("otel.instrumentation.scala-fork-join.enabled", "true");
     }
+    if (config.preview.instrumentation.pekko.enabled) {
+      properties.put("otel.instrumentation.pekko-actor.enabled", "true");
+      properties.put("otel.instrumentation.pekko-http.enabled", "true");
+      properties.put("otel.instrumentation.scala-fork-join.enabled", "true");
+    }
     if (config.preview.instrumentation.play.enabled) {
       properties.put("otel.instrumentation.play-mvc.enabled", "true");
       properties.put("otel.instrumentation.play-ws.enabled", "true");
