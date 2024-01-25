@@ -109,6 +109,8 @@ tasks {
     // and so we have to hackily re-add it via agent/agent/src/main/resources
     exclude("inst/META-INF/services/io.opentelemetry.javaagent.slf4j.spi.SLF4JServiceProvider")
 
+    exclude("inst/io/prometheus/**")
+
     // this excludes the upstream classes, but not the distro classes since the exclusion step
     // takes place before the transformation step
     exclude("io/opentelemetry/javaagent/shaded/instrumentation/api/instrumenter/http/TemporaryMetricsView.class")
