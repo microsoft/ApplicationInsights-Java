@@ -239,7 +239,10 @@ public class ConfigurationBuilder {
         config.sampling.requestsPerSecond = config.sampling.limitPerSecond;
       }
     }
-
+    if (config.authentication.clientSecret != null) {
+      configurationLogger.warn(
+          "We no longer support \"CLIENTSECRET\" typed of AAD authentication (from 3.5 GA). Please use \"user-assigned or system-assigned identify\" instead.");
+    }
     logWarningIfUsingInternalAttributes(config);
   }
 
