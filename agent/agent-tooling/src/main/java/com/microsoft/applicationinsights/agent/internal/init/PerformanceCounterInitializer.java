@@ -83,45 +83,38 @@ public class PerformanceCounterInitializer {
    * register a callback to report the metric value.
    */
   private static void loadCustomJmxPerfCounters(List<Configuration.JmxMetric> jmxXmlElements) {
-    try {
-      HashMap<String, Collection<JmxAttributeData>> data = new HashMap<>();
+    HashMap<String, Collection<JmxAttributeData>> data = new HashMap<>();
 
-      // Build a map of object name to its requested attributes
-      for (Configuration.JmxMetric jmxElement : jmxXmlElements) {
-        Collection<JmxAttributeData> collection =
-            data.computeIfAbsent(jmxElement.objectName, k -> new ArrayList<>());
+    // Build a map of object name to its requested attributes
+    for (Configuration.JmxMetric jmxElement : jmxXmlElements) {
+      Collection<JmxAttributeData> collection =
+          data.computeIfAbsent(jmxElement.objectName, k -> new ArrayList<>());
 
-        if (Strings.isNullOrEmpty(jmxElement.objectName)) {
-          try (MDC.MDCCloseable ignored = CUSTOM_JMX_METRIC_ERROR.makeActive()) {
-            logger.error("JMX object name is empty, will be ignored");
-          }
-          continue;
+      if (Strings.isNullOrEmpty(jmxElement.objectName)) {
+        try (MDC.MDCCloseable ignored = CUSTOM_JMX_METRIC_ERROR.makeActive()) {
+          logger.error("JMX object name is empty, will be ignored");
         }
-
-        if (Strings.isNullOrEmpty(jmxElement.attribute)) {
-          try (MDC.MDCCloseable ignored = CUSTOM_JMX_METRIC_ERROR.makeActive()) {
-            logger.error("JMX attribute is empty for '{}'", jmxElement.objectName);
-          }
-          continue;
-        }
-
-        if (Strings.isNullOrEmpty(jmxElement.name)) {
-          try (MDC.MDCCloseable ignored = CUSTOM_JMX_METRIC_ERROR.makeActive()) {
-            logger.error("JMX name is empty for '{}', will be ignored", jmxElement.objectName);
-          }
-          continue;
-        }
-
-        collection.add(new JmxAttributeData(jmxElement.name, jmxElement.attribute));
+        continue;
       }
 
-      createMeterPerAttribute(data);
-
-    } catch (RuntimeException e) {
-      try (MDC.MDCCloseable ignored = CUSTOM_JMX_METRIC_ERROR.makeActive()) {
-        logger.error("Failed to register JMX performance counters: '{}'", e.toString());
+      if (Strings.isNullOrEmpty(jmxElement.attribute)) {
+        try (MDC.MDCCloseable ignored = CUSTOM_JMX_METRIC_ERROR.makeActive()) {
+          logger.error("JMX attribute is empty for '{}'", jmxElement.objectName);
+        }
+        continue;
       }
+
+      if (Strings.isNullOrEmpty(jmxElement.name)) {
+        try (MDC.MDCCloseable ignored = CUSTOM_JMX_METRIC_ERROR.makeActive()) {
+          logger.error("JMX name is empty for '{}', will be ignored", jmxElement.objectName);
+        }
+        continue;
+      }
+
+      collection.add(new JmxAttributeData(jmxElement.name, jmxElement.attribute));
     }
+
+    createMeterPerAttribute(data);
   }
 
   // Create a meter for each attribute & declare the callback that reports the metric in the meter.
