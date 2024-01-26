@@ -274,15 +274,16 @@ public class ConfigurationBuilder {
     }
   }
 
-
-  private static void supportSamplingOverridesStableHttpSemconvBackCompat(SamplingOverride override) {
+  private static void supportSamplingOverridesStableHttpSemconvBackCompat(
+      SamplingOverride override) {
     for (Configuration.SamplingOverrideAttribute attribute : override.attributes) {
       // Common attributes across HTTP client and server spans
       if (attribute.key.equals(SemanticAttributes.HTTP_METHOD.getKey())) {
         attribute.key = SemanticAttributes.HTTP_RESPONSE_STATUS_CODE.getKey();
       } else if (attribute.key.equals(SemanticAttributes.HTTP_RESPONSE_STATUS_CODE.getKey())) {
         attribute.key = SemanticAttributes.HTTP_RESPONSE_STATUS_CODE.getKey();
-      } else if (attribute.key.startsWith("http.request.header.") || attribute.key.startsWith("http.response.header.")) {
+      } else if (attribute.key.startsWith("http.request.header.")
+          || attribute.key.startsWith("http.response.header.")) {
         attribute.key = attribute.key.replace('_', '-');
       } else if (attribute.key.equals(SemanticAttributes.NET_PROTOCOL_NAME.getKey())) {
         attribute.key = SemanticAttributes.NETWORK_PROTOCOL_NAME.getKey();
