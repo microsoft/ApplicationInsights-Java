@@ -27,6 +27,7 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -272,6 +273,26 @@ public class ConfigurationBuilder {
       String hostname = HostName.get();
       config.role.instance = hostname == null ? "unknown" : hostname;
     }
+
+    int requestHeadersSize = config.preview.captureHttpServerHeaders.requestHeaders.size();
+    if (requestHeadersSize > 0) {
+      List<String> headers = new ArrayList<>(requestHeadersSize);
+      for (String header : config.preview.captureHttpServerHeaders.requestHeaders) {
+        header = header.replace('_', '-');
+        headers.add(header);
+      }
+      config.preview.captureHttpServerHeaders.requestHeaders = headers;
+    }
+
+    int responseHeadersSize = config.preview.captureHttpServerHeaders.responseHeaders.size();
+    if (responseHeadersSize > 0) {
+      List<String> headers = new ArrayList<>(responseHeadersSize);
+      for (String header : config.preview.captureHttpServerHeaders.responseHeaders) {
+        header = header.replace('_', '-');
+        headers.add(header);
+      }
+      config.preview.captureHttpServerHeaders.responseHeaders = headers;
+    }
   }
 
   private static void supportSamplingOverridesStableHttpSemconvBackCompat(
@@ -297,9 +318,8 @@ public class ConfigurationBuilder {
 
       // HTTP client span attributes
       if (override.telemetryType == Configuration.SamplingTelemetryType.DEPENDENCY) {
-        if (attribute.key.equals(SemanticAttributes.HTTP_URL.getKey())) {
-          attribute.key = SemanticAttributes.URL_FULL.getKey();
-        } else if (attribute.key.equals(SemanticAttributes.HTTP_RESEND_COUNT.getKey())) {
+        // http.url is handled via LazyHttpUrl
+        if (attribute.key.equals(SemanticAttributes.HTTP_RESEND_COUNT.getKey())) {
           attribute.key = "http.request.resend_count";
         } else if (attribute.key.equals(SemanticAttributes.NET_PEER_NAME.getKey())) {
           attribute.key = SemanticAttributes.SERVER_ADDRESS.getKey();
@@ -311,7 +331,6 @@ public class ConfigurationBuilder {
       // HTTP server span attributes
       if (override.telemetryType == Configuration.SamplingTelemetryType.REQUEST) {
         // http.target is handled via LazyHttpTarget
-
         if (attribute.key.equals(SemanticAttributes.HTTP_SCHEME.getKey())) {
           attribute.key = SemanticAttributes.URL_SCHEME.getKey();
         } else if (attribute.key.equals(SemanticAttributes.HTTP_RESEND_COUNT.getKey())) {

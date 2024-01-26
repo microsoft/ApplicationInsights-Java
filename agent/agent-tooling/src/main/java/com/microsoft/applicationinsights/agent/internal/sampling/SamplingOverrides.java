@@ -185,7 +185,7 @@ public class SamplingOverrides {
         @Nullable LazyHttpUrl lazyHttpUrl,
         @Nullable LazyHttpTarget lazyHttpTarget) {
       String val = MatcherGroup.getValueIncludingThreadName(attributes, key);
-      if (key.getKey().equals(SemanticAttributes.HTTP_TARGET.getKey())) {
+      if (key.getKey().equals(SemanticAttributes.URL_PATH.getKey())) {
         val = lazyHttpTarget.get();
       }
       if (val == null && getHttpUrlKeyOldOrStableSemconv(key) && lazyHttpUrl != null) {
