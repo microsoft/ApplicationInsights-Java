@@ -28,10 +28,10 @@ val DEPENDENCY_BOMS = listOf(
   "io.opentelemetry:opentelemetry-bom-alpha:${otelVersion}-alpha",
   "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:${otelInstrumentationVersion}",
   "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${otelInstrumentationAlphaVersion}",
-  "com.azure:azure-sdk-bom:1.2.19",
+  "com.azure:azure-sdk-bom:1.2.20",
   "io.netty:netty-bom:4.1.106.Final",
   "org.junit:junit-bom:5.10.1",
-  "org.testcontainers:testcontainers-bom:1.19.3",
+  "org.testcontainers:testcontainers-bom:1.19.4",
 )
 
 val autoServiceVersion = "1.1.1"
