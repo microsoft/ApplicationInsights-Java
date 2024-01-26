@@ -14,6 +14,8 @@ import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.WILDF
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.WILDFLY_13_JAVA_8_OPENJ9;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeoutException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -23,6 +25,14 @@ abstract class DetectUnexpectedOtelMetricsTest {
 
   @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.create();
 
+  private static final List<String> EXPECTED_METRIC_NAMES = new ArrayList<>();
+
+  static {
+    EXPECTED_METRIC_NAMES.add("_OTELRESOURCE_");
+    EXPECTED_METRIC_NAMES.add("Current Thread Count");
+    EXPECTED_METRIC_NAMES.add("Loaded Class Count");
+  }
+
   @Test
   @TargetUri("/app")
   void testApp() throws Exception {
@@ -30,7 +40,7 @@ abstract class DetectUnexpectedOtelMetricsTest {
     assertThatThrownBy(
             () ->
                 testing.mockedIngestion.waitForItemsUnexpectedOtelMetric(
-                    "MetricData", envelope -> true))
+                    "MetricData", envelope -> true, EXPECTED_METRIC_NAMES))
         .isInstanceOf(TimeoutException.class);
   }
 

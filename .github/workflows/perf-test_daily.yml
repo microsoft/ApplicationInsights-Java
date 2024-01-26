@@ -1,0 +1,35 @@
+name: Daily performance test
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 6 * * *'
+
+jobs:
+
+  assemble-application-insights:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK for running Gradle
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Build Application Insights Java agent
+        uses: gradle/gradle-build-action@v2
+        with:
+          arguments: assemble
+
+      - name: Run chmod to make gradlew executable
+        run: chmod +x perf-tests/gradlew
+      
+      - name: Run perf test
+        env:
+          PERF_TEST_URL_PATTERN: ${{ secrets.PERF_TEST_URL_PATTERN }}
+        uses: gradle/gradle-build-action@v2
+        with:
+          build-root-directory: ./perf-tests
+          arguments: test
