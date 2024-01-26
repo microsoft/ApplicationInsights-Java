@@ -139,7 +139,6 @@ public class SamplingOverrides {
       this.value = value;
     }
 
-    @SuppressWarnings("SystemOut")
     @Override
     public boolean test(
         Attributes attributes, LazyHttpUrl lazyHttpUrl, LazyHttpTarget lazyHttpTarget) {
@@ -180,7 +179,6 @@ public class SamplingOverrides {
       this.value = Pattern.compile(value);
     }
 
-    @SuppressWarnings("SystemOut")
     @Override
     public boolean test(
         Attributes attributes,
