@@ -3,6 +3,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.configuration;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.SemanticAttributes;
 import com.azure.monitor.opentelemetry.exporter.implementation.statsbeat.RpAttachType;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.HostName;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
@@ -253,6 +254,7 @@ public class ConfigurationBuilder {
     overlayFromEnv(config, agentJarPath.getParent());
     config.sampling.percentage = roundToNearest(config.sampling.percentage, true);
     for (SamplingOverride override : config.preview.sampling.overrides) {
+      supportSamplingOverridesStableHttpSemconvBackCompat(override);
       override.percentage = roundToNearest(override.percentage, true);
     }
     // rp configuration should always be last (so it takes precedence)
@@ -269,6 +271,56 @@ public class ConfigurationBuilder {
     if (config.role.instance == null) {
       String hostname = HostName.get();
       config.role.instance = hostname == null ? "unknown" : hostname;
+    }
+  }
+
+
+  private static void supportSamplingOverridesStableHttpSemconvBackCompat(SamplingOverride override) {
+    for (Configuration.SamplingOverrideAttribute attribute : override.attributes) {
+      // Common attributes across HTTP client and server spans
+      if (attribute.key.equals(SemanticAttributes.HTTP_METHOD.getKey())) {
+        attribute.key = SemanticAttributes.HTTP_RESPONSE_STATUS_CODE.getKey();
+      } else if (attribute.key.equals(SemanticAttributes.HTTP_RESPONSE_STATUS_CODE.getKey())) {
+        attribute.key = SemanticAttributes.HTTP_RESPONSE_STATUS_CODE.getKey();
+      } else if (attribute.key.startsWith("http.request.header.") || attribute.key.startsWith("http.response.header.")) {
+        attribute.key = attribute.key.replace('_', '-');
+      } else if (attribute.key.equals(SemanticAttributes.NET_PROTOCOL_NAME.getKey())) {
+        attribute.key = SemanticAttributes.NETWORK_PROTOCOL_NAME.getKey();
+      } else if (attribute.key.equals(SemanticAttributes.NET_PROTOCOL_VERSION.getKey())) {
+        attribute.key = SemanticAttributes.NETWORK_PROTOCOL_VERSION.getKey();
+      } else if (attribute.key.equals(SemanticAttributes.NET_SOCK_PEER_ADDR.getKey())) {
+        attribute.key = SemanticAttributes.NETWORK_PEER_ADDRESS.getKey();
+      } else if (attribute.key.equals(SemanticAttributes.NET_SOCK_PEER_PORT.getKey())) {
+        attribute.key = SemanticAttributes.NETWORK_PEER_PORT.getKey();
+      }
+
+      // HTTP client span attributes
+      if (override.telemetryType == Configuration.SamplingTelemetryType.DEPENDENCY) {
+        if (attribute.key.equals(SemanticAttributes.HTTP_URL.getKey())) {
+          attribute.key = SemanticAttributes.URL_FULL.getKey();
+        } else if (attribute.key.equals(SemanticAttributes.HTTP_RESEND_COUNT.getKey())) {
+          attribute.key = "http.request.resend_count";
+        } else if (attribute.key.equals(SemanticAttributes.NET_PEER_NAME.getKey())) {
+          attribute.key = SemanticAttributes.SERVER_ADDRESS.getKey();
+        } else if (attribute.key.equals(SemanticAttributes.NETWORK_PEER_PORT.getKey())) {
+          attribute.key = SemanticAttributes.SERVER_PORT.getKey();
+        }
+      }
+
+      // HTTP server span attributes
+      if (override.telemetryType == Configuration.SamplingTelemetryType.REQUEST) {
+        // http.target is handled via LazyHttpTarget
+
+        if (attribute.key.equals(SemanticAttributes.HTTP_SCHEME.getKey())) {
+          attribute.key = SemanticAttributes.URL_SCHEME.getKey();
+        } else if (attribute.key.equals(SemanticAttributes.HTTP_RESEND_COUNT.getKey())) {
+          attribute.key = SemanticAttributes.CLIENT_ADDRESS.getKey();
+        } else if (attribute.key.equals(SemanticAttributes.NET_HOST_NAME.getKey())) {
+          attribute.key = SemanticAttributes.SERVER_ADDRESS.getKey();
+        } else if (attribute.key.equals(SemanticAttributes.NET_HOST_PORT.getKey())) {
+          attribute.key = SemanticAttributes.SERVER_PORT.getKey();
+        }
+      }
     }
   }
 
