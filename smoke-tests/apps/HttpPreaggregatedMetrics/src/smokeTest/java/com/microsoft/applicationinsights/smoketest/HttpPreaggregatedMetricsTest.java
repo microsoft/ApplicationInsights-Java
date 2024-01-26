@@ -162,9 +162,7 @@ abstract class HttpPreaggregatedMetricsTest {
     DataPoint dataPoint = dataPoints.get(0);
     assertThat(dataPoint.getCount()).isEqualTo(1);
     double greaterThan = type.equals("server") ? 200.0f : 0.0f;
-    assertThat(dataPoint.getValue() * 1000)
-        .isGreaterThan(greaterThan)
-        .isLessThan(60 * 1000.0); // will use millis when a new exporter is released.
+    assertThat(dataPoint.getValue()).isGreaterThan(greaterThan).isLessThan(60 * 1000.0);
     assertThat(dataPoint.getMin() * 1000).isGreaterThan(greaterThan).isLessThan(60 * 1000.0);
     assertThat(dataPoint.getMax() * 1000).isGreaterThan(greaterThan).isLessThan(60 * 1000.0);
     Map<String, String> properties = metricData.getProperties();
