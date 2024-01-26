@@ -329,7 +329,7 @@ public class ConfigurationBuilder {
         attribute.key = SemanticAttributes.HTTP_RESPONSE_STATUS_CODE.getKey();
       } else if (attribute.key.startsWith("http.request.header.")
           || attribute.key.startsWith("http.response.header.")) {
-        attribute.key = attribute.key.replace('_', '-');
+        attribute.key = attribute.key.replace('-', '_');
       } else if (attribute.key.equals(SemanticAttributes.NET_PROTOCOL_NAME.getKey())) {
         attribute.key = SemanticAttributes.NETWORK_PROTOCOL_NAME.getKey();
       } else if (attribute.key.equals(SemanticAttributes.NET_PROTOCOL_VERSION.getKey())) {

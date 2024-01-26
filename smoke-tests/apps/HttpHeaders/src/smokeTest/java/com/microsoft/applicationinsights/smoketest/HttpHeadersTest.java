@@ -39,7 +39,7 @@ abstract class HttpHeadersTest {
   @Test
   @TargetUri("/clientHeaders")
   void testClientHeaders() throws Exception {
-    Telemetry telemetry = testing.getTelemetry(2);
+    Telemetry telemetry = testing.getTelemetry(1);
 
     assertThat(telemetry.rd.getProperties()).containsKey("http.request.header.host");
     assertThat(telemetry.rd.getProperties()).hasSize(2);
