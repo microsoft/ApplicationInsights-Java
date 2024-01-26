@@ -282,7 +282,7 @@ public class ConfigurationBuilder {
     if (requestHeadersSize > 0) {
       List<String> headers = new ArrayList<>(requestHeadersSize);
       for (String header : config.preview.captureHttpServerHeaders.requestHeaders) {
-        header = header.replace('_', '-');
+        header = header.replace('-', '_');
         headers.add(header);
       }
       config.preview.captureHttpServerHeaders.requestHeaders = headers;
@@ -292,7 +292,7 @@ public class ConfigurationBuilder {
     if (responseHeadersSize > 0) {
       List<String> headers = new ArrayList<>(responseHeadersSize);
       for (String header : config.preview.captureHttpServerHeaders.responseHeaders) {
-        header = header.replace('_', '-');
+        header = header.replace('-', '_');
         headers.add(header);
       }
       config.preview.captureHttpServerHeaders.responseHeaders = headers;
@@ -302,7 +302,7 @@ public class ConfigurationBuilder {
     if (requestHeadersSize > 0) {
       List<String> headers = new ArrayList<>(requestHeadersSize);
       for (String header : config.preview.captureHttpClientHeaders.requestHeaders) {
-        header = header.replace('_', '-');
+        header = header.replace('-', '_');
         headers.add(header);
       }
       config.preview.captureHttpClientHeaders.requestHeaders = headers;
@@ -312,7 +312,7 @@ public class ConfigurationBuilder {
     if (responseHeadersSize > 0) {
       List<String> headers = new ArrayList<>(responseHeadersSize);
       for (String header : config.preview.captureHttpClientHeaders.responseHeaders) {
-        header = header.replace('_', '-');
+        header = header.replace('-', '_');
         headers.add(header);
       }
       config.preview.captureHttpClientHeaders.responseHeaders = headers;

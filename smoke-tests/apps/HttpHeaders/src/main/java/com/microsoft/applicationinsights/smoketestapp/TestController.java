@@ -21,7 +21,7 @@ public class TestController {
 
   @GetMapping("/serverHeaders")
   public String serverHeaders(HttpServletResponse response) {
-    response.setHeader("abc", "testing123");
+    response.setHeader("abc_def", "testing123");
     return "OK!";
   }
 
@@ -36,7 +36,7 @@ public class TestController {
     URL obj = new URL("https://mock.codes/200");
 
     HttpURLConnection connection = (HttpURLConnection) obj.openConnection();
-    connection.setRequestProperty("abc", nope ? "nope" : "testing123");
+    connection.setRequestProperty("abc_def", nope ? "nope" : "testing123");
     // calling getContentType() first, since this triggered a bug previously in the instrumentation
     // previously
     connection.getContentType();

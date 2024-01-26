@@ -20,14 +20,14 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 @UseAgent
 abstract class HttpHeadersTest {
 
-  @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.create();
+  @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.builder().setSelfDiagnosticsLevel("DEBUG").build();
 
   @Test
   @TargetUri("/serverHeaders")
   void testServerHeaders() throws Exception {
     Telemetry telemetry = testing.getTelemetry(0);
 
-    assertThat(telemetry.rd.getProperties().get("http.response.header.abc"))
+    assertThat(telemetry.rd.getProperties().get("http.response.header.abc_def"))
         .isEqualTo("testing123");
     assertThat(telemetry.rd.getProperties()).containsKey("http.request.header.host");
     assertThat(telemetry.rd.getProperties()).hasSize(3);
@@ -39,14 +39,14 @@ abstract class HttpHeadersTest {
   @Test
   @TargetUri("/clientHeaders")
   void testClientHeaders() throws Exception {
-    Telemetry telemetry = testing.getTelemetry(1);
+    Telemetry telemetry = testing.getTelemetry(2);
 
     assertThat(telemetry.rd.getProperties()).containsKey("http.request.header.host");
     assertThat(telemetry.rd.getProperties()).hasSize(2);
     assertThat(telemetry.rd.getProperties())
         .containsEntry("_MS.ProcessedByMetricExtractors", "True");
     assertThat(telemetry.rd.getSuccess()).isTrue();
-    assertThat(telemetry.rdd1.getProperties().get("http.request.header.abc"))
+    assertThat(telemetry.rdd1.getProperties().get("http.request.header.abc_def"))
         .isEqualTo("testing123");
     assertThat(telemetry.rdd1.getProperties()).containsKey("http.response.header.date");
     assertThat(telemetry.rdd1.getProperties()).hasSize(3);
