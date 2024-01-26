@@ -40,10 +40,14 @@ public class HttpPreaggregatedMetricsServlet extends HttpServlet {
     }
   }
 
-  private void httpUrlConnection(String url) throws IOException, InterruptedException {
+  private void httpUrlConnection(String url) throws IOException {
     URL obj = new URL(url);
     HttpURLConnection connection = (HttpURLConnection) obj.openConnection();
-    Thread.sleep(200);
+    try {
+      Thread.sleep(200);
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    }
     InputStream content = connection.getInputStream();
     // drain the content
     byte[] buffer = new byte[1024];
