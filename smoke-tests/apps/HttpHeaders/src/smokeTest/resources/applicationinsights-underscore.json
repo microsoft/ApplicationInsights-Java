@@ -12,12 +12,12 @@
         "host"
       ],
       "responseHeaders": [
-        "abc_def"
+        "abc-def"
       ]
     },
     "captureHttpClientHeaders": {
       "requestHeaders": [
-        "abc_def"
+        "abc-def"
       ],
       "responseHeaders": [
         "date"

@@ -18,7 +18,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 @UseAgent("applicationinsights-dash.json")
-abstract class HttpHeadersTestDash {
+abstract class HttpHeadersDashTest {
 
   @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.create();
 
@@ -56,29 +56,29 @@ abstract class HttpHeadersTestDash {
   }
 
   @Environment(TOMCAT_8_JAVA_8)
-  static class Tomcat8Java8Test extends HttpHeadersTestDash {}
+  static class Tomcat8Java8Test extends HttpHeadersDashTest {}
 
   @Environment(TOMCAT_8_JAVA_8_OPENJ9)
-  static class Tomcat8Java8OpenJ9Test extends HttpHeadersTestDash {}
+  static class Tomcat8Java8OpenJ9Test extends HttpHeadersDashTest {}
 
   @Environment(TOMCAT_8_JAVA_11)
-  static class Tomcat8Java11Test extends HttpHeadersTestDash {}
+  static class Tomcat8Java11Test extends HttpHeadersDashTest {}
 
   @Environment(TOMCAT_8_JAVA_11_OPENJ9)
-  static class Tomcat8Java11OpenJ9Test extends HttpHeadersTestDash {}
+  static class Tomcat8Java11OpenJ9Test extends HttpHeadersDashTest {}
 
   @Environment(TOMCAT_8_JAVA_17)
-  static class Tomcat8Java17Test extends HttpHeadersTestDash {}
+  static class Tomcat8Java17Test extends HttpHeadersDashTest {}
 
   @Environment(TOMCAT_8_JAVA_19)
-  static class Tomcat8Java19Test extends HttpHeadersTestDash {}
+  static class Tomcat8Java19Test extends HttpHeadersDashTest {}
 
   @Environment(TOMCAT_8_JAVA_20)
-  static class Tomcat8Java20Test extends HttpHeadersTestDash {}
+  static class Tomcat8Java20Test extends HttpHeadersDashTest {}
 
   @Environment(WILDFLY_13_JAVA_8)
-  static class Wildfly13Java8Test extends HttpHeadersTestDash {}
+  static class Wildfly13Java8Test extends HttpHeadersDashTest {}
 
   @Environment(WILDFLY_13_JAVA_8_OPENJ9)
-  static class Wildfly13Java8OpenJ9Test extends HttpHeadersTestDash {}
+  static class Wildfly13Java8OpenJ9Test extends HttpHeadersDashTest {}
 }

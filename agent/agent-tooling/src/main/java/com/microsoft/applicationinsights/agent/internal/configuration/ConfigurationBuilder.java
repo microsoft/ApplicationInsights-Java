@@ -27,7 +27,6 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -272,50 +271,6 @@ public class ConfigurationBuilder {
     if (config.role.instance == null) {
       String hostname = HostName.get();
       config.role.instance = hostname == null ? "unknown" : hostname;
-    }
-
-    normalizeCaptureHttpClientAndServerHeadersFormat(config);
-  }
-
-  private static void normalizeCaptureHttpClientAndServerHeadersFormat(Configuration config) {
-    int requestHeadersSize = config.preview.captureHttpServerHeaders.requestHeaders.size();
-    if (requestHeadersSize > 0) {
-      List<String> headers = new ArrayList<>(requestHeadersSize);
-      for (String header : config.preview.captureHttpServerHeaders.requestHeaders) {
-        header = header.replace('_', '-');
-        headers.add(header);
-      }
-      config.preview.captureHttpServerHeaders.requestHeaders = headers;
-    }
-
-    int responseHeadersSize = config.preview.captureHttpServerHeaders.responseHeaders.size();
-    if (responseHeadersSize > 0) {
-      List<String> headers = new ArrayList<>(responseHeadersSize);
-      for (String header : config.preview.captureHttpServerHeaders.responseHeaders) {
-        header = header.replace('_', '-');
-        headers.add(header);
-      }
-      config.preview.captureHttpServerHeaders.responseHeaders = headers;
-    }
-
-    requestHeadersSize = config.preview.captureHttpClientHeaders.requestHeaders.size();
-    if (requestHeadersSize > 0) {
-      List<String> headers = new ArrayList<>(requestHeadersSize);
-      for (String header : config.preview.captureHttpClientHeaders.requestHeaders) {
-        header = header.replace('_', '-');
-        headers.add(header);
-      }
-      config.preview.captureHttpClientHeaders.requestHeaders = headers;
-    }
-
-    responseHeadersSize = config.preview.captureHttpClientHeaders.responseHeaders.size();
-    if (responseHeadersSize > 0) {
-      List<String> headers = new ArrayList<>(responseHeadersSize);
-      for (String header : config.preview.captureHttpClientHeaders.responseHeaders) {
-        header = header.replace('_', '-');
-        headers.add(header);
-      }
-      config.preview.captureHttpClientHeaders.responseHeaders = headers;
     }
   }
 
