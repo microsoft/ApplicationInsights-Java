@@ -274,15 +274,15 @@ public class ConfigurationBuilder {
       config.role.instance = hostname == null ? "unknown" : hostname;
     }
 
-    updateCaptureHttpClientAndServerHeaders(config);
+    normalizeCaptureHttpClientAndServerHeadersFormat(config);
   }
 
-  private static void updateCaptureHttpClientAndServerHeaders(Configuration config) {
+  private static void normalizeCaptureHttpClientAndServerHeadersFormat(Configuration config) {
     int requestHeadersSize = config.preview.captureHttpServerHeaders.requestHeaders.size();
     if (requestHeadersSize > 0) {
       List<String> headers = new ArrayList<>(requestHeadersSize);
       for (String header : config.preview.captureHttpServerHeaders.requestHeaders) {
-        header = header.replace('-', '_');
+        header = header.replace('_', '-');
         headers.add(header);
       }
       config.preview.captureHttpServerHeaders.requestHeaders = headers;
@@ -292,7 +292,7 @@ public class ConfigurationBuilder {
     if (responseHeadersSize > 0) {
       List<String> headers = new ArrayList<>(responseHeadersSize);
       for (String header : config.preview.captureHttpServerHeaders.responseHeaders) {
-        header = header.replace('-', '_');
+        header = header.replace('_', '-');
         headers.add(header);
       }
       config.preview.captureHttpServerHeaders.responseHeaders = headers;
@@ -302,7 +302,7 @@ public class ConfigurationBuilder {
     if (requestHeadersSize > 0) {
       List<String> headers = new ArrayList<>(requestHeadersSize);
       for (String header : config.preview.captureHttpClientHeaders.requestHeaders) {
-        header = header.replace('-', '_');
+        header = header.replace('_', '-');
         headers.add(header);
       }
       config.preview.captureHttpClientHeaders.requestHeaders = headers;
@@ -312,7 +312,7 @@ public class ConfigurationBuilder {
     if (responseHeadersSize > 0) {
       List<String> headers = new ArrayList<>(responseHeadersSize);
       for (String header : config.preview.captureHttpClientHeaders.responseHeaders) {
-        header = header.replace('-', '_');
+        header = header.replace('_', '-');
         headers.add(header);
       }
       config.preview.captureHttpClientHeaders.responseHeaders = headers;
@@ -329,7 +329,7 @@ public class ConfigurationBuilder {
         attribute.key = SemanticAttributes.HTTP_RESPONSE_STATUS_CODE.getKey();
       } else if (attribute.key.startsWith("http.request.header.")
           || attribute.key.startsWith("http.response.header.")) {
-        attribute.key = attribute.key.replace('-', '_');
+        attribute.key = attribute.key.replace('_', '-');
       } else if (attribute.key.equals(SemanticAttributes.NET_PROTOCOL_NAME.getKey())) {
         attribute.key = SemanticAttributes.NETWORK_PROTOCOL_NAME.getKey();
       } else if (attribute.key.equals(SemanticAttributes.NET_PROTOCOL_VERSION.getKey())) {

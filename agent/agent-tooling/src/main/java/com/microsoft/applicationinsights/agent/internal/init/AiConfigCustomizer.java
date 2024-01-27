@@ -48,19 +48,19 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
 
     setHttpHeaderConfiguration(
         properties,
-        "otel.instrumentation.http.capture-headers.server.request",
+        "otel.instrumentation.http.server.capture-request-headers",
         configuration.preview.captureHttpServerHeaders.requestHeaders);
     setHttpHeaderConfiguration(
         properties,
-        "otel.instrumentation.http.capture-headers.server.response",
+        "otel.instrumentation.http.server.capture-response-headers",
         configuration.preview.captureHttpServerHeaders.responseHeaders);
     setHttpHeaderConfiguration(
         properties,
-        "otel.instrumentation.http.capture-headers.client.request",
+        "otel.instrumentation.http.client.capture-request-headers",
         configuration.preview.captureHttpClientHeaders.requestHeaders);
     setHttpHeaderConfiguration(
         properties,
-        "otel.instrumentation.http.capture-headers.client.response",
+        "otel.instrumentation.http.client.capture-response-headers",
         configuration.preview.captureHttpClientHeaders.responseHeaders);
 
     // enable capturing all mdc properties
