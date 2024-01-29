@@ -30,7 +30,7 @@ dependencies {
   implementation("com.diffplug.spotless:spotless-plugin-gradle:6.25.0")
   implementation("com.github.spotbugs.snom:spotbugs-gradle-plugin:6.0.7")
   implementation("com.github.johnrengelman:shadow:8.1.1")
-  implementation("com.gradle.enterprise:com.gradle.enterprise.gradle.plugin:3.16.1")
+  implementation("com.gradle.enterprise:com.gradle.enterprise.gradle.plugin:3.16.2")
 
   implementation("org.owasp:dependency-check-gradle:9.0.9")
 
