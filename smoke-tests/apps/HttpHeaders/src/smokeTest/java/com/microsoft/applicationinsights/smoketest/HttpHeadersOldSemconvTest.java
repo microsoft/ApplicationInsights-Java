@@ -17,7 +17,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-@UseAgent("applicationinsights-underscore.json")
+@UseAgent("applicationinsights-old-semconv.json")
 abstract class HttpHeadersOldSemconvTest {
 
   @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.create();
