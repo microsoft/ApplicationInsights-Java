@@ -24,8 +24,8 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-@UseAgent("applicationinsights-stable-semconv.json")
-abstract class SamplingOverridesStableSemconvTest {
+@UseAgent("applicationinsights-old-semconv.json")
+abstract class SamplingOverridesOldSemconvTest {
 
   @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.create();
 
@@ -99,29 +99,29 @@ abstract class SamplingOverridesStableSemconvTest {
   }
 
   @Environment(TOMCAT_8_JAVA_8)
-  static class Tomcat8Java8Test extends SamplingOverridesStableSemconvTest {}
+  static class Tomcat8Java8Test extends SamplingOverridesOldSemconvTest {}
 
   @Environment(TOMCAT_8_JAVA_8_OPENJ9)
-  static class Tomcat8Java8OpenJ9Test extends SamplingOverridesStableSemconvTest {}
+  static class Tomcat8Java8OpenJ9Test extends SamplingOverridesOldSemconvTest {}
 
   @Environment(TOMCAT_8_JAVA_11)
-  static class Tomcat8Java11Test extends SamplingOverridesStableSemconvTest {}
+  static class Tomcat8Java11Test extends SamplingOverridesOldSemconvTest {}
 
   @Environment(TOMCAT_8_JAVA_11_OPENJ9)
-  static class Tomcat8Java11OpenJ9Test extends SamplingOverridesStableSemconvTest {}
+  static class Tomcat8Java11OpenJ9Test extends SamplingOverridesOldSemconvTest {}
 
   @Environment(TOMCAT_8_JAVA_17)
-  static class Tomcat8Java17Test extends SamplingOverridesStableSemconvTest {}
+  static class Tomcat8Java17Test extends SamplingOverridesOldSemconvTest {}
 
   @Environment(TOMCAT_8_JAVA_19)
-  static class Tomcat8Java19Test extends SamplingOverridesStableSemconvTest {}
+  static class Tomcat8Java19Test extends SamplingOverridesOldSemconvTest {}
 
   @Environment(TOMCAT_8_JAVA_20)
-  static class Tomcat8Java20Test extends SamplingOverridesStableSemconvTest {}
+  static class Tomcat8Java20Test extends SamplingOverridesOldSemconvTest {}
 
   @Environment(WILDFLY_13_JAVA_8)
-  static class Wildfly13Java8Test extends SamplingOverridesStableSemconvTest {}
+  static class Wildfly13Java8Test extends SamplingOverridesOldSemconvTest {}
 
   @Environment(WILDFLY_13_JAVA_8_OPENJ9)
-  static class Wildfly13Java8OpenJ9Test extends SamplingOverridesStableSemconvTest {}
+  static class Wildfly13Java8OpenJ9Test extends SamplingOverridesOldSemconvTest {}
 }
