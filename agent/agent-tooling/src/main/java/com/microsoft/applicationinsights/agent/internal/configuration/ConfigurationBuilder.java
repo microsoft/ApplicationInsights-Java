@@ -283,47 +283,36 @@ public class ConfigurationBuilder {
     }
   }
 
-  @SuppressWarnings("SystemOut")
   private static void supportTelemetryProcessorsOldSemConv(Configuration config) {
     for (Configuration.ProcessorConfig processor : config.preview.processors) {
       if (processor.include != null && processor.type == Configuration.ProcessorType.ATTRIBUTE) {
         for (Configuration.ProcessorAttribute attribute : processor.include.attributes) {
-          System.out.println("#### before include attribute.key: " + attribute.key);
           attribute.key = mapAttributeKey(attribute.key);
-          System.out.println("#### after include attribute.key: " + attribute.key);
         }
       }
       if (processor.exclude != null && processor.type == Configuration.ProcessorType.ATTRIBUTE) {
         for (Configuration.ProcessorAttribute attribute : processor.exclude.attributes) {
-          System.out.println("#### before exclude attribute.key: " + attribute.key);
           attribute.key = mapAttributeKey(attribute.key);
-          System.out.println("#### after exclude attribute.key: " + attribute.key);
         }
       }
       for (Configuration.ProcessorAction action : processor.actions) {
         if (action.key != null && processor.type == Configuration.ProcessorType.ATTRIBUTE) {
-          System.out.println("#### before action.key: " + action.key);
           action.key = AttributeKey.stringKey(mapAttributeKey(action.key.getKey()));
-          System.out.println("#### after action.key: " + action.key);
         }
       }
       if (processor.name != null && processor.name.fromAttributes != null) {
         List<String> newFromAttributes = new ArrayList<>();
         for (String oldFromAttribute : processor.name.fromAttributes) {
-          System.out.println("#### before name.fromAttributes: " + oldFromAttribute);
           String newFromAttribute = mapAttributeKey(oldFromAttribute);
           newFromAttributes.add(newFromAttribute);
-          System.out.println("#### after name.fromAttributes: " + newFromAttribute);
         }
         processor.name.fromAttributes = newFromAttributes;
       }
       if (processor.body != null && processor.body.fromAttributes != null) {
         List<String> newFromAttributes = new ArrayList<>();
         for (String oldFromAttribute : processor.body.fromAttributes) {
-          System.out.println("#### before body.fromAttributes: " + oldFromAttribute);
           String newFromAttribute = mapAttributeKey(oldFromAttribute);
           newFromAttributes.add(newFromAttribute);
-          System.out.println("#### after body.fromAttributes: " + newFromAttribute);
         }
         processor.body.fromAttributes = newFromAttributes;
       }

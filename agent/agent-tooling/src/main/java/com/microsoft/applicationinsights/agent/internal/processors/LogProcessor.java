@@ -107,13 +107,6 @@ public class LogProcessor extends AgentProcessor {
           applyRule(groupNames.get(i), toAttributeRulePatterns.get(i), bodyAsString, builder);
     }
 
-    System.out.println("#### bodyAsString: " + bodyAsString);
-    if (log.getAttributes().get(AttributeKey.stringKey("http.request.method")) != null) {
-      System.out.println(
-          "#### http.request.method: "
-              + log.getAttributes().get(AttributeKey.stringKey("http.request.method")));
-    }
-
     return new MyLogData(log, builder.build(), Body.string(bodyAsString));
   }
 
