@@ -44,6 +44,7 @@ public class HttpPreaggregatedMetricsServlet extends HttpServlet {
     URL obj = new URL(url);
     HttpURLConnection connection = (HttpURLConnection) obj.openConnection();
     try {
+      // sleep is needed so we can verify a minimum bound on the server pre-aggregated metric
       Thread.sleep(200);
     } catch (InterruptedException e) {
       throw new RuntimeException(e);
