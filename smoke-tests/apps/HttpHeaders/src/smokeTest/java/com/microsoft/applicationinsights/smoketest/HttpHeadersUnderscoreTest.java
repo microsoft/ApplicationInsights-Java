@@ -20,8 +20,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 @UseAgent("applicationinsights-underscore.json")
 abstract class HttpHeadersUnderscoreTest {
 
-  @RegisterExtension
-  static final SmokeTestExtension testing = SmokeTestExtension.create();
+  @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.create();
 
   @Test
   @TargetUri("/serverHeaders")

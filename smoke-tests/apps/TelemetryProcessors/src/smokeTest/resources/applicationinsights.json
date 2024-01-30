@@ -78,8 +78,8 @@
         "type": "attribute",
         "actions": [
           {
-            "key": "http.url",
-            "pattern": "https?://[^/]+(?<httpPath>/[^?]*)",
+            "key": "url.path",
+            "pattern": "(?<httpPath>/[^?]*)",
             "action": "extract"
           }
         ],
@@ -89,7 +89,7 @@
         "type": "attribute",
         "actions": [
           {
-            "key": "http.url",
+            "key": "url.path",
             "pattern": "user\\/\\d+",
             "replace": "user\\/***",
             "action": "mask"
