@@ -337,6 +337,9 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
     if (!config.preview.instrumentation.jaxrsAnnotations.enabled) {
       featureList.add(Feature.JAXRS_ANNOTATIONS_DISABLED);
     }
+    if (!config.preview.instrumentation.pekko.enabled) {
+      featureList.add(Feature.PEKKO_DISABLED);
+    }
     if (config.preview.browserSdkLoader.enabled) {
       featureList.add(Feature.BROWSER_SDK_LOADER);
     }
