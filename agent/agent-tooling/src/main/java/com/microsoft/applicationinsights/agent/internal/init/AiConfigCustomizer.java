@@ -135,6 +135,11 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
 
   private static void enableInstrumentations(
       ConfigProperties otelConfig, Configuration config, Map<String, String> properties) {
+
+    if (!otelConfig.getBoolean("otel.instrumentation.common.default-enabled", true)) {
+      return;
+    }
+
     properties.put("otel.instrumentation.common.default-enabled", "false");
 
     properties.put("otel.instrumentation.experimental.span-suppression-strategy", "client");
