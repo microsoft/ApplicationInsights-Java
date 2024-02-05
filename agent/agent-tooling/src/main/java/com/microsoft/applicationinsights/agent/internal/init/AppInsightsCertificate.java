@@ -107,7 +107,7 @@ class AppInsightsCertificate {
       process.destroy();
       return result;
     } catch (Exception e) {
-      startupLogger.error("Error related to the execution of " + processBuilder.command(), e);
+      startupLogger.trace("Error related to the execution of " + processBuilder.command(), e);
       return "";
     }
   }
