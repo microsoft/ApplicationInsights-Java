@@ -31,7 +31,7 @@ abstract class TelemetryProcessorsOldSemconvTest {
   void doMostBasicTest() throws Exception {
     Telemetry telemetry = testing.getTelemetry(0);
 
-    assertThat(telemetry.rd.getProperties()).containsEntry("httpMethod", "GET");
+    assertThat(telemetry.rd.getProperties()).containsEntry("attribute1", "testValue1");
     assertThat(telemetry.rd.getProperties()).containsEntry("attribute2", "testValue2");
     assertThat(telemetry.rd.getProperties()).containsEntry("sensitiveAttribute1", "sensitiveData1");
     assertThat(telemetry.rd.getProperties()).containsEntry("httpPath", "/TelemetryProcessors/test");
@@ -42,7 +42,7 @@ abstract class TelemetryProcessorsOldSemconvTest {
     // Log processor test
     List<MessageData> logs = testing.mockedIngestion.getMessageDataInRequest(1);
     MessageData md1 = logs.get(0);
-    assertThat(md1.getMessage()).isEqualTo("GET::testValue2");
+    assertThat(md1.getMessage()).isEqualTo("testValue1::testValue2");
   }
 
   @Test
@@ -50,8 +50,8 @@ abstract class TelemetryProcessorsOldSemconvTest {
   void doSimpleTestPiiData() throws Exception {
     Telemetry telemetry = testing.getTelemetry(0);
 
-    assertThat(telemetry.rd.getName()).isEqualTo("GET::testValue2");
-    assertThat(telemetry.rd.getProperties()).containsEntry("httpMethod", "GET");
+    assertThat(telemetry.rd.getName()).isEqualTo("testValue1::testValue2");
+    assertThat(telemetry.rd.getProperties()).containsEntry("attribute1", "testValue1");
     assertThat(telemetry.rd.getProperties()).containsEntry("attribute2", "testValue2");
     assertThat(telemetry.rd.getProperties()).containsEntry("sensitiveAttribute1", "redacted");
     assertThat(telemetry.rd.getProperties())

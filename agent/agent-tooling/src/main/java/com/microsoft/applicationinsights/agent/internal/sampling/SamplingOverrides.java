@@ -268,7 +268,6 @@ public class SamplingOverrides {
   private static boolean getHttpUrlKeyOldOrStableSemconv(AttributeKey<String> key) {
     String keyString = key.getKey();
     return keyString.equals(SemanticAttributes.HTTP_URL.getKey())
-        || keyString.equals(SemanticAttributes.URL_PATH.getKey())
         || keyString.equals(SemanticAttributes.URL_FULL.getKey());
   }
 

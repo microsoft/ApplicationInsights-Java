@@ -12,8 +12,8 @@
         "type": "attribute",
         "actions": [
           {
-            "key": "http.method",
-            "value": "GET",
+            "key": "attribute1",
+            "value": "testValue",
             "action": "insert"
           },
           {
@@ -33,9 +33,9 @@
         "type": "attribute",
         "actions": [
           {
-            "key": "http.method",
-            "pattern": "^(?<httpMethod>GET|POST|PUT|DELETE)$",
-            "action": "extract"
+            "key": "attribute1",
+            "value": "testValue1",
+            "action": "update"
           }
         ],
         "id": "attributes/extractHttpMethod"
@@ -67,7 +67,7 @@
         },
         "name": {
           "fromAttributes": [
-            "httpMethod",
+            "attribute1",
             "attribute2"
           ],
           "separator": "::"
@@ -101,7 +101,7 @@
         "type": "log",
         "body": {
           "fromAttributes": [
-            "httpMethod",
+            "attribute1",
             "attribute2"
           ],
           "separator": "::"
