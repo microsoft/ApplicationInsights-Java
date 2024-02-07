@@ -46,7 +46,7 @@ dependencies {
   compileOnly("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure")
   compileOnly("io.opentelemetry:opentelemetry-extension-trace-propagators")
 
-  implementation("com.github.oshi:oshi-core:6.4.10") {
+  implementation("com.github.oshi:oshi-core:6.4.11") {
     exclude("org.slf4j", "slf4j-api")
   }
 
@@ -90,5 +90,5 @@ dependencies {
 
 configurations.all {
   // temporarily overriding version until next azure-bom release in order to address CVE
-  resolutionStrategy.force("com.azure:azure-identity:1.11.1")
+  resolutionStrategy.force("com.azure:azure-identity:1.11.2")
 }
