@@ -10,8 +10,6 @@ import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCA
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_20;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_8;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_8_OPENJ9;
-import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.WILDFLY_13_JAVA_8;
-import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.WILDFLY_13_JAVA_8_OPENJ9;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.MessageData;
@@ -22,9 +20,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 @UseAgent("applicationinsights-old-semconv.json")
 abstract class TelemetryProcessorsOldSemconvTest {
 
-  @RegisterExtension
-  static final SmokeTestExtension testing =
-      SmokeTestExtension.builder().setSelfDiagnosticsLevel("DEBUG").build();
+  @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.create();
 
   @Test
   @TargetUri("/test")
@@ -95,10 +91,4 @@ abstract class TelemetryProcessorsOldSemconvTest {
 
   @Environment(TOMCAT_8_JAVA_20)
   static class Tomcat8Java20Test extends TelemetryProcessorsOldSemconvTest {}
-
-  @Environment(WILDFLY_13_JAVA_8)
-  static class Wildfly13Java8Test extends TelemetryProcessorsOldSemconvTest {}
-
-  @Environment(WILDFLY_13_JAVA_8_OPENJ9)
-  static class Wildfly13Java8OpenJ9Test extends TelemetryProcessorsOldSemconvTest {}
 }
