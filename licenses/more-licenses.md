@@ -1,7 +1,7 @@
 
 # agent
 ## Dependency License Report
-_2024-02-06 04:41:38 UTC_
+_2024-02-07 09:41:22 PST_
 ## Apache License, Version 2.0
 
 **1** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-annotations` **Version:** `2.16.1` 
@@ -269,7 +269,7 @@ _2024-02-06 04:41:38 UTC_
 > - **Embedded license files**: [commons-text-1.11.0.jar/META-INF/LICENSE.txt](commons-text-1.11.0.jar/META-INF/LICENSE.txt) 
     - [commons-text-1.11.0.jar/META-INF/NOTICE.txt](commons-text-1.11.0.jar/META-INF/NOTICE.txt)
 
-**54** **Group:** `org.slf4j` **Name:** `jcl-over-slf4j` **Version:** `2.0.12` 
+**53** **Group:** `org.slf4j` **Name:** `jcl-over-slf4j` **Version:** `2.0.12` 
 > - **Project URL**: [http://www.slf4j.org](http://www.slf4j.org)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
@@ -346,7 +346,7 @@ _2024-02-06 04:41:38 UTC_
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**68** **Group:** `com.azure` **Name:** `azure-identity` **Version:** `1.11.2` 
+**66** **Group:** `com.azure` **Name:** `azure-identity` **Version:** `1.11.2` 
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
@@ -387,14 +387,14 @@ _2024-02-06 04:41:38 UTC_
 > - **POM Project URL**: [https://github.com/Microsoft/jfr-streaming](https://github.com/Microsoft/jfr-streaming)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**78** **Group:** `org.slf4j` **Name:** `jcl-over-slf4j` **Version:** `2.0.12` 
+**76** **Group:** `org.slf4j` **Name:** `jcl-over-slf4j` **Version:** `2.0.12` 
 > - **Project URL**: [http://www.slf4j.org](http://www.slf4j.org)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 > - **Embedded license files**: [jcl-over-slf4j-2.0.12.jar/META-INF/LICENSE.txt](jcl-over-slf4j-2.0.12.jar/META-INF/LICENSE.txt)
 
-**79** **Group:** `org.slf4j` **Name:** `slf4j-api` **Version:** `2.0.12` 
+**77** **Group:** `org.slf4j` **Name:** `slf4j-api` **Version:** `2.0.12` 
 > - **Project URL**: [http://www.slf4j.org](http://www.slf4j.org)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 > - **Embedded license files**: [slf4j-api-2.0.12.jar/META-INF/LICENSE.txt](slf4j-api-2.0.12.jar/META-INF/LICENSE.txt)
