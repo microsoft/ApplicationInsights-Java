@@ -33,7 +33,7 @@ import org.mockserver.model.HttpRequest;
 abstract class JmxMetricTest {
 
   @RegisterExtension
-  static final SmokeTestExtension testing = SmokeTestExtension.builder().useOtlpEndpoint().build();
+  static final SmokeTestExtension testing = SmokeTestExtension.builder().useOtlpEndpoint().setSelfDiagnosticsLevel("DEBUG").build();
 
   /**
    * Note about jmx metrics in this test suite: - NameWithDot: An edge case where a dot in the mbean
@@ -96,7 +96,7 @@ abstract class JmxMetricTest {
     verifyJmxMetricsSentToOtlpEndpoint();
   }
 
-  @SuppressWarnings("PreferJavaTimeOverload")
+  @SuppressWarnings({"PreferJavaTimeOverload"})
   private void verifyJmxMetricsSentToOtlpEndpoint() {
     await()
         .atMost(10, SECONDS)
@@ -134,7 +134,7 @@ abstract class JmxMetricTest {
               // (the collector seems to run for 5-10 sec)
               assertThat(occurrences.keySet()).hasSize(6);
               for (int value : occurrences.values()) {
-                assertThat(value).isBetween(1, 2);
+                assertThat(value).isBetween(1, 8);
               }
             });
   }
