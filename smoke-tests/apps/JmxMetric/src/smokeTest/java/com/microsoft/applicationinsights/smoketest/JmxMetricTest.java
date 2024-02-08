@@ -33,7 +33,7 @@ import org.mockserver.model.HttpRequest;
 abstract class JmxMetricTest {
 
   @RegisterExtension
-  static final SmokeTestExtension testing = SmokeTestExtension.builder().useOtlpEndpoint().setSelfDiagnosticsLevel("DEBUG").build();
+  static final SmokeTestExtension testing = SmokeTestExtension.builder().useOtlpEndpoint().build();
 
   /**
    * Note about jmx metrics in this test suite: - NameWithDot: An edge case where a dot in the mbean
