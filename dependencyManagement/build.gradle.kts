@@ -71,7 +71,7 @@ val DEPENDENCIES = listOf(
   "ch.qos.logback:logback-classic:1.3.14", // logback 1.4+ requires Java 11+
   "ch.qos.logback.contrib:logback-json-classic:0.1.5",
   "com.uber.nullaway:nullaway:0.10.22",
-  "commons-codec:commons-codec:1.16.0",
+  "commons-codec:commons-codec:1.16.1",
   "org.apache.commons:commons-text:1.11.0",
   "com.google.code.gson:gson:2.10.1",
   "com.azure:azure-core-test:1.23.0", // this is not included in azure-sdk-bom
