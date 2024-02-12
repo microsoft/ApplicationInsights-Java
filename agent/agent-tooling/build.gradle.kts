@@ -21,7 +21,7 @@ dependencies {
   implementation(project(":agent:agent-profiler:agent-diagnostics"))
   implementation(project(":etw:java"))
 
-  implementation("com.azure:azure-monitor-opentelemetry-exporter:1.0.0-beta.14")
+  implementation("com.azure:azure-monitor-opentelemetry-exporter:1.0.0-beta.15")
   compileOnly("io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap")
   compileOnly("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling")
   compileOnly("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-common-bootstrap")
@@ -46,7 +46,7 @@ dependencies {
   compileOnly("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure")
   compileOnly("io.opentelemetry:opentelemetry-extension-trace-propagators")
 
-  implementation("com.github.oshi:oshi-core:6.4.9") {
+  implementation("com.github.oshi:oshi-core:6.4.12") {
     exclude("org.slf4j", "slf4j-api")
   }
 
@@ -62,7 +62,7 @@ dependencies {
   testImplementation("io.opentelemetry:opentelemetry-sdk-testing")
 
   // TODO(trask): update tests, no need to use this anymore
-  testImplementation("com.squareup.okio:okio:3.7.0")
+  testImplementation("com.squareup.okio:okio:3.8.0")
 
   compileOnly(project(":agent:agent-bootstrap"))
   compileOnly("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api")
@@ -90,5 +90,5 @@ dependencies {
 
 configurations.all {
   // temporarily overriding version until next azure-bom release in order to address CVE
-  resolutionStrategy.force("com.azure:azure-identity:1.11.1")
+  resolutionStrategy.force("com.azure:azure-identity:1.11.2")
 }

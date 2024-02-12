@@ -46,7 +46,7 @@ public class ConfigurationBuilder {
   private static final String APPLICATIONINSIGHTS_RUNTIME_ATTACHED_CONFIGURATION_CONTENT =
       "applicationinsights.internal.runtime.attached.json";
 
-  private static final String APPLICATIONINSIGHTS_CONNECTION_STRING_ENV =
+  public static final String APPLICATIONINSIGHTS_CONNECTION_STRING_ENV =
       "APPLICATIONINSIGHTS_CONNECTION_STRING";
 
   private static final String APPLICATIONINSIGHTS_CONNECTION_STRING_SYS =
@@ -503,6 +503,15 @@ public class ConfigurationBuilder {
       return configFromJsonNextToAgent;
     }
 
+    if (getEnvVar("APPLICATIONINSIGHTS_PREVIEW_BSP_SCHEDULE_DELAY") != null) {
+      // Note: OTEL_BSP_SCHEDULE_DELAY and OTEL_BLRP_SCHEDULE_DELAY could be used,
+      // but should not be needed now that the default delay has been properly tuned
+      configurationLogger.warn(
+          "APPLICATIONINSIGHTS_PREVIEW_BSP_SCHEDULE_DELAY is no longer supported,"
+              + " please report an issue to https://github.com/microsoft/ApplicationInsights-Java"
+              + " if you are still in nead of this setting.");
+    }
+
     // json configuration file is not required, ok to configure via env var alone
     return new Configuration();
   }
@@ -551,8 +560,19 @@ public class ConfigurationBuilder {
     StringLookup stringLookup =
         StringLookupFactory.INSTANCE.interpolatorStringLookup(stringLookupMap, null, false);
     StringSubstitutor stringSubstitutor = new StringSubstitutor(stringLookup);
-    config.connectionString =
-        overlayConnectionStringFromEnv(stringSubstitutor.replace(config.connectionString));
+    String replacedConnectionString = stringSubstitutor.replace(config.connectionString);
+    if (replacedConnectionString != null
+        && !replacedConnectionString.startsWith("InstrumentationKey=")
+        && config.connectionString.equals(replacedConnectionString)) {
+      throw new FriendlyException(
+          "Error loading connection string from a file (\""
+              + config.connectionString
+              + "\").\n"
+              + "Please use this format instead:"
+              + "\n{ \"connectionString\": \"${file:connection-string-file.txt}\" }\n",
+          "Learn more about configuration options here: " + CONFIGURATION_OPTIONS_LINK);
+    }
+    config.connectionString = overlayConnectionStringFromEnv(replacedConnectionString);
     if (isTrimEmpty(config.role.name)) {
       // only use WEBSITE_SITE_NAME as a fallback
       config.role.name = getWebsiteSiteNameEnvVar();

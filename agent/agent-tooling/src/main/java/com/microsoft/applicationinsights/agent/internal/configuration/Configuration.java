@@ -514,6 +514,8 @@ public class Configuration {
         new DisabledByDefaultInstrumentation();
 
     public DisabledByDefaultInstrumentation r2dbc = new DisabledByDefaultInstrumentation();
+
+    public DisabledByDefaultInstrumentation pekko = new DisabledByDefaultInstrumentation();
   }
 
   public static class PreviewStatsbeat {
@@ -1107,8 +1109,6 @@ public class Configuration {
     public AttributeType type =
         AttributeType.STRING; // default to string for backward compatibility
 
-    // TODO (heya) remove this and reuse the standalone exporter Mappings.convertToString, need to
-    // make it public
     public AttributeKey<?> getAttributeKey() {
       switch (type) {
         case STRING:

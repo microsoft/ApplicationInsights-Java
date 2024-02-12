@@ -250,7 +250,8 @@ public class MockedAppInsightsIngestionServer {
   }
 
   // wait for at least one unexpected otel metrics for failure case or timeout for success
-  public List<Envelope> waitForItemsUnexpectedOtelMetric(String type, Predicate<Envelope> condition)
+  public List<Envelope> waitForItemsUnexpectedOtelMetric(
+      String type, Predicate<Envelope> condition, List<String> expectedMetricNames)
       throws InterruptedException, ExecutionException, TimeoutException {
     return waitForItems(
         new Predicate<Envelope>() {
@@ -260,7 +261,9 @@ public class MockedAppInsightsIngestionServer {
               return false;
             }
             MetricData md = (MetricData) ((Data<?>) input.getData()).getBaseData();
-            if ("_OTELRESOURCE_".equals(md.getMetrics().get(0).getName())
+            // return false if the metric name is expected
+            // "_MS.MetricId" is the metric name for pre-aggregated metrics
+            if (expectedMetricNames.contains(md.getMetrics().get(0).getName())
                 || md.getProperties().containsKey("_MS.MetricId")) {
               return false;
             }

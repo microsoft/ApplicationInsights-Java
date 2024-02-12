@@ -25,6 +25,10 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
         "applicationinsights.internal.micrometer.step.millis",
         Long.toString(SECONDS.toMillis(configuration.metricIntervalSeconds)));
 
+    properties.put(
+        "otel.metric.export.interval",
+        Long.toString(SECONDS.toMillis(configuration.metricIntervalSeconds)));
+
     enableInstrumentations(otelConfig, configuration, properties);
 
     // enable "io.opentelemetry.sdk.autoconfigure.internal.EnvironmentResourceProvider" only. It
@@ -182,8 +186,12 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
         "otel.instrumentation.opentelemetry-instrumentation-annotations.enabled", "true");
     properties.put("otel.instrumentation.opentelemetry-api.enabled", "true");
     properties.put("otel.instrumentation.opentelemetry-instrumentation-api.enabled", "true");
-    properties.put("otel.instrumentation.reactor.enabled", "true");
-    properties.put("otel.instrumentation.reactor-netty.enabled", "true");
+    if (otelConfig.getBoolean("otel.instrumentation.reactor.enabled", true)) {
+      properties.put("otel.instrumentation.reactor.enabled", "true");
+    }
+    if (otelConfig.getBoolean("otel.instrumentation.reactor-netty.enabled", true)) {
+      properties.put("otel.instrumentation.reactor-netty.enabled", "true");
+    }
     properties.put("otel.instrumentation.rxjava.enabled", "true");
 
     properties.put("otel.instrumentation.servlet.enabled", "true");
@@ -268,6 +276,11 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
     if (config.preview.instrumentation.akka.enabled) {
       properties.put("otel.instrumentation.akka-actor.enabled", "true");
       properties.put("otel.instrumentation.akka-http.enabled", "true");
+      properties.put("otel.instrumentation.scala-fork-join.enabled", "true");
+    }
+    if (config.preview.instrumentation.pekko.enabled) {
+      properties.put("otel.instrumentation.pekko-actor.enabled", "true");
+      properties.put("otel.instrumentation.pekko-http.enabled", "true");
       properties.put("otel.instrumentation.scala-fork-join.enabled", "true");
     }
     if (config.preview.instrumentation.play.enabled) {

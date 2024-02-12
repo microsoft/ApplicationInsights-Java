@@ -6,6 +6,10 @@ package com.microsoft.applicationinsights.agent.internal.init;
 import static java.util.concurrent.TimeUnit.MINUTES;
 
 import com.azure.core.util.logging.ClientLogger;
+import com.azure.monitor.opentelemetry.exporter.implementation.AzureMonitorExporterProviderKeys;
+import com.azure.monitor.opentelemetry.exporter.implementation.AzureMonitorLogRecordExporterProvider;
+import com.azure.monitor.opentelemetry.exporter.implementation.AzureMonitorMetricExporterProvider;
+import com.azure.monitor.opentelemetry.exporter.implementation.AzureMonitorSpanExporterProvider;
 import com.azure.monitor.opentelemetry.exporter.implementation.LogDataMapper;
 import com.azure.monitor.opentelemetry.exporter.implementation.MetricDataMapper;
 import com.azure.monitor.opentelemetry.exporter.implementation.SpanDataMapper;
@@ -49,31 +53,32 @@ import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClien
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryObservers;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdkBuilder;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizer;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizerProvider;
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
+import io.opentelemetry.sdk.autoconfigure.spi.internal.AutoConfigureListener;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
-import io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
+import io.opentelemetry.sdk.metrics.Aggregation;
+import io.opentelemetry.sdk.metrics.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
-import io.opentelemetry.sdk.metrics.export.MetricReader;
-import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
-import io.opentelemetry.sdk.metrics.export.PeriodicMetricReaderBuilder;
+import io.opentelemetry.sdk.metrics.View;
+import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.metrics.internal.view.AiViewRegistry;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.semconv.SemanticAttributes;
 import java.io.File;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
@@ -81,17 +86,14 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 @AutoService(AutoConfigurationCustomizerProvider.class)
-public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
+public class SecondEntryPoint
+    implements AutoConfigurationCustomizerProvider, AutoConfigureListener {
 
   private static final ClientLogger startupLogger =
       new ClientLogger("com.microsoft.applicationinsights.agent");
   private static File tempDir;
 
   @Nullable private static AgentLogExporter agentLogExporter;
-
-  @Nullable private static BatchLogRecordProcessor batchLogProcessor;
-  @Nullable private static BatchSpanProcessor batchSpanProcessor;
-  @Nullable private static MetricReader metricReader;
 
   static File getTempDir() {
     return tempDir;
@@ -239,42 +241,97 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
     telemetryClient.setQuickPulse(quickPulse);
 
     autoConfiguration
+        .addPropertiesSupplier(
+            () -> {
+              Map<String, String> props = new HashMap<>();
+              props.put("otel.traces.exporter", AzureMonitorExporterProviderKeys.EXPORTER_NAME);
+              props.put("otel.metrics.exporter", AzureMonitorExporterProviderKeys.EXPORTER_NAME);
+              props.put("otel.logs.exporter", AzureMonitorExporterProviderKeys.EXPORTER_NAME);
+              props.put(
+                  AzureMonitorExporterProviderKeys.INTERNAL_USING_AZURE_MONITOR_EXPORTER_BUILDER,
+                  "true");
+              props.put(
+                  "otel.metric.export.interval",
+                  Integer.toString(configuration.metricIntervalSeconds * 1000));
+              // using small interval because need to convert to TelemetryItem as soon as possible
+              // to grab data for live metrics. the real batching is done at a lower level
+              // (not using batch size 1 because that seems to cause poor performance on small
+              // containers)
+              props.put("otel.bsp.schedule.delay", "100");
+              props.put("otel.blrp.schedule.delay", "100");
+              return props;
+            })
         .addPropertiesCustomizer(new AiConfigCustomizer())
         .addSpanExporterCustomizer(
-            (spanExporter, otelConfig) -> {
-              if ("none".equals(otelConfig.getString("otel.traces.exporter"))) {
-                // in this case the spanExporter here is the noop spanExporter
-                return spanExporter;
+            (spanExporter, configProperties) -> {
+              if (spanExporter instanceof AzureMonitorSpanExporterProvider.MarkerSpanExporter) {
+                return buildTraceExporter(configuration, telemetryClient, quickPulse);
+              }
+              return wrapSpanExporter(spanExporter, configuration);
+            })
+        .addMetricExporterCustomizer(
+            (metricExporter, configProperties) -> {
+              if (metricExporter
+                  instanceof AzureMonitorMetricExporterProvider.MarkerMetricExporter) {
+                return buildMetricExporter(configuration, telemetryClient, metricFilters);
               } else {
-                return wrapSpanExporter(spanExporter, configuration);
+                return metricExporter;
+              }
+            })
+        .addLogRecordExporterCustomizer(
+            (logRecordExporter, configProperties) -> {
+              if (logRecordExporter
+                  instanceof AzureMonitorLogRecordExporterProvider.MarkerLogRecordExporter) {
+                return buildLogRecordExporter(configuration, telemetryClient, quickPulse);
+              } else {
+                return wrapLogExporter(logRecordExporter, configuration);
               }
             })
         .addTracerProviderCustomizer(
-            (builder, otelConfig) ->
-                configureTracing(builder, telemetryClient, quickPulse, otelConfig, configuration))
-        .addLogRecordExporterCustomizer(
-            (logExporter, otelConfig) -> {
-              if ("none".equals(otelConfig.getString("otel.logs.exporter"))) {
-                // in this case the logExporter here is the noop spanExporter
-                return logExporter;
-              } else {
-                return wrapLogExporter(logExporter, configuration);
-              }
-            })
-        .addLoggerProviderCustomizer(
-            (builder, otelConfig) ->
-                configureLogging(builder, telemetryClient, quickPulse, otelConfig, configuration))
+            (builder, otelConfig) -> configureTracing(builder, configuration))
         .addMeterProviderCustomizer(
-            (builder, otelConfig) ->
-                configureMetrics(metricFilters, builder, telemetryClient, configuration));
+            (builder, otelConfig) -> configureMetrics(builder, configuration))
+        .addLoggerProviderCustomizer(
+            (builder, otelConfig) -> configureLogging(builder, configuration));
 
     AiContextCustomizerHolder.setInstance(
         new AiContextCustomizer<>(
             configuration.preview.connectionStringOverrides,
             configuration.preview.roleNameOverrides));
+  }
 
-    Runtime.getRuntime()
-        .addShutdownHook(new Thread(() -> flushAll(telemetryClient).join(10, TimeUnit.SECONDS)));
+  private static SpanExporter buildTraceExporter(
+      Configuration configuration, TelemetryClient telemetryClient, QuickPulse quickPulse) {
+    List<Configuration.SamplingOverride> exceptionSamplingOverrides =
+        configuration.preview.sampling.overrides.stream()
+            .filter(override -> override.telemetryType == SamplingTelemetryType.EXCEPTION)
+            .collect(Collectors.toList());
+    SpanExporter spanExporter =
+        createSpanExporter(
+            telemetryClient,
+            quickPulse,
+            configuration.preview.captureHttpServer4xxAsError,
+            new SamplingOverrides(exceptionSamplingOverrides));
+
+    return wrapSpanExporter(spanExporter, configuration);
+  }
+
+  private static MetricExporter buildMetricExporter(
+      Configuration configuration,
+      TelemetryClient telemetryClient,
+      List<MetricFilter> metricFilters) {
+    MetricDataMapper mapper =
+        new MetricDataMapper(
+            telemetryClient::populateDefaults, configuration.preview.captureHttpServer4xxAsError);
+    return new AgentMetricExporter(
+        metricFilters, mapper, telemetryClient.getMetricsBatchItemProcessor());
+  }
+
+  private static LogRecordExporter buildLogRecordExporter(
+      Configuration configuration, TelemetryClient telemetryClient, QuickPulse quickPulse) {
+    LogRecordExporter logExporter = createLogExporter(telemetryClient, quickPulse, configuration);
+
+    return wrapLogExporter(logExporter, configuration);
   }
 
   private static Set<Feature> initStatsbeatFeatureSet(Configuration config) {
@@ -440,42 +497,8 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
     return featureList;
   }
 
-  private static CompletableResultCode flushAll(TelemetryClient telemetryClient) {
-    List<CompletableResultCode> results = new ArrayList<>();
-    if (batchSpanProcessor != null) {
-      results.add(batchSpanProcessor.forceFlush());
-    }
-    if (metricReader != null) {
-      results.add(metricReader.forceFlush());
-    }
-    if (batchLogProcessor != null) {
-      results.add(batchLogProcessor.forceFlush());
-    }
-    CompletableResultCode overallResult = new CompletableResultCode();
-    CompletableResultCode initialResult = CompletableResultCode.ofAll(results);
-    initialResult.whenComplete(
-        () -> {
-          // IMPORTANT: the metric reader flush will fail if the periodic metric reader is already
-          // mid-exporter
-          CompletableResultCode telemetryClientResult = telemetryClient.forceFlush();
-          telemetryClientResult.whenComplete(
-              () -> {
-                if (initialResult.isSuccess() && telemetryClientResult.isSuccess()) {
-                  overallResult.succeed();
-                } else {
-                  overallResult.fail();
-                }
-              });
-        });
-    return overallResult;
-  }
-
   private static SdkTracerProviderBuilder configureTracing(
-      SdkTracerProviderBuilder tracerProvider,
-      TelemetryClient telemetryClient,
-      @Nullable QuickPulse quickPulse,
-      ConfigProperties otelConfig,
-      Configuration configuration) {
+      SdkTracerProviderBuilder tracerProvider, Configuration configuration) {
 
     boolean enabled = !Strings.isNullOrEmpty(configuration.connectionString);
     RuntimeConfigurator.updatePropagation(
@@ -617,11 +640,7 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
   // telemetry and exception telemetry can be reported as either span events or as log records with
   // an exception stack traces
   private static SdkLoggerProviderBuilder configureLogging(
-      SdkLoggerProviderBuilder builder,
-      TelemetryClient telemetryClient,
-      @Nullable QuickPulse quickPulse,
-      ConfigProperties otelConfig,
-      Configuration configuration) {
+      SdkLoggerProviderBuilder builder, Configuration configuration) {
 
     builder.addLogRecordProcessor(new AzureMonitorLogProcessor());
 
@@ -640,21 +659,6 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
     // adding this even if there are no roleNameOverrides, in order to support
     // "ai.preview.service_name" being set programmatically on CONSUMER spans
     builder.addLogRecordProcessor(new InheritedRoleNameLogProcessor());
-
-    String logsExporter = otelConfig.getString("otel.logs.exporter");
-    if ("none".equals(logsExporter)) { // "none" is the default set in AiConfigCustomizer
-      LogRecordExporter logExporter = createLogExporter(telemetryClient, quickPulse, configuration);
-
-      logExporter = wrapLogExporter(logExporter, configuration);
-
-      // using BatchLogProcessor in order to get off of the application thread as soon as possible
-      batchLogProcessor =
-          BatchLogRecordProcessor.builder(logExporter)
-              .setScheduleDelay(getBatchProcessorDelay())
-              .build();
-
-      builder.addLogRecordProcessor(batchLogProcessor);
-    }
 
     return builder;
   }
@@ -724,39 +728,55 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
         .collect(Collectors.toCollection(ArrayList::new));
   }
 
-  private static Duration getBatchProcessorDelay() {
-    String delayMillisStr = System.getenv("APPLICATIONINSIGHTS_PREVIEW_BSP_SCHEDULE_DELAY");
-    if (delayMillisStr != null) {
-      return Duration.ofMillis(Integer.parseInt(delayMillisStr));
-    } else {
-      // using small interval because need to convert to TelemetryItem as soon as possible to grab
-      // data for live metrics. the real batching is done at a lower level
-      // (not using batch size 1 because that seems to cause poor performance on small containers)
-      return Duration.ofMillis(100);
-    }
-  }
-
   private static SdkMeterProviderBuilder configureMetrics(
-      List<MetricFilter> metricFilters,
-      SdkMeterProviderBuilder builder,
-      TelemetryClient telemetryClient,
-      Configuration configuration) {
-    MetricDataMapper mapper =
-        new MetricDataMapper(
-            telemetryClient::populateDefaults, configuration.preview.captureHttpServer4xxAsError);
-    PeriodicMetricReaderBuilder readerBuilder =
-        PeriodicMetricReader.builder(
-            new AgentMetricExporter(
-                metricFilters, mapper, telemetryClient.getMetricsBatchItemProcessor()));
-    int intervalMillis =
-        Integer.getInteger(
-            "applicationinsights.testing.metric-reader-interval-millis",
-            configuration.metricIntervalSeconds * 1000);
-    metricReader = readerBuilder.setInterval(Duration.ofMillis(intervalMillis)).build();
+      SdkMeterProviderBuilder builder, Configuration configuration) {
+
+    // drop internal OpenTelemetry SDK metrics
+    drop(builder, "io.opentelemetry.sdk.trace", "queueSize");
+    drop(builder, "io.opentelemetry.sdk.trace", "processedSpans");
+    drop(builder, "io.opentelemetry.sdk.logs", "queueSize");
+    drop(builder, "io.opentelemetry.sdk.logs", "processedLogs");
+
     if (configuration.internal.preAggregatedStandardMetrics.enabled) {
       AiViewRegistry.registerViews(builder);
     }
-    return builder.registerMetricReader(metricReader);
+    return builder;
+  }
+
+  private static void drop(
+      SdkMeterProviderBuilder builder, String meterName, String processedSpans) {
+    builder.registerView(
+        InstrumentSelector.builder().setMeterName(meterName).setName(processedSpans).build(),
+        View.builder().setAggregation(Aggregation.drop()).build());
+  }
+
+  @Override
+  public void afterAutoConfigure(OpenTelemetrySdk sdk) {
+    Runtime.getRuntime()
+        .addShutdownHook(
+            new Thread(
+                () -> flushAll(sdk, TelemetryClient.getActive()).join(10, TimeUnit.SECONDS)));
+  }
+
+  private static CompletableResultCode flushAll(
+      OpenTelemetrySdk sdk, TelemetryClient telemetryClient) {
+    CompletableResultCode sdkShutdownResult = sdk.shutdown();
+    CompletableResultCode overallResult = new CompletableResultCode();
+    sdkShutdownResult.whenComplete(
+        () -> {
+          // IMPORTANT: the metric reader flush will fail if the periodic metric reader is already
+          // mid-exporter
+          CompletableResultCode telemetryClientResult = telemetryClient.forceFlush();
+          telemetryClientResult.whenComplete(
+              () -> {
+                if (sdkShutdownResult.isSuccess() && telemetryClientResult.isSuccess()) {
+                  overallResult.succeed();
+                } else {
+                  overallResult.fail();
+                }
+              });
+        });
+    return overallResult;
   }
 
   private static class BackCompatHttpUrlProcessor implements SpanExporter {
