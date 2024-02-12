@@ -529,30 +529,6 @@ public class SecondEntryPoint
       tracerProvider.addSpanProcessor(new AiLegacyHeaderSpanProcessor());
     }
 
-    String tracesExporter = otelConfig.getString("otel.traces.exporter");
-    if ("none".equals(tracesExporter)) { // "none" is the default set in AiConfigCustomizer
-      List<Configuration.SamplingOverride> exceptionSamplingOverrides =
-          configuration.sampling.overrides.stream()
-              .filter(override -> override.telemetryType == SamplingTelemetryType.EXCEPTION)
-              .collect(Collectors.toList());
-      SpanExporter spanExporter =
-          createSpanExporter(
-              telemetryClient,
-              quickPulse,
-              configuration.preview.captureHttpServer4xxAsError,
-              new SamplingOverrides(exceptionSamplingOverrides));
-
-      spanExporter = wrapSpanExporter(spanExporter, configuration);
-
-      // using BatchSpanProcessor in order to get off of the application thread as soon as possible
-      batchSpanProcessor =
-          BatchSpanProcessor.builder(spanExporter)
-              .setScheduleDelay(getBatchProcessorDelay())
-              .build();
-
-      tracerProvider.addSpanProcessor(batchSpanProcessor);
-    }
-
     return tracerProvider;
   }
 
