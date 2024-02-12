@@ -28,8 +28,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 abstract class OtlpTest {
 
   @RegisterExtension
-  static final SmokeTestExtension testing =
-      SmokeTestExtension.builder().useOtlpEndpoint().setSelfDiagnosticsLevel("TRACE").build();
+  static final SmokeTestExtension testing = SmokeTestExtension.builder().useOtlpEndpoint().build();
 
   @Test
   @TargetUri("/ping")

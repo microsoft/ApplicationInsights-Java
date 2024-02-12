@@ -582,6 +582,15 @@ public class ConfigurationBuilder {
       return configFromJsonNextToAgent;
     }
 
+    if (getEnvVar("APPLICATIONINSIGHTS_PREVIEW_BSP_SCHEDULE_DELAY") != null) {
+      // Note: OTEL_BSP_SCHEDULE_DELAY and OTEL_BLRP_SCHEDULE_DELAY could be used,
+      // but should not be needed now that the default delay has been properly tuned
+      configurationLogger.warn(
+          "APPLICATIONINSIGHTS_PREVIEW_BSP_SCHEDULE_DELAY is no longer supported,"
+              + " please report an issue to https://github.com/microsoft/ApplicationInsights-Java"
+              + " if you are still in nead of this setting.");
+    }
+
     // json configuration file is not required, ok to configure via env var alone
     return new Configuration();
   }
