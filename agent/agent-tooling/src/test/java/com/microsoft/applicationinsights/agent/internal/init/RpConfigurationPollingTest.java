@@ -32,8 +32,7 @@ class RpConfigurationPollingTest {
     // default sampler at startup is "Sampler.alwaysOff()", and this test relies on real sampler
     Configuration config = new Configuration();
     config.sampling.percentage = 100.0;
-    DelegatingSampler.getInstance()
-        .setDelegate(Samplers.getSampler(config.sampling, config.preview.sampling));
+    DelegatingSampler.getInstance().setDelegate(Samplers.getSampler(config.sampling));
   }
 
   @AfterEach
@@ -42,8 +41,7 @@ class RpConfigurationPollingTest {
     // otherwise tests run after this can fail
     Configuration config = new Configuration();
     config.sampling.percentage = 100.0;
-    DelegatingSampler.getInstance()
-        .setDelegate(Samplers.getSampler(config.sampling, config.preview.sampling));
+    DelegatingSampler.getInstance().setDelegate(Samplers.getSampler(config.sampling));
   }
 
   @Test

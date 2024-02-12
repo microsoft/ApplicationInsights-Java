@@ -13,7 +13,6 @@ public class RuntimeConfiguration {
   public Configuration.Role role = new Configuration.Role();
 
   public Configuration.Sampling sampling = new Configuration.Sampling();
-  public Configuration.SamplingPreview samplingPreview = new Configuration.SamplingPreview();
 
   public boolean propagationDisabled;
   public List<String> additionalPropagators = new ArrayList<>();

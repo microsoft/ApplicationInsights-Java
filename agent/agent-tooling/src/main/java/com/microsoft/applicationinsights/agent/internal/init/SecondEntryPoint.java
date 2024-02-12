@@ -346,9 +346,6 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
     if (config.preview.browserSdkLoader.enabled) {
       featureList.add(Feature.BROWSER_SDK_LOADER);
     }
-    if (!config.preview.sampling.overrides.isEmpty()) {
-      featureList.add(Feature.PREVIEW_SAMPLING);
-    }
     // TODO (heya) track sampling overrides GA feature after updating the standalone exporter
     //    if (!config.sampling.overrides.isEmpty()) {
     //      featureList.add(Feature.SAMPLING);
@@ -485,8 +482,7 @@ public class SecondEntryPoint implements AutoConfigurationCustomizerProvider {
         !configuration.preview.disablePropagation && enabled,
         configuration.preview.additionalPropagators,
         configuration.preview.legacyRequestIdPropagation.enabled);
-    RuntimeConfigurator.updateSampling(
-        enabled, configuration.sampling, configuration.preview.sampling);
+    RuntimeConfigurator.updateSampling(enabled, configuration.sampling);
 
     tracerProvider.addSpanProcessor(new AzureMonitorSpanProcessor());
     if (!configuration.preview.inheritedAttributes.isEmpty()) {

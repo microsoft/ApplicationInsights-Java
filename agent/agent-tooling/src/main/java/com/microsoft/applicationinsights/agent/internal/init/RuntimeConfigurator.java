@@ -65,7 +65,7 @@ public class RuntimeConfigurator {
 
     runtimeConfig.sampling.percentage = initialConfig.sampling.percentage;
     runtimeConfig.sampling.requestsPerSecond = initialConfig.sampling.requestsPerSecond;
-    runtimeConfig.samplingPreview.parentBased = initialConfig.preview.sampling.parentBased;
+    runtimeConfig.sampling.parentBased = initialConfig.sampling.parentBased;
     // TODO (trask) make deep copies? (not needed currently)
     runtimeConfig.sampling.overrides = new ArrayList<>(initialConfig.sampling.overrides);
 
@@ -91,7 +91,7 @@ public class RuntimeConfigurator {
 
     copy.sampling.percentage = config.sampling.percentage;
     copy.sampling.requestsPerSecond = config.sampling.requestsPerSecond;
-    copy.samplingPreview.parentBased = config.samplingPreview.parentBased;
+    copy.sampling.parentBased = config.sampling.parentBased;
     // TODO (trask) make deep copies? (not needed currently)
     copy.sampling.overrides = new ArrayList<>(config.sampling.overrides);
 
@@ -137,7 +137,7 @@ public class RuntimeConfigurator {
         || !Objects.equals(runtimeConfig.sampling.percentage, currentConfig.sampling.percentage)
         || !Objects.equals(
             runtimeConfig.sampling.requestsPerSecond, currentConfig.sampling.requestsPerSecond)) {
-      updateSampling(enabled, runtimeConfig.sampling, runtimeConfig.samplingPreview);
+      updateSampling(enabled, runtimeConfig.sampling);
     }
 
     // initialize Profiler
@@ -195,10 +195,7 @@ public class RuntimeConfigurator {
     }
   }
 
-  static void updateSampling(
-      boolean enabled,
-      Configuration.Sampling sampling,
-      Configuration.SamplingPreview samplingPreview) {
+  static void updateSampling(boolean enabled, Configuration.Sampling sampling) {
 
     if (!enabled) {
       DelegatingSampler.getInstance().reset();
@@ -206,7 +203,7 @@ public class RuntimeConfigurator {
       return;
     }
 
-    DelegatingSampler.getInstance().setDelegate(Samplers.getSampler(sampling, samplingPreview));
+    DelegatingSampler.getInstance().setDelegate(Samplers.getSampler(sampling));
     if (sampling.percentage != null) {
       BytecodeUtilImpl.samplingPercentage = sampling.percentage.floatValue();
     } else {
