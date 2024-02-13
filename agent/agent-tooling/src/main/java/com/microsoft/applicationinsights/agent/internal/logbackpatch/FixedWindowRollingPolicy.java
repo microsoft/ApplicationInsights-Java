@@ -29,6 +29,8 @@ import ch.qos.logback.core.rolling.helper.IntegerTokenConverter;
 import ch.qos.logback.core.rolling.helper.RenameUtil;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Date;
 
 // copied from ch.qos.logback.core.rolling.FixedWindowRollingPolicy
@@ -145,7 +147,11 @@ public class FixedWindowRollingPolicy extends RollingPolicyBase {
       File file = new File(fileNamePattern.convertInt(maxIndex));
 
       if (file.exists()) {
-        file.delete();
+        try {
+          Files.delete(file.toPath());
+        } catch (IOException e) {
+          addError("File deletaion failed.", e);
+        }
       }
 
       // Map {(maxIndex - 1), ..., minIndex} to {maxIndex, ..., minIndex+1}
