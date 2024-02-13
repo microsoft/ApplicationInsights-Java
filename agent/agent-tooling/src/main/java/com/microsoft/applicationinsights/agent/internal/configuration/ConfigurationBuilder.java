@@ -320,46 +320,56 @@ public class ConfigurationBuilder {
   }
 
   private static String mapAttributeKey(String oldAttributeKey) {
+    String result = null;
     // Common attributes across HTTP client and server spans
     if (oldAttributeKey.equals(SemanticAttributes.HTTP_METHOD.getKey())) {
-      return SemanticAttributes.HTTP_REQUEST_METHOD.getKey();
+      result = SemanticAttributes.HTTP_REQUEST_METHOD.getKey();
     } else if (oldAttributeKey.equals(SemanticAttributes.HTTP_STATUS_CODE.getKey())) {
-      return SemanticAttributes.HTTP_RESPONSE_STATUS_CODE.getKey();
+      result = SemanticAttributes.HTTP_RESPONSE_STATUS_CODE.getKey();
     } else if (oldAttributeKey.startsWith("http.request.header.")
         || oldAttributeKey.startsWith("http.response.header.")) {
-      return oldAttributeKey.replace('_', '-');
+      result = oldAttributeKey.replace('_', '-');
     } else if (oldAttributeKey.equals(SemanticAttributes.NET_PROTOCOL_NAME.getKey())) {
-      return SemanticAttributes.NETWORK_PROTOCOL_NAME.getKey();
+      result = SemanticAttributes.NETWORK_PROTOCOL_NAME.getKey();
     } else if (oldAttributeKey.equals(SemanticAttributes.NET_PROTOCOL_VERSION.getKey())) {
-      return SemanticAttributes.NETWORK_PROTOCOL_VERSION.getKey();
+      result = SemanticAttributes.NETWORK_PROTOCOL_VERSION.getKey();
     } else if (oldAttributeKey.equals(SemanticAttributes.NET_SOCK_PEER_ADDR.getKey())) {
-      return SemanticAttributes.NETWORK_PEER_ADDRESS.getKey();
+      result = SemanticAttributes.NETWORK_PEER_ADDRESS.getKey();
     } else if (oldAttributeKey.equals(SemanticAttributes.NET_SOCK_PEER_PORT.getKey())) {
-      return SemanticAttributes.NETWORK_PEER_PORT.getKey();
+      result = SemanticAttributes.NETWORK_PEER_PORT.getKey();
     }
 
     // HTTP client span attributes
     // http.url is handled via LazyHttpUrl
     if (oldAttributeKey.equals(SemanticAttributes.HTTP_RESEND_COUNT.getKey())) {
-      return "http.request.resend_count";
+      result = "http.request.resend_count";
     } else if (oldAttributeKey.equals(SemanticAttributes.NET_PEER_NAME.getKey())) {
-      return SemanticAttributes.SERVER_ADDRESS.getKey();
-    } else if (oldAttributeKey.equals(SemanticAttributes.NETWORK_PEER_PORT.getKey())) {
-      return SemanticAttributes.SERVER_PORT.getKey();
+      result = SemanticAttributes.SERVER_ADDRESS.getKey();
+    } else if (oldAttributeKey.equals(SemanticAttributes.NET_PEER_PORT.getKey())) {
+      result = SemanticAttributes.SERVER_PORT.getKey();
     }
 
     // HTTP server span attributes
     // http.target is handled via LazyHttpTarget
     if (oldAttributeKey.equals(SemanticAttributes.HTTP_SCHEME.getKey())) {
-      return SemanticAttributes.URL_SCHEME.getKey();
-    } else if (oldAttributeKey.equals(SemanticAttributes.HTTP_RESEND_COUNT.getKey())) {
-      return SemanticAttributes.CLIENT_ADDRESS.getKey();
+      result = SemanticAttributes.URL_SCHEME.getKey();
+    } else if (oldAttributeKey.equals(SemanticAttributes.HTTP_CLIENT_IP.getKey())) {
+      result = SemanticAttributes.CLIENT_ADDRESS.getKey();
     } else if (oldAttributeKey.equals(SemanticAttributes.NET_HOST_NAME.getKey())) {
-      return SemanticAttributes.SERVER_ADDRESS.getKey();
+      result = SemanticAttributes.SERVER_ADDRESS.getKey();
     } else if (oldAttributeKey.equals(SemanticAttributes.NET_HOST_PORT.getKey())) {
-      return SemanticAttributes.SERVER_PORT.getKey();
+      result = SemanticAttributes.SERVER_PORT.getKey();
     }
-    return oldAttributeKey;
+
+    if (result == null) {
+      result = oldAttributeKey;
+    } else {
+      configurationLogger.warn(
+          "\"{}\" has been deprecated and replaced with \"{}}\" since 3.5 GA.",
+          oldAttributeKey,
+          result);
+    }
+    return result;
   }
 
   private static void logWarningIfUsingInternalAttributes(Configuration config) {

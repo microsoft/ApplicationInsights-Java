@@ -33,7 +33,7 @@ abstract class SpringBootAutoTest {
         .hasEntrySatisfying(
             "ai.user.userAgent", v -> assertThat(v).startsWith("Apache-HttpClient/"));
     //        assertThat(telemetry.rdEnvelope.getTags()).containsKey("ai.location.ip"); // TODO
-    // waiting for the fix to be released in upstream
+    // (heya) need to revert this when upgrading to 2.1 otel
 
     assertThat(telemetry.rd.getName()).isEqualTo("GET /SpringBootAuto/test");
     assertThat(telemetry.rd.getUrl()).matches("http://localhost:[0-9]+/SpringBootAuto/test");

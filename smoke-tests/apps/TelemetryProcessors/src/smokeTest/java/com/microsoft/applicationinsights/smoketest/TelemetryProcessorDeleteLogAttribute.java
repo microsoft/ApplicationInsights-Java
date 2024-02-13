@@ -16,15 +16,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.MessageData;
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 @UseAgent("applicationinsights-delete-existing-attribute.json")
 abstract class TelemetryProcessorDeleteLogAttribute {
 
-  @RegisterExtension
-  static final SmokeTestExtension testing =
-      SmokeTestExtension.builder().setSelfDiagnosticsLevel("DEBUG").build();
+  @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.create();
 
   @Test
   @TargetUri("/delete-existing-log-attribute")
@@ -39,7 +38,11 @@ abstract class TelemetryProcessorDeleteLogAttribute {
         .filter(log -> log.getMessage().contains("custom property from MDC"))
         .forEach(
             log -> {
-              assertThat(log.getProperties().get("toBeDeletedAttributeKey")).isNull();
+              Map<String, String> properties = log.getProperties();
+              assertThat(properties.get("toBeDeletedAttributeKey")).isNull();
+              assertThat(properties.get("LoggerName")).isEqualTo("smoketestappcontroller");
+              assertThat(properties.get("SourceType")).isEqualTo("Logger");
+              assertThat(properties.get("ThreadName")).isNotNull();
             });
   }
 
