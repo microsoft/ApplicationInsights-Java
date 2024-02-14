@@ -33,17 +33,14 @@ abstract class TelemetryProcessorDeleteLogAttribute {
         .isEqualTo("GET /TelemetryProcessors/delete-existing-log-attribute");
     assertThat(telemetry.rd.getProperties().get("toBeDeletedAttributeKey")).isNull();
 
-    List<MessageData> logs = testing.mockedIngestion.getTelemetryDataByType("MessageData");
-    logs.stream()
-        .filter(log -> log.getMessage().contains("custom property from MDC"))
-        .forEach(
-            log -> {
-              Map<String, String> properties = log.getProperties();
-              assertThat(properties.get("toBeDeletedAttributeKey")).isNull();
-              assertThat(properties.get("LoggerName")).isEqualTo("smoketestappcontroller");
-              assertThat(properties.get("SourceType")).isEqualTo("Logger");
-              assertThat(properties.get("ThreadName")).isNotNull();
-            });
+    List<MessageData> logs = testing.mockedIngestion.getMessageDataInRequest(1);
+    MessageData log = logs.get(0);
+    assertThat(log.getMessage()).isEqualTo("custom property from MDC");
+    Map<String, String> properties = log.getProperties();
+    assertThat(properties.get("toBeDeletedAttributeKey")).isNull();
+    assertThat(properties.get("LoggerName")).isEqualTo("smoketestappcontroller");
+    assertThat(properties.get("SourceType")).isEqualTo("Logger");
+    assertThat(properties.get("ThreadName")).isNotNull();
   }
 
   @Environment(TOMCAT_8_JAVA_8)

@@ -40,7 +40,6 @@ public class TestController {
 
   @GetMapping("/delete-existing-log-attribute")
   public String deleteExistingLogAttribute() {
-    Span.current().setAttribute("toBeDeletedAttributeKey", "toBeDeletedAttributeValue");
     MDC.put("toBeDeletedAttributeKey", "toBeDeletedAttributeValue");
     logger.info("custom property from MDC");
 

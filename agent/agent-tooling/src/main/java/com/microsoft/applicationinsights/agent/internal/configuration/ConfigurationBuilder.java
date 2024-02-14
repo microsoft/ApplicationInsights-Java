@@ -365,7 +365,7 @@ public class ConfigurationBuilder {
       result = oldAttributeKey;
     } else {
       configurationLogger.warn(
-          "\"{}\" has been deprecated and replaced with \"{}}\" since 3.5 GA.",
+          "\"{}\" has been deprecated and replaced with \"{}\" since 3.5.0 GA.",
           oldAttributeKey,
           result);
     }
