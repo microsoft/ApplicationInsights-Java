@@ -136,7 +136,7 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
   private static void enableInstrumentations(
       ConfigProperties otelConfig, Configuration config, Map<String, String> properties) {
 
-    if (otelConfig.getBoolean("applicationinsights.testing.instrumentation.disabled")) {
+    if (otelConfig.getBoolean("applicationinsights.testing.instrumentation.disabled", false)) {
       return;
     }
 
