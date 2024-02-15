@@ -342,7 +342,8 @@ public class ConfigurationBuilder {
     // HTTP client span attributes
     // http.url is handled via LazyHttpUrl
     if (oldAttributeKey.equals(SemanticAttributes.HTTP_RESEND_COUNT.getKey())) {
-      result = "http.request.resend_count";
+      result = "http.request.resend_count"; // TODO (heya) use upstream SemanticAttributes when it
+      // becomes available.
     } else if (oldAttributeKey.equals(SemanticAttributes.NET_PEER_NAME.getKey())) {
       result = SemanticAttributes.SERVER_ADDRESS.getKey();
     } else if (oldAttributeKey.equals(SemanticAttributes.NET_PEER_PORT.getKey())) {
