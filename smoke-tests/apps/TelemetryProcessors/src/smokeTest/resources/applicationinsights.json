@@ -78,7 +78,7 @@
         "type": "attribute",
         "actions": [
           {
-            "key": "url.full",
+            "key": "url.path",
             "pattern": "(?<httpPath>/[^?]*)",
             "action": "extract"
           }
@@ -89,7 +89,7 @@
         "type": "attribute",
         "actions": [
           {
-            "key": "url.full",
+            "key": "url.path",
             "pattern": "user\\/\\d+",
             "replace": "user\\/***",
             "action": "mask"
