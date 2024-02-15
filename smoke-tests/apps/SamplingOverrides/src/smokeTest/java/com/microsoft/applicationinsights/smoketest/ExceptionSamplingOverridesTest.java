@@ -44,7 +44,7 @@ abstract class ExceptionSamplingOverridesTest {
     ExceptionDetails exceptionDetails = exceptions.get(0).getExceptions().get(0);
     assertThat(exceptionDetails.getStack()).isNotNull();
     assertThat(exceptionDetails.getTypeName()).isEqualTo("java.lang.RuntimeException");
-    assertThat(exceptionDetails.getMessage()).isEqualTo("This is an expected exception");
+    assertThat(exceptionDetails.getMessage()).isEqualTo("this is an expected exception");
   }
 
   @Environment(TOMCAT_8_JAVA_8)
