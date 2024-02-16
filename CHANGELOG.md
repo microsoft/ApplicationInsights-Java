@@ -1,10 +1,10 @@
 # CHANGELOG
 
-## Version 3.5 GA (01/25/2024)
+## Version 3.5 GA (02/19/2024)
 
 ### Enhancements:
 
-* Update to OpenTelemetry Java 2.0.0 ([#3418](https://github.com/microsoft/ApplicationInsights-Java/pull/3418))
+* Update to OpenTelemetry Java 2.1.0 ([#3418](https://github.com/microsoft/ApplicationInsights-Java/pull/3418))
 * Support stable HTTP semantic conventions ([#3418](https://github.com/microsoft/ApplicationInsights-Java/pull/3418))
 * GA sampling overrides ([#3463](https://github.com/microsoft/ApplicationInsights-Java/pull/3463))
 * Collect JMX metrics via OTLP ([#3406](https://github.com/microsoft/ApplicationInsights-Java/pull/3406))
