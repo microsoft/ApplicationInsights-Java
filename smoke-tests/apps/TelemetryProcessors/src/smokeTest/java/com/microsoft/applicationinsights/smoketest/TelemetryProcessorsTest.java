@@ -23,8 +23,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 abstract class TelemetryProcessorsTest {
 
   @RegisterExtension
-  static final SmokeTestExtension testing =
-      SmokeTestExtension.builder().setSelfDiagnosticsLevel("DEBUG").build();
+  static final SmokeTestExtension testing = SmokeTestExtension.create();
 
   @Test
   @TargetUri("/test")
