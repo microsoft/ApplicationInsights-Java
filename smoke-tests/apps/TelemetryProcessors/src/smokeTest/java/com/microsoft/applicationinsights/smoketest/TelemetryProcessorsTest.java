@@ -22,8 +22,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 @UseAgent
 abstract class TelemetryProcessorsTest {
 
-  @RegisterExtension
-  static final SmokeTestExtension testing = SmokeTestExtension.create();
+  @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.create();
 
   @Test
   @TargetUri("/test")
