@@ -45,8 +45,7 @@ abstract class CassandraTest {
     assertThat(telemetry.rdd1.getName()).isEqualTo("SELECT test.test");
     assertThat(telemetry.rdd1.getData()).isEqualTo("select * from test.test");
     assertThat(telemetry.rdd1.getType()).isEqualTo("cassandra");
-    //    assertThat(telemetry.rdd1.getTarget()).matches("dependency[0-9]+"); // TODO (heya) need to
-    // revert this when upgrading to 2.1 otel
+    assertThat(telemetry.rdd1.getTarget()).matches("dependency[0-9]+");
     assertThat(telemetry.rdd1.getProperties()).isEmpty();
     assertThat(telemetry.rdd1.getSuccess()).isTrue();
 
