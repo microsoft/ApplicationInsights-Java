@@ -9,7 +9,7 @@
       {
         "attributes": [
           {
-            "key": "http.request.header.abc",
+            "key": "http.request.header.abc-def",
             "value": "nope",
             "matchType": "strict"
           }
