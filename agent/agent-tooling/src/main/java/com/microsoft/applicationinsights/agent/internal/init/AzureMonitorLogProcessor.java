@@ -87,7 +87,9 @@ public class AzureMonitorLogProcessor implements LogRecordProcessor {
           String stacktrace =
               (String) attributesMapField.get(SemanticAttributes.EXCEPTION_STACKTRACE);
           if (stacktrace != null && stacktrace.equals(stacktraceFromSpan)) {
-            span.setAttribute("applicationinsights.internal.exception_already_logged", true);
+            span.setAttribute(
+                "applicationinsights.internal.exception_already_logged",
+                true); // TODO (heya) this should be AiSemanticAttributes.EXCEPTION_ALREADY_LOGGED
             logger.verbose(
                 "add \"applicationinsights.internal.exception_already_logged\" attribute to the span.");
           }
