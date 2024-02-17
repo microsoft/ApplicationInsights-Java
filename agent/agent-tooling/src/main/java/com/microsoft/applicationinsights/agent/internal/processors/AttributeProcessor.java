@@ -3,6 +3,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.processors;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.SpanDataMapper;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.ProcessorAction;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.ProcessorConfig;
 import io.opentelemetry.api.common.AttributeKey;
@@ -104,6 +105,15 @@ public class AttributeProcessor extends AgentProcessor {
 
     // Currently we only support String
     String existingValue = existingAttributes.get(actionObj.key);
+
+    AttributeKey<String> attributeKey = actionObj.key;
+    // support backward compatibility for http.url
+    if (actionObj.key.getKey().equals("http.url")) {
+      HttpUrlKeyValuePair pair = processHttpUrl(attributes);
+      attributeKey = AttributeKey.stringKey(pair.key);
+      existingValue = pair.value;
+    }
+
     if (existingValue == null) {
       return existingAttributes;
     }
@@ -112,14 +122,14 @@ public class AttributeProcessor extends AgentProcessor {
     if (actionObj.value != null) {
       // update to new value
       AttributesBuilder builder = existingAttributes.toBuilder();
-      builder.put(actionObj.key, actionObj.value);
+      builder.put(attributeKey, actionObj.value);
       return builder.build();
     }
 
     String fromAttributeValue = existingAttributes.get(actionObj.fromAttribute);
     if (fromAttributeValue != null) {
       AttributesBuilder builder = existingAttributes.toBuilder();
-      builder.put(actionObj.key, fromAttributeValue);
+      builder.put(attributeKey, fromAttributeValue);
       return builder.build();
     }
 
@@ -131,14 +141,24 @@ public class AttributeProcessor extends AgentProcessor {
 
     // Currently we only support String
     String existingValue = existingAttributes.get(actionObj.key);
+
+    AttributeKey<String> attributeKey = actionObj.key;
+    // support backward compatibility for http.url
+    if (actionObj.key.getKey().equals("http.url")) {
+      HttpUrlKeyValuePair pair = processHttpUrl(attributes);
+      attributeKey = AttributeKey.stringKey(pair.key);
+      existingValue = pair.value;
+    }
+
     if (existingValue == null) {
       return existingAttributes;
     }
 
     AttributesBuilder builder = Attributes.builder();
+    AttributeKey<String> finalAttributeKey = attributeKey;
     existingAttributes.forEach(
         (key, value) -> {
-          if (!key.equals(actionObj.key)) {
+          if (!key.equals(finalAttributeKey)) {
             putIntoBuilder(builder, key, value);
           }
         });
@@ -150,20 +170,36 @@ public class AttributeProcessor extends AgentProcessor {
 
     // Currently we only support String
     String existingValue = existingAttributes.get(actionObj.key);
+
+    AttributeKey<String> attributeKey = actionObj.key;
+    // support backward compatibility for http.url
+    if (actionObj.key.getKey().equals("http.url")) {
+      HttpUrlKeyValuePair pair = processHttpUrl(attributes);
+      attributeKey = AttributeKey.stringKey(pair.key);
+      existingValue = pair.value;
+    }
+
     if (existingValue == null) {
       return existingAttributes;
     }
 
     AttributesBuilder builderCopy = existingAttributes.toBuilder();
-    builderCopy.put(actionObj.key, DigestUtils.sha256Hex(existingValue));
+    builderCopy.put(attributeKey, DigestUtils.sha256Hex(existingValue));
     return builderCopy.build();
   }
 
   private static Attributes processExtractAction(Attributes attributes, ProcessorAction actionObj) {
     Attributes existingAttributes = attributes;
 
-    // Currently we only support String
     String existingValue = existingAttributes.get(actionObj.key);
+
+    // support backward compatibility for http.url
+    if (actionObj.key.getKey().equals("http.url")) {
+      HttpUrlKeyValuePair pair = processHttpUrl(attributes);
+      existingValue = pair.value;
+    }
+
+    // Currently we only support String
     if (existingValue == null) {
       return existingAttributes;
     }
@@ -184,6 +220,15 @@ public class AttributeProcessor extends AgentProcessor {
 
     // Currently we only support String
     String existingValue = existingAttributes.get(actionObj.key);
+
+    AttributeKey<String> attributeKey = actionObj.key;
+    // support backward compatibility for http.url
+    if (actionObj.key.getKey().equals("http.url")) {
+      HttpUrlKeyValuePair pair = processHttpUrl(attributes);
+      attributeKey = AttributeKey.stringKey(pair.key);
+      existingValue = pair.value;
+    }
+
     if (existingValue == null) {
       return existingAttributes;
     }
@@ -195,8 +240,27 @@ public class AttributeProcessor extends AgentProcessor {
     }
 
     AttributesBuilder builder = existingAttributes.toBuilder();
-    builder.put(actionObj.key, newValue);
+    builder.put(attributeKey, newValue);
     return builder.build();
+  }
+
+  // support backward compatibility for http.url
+  private static HttpUrlKeyValuePair processHttpUrl(Attributes attributes) {
+    String urlFull = attributes.get(AttributeKey.stringKey("url.full"));
+    if (urlFull != null) {
+      return new HttpUrlKeyValuePair("url.full", urlFull);
+    }
+    return new HttpUrlKeyValuePair("url.path", SpanDataMapper.getHttpUrlFromServerSpan(attributes));
+  }
+
+  private static class HttpUrlKeyValuePair {
+    public final String key;
+    public final String value;
+
+    public HttpUrlKeyValuePair(String key, String value) {
+      this.key = key;
+      this.value = value;
+    }
   }
 
   @SuppressWarnings("unchecked")

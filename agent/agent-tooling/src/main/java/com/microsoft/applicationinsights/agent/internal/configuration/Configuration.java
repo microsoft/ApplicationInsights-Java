@@ -1262,10 +1262,10 @@ public class Configuration {
   }
 
   public static class ProcessorAction {
-    @Nullable public final AttributeKey<String> key;
+    @Nullable public AttributeKey<String> key;
     public final ProcessorActionType action;
     public final String value;
-    @Nullable public final AttributeKey<String> fromAttribute;
+    @Nullable public AttributeKey<String> fromAttribute;
     @Nullable public final ExtractAttribute extractAttribute;
     @Nullable public final MaskAttribute maskAttribute;
 

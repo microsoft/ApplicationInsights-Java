@@ -11,10 +11,10 @@ data class DependencySet(val group: String, val version: String, val modules: Li
 val dependencyVersions = hashMapOf<String, String>()
 rootProject.extra["versions"] = dependencyVersions
 
-val otelVersion = "1.32.0"
-val otelInstrumentationAlphaVersion = "1.32.0-alpha"
-val otelInstrumentationVersion = "1.32.0"
-val otelContribAlphaVersion = "1.30.0-alpha"
+val otelVersion = "1.35.0"
+val otelInstrumentationAlphaVersion = "2.1.0-alpha"
+val otelInstrumentationVersion = "2.1.0"
+val otelContribAlphaVersion = "1.32.0-alpha"
 
 rootProject.extra["otelVersion"] = otelVersion
 rootProject.extra["otelInstrumentationVersion"] = otelInstrumentationVersion
@@ -44,6 +44,7 @@ val slf4jVersion = "2.0.12"
 
 val CORE_DEPENDENCIES = listOf(
   "io.opentelemetry:opentelemetry-semconv:1.30.1-alpha",
+  "io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-incubator:${otelInstrumentationAlphaVersion}",
   "com.google.auto.service:auto-service:${autoServiceVersion}",
   "com.google.auto.service:auto-service-annotations:${autoServiceVersion}",
   "com.google.auto.value:auto-value:${autoValueVersion}",
@@ -70,7 +71,7 @@ val CORE_DEPENDENCIES = listOf(
 val DEPENDENCIES = listOf(
   "ch.qos.logback:logback-classic:1.3.14", // logback 1.4+ requires Java 11+
   "ch.qos.logback.contrib:logback-json-classic:0.1.5",
-  "com.uber.nullaway:nullaway:0.10.22",
+  "com.uber.nullaway:nullaway:0.10.23",
   "commons-codec:commons-codec:1.16.1",
   "org.apache.commons:commons-text:1.11.0",
   "com.google.code.gson:gson:2.10.1",

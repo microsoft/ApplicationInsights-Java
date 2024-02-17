@@ -7,7 +7,6 @@ dependencies {
     exclude("spring-boot-starter-tomcat")
   }
   implementation("io.opentelemetry:opentelemetry-api:1.30.0")
-  implementation("io.opentelemetry:opentelemetry-semconv:1.30.0-alpha")
   implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:1.30.0")
   implementation("org.springframework.boot:spring-boot-test:2.7.16")
   implementation("io.spring.dependency-management:io.spring.dependency-management.gradle.plugin:1.1.3")

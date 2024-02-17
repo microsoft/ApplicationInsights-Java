@@ -84,7 +84,6 @@ tasks {
       exclude(dependency("io.opentelemetry:opentelemetry-api"))
       exclude(dependency("io.opentelemetry:opentelemetry-api-metrics"))
       exclude(dependency("io.opentelemetry:opentelemetry-context"))
-      exclude(dependency("io.opentelemetry:opentelemetry-semconv"))
     }
   }
 
@@ -109,6 +108,8 @@ tasks {
     // unfortunately, this also excludes the same from our distro (which points to logback)
     // and so we have to hackily re-add it via agent/agent/src/main/resources
     exclude("inst/META-INF/services/io.opentelemetry.javaagent.slf4j.spi.SLF4JServiceProvider")
+
+    exclude("inst/io/prometheus/**")
 
     // this excludes the upstream classes, but not the distro classes since the exclusion step
     // takes place before the transformation step

@@ -34,12 +34,10 @@ import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.TempDirs;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
-import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -340,8 +338,7 @@ public class TelemetryClient {
     for (Map.Entry<String, String> entry : globalProperties.entrySet()) {
       telemetryBuilder.addProperty(entry.getKey(), entry.getValue());
     }
-    ResourceParser.updateRoleNameAndInstance(
-        telemetryBuilder, resource, DefaultConfigProperties.create(Collections.emptyMap()));
+    new ResourceParser().updateRoleNameAndInstance(telemetryBuilder, resource);
   }
 
   @Nullable

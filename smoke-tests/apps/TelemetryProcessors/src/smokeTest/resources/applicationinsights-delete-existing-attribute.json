@@ -1,0 +1,24 @@
+{
+  "role": {
+    "name": "testrolename",
+    "instance": "testroleinstance"
+  },
+  "sampling": {
+    "percentage": 100
+  },
+  "preview": {
+    "processors": [
+      {
+        "type": "attribute",
+        "actions": [
+          {
+            "key": "toBeDeletedAttributeKey",
+            "action": "delete"
+          }
+        ],
+        "id": "attributes/delete"
+      }
+    ]
+  }
+}
+

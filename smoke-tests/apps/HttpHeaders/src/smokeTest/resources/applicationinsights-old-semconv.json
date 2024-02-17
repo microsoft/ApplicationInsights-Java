@@ -4,19 +4,7 @@
     "instance": "testroleinstance"
   },
   "sampling": {
-    "percentage": 100,
-    "overrides": [
-      {
-        "attributes": [
-          {
-            "key": "http.request.header.abc",
-            "value": "nope",
-            "matchType": "strict"
-          }
-        ],
-        "percentage": 0
-      }
-    ]
+    "percentage": 100
   },
   "preview": {
     "captureHttpServerHeaders": {
@@ -33,6 +21,20 @@
       ],
       "responseHeaders": [
         "date"
+      ]
+    },
+    "sampling": {
+      "overrides": [
+        {
+          "attributes": [
+            {
+              "key": "http.request.header.abc_def",
+              "value": "nope",
+              "matchType": "strict"
+            }
+          ],
+          "percentage": 0
+        }
       ]
     }
   }

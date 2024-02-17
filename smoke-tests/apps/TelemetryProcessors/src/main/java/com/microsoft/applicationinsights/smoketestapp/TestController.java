@@ -9,6 +9,7 @@ import io.opentelemetry.api.trace.Span;
 import java.util.Arrays;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.slf4j.MDC;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -35,6 +36,14 @@ public class TestController {
   @GetMapping("/user/1234")
   public String sensitiveDataInUrl() {
     return "Test sensitive data in URL";
+  }
+
+  @GetMapping("/delete-existing-log-attribute")
+  public String deleteExistingLogAttribute() {
+    MDC.put("toBeDeletedAttributeKey", "toBeDeletedAttributeValue");
+    logger.info("custom property from MDC");
+
+    return "delete existing log attribute";
   }
 
   @GetMapping("/test-non-string-strict-span-attributes")
