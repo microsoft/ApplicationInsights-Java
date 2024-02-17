@@ -21,7 +21,7 @@ dependencies {
   implementation(project(":agent:agent-profiler:agent-diagnostics"))
   implementation(project(":etw:java"))
 
-  implementation("com.azure:azure-monitor-opentelemetry-exporter:1.0.0-beta.15")
+  implementation("com.azure:azure-monitor-opentelemetry-exporter:1.0.0-beta.17")
   compileOnly("io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap")
   compileOnly("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling")
   compileOnly("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-common-bootstrap")
@@ -66,7 +66,7 @@ dependencies {
 
   compileOnly(project(":agent:agent-bootstrap"))
   compileOnly("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api")
-  compileOnly("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-semconv")
+  compileOnly("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-incubator")
   compileOnly("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations-support")
 
   compileOnly("com.google.auto.value:auto-value-annotations")
@@ -74,7 +74,7 @@ dependencies {
 
   testImplementation(project(":agent:agent-bootstrap"))
   testImplementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api")
-  testImplementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-semconv")
+  testImplementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-incubator")
   testImplementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations-support")
 
   testImplementation("org.junit.jupiter:junit-jupiter")

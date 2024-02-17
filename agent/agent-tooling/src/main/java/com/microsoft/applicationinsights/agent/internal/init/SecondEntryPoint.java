@@ -43,7 +43,6 @@ import com.microsoft.applicationinsights.agent.internal.legacyheaders.AiLegacyHe
 import com.microsoft.applicationinsights.agent.internal.processors.ExporterWithLogProcessor;
 import com.microsoft.applicationinsights.agent.internal.processors.ExporterWithSpanProcessor;
 import com.microsoft.applicationinsights.agent.internal.processors.LogExporterWithAttributeProcessor;
-import com.microsoft.applicationinsights.agent.internal.processors.MySpanData;
 import com.microsoft.applicationinsights.agent.internal.processors.SpanExporterWithAttributeProcessor;
 import com.microsoft.applicationinsights.agent.internal.profiler.triggers.AlertTriggerSpanProcessor;
 import com.microsoft.applicationinsights.agent.internal.sampling.SamplingOverrides;
@@ -51,8 +50,6 @@ import com.microsoft.applicationinsights.agent.internal.telemetry.BatchItemProce
 import com.microsoft.applicationinsights.agent.internal.telemetry.MetricFilter;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryObservers;
-import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdkBuilder;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizer;
@@ -68,12 +65,9 @@ import io.opentelemetry.sdk.metrics.View;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.metrics.internal.view.AiViewRegistry;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
-import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
-import io.opentelemetry.semconv.SemanticAttributes;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -400,6 +394,9 @@ public class SecondEntryPoint
     if (!config.preview.instrumentation.jaxrsAnnotations.enabled) {
       featureList.add(Feature.JAXRS_ANNOTATIONS_DISABLED);
     }
+    if (!config.preview.instrumentation.pekko.enabled) {
+      featureList.add(Feature.PEKKO_DISABLED);
+    }
     if (config.preview.browserSdkLoader.enabled) {
       featureList.add(Feature.BROWSER_SDK_LOADER);
     }
@@ -594,10 +591,6 @@ public class SecondEntryPoint
                 "Not an expected ProcessorType: " + processorConfig.type);
         }
       }
-
-      // this is temporary until semantic attributes stabilize and we make breaking change
-      // then can use java.util.functions.Predicate<Attributes>
-      spanExporter = new BackCompatHttpUrlProcessor(spanExporter);
     }
 
     return spanExporter;
@@ -753,48 +746,5 @@ public class SecondEntryPoint
               });
         });
     return overallResult;
-  }
-
-  private static class BackCompatHttpUrlProcessor implements SpanExporter {
-
-    private final SpanExporter delegate;
-
-    private BackCompatHttpUrlProcessor(SpanExporter delegate) {
-      this.delegate = delegate;
-    }
-
-    @Override
-    public CompletableResultCode export(Collection<SpanData> spans) {
-      List<SpanData> copy = new ArrayList<>();
-      for (SpanData span : spans) {
-        copy.add(addBackCompatHttpUrl(span));
-      }
-      return delegate.export(copy);
-    }
-
-    private static SpanData addBackCompatHttpUrl(SpanData span) {
-      Attributes attributes = span.getAttributes();
-      if (attributes.get(SemanticAttributes.HTTP_URL) != null) {
-        // already has http.url
-        return span;
-      }
-      String httpUrl = SpanDataMapper.getHttpUrlFromServerSpan(attributes);
-      if (httpUrl == null) {
-        return span;
-      }
-      AttributesBuilder builder = attributes.toBuilder();
-      builder.put(SemanticAttributes.HTTP_URL, httpUrl);
-      return new MySpanData(span, builder.build());
-    }
-
-    @Override
-    public CompletableResultCode flush() {
-      return delegate.flush();
-    }
-
-    @Override
-    public CompletableResultCode shutdown() {
-      return delegate.shutdown();
-    }
   }
 }

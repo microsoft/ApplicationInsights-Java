@@ -19,8 +19,8 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-@UseAgent
-abstract class TelemetryProcessorsTest {
+@UseAgent("applicationinsights-old-semconv.json")
+abstract class TelemetryProcessorsOldSemconvTest {
 
   @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.create();
 
@@ -74,29 +74,29 @@ abstract class TelemetryProcessorsTest {
   }
 
   @Environment(TOMCAT_8_JAVA_8)
-  static class Tomcat8Java8Test extends TelemetryProcessorsTest {}
+  static class Tomcat8Java8Test extends TelemetryProcessorsOldSemconvTest {}
 
   @Environment(TOMCAT_8_JAVA_8_OPENJ9)
-  static class Tomcat8Java8OpenJ9Test extends TelemetryProcessorsTest {}
+  static class Tomcat8Java8OpenJ9Test extends TelemetryProcessorsOldSemconvTest {}
 
   @Environment(TOMCAT_8_JAVA_11)
-  static class Tomcat8Java11Test extends TelemetryProcessorsTest {}
+  static class Tomcat8Java11Test extends TelemetryProcessorsOldSemconvTest {}
 
   @Environment(TOMCAT_8_JAVA_11_OPENJ9)
-  static class Tomcat8Java11OpenJ9Test extends TelemetryProcessorsTest {}
+  static class Tomcat8Java11OpenJ9Test extends TelemetryProcessorsOldSemconvTest {}
 
   @Environment(TOMCAT_8_JAVA_17)
-  static class Tomcat8Java17Test extends TelemetryProcessorsTest {}
+  static class Tomcat8Java17Test extends TelemetryProcessorsOldSemconvTest {}
 
   @Environment(TOMCAT_8_JAVA_19)
-  static class Tomcat8Java19Test extends TelemetryProcessorsTest {}
+  static class Tomcat8Java19Test extends TelemetryProcessorsOldSemconvTest {}
 
   @Environment(TOMCAT_8_JAVA_20)
-  static class Tomcat8Java20Test extends TelemetryProcessorsTest {}
+  static class Tomcat8Java20Test extends TelemetryProcessorsOldSemconvTest {}
 
   @Environment(WILDFLY_13_JAVA_8)
-  static class Wildfly13Java8Test extends TelemetryProcessorsTest {}
+  static class Wildfly13Java8Test extends TelemetryProcessorsOldSemconvTest {}
 
   @Environment(WILDFLY_13_JAVA_8_OPENJ9)
-  static class Wildfly13Java8OpenJ9Test extends TelemetryProcessorsTest {}
+  static class Wildfly13Java8OpenJ9Test extends TelemetryProcessorsOldSemconvTest {}
 }

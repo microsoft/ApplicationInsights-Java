@@ -13,7 +13,7 @@
           "telemetryType": "request",
           "attributes": [
             {
-              "key": "url.path",
+              "key": "http.url",
               "value": ".*/health-check",
               "matchType": "regexp"
             }

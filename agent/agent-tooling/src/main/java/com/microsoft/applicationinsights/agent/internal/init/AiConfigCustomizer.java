@@ -21,6 +21,7 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
     Configuration configuration = FirstEntryPoint.getConfiguration();
 
     Map<String, String> properties = new HashMap<>();
+
     properties.put(
         "applicationinsights.internal.micrometer.step.millis",
         Long.toString(SECONDS.toMillis(configuration.metricIntervalSeconds)));
@@ -37,9 +38,9 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
         "otel.java.enabled.resource.providers",
         "io.opentelemetry.sdk.autoconfigure.internal.EnvironmentResourceProvider");
 
-    if (!configuration.preview.captureControllerSpans) {
+    if (configuration.preview.captureControllerSpans) {
       properties.put(
-          "otel.instrumentation.common.experimental.controller-telemetry.enabled", "false");
+          "otel.instrumentation.common.experimental.controller-telemetry.enabled", "true");
     }
     properties.put("otel.instrumentation.common.experimental.view-telemetry.enabled", "false");
     properties.put(
@@ -47,19 +48,19 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
 
     setHttpHeaderConfiguration(
         properties,
-        "otel.instrumentation.http.capture-headers.server.request",
+        "otel.instrumentation.http.server.capture-request-headers",
         configuration.preview.captureHttpServerHeaders.requestHeaders);
     setHttpHeaderConfiguration(
         properties,
-        "otel.instrumentation.http.capture-headers.server.response",
+        "otel.instrumentation.http.server.capture-response-headers",
         configuration.preview.captureHttpServerHeaders.responseHeaders);
     setHttpHeaderConfiguration(
         properties,
-        "otel.instrumentation.http.capture-headers.client.request",
+        "otel.instrumentation.http.client.capture-request-headers",
         configuration.preview.captureHttpClientHeaders.requestHeaders);
     setHttpHeaderConfiguration(
         properties,
-        "otel.instrumentation.http.capture-headers.client.response",
+        "otel.instrumentation.http.client.capture-response-headers",
         configuration.preview.captureHttpClientHeaders.responseHeaders);
 
     // enable capturing all mdc properties

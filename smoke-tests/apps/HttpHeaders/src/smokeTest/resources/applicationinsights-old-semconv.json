@@ -28,7 +28,7 @@
         {
           "attributes": [
             {
-              "key": "http.request.header.abc-def",
+              "key": "http.request.header.abc_def",
               "value": "nope",
               "matchType": "strict"
             }
