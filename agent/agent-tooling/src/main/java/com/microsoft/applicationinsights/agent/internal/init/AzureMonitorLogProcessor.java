@@ -88,12 +88,15 @@ public class AzureMonitorLogProcessor implements LogRecordProcessor {
               (String) attributesMapField.get(SemanticAttributes.EXCEPTION_STACKTRACE);
           if (stacktrace != null && stacktrace.equals(stacktraceFromSpan)) {
             span.setAttribute("applicationinsights.internal.exception_already_logged", true);
-            logger.verbose("add \"applicationinsights.internal.exception_already_logged\" attribute to the span.");
+            logger.verbose(
+                "add \"applicationinsights.internal.exception_already_logged\" attribute to the span.");
           }
         }
       }
     } catch (Exception e) {
-      logger.error("Error occurred while stamping \"applicationinsights.internal.exception_already_logged\" to the span.", e);
+      logger.error(
+          "Error occurred while stamping \"applicationinsights.internal.exception_already_logged\" to the span.",
+          e);
     }
   }
 }
