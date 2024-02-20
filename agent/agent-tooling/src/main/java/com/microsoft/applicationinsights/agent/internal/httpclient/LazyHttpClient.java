@@ -19,10 +19,13 @@ import com.azure.core.http.policy.HttpLoggingPolicy;
 import com.azure.core.http.policy.HttpPipelinePolicy;
 import com.azure.core.http.policy.RedirectPolicy;
 import com.azure.core.util.Context;
+import com.azure.identity.ClientSecretCredentialBuilder;
 import com.azure.identity.ManagedIdentityCredential;
 import com.azure.identity.ManagedIdentityCredentialBuilder;
+import com.azure.identity.VisualStudioCodeCredential;
+import com.azure.identity.VisualStudioCodeCredentialBuilder;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
-import io.opentelemetry.api.internal.GuardedBy;
+import io.opentelemetry.instrumentation.api.internal.GuardedBy;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
@@ -147,6 +150,10 @@ public class LazyHttpClient implements HttpClient {
         return getAuthenticationPolicyWithUami(configuration);
       case SAMI:
         return getAuthenticationPolicyWithSami();
+      case VSCODE:
+        return getAuthenticationPolicyWithVsCode();
+      case CLIENTSECRET:
+        return getAuthenticationPolicyWithClientSecret(configuration);
     }
     throw new IllegalStateException(
         "Invalid Authentication Type used in AAD Authentication: " + configuration.type);
@@ -158,6 +165,27 @@ public class LazyHttpClient implements HttpClient {
         new ManagedIdentityCredentialBuilder().clientId(configuration.clientId);
     return new BearerTokenAuthenticationPolicy(
         managedIdentityCredential.build(), APPLICATIONINSIGHTS_AUTHENTICATION_SCOPE);
+  }
+
+  private static HttpPipelinePolicy getAuthenticationPolicyWithClientSecret(
+      Configuration.AadAuthentication configuration) {
+    ClientSecretCredentialBuilder credential =
+        new ClientSecretCredentialBuilder()
+            .tenantId(configuration.tenantId)
+            .clientSecret(configuration.clientSecret)
+            .clientId(configuration.clientId);
+    if (configuration.authorityHost != null) {
+      credential.authorityHost(configuration.authorityHost);
+    }
+    return new BearerTokenAuthenticationPolicy(
+        credential.build(), APPLICATIONINSIGHTS_AUTHENTICATION_SCOPE);
+  }
+
+  private static HttpPipelinePolicy getAuthenticationPolicyWithVsCode() {
+    VisualStudioCodeCredential visualStudioCodeCredential =
+        new VisualStudioCodeCredentialBuilder().build();
+    return new BearerTokenAuthenticationPolicy(
+        visualStudioCodeCredential, APPLICATIONINSIGHTS_AUTHENTICATION_SCOPE);
   }
 
   private static HttpPipelinePolicy getAuthenticationPolicyWithSami() {

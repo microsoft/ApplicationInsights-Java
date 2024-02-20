@@ -242,9 +242,14 @@ public class ConfigurationBuilder {
         config.sampling.requestsPerSecond = config.sampling.limitPerSecond;
       }
     }
+    if (config.preview.authentication.enabled && !config.authentication.enabled) {
+      configurationLogger.warn(
+          "\"authentication\" is no longer in preview and has been GA since 3.5.0 GA.");
+      config.authentication = config.preview.authentication;
+    }
     if (config.authentication.clientSecret != null) {
       configurationLogger.warn(
-          "We no longer support \"CLIENTSECRET\" typed of AAD authentication (from 3.5 GA). Please use \"user-assigned or system-assigned identify\" instead.");
+          "We no longer support \"CLIENTSECRET\" typed of AAD authentication (from 3.5.0 GA). Please use \"user-assigned or system-assigned identify\" instead.");
     }
     logWarningIfUsingInternalAttributes(config);
   }
