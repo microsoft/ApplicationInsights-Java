@@ -9,8 +9,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 enum MetricView {
-  HTTP_CLIENT_VIEW("http.client.duration", httpClientDurationAttributeKeys(), false),
-  HTTP_SERVER_VIEW("http.server.duration", httpServerDurationAttributeKeys(), true),
+  HTTP_CLIENT_VIEW("http.client.request.duration", httpClientDurationAttributeKeys(), false),
+  HTTP_SERVER_VIEW("http.server.request.duration", httpServerDurationAttributeKeys(), true),
   RPC_CLIENT_VIEW("rpc.client.duration", rpcClientDurationAttributeKeys(), false),
   RPC_SERVER_VIEW("rpc.server.duration", rpcServerDurationAttributeKeys(), false);
 
@@ -41,23 +41,23 @@ enum MetricView {
 
   private static Set<AttributeKey<?>> httpClientDurationAttributeKeys() {
     Set<AttributeKey<?>> view = new HashSet<>(3);
-    view.add(SemanticAttributes.HTTP_STATUS_CODE);
-    view.add(SemanticAttributes.NET_PEER_NAME);
-    view.add(SemanticAttributes.NET_PEER_PORT);
+    view.add(SemanticAttributes.HTTP_RESPONSE_STATUS_CODE);
+    view.add(SemanticAttributes.SERVER_ADDRESS);
+    view.add(SemanticAttributes.SERVER_PORT);
     return view;
   }
 
   private static Set<AttributeKey<?>> httpServerDurationAttributeKeys() {
     Set<AttributeKey<?>> view = new HashSet<>(1);
-    view.add(SemanticAttributes.HTTP_STATUS_CODE);
+    view.add(SemanticAttributes.HTTP_RESPONSE_STATUS_CODE);
     return view;
   }
 
   private static Set<AttributeKey<?>> rpcClientDurationAttributeKeys() {
     Set<AttributeKey<?>> view = new HashSet<>(3);
     view.add(SemanticAttributes.RPC_SYSTEM);
-    view.add(SemanticAttributes.NET_PEER_NAME);
-    view.add(SemanticAttributes.NET_PEER_PORT);
+    view.add(SemanticAttributes.SERVER_ADDRESS);
+    view.add(SemanticAttributes.SERVER_PORT);
     return view;
   }
 

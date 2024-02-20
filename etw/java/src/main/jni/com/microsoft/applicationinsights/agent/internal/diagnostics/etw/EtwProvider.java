@@ -23,16 +23,12 @@ public class EtwProvider {
       try {
         dllPath = loadLibrary(sdkVersion);
         LOGGER.debug("EtwProvider initialized. Lib path={}", dllPath.getAbsolutePath());
-      } catch (ThreadDeath td) {
-        throw td;
       } catch (Throwable t) {
         try {
           LOGGER.error("Error initializing EtwProvider", t);
           if (dllPath != null) {
             dllPath.deleteOnExit();
           }
-        } catch (ThreadDeath td) {
-          throw td;
         } catch (Throwable chomp) {
           // ignore
         }

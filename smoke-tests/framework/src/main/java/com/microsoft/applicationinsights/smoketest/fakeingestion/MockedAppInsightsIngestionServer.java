@@ -41,13 +41,13 @@ public class MockedAppInsightsIngestionServer {
 
   @SuppressWarnings("SystemOut")
   public void startServer() throws Exception {
-    System.out.println("Starting fake ingestion...");
+    System.out.println("Starting fake Breeze ingestion...");
     server.start();
   }
 
   @SuppressWarnings("SystemOut")
   public void stopServer() throws Exception {
-    System.out.println("Stopping fake ingestion...");
+    System.out.println("Stopping fake Breeze ingestion...");
     server.stop();
     server.join();
   }
@@ -140,6 +140,11 @@ public class MockedAppInsightsIngestionServer {
   public List<Envelope> waitForItems(String type, int numItems)
       throws ExecutionException, InterruptedException, TimeoutException {
     return waitForItems(type, numItems, null);
+  }
+
+  public List<Envelope> waitForItems(String type, Predicate<Envelope> condition, int numItems)
+      throws ExecutionException, InterruptedException, TimeoutException {
+    return waitForItems(type, numItems, null, condition);
   }
 
   // if operationId is null, then matches all items, otherwise only matches items with that
@@ -245,7 +250,8 @@ public class MockedAppInsightsIngestionServer {
   }
 
   // wait for at least one unexpected otel metrics for failure case or timeout for success
-  public List<Envelope> waitForItemsUnexpectedOtelMetric(String type, Predicate<Envelope> condition)
+  public List<Envelope> waitForItemsUnexpectedOtelMetric(
+      String type, Predicate<Envelope> condition, List<String> expectedMetricNames)
       throws InterruptedException, ExecutionException, TimeoutException {
     return waitForItems(
         new Predicate<Envelope>() {
@@ -255,7 +261,10 @@ public class MockedAppInsightsIngestionServer {
               return false;
             }
             MetricData md = (MetricData) ((Data<?>) input.getData()).getBaseData();
-            if (md.getProperties().containsKey("_MS.MetricId")) {
+            // return false if the metric name is expected
+            // "_MS.MetricId" is the metric name for pre-aggregated metrics
+            if (expectedMetricNames.contains(md.getMetrics().get(0).getName())
+                || md.getProperties().containsKey("_MS.MetricId")) {
               return false;
             }
             return condition.test(input);

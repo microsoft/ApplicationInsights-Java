@@ -3,6 +3,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.configuration;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.SemanticAttributes;
 import com.azure.monitor.opentelemetry.exporter.implementation.statsbeat.RpAttachType;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.HostName;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
@@ -20,12 +21,14 @@ import com.microsoft.applicationinsights.agent.internal.configuration.Configurat
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.JmxMetric;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.SamplingOverride;
 import com.microsoft.applicationinsights.agent.internal.diagnostics.DiagnosticsHelper;
+import io.opentelemetry.api.common.AttributeKey;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -46,7 +49,7 @@ public class ConfigurationBuilder {
   private static final String APPLICATIONINSIGHTS_RUNTIME_ATTACHED_CONFIGURATION_CONTENT =
       "applicationinsights.internal.runtime.attached.json";
 
-  private static final String APPLICATIONINSIGHTS_CONNECTION_STRING_ENV =
+  public static final String APPLICATIONINSIGHTS_CONNECTION_STRING_ENV =
       "APPLICATIONINSIGHTS_CONNECTION_STRING";
 
   private static final String APPLICATIONINSIGHTS_CONNECTION_STRING_SYS =
@@ -251,6 +254,7 @@ public class ConfigurationBuilder {
     overlayFromEnv(config, agentJarPath.getParent());
     config.sampling.percentage = roundToNearest(config.sampling.percentage, true);
     for (SamplingOverride override : config.preview.sampling.overrides) {
+      supportSamplingOverridesOldSemConv(override);
       override.percentage = roundToNearest(override.percentage, true);
     }
     // rp configuration should always be last (so it takes precedence)
@@ -268,6 +272,103 @@ public class ConfigurationBuilder {
       String hostname = HostName.get();
       config.role.instance = hostname == null ? "unknown" : hostname;
     }
+    supportTelemetryProcessorsOldSemConv(config);
+  }
+
+  private static void supportSamplingOverridesOldSemConv(SamplingOverride override) {
+    for (Configuration.SamplingOverrideAttribute attribute : override.attributes) {
+      attribute.key = mapAttributeKey(attribute.key);
+    }
+  }
+
+  private static void supportTelemetryProcessorsOldSemConv(Configuration config) {
+    for (Configuration.ProcessorConfig processor : config.preview.processors) {
+      if (processor.include != null && processor.type == Configuration.ProcessorType.ATTRIBUTE) {
+        for (Configuration.ProcessorAttribute attribute : processor.include.attributes) {
+          attribute.key = mapAttributeKey(attribute.key);
+        }
+      }
+      if (processor.exclude != null && processor.type == Configuration.ProcessorType.ATTRIBUTE) {
+        for (Configuration.ProcessorAttribute attribute : processor.exclude.attributes) {
+          attribute.key = mapAttributeKey(attribute.key);
+        }
+      }
+      for (Configuration.ProcessorAction action : processor.actions) {
+        if (action.key != null && processor.type == Configuration.ProcessorType.ATTRIBUTE) {
+          action.key = AttributeKey.stringKey(mapAttributeKey(action.key.getKey()));
+        }
+      }
+      if (processor.name != null && processor.name.fromAttributes != null) {
+        List<String> newFromAttributes = new ArrayList<>();
+        for (String oldFromAttribute : processor.name.fromAttributes) {
+          String newFromAttribute = mapAttributeKey(oldFromAttribute);
+          newFromAttributes.add(newFromAttribute);
+        }
+        processor.name.fromAttributes = newFromAttributes;
+      }
+      if (processor.body != null && processor.body.fromAttributes != null) {
+        List<String> newFromAttributes = new ArrayList<>();
+        for (String oldFromAttribute : processor.body.fromAttributes) {
+          String newFromAttribute = mapAttributeKey(oldFromAttribute);
+          newFromAttributes.add(newFromAttribute);
+        }
+        processor.body.fromAttributes = newFromAttributes;
+      }
+    }
+  }
+
+  private static String mapAttributeKey(String oldAttributeKey) {
+    String result = null;
+    // Common attributes across HTTP client and server spans
+    if (oldAttributeKey.equals(SemanticAttributes.HTTP_METHOD.getKey())) {
+      result = SemanticAttributes.HTTP_REQUEST_METHOD.getKey();
+    } else if (oldAttributeKey.equals(SemanticAttributes.HTTP_STATUS_CODE.getKey())) {
+      result = SemanticAttributes.HTTP_RESPONSE_STATUS_CODE.getKey();
+    } else if (oldAttributeKey.startsWith("http.request.header.")
+        || oldAttributeKey.startsWith("http.response.header.")) {
+      result = oldAttributeKey.replace('_', '-');
+    } else if (oldAttributeKey.equals(SemanticAttributes.NET_PROTOCOL_NAME.getKey())) {
+      result = SemanticAttributes.NETWORK_PROTOCOL_NAME.getKey();
+    } else if (oldAttributeKey.equals(SemanticAttributes.NET_PROTOCOL_VERSION.getKey())) {
+      result = SemanticAttributes.NETWORK_PROTOCOL_VERSION.getKey();
+    } else if (oldAttributeKey.equals(SemanticAttributes.NET_SOCK_PEER_ADDR.getKey())) {
+      result = SemanticAttributes.NETWORK_PEER_ADDRESS.getKey();
+    } else if (oldAttributeKey.equals(SemanticAttributes.NET_SOCK_PEER_PORT.getKey())) {
+      result = SemanticAttributes.NETWORK_PEER_PORT.getKey();
+    }
+
+    // HTTP client span attributes
+    // http.url is handled via LazyHttpUrl
+    if (oldAttributeKey.equals(SemanticAttributes.HTTP_RESEND_COUNT.getKey())) {
+      result = "http.request.resend_count"; // TODO (heya) use upstream SemanticAttributes when it
+      // becomes available.
+    } else if (oldAttributeKey.equals(SemanticAttributes.NET_PEER_NAME.getKey())) {
+      result = SemanticAttributes.SERVER_ADDRESS.getKey();
+    } else if (oldAttributeKey.equals(SemanticAttributes.NET_PEER_PORT.getKey())) {
+      result = SemanticAttributes.SERVER_PORT.getKey();
+    }
+
+    // HTTP server span attributes
+    // http.target is handled via LazyHttpTarget
+    if (oldAttributeKey.equals(SemanticAttributes.HTTP_SCHEME.getKey())) {
+      result = SemanticAttributes.URL_SCHEME.getKey();
+    } else if (oldAttributeKey.equals(SemanticAttributes.HTTP_CLIENT_IP.getKey())) {
+      result = SemanticAttributes.CLIENT_ADDRESS.getKey();
+    } else if (oldAttributeKey.equals(SemanticAttributes.NET_HOST_NAME.getKey())) {
+      result = SemanticAttributes.SERVER_ADDRESS.getKey();
+    } else if (oldAttributeKey.equals(SemanticAttributes.NET_HOST_PORT.getKey())) {
+      result = SemanticAttributes.SERVER_PORT.getKey();
+    }
+
+    if (result == null) {
+      result = oldAttributeKey;
+    } else {
+      configurationLogger.warn(
+          "\"{}\" has been deprecated and replaced with \"{}\" since 3.5.0 GA.",
+          oldAttributeKey,
+          result);
+    }
+    return result;
   }
 
   private static void logWarningIfUsingInternalAttributes(Configuration config) {
@@ -490,6 +591,15 @@ public class ConfigurationBuilder {
       return configFromJsonNextToAgent;
     }
 
+    if (getEnvVar("APPLICATIONINSIGHTS_PREVIEW_BSP_SCHEDULE_DELAY") != null) {
+      // Note: OTEL_BSP_SCHEDULE_DELAY and OTEL_BLRP_SCHEDULE_DELAY could be used,
+      // but should not be needed now that the default delay has been properly tuned
+      configurationLogger.warn(
+          "APPLICATIONINSIGHTS_PREVIEW_BSP_SCHEDULE_DELAY is no longer supported,"
+              + " please report an issue to https://github.com/microsoft/ApplicationInsights-Java"
+              + " if you are still in nead of this setting.");
+    }
+
     // json configuration file is not required, ok to configure via env var alone
     return new Configuration();
   }
@@ -538,8 +648,19 @@ public class ConfigurationBuilder {
     StringLookup stringLookup =
         StringLookupFactory.INSTANCE.interpolatorStringLookup(stringLookupMap, null, false);
     StringSubstitutor stringSubstitutor = new StringSubstitutor(stringLookup);
-    config.connectionString =
-        overlayConnectionStringFromEnv(stringSubstitutor.replace(config.connectionString));
+    String replacedConnectionString = stringSubstitutor.replace(config.connectionString);
+    if (replacedConnectionString != null
+        && !replacedConnectionString.startsWith("InstrumentationKey=")
+        && config.connectionString.equals(replacedConnectionString)) {
+      throw new FriendlyException(
+          "Error loading connection string from a file (\""
+              + config.connectionString
+              + "\").\n"
+              + "Please use this format instead:"
+              + "\n{ \"connectionString\": \"${file:connection-string-file.txt}\" }\n",
+          "Learn more about configuration options here: " + CONFIGURATION_OPTIONS_LINK);
+    }
+    config.connectionString = overlayConnectionStringFromEnv(replacedConnectionString);
     if (isTrimEmpty(config.role.name)) {
       // only use WEBSITE_SITE_NAME as a fallback
       config.role.name = getWebsiteSiteNameEnvVar();

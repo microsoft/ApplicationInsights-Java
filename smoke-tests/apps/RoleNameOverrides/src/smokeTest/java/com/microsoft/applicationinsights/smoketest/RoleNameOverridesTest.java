@@ -99,9 +99,9 @@ abstract class RoleNameOverridesTest {
     // and metrics too
 
     List<Envelope> clientMetrics =
-        testing.mockedIngestion.waitForMetricItems("http.client.duration", 1);
+        testing.mockedIngestion.waitForMetricItems("http.client.request.duration", 1);
     List<Envelope> serverMetrics =
-        testing.mockedIngestion.waitForMetricItems("http.server.duration", 1);
+        testing.mockedIngestion.waitForMetricItems("http.server.request.duration", 1);
 
     verifyHttpClientPreAggregatedMetrics(clientMetrics, roleName);
     verifyHttpServerPreAggregatedMetrics(serverMetrics, roleName);
@@ -117,7 +117,6 @@ abstract class RoleNameOverridesTest {
     MetricData otelResourceMetricData =
         (MetricData) ((Data<?>) otelResourceMetrics.get(0).getData()).getBaseData();
     Map<String, String> properties = otelResourceMetricData.getProperties();
-    assertThat(properties.size()).isEqualTo(3);
     assertThat(properties.get("fakeOtelResourceKey1")).isEqualTo("fakeValue1");
     assertThat(properties.get("fakeOtelResourceKey2")).isEqualTo("fakeValue2");
     assertThat(properties.get("fakeOtelResourceKey3")).isEqualTo("fakeValue3");

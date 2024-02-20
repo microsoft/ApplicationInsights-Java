@@ -227,7 +227,10 @@ public class TelemetryClient {
         LazyHttpClient.newHttpPipeLine(
             aadAuthentication,
             new NetworkStatsbeatHttpPipelinePolicy(statsbeatModule.getNetworkStatsbeat()));
-    TelemetryPipeline telemetryPipeline = new TelemetryPipeline(httpPipeline);
+    // TODO (heya) refactor the following by using AzureMonitorHelper.createTelemetryItemExporter by
+    // passing in getNonessentialStatsbeat
+    TelemetryPipeline telemetryPipeline =
+        new TelemetryPipeline(httpPipeline, statsbeatModule::shutdown);
 
     TelemetryPipelineListener telemetryPipelineListener;
     if (tempDir == null) {
@@ -328,14 +331,14 @@ public class TelemetryClient {
       // not sure if connectionString can be null in Azure Functions
       telemetryBuilder.setConnectionString(connectionString);
     }
+    telemetryBuilder.setResource(resource);
     for (Map.Entry<String, String> entry : globalTags.entrySet()) {
       telemetryBuilder.addTag(entry.getKey(), entry.getValue());
     }
     for (Map.Entry<String, String> entry : globalProperties.entrySet()) {
       telemetryBuilder.addProperty(entry.getKey(), entry.getValue());
     }
-    ResourceParser.updateRoleNameAndInstance(
-        telemetryBuilder, resource, com.azure.core.util.Configuration.getGlobalConfiguration());
+    new ResourceParser().updateRoleNameAndInstance(telemetryBuilder, resource);
   }
 
   @Nullable
@@ -475,11 +478,7 @@ public class TelemetryClient {
       return this;
     }
 
-    public Builder setConnectionStrings(
-        @Nullable String connectionString,
-        @Nullable String statsbeatInstrumentationKey,
-        @Nullable String statsbeatEndpoint) {
-
+    public Builder setConnectionStrings(@Nullable String connectionString) {
       if (Strings.isNullOrEmpty(connectionString)) {
         this.connectionString = null;
         this.statsbeatConnectionString = null;
@@ -487,7 +486,9 @@ public class TelemetryClient {
         this.connectionString = ConnectionString.parse(connectionString);
         this.statsbeatConnectionString =
             StatsbeatConnectionString.create(
-                this.connectionString, statsbeatInstrumentationKey, statsbeatEndpoint);
+                this.connectionString,
+                System.getProperty("applicationinsights.testing.statsbeat.ikey"),
+                System.getProperty("applicationinsights.testing.statsbeat.endpoint"));
         if (this.statsbeatConnectionString == null) {
           statsbeatModule.shutdown();
         }

@@ -162,25 +162,31 @@ class ConfigurationBuilderTest {
   @Test
   void testOverlayWithEnvVarWithBadFileStringLookupFormat() throws Exception {
     Configuration configuration = new Configuration();
-    configuration.connectionString = "${file:" + connectionStringFile.getAbsolutePath();
-    ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
-    assertThat(configuration.connectionString).isEqualTo(configuration.connectionString);
+    String filename = "${file:" + connectionStringFile.getAbsolutePath();
+    configuration.connectionString = filename;
+    assertFriendlyExceptionThrown(configuration, filename);
 
-    configuration.connectionString = "${xyz:" + connectionStringFile.getAbsolutePath() + "}";
-    ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
-    assertThat(configuration.connectionString).isEqualTo(configuration.connectionString);
+    filename = "${xyz:" + connectionStringFile.getAbsolutePath() + "}";
+    configuration.connectionString = filename;
+    assertFriendlyExceptionThrown(configuration, filename);
 
-    configuration.connectionString = "file:" + connectionStringFile.getAbsolutePath() + "}";
-    ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
-    assertThat(configuration.connectionString).isEqualTo(configuration.connectionString);
+    filename = "file:" + connectionStringFile.getAbsolutePath() + "}";
+    configuration.connectionString = filename;
+    assertFriendlyExceptionThrown(configuration, filename);
 
-    configuration.connectionString = "file:" + connectionStringFile.getAbsolutePath();
-    ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
-    assertThat(configuration.connectionString).isEqualTo(configuration.connectionString);
+    filename = "file:" + connectionStringFile.getAbsolutePath();
+    configuration.connectionString = filename;
+    assertFriendlyExceptionThrown(configuration, filename);
 
     configuration.connectionString = CONNECTION_STRING;
     ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
-    assertThat(configuration.connectionString).isEqualTo(configuration.connectionString);
+    assertThat(configuration.connectionString).isEqualTo(CONNECTION_STRING);
+  }
+
+  private static void assertFriendlyExceptionThrown(Configuration configuration, String filename) {
+    assertThatThrownBy(() -> ConfigurationBuilder.overlayFromEnv(configuration, Paths.get(".")))
+        .isInstanceOf(FriendlyException.class);
+    assertThat(configuration.connectionString).isEqualTo(filename);
   }
 
   @Test

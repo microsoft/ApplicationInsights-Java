@@ -18,6 +18,7 @@ public final class AzureFunctionsCustomDimensions implements ImplicitContextKeye
   public final String category;
   public final String hostInstanceId;
   public final String azFunctionLiveLogsSessionId;
+  public final String operationName;
 
   public AzureFunctionsCustomDimensions(
       String invocationId,
@@ -25,13 +26,15 @@ public final class AzureFunctionsCustomDimensions implements ImplicitContextKeye
       String logLevel,
       String category,
       String hostInstanceId,
-      String azFunctionLiveLogsSessionId) {
+      String azFunctionLiveLogsSessionId,
+      String operationName) {
     this.invocationId = invocationId;
     this.processId = processId;
     this.logLevel = logLevel;
     this.category = category;
     this.hostInstanceId = hostInstanceId;
     this.azFunctionLiveLogsSessionId = azFunctionLiveLogsSessionId;
+    this.operationName = operationName;
   }
 
   public static AzureFunctionsCustomDimensions fromContext(Context context) {

@@ -19,9 +19,7 @@ public class AzureMonitorLogProcessor implements LogRecordProcessor {
     if (!(currentSpan instanceof ReadableSpan)) {
       return;
     }
-
     ReadableSpan readableSpan = (ReadableSpan) currentSpan;
-
     logRecord.setAttribute(
         AiSemanticAttributes.OPERATION_NAME, OperationNames.getOperationName(readableSpan));
     Long itemCount = readableSpan.getAttribute(AiSemanticAttributes.ITEM_COUNT);

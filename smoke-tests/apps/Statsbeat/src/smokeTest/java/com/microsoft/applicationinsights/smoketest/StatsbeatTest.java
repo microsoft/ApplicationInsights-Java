@@ -69,7 +69,7 @@ abstract class StatsbeatTest {
 
     List<Envelope> requestSuccessCountMetrics =
         testing.mockedIngestion.waitForMetricItems(
-            "Request Success Count", 1, 70, TimeUnit.SECONDS);
+            "Request_Success_Count", 1, 70, TimeUnit.SECONDS);
 
     MetricData requestSuccessCountData =
         (MetricData) ((Data<?>) requestSuccessCountMetrics.get(0).getData()).getBaseData();
@@ -79,7 +79,7 @@ abstract class StatsbeatTest {
     assertThat(requestSuccessCountData.getProperties()).hasSize(9);
 
     List<Envelope> requestDurationMetrics =
-        testing.mockedIngestion.waitForMetricItems("Request Duration", 1, 70, TimeUnit.SECONDS);
+        testing.mockedIngestion.waitForMetricItems("Request_Duration", 1, 70, TimeUnit.SECONDS);
 
     MetricData requestDurationData =
         (MetricData) ((Data<?>) requestDurationMetrics.get(0).getData()).getBaseData();

@@ -1,0 +1,57 @@
+{
+  "role": {
+    "name": "testrolename",
+    "instance": "testroleinstance"
+  },
+  "sampling": {
+    "percentage": 100
+  },
+  "jmxMetrics": [
+    {
+      "name": "NameWithDot",
+      "objectName": "test:name=X",
+      "attribute": "NestedObject\\.Value"
+    },
+    {
+      "name": "DefaultJmxMetricNameOverride",
+      "objectName": "java.lang:type=Threading",
+      "attribute": "ThreadCount"
+    },
+    {
+      "name": "WildcardJmxMetric",
+      "objectName": "java.lang:name=*,type=GarbageColl?ctor",
+      "attribute": "CollectionCount"
+    },
+    {
+      "name": "BooleanJmxMetric",
+      "objectName": "java.lang:type=Threading",
+      "attribute": "ThreadAllocatedMemoryEnabled"
+    },
+    {
+      "name": "DotInAttributeNameAsPathSeparator",
+      "objectName": "java.lang:type=Memory",
+      "attribute": "HeapMemoryUsage.committed"
+    },
+    {
+      "name": "GCOld",
+      "objectName": "java.lang:name=G1 Old Generation,type=GarbageCollector",
+      "attribute": "CollectionCount"
+    },
+    {
+      "name": "GCYoung",
+      "objectName": "java.lang:name=G1 Young Generation,type=GarbageCollector",
+      "attribute": "CollectionCount"
+    },
+    {
+      "name": "PSScavenge",
+      "objectName": "java.lang:type=GarbageCollector,name=PS Scavenge",
+      "attribute": "CollectionCount"
+    },
+    {
+      "name": "PSMarkSweep",
+      "objectName": "java.lang:type=GarbageCollector,name=PS MarkSweep",
+      "attribute": "CollectionCount"
+    }
+  ],
+  "metricIntervalSeconds": 5
+}
