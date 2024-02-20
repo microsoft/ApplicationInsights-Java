@@ -249,7 +249,7 @@ public class ConfigurationBuilder {
     }
     if (config.authentication.clientSecret != null) {
       configurationLogger.warn(
-          "We no longer support \"CLIENTSECRET\" typed of AAD authentication (from 3.5.0 GA). Please use \"user-assigned or system-assigned identify\" instead.");
+          "\"CLIENTSECRET\" typed of AAD authentication has been deprecated since 3.5.0 GA. Please use \"user-assigned or system-assigned identify\" instead.");
     }
     logWarningIfUsingInternalAttributes(config);
   }
