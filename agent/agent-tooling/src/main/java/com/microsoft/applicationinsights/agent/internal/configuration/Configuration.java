@@ -1531,14 +1531,14 @@ public class Configuration {
         throw new FriendlyException(
             "AAD Authentication configuration is missing authentication \"type\".",
             "Please provide a valid authentication \"type\" under the \"authentication\" configuration. "
-                + "Learn more about authentication configuration here: https://learn.microsoft.com/en-us/azure/azure-monitor/app/java-standalone-config#authentication");
+                + "Learn more about authentication configuration here: https://docs.microsoft.com/en-us/azure/azure-monitor/app/java-standalone-config#authentication");
       }
       if (type == AuthenticationType.UAMI) {
         if (isEmpty(clientId)) {
           throw new FriendlyException(
               "AAD Authentication configuration of type User Assigned Managed Identity is missing \"clientId\".",
               "Please provide a valid \"clientId\" under the \"authentication\" configuration. "
-                  + "Learn more about authentication configuration here: https://learn.microsoft.com/en-us/azure/azure-monitor/app/java-standalone-config#authentication");
+                  + "Learn more about authentication configuration here: https://docs.microsoft.com/en-us/azure/azure-monitor/app/java-standalone-config#authentication");
         }
       }
     }
