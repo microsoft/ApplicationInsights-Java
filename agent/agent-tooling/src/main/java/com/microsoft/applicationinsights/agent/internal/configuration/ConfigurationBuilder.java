@@ -244,7 +244,7 @@ public class ConfigurationBuilder {
     }
     if (config.preview.authentication.enabled && !config.authentication.enabled) {
       configurationLogger.warn(
-          "\"authentication\" is no longer in preview and has been GA since 3.5.0 GA.");
+          "\"authentication\" is no longer in preview and it has been GA since 3.4.18");
       config.authentication = config.preview.authentication;
     }
     if (config.authentication.clientSecret != null) {

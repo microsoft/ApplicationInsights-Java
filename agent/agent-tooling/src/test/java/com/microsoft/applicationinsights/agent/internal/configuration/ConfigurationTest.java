@@ -246,7 +246,10 @@ class ConfigurationTest {
         .isEqualTo("InstrumentationKey=00000000-0000-0000-0000-000000000000");
     assertThat(configuration.authentication.enabled).isTrue();
     assertThat(configuration.authentication.type).isEqualTo(Configuration.AuthenticationType.SAMI);
-    assertThat(configuration.authentication.clientId).isNull();
+    assertThat(configuration.authentication.clientId).isEqualTo("123xyz");
+    assertThat(configuration.authentication.tenantId).isEqualTo("tenant123");
+    assertThat(configuration.authentication.clientSecret).isEqualTo("clientsecret123");
+    assertThat(configuration.authentication.authorityHost).isEqualTo("https://test.com/microsoft/");
   }
 
   @Test
@@ -623,6 +626,7 @@ class ConfigurationTest {
     assertThat(configuration.authentication.enabled).isTrue();
     assertThat(configuration.authentication.type).isEqualTo(Configuration.AuthenticationType.UAMI);
     assertThat(configuration.authentication.clientId).isEqualTo("12345678");
+    assertThat(configuration.authentication.clientSecret).isNull();
 
     envVars.set("APPLICATIONINSIGHTS_AUTHENTICATION_STRING", "Authorization=AAD;ClientId=");
 
@@ -632,6 +636,7 @@ class ConfigurationTest {
     assertThat(configuration2.authentication.enabled).isTrue();
     assertThat(configuration2.authentication.type).isEqualTo(Configuration.AuthenticationType.SAMI);
     assertThat(configuration2.authentication.clientId).isNull();
+    assertThat(configuration2.authentication.clientSecret).isNull();
   }
 
   @Test

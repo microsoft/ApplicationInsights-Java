@@ -63,8 +63,8 @@ public class Configuration {
   }
 
   public void validate() {
-    authentication.validate();
     instrumentation.logging.getSeverityThreshold();
+    authentication.validate();
     preview.validate();
   }
 
@@ -1515,10 +1515,10 @@ public class Configuration {
   }
 
   public static class AadAuthentication {
-    // AAD is disabled when APPLICATIONINSIGHTS_AUTHENTICATION_STRING is not set
+    // AAD can also be configured using APPLICATIONINSIGHTS_AUTHENTICATION_STRING
     public boolean enabled;
-    public String clientId;
     public AuthenticationType type;
+    public String clientId;
     @Deprecated public String tenantId;
     @Deprecated public String clientSecret;
     @Deprecated public String authorityHost;
@@ -1539,6 +1539,28 @@ public class Configuration {
               "AAD Authentication configuration of type User Assigned Managed Identity is missing \"clientId\".",
               "Please provide a valid \"clientId\" under the \"authentication\" configuration. "
                   + "Learn more about authentication configuration here: https://docs.microsoft.com/en-us/azure/azure-monitor/app/java-standalone-config#authentication");
+        }
+      }
+      if (type == AuthenticationType.CLIENTSECRET) {
+        if (isEmpty(clientId)) {
+          throw new FriendlyException(
+              "AAD Authentication configuration of type Client Secret Identity is missing \"clientId\".",
+              "Please provide a valid \"clientId\" under the \"authentication\" configuration. "
+                  + "Learn more about authentication configuration here: https://docs.microsoft.com/en-us/azure/azure-monitor/app/java-standalone-config#authentication");
+        }
+
+        if (isEmpty(tenantId)) {
+          throw new FriendlyException(
+              "AAD Authentication configuration of type Client Secret Identity is missing \"tenantId\".",
+              "Please provide a valid \"tenantId\" under the \"authentication\" configuration. "
+                  + "Learn more about authentication configuration here: https://docs.microsoft.com/en-us/azure/azure-monitor/app/java-standalone-config#authentication");
+        }
+
+        if (isEmpty(clientSecret)) {
+          throw new FriendlyException(
+              "AAD Authentication configuration of type Client Secret Identity is missing \"clientSecret\".",
+              "Please provide a valid \"clientSecret\" under the \"authentication\" configuration. "
+                  + "Learn more about authentication configuration here: https://docs.microsoft.com/en-us/azure/azure-monitor/app/java-standalone-config");
         }
       }
     }
