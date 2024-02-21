@@ -99,7 +99,7 @@ public class AzureMonitorLogProcessor implements LogRecordProcessor {
       span.setAttribute(
           "applicationinsights.internal.exception_logged",
           stacktrace); // TODO (heya) this should be AiSemanticAttributes.EXCEPTION_LOGGED
-      System.out.println(
+      logger.verbose(
           "add \"applicationinsights.internal.exception_logged\" attribute to the span.");
     }
   }
