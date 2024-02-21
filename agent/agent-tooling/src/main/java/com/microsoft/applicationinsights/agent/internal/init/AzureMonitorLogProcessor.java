@@ -31,9 +31,9 @@ public class AzureMonitorLogProcessor implements LogRecordProcessor {
     if (!(currentSpan instanceof ReadableSpan)) {
       return;
     }
-    ReadableSpan readableSpan = (ReadableSpan) currentSpan;
     setAttributeExceptionLogged(LocalRootSpan.fromContext(context), logRecord);
 
+    ReadableSpan readableSpan = (ReadableSpan) currentSpan;
     logRecord.setAttribute(
         AiSemanticAttributes.OPERATION_NAME, OperationNames.getOperationName(readableSpan));
     Long itemCount = readableSpan.getAttribute(AiSemanticAttributes.ITEM_COUNT);
@@ -80,26 +80,27 @@ public class AzureMonitorLogProcessor implements LogRecordProcessor {
   }
 
   private static void setAttributeExceptionLogged(Span span, ReadWriteLogRecord logRecord) {
-    if (lockField != null && attributesMapField != null) {
-      String stacktrace = null;
-      try {
-        synchronized (lockField) {
-          stacktrace =
-              ((AttributesMap) attributesMapField.get(logRecord))
-                  .get(SemanticAttributes.EXCEPTION_STACKTRACE);
-        }
-      } catch (Exception e) {
-        logger.error(
-            "Error occurred while stamping \"applicationinsights.internal.exception_logged\" to the span.",
-            e);
+    if (lockField == null || attributesMapField == null) {
+      return;
+    }
+    String stacktrace = null;
+    try {
+      synchronized (lockField) {
+        stacktrace =
+            ((AttributesMap) attributesMapField.get(logRecord))
+                .get(SemanticAttributes.EXCEPTION_STACKTRACE);
       }
-      if (stacktrace != null) {
-        span.setAttribute(
-            "applicationinsights.internal.exception_logged",
-            stacktrace); // TODO (heya) this should be AiSemanticAttributes.EXCEPTION_LOGGED
-        logger.verbose(
-            "add \"applicationinsights.internal.exception_logged\" attribute to the span.");
-      }
+    } catch (Exception e) {
+      logger.error(
+          "Error occurred while stamping \"applicationinsights.internal.exception_logged\" to the span.",
+          e);
+    }
+    if (stacktrace != null) {
+      span.setAttribute(
+          "applicationinsights.internal.exception_logged",
+          stacktrace); // TODO (heya) this should be AiSemanticAttributes.EXCEPTION_LOGGED
+      System.out.println(
+          "add \"applicationinsights.internal.exception_logged\" attribute to the span.");
     }
   }
 }
