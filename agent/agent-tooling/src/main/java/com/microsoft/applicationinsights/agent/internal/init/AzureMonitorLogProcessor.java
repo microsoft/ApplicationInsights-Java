@@ -21,8 +21,8 @@ public class AzureMonitorLogProcessor implements LogRecordProcessor {
     }
     ReadableSpan readableSpan = (ReadableSpan) currentSpan;
     currentSpan.setAttribute(
-        "applicationinsights.internal.exception_already_logged",
-        true); // TODO (heya) this should be AiSemanticAttributes.EXCEPTION_ALREADY_LOGGED
+        "applicationinsights.internal.exception_logged",
+        true); // TODO (heya) this should be AiSemanticAttributes.EXCEPTION_LOGGED
 
     logRecord.setAttribute(
         AiSemanticAttributes.OPERATION_NAME, OperationNames.getOperationName(readableSpan));

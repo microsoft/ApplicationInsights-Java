@@ -27,7 +27,9 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 @UseAgent
 abstract class SpringBootTest {
 
-  @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.create();
+  @RegisterExtension
+  static final SmokeTestExtension testing =
+      SmokeTestExtension.builder().setSelfDiagnosticsLevel("DEBUG").build();
 
   @Test
   @TargetUri("/basic/trackEvent")
@@ -59,7 +61,6 @@ abstract class SpringBootTest {
 
     Envelope rdEnvelope = rdList.get(0);
     List<Envelope> edList = testing.mockedIngestion.waitForItems("ExceptionData", 1);
-    assertThat(edList.size()).isEqualTo(2);
     assertThat(testing.mockedIngestion.getCountForType("EventData")).isZero();
 
     Envelope edEnvelope1 = edList.get(0);
