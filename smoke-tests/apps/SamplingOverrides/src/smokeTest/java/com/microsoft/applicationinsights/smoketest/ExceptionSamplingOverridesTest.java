@@ -22,9 +22,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 @UseAgent("applicationinsights3.json")
 abstract class ExceptionSamplingOverridesTest {
 
-  @RegisterExtension
-  static final SmokeTestExtension testing =
-      SmokeTestExtension.builder().setSelfDiagnosticsLevel("DEBUG").build();
+  @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.create();
 
   @Test
   @TargetUri(value = "/trackException")
@@ -33,7 +31,7 @@ abstract class ExceptionSamplingOverridesTest {
     Envelope rdEnvelope = rdList.get(0);
     assertThat(rdEnvelope.getTags().get("ai.operation.name"))
         .isEqualTo("GET /SamplingOverrides/trackException");
-    assertThat(testing.mockedIngestion.getCountForType("ExceptionData")).isEqualTo(1);
+    assertThat(testing.mockedIngestion.getCountForType("ExceptionData")).isEqualTo(0);
   }
 
   @Environment(TOMCAT_8_JAVA_8)
