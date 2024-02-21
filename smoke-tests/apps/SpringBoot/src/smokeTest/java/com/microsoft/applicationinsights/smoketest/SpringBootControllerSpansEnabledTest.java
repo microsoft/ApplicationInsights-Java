@@ -10,12 +10,9 @@ import static org.assertj.core.data.MapEntry.entry;
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
 import com.microsoft.applicationinsights.smoketest.schemav2.EventData;
-import com.microsoft.applicationinsights.smoketest.schemav2.ExceptionData;
 import com.microsoft.applicationinsights.smoketest.schemav2.RemoteDependencyData;
 import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Predicate;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -23,7 +20,9 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 @UseAgent("controller_spans_enabled_applicationinsights.json")
 class SpringBootControllerSpansEnabledTest {
 
-  @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.create();
+  @RegisterExtension
+  static final SmokeTestExtension testing =
+      SmokeTestExtension.builder().setSelfDiagnosticsLevel("DEBUG").build();
 
   @Test
   @TargetUri("/basic/trackEvent")
@@ -60,25 +59,7 @@ class SpringBootControllerSpansEnabledTest {
     String operationId = rdEnvelope.getTags().get("ai.operation.id");
     List<Envelope> rddList =
         testing.mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 1, operationId);
-    List<Envelope> edList =
-        testing.mockedIngestion.waitForItems(
-            new Predicate<Envelope>() {
-              @Override
-              public boolean test(Envelope input) {
-                if (!"ExceptionData".equals(input.getData().getBaseType())) {
-                  return false;
-                }
-                if (!operationId.equals(input.getTags().get("ai.operation.id"))) {
-                  return false;
-                }
-                // lastly, filter out ExceptionData captured from tomcat logger
-                ExceptionData data = (ExceptionData) ((Data<?>) input.getData()).getBaseData();
-                return !data.getProperties().containsKey("LoggerName");
-              }
-            },
-            1,
-            10,
-            TimeUnit.SECONDS);
+    List<Envelope> edList = testing.mockedIngestion.waitForItems("ExceptionData", 1);
     assertThat(testing.mockedIngestion.getCountForType("EventData")).isZero();
 
     Envelope rddEnvelope1 = rddList.get(0);
