@@ -27,7 +27,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 @UseAgent
 abstract class SpringBootTest {
 
-  @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.create();
+  @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.builder().setSelfDiagnosticsLevel("DEBUG").build();
 
   @Test
   @TargetUri("/basic/trackEvent")
