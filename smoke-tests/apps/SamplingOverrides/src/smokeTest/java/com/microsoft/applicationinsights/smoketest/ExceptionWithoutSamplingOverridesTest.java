@@ -27,7 +27,7 @@ abstract class ExceptionWithoutSamplingOverridesTest {
 
   @RegisterExtension
   static final SmokeTestExtension testing =
-      SmokeTestExtension.builder().setSelfDiagnosticsLevel("DEBUG").build();
+      SmokeTestExtension.builder().setSelfDiagnosticsLevel("debug").build();
 
   @Test
   @TargetUri(value = "/trackExceptionWithoutSamplingOverrides")

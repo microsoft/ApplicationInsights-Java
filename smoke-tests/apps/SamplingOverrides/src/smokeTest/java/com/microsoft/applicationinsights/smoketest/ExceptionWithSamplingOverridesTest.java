@@ -31,7 +31,7 @@ abstract class ExceptionWithSamplingOverridesTest {
     Envelope rdEnvelope = rdList.get(0);
     assertThat(rdEnvelope.getTags().get("ai.operation.name"))
         .isEqualTo("GET /SamplingOverrides/trackException");
-    assertThat(testing.mockedIngestion.getCountForType("ExceptionData")).isEqualTo(1);
+    assertThat(testing.mockedIngestion.getCountForType("ExceptionData")).isZero();
   }
 
   @Environment(TOMCAT_8_JAVA_8)
