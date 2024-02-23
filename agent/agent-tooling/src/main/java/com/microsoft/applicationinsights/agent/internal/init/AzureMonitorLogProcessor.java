@@ -20,10 +20,14 @@ import javax.annotation.Nullable;
 public class AzureMonitorLogProcessor implements LogRecordProcessor {
 
   private static final ClientLogger logger = new ClientLogger(AzureMonitorLogProcessor.class);
+  private static final Field lockField;
+  private static final Field attributesMapField;
 
-  private static final Class<?> sdkReadWriteLogRecordClass = getSdkReadWriteLogRecordClass();
-  private static final Field lockField = getLockField();
-  private static final Field attributesMapField = getAttributesMapField();
+  static {
+    Class<?> sdkReadWriteLogRecordClass = getSdkReadWriteLogRecordClass();
+    lockField = getLockField(sdkReadWriteLogRecordClass);
+    attributesMapField = getAttributesMapField(sdkReadWriteLogRecordClass);
+  }
 
   @Override
   public void onEmit(Context context, ReadWriteLogRecord logRecord) {
@@ -52,7 +56,7 @@ public class AzureMonitorLogProcessor implements LogRecordProcessor {
   }
 
   @Nullable
-  private static Field getLockField() {
+  private static Field getLockField(Class<?> sdkReadWriteLogRecordClass) {
     if (sdkReadWriteLogRecordClass == null) {
       return null;
     }
@@ -66,7 +70,7 @@ public class AzureMonitorLogProcessor implements LogRecordProcessor {
   }
 
   @Nullable
-  private static Field getAttributesMapField() {
+  private static Field getAttributesMapField(Class<?> sdkReadWriteLogRecordClass) {
     if (sdkReadWriteLogRecordClass == null) {
       return null;
     }
@@ -86,21 +90,18 @@ public class AzureMonitorLogProcessor implements LogRecordProcessor {
     String stacktrace = null;
     try {
       synchronized (lockField) {
+        // TODO add `getAttribute()` to `ReadWriteLogRecord` upstream
         stacktrace =
             ((AttributesMap) attributesMapField.get(logRecord))
                 .get(SemanticAttributes.EXCEPTION_STACKTRACE);
       }
     } catch (Exception e) {
       logger.error(
-          "Error occurred while stamping \"applicationinsights.internal.exception_logged\" to the span.",
+          "Error occurred while stamping \"applicationinsights.internal.logged_exception\" to the span.",
           e);
     }
     if (stacktrace != null) {
-      span.setAttribute(
-          "applicationinsights.internal.exception_logged",
-          stacktrace); // TODO (heya) this should be AiSemanticAttributes.EXCEPTION_LOGGED
-      logger.verbose(
-          "add \"applicationinsights.internal.exception_logged\" attribute to the span.");
+      span.setAttribute(AiSemanticAttributes.LOGGED_EXCEPTION, stacktrace);
     }
   }
 }
