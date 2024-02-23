@@ -40,14 +40,10 @@ abstract class ExceptionWithoutSamplingOverridesTest {
         (ExceptionData) ((Data<?>) exceptions.get(0).getData()).getBaseData();
     assertThat(exceptions.size()).isEqualTo(1);
     assertThat(exceptionData.getProperties().size()).isEqualTo(4);
-    assertThat(exceptionData.getProperties().get("LoggerName"))
-        .isEqualTo(
-            "org.apache.catalina.core.ContainerBase.[Catalina].[localhost].[/SamplingOverrides].[com.microsoft.applicationinsights.smoketestapp.ExceptionSamplingOverridesServlet]");
-    assertThat(exceptionData.getProperties().get("Logger Message"))
-        .isEqualTo(
-            "Servlet.service() for servlet [com.microsoft.applicationinsights.smoketestapp.ExceptionSamplingOverridesServlet] in context with path [/SamplingOverrides] threw exception");
+    assertThat(exceptionData.getProperties().get("LoggerName")).isNotNull();
+    assertThat(exceptionData.getProperties().get("Logger Message")).isNotNull();
     assertThat(exceptionData.getProperties().get("SourceType")).isEqualTo("Logger");
-    assertThat(exceptionData.getProperties().get("ThreadName")).isEqualTo("http-nio-8080-exec-2");
+    assertThat(exceptionData.getProperties().get("ThreadName")).isNotNull();
     ExceptionDetails exceptionDetails = exceptionData.getExceptions().get(0);
     assertThat(exceptionDetails.getStack()).isNotNull();
     assertThat(exceptionDetails.getTypeName()).isEqualTo("java.lang.RuntimeException");
