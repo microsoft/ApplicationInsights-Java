@@ -22,18 +22,18 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-@UseAgent("applicationinsights-exception-without-sampling-overrides.json")
+@UseAgent
 abstract class ExceptionWithoutSamplingOverridesTest {
 
   @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.create();
 
   @Test
-  @TargetUri(value = "/trackExceptionWithoutSamplingOverrides")
+  @TargetUri(value = "/trackException")
   void testExceptionWithoutSamplingOverrides() throws Exception {
     List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
     Envelope rdEnvelope = rdList.get(0);
     assertThat(rdEnvelope.getTags().get("ai.operation.name"))
-        .isEqualTo("GET /SamplingOverrides/trackExceptionWithoutSamplingOverrides");
+        .isEqualTo("GET /SamplingOverrides/trackException");
 
     List<Envelope> exceptions = testing.mockedIngestion.waitForItems("ExceptionData", 1);
     ExceptionData exceptionData =
@@ -42,17 +42,16 @@ abstract class ExceptionWithoutSamplingOverridesTest {
     assertThat(exceptionData.getProperties().size()).isEqualTo(4);
     assertThat(exceptionData.getProperties().get("LoggerName"))
         .isEqualTo(
-            "org.apache.catalina.core.ContainerBase.[Catalina].[localhost].[/SamplingOverrides].[com.microsoft.applicationinsights.smoketestapp.ExceptionWithoutSamplingOverridesServlet]");
+            "org.apache.catalina.core.ContainerBase.[Catalina].[localhost].[/SamplingOverrides].[com.microsoft.applicationinsights.smoketestapp.ExceptionSamplingOverridesServlet]");
     assertThat(exceptionData.getProperties().get("Logger Message"))
         .isEqualTo(
-            "Servlet.service() for servlet [com.microsoft.applicationinsights.smoketestapp.ExceptionWithoutSamplingOverridesServlet] in context with path [/SamplingOverrides] threw exception");
+            "Servlet.service() for servlet [com.microsoft.applicationinsights.smoketestapp.ExceptionSamplingOverridesServlet] in context with path [/SamplingOverrides] threw exception");
     assertThat(exceptionData.getProperties().get("SourceType")).isEqualTo("Logger");
     assertThat(exceptionData.getProperties().get("ThreadName")).isEqualTo("http-nio-8080-exec-2");
     ExceptionDetails exceptionDetails = exceptionData.getExceptions().get(0);
     assertThat(exceptionDetails.getStack()).isNotNull();
     assertThat(exceptionDetails.getTypeName()).isEqualTo("java.lang.RuntimeException");
-    assertThat(exceptionDetails.getMessage())
-        .isEqualTo("this is an expected exception without sampling overrides");
+    assertThat(exceptionDetails.getMessage()).isEqualTo("this is an expected exception");
   }
 
   @Environment(TOMCAT_8_JAVA_8)

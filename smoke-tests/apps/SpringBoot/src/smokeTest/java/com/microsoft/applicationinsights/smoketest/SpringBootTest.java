@@ -59,6 +59,7 @@ abstract class SpringBootTest {
 
     Envelope rdEnvelope = rdList.get(0);
     List<Envelope> edList = testing.mockedIngestion.waitForItems("ExceptionData", 1);
+    assertThat(edList.size()).isEqualTo(1);
     assertThat(testing.mockedIngestion.getCountForType("EventData")).isZero();
 
     Envelope edEnvelope1 = edList.get(0);

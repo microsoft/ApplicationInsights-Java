@@ -58,6 +58,7 @@ class SpringBootControllerSpansEnabledTest {
     List<Envelope> rddList =
         testing.mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 1, operationId);
     List<Envelope> edList = testing.mockedIngestion.waitForItems("ExceptionData", 1);
+    assertThat(edList.size()).isEqualTo(1);
     assertThat(testing.mockedIngestion.getCountForType("EventData")).isZero();
 
     Envelope rddEnvelope1 = rddList.get(0);

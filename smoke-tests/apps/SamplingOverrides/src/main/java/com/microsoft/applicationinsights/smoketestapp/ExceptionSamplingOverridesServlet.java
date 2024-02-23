@@ -9,7 +9,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 @WebServlet("/trackException")
-public class ExceptionWithSamplingOverridesServlet extends HttpServlet {
+public class ExceptionSamplingOverridesServlet extends HttpServlet {
 
   protected void doGet(HttpServletRequest request, HttpServletResponse response) {
     throw new RuntimeException("this is an expected exception");
