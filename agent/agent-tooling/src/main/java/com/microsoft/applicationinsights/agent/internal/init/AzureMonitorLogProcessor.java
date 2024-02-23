@@ -88,7 +88,7 @@ public class AzureMonitorLogProcessor implements LogRecordProcessor {
       synchronized (lockField) {
         stacktrace =
             ((AttributesMap) attributesMapField.get(logRecord))
-                .get(SemanticAttributes.EXCEPTION_MESSAGE);
+                .get(SemanticAttributes.EXCEPTION_STACKTRACE);
       }
     } catch (Exception e) {
       logger.error(

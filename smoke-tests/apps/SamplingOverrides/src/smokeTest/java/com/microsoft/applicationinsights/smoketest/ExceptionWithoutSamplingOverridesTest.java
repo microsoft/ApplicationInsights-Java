@@ -25,9 +25,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 @UseAgent("applicationinsights-exception-without-sampling-overrides.json")
 abstract class ExceptionWithoutSamplingOverridesTest {
 
-  @RegisterExtension
-  static final SmokeTestExtension testing =
-      SmokeTestExtension.builder().setSelfDiagnosticsLevel("debug").build();
+  @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.create();
 
   @Test
   @TargetUri(value = "/trackExceptionWithoutSamplingOverrides")
@@ -52,9 +50,9 @@ abstract class ExceptionWithoutSamplingOverridesTest {
     assertThat(exceptionData.getProperties().get("ThreadName")).isEqualTo("http-nio-8080-exec-2");
     ExceptionDetails exceptionDetails = exceptionData.getExceptions().get(0);
     assertThat(exceptionDetails.getStack()).isNotNull();
-    assertThat(exceptionDetails.getTypeName()).isEqualTo("java.lang.IllegalArgumentException");
+    assertThat(exceptionDetails.getTypeName()).isEqualTo("java.lang.RuntimeException");
     assertThat(exceptionDetails.getMessage())
-        .isEqualTo("this is an expected IllegalArgumentException");
+        .isEqualTo("this is an expected exception without sampling overrides");
   }
 
   @Environment(TOMCAT_8_JAVA_8)

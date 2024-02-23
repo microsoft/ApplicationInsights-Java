@@ -45,6 +45,7 @@ public class LoggingLevelConfigurator {
     updateLoggerLevel(loggerContext.getLogger(ROOT_LOGGER_NAME));
   }
 
+  @SuppressWarnings("SystemOut")
   public void updateLoggerLevel(Logger logger) {
     Level loggerLevel;
     String name = logger.getName();
@@ -89,6 +90,7 @@ public class LoggingLevelConfigurator {
     } else {
       loggerLevel = getOtherLibLevel(level);
     }
+    System.out.println(loggerLevel);
     logger.setLevel(loggerLevel);
   }
 
