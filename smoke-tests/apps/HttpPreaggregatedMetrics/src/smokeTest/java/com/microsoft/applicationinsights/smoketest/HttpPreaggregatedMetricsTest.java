@@ -162,9 +162,15 @@ abstract class HttpPreaggregatedMetricsTest {
     DataPoint dataPoint = dataPoints.get(0);
     assertThat(dataPoint.getCount()).isEqualTo(1);
     double greaterThan = type.equals("server") ? 200.0f : 0.0f;
-    assertThat(dataPoint.getValue()).isGreaterThan(greaterThan).isLessThan(60 * 1000.0);
-    assertThat(dataPoint.getMin() * 1000).isGreaterThan(greaterThan).isLessThan(60 * 1000.0);
-    assertThat(dataPoint.getMax() * 1000).isGreaterThan(greaterThan).isLessThan(60 * 1000.0);
+    assertThat(dataPoint.getValue())
+        .isGreaterThan(greaterThan)
+        .isLessThan(70 * 1000.0); // wildfly takes longer
+    assertThat(dataPoint.getMin() * 1000)
+        .isGreaterThan(greaterThan)
+        .isLessThan(70 * 1000.0); // wildfly takes longer
+    assertThat(dataPoint.getMax() * 1000)
+        .isGreaterThan(greaterThan)
+        .isLessThan(70 * 1000.0); // wildfly takes longer
     Map<String, String> properties = metricData.getProperties();
     String expectedSuccess = "200".equals(resultCode) ? "True" : "False";
     if ("client".equals(type)) {
