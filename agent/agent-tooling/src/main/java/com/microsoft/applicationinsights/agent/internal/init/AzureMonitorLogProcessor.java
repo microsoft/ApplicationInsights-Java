@@ -96,9 +96,7 @@ public class AzureMonitorLogProcessor implements LogRecordProcessor {
                 .get(SemanticAttributes.EXCEPTION_STACKTRACE);
       }
     } catch (Exception e) {
-      logger.error(
-          "Error occurred while stamping \"applicationinsights.internal.logged_exception\" to the span.",
-          e);
+      logger.error(e.getMessage(), e);
     }
     if (stacktrace != null) {
       span.setAttribute(AiSemanticAttributes.LOGGED_EXCEPTION, stacktrace);
