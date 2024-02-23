@@ -24,8 +24,6 @@ import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
 import com.microsoft.applicationinsights.smoketest.schemav2.SeverityLevel;
 import java.util.Comparator;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Predicate;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -449,27 +447,8 @@ abstract class CoreAndFilter2xTest {
     List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
 
     Envelope rdEnvelope = rdList.get(0);
-    String operationId = rdEnvelope.getTags().get("ai.operation.id");
-    List<Envelope> edList =
-        testing.mockedIngestion.waitForItems(
-            new Predicate<Envelope>() {
-              @Override
-              public boolean test(Envelope input) {
-                if (!"ExceptionData".equals(input.getData().getBaseType())) {
-                  return false;
-                }
-                if (!operationId.equals(input.getTags().get("ai.operation.id"))) {
-                  return false;
-                }
-                // lastly, filter out ExceptionData captured from tomcat logger
-                ExceptionData data = (ExceptionData) ((Data<?>) input.getData()).getBaseData();
-                return !data.getProperties().containsKey("LoggerName");
-              }
-            },
-            1,
-            10,
-            TimeUnit.SECONDS);
-
+    List<Envelope> edList = testing.mockedIngestion.waitForItems("ExceptionData", 1);
+    assertThat(edList.size()).isEqualTo(1);
     Envelope edEnvelope = edList.get(0);
 
     assertThat(rdEnvelope.getSampleRate()).isNull();
