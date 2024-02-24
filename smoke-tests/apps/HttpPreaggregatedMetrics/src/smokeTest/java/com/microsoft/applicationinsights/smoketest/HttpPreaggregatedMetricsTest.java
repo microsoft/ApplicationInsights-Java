@@ -165,10 +165,10 @@ abstract class HttpPreaggregatedMetricsTest {
     assertThat(dataPoint.getValue())
         .isGreaterThan(greaterThan)
         .isLessThan(70 * 1000.0); // wildfly takes longer
-    assertThat(dataPoint.getMin() * 1000)
+    assertThat(dataPoint.getMin())
         .isGreaterThan(greaterThan)
         .isLessThan(70 * 1000.0); // wildfly takes longer
-    assertThat(dataPoint.getMax() * 1000)
+    assertThat(dataPoint.getMax())
         .isGreaterThan(greaterThan)
         .isLessThan(70 * 1000.0); // wildfly takes longer
     Map<String, String> properties = metricData.getProperties();
