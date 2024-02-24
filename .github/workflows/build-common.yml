@@ -81,6 +81,10 @@ jobs:
           distribution: temurin
           java-version: 17
 
+      - run: |
+          mvn -version
+          mvn install:install-file -Dfile="azure-monitor-opentelemetry-exporter-1.0.0-beta.19.jar" -DpomFile="azure-monitor-opentelemetry-exporter-1.0.0-beta.19.pom" -DgroupId="com.azure" -DartifactId="azure-monitor-opentelemetry-exporter" -Dversion="1.0.0-beta.19"
+
       - name: Assemble
         uses: gradle/gradle-build-action@v3
         with:
@@ -129,6 +133,10 @@ jobs:
           distribution: temurin
           java-version: 17
 
+      - run: |
+          mvn -version
+          mvn install:install-file -Dfile="azure-monitor-opentelemetry-exporter-1.0.0-beta.19.jar" -DpomFile="azure-monitor-opentelemetry-exporter-1.0.0-beta.19.pom" -DgroupId="com.azure" -DartifactId="azure-monitor-opentelemetry-exporter" -Dversion="1.0.0-beta.19"
+
       - name: Test
         uses: gradle/gradle-build-action@v3
         with:
@@ -168,6 +176,10 @@ jobs:
         with:
           distribution: temurin
           java-version: 17
+
+      - run: |
+          mvn -version
+          mvn install:install-file -Dfile="azure-monitor-opentelemetry-exporter-1.0.0-beta.19.jar" -DpomFile="azure-monitor-opentelemetry-exporter-1.0.0-beta.19.pom" -DgroupId="com.azure" -DartifactId="azure-monitor-opentelemetry-exporter" -Dversion="1.0.0-beta.19"
 
       - name: Test
         uses: gradle/gradle-build-action@v3
