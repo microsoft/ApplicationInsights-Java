@@ -209,7 +209,7 @@ abstract class CoreAndFilter2xTest {
     Envelope mdEnvelope = mdList.get(0);
 
     assertThat(rdEnvelope.getSampleRate()).isEqualTo(100.0f);
-    assertThat(mdEnvelope.getSampleRate()).isEqualTo(100.0f);
+    assertThat(mdEnvelope.getSampleRate()).isNull(); // metrics are never sent with sample rate
 
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
     MetricData md = (MetricData) ((Data<?>) mdEnvelope.getData()).getBaseData();
