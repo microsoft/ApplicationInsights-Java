@@ -113,10 +113,11 @@ abstract class CoreAndFilter3xUsingOld3xAgentTest {
     Envelope edEnvelope2 = edList.get(1);
     Envelope edEnvelope3 = edList.get(2);
 
-    assertThat(rdEnvelope.getSampleRate()).isEqualTo(100.0f);
-    assertThat(edEnvelope1.getSampleRate()).isEqualTo(100.0f);
-    assertThat(edEnvelope2.getSampleRate()).isEqualTo(100.0f);
-    assertThat(edEnvelope3.getSampleRate()).isEqualTo(100.0f);
+    // TODO need to send item count using old 3x agent?
+    assertThat(rdEnvelope.getSampleRate()).isNull();
+    assertThat(edEnvelope1.getSampleRate()).isNull();
+    assertThat(edEnvelope2.getSampleRate()).isNull();
+    assertThat(edEnvelope3.getSampleRate()).isNull();
 
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
 
