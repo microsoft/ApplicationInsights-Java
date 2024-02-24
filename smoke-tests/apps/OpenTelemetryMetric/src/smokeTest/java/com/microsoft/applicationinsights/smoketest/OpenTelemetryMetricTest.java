@@ -161,9 +161,9 @@ abstract class OpenTelemetryMetricTest {
     Envelope envelope3 = metrics.get(2);
 
     assertThat(rdEnvelope.getSampleRate()).isEqualTo(100.0f);
-    assertThat(envelope1.getSampleRate()).isEqualTo(100.0f);
-    assertThat(envelope2.getSampleRate()).isEqualTo(100.0f);
-    assertThat(envelope3.getSampleRate()).isEqualTo(100.0f);
+    assertThat(envelope1.getSampleRate()).isNull(); // metrics are never sent with sample rate
+    assertThat(envelope2.getSampleRate()).isNull(); // metrics are never sent with sample rate
+    assertThat(envelope3.getSampleRate()).isNull(); // metrics are never sent with sample rate
 
     // validate tags
     Map<String, String> tags1 = envelope1.getTags();
