@@ -164,13 +164,13 @@ abstract class HttpPreaggregatedMetricsTest {
     double greaterThan = type.equals("server") ? 200.0f : 0.0f;
     assertThat(dataPoint.getValue())
         .isGreaterThan(greaterThan)
-        .isLessThan(70 * 1000.0); // wildfly takes longer
+        .isLessThan(60 * 1000.0);
     assertThat(dataPoint.getMin())
         .isGreaterThan(greaterThan)
-        .isLessThan(70 * 1000.0); // wildfly takes longer
+        .isLessThan(60 * 1000.0);
     assertThat(dataPoint.getMax())
         .isGreaterThan(greaterThan)
-        .isLessThan(70 * 1000.0); // wildfly takes longer
+        .isLessThan(60 * 1000.0);
     Map<String, String> properties = metricData.getProperties();
     String expectedSuccess = "200".equals(resultCode) ? "True" : "False";
     if ("client".equals(type)) {
