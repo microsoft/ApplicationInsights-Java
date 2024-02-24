@@ -64,8 +64,8 @@ abstract class SpringBootTest {
 
     Envelope edEnvelope1 = edList.get(0);
 
-    assertThat(rdEnvelope.getSampleRate()).isNull();
-    assertThat(edEnvelope1.getSampleRate()).isNull();
+    assertThat(rdEnvelope.getSampleRate()).isEqualTo(100.0f);
+    assertThat(edEnvelope1.getSampleRate()).isEqualTo(100.0f);
 
     RequestData rd = testing.getTelemetryDataForType(0, "RequestData");
 
@@ -92,8 +92,8 @@ abstract class SpringBootTest {
 
     Envelope rddEnvelope1 = rddList.get(0);
 
-    assertThat(rdEnvelope.getSampleRate()).isNull();
-    assertThat(rddEnvelope1.getSampleRate()).isNull();
+    assertThat(rdEnvelope.getSampleRate()).isEqualTo(100.0f);
+    assertThat(rddEnvelope1.getSampleRate()).isEqualTo(100.0f);
 
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
     RemoteDependencyData rdd1 =

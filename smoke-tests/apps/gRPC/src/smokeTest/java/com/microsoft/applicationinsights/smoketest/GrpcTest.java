@@ -51,9 +51,9 @@ abstract class GrpcTest {
 
     Envelope rddEnvelope = getDependencyEnvelope(rddList, "example.Greeter/SayHello");
 
-    assertThat(rdEnvelope1.getSampleRate()).isNull();
-    assertThat(rdEnvelope2.getSampleRate()).isNull();
-    assertThat(rddEnvelope.getSampleRate()).isNull();
+    assertThat(rdEnvelope1.getSampleRate()).isEqualTo(100.0f);
+    assertThat(rdEnvelope2.getSampleRate()).isEqualTo(100.0f);
+    assertThat(rddEnvelope.getSampleRate()).isEqualTo(100.0f);
 
     RequestData rd1 = (RequestData) ((Data<?>) rdEnvelope1.getData()).getBaseData();
     RemoteDependencyData rdd =
@@ -99,9 +99,9 @@ abstract class GrpcTest {
 
     Envelope rddEnvelope = getDependencyEnvelope(rddList, "example.Greeter/Conversation");
 
-    assertThat(rdEnvelope1.getSampleRate()).isNull();
-    assertThat(rdEnvelope2.getSampleRate()).isNull();
-    assertThat(rddEnvelope.getSampleRate()).isNull();
+    assertThat(rdEnvelope1.getSampleRate()).isEqualTo(100.0f);
+    assertThat(rdEnvelope2.getSampleRate()).isEqualTo(100.0f);
+    assertThat(rddEnvelope.getSampleRate()).isEqualTo(100.0f);
 
     RequestData rd1 = (RequestData) ((Data<?>) rdEnvelope1.getData()).getBaseData();
     RemoteDependencyData rdd =
