@@ -41,7 +41,6 @@ import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.annotation.Nullable;
-import io.opentelemetry.sdk.trace.data.SpanData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
