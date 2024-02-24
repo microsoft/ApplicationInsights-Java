@@ -401,7 +401,7 @@ public class SecondEntryPoint
       featureList.add(Feature.BROWSER_SDK_LOADER);
     }
     if (!config.preview.sampling.overrides.isEmpty()) {
-      featureList.add(Feature.PREVIEW_SAMPLING);
+      featureList.add(Feature.SAMPLING);
     }
     if (config.preview.captureControllerSpans) {
       featureList.add(Feature.PREVIEW_CAPTURE_CONTROLLER_SPANS);

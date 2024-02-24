@@ -48,8 +48,8 @@ class KafkaDisabledTest {
     List<Envelope> rddList = testing.mockedIngestion.waitForItems("RemoteDependencyData", 1);
     Envelope rddEnvelope = rddList.get(0);
 
-    assertThat(rdEnvelope.getSampleRate()).isNull();
-    assertThat(rddEnvelope.getSampleRate()).isNull();
+    assertThat(rdEnvelope.getSampleRate()).isEqualTo(100.0f);
+    assertThat(rddEnvelope.getSampleRate()).isEqualTo(100.0f);
 
     RemoteDependencyData rdd =
         (RemoteDependencyData) ((Data<?>) rddEnvelope.getData()).getBaseData();

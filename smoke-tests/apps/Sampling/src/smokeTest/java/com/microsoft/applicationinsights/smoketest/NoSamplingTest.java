@@ -48,13 +48,13 @@ abstract class NoSamplingTest {
     assertThat(messageEnvelopes.size()).isEqualTo(1000);
 
     for (Envelope requestEnvelope : requestEnvelopes) {
-      assertThat(requestEnvelope.getSampleRate()).isNull();
+      assertThat(requestEnvelope.getSampleRate()).isEqualTo(100.0f);
     }
     for (Envelope eventEnvelope : eventEnvelopes) {
-      assertThat(eventEnvelope.getSampleRate()).isNull();
+      assertThat(eventEnvelope.getSampleRate()).isEqualTo(100.0f);
     }
     for (Envelope messageEnvelope : messageEnvelopes) {
-      assertThat(messageEnvelope.getSampleRate()).isNull();
+      assertThat(messageEnvelope.getSampleRate()).isEqualTo(100.0f);
     }
   }
 

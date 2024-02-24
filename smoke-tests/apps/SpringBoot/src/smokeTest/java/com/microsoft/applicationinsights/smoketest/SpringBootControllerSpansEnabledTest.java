@@ -10,12 +10,9 @@ import static org.assertj.core.data.MapEntry.entry;
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
 import com.microsoft.applicationinsights.smoketest.schemav2.EventData;
-import com.microsoft.applicationinsights.smoketest.schemav2.ExceptionData;
 import com.microsoft.applicationinsights.smoketest.schemav2.RemoteDependencyData;
 import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Predicate;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -31,7 +28,7 @@ class SpringBootControllerSpansEnabledTest {
     List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
     Envelope rdEnvelope = rdList.get(0);
 
-    assertThat(rdEnvelope.getSampleRate()).isNull();
+    assertThat(rdEnvelope.getSampleRate()).isEqualTo(100.0f);
 
     String operationId = rdEnvelope.getTags().get("ai.operation.id");
 
@@ -60,33 +57,16 @@ class SpringBootControllerSpansEnabledTest {
     String operationId = rdEnvelope.getTags().get("ai.operation.id");
     List<Envelope> rddList =
         testing.mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 1, operationId);
-    List<Envelope> edList =
-        testing.mockedIngestion.waitForItems(
-            new Predicate<Envelope>() {
-              @Override
-              public boolean test(Envelope input) {
-                if (!"ExceptionData".equals(input.getData().getBaseType())) {
-                  return false;
-                }
-                if (!operationId.equals(input.getTags().get("ai.operation.id"))) {
-                  return false;
-                }
-                // lastly, filter out ExceptionData captured from tomcat logger
-                ExceptionData data = (ExceptionData) ((Data<?>) input.getData()).getBaseData();
-                return !data.getProperties().containsKey("LoggerName");
-              }
-            },
-            1,
-            10,
-            TimeUnit.SECONDS);
+    List<Envelope> edList = testing.mockedIngestion.waitForItems("ExceptionData", 1);
+    assertThat(edList.size()).isEqualTo(1);
     assertThat(testing.mockedIngestion.getCountForType("EventData")).isZero();
 
     Envelope rddEnvelope1 = rddList.get(0);
     Envelope edEnvelope1 = edList.get(0);
 
-    assertThat(rdEnvelope.getSampleRate()).isNull();
-    assertThat(rddEnvelope1.getSampleRate()).isNull();
-    assertThat(edEnvelope1.getSampleRate()).isNull();
+    assertThat(rdEnvelope.getSampleRate()).isEqualTo(100.0f);
+    assertThat(rddEnvelope1.getSampleRate()).isEqualTo(100.0f);
+    assertThat(edEnvelope1.getSampleRate()).isEqualTo(100.0f);
 
     RequestData rd = testing.getTelemetryDataForType(0, "RequestData");
     RemoteDependencyData rdd1 =
@@ -126,10 +106,10 @@ class SpringBootControllerSpansEnabledTest {
     Envelope rddEnvelope2 = rddList.get(1);
     Envelope rddEnvelope3 = rddList.get(2);
 
-    assertThat(rdEnvelope.getSampleRate()).isNull();
-    assertThat(rddEnvelope1.getSampleRate()).isNull();
-    assertThat(rddEnvelope2.getSampleRate()).isNull();
-    assertThat(rddEnvelope3.getSampleRate()).isNull();
+    assertThat(rdEnvelope.getSampleRate()).isEqualTo(100.0f);
+    assertThat(rddEnvelope1.getSampleRate()).isEqualTo(100.0f);
+    assertThat(rddEnvelope2.getSampleRate()).isEqualTo(100.0f);
+    assertThat(rddEnvelope3.getSampleRate()).isEqualTo(100.0f);
 
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
     RemoteDependencyData rdd1 =
