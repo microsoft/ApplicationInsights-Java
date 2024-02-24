@@ -74,7 +74,6 @@ abstract class CoreAndFilter3xUsingOld3xAgentTest {
     Envelope edEnvelope1 = edList.get(0);
     Envelope edEnvelope2 = edList.get(1);
 
-    // TODO need to send item count using old 3x agent?
     assertThat(rdEnvelope.getSampleRate()).isNull();
     assertThat(edEnvelope1.getSampleRate()).isNull();
     assertThat(edEnvelope2.getSampleRate()).isNull();
@@ -114,7 +113,6 @@ abstract class CoreAndFilter3xUsingOld3xAgentTest {
     Envelope edEnvelope2 = edList.get(1);
     Envelope edEnvelope3 = edList.get(2);
 
-    // TODO need to send item count using old 3x agent?
     assertThat(rdEnvelope.getSampleRate()).isNull();
     assertThat(edEnvelope1.getSampleRate()).isNull();
     assertThat(edEnvelope2.getSampleRate()).isNull();
@@ -213,7 +211,6 @@ abstract class CoreAndFilter3xUsingOld3xAgentTest {
     Envelope rdEnvelope = rdList.get(0);
     Envelope mdEnvelope = mdList.get(0);
 
-    // TODO need to send item count using old 3x agent?
     assertThat(rdEnvelope.getSampleRate()).isNull();
     assertThat(mdEnvelope.getSampleRate()).isNull();
 
@@ -251,7 +248,6 @@ abstract class CoreAndFilter3xUsingOld3xAgentTest {
     Envelope mdEnvelope2 = mdList.get(1);
     Envelope mdEnvelope3 = mdList.get(2);
 
-    // TODO need to send item count using old 3x agent?
     assertThat(rdEnvelope.getSampleRate()).isNull();
     assertThat(mdEnvelope1.getSampleRate()).isNull();
     assertThat(mdEnvelope2.getSampleRate()).isNull();
@@ -315,7 +311,6 @@ abstract class CoreAndFilter3xUsingOld3xAgentTest {
       }
     }
 
-    // TODO need to send item count using old 3x agent?
     assertThat(rdEnvelope.getSampleRate()).isNull();
     assertThat(pvdEnvelope1.getSampleRate()).isNull();
     assertThat(pvdEnvelope2.getSampleRate()).isNull();
@@ -409,7 +404,6 @@ abstract class CoreAndFilter3xUsingOld3xAgentTest {
 
     Envelope pvdEnvelope = pvdList.get(0);
 
-    // TODO need to send item count using old 3x agent?
     assertThat(rdEnvelope.getSampleRate()).isNull();
     assertThat(pvdEnvelope.getSampleRate()).isNull();
 
@@ -430,7 +424,6 @@ abstract class CoreAndFilter3xUsingOld3xAgentTest {
 
     Envelope rdEnvelope = rdList.get(0);
 
-    // TODO need to send item count using old 3x agent?
     assertThat(rdEnvelope.getSampleRate()).isNull();
 
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
@@ -483,7 +476,6 @@ abstract class CoreAndFilter3xUsingOld3xAgentTest {
 
     Envelope edEnvelope = edList.get(0);
 
-    // TODO need to send item count using old 3x agent?
     assertThat(rdEnvelope.getSampleRate()).isNull();
     assertThat(edEnvelope.getSampleRate()).isNull();
 
@@ -513,7 +505,6 @@ abstract class CoreAndFilter3xUsingOld3xAgentTest {
 
     Envelope rdEnvelope = rdList.get(0);
 
-    // TODO need to send item count using old 3x agent?
     assertThat(rdEnvelope.getSampleRate()).isNull();
 
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
