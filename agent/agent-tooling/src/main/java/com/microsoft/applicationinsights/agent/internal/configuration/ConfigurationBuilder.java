@@ -197,7 +197,7 @@ public class ConfigurationBuilder {
 
     if (!config.preview.sampling.overrides.isEmpty()) {
       configurationLogger.warn(
-          "\"Sampling overrides\" is no longer in preview and it has been GA since 3.5 GA,");
+          "\"Sampling overrides\" is no longer in preview and it has been GA since 3.5.0 GA,");
       config.sampling.overrides = config.preview.sampling.overrides;
     }
     for (SamplingOverride override : config.sampling.overrides) {
