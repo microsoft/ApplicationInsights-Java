@@ -200,11 +200,6 @@ public class ConfigurationBuilder {
           "\"Sampling overrides\" is no longer in preview and it has been GA since 3.5 GA,");
       config.sampling.overrides = config.preview.sampling.overrides;
     }
-    if (config.preview.sampling.parentBased) {
-      configurationLogger.warn(
-          "\"parentBased\" is no longer in preview and it has been GA since 3.5 GA,");
-      config.sampling.parentBased = config.preview.sampling.parentBased;
-    }
     for (SamplingOverride override : config.sampling.overrides) {
       if (override.telemetryKind != null) {
         configurationLogger.warn(

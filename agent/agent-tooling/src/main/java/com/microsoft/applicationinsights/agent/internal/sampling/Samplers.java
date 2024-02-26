@@ -11,7 +11,8 @@ import java.util.stream.Collectors;
 
 public class Samplers {
 
-  public static Sampler getSampler(Configuration.Sampling sampling) {
+  public static Sampler getSampler(
+      Configuration.Sampling sampling, Configuration.SamplingPreview samplingPreview) {
     Sampler sampler;
     if (sampling.requestsPerSecond != null) {
       SamplingPercentage requestSamplingPercentage =
@@ -39,7 +40,7 @@ public class Samplers {
           new AiOverrideSampler(requestSamplingOverrides, dependencySamplingOverrides, sampler);
     }
 
-    if (!sampling.parentBased) {
+    if (!samplingPreview.parentBased) {
       return sampler;
     }
 

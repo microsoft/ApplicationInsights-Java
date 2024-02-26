@@ -156,7 +156,6 @@ public class Configuration {
   }
 
   public static class Sampling {
-    public boolean parentBased;
 
     // fixed percentage of requests
     @Nullable public Double percentage;
@@ -193,7 +192,7 @@ public class Configuration {
     // sampled)
     //
     // future goal: make parentBased sampling the default if item count is received via tracestate
-    @Deprecated public boolean parentBased;
+    public boolean parentBased;
 
     @Deprecated public List<SamplingOverride> overrides = new ArrayList<>();
   }
