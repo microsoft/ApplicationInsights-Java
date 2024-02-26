@@ -501,7 +501,8 @@ public class SecondEntryPoint
         !configuration.preview.disablePropagation && enabled,
         configuration.preview.additionalPropagators,
         configuration.preview.legacyRequestIdPropagation.enabled);
-    RuntimeConfigurator.updateSampling(enabled, configuration.sampling);
+    RuntimeConfigurator.updateSampling(
+        enabled, configuration.sampling, configuration.preview.sampling);
 
     tracerProvider.addSpanProcessor(new AzureMonitorSpanProcessor());
     if (!configuration.preview.inheritedAttributes.isEmpty()) {

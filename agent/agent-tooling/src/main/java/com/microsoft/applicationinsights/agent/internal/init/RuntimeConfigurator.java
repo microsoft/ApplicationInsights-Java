@@ -137,7 +137,7 @@ public class RuntimeConfigurator {
         || !Objects.equals(runtimeConfig.sampling.percentage, currentConfig.sampling.percentage)
         || !Objects.equals(
             runtimeConfig.sampling.requestsPerSecond, currentConfig.sampling.requestsPerSecond)) {
-      updateSampling(enabled, runtimeConfig.sampling);
+      updateSampling(enabled, runtimeConfig.sampling, runtimeConfig.samplingPreview);
     }
 
     // initialize Profiler
@@ -195,7 +195,10 @@ public class RuntimeConfigurator {
     }
   }
 
-  static void updateSampling(boolean enabled, Configuration.Sampling sampling) {
+  static void updateSampling(
+      boolean enabled,
+      Configuration.Sampling sampling,
+      Configuration.SamplingPreview samplingPreview) {
 
     if (!enabled) {
       DelegatingSampler.getInstance().reset();
@@ -203,7 +206,7 @@ public class RuntimeConfigurator {
       return;
     }
 
-    DelegatingSampler.getInstance().setDelegate(Samplers.getSampler(sampling));
+    DelegatingSampler.getInstance().setDelegate(Samplers.getSampler(sampling, samplingPreview));
     if (sampling.percentage != null) {
       BytecodeUtilImpl.samplingPercentage = sampling.percentage.floatValue();
     } else {
