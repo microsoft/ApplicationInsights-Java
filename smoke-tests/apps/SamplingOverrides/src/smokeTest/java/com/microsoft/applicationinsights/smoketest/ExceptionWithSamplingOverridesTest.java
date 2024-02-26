@@ -22,8 +22,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 @UseAgent("applicationinsights-exception-with-sampling-overrides.json")
 abstract class ExceptionWithSamplingOverridesTest {
 
-  @RegisterExtension
-  static final SmokeTestExtension testing = SmokeTestExtension.create();
+  @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.create();
 
   @Test
   @TargetUri(value = "/trackException")
