@@ -19,8 +19,8 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-@UseAgent("applicationinsights3.json")
-abstract class ExceptionSamplingOverridesTest {
+@UseAgent("applicationinsights-exception-with-sampling-overrides.json")
+abstract class ExceptionWithSamplingOverridesTest {
 
   @RegisterExtension
   static final SmokeTestExtension testing =
@@ -28,7 +28,7 @@ abstract class ExceptionSamplingOverridesTest {
 
   @Test
   @TargetUri(value = "/trackException")
-  void testExceptionSamplingOverrides() throws Exception {
+  void testExceptionWithSamplingOverrides() throws Exception {
     List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
     Envelope rdEnvelope = rdList.get(0);
     assertThat(rdEnvelope.getTags().get("ai.operation.name"))
@@ -37,29 +37,29 @@ abstract class ExceptionSamplingOverridesTest {
   }
 
   @Environment(TOMCAT_8_JAVA_8)
-  static class Tomcat8Java8Test extends ExceptionSamplingOverridesTest {}
+  static class Tomcat8Java8Test extends ExceptionWithSamplingOverridesTest {}
 
   @Environment(TOMCAT_8_JAVA_8_OPENJ9)
-  static class Tomcat8Java8OpenJ9Test extends ExceptionSamplingOverridesTest {}
+  static class Tomcat8Java8OpenJ9Test extends ExceptionWithSamplingOverridesTest {}
 
   @Environment(TOMCAT_8_JAVA_11)
-  static class Tomcat8Java11Test extends ExceptionSamplingOverridesTest {}
+  static class Tomcat8Java11Test extends ExceptionWithSamplingOverridesTest {}
 
   @Environment(TOMCAT_8_JAVA_11_OPENJ9)
-  static class Tomcat8Java11OpenJ9Test extends ExceptionSamplingOverridesTest {}
+  static class Tomcat8Java11OpenJ9Test extends ExceptionWithSamplingOverridesTest {}
 
   @Environment(TOMCAT_8_JAVA_17)
-  static class Tomcat8Java17Test extends ExceptionSamplingOverridesTest {}
+  static class Tomcat8Java17Test extends ExceptionWithSamplingOverridesTest {}
 
   @Environment(TOMCAT_8_JAVA_19)
-  static class Tomcat8Java19Test extends ExceptionSamplingOverridesTest {}
+  static class Tomcat8Java19Test extends ExceptionWithSamplingOverridesTest {}
 
   @Environment(TOMCAT_8_JAVA_20)
-  static class Tomcat8Java20Test extends ExceptionSamplingOverridesTest {}
+  static class Tomcat8Java20Test extends ExceptionWithSamplingOverridesTest {}
 
   @Environment(WILDFLY_13_JAVA_8)
-  static class Wildfly13Java8Test extends ExceptionSamplingOverridesTest {}
+  static class Wildfly13Java8Test extends ExceptionWithSamplingOverridesTest {}
 
   @Environment(WILDFLY_13_JAVA_8_OPENJ9)
-  static class Wildfly13Java8OpenJ9Test extends ExceptionSamplingOverridesTest {}
+  static class Wildfly13Java8OpenJ9Test extends ExceptionWithSamplingOverridesTest {}
 }

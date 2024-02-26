@@ -400,10 +400,9 @@ public class SecondEntryPoint
     if (config.preview.browserSdkLoader.enabled) {
       featureList.add(Feature.BROWSER_SDK_LOADER);
     }
-    // TODO (heya) track sampling overrides GA feature after updating the standalone exporter
-    //    if (!config.sampling.overrides.isEmpty()) {
-    //      featureList.add(Feature.SAMPLING);
-    //    }
+    if (!config.preview.sampling.overrides.isEmpty()) {
+      featureList.add(Feature.SAMPLING);
+    }
     if (config.preview.captureControllerSpans) {
       featureList.add(Feature.PREVIEW_CAPTURE_CONTROLLER_SPANS);
     }
