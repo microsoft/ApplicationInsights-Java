@@ -73,10 +73,6 @@ public class ExceptionDetails {
     this.hasFullStack = value;
   }
 
-  public String getStack() {
-    return this.stack;
-  }
-
   /** Sets the Stack property. */
   public void setStack(String value) {
     this.stack = value;
