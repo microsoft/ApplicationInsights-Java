@@ -67,9 +67,9 @@ abstract class PreAggMetricsWithRoleNameOverridesAndSamplingTest {
     for (Envelope envelope : metricsEnvelops) {
       MetricData metricData = (MetricData) ((Data<?>) envelope.getData()).getBaseData();
       String name = metricData.getMetrics().get(0).getName();
-      if ("http.client.duration".equals(name)) {
+      if ("http.client.request.duration".equals(name)) {
         clientMetrics.add(envelope);
-      } else if ("http.server.duration".equals(name)) {
+      } else if ("http.server.request.duration".equals(name)) {
         serverMetrics.add(envelope);
       }
     }

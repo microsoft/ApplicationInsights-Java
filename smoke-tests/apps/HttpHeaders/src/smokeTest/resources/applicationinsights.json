@@ -12,12 +12,12 @@
         "host"
       ],
       "responseHeaders": [
-        "abc"
+        "abc-def"
       ]
     },
     "captureHttpClientHeaders": {
       "requestHeaders": [
-        "abc"
+        "abc-def"
       ],
       "responseHeaders": [
         "date"
@@ -28,7 +28,7 @@
         {
           "attributes": [
             {
-              "key": "http.request.header.abc",
+              "key": "http.request.header.abc-def",
               "value": "nope",
               "matchType": "strict"
             }

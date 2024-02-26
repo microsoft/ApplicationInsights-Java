@@ -60,7 +60,7 @@ public final class ApplicationInsights {
       String appInsightResourceName = findAppInsightResourceName();
       CoreRuntimeAttach runtimeAttach = new CoreRuntimeAttach(appInsightResourceName);
 
-      runtimeAttach.attachJavaagentToCurrentJVM();
+      runtimeAttach.attachJavaagentToCurrentJvm();
     } catch (Throwable t) {
       logger.log(Level.WARNING, "Fail to runtime attach Application Insights", t);
     }

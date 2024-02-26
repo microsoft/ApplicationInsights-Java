@@ -28,7 +28,7 @@ public class StatsbeatSpanExporter implements SpanExporter {
       if (instrumentationScopeName.startsWith("azure-")) {
         instrumentationScopeName = AZURE_OPENTELEMETRY;
       }
-      statsbeatModule.getInstrumentationStatsbeat().addInstrumentation(instrumentationScopeName);
+      statsbeatModule.getInstrumentationStatsbeat().addInstrumentation(span);
     }
     return delegate.export(spans);
   }

@@ -5,7 +5,7 @@ package com.microsoft.applicationinsights.smoketestapp;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.logs.Severity;
-import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
+import io.opentelemetry.semconv.SemanticAttributes;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import org.springframework.web.bind.annotation.GetMapping;

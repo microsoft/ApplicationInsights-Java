@@ -1,0 +1,43 @@
+{
+  "role": {
+    "name": "testrolename",
+    "instance": "testroleinstance"
+  },
+  "sampling": {
+    "percentage": 100
+  },
+  "preview": {
+    "sampling": {
+      "overrides": [
+        {
+          "telemetryType": "request",
+          "attributes": [
+            {
+              "key": "http.url",
+              "value": ".*/health-check",
+              "matchType": "regexp"
+            }
+          ],
+          "percentage": 50,
+          "id": "filter out health check"
+        },
+        {
+          "telemetryType": "dependency",
+          "attributes": [
+            {
+              "key": "db.statement",
+              "value": "select count(*) from abc",
+              "matchType": "strict"
+            }
+          ],
+          "percentage": 0,
+          "id": "filter out noisy jdbc"
+        },
+        {
+          "telemetryType": "trace",
+          "percentage": 100
+        }
+      ]
+    }
+  }
+}

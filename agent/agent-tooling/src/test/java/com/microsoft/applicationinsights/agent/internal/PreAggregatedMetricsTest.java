@@ -30,10 +30,10 @@ import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.instrumentation.api.incubator.semconv.rpc.RpcClientMetrics;
 import io.opentelemetry.instrumentation.api.instrumenter.OperationListener;
-import io.opentelemetry.instrumentation.api.instrumenter.http.HttpClientMetrics;
-import io.opentelemetry.instrumentation.api.instrumenter.http.HttpServerMetrics;
-import io.opentelemetry.instrumentation.api.instrumenter.rpc.RpcClientMetrics;
+import io.opentelemetry.instrumentation.api.semconv.http.HttpClientMetrics;
+import io.opentelemetry.instrumentation.api.semconv.http.HttpServerMetrics;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -74,9 +74,8 @@ public class PreAggregatedMetricsTest {
             .put("http.host", "host")
             .put("http.target", "/")
             .put("http.scheme", "https")
-            .put("net.peer.name", "localhost")
-            .put("net.peer.ip", "0.0.0.0")
-            .put("net.peer.port", 1234)
+            .put("server.address", "localhost")
+            .put("server.port", 1234)
             .put("http.request_content_length", 100)
             .build();
 
@@ -84,7 +83,7 @@ public class PreAggregatedMetricsTest {
         Attributes.builder()
             .put("http.flavor", "2.0")
             .put("http.server_name", "server")
-            .put("http.status_code", 200)
+            .put("http.response.status_code", 200)
             .put("http.response_content_length", 200)
             .build();
 
@@ -114,18 +113,19 @@ public class PreAggregatedMetricsTest {
         .satisfiesExactly(
             metric ->
                 assertThat(metric)
-                    .hasName("http.client.duration")
-                    .hasUnit("ms")
+                    .hasName("http.client.request.duration")
+                    .hasUnit("s")
                     .hasHistogramSatisfying(
                         histogram ->
                             histogram.hasPointsSatisfying(
                                 point ->
                                     point
-                                        .hasSum(150 /* millis */)
+                                        .hasSum(0.15 /* seconds */)
                                         .hasAttributesSatisfying(
-                                            equalTo(SemanticAttributes.NET_PEER_NAME, "localhost"),
-                                            equalTo(SemanticAttributes.NET_PEER_PORT, 1234),
-                                            equalTo(SemanticAttributes.HTTP_STATUS_CODE, 200))
+                                            equalTo(SemanticAttributes.SERVER_ADDRESS, "localhost"),
+                                            equalTo(SemanticAttributes.SERVER_PORT, 1234),
+                                            equalTo(
+                                                SemanticAttributes.HTTP_RESPONSE_STATUS_CODE, 200))
                                         .hasExemplarsSatisfying(
                                             exemplar ->
                                                 exemplar
@@ -158,10 +158,8 @@ public class PreAggregatedMetricsTest {
 
     Attributes responseAttributes1 =
         Attributes.builder()
-            .put(SemanticAttributes.NET_PEER_NAME, "example.com")
-            .put(SemanticAttributes.NET_PEER_IP, "127.0.0.1")
-            .put(SemanticAttributes.NET_PEER_PORT, 8080)
-            .put(SemanticAttributes.NET_TRANSPORT, "ip_tcp")
+            .put(SemanticAttributes.SERVER_ADDRESS, "example.com")
+            .put(SemanticAttributes.SERVER_PORT, 8080)
             .build();
 
     Context parent =
@@ -202,8 +200,8 @@ public class PreAggregatedMetricsTest {
                                         .hasAttributesSatisfying(
                                             equalTo(SemanticAttributes.RPC_SYSTEM, "grpc"),
                                             equalTo(
-                                                SemanticAttributes.NET_PEER_NAME, "example.com"),
-                                            equalTo(SemanticAttributes.NET_PEER_PORT, 8080))
+                                                SemanticAttributes.SERVER_ADDRESS, "example.com"),
+                                            equalTo(SemanticAttributes.SERVER_PORT, 8080))
                                         .hasExemplarsSatisfying(
                                             exemplar ->
                                                 exemplar
@@ -233,8 +231,8 @@ public class PreAggregatedMetricsTest {
             .put("http.host", "host")
             .put("http.target", "/")
             .put("http.scheme", "https")
-            .put("net.host.name", "localhost")
-            .put("net.host.port", 1234)
+            .put("server.address", "localhost")
+            .put("server.port", 1234)
             .put("http.request_content_length", 100)
             .build();
 
@@ -242,7 +240,7 @@ public class PreAggregatedMetricsTest {
         Attributes.builder()
             .put("http.flavor", "2.0")
             .put("http.server_name", "server")
-            .put("http.status_code", 200)
+            .put("http.response.status_code", 200)
             .put("http.response_content_length", 200)
             .build();
 
@@ -259,26 +257,27 @@ public class PreAggregatedMetricsTest {
     Collection<MetricData> metricDataCollection = metricReader.collectAllMetrics();
     MetricData target = null;
     for (MetricData metricData : metricDataCollection) {
-      if ("http.server.duration".equals(metricData.getName())) {
+      if ("http.server.request.duration".equals(metricData.getName())) {
         target = metricData;
         System.out.println("metric: " + metricData);
       }
     }
 
     assertThat(target)
-        .satisfies(
+        .satisfiesAnyOf(
             metric ->
                 assertThat(metric)
-                    .hasName("http.server.duration")
-                    .hasUnit("ms")
+                    .hasName("http.server.request.duration")
+                    .hasUnit("s")
                     .hasHistogramSatisfying(
                         histogram ->
                             histogram.hasPointsSatisfying(
                                 point ->
                                     point
-                                        .hasSum(150 /* millis */)
+                                        .hasSum(0.15 /* seconds */)
                                         .hasAttributesSatisfying(
-                                            equalTo(SemanticAttributes.HTTP_STATUS_CODE, 200),
+                                            equalTo(
+                                                SemanticAttributes.HTTP_RESPONSE_STATUS_CODE, 200),
                                             equalTo(
                                                 AttributeKey.booleanKey(
                                                     "applicationinsights.internal.is_synthetic"),

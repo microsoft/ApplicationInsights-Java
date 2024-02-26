@@ -10,7 +10,7 @@ pluginManagement {
 }
 
 plugins {
-  id("com.gradle.enterprise") version "3.16.1"
+  id("com.gradle.enterprise") version "3.16.2"
 }
 
 dependencyResolutionManagement {
@@ -98,7 +98,7 @@ hideFromDependabot(":smoke-tests:apps:Diagnostics")
 hideFromDependabot(":smoke-tests:apps:Diagnostics:JfrFileReader")
 hideFromDependabot(":smoke-tests:apps:DiagnosticExtension:MockExtension")
 hideFromDependabot(":smoke-tests:apps:DiagnosticExtension")
-hideFromDependabot(":smoke-tests:apps:DotInJmxMetric")
+hideFromDependabot(":smoke-tests:apps:JmxMetric")
 hideFromDependabot(":smoke-tests:apps:gRPC")
 hideFromDependabot(":smoke-tests:apps:HeartBeat")
 hideFromDependabot(":smoke-tests:apps:HttpClients")
