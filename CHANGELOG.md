@@ -1,5 +1,20 @@
 # CHANGELOG
 
+## Version 3.5 GA (02/26/2024)
+
+### Enhancements:
+
+* Update to OpenTelemetry Java 2.1.0 ([#3418](https://github.com/microsoft/ApplicationInsights-Java/pull/3418))
+* Support stable HTTP semantic conventions ([#3418](https://github.com/microsoft/ApplicationInsights-Java/pull/3418))
+* GA sampling overrides ([#3463](https://github.com/microsoft/ApplicationInsights-Java/pull/3463))
+* Collect JMX metrics via OTLP ([#3406](https://github.com/microsoft/ApplicationInsights-Java/pull/3406))
+* Support OpenTelemetry Java instrumentation Agent Extension ([#3493](https://github.com/microsoft/ApplicationInsights-Java/pull/3493))
+* Support Pekko instrumentation ([#3517](https://github.com/microsoft/ApplicationInsights-Java/pull/3517))
+
+### Bug fixes:
+
+* Fix duplicate exceptions ([#3555](https://github.com/microsoft/ApplicationInsights-Java/pull/3555))
+
 ## Version 3.4.19 GA (12/20/2023)
 
 ### Enhancements:
