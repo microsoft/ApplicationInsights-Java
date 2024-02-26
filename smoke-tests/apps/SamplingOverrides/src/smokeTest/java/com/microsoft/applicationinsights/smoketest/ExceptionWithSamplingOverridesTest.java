@@ -23,8 +23,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 abstract class ExceptionWithSamplingOverridesTest {
 
   @RegisterExtension
-  static final SmokeTestExtension testing =
-      SmokeTestExtension.builder().setSelfDiagnosticsLevel("DEBUG").build();
+  static final SmokeTestExtension testing = SmokeTestExtension.create();
 
   @Test
   @TargetUri(value = "/trackException")
