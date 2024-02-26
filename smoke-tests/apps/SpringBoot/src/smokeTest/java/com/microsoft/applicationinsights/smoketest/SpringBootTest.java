@@ -58,11 +58,11 @@ abstract class SpringBootTest {
     List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
 
     Envelope rdEnvelope = rdList.get(0);
-    List<Envelope> edList = testing.mockedIngestion.waitForItems("ExceptionData", 1);
-    assertThat(edList.size()).isEqualTo(1);
+    List<Envelope> exceptions = testing.mockedIngestion.waitForItems("ExceptionData", 1);
+    assertThat(exceptions).hasSize(1);
     assertThat(testing.mockedIngestion.getCountForType("EventData")).isZero();
 
-    Envelope edEnvelope1 = edList.get(0);
+    Envelope edEnvelope1 = exceptions.get(0);
 
     assertThat(rdEnvelope.getSampleRate()).isEqualTo(100.0f);
     assertThat(edEnvelope1.getSampleRate()).isEqualTo(100.0f);

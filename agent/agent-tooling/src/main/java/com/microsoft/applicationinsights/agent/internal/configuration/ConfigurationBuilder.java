@@ -194,7 +194,13 @@ public class ConfigurationBuilder {
               + " and it is now enabled by default,"
               + " so no need to enable it under preview configuration");
     }
-    for (SamplingOverride override : config.preview.sampling.overrides) {
+
+    if (!config.preview.sampling.overrides.isEmpty()) {
+      configurationLogger.warn(
+          "\"Sampling overrides\" is no longer in preview and it has been GA since 3.5.0 GA,");
+      config.sampling.overrides = config.preview.sampling.overrides;
+    }
+    for (SamplingOverride override : config.sampling.overrides) {
       if (override.telemetryKind != null) {
         configurationLogger.warn(
             "Sampling overrides \"telemetryKind\" has been deprecated,"
@@ -258,7 +264,7 @@ public class ConfigurationBuilder {
       Path agentJarPath, RpConfiguration rpConfiguration, Configuration config) throws IOException {
     overlayFromEnv(config, agentJarPath.getParent());
     config.sampling.percentage = roundToNearest(config.sampling.percentage, true);
-    for (SamplingOverride override : config.preview.sampling.overrides) {
+    for (SamplingOverride override : config.sampling.overrides) {
       supportSamplingOverridesOldSemConv(override);
       override.percentage = roundToNearest(override.percentage, true);
     }
@@ -345,7 +351,7 @@ public class ConfigurationBuilder {
     // HTTP client span attributes
     // http.url is handled via LazyHttpUrl
     if (oldAttributeKey.equals(SemanticAttributes.HTTP_RESEND_COUNT.getKey())) {
-      result = "http.request.resend_count"; // TODO (heya) use upstream SemanticAttributes when it
+      result = SemanticAttributes.HTTP_REQUEST_RESEND_COUNT.getKey();
       // becomes available.
     } else if (oldAttributeKey.equals(SemanticAttributes.NET_PEER_NAME.getKey())) {
       result = SemanticAttributes.SERVER_ADDRESS.getKey();
@@ -393,7 +399,7 @@ public class ConfigurationBuilder {
         }
       }
     }
-    for (SamplingOverride override : config.preview.sampling.overrides) {
+    for (SamplingOverride override : config.sampling.overrides) {
       for (Configuration.SamplingOverrideAttribute attribute : override.attributes) {
         logWarningIfUsingInternalAttributes(attribute.key);
       }

@@ -13,7 +13,6 @@ public class Samplers {
 
   public static Sampler getSampler(
       Configuration.Sampling sampling, Configuration.SamplingPreview samplingPreview) {
-
     Sampler sampler;
     if (sampling.requestsPerSecond != null) {
       SamplingPercentage requestSamplingPercentage =
@@ -28,11 +27,11 @@ public class Samplers {
     }
 
     List<SamplingOverride> requestSamplingOverrides =
-        samplingPreview.overrides.stream()
+        sampling.overrides.stream()
             .filter(SamplingOverride::isForRequestTelemetry)
             .collect(Collectors.toList());
     List<SamplingOverride> dependencySamplingOverrides =
-        samplingPreview.overrides.stream()
+        sampling.overrides.stream()
             .filter(SamplingOverride::isForDependencyTelemetry)
             .collect(Collectors.toList());
 

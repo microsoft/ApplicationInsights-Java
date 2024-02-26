@@ -4,36 +4,32 @@
     "instance": "testroleinstance"
   },
   "sampling": {
-    "percentage": 100
-  },
-  "preview": {
-    "sampling": {
-      "overrides": [
-        {
-          "spanKind": "server",
-          "attributes": [
-            {
-              "key": "http.url",
-              "value": ".*/health-check",
-              "matchType": "regexp"
-            }
-          ],
-          "percentage": 50,
-          "id": "filter out health check"
-        },
-        {
-          "spanKind": "client",
-          "attributes": [
-            {
-              "key": "db.statement",
-              "value": "select count(*) from abc",
-              "matchType": "strict"
-            }
-          ],
-          "percentage": 0,
-          "id": "filter out noisy jdbc"
-        }
-      ]
-    }
+    "percentage": 100,
+    "overrides": [
+      {
+        "spanKind": "server",
+        "attributes": [
+          {
+            "key": "http.url",
+            "value": ".*/health-check",
+            "matchType": "regexp"
+          }
+        ],
+        "percentage": 50,
+        "id": "filter out health check"
+      },
+      {
+        "spanKind": "client",
+        "attributes": [
+          {
+            "key": "db.statement",
+            "value": "select count(*) from abc",
+            "matchType": "strict"
+          }
+        ],
+        "percentage": 0,
+        "id": "filter out noisy jdbc"
+      }
+    ]
   }
 }

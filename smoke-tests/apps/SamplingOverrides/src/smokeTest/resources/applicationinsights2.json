@@ -4,24 +4,20 @@
     "instance": "testroleinstance"
   },
   "sampling": {
-    "percentage": 50
-  },
-  "preview": {
-    "sampling": {
-      "overrides": [
-        {
-          "telemetryType": "request",
-          "attributes": [
-            {
-              "key": "http.url",
-              "value": ".*/login",
-              "matchType": "regexp"
-            }
-          ],
-          "percentage": 100,
-          "id": "capture all login telemetry"
-        }
-      ]
-    }
+    "percentage": 50,
+    "overrides": [
+      {
+        "telemetryType": "request",
+        "attributes": [
+          {
+            "key": "http.url",
+            "value": ".*/login",
+            "matchType": "regexp"
+          }
+        ],
+        "percentage": 100,
+        "id": "capture all login telemetry"
+      }
+    ]
   }
 }

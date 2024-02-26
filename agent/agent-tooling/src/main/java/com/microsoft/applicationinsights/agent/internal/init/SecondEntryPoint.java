@@ -644,11 +644,11 @@ public class SecondEntryPoint
             telemetryClient::populateDefaults);
 
     List<Configuration.SamplingOverride> logSamplingOverrides =
-        configuration.preview.sampling.overrides.stream()
+        configuration.sampling.overrides.stream()
             .filter(override -> override.telemetryType == SamplingTelemetryType.TRACE)
             .collect(Collectors.toList());
     List<Configuration.SamplingOverride> exceptionSamplingOverrides =
-        configuration.preview.sampling.overrides.stream()
+        configuration.sampling.overrides.stream()
             .filter(override -> override.telemetryType == SamplingTelemetryType.EXCEPTION)
             .collect(Collectors.toList());
 

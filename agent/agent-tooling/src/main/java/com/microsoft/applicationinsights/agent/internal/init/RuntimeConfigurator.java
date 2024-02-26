@@ -67,8 +67,7 @@ public class RuntimeConfigurator {
     runtimeConfig.sampling.requestsPerSecond = initialConfig.sampling.requestsPerSecond;
     runtimeConfig.samplingPreview.parentBased = initialConfig.preview.sampling.parentBased;
     // TODO (trask) make deep copies? (not needed currently)
-    runtimeConfig.samplingPreview.overrides =
-        new ArrayList<>(initialConfig.preview.sampling.overrides);
+    runtimeConfig.sampling.overrides = new ArrayList<>(initialConfig.sampling.overrides);
 
     runtimeConfig.propagationDisabled = initialConfig.preview.disablePropagation;
     runtimeConfig.additionalPropagators =
@@ -94,7 +93,7 @@ public class RuntimeConfigurator {
     copy.sampling.requestsPerSecond = config.sampling.requestsPerSecond;
     copy.samplingPreview.parentBased = config.samplingPreview.parentBased;
     // TODO (trask) make deep copies? (not needed currently)
-    copy.samplingPreview.overrides = new ArrayList<>(config.samplingPreview.overrides);
+    copy.sampling.overrides = new ArrayList<>(config.sampling.overrides);
 
     copy.propagationDisabled = config.propagationDisabled;
     copy.additionalPropagators = new ArrayList<>(config.additionalPropagators);

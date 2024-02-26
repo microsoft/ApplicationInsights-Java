@@ -5,71 +5,67 @@
     "instance": "testroleinstance"
   },
   "sampling": {
-    "percentage": 50
-  },
-  "preview": {
-    "sampling": {
-      "overrides": [
-        {
-          "telemetryType": "request",
-          "attributes": [
-            {
-              "key": "thread.name",
-              "value": "http-nio-.*",
-              "matchType": "regexp"
-            },
-            {
-              "key": "http.target",
-              "value": "/SamplingOverrides/health-check",
-              "matchType": "strict"
-            }
-          ],
-          "percentage": 100
-        },
-        {
-          "telemetryType": "request",
-          "attributes": [
-            {
-              "key": "thread.name",
-              "value": "http-nio-.*",
-              "matchType": "regexp"
-            },
-            {
-              "key": "http.target",
-              "value": "/SamplingOverrides/",
-              "matchType": "strict"
-            }
-          ],
-          "percentage": 100
-        },
-        {
-          "telemetryType": "request",
-          "attributes": [
-            {
-              "key": "thread.name",
-              "value": "http-nio-.*",
-              "matchType": "regexp"
-            },
-            {
-              "key": "http.target",
-              "value": "/SamplingOverrides/thread-name",
-              "matchType": "strict"
-            }
-          ],
-          "percentage": 0
-        },
-        {
-          "telemetryType": "trace",
-          "attributes": [
-            {
-              "key": "thread.name",
-              "value": "http-nio-.*",
-              "matchType": "regexp"
-            }
-          ],
-          "percentage": 0
-        }
-      ]
-    }
+    "percentage": 50,
+    "overrides": [
+      {
+        "telemetryType": "request",
+        "attributes": [
+          {
+            "key": "thread.name",
+            "value": "http-nio-.*",
+            "matchType": "regexp"
+          },
+          {
+            "key": "http.target",
+            "value": "/SamplingOverrides/health-check",
+            "matchType": "strict"
+          }
+        ],
+        "percentage": 100
+      },
+      {
+        "telemetryType": "request",
+        "attributes": [
+          {
+            "key": "thread.name",
+            "value": "http-nio-.*",
+            "matchType": "regexp"
+          },
+          {
+            "key": "http.target",
+            "value": "/SamplingOverrides/",
+            "matchType": "strict"
+          }
+        ],
+        "percentage": 100
+      },
+      {
+        "telemetryType": "request",
+        "attributes": [
+          {
+            "key": "thread.name",
+            "value": "http-nio-.*",
+            "matchType": "regexp"
+          },
+          {
+            "key": "http.target",
+            "value": "/SamplingOverrides/thread-name",
+            "matchType": "strict"
+          }
+        ],
+        "percentage": 0
+      },
+      {
+        "telemetryType": "trace",
+        "attributes": [
+          {
+            "key": "thread.name",
+            "value": "http-nio-.*",
+            "matchType": "regexp"
+          }
+        ],
+        "percentage": 0
+      }
+    ]
   }
 }
