@@ -1,7 +1,7 @@
 
 # agent
 ## Dependency License Report
-_2024-02-26 11:03:42 PST_
+_2024-02-27 03:50:01 UTC_
 ## Apache License, Version 2.0
 
 **1** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-annotations` **Version:** `2.16.1` 
@@ -369,7 +369,7 @@ _2024-02-26 11:03:42 PST_
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**72** **Group:** `com.github.oshi` **Name:** `oshi-core` **Version:** `6.4.12` 
+**72** **Group:** `com.github.oshi` **Name:** `oshi-core` **Version:** `6.4.13` 
 > - **Manifest Project URL**: [https://github.com/oshi/oshi/oshi-core](https://github.com/oshi/oshi/oshi-core)
 > - **Manifest License**: "SPDX-License-Identifier: MIT";link="https://opensource.org/licenses/MIT" (Not Packaged)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
