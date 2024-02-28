@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## Version 3.5 GA (02/26/2024)
+## Version 3.5 GA (02/28/2024)
 
 ### Enhancements:
 
@@ -13,6 +13,7 @@
 
 ### Bug fixes:
 
+* Fix ETW log for non-auto attach ([#3560](https://github.com/microsoft/ApplicationInsights-Java/pull/3560))
 * Fix duplicate exceptions ([#3555](https://github.com/microsoft/ApplicationInsights-Java/pull/3555))
 
 ## Version 3.4.19 GA (12/20/2023)

@@ -105,7 +105,7 @@ class ConfigurationTest {
 
   @Test
   void shouldThrowFromEnvVarIfEmbeddedConnectionStringAndAppSvcRpIntegration() {
-    DiagnosticsHelper.setAppSvcRpIntegration(true);
+    DiagnosticsHelper.setAppSvcRpIntegratedAuto(true);
     try {
       String contentJson =
           "{\"connectionString\":\"InstrumentationKey=55555555-5555-5555-5555-555555555555\","
@@ -115,7 +115,7 @@ class ConfigurationTest {
       assertThatThrownBy(() -> ConfigurationBuilder.create(Paths.get("."), null))
           .isInstanceOf(ConfigurationBuilder.ConfigurationException.class);
     } finally {
-      DiagnosticsHelper.setAppSvcRpIntegration(false);
+      DiagnosticsHelper.setAppSvcRpIntegratedAuto(false);
     }
   }
 

@@ -978,8 +978,9 @@ public class ConfigurationBuilder {
 
     Configuration configuration = getConfiguration(json, JsonOrigin.ENV_VAR);
 
-    // restrict connection string in APPLICATIONINSIGHTS_CONFIGURATION_CONTENT for App Service only
-    if (configuration.connectionString != null && DiagnosticsHelper.isAppSvcRpIntegration()) {
+    // restrict connection string in APPLICATIONINSIGHTS_CONFIGURATION_CONTENT for App Service
+    // INTEGRATED_AUTO only
+    if (configuration.connectionString != null && DiagnosticsHelper.isAppSvcRpIntegratedAuto()) {
       throw new ConfigurationException(
           "\"connectionString\" attribute is not supported inside of "
               + APPLICATIONINSIGHTS_CONFIGURATION_CONTENT
