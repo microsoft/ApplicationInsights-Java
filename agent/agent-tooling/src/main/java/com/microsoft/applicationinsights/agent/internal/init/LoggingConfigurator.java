@@ -59,7 +59,8 @@ public class LoggingConfigurator {
     loggerContext.getLogger(ROOT_LOGGER_NAME).detachAndStopAllAppenders();
 
     // only enable ETW when it's INTEGRATED_AUTO
-    if (DiagnosticsHelper.isAppSvcRpIntegration() && RpAttachType.getRpAttachType().equals(RpAttachType.INTEGRATED_AUTO)) {
+    if (DiagnosticsHelper.isAppSvcRpIntegration()
+        && RpAttachType.INTEGRATED_AUTO.equals(RpAttachType.getRpAttachType())) {
       configureAppSvc();
     } else if (DiagnosticsHelper.isFunctionsRpIntegration()) {
       configureFunctions();
