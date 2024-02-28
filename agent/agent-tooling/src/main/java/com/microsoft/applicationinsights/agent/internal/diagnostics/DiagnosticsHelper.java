@@ -13,8 +13,8 @@ public class DiagnosticsHelper {
   private DiagnosticsHelper() {}
 
   // visible for testing
-  private static volatile boolean appSvcRpIntegration;
-  private static volatile boolean functionsRpIntegration;
+  private static volatile boolean appSvcRpIntegratedAuto;
+  private static volatile boolean functionsRpIntegratedAuto;
 
   private static final boolean isWindows;
 
@@ -37,12 +37,16 @@ public class DiagnosticsHelper {
     // TODO (heya) refactor PropertyHelper and ResourceProvider to simplify logic for rp
     if ("java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME"))) {
       PropertyHelper.setRpIntegrationChar('f');
-      functionsRpIntegration = true;
       setRpAttachType(agentPath, "functions.codeless");
+      if (RpAttachType.INTEGRATED_AUTO.equals(RpAttachType.getRpAttachType())) {
+        functionsRpIntegratedAuto = true;
+      }
     } else if (!Strings.isNullOrEmpty(System.getenv("WEBSITE_SITE_NAME"))) {
       PropertyHelper.setRpIntegrationChar('a');
-      appSvcRpIntegration = true;
       setRpAttachType(agentPath, "appsvc.codeless");
+      if (RpAttachType.INTEGRATED_AUTO.equals(RpAttachType.getRpAttachType())) {
+        appSvcRpIntegratedAuto = true;
+      }
     } else if (!Strings.isNullOrEmpty(System.getenv("AKS_ARM_NAMESPACE_ID"))) {
       // AKS_ARM_NAMESPACE_ID is an env var available in AKS only and it's also used as the AKS
       // attach rate numerator
@@ -57,12 +61,12 @@ public class DiagnosticsHelper {
     }
   }
 
-  public static boolean isAppSvcRpIntegration() {
-    return appSvcRpIntegration;
+  public static boolean isAppSvcRpIntegratedAuto() {
+    return appSvcRpIntegratedAuto;
   }
 
-  public static boolean isFunctionsRpIntegration() {
-    return functionsRpIntegration;
+  public static boolean isFunctionsRpIntegratedAuto() {
+    return functionsRpIntegratedAuto;
   }
 
   public static ApplicationMetadataFactory getMetadataFactory() {
@@ -82,7 +86,7 @@ public class DiagnosticsHelper {
   }
 
   // only used by tests
-  public static void setAppSvcRpIntegration(boolean appSvcRpIntegration) {
-    DiagnosticsHelper.appSvcRpIntegration = appSvcRpIntegration;
+  public static void setAppSvcRpIntegratedAuto(boolean appSvcRpIntegratedAuto) {
+    DiagnosticsHelper.appSvcRpIntegratedAuto = appSvcRpIntegratedAuto;
   }
 }

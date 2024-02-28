@@ -230,7 +230,7 @@ public class StatusFile {
       justification =
           "The constructed file path cannot be controlled by an end user of the instrumented application)")
   private static boolean writable() {
-    if (!DiagnosticsHelper.isAppSvcRpIntegration()) {
+    if (!DiagnosticsHelper.isAppSvcRpIntegratedAuto()) {
       return false;
     }
     return new File(logDir).canWrite();

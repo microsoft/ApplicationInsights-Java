@@ -19,7 +19,6 @@ import ch.qos.logback.core.rolling.RollingFileAppender;
 import ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy;
 import ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy;
 import ch.qos.logback.core.util.FileSize;
-import com.azure.monitor.opentelemetry.exporter.implementation.statsbeat.RpAttachType;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.PropertyHelper;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.diagnostics.DiagnosticsHelper;
@@ -59,10 +58,9 @@ public class LoggingConfigurator {
     loggerContext.getLogger(ROOT_LOGGER_NAME).detachAndStopAllAppenders();
 
     // only enable ETW when it's INTEGRATED_AUTO
-    if (DiagnosticsHelper.isAppSvcRpIntegration()
-        && RpAttachType.INTEGRATED_AUTO.equals(RpAttachType.getRpAttachType())) {
+    if (DiagnosticsHelper.isAppSvcRpIntegratedAuto()) {
       configureAppSvc();
-    } else if (DiagnosticsHelper.isFunctionsRpIntegration()) {
+    } else if (DiagnosticsHelper.isFunctionsRpIntegratedAuto()) {
       configureFunctions();
     } else if (destination == null || destination.equalsIgnoreCase("file+console")) {
       configureFileAndConsole();
@@ -206,7 +204,7 @@ public class LoggingConfigurator {
     appender.setName("CONSOLE");
 
     // format Functions diagnostic log as comma separated
-    if (DiagnosticsHelper.isFunctionsRpIntegration()) {
+    if (DiagnosticsHelper.isFunctionsRpIntegratedAuto()) {
       appender.setLayout(
           new ApplicationInsightsCsvLayout(PropertyHelper.getQualifiedSdkVersionString()));
     } else {
