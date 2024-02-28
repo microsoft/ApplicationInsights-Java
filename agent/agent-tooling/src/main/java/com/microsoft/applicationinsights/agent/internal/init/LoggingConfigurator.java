@@ -19,6 +19,7 @@ import ch.qos.logback.core.rolling.RollingFileAppender;
 import ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy;
 import ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy;
 import ch.qos.logback.core.util.FileSize;
+import com.azure.monitor.opentelemetry.exporter.implementation.statsbeat.RpAttachType;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.PropertyHelper;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.diagnostics.DiagnosticsHelper;
@@ -57,7 +58,8 @@ public class LoggingConfigurator {
   void configure() {
     loggerContext.getLogger(ROOT_LOGGER_NAME).detachAndStopAllAppenders();
 
-    if (DiagnosticsHelper.isAppSvcRpIntegration()) {
+    // only enable ETW when it's INTEGRATED_AUTO
+    if (DiagnosticsHelper.isAppSvcRpIntegration() && RpAttachType.getRpAttachType().equals(RpAttachType.INTEGRATED_AUTO)) {
       configureAppSvc();
     } else if (DiagnosticsHelper.isFunctionsRpIntegration()) {
       configureFunctions();
