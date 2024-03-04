@@ -227,6 +227,6 @@ configurations {
     exclude("com.fasterxml.jackson.dataformat", "jackson-dataformat-xml")
     exclude("com.fasterxml.woodstox", "woodstox-core")
     // temporarily overriding version until next azure-bom release in order to address CVE
-    resolutionStrategy.force("com.azure:azure-identity:1.11.2")
+    resolutionStrategy.force("com.azure:azure-identity:1.11.3")
   }
 }
