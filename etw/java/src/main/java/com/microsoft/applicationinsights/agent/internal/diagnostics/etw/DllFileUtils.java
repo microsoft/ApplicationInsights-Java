@@ -53,6 +53,7 @@ class DllFileUtils {
 
   /** Assumes dllOnDisk is non-null and exists. */
   public static void extractToLocalFolder(File dllOnDisk, String libraryToLoad) throws IOException {
+    LOGGER.debug("#### extractToLocalFolder start");
     ClassLoader classLoader = DllFileUtils.class.getClassLoader();
     if (classLoader == null) {
       classLoader = ClassLoader.getSystemClassLoader();
@@ -64,23 +65,31 @@ class DllFileUtils {
       byte[] buffer = new byte[8192];
       try (OutputStream out = new FileOutputStream(dllOnDisk, false)) {
         if (dllOnDisk.exists()) {
+          LOGGER.debug("#### dllOnDisk exists: '{}'", dllOnDisk);
           if (dllOnDisk.isDirectory()) {
+            LOGGER.debug("#### dllOnDisk is a directory: '{}'", dllOnDisk.isDirectory());
             throw new IOException(
                 "Cannot extract dll: " + dllOnDisk.getAbsolutePath() + " exists as a directory");
           }
           if (!dllOnDisk.canWrite()) {
+            LOGGER.debug("#### dllOnDisk is not writeable: '{}'", dllOnDisk.canWrite());
             throw new IOException(
                 "Cannote extract dll: " + dllOnDisk.getAbsolutePath() + " is not writeable.");
+          } else {
+            LOGGER.debug("#### dllOnDisk is writeable: '{}'", dllOnDisk.canWrite());
           }
+        } else {
+          LOGGER.debug("#### dllOnDisk does not exist: '{}'", dllOnDisk);
         }
 
         int bytesRead;
         while ((bytesRead = in.read(buffer)) != -1) { // while not EOF
           out.write(buffer, 0, bytesRead);
         }
+        LOGGER.debug("#### Successfully extracted '{}' to local folder", libraryToLoad);
       }
     }
-    LOGGER.debug("Successfully extracted '{}' to local folder", libraryToLoad);
+    LOGGER.debug("#### extractToLocalFolder done");
   }
 
   private static final List<String> CANDIDATE_USERNAME_ENVIRONMENT_VARIABLES =

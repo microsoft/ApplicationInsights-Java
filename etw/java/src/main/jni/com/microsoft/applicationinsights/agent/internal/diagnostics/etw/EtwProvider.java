@@ -39,7 +39,6 @@ public class EtwProvider {
     }
   }
 
-  @SuppressWarnings("SystemOut")
   private static File loadLibrary(String sdkVersion) throws IOException {
     String fileName = getDllFilenameForArch();
 
@@ -47,14 +46,14 @@ public class EtwProvider {
     File dllPath = new File(targetDir, fileName);
 
     if (!dllPath.exists()) {
-      System.out.println("#### default dllPath doesn't exist" + dllPath.getAbsolutePath());
-      System.out.println("#### extract to local folder instead");
+      LOGGER.debug("#### default dllPath doesn't exist" + dllPath.getAbsolutePath());
+      LOGGER.debug("#### extract to local folder instead");
       DllFileUtils.extractToLocalFolder(dllPath, fileName);
     } else {
-      System.out.println("#### default dllPath exists" + dllPath.getAbsolutePath());
+      LOGGER.debug("#### default dllPath exists" + dllPath.getAbsolutePath());
     }
 
-    System.out.println("#### finally load dll from " + dllPath.getAbsolutePath());
+    LOGGER.debug("#### finally load dll from " + dllPath.getAbsolutePath());
     System.load(dllPath.getAbsolutePath());
 
     return dllPath;
