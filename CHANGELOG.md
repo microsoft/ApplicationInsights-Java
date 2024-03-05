@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## Version 3.5.1 GA (03/05/2024)
+
+### Bug fixes:
+
+* Fix ETW initialization failure for App Service Windows ([#3571](https://github.com/microsoft/ApplicationInsights-Java/pull/3571))
+
 ## Version 3.5.0 GA (02/29/2024)
 
 ### Enhancements:
