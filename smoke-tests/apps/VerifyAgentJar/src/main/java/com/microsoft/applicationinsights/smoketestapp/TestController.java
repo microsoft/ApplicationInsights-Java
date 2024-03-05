@@ -85,8 +85,6 @@ public class TestController {
     expectedEntries.add("rp-logger-config/");
     expectedEntries.add("rp-logger-config/diagnostics\\.appender\\.xml");
     expectedEntries.add("rp-logger-config/etw\\.appender\\.xml");
-    expectedEntries.add("applicationinsights-java-etw-provider-x86-64\\.dll");
-    expectedEntries.add("applicationinsights-java-etw-provider-x86\\.dll");
     expectedEntries.add("inst/.*");
     JarFile jarFile = new JarFile(AGENT_JAR);
     List<String> unexpected = new ArrayList<>();
