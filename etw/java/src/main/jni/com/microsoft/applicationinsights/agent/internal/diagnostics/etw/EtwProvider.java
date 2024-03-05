@@ -11,9 +11,9 @@ import org.slf4j.LoggerFactory;
 
 public class EtwProvider {
   private static final String LIB_FILENAME_32_BIT =
-      "inst/applicationinsights-java-etw-provider-x86.dll";
+      "/inst/applicationinsights-java-etw-provider-x86.dll";
   private static final String LIB_FILENAME_64_BIT =
-      "inst/applicationinsights-java-etw-provider-x86-64.dll";
+      "/inst/applicationinsights-java-etw-provider-x86-64.dll";
 
   private static final Logger LOGGER = LoggerFactory.getLogger(EtwProvider.class);
 
@@ -40,6 +40,7 @@ public class EtwProvider {
     }
   }
 
+  @SuppressWarnings("SystemOut")
   private static File loadLibrary(String sdkVersion) throws IOException {
     String fileName = getDllFilenameForArch();
 
@@ -47,9 +48,14 @@ public class EtwProvider {
     File dllPath = new File(targetDir, fileName);
 
     if (!dllPath.exists()) {
+      System.out.println("#### default dllPath doesn't exist" + dllPath.getAbsolutePath());
+      System.out.println("#### extract to local folder instead");
       DllFileUtils.extractToLocalFolder(dllPath, fileName);
+    } else {
+      System.out.println("#### default dllPath exists" + dllPath.getAbsolutePath());
     }
 
+    System.out.println("#### finally load dll from " + dllPath.getAbsolutePath());
     System.load(dllPath.getAbsolutePath());
 
     return dllPath;
