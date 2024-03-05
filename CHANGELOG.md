@@ -2,6 +2,11 @@
 
 ## Version 3.5.0 GA (02/29/2024)
 
+### Breaking changes
+
+* ⚠️⚠️ Stable HTTP semantic conventions are now emitted ⚠️⚠️
+TOO MANY CHANGES TO LIST HERE, be sure to review the full [list of changes](https://github.com/open-telemetry/semantic-conventions/blob/main/docs/http/migration-guide.md#summary-of-changes).
+
 ### Enhancements:
 
 * Update to OpenTelemetry Java 2.1.0 ([#3418](https://github.com/microsoft/ApplicationInsights-Java/pull/3418))
