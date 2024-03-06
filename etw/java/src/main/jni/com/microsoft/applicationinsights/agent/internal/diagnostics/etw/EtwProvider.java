@@ -48,6 +48,7 @@ public class EtwProvider {
     if (!dllPath.exists()) {
       LOGGER.debug("#### default dllPath doesn't exist" + dllPath.getAbsolutePath());
       LOGGER.debug("#### extract to local folder instead");
+      dllPath.createNewFile();
       DllFileUtils.extractToLocalFolder(dllPath, fileName);
     } else {
       LOGGER.debug("#### default dllPath exists" + dllPath.getAbsolutePath());

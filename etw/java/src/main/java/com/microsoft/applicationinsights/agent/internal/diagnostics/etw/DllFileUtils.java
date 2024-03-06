@@ -87,6 +87,9 @@ class DllFileUtils {
           out.write(buffer, 0, bytesRead);
         }
         LOGGER.debug("#### Successfully extracted '{}' to local folder", libraryToLoad);
+      } catch (IOException e) {
+        LOGGER.error("#### Failed to extract '{}' to local folder", libraryToLoad, e);
+        return;
       }
     }
     LOGGER.debug("#### extractToLocalFolder done");
