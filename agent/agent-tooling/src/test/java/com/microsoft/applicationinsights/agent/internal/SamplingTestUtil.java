@@ -13,8 +13,8 @@ import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
-import javax.annotation.Nullable;
 import java.util.Collections;
+import javax.annotation.Nullable;
 
 public class SamplingTestUtil {
 
