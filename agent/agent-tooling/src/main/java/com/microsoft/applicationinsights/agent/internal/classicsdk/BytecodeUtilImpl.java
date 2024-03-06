@@ -522,7 +522,9 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
       }
       // sampled in
 
-      telemetryBuilder.setSampleRate(samplingPercentage);
+      if (samplingPercentage != 100) {
+        telemetryBuilder.setSampleRate(samplingPercentage);
+      }
     }
 
     // this is not null because sdk instrumentation is not added until TelemetryClient.setActive()
