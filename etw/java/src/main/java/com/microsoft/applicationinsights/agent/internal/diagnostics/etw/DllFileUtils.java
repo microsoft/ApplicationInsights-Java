@@ -83,9 +83,9 @@ class DllFileUtils {
         while ((bytesRead = in.read(buffer)) != -1) { // while not EOF
           out.write(buffer, 0, bytesRead);
         }
-        LOGGER.debug("Successfully extracted '{}' to local folder", libraryToLoad);
       }
     }
+    LOGGER.debug("Successfully extracted '{}' to local folder", libraryToLoad);
   }
 
   private static final List<String> CANDIDATE_USERNAME_ENVIRONMENT_VARIABLES =
