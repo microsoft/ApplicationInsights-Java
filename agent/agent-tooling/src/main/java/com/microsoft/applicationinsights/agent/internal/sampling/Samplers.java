@@ -22,7 +22,7 @@ public class Samplers {
     } else if (sampling.percentage != null) {
       SamplingPercentage samplingPercentage;
       if (sampling.percentage == 100) {
-        samplingPercentage = SamplingPercentage.ingestion();
+        samplingPercentage = SamplingPercentage.useIngestionSampling();
       } else {
         samplingPercentage = SamplingPercentage.fixed(sampling.percentage);
       }

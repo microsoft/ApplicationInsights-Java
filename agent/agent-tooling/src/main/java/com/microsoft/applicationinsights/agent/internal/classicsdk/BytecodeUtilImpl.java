@@ -52,6 +52,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
   private static final AtomicBoolean alreadyLoggedError = new AtomicBoolean();
 
   // in Azure Functions consumption pool, we don't know at startup whether to enable or not
+  // TODO (trask) convert this from float to double?
   public static volatile float samplingPercentage = 0;
 
   public static volatile FeatureStatsbeat featureStatsbeat;

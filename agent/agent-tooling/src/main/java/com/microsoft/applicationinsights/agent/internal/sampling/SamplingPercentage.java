@@ -25,7 +25,7 @@ public interface SamplingPercentage {
     return new RateLimitedSamplingPercentage(targetPerSecondLimit, 0.1);
   }
 
-  static SamplingPercentage ingestion() {
+  static SamplingPercentage useIngestionSampling() {
     return () -> USE_INGESTION_SAMPLING;
   }
 }
