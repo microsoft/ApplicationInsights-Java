@@ -30,7 +30,6 @@ class DllFileUtils {
           "The constructed file path cannot be controlled by an end user of the instrumented application")
   public static File buildDllLocalPath(@Nullable String versionDirectory) {
     File dllPath = getTempDir();
-    LOGGER.debug("#### temp dir: '{}'", dllPath.getPath());
 
     dllPath = new File(dllPath, AI_BASE_FOLDER);
     dllPath = new File(dllPath, AI_NATIVE_FOLDER);
@@ -52,54 +51,41 @@ class DllFileUtils {
     if (!dllPath.exists() || !dllPath.canRead() || !dllPath.canWrite()) {
       throw new IllegalStateException("Failed to create a read/write folder for the native dll.");
     }
-    LOGGER.debug("{} folder exists", dllPath);
+    LOGGER.trace("{} folder exists", dllPath);
 
     return dllPath;
   }
 
   /** Assumes dllOnDisk is non-null and exists. */
   public static void extractToLocalFolder(File dllOnDisk, String libraryToLoad) throws IOException {
-    LOGGER.debug("#### extractToLocalFolder start");
     ClassLoader classLoader = DllFileUtils.class.getClassLoader();
     if (classLoader == null) {
       classLoader = ClassLoader.getSystemClassLoader();
     }
     try (InputStream in = classLoader.getResourceAsStream(libraryToLoad)) {
       if (in == null) {
-        throw new IllegalStateException(
-            String.format("Failed to find '%s' in jar ", libraryToLoad));
+        throw new IllegalStateException(String.format("Failed to find '%s' in jar", libraryToLoad));
       }
       byte[] buffer = new byte[8192];
       try (OutputStream out = new FileOutputStream(dllOnDisk, false)) {
         if (dllOnDisk.exists()) {
-          LOGGER.debug("#### dllOnDisk exists: '{}'", dllOnDisk);
           if (dllOnDisk.isDirectory()) {
-            LOGGER.debug("#### dllOnDisk is a directory: '{}'", dllOnDisk.isDirectory());
             throw new IOException(
                 "Cannot extract dll: " + dllOnDisk.getAbsolutePath() + " exists as a directory");
           }
           if (!dllOnDisk.canWrite()) {
-            LOGGER.debug("#### dllOnDisk is not writeable: '{}'", dllOnDisk.canWrite());
             throw new IOException(
                 "Cannote extract dll: " + dllOnDisk.getAbsolutePath() + " is not writeable.");
-          } else {
-            LOGGER.debug("#### dllOnDisk is writeable: '{}'", dllOnDisk.canWrite());
           }
-        } else {
-          LOGGER.debug("#### dllOnDisk does not exist: '{}'", dllOnDisk);
         }
 
         int bytesRead;
         while ((bytesRead = in.read(buffer)) != -1) { // while not EOF
           out.write(buffer, 0, bytesRead);
         }
-        LOGGER.debug("#### Successfully extracted '{}' to local folder", libraryToLoad);
-      } catch (IOException e) {
-        LOGGER.error("#### Failed to extract '{}' to local folder", libraryToLoad, e);
-        return;
+        LOGGER.debug("Successfully extracted '{}' to local folder", libraryToLoad);
       }
     }
-    LOGGER.debug("#### extractToLocalFolder done");
   }
 
   private static final List<String> CANDIDATE_USERNAME_ENVIRONMENT_VARIABLES =

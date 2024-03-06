@@ -23,15 +23,12 @@ public class EtwProvider {
       try {
         dllPath = loadLibrary(sdkVersion);
         LOGGER.debug("EtwProvider initialized. Lib path={}", dllPath.getAbsolutePath());
-        if (dllPath.exists()) {
-          LOGGER.debug("#### dllpath is fully loaded" + dllPath);
-        }
       } catch (Throwable t) {
         try {
-          LOGGER.error("Error initializing EtwProvider", t);
-          //          if (dllPath != null) {
-          //            dllPath.deleteOnExit();
-          //          }
+          LOGGER.debug("Error initializing EtwProvider", t);
+          if (dllPath != null) {
+            dllPath.deleteOnExit();
+          }
         } catch (Throwable chomp) {
           // ignore
         }
@@ -49,18 +46,9 @@ public class EtwProvider {
     File dllPath = new File(targetDir, fileName);
 
     if (!dllPath.exists()) {
-      LOGGER.debug("#### default dllPath doesn't exist" + dllPath.getPath());
-      LOGGER.debug("#### extract to local folder instead");
-      dllPath.createNewFile();
-      if (dllPath.exists()) {
-        LOGGER.debug("#### dllPath exists after createNewFile" + dllPath);
-      }
       DllFileUtils.extractToLocalFolder(dllPath, fileName);
-    } else {
-      LOGGER.debug("#### default dllPath exists" + dllPath.getAbsolutePath());
     }
 
-    LOGGER.debug("#### finally load dll from " + dllPath.getAbsolutePath());
     System.load(dllPath.getAbsolutePath());
 
     return dllPath;
