@@ -57,11 +57,11 @@ abstract class Log4j2Test {
     assertThat(Instant.parse(mdEnvelope4.getTime()))
         .isBetween(now.minus(1, ChronoUnit.MINUTES), now);
 
-    assertThat(rdEnvelope.getSampleRate()).isEqualTo(100.0f);
-    assertThat(mdEnvelope1.getSampleRate()).isEqualTo(100.0f);
-    assertThat(mdEnvelope2.getSampleRate()).isEqualTo(100.0f);
-    assertThat(mdEnvelope3.getSampleRate()).isEqualTo(100.0f);
-    assertThat(mdEnvelope4.getSampleRate()).isEqualTo(100.0f);
+    assertThat(rdEnvelope.getSampleRate()).isNull();
+    assertThat(mdEnvelope1.getSampleRate()).isNull();
+    assertThat(mdEnvelope2.getSampleRate()).isNull();
+    assertThat(mdEnvelope3.getSampleRate()).isNull();
+    assertThat(mdEnvelope4.getSampleRate()).isNull();
 
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
 
@@ -117,8 +117,8 @@ abstract class Log4j2Test {
 
     Envelope edEnvelope = edList.get(0);
 
-    assertThat(rdEnvelope.getSampleRate()).isEqualTo(100.0f);
-    assertThat(edEnvelope.getSampleRate()).isEqualTo(100.0f);
+    assertThat(rdEnvelope.getSampleRate()).isNull();
+    assertThat(edEnvelope.getSampleRate()).isNull();
 
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
     ExceptionData ed = (ExceptionData) ((Data<?>) edEnvelope.getData()).getBaseData();

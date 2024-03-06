@@ -35,7 +35,7 @@ abstract class ReadOnlyTest {
 
     Envelope mdEnvelope = mdList.get(0);
 
-    assertThat(mdEnvelope.getSampleRate()).isEqualTo(100.0f);
+    assertThat(mdEnvelope.getSampleRate()).isNull();
 
     MessageData md = (MessageData) ((Data<?>) mdEnvelope.getData()).getBaseData();
 

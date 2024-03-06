@@ -41,8 +41,8 @@ class JmsDisabledTest {
     List<Envelope> rddList = testing.mockedIngestion.waitForItems("RemoteDependencyData", 1);
     Envelope rddEnvelope = rddList.get(0);
 
-    assertThat(rdEnvelope.getSampleRate()).isEqualTo(100.0f);
-    assertThat(rddEnvelope.getSampleRate()).isEqualTo(100.0f);
+    assertThat(rdEnvelope.getSampleRate()).isNull();
+    assertThat(rddEnvelope.getSampleRate()).isNull();
 
     RemoteDependencyData rdd =
         (RemoteDependencyData) ((Data<?>) rddEnvelope.getData()).getBaseData();

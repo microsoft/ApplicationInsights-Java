@@ -83,7 +83,7 @@ abstract class HttpClientTest {
         .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
     assertThat(telemetry.rd.getSuccess()).isTrue();
     // TODO (trask) add this check in all smoke tests?
-    assertThat(telemetry.rdEnvelope.getSampleRate()).isEqualTo(100.0f);
+    assertThat(telemetry.rdEnvelope.getSampleRate()).isNull();
 
     assertThat(telemetry.rdd1.getName()).isEqualTo("GET /200");
     assertThat(telemetry.rdd1.getData()).isEqualTo(successUrlWithQueryString);
@@ -93,7 +93,7 @@ abstract class HttpClientTest {
     assertThat(telemetry.rdd1.getProperties())
         .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
     assertThat(telemetry.rdd1.getSuccess()).isTrue();
-    assertThat(telemetry.rddEnvelope1.getSampleRate()).isEqualTo(100.0f);
+    assertThat(telemetry.rddEnvelope1.getSampleRate()).isNull();
 
     assertThat(telemetry.rdd2.getName()).isEqualTo("GET /404");
     assertThat(telemetry.rdd2.getData()).isEqualTo("https://mock.codes/404");
@@ -103,7 +103,7 @@ abstract class HttpClientTest {
     assertThat(telemetry.rdd2.getProperties())
         .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
     assertThat(telemetry.rdd2.getSuccess()).isFalse();
-    assertThat(telemetry.rddEnvelope2.getSampleRate()).isEqualTo(100.0f);
+    assertThat(telemetry.rddEnvelope2.getSampleRate()).isNull();
 
     assertThat(telemetry.rdd3.getName()).isEqualTo("GET /500");
     assertThat(telemetry.rdd3.getData()).isEqualTo("https://mock.codes/500");
@@ -113,7 +113,7 @@ abstract class HttpClientTest {
     assertThat(telemetry.rdd3.getProperties())
         .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
     assertThat(telemetry.rdd3.getSuccess()).isFalse();
-    assertThat(telemetry.rddEnvelope3.getSampleRate()).isEqualTo(100.0f);
+    assertThat(telemetry.rddEnvelope3.getSampleRate()).isNull();
 
     SmokeTestExtension.assertParentChild(
         telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /HttpClients/*");
