@@ -64,10 +64,10 @@ class DllFileUtils {
     if (classLoader == null) {
       classLoader = ClassLoader.getSystemClassLoader();
     }
-    try (InputStream in = classLoader.getResourceAsStream("/inst/" + libraryToLoad)) {
+    try (InputStream in = classLoader.getResourceAsStream(libraryToLoad)) {
       if (in == null) {
         throw new IllegalStateException(
-            String.format("Failed to find '%s' in jar /inst/", libraryToLoad));
+            String.format("Failed to find '%s' in jar ", libraryToLoad));
       }
       byte[] buffer = new byte[8192];
       try (OutputStream out = new FileOutputStream(dllOnDisk, false)) {
