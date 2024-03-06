@@ -52,7 +52,7 @@ jobs:
                             $VERSION \
                             applicationinsights-agent-$VERSION.jar
 
-          echo "{version}={$VERSION}" >> $GITHUB_OUTPUT
+          echo "::set-output name=version::$VERSION"
 
   create-docs-pull-request:
     needs:
