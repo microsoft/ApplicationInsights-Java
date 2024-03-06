@@ -25,7 +25,7 @@ public class EtwProvider {
         LOGGER.debug("EtwProvider initialized. Lib path={}", dllPath.getAbsolutePath());
       } catch (Throwable t) {
         try {
-          LOGGER.error("Error initializing EtwProvider", t);
+          LOGGER.debug("Error initializing EtwProvider", t);
           if (dllPath != null) {
             dllPath.deleteOnExit();
           }
