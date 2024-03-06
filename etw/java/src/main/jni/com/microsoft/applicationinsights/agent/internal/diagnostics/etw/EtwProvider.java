@@ -10,9 +10,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class EtwProvider {
-  private static final String LIB_FILENAME_32_BIT = "applicationinsights-java-etw-provider-x86.dll";
+  private static final String LIB_FILENAME_32_BIT =
+      "/inst/applicationinsights-java-etw-provider-x86.dll";
   private static final String LIB_FILENAME_64_BIT =
-      "applicationinsights-java-etw-provider-x86-64.dll";
+      "/inst/applicationinsights-java-etw-provider-x86-64.dll";
 
   private static final Logger LOGGER = LoggerFactory.getLogger(EtwProvider.class);
 
@@ -23,12 +24,15 @@ public class EtwProvider {
       try {
         dllPath = loadLibrary(sdkVersion);
         LOGGER.debug("EtwProvider initialized. Lib path={}", dllPath.getAbsolutePath());
+        if (dllPath.exists()) {
+          LOGGER.debug("#### dllpath is fully loaded" + dllPath);
+        }
       } catch (Throwable t) {
         try {
           LOGGER.error("Error initializing EtwProvider", t);
-          if (dllPath != null) {
-            dllPath.deleteOnExit();
-          }
+          //          if (dllPath != null) {
+          //            dllPath.deleteOnExit();
+          //          }
         } catch (Throwable chomp) {
           // ignore
         }
@@ -46,9 +50,12 @@ public class EtwProvider {
     File dllPath = new File(targetDir, fileName);
 
     if (!dllPath.exists()) {
-      LOGGER.debug("#### default dllPath doesn't exist" + dllPath.getAbsolutePath());
+      LOGGER.debug("#### default dllPath doesn't exist" + dllPath.getPath());
       LOGGER.debug("#### extract to local folder instead");
       dllPath.createNewFile();
+      if (dllPath.exists()) {
+        LOGGER.debug("#### dllPath exists after createNewFile" + dllPath);
+      }
       DllFileUtils.extractToLocalFolder(dllPath, fileName);
     } else {
       LOGGER.debug("#### default dllPath exists" + dllPath.getAbsolutePath());

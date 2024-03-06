@@ -30,6 +30,7 @@ class DllFileUtils {
           "The constructed file path cannot be controlled by an end user of the instrumented application")
   public static File buildDllLocalPath(@Nullable String versionDirectory) {
     File dllPath = getTempDir();
+    LOGGER.debug("#### temp dir: '{}'", dllPath.getPath());
 
     dllPath = new File(dllPath, AI_BASE_FOLDER);
     dllPath = new File(dllPath, AI_NATIVE_FOLDER);
@@ -46,7 +47,7 @@ class DllFileUtils {
     if (!dllPath.exists() || !dllPath.canRead() || !dllPath.canWrite()) {
       throw new IllegalStateException("Failed to create a read/write folder for the native dll.");
     }
-    LOGGER.trace("{} folder exists", dllPath);
+    LOGGER.debug("{} folder exists", dllPath);
 
     return dllPath;
   }
