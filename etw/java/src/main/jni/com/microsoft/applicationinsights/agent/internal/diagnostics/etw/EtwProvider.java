@@ -10,10 +10,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class EtwProvider {
-  private static final String LIB_FILENAME_32_BIT =
-      "/inst/applicationinsights-java-etw-provider-x86.dll";
+  private static final String LIB_FILENAME_32_BIT = "applicationinsights-java-etw-provider-x86.dll";
   private static final String LIB_FILENAME_64_BIT =
-      "/inst/applicationinsights-java-etw-provider-x86-64.dll";
+      "applicationinsights-java-etw-provider-x86-64.dll";
 
   private static final Logger LOGGER = LoggerFactory.getLogger(EtwProvider.class);
 

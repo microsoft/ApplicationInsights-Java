@@ -41,7 +41,12 @@ class DllFileUtils {
     }
 
     if (!dllPath.exists()) {
-      dllPath.mkdirs();
+      try {
+        dllPath.mkdirs();
+      } catch (SecurityException e) {
+        throw new IllegalStateException(
+            "Failed to create a folder AISDK/native for the native dll.", e);
+      }
     }
 
     if (!dllPath.exists() || !dllPath.canRead() || !dllPath.canWrite()) {
@@ -59,9 +64,10 @@ class DllFileUtils {
     if (classLoader == null) {
       classLoader = ClassLoader.getSystemClassLoader();
     }
-    try (InputStream in = classLoader.getResourceAsStream(libraryToLoad)) {
+    try (InputStream in = classLoader.getResourceAsStream("/inst/" + libraryToLoad)) {
       if (in == null) {
-        throw new IllegalStateException(String.format("Failed to find '%s' in jar", libraryToLoad));
+        throw new IllegalStateException(
+            String.format("Failed to find '%s' in jar /inst/", libraryToLoad));
       }
       byte[] buffer = new byte[8192];
       try (OutputStream out = new FileOutputStream(dllOnDisk, false)) {
