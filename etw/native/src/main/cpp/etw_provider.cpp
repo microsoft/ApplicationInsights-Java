@@ -48,7 +48,7 @@ TRACELOGGING_DEFINE_PROVIDER(
     (0x1f0dc33f,0x30ae,0x5ff3,0x8b,0x01,0x8c,0xa9,0xb8,0x50,0x92,0x33));
 
 /********cppWriteEvent(IpaEtwEventBase event)********/
-JNIEXPORT void JNICALL Java_com_microsoft_applicationinsights_agent_bootstrap_diagnostics_etw_EtwProvider_cppWriteEvent
+JNIEXPORT void JNICALL Java_com_microsoft_applicationinsights_agent_internal_diagnostics_etw_EtwProvider_cppWriteEvent
     (JNIEnv * env, jobject jobj_javaThis, jobject jobj_event)
 {
     try
