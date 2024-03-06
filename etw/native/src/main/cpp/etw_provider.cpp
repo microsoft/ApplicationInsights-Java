@@ -81,7 +81,7 @@ JNIEXPORT void JNICALL Java_com_microsoft_applicationinsights_agent_internal_dia
 
 int getEventId(JNIEnv * env, jobject &jobj_event) throw(aijnierr_t) {
     jclass cls = env->GetObjectClass(jobj_event);
-    jmethodID jmid = env->GetMethodID(cls, "id", "()Lcom/microsoft/applicationinsights/agent/bootstrap/diagnostics/etw/events/model/IpaEtwEventId;");
+    jmethodID jmid = env->GetMethodID(cls, "id", "()Lcom/microsoft/applicationinsights/agent/internal/diagnostics/etw/events/model/IpaEtwEventId;");
     if (jmid == NULL) {
         throw AIJNIERR_METHOD_NAME;
     }
@@ -285,7 +285,7 @@ void handleGenericException(JNIEnv * env) noexcept {
 
 jthrowable newJniException(JNIEnv * env, const char * message) noexcept {
     jthrowable rval = NULL;
-    jclass excls = env->FindClass("com/microsoft/applicationinsights/agent/bootstrap/diagnostics/etw/ApplicationInsightsEtwException");
+    jclass excls = env->FindClass("com/microsoft/applicationinsights/agent/internal/diagnostics/etw/ApplicationInsightsEtwException");
     if (excls == NULL) {
         DBG("Could not find ApplicationInsightsEtwException");
         javaThrowUnknownError(env, " - could not find ApplicationInsightsEtwException");
@@ -314,7 +314,7 @@ jthrowable newJniException(JNIEnv * env, const char * message, jthrowable cause)
     }
 
     jthrowable rval = NULL;
-    jclass excls = env->FindClass("com/microsoft/applicationinsights/agent/bootstrap/diagnostics/etw/ApplicationInsightsEtwException");
+    jclass excls = env->FindClass("com/microsoft/applicationinsights/agent/internal/diagnostics/etw/ApplicationInsightsEtwException");
     if (excls == NULL) {
         DBG("Could not find class ApplicationInsightsEtwException");
         javaThrowUnknownError(env, " - could not find class ApplicationInsightsEtwException");

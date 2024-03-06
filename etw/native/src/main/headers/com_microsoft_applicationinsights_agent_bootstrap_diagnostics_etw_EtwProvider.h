@@ -10,7 +10,7 @@ extern "C" {
 /*
  * Class:     com_microsoft_applicationinsights_agent_internal_diagnostics_etw_EtwProvider
  * Method:    cppWriteEvent
- * Signature: (Lcom/microsoft/applicationinsights/agent/bootstrap/diagnostics/etw/events/model/IpaEtwEventBase;)V
+ * Signature: (Lcom/microsoft/applicationinsights/agent/internal/diagnostics/etw/events/model/IpaEtwEventBase;)V
  */
 JNIEXPORT void JNICALL Java_com_microsoft_applicationinsights_agent_internal_diagnostics_etw_EtwProvider_cppWriteEvent
   (JNIEnv *, jobject, jobject);
