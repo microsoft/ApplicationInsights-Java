@@ -20,6 +20,8 @@ import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 import java.util.List;
 import javax.annotation.Nullable;
 
+import static com.microsoft.applicationinsights.agent.internal.sampling.SamplingPercentage.USE_INGESTION_SAMPLING;
+
 // this sampler does two things:
 // * implements same trace id hashing algorithm so that traces are sampled the same across multiple
 //   nodes when some of those nodes are being monitored by other Application Insights SDKs (and 2.x
@@ -74,6 +76,10 @@ public class AiSampler implements Sampler {
           isRequest
               ? requestSamplingPercentage.get()
               : parentlessDependencySamplingPercentage.get();
+    }
+
+    if (sp == SamplingPercentage.USE_INGESTION_SAMPLING) {
+      return SamplingResult.recordAndSample();
     }
 
     if (sp == 0) {

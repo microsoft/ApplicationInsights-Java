@@ -12,6 +12,8 @@ import com.microsoft.applicationinsights.agent.internal.configuration.Configurat
 // the portal
 public interface SamplingPercentage {
 
+  long USE_INGESTION_SAMPLING = -1;
+
   double get();
 
   static SamplingPercentage fixed(double percentage) {
@@ -21,5 +23,9 @@ public interface SamplingPercentage {
 
   static SamplingPercentage rateLimited(double targetPerSecondLimit) {
     return new RateLimitedSamplingPercentage(targetPerSecondLimit, 0.1);
+  }
+
+  static SamplingPercentage ingestion() {
+    return () -> USE_INGESTION_SAMPLING;
   }
 }
