@@ -257,6 +257,13 @@ public class ConfigurationBuilder {
       configurationLogger.warn(
           "\"clientsecret\" typed of AAD authentication has been deprecated since 3.5.0 GA. Please use \"user-assigned identity\" or \"system-assigned identity\" instead.");
     }
+    if (config.sampling.percentage != null && config.sampling.requestsPerSecond != null) {
+      configurationLogger.warn(
+          "Sampling \"requestsPerSecond\" and \"percentage\" should not be used at the same time."
+              + " Please remove one of them.");
+      config.sampling.percentage = null; // requestsPerSecond takes priority
+    }
+
     logWarningIfUsingInternalAttributes(config);
   }
 

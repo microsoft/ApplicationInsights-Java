@@ -42,9 +42,9 @@ abstract class JavaUtilLoggingTest {
     Envelope mdEnvelope1 = mdList.get(0);
     Envelope mdEnvelope2 = mdList.get(1);
 
-    assertThat(rdEnvelope.getSampleRate()).isEqualTo(100.0f);
-    assertThat(mdEnvelope1.getSampleRate()).isEqualTo(100.0f);
-    assertThat(mdEnvelope2.getSampleRate()).isEqualTo(100.0f);
+    assertThat(rdEnvelope.getSampleRate()).isNull();
+    assertThat(mdEnvelope1.getSampleRate()).isNull();
+    assertThat(mdEnvelope2.getSampleRate()).isNull();
 
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
 
@@ -86,8 +86,8 @@ abstract class JavaUtilLoggingTest {
 
     Envelope edEnvelope = edList.get(0);
 
-    assertThat(rdEnvelope.getSampleRate()).isEqualTo(100.0f);
-    assertThat(edEnvelope.getSampleRate()).isEqualTo(100.0f);
+    assertThat(rdEnvelope.getSampleRate()).isNull();
+    assertThat(edEnvelope.getSampleRate()).isNull();
 
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
 

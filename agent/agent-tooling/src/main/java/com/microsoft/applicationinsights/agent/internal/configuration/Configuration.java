@@ -65,6 +65,7 @@ public class Configuration {
   public void validate() {
     instrumentation.logging.getSeverityThreshold();
     authentication.validate();
+    sampling.validate();
     preview.validate();
   }
 
@@ -168,6 +169,12 @@ public class Configuration {
     @Deprecated @Nullable public Double limitPerSecond;
 
     public List<SamplingOverride> overrides = new ArrayList<>();
+
+    private void validate() {
+      for (SamplingOverride samplingOverride : overrides) {
+        samplingOverride.validate();
+      }
+    }
   }
 
   public static class SamplingPreview {

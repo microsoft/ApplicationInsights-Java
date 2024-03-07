@@ -39,9 +39,9 @@ public abstract class CustomInstrumentationTest {
 
     Envelope mdEnvelope = mdList.get(0);
 
-    assertThat(telemetry.rdEnvelope.getSampleRate()).isEqualTo(100.0f);
-    assertThat(telemetry.rddEnvelope1.getSampleRate()).isEqualTo(100.0f);
-    assertThat(mdEnvelope.getSampleRate()).isEqualTo(100.0f);
+    assertThat(telemetry.rdEnvelope.getSampleRate()).isNull();
+    assertThat(telemetry.rddEnvelope1.getSampleRate()).isNull();
+    assertThat(mdEnvelope.getSampleRate()).isNull();
 
     MessageData md = (MessageData) ((Data<?>) mdEnvelope.getData()).getBaseData();
 
@@ -82,9 +82,9 @@ public abstract class CustomInstrumentationTest {
 
     Envelope mdEnvelope = mdList.get(0);
 
-    assertThat(rdEnvelope1.getSampleRate()).isEqualTo(100.0f);
-    assertThat(rdEnvelope2.getSampleRate()).isEqualTo(100.0f);
-    assertThat(mdEnvelope.getSampleRate()).isEqualTo(100.0f);
+    assertThat(rdEnvelope1.getSampleRate()).isNull();
+    assertThat(rdEnvelope2.getSampleRate()).isNull();
+    assertThat(mdEnvelope.getSampleRate()).isNull();
 
     RequestData rd1 = (RequestData) ((Data<?>) rdEnvelope1.getData()).getBaseData();
     RequestData rd2 = (RequestData) ((Data<?>) rdEnvelope2.getData()).getBaseData();

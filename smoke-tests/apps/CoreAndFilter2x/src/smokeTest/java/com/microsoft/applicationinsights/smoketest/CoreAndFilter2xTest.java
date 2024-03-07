@@ -71,9 +71,9 @@ abstract class CoreAndFilter2xTest {
     Envelope edEnvelope1 = edList.get(0);
     Envelope edEnvelope2 = edList.get(1);
 
-    assertThat(rdEnvelope.getSampleRate()).isEqualTo(100.0f);
-    assertThat(edEnvelope1.getSampleRate()).isEqualTo(100.0f);
-    assertThat(edEnvelope2.getSampleRate()).isEqualTo(100.0f);
+    assertThat(rdEnvelope.getSampleRate()).isNull();
+    assertThat(edEnvelope1.getSampleRate()).isNull();
+    assertThat(edEnvelope2.getSampleRate()).isNull();
 
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
 
@@ -110,10 +110,10 @@ abstract class CoreAndFilter2xTest {
     Envelope edEnvelope2 = edList.get(1);
     Envelope edEnvelope3 = edList.get(2);
 
-    assertThat(rdEnvelope.getSampleRate()).isEqualTo(100.0f);
-    assertThat(edEnvelope1.getSampleRate()).isEqualTo(100.0f);
-    assertThat(edEnvelope2.getSampleRate()).isEqualTo(100.0f);
-    assertThat(edEnvelope3.getSampleRate()).isEqualTo(100.0f);
+    assertThat(rdEnvelope.getSampleRate()).isNull();
+    assertThat(edEnvelope1.getSampleRate()).isNull();
+    assertThat(edEnvelope2.getSampleRate()).isNull();
+    assertThat(edEnvelope3.getSampleRate()).isNull();
 
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
 
@@ -208,7 +208,7 @@ abstract class CoreAndFilter2xTest {
     Envelope rdEnvelope = rdList.get(0);
     Envelope mdEnvelope = mdList.get(0);
 
-    assertThat(rdEnvelope.getSampleRate()).isEqualTo(100.0f);
+    assertThat(rdEnvelope.getSampleRate()).isNull();
     assertThat(mdEnvelope.getSampleRate()).isNull(); // metrics are never sent with sample rate
 
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
@@ -245,10 +245,10 @@ abstract class CoreAndFilter2xTest {
     Envelope mdEnvelope2 = mdList.get(1);
     Envelope mdEnvelope3 = mdList.get(2);
 
-    assertThat(rdEnvelope.getSampleRate()).isEqualTo(100.0f);
-    assertThat(mdEnvelope1.getSampleRate()).isEqualTo(100.0f);
-    assertThat(mdEnvelope2.getSampleRate()).isEqualTo(100.0f);
-    assertThat(mdEnvelope3.getSampleRate()).isEqualTo(100.0f);
+    assertThat(rdEnvelope.getSampleRate()).isNull();
+    assertThat(mdEnvelope1.getSampleRate()).isNull();
+    assertThat(mdEnvelope2.getSampleRate()).isNull();
+    assertThat(mdEnvelope3.getSampleRate()).isNull();
 
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
 
@@ -308,10 +308,10 @@ abstract class CoreAndFilter2xTest {
       }
     }
 
-    assertThat(rdEnvelope.getSampleRate()).isEqualTo(100.0f);
-    assertThat(pvdEnvelope1.getSampleRate()).isEqualTo(100.0f);
-    assertThat(pvdEnvelope2.getSampleRate()).isEqualTo(100.0f);
-    assertThat(pvdEnvelope3.getSampleRate()).isEqualTo(100.0f);
+    assertThat(rdEnvelope.getSampleRate()).isNull();
+    assertThat(pvdEnvelope1.getSampleRate()).isNull();
+    assertThat(pvdEnvelope2.getSampleRate()).isNull();
+    assertThat(pvdEnvelope3.getSampleRate()).isNull();
 
     PageViewData pv1 = (PageViewData) ((Data<?>) pvdEnvelope1.getData()).getBaseData();
     PageViewData pv2 = (PageViewData) ((Data<?>) pvdEnvelope2.getData()).getBaseData();
@@ -399,8 +399,8 @@ abstract class CoreAndFilter2xTest {
 
     Envelope pvdEnvelope = pvdList.get(0);
 
-    assertThat(rdEnvelope.getSampleRate()).isEqualTo(100.0f);
-    assertThat(pvdEnvelope.getSampleRate()).isEqualTo(100.0f);
+    assertThat(rdEnvelope.getSampleRate()).isNull();
+    assertThat(pvdEnvelope.getSampleRate()).isNull();
 
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
 
@@ -419,7 +419,7 @@ abstract class CoreAndFilter2xTest {
 
     Envelope rdEnvelope = rdList.get(0);
 
-    assertThat(rdEnvelope.getSampleRate()).isEqualTo(100.0f);
+    assertThat(rdEnvelope.getSampleRate()).isNull();
 
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
 
@@ -451,8 +451,8 @@ abstract class CoreAndFilter2xTest {
     assertThat(edList.size()).isEqualTo(1);
     Envelope edEnvelope = edList.get(0);
 
-    assertThat(rdEnvelope.getSampleRate()).isEqualTo(100.0f);
-    assertThat(edEnvelope.getSampleRate()).isEqualTo(100.0f);
+    assertThat(rdEnvelope.getSampleRate()).isNull();
+    assertThat(edEnvelope.getSampleRate()).isNull();
 
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
     ExceptionData ed = (ExceptionData) ((Data<?>) edEnvelope.getData()).getBaseData();
@@ -480,7 +480,7 @@ abstract class CoreAndFilter2xTest {
 
     Envelope rdEnvelope = rdList.get(0);
 
-    assertThat(rdEnvelope.getSampleRate()).isEqualTo(100.0f);
+    assertThat(rdEnvelope.getSampleRate()).isNull();
 
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
 

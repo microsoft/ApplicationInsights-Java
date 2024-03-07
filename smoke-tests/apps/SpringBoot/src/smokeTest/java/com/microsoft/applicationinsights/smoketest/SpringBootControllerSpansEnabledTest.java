@@ -28,7 +28,7 @@ class SpringBootControllerSpansEnabledTest {
     List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
     Envelope rdEnvelope = rdList.get(0);
 
-    assertThat(rdEnvelope.getSampleRate()).isEqualTo(100.0f);
+    assertThat(rdEnvelope.getSampleRate()).isNull();
 
     String operationId = rdEnvelope.getTags().get("ai.operation.id");
 
@@ -64,9 +64,9 @@ class SpringBootControllerSpansEnabledTest {
     Envelope rddEnvelope1 = rddList.get(0);
     Envelope edEnvelope1 = edList.get(0);
 
-    assertThat(rdEnvelope.getSampleRate()).isEqualTo(100.0f);
-    assertThat(rddEnvelope1.getSampleRate()).isEqualTo(100.0f);
-    assertThat(edEnvelope1.getSampleRate()).isEqualTo(100.0f);
+    assertThat(rdEnvelope.getSampleRate()).isNull();
+    assertThat(rddEnvelope1.getSampleRate()).isNull();
+    assertThat(edEnvelope1.getSampleRate()).isNull();
 
     RequestData rd = testing.getTelemetryDataForType(0, "RequestData");
     RemoteDependencyData rdd1 =
@@ -106,10 +106,10 @@ class SpringBootControllerSpansEnabledTest {
     Envelope rddEnvelope2 = rddList.get(1);
     Envelope rddEnvelope3 = rddList.get(2);
 
-    assertThat(rdEnvelope.getSampleRate()).isEqualTo(100.0f);
-    assertThat(rddEnvelope1.getSampleRate()).isEqualTo(100.0f);
-    assertThat(rddEnvelope2.getSampleRate()).isEqualTo(100.0f);
-    assertThat(rddEnvelope3.getSampleRate()).isEqualTo(100.0f);
+    assertThat(rdEnvelope.getSampleRate()).isNull();
+    assertThat(rddEnvelope1.getSampleRate()).isNull();
+    assertThat(rddEnvelope2.getSampleRate()).isNull();
+    assertThat(rddEnvelope3.getSampleRate()).isNull();
 
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
     RemoteDependencyData rdd1 =

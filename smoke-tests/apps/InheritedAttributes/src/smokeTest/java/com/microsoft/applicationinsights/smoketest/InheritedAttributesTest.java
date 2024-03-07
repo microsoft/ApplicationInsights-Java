@@ -39,8 +39,8 @@ abstract class InheritedAttributesTest {
 
     Envelope mdEnvelope = mdList.get(0);
 
-    assertThat(rdEnvelope.getSampleRate()).isEqualTo(100.0f);
-    assertThat(mdEnvelope.getSampleRate()).isEqualTo(100.0f);
+    assertThat(rdEnvelope.getSampleRate()).isNull();
+    assertThat(mdEnvelope.getSampleRate()).isNull();
 
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
     MessageData md = (MessageData) ((Data<?>) mdEnvelope.getData()).getBaseData();

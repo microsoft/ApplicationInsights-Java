@@ -52,6 +52,7 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
   private static final AtomicBoolean alreadyLoggedError = new AtomicBoolean();
 
   // in Azure Functions consumption pool, we don't know at startup whether to enable or not
+  // TODO (trask) convert this from float to double?
   public static volatile float samplingPercentage = 0;
 
   public static volatile FeatureStatsbeat featureStatsbeat;
@@ -505,8 +506,10 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
     }
 
     if (isPartOfTheCurrentTrace && applySampling && span instanceof ReadableSpan) {
-      long itemCount = getItemCount((ReadableSpan) span);
-      telemetryBuilder.setSampleRate(100.0f / itemCount);
+      Long itemCount = ((ReadableSpan) span).getAttribute(AiSemanticAttributes.ITEM_COUNT);
+      if (itemCount != null) {
+        telemetryBuilder.setSampleRate(100.0f / itemCount);
+      }
     }
 
     if (!isPartOfTheCurrentTrace && applySampling) {
@@ -519,7 +522,9 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
       }
       // sampled in
 
-      telemetryBuilder.setSampleRate(samplingPercentage);
+      if (samplingPercentage != 100) {
+        telemetryBuilder.setSampleRate(samplingPercentage);
+      }
     }
 
     // this is not null because sdk instrumentation is not added until TelemetryClient.setActive()
@@ -572,11 +577,6 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
       return true;
     }
     return SamplingScoreGeneratorV2.getSamplingScore(operationId) < samplingPercentage;
-  }
-
-  private static long getItemCount(ReadableSpan span) {
-    Long itemCount = span.getAttribute(AiSemanticAttributes.ITEM_COUNT);
-    return itemCount == null ? 1L : itemCount;
   }
 
   private static void selectivelySetTags(

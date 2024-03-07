@@ -76,6 +76,10 @@ public class AiSampler implements Sampler {
               : parentlessDependencySamplingPercentage.get();
     }
 
+    if (sp == SamplingPercentage.USE_INGESTION_SAMPLING) {
+      return SamplingResult.recordAndSample();
+    }
+
     if (sp == 0) {
       return SamplingResult.drop();
     }

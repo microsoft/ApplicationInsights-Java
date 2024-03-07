@@ -20,7 +20,12 @@ public class Samplers {
       SamplingPercentage parentlessDependencySamplingPercentage = SamplingPercentage.fixed(100);
       sampler = new AiSampler(requestSamplingPercentage, parentlessDependencySamplingPercentage);
     } else if (sampling.percentage != null) {
-      SamplingPercentage samplingPercentage = SamplingPercentage.fixed(sampling.percentage);
+      SamplingPercentage samplingPercentage;
+      if (sampling.percentage == 100) {
+        samplingPercentage = SamplingPercentage.useIngestionSampling();
+      } else {
+        samplingPercentage = SamplingPercentage.fixed(sampling.percentage);
+      }
       sampler = new AiSampler(samplingPercentage, samplingPercentage);
     } else {
       throw new AssertionError("ConfigurationBuilder should have set the default sampling");

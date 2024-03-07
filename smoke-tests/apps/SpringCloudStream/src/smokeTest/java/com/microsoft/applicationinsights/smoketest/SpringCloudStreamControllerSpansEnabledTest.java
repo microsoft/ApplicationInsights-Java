@@ -43,10 +43,10 @@ class SpringCloudStreamControllerSpansEnabledTest {
     Envelope rddEnvelope1 = rddList.get(0);
     Envelope rddEnvelope2 = rddList.get(1);
 
-    assertThat(rdEnvelope1.getSampleRate()).isEqualTo(100.0f);
-    assertThat(rdEnvelope2.getSampleRate()).isEqualTo(100.0f);
-    assertThat(rddEnvelope1.getSampleRate()).isEqualTo(100.0f);
-    assertThat(rddEnvelope2.getSampleRate()).isEqualTo(100.0f);
+    assertThat(rdEnvelope1.getSampleRate()).isNull();
+    assertThat(rdEnvelope2.getSampleRate()).isNull();
+    assertThat(rddEnvelope1.getSampleRate()).isNull();
+    assertThat(rddEnvelope2.getSampleRate()).isNull();
 
     RequestData rd1 = (RequestData) ((Data<?>) rdEnvelope1.getData()).getBaseData();
     RequestData rd2 = (RequestData) ((Data<?>) rdEnvelope2.getData()).getBaseData();
