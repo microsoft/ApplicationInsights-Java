@@ -152,9 +152,7 @@ jobs:
         run: |
           modules=$(ls -d smoke-tests/apps/* | sed 's/\/$//' | sed 's/\//:/g' | sed 's/^/:/')
           inner_json=$(echo $modules | xargs echo | sed 's/ /","/g')
-          echo "inner_json: {\"module\":[\"$inner_json\"]}"
-          echo "module:[$inner_json]"
-          echo "matrix="module:[$inner_json]" >> $GITHUB_OUTPUT
+          echo "matrix={\"module\":[\"$inner_json\"]}" >> $GITHUB_OUTPUT
 
   smoke-test:
     needs: setup-smoke-test-matrix
