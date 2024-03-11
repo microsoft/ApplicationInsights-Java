@@ -28,12 +28,14 @@ import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.Telemetr
 import com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.QuickPulse;
 import com.azure.monitor.opentelemetry.exporter.implementation.statsbeat.NetworkStatsbeatHttpPipelinePolicy;
 import com.azure.monitor.opentelemetry.exporter.implementation.statsbeat.StatsbeatModule;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.AksResourceAttributes;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.PropertyHelper;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.ResourceParser;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.TempDirs;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.File;
@@ -326,6 +328,7 @@ public class TelemetryClient {
     return telemetry;
   }
 
+  @SuppressWarnings("SystemOut")
   public void populateDefaults(AbstractTelemetryBuilder telemetryBuilder, Resource resource) {
     if (connectionString != null) {
       // not sure if connectionString can be null in Azure Functions
@@ -337,6 +340,15 @@ public class TelemetryClient {
     }
     for (Map.Entry<String, String> entry : globalProperties.entrySet()) {
       telemetryBuilder.addProperty(entry.getKey(), entry.getValue());
+    }
+    if (AksResourceAttributes.isAks(resource)) {
+      System.out.println("#### resource is from AKS");
+      Attributes attributes = resource.getAttributes();
+      System.out.println("#### start printing attributes");
+      attributes.forEach((key, value) -> System.out.println(key + " : " + value));
+      System.out.println("#### end printing attributes");
+    } else {
+      System.out.println("#### resource is not from AKS");
     }
     new ResourceParser().updateRoleNameAndInstance(telemetryBuilder, resource);
   }
