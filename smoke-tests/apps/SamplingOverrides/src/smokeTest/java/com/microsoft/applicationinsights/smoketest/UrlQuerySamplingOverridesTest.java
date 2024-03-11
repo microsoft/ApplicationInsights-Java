@@ -21,7 +21,9 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 @UseAgent("applicationinsights-urlquery.json")
 abstract class UrlQuerySamplingOverridesTest {
 
-  @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.create();
+  @RegisterExtension
+  static final SmokeTestExtension testing =
+      SmokeTestExtension.builder().setUseDefaultHttpPort().build();
 
   @Test
   @TargetUri(value = "/test?query")
