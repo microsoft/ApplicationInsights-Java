@@ -29,8 +29,7 @@ abstract class HttpServerQueryStringTest {
     Telemetry telemetry = testing.getTelemetry(0);
 
     assertThat(telemetry.rd.getName()).isEqualTo("GET /HttpServer/test");
-    assertThat(telemetry.rd.getUrl())
-        .matches("http://localhost:[0-9]+/HttpServer/test\\?query");
+    assertThat(telemetry.rd.getUrl()).matches("http://localhost:[0-9]+/HttpServer/test\\?query");
     assertThat(telemetry.rd.getResponseCode()).isEqualTo("200");
     assertThat(telemetry.rd.getSuccess()).isTrue();
     assertThat(telemetry.rd.getSource()).isNull();

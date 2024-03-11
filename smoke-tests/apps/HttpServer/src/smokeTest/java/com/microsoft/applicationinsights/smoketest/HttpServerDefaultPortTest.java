@@ -32,8 +32,7 @@ abstract class HttpServerDefaultPortTest {
     Telemetry telemetry = testing.getTelemetry(0);
 
     assertThat(telemetry.rd.getName()).isEqualTo("GET /HttpServer/test");
-    assertThat(telemetry.rd.getUrl())
-        .isEqualTo("http://localhost/HttpServer/test?query");
+    assertThat(telemetry.rd.getUrl()).isEqualTo("http://localhost/HttpServer/test?query");
     assertThat(telemetry.rd.getResponseCode()).isEqualTo("200");
     assertThat(telemetry.rd.getSuccess()).isTrue();
     assertThat(telemetry.rd.getSource()).isNull();
