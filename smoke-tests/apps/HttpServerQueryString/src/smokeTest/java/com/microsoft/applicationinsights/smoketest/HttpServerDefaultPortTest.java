@@ -18,6 +18,7 @@ import static org.assertj.core.data.MapEntry.entry;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
+// TODO (trask) add test for default HTTPS port 443 also
 @UseAgent
 abstract class HttpServerDefaultPortTest {
 
