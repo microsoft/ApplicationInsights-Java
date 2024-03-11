@@ -23,6 +23,7 @@ public class SmokeTestExtensionBuilder {
   private File agentExtensionFile;
   private ProfilerState profilerEndpointPath = ProfilerState.unconfigured;
   private final Map<String, String> httpHeaders = new HashMap<>();
+  private boolean useDefaultHttpPort;
   private boolean useOtlpEndpoint;
 
   public SmokeTestExtensionBuilder setDependencyContainer(
@@ -83,6 +84,11 @@ public class SmokeTestExtensionBuilder {
     return this;
   }
 
+  public SmokeTestExtensionBuilder setUseDefaultHttpPort() {
+    this.useDefaultHttpPort = true;
+    return this;
+  }
+
   public SmokeTestExtensionBuilder useOtlpEndpoint() {
     this.useOtlpEndpoint = true;
     return this;
@@ -102,6 +108,7 @@ public class SmokeTestExtensionBuilder {
         agentExtensionFile,
         profilerEndpointPath,
         httpHeaders,
+        useDefaultHttpPort,
         useOtlpEndpoint);
   }
 }

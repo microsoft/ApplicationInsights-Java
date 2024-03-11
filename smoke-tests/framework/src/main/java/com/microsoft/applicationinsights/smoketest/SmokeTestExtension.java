@@ -103,6 +103,7 @@ public class SmokeTestExtension
   private final File javaagentFile;
   private final File agentExtensionFile;
   private final Map<String, String> httpHeaders;
+  private final boolean useDefaultHttpPort;
   private final boolean useOtlpEndpoint;
 
   public static SmokeTestExtension create() {
@@ -126,6 +127,7 @@ public class SmokeTestExtension
       File agentExtensionFile,
       ProfilerState profilerState,
       Map<String, String> httpHeaders,
+      boolean useDefaultHttpPort,
       boolean useOtlpEndpoint) {
     this.skipHealthCheck = skipHealthCheck;
     this.readOnly = readOnly;
@@ -152,6 +154,7 @@ public class SmokeTestExtension
     javaagentFile = new File(System.getProperty(javaagentPathSystemProperty));
 
     this.httpHeaders = httpHeaders;
+    this.useDefaultHttpPort = useDefaultHttpPort;
     this.useOtlpEndpoint = useOtlpEndpoint;
   }
 
@@ -217,6 +220,10 @@ public class SmokeTestExtension
     hostnameEnvVars = new HashMap<>();
     startDependencyContainers();
     startTestApplicationContainer();
+    // TODO (trask) how to wait for startup in this case?
+    if (useDefaultHttpPort) {
+      Thread.sleep(15000);
+    }
     clearOutAnyInitLogs();
   }
 
@@ -242,11 +249,17 @@ public class SmokeTestExtension
 
   protected String getBaseUrl() {
     String appContext = getAppContext();
-    if (appContext.isEmpty()) {
-      return "http://localhost:" + appServerPort;
-    } else {
-      return "http://localhost:" + appServerPort + "/" + appContext;
+    StringBuilder sb = new StringBuilder();
+    sb.append("http://localhost");
+    if (appServerPort != 80) {
+      sb.append(':');
+      sb.append(appServerPort);
     }
+    if (!appContext.isEmpty()) {
+      sb.append('/');
+      sb.append(appContext);
+    }
+    return sb.toString();
   }
 
   protected String getAppContext() {
@@ -385,13 +398,22 @@ public class SmokeTestExtension
     Testcontainers.exposeHostPorts(4318);
 
     GenericContainer<?> container;
-    if (REMOTE_DEBUG) {
-      container =
-          new FixedHostPortGenericContainer<>(currentImageName)
-              .withFixedExposedPort(5005, 5005)
-              .withStartupTimeout(Duration.ofMinutes(5));
+    if (REMOTE_DEBUG || useDefaultHttpPort) {
+      FixedHostPortGenericContainer fixedPortContainer =
+          new FixedHostPortGenericContainer<>(currentImageName);
+      if (REMOTE_DEBUG) {
+        fixedPortContainer
+            .withFixedExposedPort(5005, 5005)
+            .withStartupTimeout(Duration.ofMinutes(5));
+      }
+      if (useDefaultHttpPort) {
+        fixedPortContainer.withFixedExposedPort(80, 8080);
+      } else {
+        fixedPortContainer.withExposedPorts(8080);
+      }
+      container = fixedPortContainer;
     } else {
-      container = new GenericContainer<>(currentImageName);
+      container = new GenericContainer<>(currentImageName).withExposedPorts(8080);
     }
 
     container =
@@ -402,7 +424,6 @@ public class SmokeTestExtension
             .withEnv("OTEL_RESOURCE_ATTRIBUTES", otelResourceAttributesEnvVar)
             .withEnv("APPLICATIONINSIGHTS_METRIC_INTERVAL_SECONDS", "1")
             .withNetwork(network)
-            .withExposedPorts(8080)
             .withFileSystemBind(
                 appFile.getAbsolutePath(),
                 currentImageAppDir + "/" + currentImageAppFileName,
