@@ -1,9 +1,11 @@
 # CHANGELOG
 
-## Version 3.5.1 GA (03/07/2024)
+## Version 3.5.1 GA (03/11/2024)
 
 ### Bug fixes:
 
+* Fix sampling overrides for http.target when url.query is present ([#3588](https://github.com/microsoft/ApplicationInsights-Java/pull/3588))
+* Support url.query from OTel stable HTTP semconv ([#3581](https://github.com/microsoft/ApplicationInsights-Java/pull/3581))
 * Fix ETW initialization failure for App Service Windows ([#3571](https://github.com/microsoft/ApplicationInsights-Java/pull/3571))
 * Fix ingestion sampling([#3578](https://github.com/microsoft/ApplicationInsights-Java/pull/3578))
 
