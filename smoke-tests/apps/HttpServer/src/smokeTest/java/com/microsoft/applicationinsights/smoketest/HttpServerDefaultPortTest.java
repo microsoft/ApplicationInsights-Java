@@ -31,9 +31,9 @@ abstract class HttpServerDefaultPortTest {
   void queryTest() throws Exception {
     Telemetry telemetry = testing.getTelemetry(0);
 
-    assertThat(telemetry.rd.getName()).isEqualTo("GET /HttpServerQueryString/test");
+    assertThat(telemetry.rd.getName()).isEqualTo("GET /HttpServer/test");
     assertThat(telemetry.rd.getUrl())
-        .isEqualTo("http://localhost/HttpServerQueryString/test?query");
+        .isEqualTo("http://localhost/HttpServer/test?query");
     assertThat(telemetry.rd.getResponseCode()).isEqualTo("200");
     assertThat(telemetry.rd.getSuccess()).isTrue();
     assertThat(telemetry.rd.getSource()).isNull();
