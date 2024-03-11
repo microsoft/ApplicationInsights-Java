@@ -103,7 +103,7 @@ public class SmokeTestExtension
   private final File javaagentFile;
   private final File agentExtensionFile;
   private final Map<String, String> httpHeaders;
-  private final int port;
+  private final boolean useDefaultHttpPort;
   private final boolean useOtlpEndpoint;
 
   public static SmokeTestExtension create() {
@@ -127,7 +127,7 @@ public class SmokeTestExtension
       File agentExtensionFile,
       ProfilerState profilerState,
       Map<String, String> httpHeaders,
-      int port,
+      boolean useDefaultHttpPort,
       boolean useOtlpEndpoint) {
     this.skipHealthCheck = skipHealthCheck;
     this.readOnly = readOnly;
@@ -154,7 +154,7 @@ public class SmokeTestExtension
     javaagentFile = new File(System.getProperty(javaagentPathSystemProperty));
 
     this.httpHeaders = httpHeaders;
-    this.port = port;
+    this.useDefaultHttpPort = useDefaultHttpPort;
     this.useOtlpEndpoint = useOtlpEndpoint;
   }
 
@@ -221,7 +221,7 @@ public class SmokeTestExtension
     startDependencyContainers();
     startTestApplicationContainer();
     // TODO (trask) how to wait for startup in this case?
-    if (port != -1) {
+    if (useDefaultHttpPort) {
       Thread.sleep(15000);
     }
     clearOutAnyInitLogs();
@@ -398,7 +398,7 @@ public class SmokeTestExtension
     Testcontainers.exposeHostPorts(4318);
 
     GenericContainer<?> container;
-    if (REMOTE_DEBUG || port != -1) {
+    if (REMOTE_DEBUG || useDefaultHttpPort) {
       FixedHostPortGenericContainer fixedPortContainer =
           new FixedHostPortGenericContainer<>(currentImageName);
       if (REMOTE_DEBUG) {
@@ -406,8 +406,8 @@ public class SmokeTestExtension
             .withFixedExposedPort(5005, 5005)
             .withStartupTimeout(Duration.ofMinutes(5));
       }
-      if (port != -1) {
-        fixedPortContainer.withFixedExposedPort(port, 8080);
+      if (useDefaultHttpPort) {
+        fixedPortContainer.withFixedExposedPort(80, 8080);
       } else {
         fixedPortContainer.withExposedPorts(8080);
       }

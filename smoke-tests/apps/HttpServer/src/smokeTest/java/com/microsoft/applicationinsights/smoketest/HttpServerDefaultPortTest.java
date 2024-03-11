@@ -24,7 +24,7 @@ abstract class HttpServerDefaultPortTest {
 
   @RegisterExtension
   static final SmokeTestExtension testing =
-      SmokeTestExtension.builder().setAppServerPort(80).build();
+      SmokeTestExtension.builder().setUseDefaultHttpPort().build();
 
   @Test
   @TargetUri("/test?query")
