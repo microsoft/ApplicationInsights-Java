@@ -21,7 +21,7 @@ dependencies {
   implementation(project(":agent:agent-profiler:agent-diagnostics"))
   implementation(project(":etw:java"))
 
-  implementation("com.azure:azure-monitor-opentelemetry-exporter:1.0.0-beta.20")
+  implementation("com.azure:azure-monitor-opentelemetry-exporter:1.0.0-beta.21")
   compileOnly("io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap")
   compileOnly("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling")
   compileOnly("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-common-bootstrap")
@@ -46,7 +46,7 @@ dependencies {
   compileOnly("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure")
   compileOnly("io.opentelemetry:opentelemetry-extension-trace-propagators")
 
-  implementation("com.github.oshi:oshi-core:6.4.13") {
+  implementation("com.github.oshi:oshi-core:6.5.0") {
     exclude("org.slf4j", "slf4j-api")
   }
 
