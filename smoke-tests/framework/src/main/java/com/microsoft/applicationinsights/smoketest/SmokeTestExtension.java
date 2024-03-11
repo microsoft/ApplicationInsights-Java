@@ -402,8 +402,9 @@ public class SmokeTestExtension
       FixedHostPortGenericContainer fixedPortContainer =
           new FixedHostPortGenericContainer<>(currentImageName);
       if (REMOTE_DEBUG) {
-        fixedPortContainer.withFixedExposedPort(5005, 5005)
-                .withStartupTimeout(Duration.ofMinutes(5));
+        fixedPortContainer
+            .withFixedExposedPort(5005, 5005)
+            .withStartupTimeout(Duration.ofMinutes(5));
       }
       if (port != -1) {
         fixedPortContainer.withFixedExposedPort(port, 8080);
@@ -412,8 +413,7 @@ public class SmokeTestExtension
       }
       container = fixedPortContainer;
     } else {
-      container = new GenericContainer<>(currentImageName)
-          .withExposedPorts(8080);
+      container = new GenericContainer<>(currentImageName).withExposedPorts(8080);
     }
 
     container =
