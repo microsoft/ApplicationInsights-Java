@@ -4,4 +4,5 @@ plugins {
 
 dependencies {
   implementation("org.hsqldb:hsqldb:2.5.1")
+  implementation("ch.qos.logback:logback-classic")
 }

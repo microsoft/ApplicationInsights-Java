@@ -291,10 +291,12 @@ public class SamplingOverrides {
       this.attributes = attributes;
     }
 
+    @SuppressWarnings("SystemOut")
     private String get() {
       if (!initialized) {
         String urlQuery = attributes.get(SemanticAttributes.URL_QUERY);
-        value = attributes.get(SemanticAttributes.URL_PATH) + (urlQuery != null ? urlQuery : "");
+        value =
+            attributes.get(SemanticAttributes.URL_PATH) + (urlQuery != null ? "?" + urlQuery : "");
         initialized = true;
       }
       return value;

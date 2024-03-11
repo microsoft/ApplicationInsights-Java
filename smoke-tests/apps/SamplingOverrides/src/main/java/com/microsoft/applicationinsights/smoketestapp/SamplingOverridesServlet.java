@@ -73,6 +73,10 @@ public class SamplingOverridesServlet extends HttpServlet {
       executeStatement(connection);
       connection.close();
       return 200;
+    } else if (pathInfo.equals("/test")) {
+      Connection connection = getHsqldbConnection();
+      connection.clearWarnings();
+      return 200;
     } else {
       throw new ServletException("Unexpected url: " + pathInfo);
     }
