@@ -355,6 +355,7 @@ public class TelemetryClient {
     new ResourceParser().updateRoleNameAndInstance(telemetryBuilder, resource);
   }
 
+  @SuppressWarnings("SystemOut")
   private void printOtelResourceAttributes() {
     System.out.println("#### start OTEL_RESOURCE_ATTRIBUTES: \n");
     System.out.println(System.getenv("OTEL_RESOURCE_ATTRIBUTES"));
