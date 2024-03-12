@@ -356,7 +356,7 @@ public class TelemetryClient {
   }
 
   @SuppressWarnings("SystemOut")
-  private void printOtelResourceAttributes() {
+  private static void printOtelResourceAttributes() {
     System.out.println("#### start OTEL_RESOURCE_ATTRIBUTES: \n");
     System.out.println(System.getenv("OTEL_RESOURCE_ATTRIBUTES"));
     System.out.println("#### end OTEL_RESOURCE_ATTRIBUTES");
