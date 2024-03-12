@@ -347,10 +347,18 @@ public class TelemetryClient {
       System.out.println("#### start printing attributes");
       attributes.forEach((key, value) -> System.out.println(key + " : " + value));
       System.out.println("#### end printing attributes");
+
+      printOtelResourceAttributes(); // they should match
     } else {
       System.out.println("#### resource is not from AKS");
     }
     new ResourceParser().updateRoleNameAndInstance(telemetryBuilder, resource);
+  }
+
+  private void printOtelResourceAttributes() {
+    System.out.println("#### start OTEL_RESOURCE_ATTRIBUTES: \n");
+    System.out.println(System.getenv("OTEL_RESOURCE_ATTRIBUTES"));
+    System.out.println("#### end OTEL_RESOURCE_ATTRIBUTES");
   }
 
   @Nullable
