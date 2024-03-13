@@ -5,9 +5,7 @@ on:
 jobs:
   release:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pull-requests: write
+    permissions: write-all
     outputs:
       version: ${{ steps.create-github-release.outputs.version }}
     steps:
