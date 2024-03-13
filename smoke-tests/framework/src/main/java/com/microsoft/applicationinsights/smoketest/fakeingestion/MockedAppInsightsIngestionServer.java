@@ -7,6 +7,7 @@ import com.microsoft.applicationinsights.smoketest.SmokeTestExtension;
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.Domain;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
+import com.microsoft.applicationinsights.smoketest.schemav2.MessageData;
 import com.microsoft.applicationinsights.smoketest.schemav2.MetricData;
 import java.util.ArrayList;
 import java.util.List;
@@ -107,7 +108,9 @@ public class MockedAppInsightsIngestionServer {
     List<Envelope> items = waitForItems("MessageData", numItems);
     List<T> dataItems = new ArrayList<>();
     for (Envelope e : items) {
-      if (e.getTags().containsKey("ai.operation.id")) {
+      MessageData md = (MessageData) ((Data<?>) e.getData()).getBaseData();
+      if (e.getTags().containsKey("ai.operation.id")
+          && !"stdout".equals(md.getProperties().get("LoggerName"))) {
         Data<T> dt = (Data<T>) e.getData();
         dataItems.add(dt.getBaseData());
       }
