@@ -1,36 +1,36 @@
 
 # agent
 ## Dependency License Report
-_2024-03-12 03:25:14 UTC_
+_2024-03-13 03:34:09 UTC_
 ## Apache License, Version 2.0
 
-**1** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-annotations` **Version:** `2.16.2` 
+**1** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-annotations` **Version:** `2.17.0` 
 > - **Project URL**: [https://github.com/FasterXML/jackson](https://github.com/FasterXML/jackson)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
-> - **Embedded license files**: [jackson-annotations-2.16.2.jar/META-INF/LICENSE](jackson-annotations-2.16.2.jar/META-INF/LICENSE) 
-    - [jackson-annotations-2.16.2.jar/META-INF/NOTICE](jackson-annotations-2.16.2.jar/META-INF/NOTICE)
+> - **Embedded license files**: [jackson-annotations-2.17.0.jar/META-INF/LICENSE](jackson-annotations-2.17.0.jar/META-INF/LICENSE) 
+    - [jackson-annotations-2.17.0.jar/META-INF/NOTICE](jackson-annotations-2.17.0.jar/META-INF/NOTICE)
 
-**2** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-core` **Version:** `2.16.2` 
+**2** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-core` **Version:** `2.17.0` 
 > - **Project URL**: [https://github.com/FasterXML/jackson-core](https://github.com/FasterXML/jackson-core)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
-> - **Embedded license files**: [jackson-core-2.16.2.jar/META-INF/LICENSE](jackson-core-2.16.2.jar/META-INF/LICENSE) 
-    - [jackson-core-2.16.2.jar/META-INF/NOTICE](jackson-core-2.16.2.jar/META-INF/NOTICE)
+> - **Embedded license files**: [jackson-core-2.17.0.jar/META-INF/LICENSE](jackson-core-2.17.0.jar/META-INF/LICENSE) 
+    - [jackson-core-2.17.0.jar/META-INF/NOTICE](jackson-core-2.17.0.jar/META-INF/NOTICE)
 
-**3** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-databind` **Version:** `2.16.2` 
+**3** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-databind` **Version:** `2.17.0` 
 > - **Project URL**: [https://github.com/FasterXML/jackson](https://github.com/FasterXML/jackson)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
-> - **Embedded license files**: [jackson-databind-2.16.2.jar/META-INF/LICENSE](jackson-databind-2.16.2.jar/META-INF/LICENSE) 
-    - [jackson-databind-2.16.2.jar/META-INF/NOTICE](jackson-databind-2.16.2.jar/META-INF/NOTICE)
+> - **Embedded license files**: [jackson-databind-2.17.0.jar/META-INF/LICENSE](jackson-databind-2.17.0.jar/META-INF/LICENSE) 
+    - [jackson-databind-2.17.0.jar/META-INF/NOTICE](jackson-databind-2.17.0.jar/META-INF/NOTICE)
 
-**4** **Group:** `com.fasterxml.jackson.datatype` **Name:** `jackson-datatype-jsr310` **Version:** `2.16.2` 
+**4** **Group:** `com.fasterxml.jackson.datatype` **Name:** `jackson-datatype-jsr310` **Version:** `2.17.0` 
 > - **Manifest Project URL**: [https://github.com/FasterXML/jackson-modules-java8/jackson-datatype-jsr310](https://github.com/FasterXML/jackson-modules-java8/jackson-datatype-jsr310)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
-> - **Embedded license files**: [jackson-datatype-jsr310-2.16.2.jar/META-INF/LICENSE](jackson-datatype-jsr310-2.16.2.jar/META-INF/LICENSE) 
-    - [jackson-datatype-jsr310-2.16.2.jar/META-INF/NOTICE](jackson-datatype-jsr310-2.16.2.jar/META-INF/NOTICE)
+> - **Embedded license files**: [jackson-datatype-jsr310-2.17.0.jar/META-INF/LICENSE](jackson-datatype-jsr310-2.17.0.jar/META-INF/LICENSE) 
+    - [jackson-datatype-jsr310-2.17.0.jar/META-INF/NOTICE](jackson-datatype-jsr310-2.17.0.jar/META-INF/NOTICE)
 
 **5** **Group:** `com.github.stephenc.jcip` **Name:** `jcip-annotations` **Version:** `1.0-1` 
 > - **POM Project URL**: [http://stephenc.github.com/jcip-annotations](http://stephenc.github.com/jcip-annotations)
@@ -233,43 +233,49 @@ _2024-03-12 03:25:14 UTC_
 > - **POM Project URL**: [https://github.com/reactor/reactor-netty](https://github.com/reactor/reactor-netty)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
-**47** **Group:** `net.java.dev.jna` **Name:** `jna` **Version:** `5.14.0` 
+**47** **Group:** `net.bytebuddy` **Name:** `byte-buddy` **Version:** `1.14.9` 
+> - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
+> - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
+> - **Embedded license files**: [byte-buddy-1.14.9.jar/META-INF/LICENSE](byte-buddy-1.14.9.jar/META-INF/LICENSE) 
+    - [byte-buddy-1.14.9.jar/META-INF/NOTICE](byte-buddy-1.14.9.jar/META-INF/NOTICE)
+
+**48** **Group:** `net.java.dev.jna` **Name:** `jna` **Version:** `5.14.0` 
 > - **POM Project URL**: [https://github.com/java-native-access/jna](https://github.com/java-native-access/jna)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 > - **POM License**: GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 - [https://www.gnu.org/licenses/lgpl-2.1](https://www.gnu.org/licenses/lgpl-2.1)
 > - **Embedded license files**: [jna-5.14.0.jar/META-INF/LICENSE](jna-5.14.0.jar/META-INF/LICENSE)
 
-**48** **Group:** `net.java.dev.jna` **Name:** `jna-platform` **Version:** `5.14.0` 
+**49** **Group:** `net.java.dev.jna` **Name:** `jna-platform` **Version:** `5.14.0` 
 > - **POM Project URL**: [https://github.com/java-native-access/jna](https://github.com/java-native-access/jna)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 > - **POM License**: GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 - [https://www.gnu.org/licenses/lgpl-2.1](https://www.gnu.org/licenses/lgpl-2.1)
 > - **Embedded license files**: [jna-platform-5.14.0.jar/META-INF/LICENSE](jna-platform-5.14.0.jar/META-INF/LICENSE)
 
-**49** **Group:** `net.minidev` **Name:** `accessors-smart` **Version:** `2.4.9` 
+**50** **Group:** `net.minidev` **Name:** `accessors-smart` **Version:** `2.4.9` 
 > - **Project URL**: [https://urielch.github.io/](https://urielch.github.io/)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
-**50** **Group:** `net.minidev` **Name:** `json-smart` **Version:** `2.4.10` 
+**51** **Group:** `net.minidev` **Name:** `json-smart` **Version:** `2.4.10` 
 > - **Project URL**: [https://urielch.github.io/](https://urielch.github.io/)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
-**51** **Group:** `org.apache.commons` **Name:** `commons-lang3` **Version:** `3.13.0` 
+**52** **Group:** `org.apache.commons` **Name:** `commons-lang3` **Version:** `3.13.0` 
 > - **Project URL**: [https://commons.apache.org/proper/commons-lang/](https://commons.apache.org/proper/commons-lang/)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 > - **Embedded license files**: [commons-lang3-3.13.0.jar/META-INF/LICENSE.txt](commons-lang3-3.13.0.jar/META-INF/LICENSE.txt) 
     - [commons-lang3-3.13.0.jar/META-INF/NOTICE.txt](commons-lang3-3.13.0.jar/META-INF/NOTICE.txt)
 
-**52** **Group:** `org.apache.commons` **Name:** `commons-text` **Version:** `1.11.0` 
+**53** **Group:** `org.apache.commons` **Name:** `commons-text` **Version:** `1.11.0` 
 > - **Project URL**: [https://commons.apache.org/proper/commons-text](https://commons.apache.org/proper/commons-text)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 > - **Embedded license files**: [commons-text-1.11.0.jar/META-INF/LICENSE.txt](commons-text-1.11.0.jar/META-INF/LICENSE.txt) 
     - [commons-text-1.11.0.jar/META-INF/NOTICE.txt](commons-text-1.11.0.jar/META-INF/NOTICE.txt)
 
-**53** **Group:** `org.slf4j` **Name:** `jcl-over-slf4j` **Version:** `2.0.12` 
+**54** **Group:** `org.slf4j` **Name:** `jcl-over-slf4j` **Version:** `2.0.12` 
 > - **Project URL**: [http://www.slf4j.org](http://www.slf4j.org)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
@@ -278,59 +284,59 @@ _2024-03-12 03:25:14 UTC_
 
 ## Eclipse Public License - v 1.0
 
-**54** **Group:** `ch.qos.logback` **Name:** `logback-classic` **Version:** `1.3.14` 
+**55** **Group:** `ch.qos.logback` **Name:** `logback-classic` **Version:** `1.3.14` 
 > - **Manifest Project URL**: [http://www.qos.ch](http://www.qos.ch)
 > - **Manifest License**: GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 (Not Packaged)
 > - **POM License**: Eclipse Public License - v 1.0 - [http://www.eclipse.org/legal/epl-v10.html](http://www.eclipse.org/legal/epl-v10.html)
 > - **POM License**: GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 - [https://www.gnu.org/licenses/lgpl-2.1](https://www.gnu.org/licenses/lgpl-2.1)
 
-**55** **Group:** `ch.qos.logback` **Name:** `logback-core` **Version:** `1.3.14` 
+**56** **Group:** `ch.qos.logback` **Name:** `logback-core` **Version:** `1.3.14` 
 > - **Manifest Project URL**: [http://www.qos.ch](http://www.qos.ch)
 > - **Manifest License**: GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 (Not Packaged)
 > - **POM License**: Eclipse Public License - v 1.0 - [http://www.eclipse.org/legal/epl-v10.html](http://www.eclipse.org/legal/epl-v10.html)
 > - **POM License**: GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 - [https://www.gnu.org/licenses/lgpl-2.1](https://www.gnu.org/licenses/lgpl-2.1)
 
-**56** **Group:** `ch.qos.logback.contrib` **Name:** `logback-json-classic` **Version:** `0.1.5` 
+**57** **Group:** `ch.qos.logback.contrib` **Name:** `logback-json-classic` **Version:** `0.1.5` 
 > - **Manifest License**: GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 (Not Packaged)
 > - **POM License**: Eclipse Public License - v 1.0 - [http://www.eclipse.org/legal/epl-v10.html](http://www.eclipse.org/legal/epl-v10.html)
 > - **POM License**: GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 - [https://www.gnu.org/licenses/lgpl-2.1](https://www.gnu.org/licenses/lgpl-2.1)
 
-**57** **Group:** `ch.qos.logback.contrib` **Name:** `logback-json-core` **Version:** `0.1.5` 
+**58** **Group:** `ch.qos.logback.contrib` **Name:** `logback-json-core` **Version:** `0.1.5` 
 > - **Manifest License**: GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 (Not Packaged)
 > - **POM License**: Eclipse Public License - v 1.0 - [http://www.eclipse.org/legal/epl-v10.html](http://www.eclipse.org/legal/epl-v10.html)
 > - **POM License**: GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 - [https://www.gnu.org/licenses/lgpl-2.1](https://www.gnu.org/licenses/lgpl-2.1)
 
 ## GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1
 
-**58** **Group:** `ch.qos.logback` **Name:** `logback-classic` **Version:** `1.3.14` 
+**59** **Group:** `ch.qos.logback` **Name:** `logback-classic` **Version:** `1.3.14` 
 > - **Manifest Project URL**: [http://www.qos.ch](http://www.qos.ch)
 > - **Manifest License**: GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 (Not Packaged)
 > - **POM License**: Eclipse Public License - v 1.0 - [http://www.eclipse.org/legal/epl-v10.html](http://www.eclipse.org/legal/epl-v10.html)
 > - **POM License**: GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 - [https://www.gnu.org/licenses/lgpl-2.1](https://www.gnu.org/licenses/lgpl-2.1)
 
-**59** **Group:** `ch.qos.logback` **Name:** `logback-core` **Version:** `1.3.14` 
+**60** **Group:** `ch.qos.logback` **Name:** `logback-core` **Version:** `1.3.14` 
 > - **Manifest Project URL**: [http://www.qos.ch](http://www.qos.ch)
 > - **Manifest License**: GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 (Not Packaged)
 > - **POM License**: Eclipse Public License - v 1.0 - [http://www.eclipse.org/legal/epl-v10.html](http://www.eclipse.org/legal/epl-v10.html)
 > - **POM License**: GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 - [https://www.gnu.org/licenses/lgpl-2.1](https://www.gnu.org/licenses/lgpl-2.1)
 
-**60** **Group:** `ch.qos.logback.contrib` **Name:** `logback-json-classic` **Version:** `0.1.5` 
+**61** **Group:** `ch.qos.logback.contrib` **Name:** `logback-json-classic` **Version:** `0.1.5` 
 > - **Manifest License**: GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 (Not Packaged)
 > - **POM License**: Eclipse Public License - v 1.0 - [http://www.eclipse.org/legal/epl-v10.html](http://www.eclipse.org/legal/epl-v10.html)
 > - **POM License**: GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 - [https://www.gnu.org/licenses/lgpl-2.1](https://www.gnu.org/licenses/lgpl-2.1)
 
-**61** **Group:** `ch.qos.logback.contrib` **Name:** `logback-json-core` **Version:** `0.1.5` 
+**62** **Group:** `ch.qos.logback.contrib` **Name:** `logback-json-core` **Version:** `0.1.5` 
 > - **Manifest License**: GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 (Not Packaged)
 > - **POM License**: Eclipse Public License - v 1.0 - [http://www.eclipse.org/legal/epl-v10.html](http://www.eclipse.org/legal/epl-v10.html)
 > - **POM License**: GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 - [https://www.gnu.org/licenses/lgpl-2.1](https://www.gnu.org/licenses/lgpl-2.1)
 
-**62** **Group:** `net.java.dev.jna` **Name:** `jna` **Version:** `5.14.0` 
+**63** **Group:** `net.java.dev.jna` **Name:** `jna` **Version:** `5.14.0` 
 > - **POM Project URL**: [https://github.com/java-native-access/jna](https://github.com/java-native-access/jna)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 > - **POM License**: GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 - [https://www.gnu.org/licenses/lgpl-2.1](https://www.gnu.org/licenses/lgpl-2.1)
 > - **Embedded license files**: [jna-5.14.0.jar/META-INF/LICENSE](jna-5.14.0.jar/META-INF/LICENSE)
 
-**63** **Group:** `net.java.dev.jna` **Name:** `jna-platform` **Version:** `5.14.0` 
+**64** **Group:** `net.java.dev.jna` **Name:** `jna-platform` **Version:** `5.14.0` 
 > - **POM Project URL**: [https://github.com/java-native-access/jna](https://github.com/java-native-access/jna)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 > - **POM License**: GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 - [https://www.gnu.org/licenses/lgpl-2.1](https://www.gnu.org/licenses/lgpl-2.1)
@@ -338,70 +344,70 @@ _2024-03-12 03:25:14 UTC_
 
 ## MIT License
 
-**64** **Group:** `com.azure` **Name:** `azure-core` **Version:** `1.46.0` 
+**65** **Group:** `com.azure` **Name:** `azure-core` **Version:** `1.46.0` 
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**65** **Group:** `com.azure` **Name:** `azure-core-http-netty` **Version:** `1.14.0` 
+**66** **Group:** `com.azure` **Name:** `azure-core-http-netty` **Version:** `1.14.0` 
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**66** **Group:** `com.azure` **Name:** `azure-identity` **Version:** `1.11.3` 
+**67** **Group:** `com.azure` **Name:** `azure-identity` **Version:** `1.11.3` 
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**67** **Group:** `com.azure` **Name:** `azure-json` **Version:** `1.1.0` 
+**68** **Group:** `com.azure` **Name:** `azure-json` **Version:** `1.1.0` 
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**68** **Group:** `com.azure` **Name:** `azure-monitor-opentelemetry-exporter` **Version:** `1.0.0-beta.21` 
+**69** **Group:** `com.azure` **Name:** `azure-monitor-opentelemetry-exporter` **Version:** `1.0.0-beta.21` 
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**69** **Group:** `com.azure` **Name:** `azure-storage-blob` **Version:** `12.25.2` 
+**70** **Group:** `com.azure` **Name:** `azure-storage-blob` **Version:** `12.25.2` 
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**70** **Group:** `com.azure` **Name:** `azure-storage-common` **Version:** `12.24.2` 
+**71** **Group:** `com.azure` **Name:** `azure-storage-common` **Version:** `12.24.2` 
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**71** **Group:** `com.azure` **Name:** `azure-storage-internal-avro` **Version:** `12.10.2` 
+**72** **Group:** `com.azure` **Name:** `azure-storage-internal-avro` **Version:** `12.10.2` 
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**72** **Group:** `com.github.oshi` **Name:** `oshi-core` **Version:** `6.5.0` 
+**73** **Group:** `com.github.oshi` **Name:** `oshi-core` **Version:** `6.5.0` 
 > - **Manifest Project URL**: [https://github.com/oshi/oshi/oshi-core](https://github.com/oshi/oshi/oshi-core)
 > - **Manifest License**: "SPDX-License-Identifier: MIT";link="https://opensource.org/licenses/MIT" (Not Packaged)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**73** **Group:** `com.microsoft.azure` **Name:** `msal4j` **Version:** `1.14.0` 
+**74** **Group:** `com.microsoft.azure` **Name:** `msal4j` **Version:** `1.14.0` 
 > - **Project URL**: [https://github.com/AzureAD/microsoft-authentication-library-for-java](https://github.com/AzureAD/microsoft-authentication-library-for-java)
 > - **Manifest License**: "MIT License" (Not Packaged)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**74** **Group:** `com.microsoft.azure` **Name:** `msal4j-persistence-extension` **Version:** `1.2.0` 
+**75** **Group:** `com.microsoft.azure` **Name:** `msal4j-persistence-extension` **Version:** `1.2.0` 
 > - **POM Project URL**: [https://github.com/AzureAD/microsoft-authentication-extensions-for-java](https://github.com/AzureAD/microsoft-authentication-extensions-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**75** **Group:** `com.microsoft.jfr` **Name:** `jfr-streaming` **Version:** `1.2.0` 
+**76** **Group:** `com.microsoft.jfr` **Name:** `jfr-streaming` **Version:** `1.2.0` 
 > - **POM Project URL**: [https://github.com/Microsoft/jfr-streaming](https://github.com/Microsoft/jfr-streaming)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**76** **Group:** `org.slf4j` **Name:** `jcl-over-slf4j` **Version:** `2.0.12` 
+**77** **Group:** `org.slf4j` **Name:** `jcl-over-slf4j` **Version:** `2.0.12` 
 > - **Project URL**: [http://www.slf4j.org](http://www.slf4j.org)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 > - **Embedded license files**: [jcl-over-slf4j-2.0.12.jar/META-INF/LICENSE.txt](jcl-over-slf4j-2.0.12.jar/META-INF/LICENSE.txt)
 
-**77** **Group:** `org.slf4j` **Name:** `slf4j-api` **Version:** `2.0.12` 
+**78** **Group:** `org.slf4j` **Name:** `slf4j-api` **Version:** `2.0.12` 
 > - **Project URL**: [http://www.slf4j.org](http://www.slf4j.org)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 > - **Embedded license files**: [slf4j-api-2.0.12.jar/META-INF/LICENSE.txt](slf4j-api-2.0.12.jar/META-INF/LICENSE.txt)
 
 ## MIT-0
 
-**78** **Group:** `org.reactivestreams` **Name:** `reactive-streams` **Version:** `1.0.4` 
+**79** **Group:** `org.reactivestreams` **Name:** `reactive-streams` **Version:** `1.0.4` 
 > - **Manifest Project URL**: [http://reactive-streams.org](http://reactive-streams.org)
 > - **POM Project URL**: [http://www.reactive-streams.org/](http://www.reactive-streams.org/)
 > - **POM License**: MIT-0 - [https://spdx.org/licenses/MIT-0.html](https://spdx.org/licenses/MIT-0.html)
