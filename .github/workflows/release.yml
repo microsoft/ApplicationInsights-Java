@@ -56,6 +56,7 @@ jobs:
           echo "version=$VERSION" >> ${GITHUB_OUTPUT}
 
   create-docs-pull-request:
+    permissions: write-all
     needs:
       - release
     uses: ./.github/workflows/reusable-create-docs-pull-request.yml
@@ -65,6 +66,7 @@ jobs:
       AARON_MAXWELL_TOKEN: ${{ secrets.AARON_MAXWELL_TOKEN }}
 
   create-version-bump-pull-request:
+    permissions: write-all
     needs:
       - release
     uses: ./.github/workflows/reusable-create-version-bump-pull-request.yml
