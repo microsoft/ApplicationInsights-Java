@@ -67,7 +67,7 @@ val CORE_DEPENDENCIES = listOf(
   // which targets at least reactor-netty-http:1.1.1
   // fix CVE-2023-52428 https://github.com/advisories/GHSA-gvpg-vgmx-xg6w
   // TODO (heya) remove this once azure-identity is updated in April
-  "com.microsoft.azure:msal4j:1.14.3"
+  "com.microsoft.azure:msal4j:1.14.3",
   "io.projectreactor.netty:reactor-netty-http:1.1.17",
 )
 
