@@ -23,7 +23,7 @@ rootProject.extra["otelContribAlphaVersion"] = otelContribAlphaVersion
 
 val DEPENDENCY_BOMS = listOf(
   "com.fasterxml.jackson:jackson-bom:2.16.2",
-  "com.google.guava:guava-bom:33.0.0-jre",
+  "com.google.guava:guava-bom:33.1.0-jre",
   "io.opentelemetry:opentelemetry-bom:${otelVersion}",
   "io.opentelemetry:opentelemetry-bom-alpha:${otelVersion}-alpha",
   "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:${otelInstrumentationVersion}",
@@ -65,10 +65,10 @@ val CORE_DEPENDENCIES = listOf(
   "io.opentelemetry.javaagent:opentelemetry-javaagent-tooling:${otelInstrumentationAlphaVersion}",
   // temporarily overriding transitive dependency from azure-core until next azure-bom release
   // which targets at least reactor-netty-http:1.1.1
-  "io.projectreactor.netty:reactor-netty-http:1.1.15",
   // fix CVE-2023-52428 https://github.com/advisories/GHSA-gvpg-vgmx-xg6w
   // TODO (heya) remove this once azure-identity is updated in April
   "com.microsoft.azure:msal4j:1.14.3"
+  "io.projectreactor.netty:reactor-netty-http:1.1.17",
 )
 
 val DEPENDENCIES = listOf(
