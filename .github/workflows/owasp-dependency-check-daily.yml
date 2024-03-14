@@ -10,7 +10,7 @@ on:
 jobs:
   analyze:
     runs-on: ubuntu-latest
-
+    permissions: write-all
     steps:
       - uses: actions/checkout@v4
 
@@ -31,6 +31,7 @@ jobs:
           path: agent/agent/build/reports
 
   scheduled-job-notification:
+    permissions: write-all
     needs:
       - analyze
     if: always()
