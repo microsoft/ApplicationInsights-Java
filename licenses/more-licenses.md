@@ -221,15 +221,15 @@ _2024-03-13 03:34:09 UTC_
 > - **POM Project URL**: [https://github.com/open-telemetry/opentelemetry-java](https://github.com/open-telemetry/opentelemetry-java)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
-**44** **Group:** `io.projectreactor` **Name:** `reactor-core` **Version:** `3.5.14` 
+**44** **Group:** `io.projectreactor` **Name:** `reactor-core` **Version:** `3.5.15` 
 > - **POM Project URL**: [https://github.com/reactor/reactor-core](https://github.com/reactor/reactor-core)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
 
-**45** **Group:** `io.projectreactor.netty` **Name:** `reactor-netty-core` **Version:** `1.1.15` 
+**45** **Group:** `io.projectreactor.netty` **Name:** `reactor-netty-core` **Version:** `1.1.17` 
 > - **POM Project URL**: [https://github.com/reactor/reactor-netty](https://github.com/reactor/reactor-netty)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
-**46** **Group:** `io.projectreactor.netty` **Name:** `reactor-netty-http` **Version:** `1.1.15` 
+**46** **Group:** `io.projectreactor.netty` **Name:** `reactor-netty-http` **Version:** `1.1.17` 
 > - **POM Project URL**: [https://github.com/reactor/reactor-netty](https://github.com/reactor/reactor-netty)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
