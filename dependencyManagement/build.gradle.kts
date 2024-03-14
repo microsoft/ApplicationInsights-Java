@@ -66,7 +66,8 @@ val CORE_DEPENDENCIES = listOf(
   // temporarily overriding transitive dependency from azure-core until next azure-bom release
   // which targets at least reactor-netty-http:1.1.1
   "io.projectreactor.netty:reactor-netty-http:1.1.15",
-  // try to fix CVE-2023-52428 https://github.com/advisories/GHSA-gvpg-vgmx-xg6w
+  // fix CVE-2023-52428 https://github.com/advisories/GHSA-gvpg-vgmx-xg6w
+  // TODO (heya) remove this once azure-identity is updated in April
   "com.microsoft.azure:msal4j:1.14.3"
 )
 
