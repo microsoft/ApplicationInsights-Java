@@ -1,7 +1,7 @@
 
 # agent
 ## Dependency License Report
-_2024-03-12 03:25:14 UTC_
+_2024-03-14 14:03:30 PDT_
 ## Apache License, Version 2.0
 
 **1** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-annotations` **Version:** `2.16.2` 
@@ -41,7 +41,7 @@ _2024-03-12 03:25:14 UTC_
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
-**7** **Group:** `com.nimbusds` **Name:** `content-type` **Version:** `2.2` 
+**7** **Group:** `com.nimbusds` **Name:** `content-type` **Version:** `2.3` 
 > - **Manifest Project URL**: [https://connect2id.com](https://connect2id.com)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM Project URL**: [https://bitbucket.org/connect2id/nimbus-content-type](https://bitbucket.org/connect2id/nimbus-content-type)
@@ -53,13 +53,13 @@ _2024-03-12 03:25:14 UTC_
 > - **POM Project URL**: [https://bitbucket.org/connect2id/nimbus-language-tags](https://bitbucket.org/connect2id/nimbus-language-tags)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
-**9** **Group:** `com.nimbusds` **Name:** `nimbus-jose-jwt` **Version:** `9.30.2` 
+**9** **Group:** `com.nimbusds` **Name:** `nimbus-jose-jwt` **Version:** `9.37.3` 
 > - **Manifest Project URL**: [https://connect2id.com](https://connect2id.com)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM Project URL**: [https://bitbucket.org/connect2id/nimbus-jose-jwt](https://bitbucket.org/connect2id/nimbus-jose-jwt)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
-**10** **Group:** `com.nimbusds` **Name:** `oauth2-oidc-sdk` **Version:** `10.7.1` 
+**10** **Group:** `com.nimbusds` **Name:** `oauth2-oidc-sdk` **Version:** `11.9.1` 
 > - **Project URL**: [https://bitbucket.org/connect2id/oauth-2.0-sdk-with-openid-connect-extensions](https://bitbucket.org/connect2id/oauth-2.0-sdk-with-openid-connect-extensions)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
@@ -245,12 +245,12 @@ _2024-03-12 03:25:14 UTC_
 > - **POM License**: GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 - [https://www.gnu.org/licenses/lgpl-2.1](https://www.gnu.org/licenses/lgpl-2.1)
 > - **Embedded license files**: [jna-platform-5.14.0.jar/META-INF/LICENSE](jna-platform-5.14.0.jar/META-INF/LICENSE)
 
-**49** **Group:** `net.minidev` **Name:** `accessors-smart` **Version:** `2.4.9` 
+**49** **Group:** `net.minidev` **Name:** `accessors-smart` **Version:** `2.5.0` 
 > - **Project URL**: [https://urielch.github.io/](https://urielch.github.io/)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
-**50** **Group:** `net.minidev` **Name:** `json-smart` **Version:** `2.4.10` 
+**50** **Group:** `net.minidev` **Name:** `json-smart` **Version:** `2.5.0` 
 > - **Project URL**: [https://urielch.github.io/](https://urielch.github.io/)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
@@ -374,7 +374,7 @@ _2024-03-12 03:25:14 UTC_
 > - **Manifest License**: "SPDX-License-Identifier: MIT";link="https://opensource.org/licenses/MIT" (Not Packaged)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**73** **Group:** `com.microsoft.azure` **Name:** `msal4j` **Version:** `1.14.0` 
+**73** **Group:** `com.microsoft.azure` **Name:** `msal4j` **Version:** `1.14.3` 
 > - **Project URL**: [https://github.com/AzureAD/microsoft-authentication-library-for-java](https://github.com/AzureAD/microsoft-authentication-library-for-java)
 > - **Manifest License**: "MIT License" (Not Packaged)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
