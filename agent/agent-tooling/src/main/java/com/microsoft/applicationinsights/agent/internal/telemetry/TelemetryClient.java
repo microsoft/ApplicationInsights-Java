@@ -4,6 +4,7 @@
 package com.microsoft.applicationinsights.agent.internal.telemetry;
 
 import com.azure.core.http.HttpPipeline;
+import com.azure.core.util.logging.ClientLogger;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.AbstractTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.AvailabilityTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.EventTelemetryBuilder;
@@ -49,6 +50,7 @@ import org.apache.commons.text.StringSubstitutor;
 
 public class TelemetryClient {
 
+  private static final ClientLogger logger = new ClientLogger(TelemetryClient.class);
   private static final String TELEMETRY_FOLDER_NAME = "telemetry";
 
   @Nullable private static volatile TelemetryClient active;
@@ -328,7 +330,6 @@ public class TelemetryClient {
     return telemetry;
   }
 
-  @SuppressWarnings("SystemOut")
   public void populateDefaults(AbstractTelemetryBuilder telemetryBuilder, Resource resource) {
     if (connectionString != null) {
       // not sure if connectionString can be null in Azure Functions
@@ -342,24 +343,24 @@ public class TelemetryClient {
       telemetryBuilder.addProperty(entry.getKey(), entry.getValue());
     }
     if (AksResourceAttributes.isAks(resource)) {
-      System.out.println("#### resource is from AKS");
+      logger.verbose("#### resource is from AKS");
       Attributes attributes = resource.getAttributes();
-      System.out.println("#### start printing attributes");
-      attributes.forEach((key, value) -> System.out.println(key + " : " + value));
-      System.out.println("#### end printing attributes");
+      logger.verbose("#### start printing attributes");
+      attributes.forEach((key, value) -> logger.verbose(key + " : " + value));
+      logger.verbose("#### end printing attributes");
 
       printOtelResourceAttributes(); // they should match
     } else {
-      System.out.println("#### resource is not from AKS");
+      logger.verbose("#### resource is not from AKS");
     }
     new ResourceParser().updateRoleNameAndInstance(telemetryBuilder, resource);
   }
 
   @SuppressWarnings("SystemOut")
   private static void printOtelResourceAttributes() {
-    System.out.println("#### start OTEL_RESOURCE_ATTRIBUTES: \n");
-    System.out.println(System.getenv("OTEL_RESOURCE_ATTRIBUTES"));
-    System.out.println("#### end OTEL_RESOURCE_ATTRIBUTES");
+    logger.verbose("#### start OTEL_RESOURCE_ATTRIBUTES: \n");
+    logger.verbose(System.getenv("OTEL_RESOURCE_ATTRIBUTES"));
+    logger.verbose("#### end OTEL_RESOURCE_ATTRIBUTES");
   }
 
   @Nullable
