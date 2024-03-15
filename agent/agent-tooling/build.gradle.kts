@@ -50,6 +50,11 @@ dependencies {
     exclude("org.slf4j", "slf4j-api")
   }
 
+  implementation("com.fasterxml.jackson:jackson-bom") {
+    // we use byte-buddy-dep
+    exclude("net.bytebuddy", "byte-buddy")
+  }
+
   compileOnly("org.slf4j:slf4j-api")
 
   compileOnly("io.opentelemetry:opentelemetry-sdk")
