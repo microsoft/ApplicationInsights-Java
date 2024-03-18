@@ -50,11 +50,6 @@ dependencies {
     exclude("org.slf4j", "slf4j-api")
   }
 
-  implementation("com.fasterxml.jackson:jackson-bom") {
-    // we use byte-buddy-dep
-    exclude("net.bytebuddy", "byte-buddy")
-  }
-
   compileOnly("org.slf4j:slf4j-api")
 
   compileOnly("io.opentelemetry:opentelemetry-sdk")
@@ -72,7 +67,9 @@ dependencies {
   compileOnly(project(":agent:agent-bootstrap"))
   compileOnly("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api")
   compileOnly("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-incubator")
-  compileOnly("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations-support")
+  compileOnly("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations-support") {
+    exclude("net.bytebuddy", "byte-buddy")
+  }
 
   compileOnly("com.google.auto.value:auto-value-annotations")
   annotationProcessor("com.google.auto.value:auto-value")
@@ -80,7 +77,9 @@ dependencies {
   testImplementation(project(":agent:agent-bootstrap"))
   testImplementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api")
   testImplementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-incubator")
-  testImplementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations-support")
+  testImplementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations-support") {
+    exclude("net.bytebuddy", "byte-buddy")
+  }
 
   testImplementation("org.junit.jupiter:junit-jupiter")
   testImplementation("com.azure:azure-core-test")
