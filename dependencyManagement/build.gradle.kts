@@ -11,9 +11,9 @@ data class DependencySet(val group: String, val version: String, val modules: Li
 val dependencyVersions = hashMapOf<String, String>()
 rootProject.extra["versions"] = dependencyVersions
 
-val otelVersion = "1.35.0"
+val otelVersion = "1.36.0"
 val otelInstrumentationAlphaVersion = "2.2.0-alpha"
-val otelInstrumentationVersion = "2.1.0"
+val otelInstrumentationVersion = "2.2.0"
 val otelContribAlphaVersion = "1.32.0-alpha"
 
 rootProject.extra["otelVersion"] = otelVersion
