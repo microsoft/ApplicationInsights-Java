@@ -1,7 +1,11 @@
 
 # agent
 ## Dependency License Report
+<<<<<<< HEAD
 _2024-03-15 03:53:47 UTC_
+=======
+_2024-03-18 17:26:02 UTC_
+>>>>>>> 3c06945d558ff4e55eba25bf5c1ef862b6d20410
 ## Apache License, Version 2.0
 
 **1** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-annotations` **Version:** `2.17.0` 
@@ -251,12 +255,20 @@ _2024-03-15 03:53:47 UTC_
 > - **POM License**: GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 - [https://www.gnu.org/licenses/lgpl-2.1](https://www.gnu.org/licenses/lgpl-2.1)
 > - **Embedded license files**: [jna-platform-5.14.0.jar/META-INF/LICENSE](jna-platform-5.14.0.jar/META-INF/LICENSE)
 
+<<<<<<< HEAD
 **49** **Group:** `net.minidev` **Name:** `accessors-smart` **Version:** `2.5.0` 
+=======
+**50** **Group:** `net.minidev` **Name:** `accessors-smart` **Version:** `2.5.0` 
+>>>>>>> 3c06945d558ff4e55eba25bf5c1ef862b6d20410
 > - **Project URL**: [https://urielch.github.io/](https://urielch.github.io/)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
+<<<<<<< HEAD
 **50** **Group:** `net.minidev` **Name:** `json-smart` **Version:** `2.5.0` 
+=======
+**51** **Group:** `net.minidev` **Name:** `json-smart` **Version:** `2.5.0` 
+>>>>>>> 3c06945d558ff4e55eba25bf5c1ef862b6d20410
 > - **Project URL**: [https://urielch.github.io/](https://urielch.github.io/)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
@@ -352,7 +364,11 @@ _2024-03-15 03:53:47 UTC_
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
+<<<<<<< HEAD
 **66** **Group:** `com.azure` **Name:** `azure-identity` **Version:** `1.11.4` 
+=======
+**67** **Group:** `com.azure` **Name:** `azure-identity` **Version:** `1.11.4` 
+>>>>>>> 3c06945d558ff4e55eba25bf5c1ef862b6d20410
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
