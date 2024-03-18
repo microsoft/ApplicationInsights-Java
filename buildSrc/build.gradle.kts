@@ -32,7 +32,7 @@ dependencies {
   implementation("com.github.johnrengelman:shadow:8.1.1")
   implementation("com.gradle.enterprise:com.gradle.enterprise.gradle.plugin:3.16.2")
 
-  implementation("org.owasp:dependency-check-gradle:9.0.9")
+  implementation("org.owasp:dependency-check-gradle:9.0.10")
 
   implementation("io.opentelemetry.instrumentation:gradle-plugins:2.1.0-alpha")
 
