@@ -24,7 +24,7 @@ dependencies {
   // this is exposed in SmokeTestExtension API
   api("org.testcontainers:testcontainers:1.19.7")
 
-  implementation("org.awaitility:awaitility:4.2.0")
+  implementation("org.awaitility:awaitility:4.2.1")
 
   implementation("ch.qos.logback:logback-classic")
 
