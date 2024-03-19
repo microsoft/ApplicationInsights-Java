@@ -93,5 +93,5 @@ dependencies {
 
 configurations.all {
   // temporarily overriding version until next azure-bom release in order to address CVE
-  resolutionStrategy.force("com.azure:azure-identity:1.11.3")
+  resolutionStrategy.force("com.azure:azure-identity:1.11.4")
 }
