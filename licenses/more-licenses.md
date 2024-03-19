@@ -374,7 +374,7 @@ _2024-03-19 10:43:25 PDT_
 > - **Manifest License**: "SPDX-License-Identifier: MIT";link="https://opensource.org/licenses/MIT" (Not Packaged)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**73** **Group:** `com.microsoft.azure` **Name:** `msal4j` **Version:** `1.14.3` 
+**74** **Group:** `com.microsoft.azure` **Name:** `msal4j` **Version:** `1.14.3` 
 > - **Project URL**: [https://github.com/AzureAD/microsoft-authentication-library-for-java](https://github.com/AzureAD/microsoft-authentication-library-for-java)
 > - **Manifest License**: "MIT License" (Not Packaged)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
