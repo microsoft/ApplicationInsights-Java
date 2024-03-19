@@ -37,7 +37,9 @@ dependencies {
   implementation("ch.qos.logback:logback-classic")
   implementation("ch.qos.logback.contrib:logback-json-classic")
 
-  implementation("com.azure:azure-core")
+  implementation("com.azure:azure-core") {
+    exclude("net.bytebuddy", "byte-buddy")
+  }
   implementation("com.azure:azure-identity") {
     exclude("org.ow2.asm", "asm")
   }
@@ -67,9 +69,7 @@ dependencies {
   compileOnly(project(":agent:agent-bootstrap"))
   compileOnly("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api")
   compileOnly("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-incubator")
-  compileOnly("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations-support") {
-    exclude("net.bytebuddy", "byte-buddy")
-  }
+  compileOnly("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations-support")
 
   compileOnly("com.google.auto.value:auto-value-annotations")
   annotationProcessor("com.google.auto.value:auto-value")
@@ -77,9 +77,7 @@ dependencies {
   testImplementation(project(":agent:agent-bootstrap"))
   testImplementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api")
   testImplementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-incubator")
-  testImplementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations-support") {
-    exclude("net.bytebuddy", "byte-buddy")
-  }
+  testImplementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations-support")
 
   testImplementation("org.junit.jupiter:junit-jupiter")
   testImplementation("com.azure:azure-core-test")
