@@ -63,9 +63,6 @@ val CORE_DEPENDENCIES = listOf(
   "io.opentelemetry.javaagent:opentelemetry-javaagent-extension-api:${otelInstrumentationAlphaVersion}",
   "io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap:${otelInstrumentationAlphaVersion}",
   "io.opentelemetry.javaagent:opentelemetry-javaagent-tooling:${otelInstrumentationAlphaVersion}",
-  // fix CVE-2023-52428 https://github.com/advisories/GHSA-gvpg-vgmx-xg6w
-  // TODO (heya) remove this once azure-identity is updated in April
-  "com.microsoft.azure:msal4j:1.14.3"
 )
 
 val DEPENDENCIES = listOf(
