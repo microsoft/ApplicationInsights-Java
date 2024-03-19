@@ -15,6 +15,7 @@ val otelVersion = "1.35.0"
 val otelInstrumentationAlphaVersion = "2.1.0-alpha"
 val otelInstrumentationVersion = "2.1.0"
 val otelContribAlphaVersion = "1.32.0-alpha"
+val byteBuddyVersion = "1.14.11"
 
 rootProject.extra["otelVersion"] = otelVersion
 rootProject.extra["otelInstrumentationVersion"] = otelInstrumentationVersion

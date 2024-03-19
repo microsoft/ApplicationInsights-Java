@@ -11,9 +11,7 @@ dependencies {
   annotationProcessor("com.google.auto.value:auto-value")
 
   implementation("com.microsoft.jfr:jfr-streaming")
-  implementation("com.azure:azure-storage-blob") {
-    exclude("net.bytebuddy", "byte-buddy")
-  }
+  implementation("com.azure:azure-storage-blob")
 
   implementation(project(":agent:agent-profiler:agent-alerting-api"))
   implementation(project(":agent:agent-profiler:agent-alerting"))
@@ -93,4 +91,10 @@ dependencies {
 configurations.all {
   // temporarily overriding version until next azure-bom release in order to address CVE
   resolutionStrategy.force("com.azure:azure-identity:1.11.4")
+}
+
+configurations {
+  "implementation" {
+    exclude(group = "net.bytebuddy", module = "byte-buddy") // we use byte-buddy-dep
+  }
 }

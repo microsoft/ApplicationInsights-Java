@@ -73,7 +73,6 @@ io.opentelemetry:opentelemetry-sdk:1.35.0=runtimeClasspath
 io.projectreactor.netty:reactor-netty-core:1.0.40=runtimeClasspath
 io.projectreactor.netty:reactor-netty-http:1.0.40=runtimeClasspath
 io.projectreactor:reactor-core:3.4.34=runtimeClasspath
-net.bytebuddy:byte-buddy:1.14.9=runtimeClasspath
 net.java.dev.jna:jna-platform:5.14.0=runtimeClasspath
 net.java.dev.jna:jna:5.14.0=runtimeClasspath
 net.minidev:accessors-smart:2.5.0=runtimeClasspath
