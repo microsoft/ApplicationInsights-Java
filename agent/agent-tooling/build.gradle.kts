@@ -11,7 +11,9 @@ dependencies {
   annotationProcessor("com.google.auto.value:auto-value")
 
   implementation("com.microsoft.jfr:jfr-streaming")
-  implementation("com.azure:azure-storage-blob")
+  implementation("com.azure:azure-storage-blob") {
+    exclude("net.bytebuddy", "byte-buddy")
+  }
 
   implementation(project(":agent:agent-profiler:agent-alerting-api"))
   implementation(project(":agent:agent-profiler:agent-alerting"))
@@ -37,9 +39,7 @@ dependencies {
   implementation("ch.qos.logback:logback-classic")
   implementation("ch.qos.logback.contrib:logback-json-classic")
 
-  implementation("com.azure:azure-core") {
-    exclude("net.bytebuddy", "byte-buddy")
-  }
+  implementation("com.azure:azure-core")
   implementation("com.azure:azure-identity") {
     exclude("org.ow2.asm", "asm")
   }
