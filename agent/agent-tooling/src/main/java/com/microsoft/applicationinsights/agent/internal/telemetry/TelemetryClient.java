@@ -343,16 +343,19 @@ public class TelemetryClient {
       telemetryBuilder.addProperty(entry.getKey(), entry.getValue());
     }
     if (AksResourceAttributes.isAks(resource)) {
-      logger.verbose("#### resource is from AKS");
+      logger.verbose("############## resource is from AKS ##############");
       Attributes attributes = resource.getAttributes();
-      logger.verbose("#### start printing attributes");
+      logger.verbose("#### start printing AKS attributes");
       attributes.forEach((key, value) -> logger.verbose(key + " : " + value));
-      logger.verbose("#### end printing attributes");
-
-      printOtelResourceAttributes(); // they should match
+      logger.verbose("############## end printing AKS attributes ##############");
     } else {
-      logger.verbose("#### resource is not from AKS");
+      logger.verbose("############## resource is not from AKS ##############");
+      Attributes attributes = resource.getAttributes();
+      logger.verbose("#### start printing non-AKS attributes");
+      attributes.forEach((key, value) -> logger.verbose(key + " : " + value));
+      logger.verbose("############## end printing non-AKS attributes ##############");
     }
+    printOtelResourceAttributes(); // they should match
     new ResourceParser().updateRoleNameAndInstance(telemetryBuilder, resource);
   }
 
