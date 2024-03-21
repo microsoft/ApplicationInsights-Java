@@ -23,7 +23,7 @@ rootProject.extra["otelContribAlphaVersion"] = otelContribAlphaVersion
 
 val DEPENDENCY_BOMS = listOf(
   "com.fasterxml.jackson:jackson-bom:2.16.2",
-  "com.google.guava:guava-bom:33.0.0-jre",
+  "com.google.guava:guava-bom:33.1.0-jre",
   "io.opentelemetry:opentelemetry-bom:${otelVersion}",
   "io.opentelemetry:opentelemetry-bom-alpha:${otelVersion}-alpha",
   "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:${otelInstrumentationVersion}",
@@ -36,7 +36,7 @@ val DEPENDENCY_BOMS = listOf(
 
 val autoServiceVersion = "1.1.1"
 val autoValueVersion = "1.10.4"
-val errorProneVersion = "2.25.0"
+val errorProneVersion = "2.26.1"
 val byteBuddyVersion = "1.12.18"
 val jmhVersion = "1.37"
 val mockitoVersion = "4.11.0"
@@ -63,9 +63,6 @@ val CORE_DEPENDENCIES = listOf(
   "io.opentelemetry.javaagent:opentelemetry-javaagent-extension-api:${otelInstrumentationAlphaVersion}",
   "io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap:${otelInstrumentationAlphaVersion}",
   "io.opentelemetry.javaagent:opentelemetry-javaagent-tooling:${otelInstrumentationAlphaVersion}",
-  // temporarily overriding transitive dependency from azure-core until next azure-bom release
-  // which targets at least reactor-netty-http:1.1.1
-  "io.projectreactor.netty:reactor-netty-http:1.1.15",
 )
 
 val DEPENDENCIES = listOf(
@@ -77,7 +74,7 @@ val DEPENDENCIES = listOf(
   "com.google.code.gson:gson:2.10.1",
   "com.azure:azure-core-test:1.24.0", // this is not included in azure-sdk-bom
   "org.assertj:assertj-core:3.25.3",
-  "org.awaitility:awaitility:4.2.0",
+  "org.awaitility:awaitility:4.2.1",
   "io.github.hakky54:logcaptor:2.9.2",
   "com.microsoft.jfr:jfr-streaming:1.2.0",
   "com.google.code.findbugs:jsr305:3.0.2",

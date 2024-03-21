@@ -1,0 +1,22 @@
+{
+  "role": {
+    "name": "testrolename",
+    "instance": "testroleinstance"
+  },
+  "sampling": {
+    "percentage": 50,
+    "overrides": [
+      {
+        "telemetryType": "request",
+        "attributes": [
+          {
+            "key": "http.target",
+            "value": "/SamplingOverrides/test?query",
+            "matchType": "strict"
+          }
+        ],
+        "percentage": 100
+      }
+    ]
+  }
+}

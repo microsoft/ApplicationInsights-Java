@@ -62,7 +62,7 @@ dependencies {
   testImplementation("io.opentelemetry:opentelemetry-sdk-testing")
 
   // TODO(trask): update tests, no need to use this anymore
-  testImplementation("com.squareup.okio:okio:3.8.0")
+  testImplementation("com.squareup.okio:okio:3.9.0")
 
   compileOnly(project(":agent:agent-bootstrap"))
   compileOnly("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api")
@@ -90,5 +90,5 @@ dependencies {
 
 configurations.all {
   // temporarily overriding version until next azure-bom release in order to address CVE
-  resolutionStrategy.force("com.azure:azure-identity:1.11.3")
+  resolutionStrategy.force("com.azure:azure-identity:1.11.4")
 }
