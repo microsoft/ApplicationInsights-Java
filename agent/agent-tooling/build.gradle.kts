@@ -92,3 +92,9 @@ configurations.all {
   // temporarily overriding version until next azure-bom release in order to address CVE
   resolutionStrategy.force("com.azure:azure-identity:1.11.4")
 }
+
+configurations {
+  "implementation" {
+    exclude(group = "net.bytebuddy", module = "byte-buddy") // we use byte-buddy-dep
+  }
+}
