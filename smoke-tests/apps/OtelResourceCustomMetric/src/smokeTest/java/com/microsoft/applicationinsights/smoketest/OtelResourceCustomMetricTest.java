@@ -72,8 +72,7 @@ abstract class OtelResourceCustomMetricTest {
     List<DataPoint> dataPoints = metricData.getMetrics();
     assertThat(dataPoints).hasSize(1);
     Map<String, String> properties = metricData.getProperties();
-    assertThat(properties)
-        .containsAllEntriesOf(parseOtelResourceAttributes());
+    assertThat(properties).containsAllEntriesOf(parseOtelResourceAttributes());
   }
 
   private static Map<String, String> parseOtelResourceAttributes() {
