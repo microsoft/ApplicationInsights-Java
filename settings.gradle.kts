@@ -126,6 +126,7 @@ hideFromDependabot(":smoke-tests:apps:NonDaemonThreads")
 hideFromDependabot(":smoke-tests:apps:OpenTelemetryApiSupport")
 hideFromDependabot(":smoke-tests:apps:OpenTelemetryApiLogBridge")
 hideFromDependabot(":smoke-tests:apps:OpenTelemetryMetric")
+hideFromDependabot(":smoke-tests:apps:OtelResourceCustomMetric")
 hideFromDependabot(":smoke-tests:apps:OtlpMetrics")
 hideFromDependabot(":smoke-tests:apps:PreAggMetricsWithRoleNameOverridesAndSampling")
 hideFromDependabot(":smoke-tests:apps:PreferForwardedUrlScheme")
@@ -154,3 +155,5 @@ hideFromDependabot(":smoke-tests:apps:WebFlux")
 fun hideFromDependabot(projectPath: String) {
   include(projectPath)
 }
+include("smoke-tests:apps:OtelResourceCustomMetric")
+findProject(":smoke-tests:apps:OtelResourceCustomMetric")?.name = "OtelResourceCustomMetric"

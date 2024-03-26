@@ -56,6 +56,7 @@ public class TelemetryClient {
   @Nullable private static volatile TelemetryClient active;
 
   private final AppIdSupplier appIdSupplier;
+  private volatile Resource otelResource;
 
   @Nullable private volatile ConnectionString connectionString;
   @Nullable private volatile StatsbeatConnectionString statsbeatConnectionString;
@@ -326,7 +327,10 @@ public class TelemetryClient {
 
   private <T extends AbstractTelemetryBuilder> T newTelemetryBuilder(Supplier<T> creator) {
     T telemetry = creator.get();
-    populateDefaults(telemetry, Resource.getDefault());
+    logger.verbose("############## start printing otelResource: ##############");
+    otelResource.getAttributes().forEach((key, value) -> logger.verbose(key + " : " + value));
+    logger.verbose("############## end printing otelResource ##############");
+    populateDefaults(telemetry, otelResource);
     return telemetry;
   }
 
@@ -431,6 +435,14 @@ public class TelemetryClient {
 
   public void setQuickPulse(@Nullable QuickPulse quickPulse) {
     this.quickPulse = quickPulse;
+  }
+
+  public Resource getOtelResource() {
+    return otelResource;
+  }
+
+  public void setOtelResource(Resource resource) {
+    otelResource = resource;
   }
 
   public static class Builder {
