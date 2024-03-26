@@ -28,9 +28,6 @@ dependencies {
   testImplementation("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling")
 
   compileOnly("io.opentelemetry.javaagent:opentelemetry-javaagent-extension-api")
-  implementation("net.bytebuddy:byte-buddy-dep:1.14.12") {
-    exclude("org.ow2.asm", "asm")
-  }
 
   implementation("commons-codec:commons-codec")
   implementation("org.apache.commons:commons-text")
