@@ -33,9 +33,7 @@ abstract class OtelResourceCustomMetricTest {
 
   @RegisterExtension
   static final SmokeTestExtension testing =
-      SmokeTestExtension.builder()
-          .otelResourceAttributesEnvVar(OTEL_RESOURCE_ATTRIBUTES)
-          .build();
+      SmokeTestExtension.builder().otelResourceAttributesEnvVar(OTEL_RESOURCE_ATTRIBUTES).build();
 
   private static final int COUNT = 100;
 
