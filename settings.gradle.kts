@@ -155,5 +155,3 @@ hideFromDependabot(":smoke-tests:apps:WebFlux")
 fun hideFromDependabot(projectPath: String) {
   include(projectPath)
 }
-include("smoke-tests:apps:OtelResourceCustomMetric")
-findProject(":smoke-tests:apps:OtelResourceCustomMetric")?.name = "OtelResourceCustomMetric"

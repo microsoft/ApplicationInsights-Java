@@ -68,19 +68,16 @@ abstract class OtelResourceCustomMetricTest {
     assertThat(tags).containsEntry("ai.cloud.role", "customer-java-very-big");
   }
 
-  @SuppressWarnings("SystemOut")
   private static void validateMetricData(MetricData metricData) {
     List<DataPoint> dataPoints = metricData.getMetrics();
     assertThat(dataPoints).hasSize(1);
     Map<String, String> properties = metricData.getProperties();
-    System.out.println("############ properties: " + properties);
     assertThat(properties)
-        .containsAllEntriesOf(parseOtelResourceAttributes(OTEL_RESOURCE_ATTRIBUTES));
+        .containsAllEntriesOf(parseOtelResourceAttributes());
   }
 
-  private static Map<String, String> parseOtelResourceAttributes(
-      String commaSeparatedKeyValueAttributes) {
-    String[] attributes = commaSeparatedKeyValueAttributes.split(",");
+  private static Map<String, String> parseOtelResourceAttributes() {
+    String[] attributes = OtelResourceCustomMetricTest.OTEL_RESOURCE_ATTRIBUTES.split(",");
     Map<String, String> result = new HashMap<>();
     for (String attribute : attributes) {
       String[] keyValue = attribute.split("=");
