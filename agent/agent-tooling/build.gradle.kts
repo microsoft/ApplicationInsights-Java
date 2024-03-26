@@ -45,7 +45,7 @@ dependencies {
     exclude("org.ow2.asm", "asm")
   }
 
-  compileOnly("io.opentelemetry:opentelemetry-sdk-extension-tracing-incubator")
+  compileOnly("io.opentelemetry:opentelemetry-sdk-extension-tracing-incubator:1.17.0-alpha")
   compileOnly("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure")
   compileOnly("io.opentelemetry:opentelemetry-extension-trace-propagators")
 
