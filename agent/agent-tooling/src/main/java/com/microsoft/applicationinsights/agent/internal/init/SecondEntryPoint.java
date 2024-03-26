@@ -293,6 +293,7 @@ public class SecondEntryPoint
             configuration.preview.connectionStringOverrides,
             configuration.preview.roleNameOverrides));
 
+    // needed for 2.x bridge
     autoConfiguration.addResourceCustomizer(
         (resource, configProperties) -> {
           telemetryClient.setOtelResource(resource);

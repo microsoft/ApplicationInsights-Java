@@ -4,7 +4,6 @@
 package com.microsoft.applicationinsights.agent.internal.telemetry;
 
 import com.azure.core.http.HttpPipeline;
-import com.azure.core.util.logging.ClientLogger;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.AbstractTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.AvailabilityTelemetryBuilder;
 import com.azure.monitor.opentelemetry.exporter.implementation.builders.EventTelemetryBuilder;
@@ -29,14 +28,12 @@ import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.Telemetr
 import com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.QuickPulse;
 import com.azure.monitor.opentelemetry.exporter.implementation.statsbeat.NetworkStatsbeatHttpPipelinePolicy;
 import com.azure.monitor.opentelemetry.exporter.implementation.statsbeat.StatsbeatModule;
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.AksResourceAttributes;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.PropertyHelper;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.ResourceParser;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.TempDirs;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
-import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.File;
@@ -50,7 +47,6 @@ import org.apache.commons.text.StringSubstitutor;
 
 public class TelemetryClient {
 
-  private static final ClientLogger logger = new ClientLogger(TelemetryClient.class);
   private static final String TELEMETRY_FOLDER_NAME = "telemetry";
 
   @Nullable private static volatile TelemetryClient active;
@@ -327,9 +323,6 @@ public class TelemetryClient {
 
   private <T extends AbstractTelemetryBuilder> T newTelemetryBuilder(Supplier<T> creator) {
     T telemetry = creator.get();
-    logger.verbose("############## start printing otelResource: ##############");
-    otelResource.getAttributes().forEach((key, value) -> logger.verbose(key + " : " + value));
-    logger.verbose("############## end printing otelResource ##############");
     populateDefaults(telemetry, otelResource);
     return telemetry;
   }
@@ -346,28 +339,7 @@ public class TelemetryClient {
     for (Map.Entry<String, String> entry : globalProperties.entrySet()) {
       telemetryBuilder.addProperty(entry.getKey(), entry.getValue());
     }
-    if (AksResourceAttributes.isAks(resource)) {
-      logger.verbose("############## resource is from AKS ##############");
-      Attributes attributes = resource.getAttributes();
-      logger.verbose("#### start printing AKS attributes");
-      attributes.forEach((key, value) -> logger.verbose(key + " : " + value));
-      logger.verbose("############## end printing AKS attributes ##############");
-    } else {
-      logger.verbose("############## resource is not from AKS ##############");
-      Attributes attributes = resource.getAttributes();
-      logger.verbose("#### start printing non-AKS attributes");
-      attributes.forEach((key, value) -> logger.verbose(key + " : " + value));
-      logger.verbose("############## end printing non-AKS attributes ##############");
-    }
-    printOtelResourceAttributes(); // they should match
     new ResourceParser().updateRoleNameAndInstance(telemetryBuilder, resource);
-  }
-
-  @SuppressWarnings("SystemOut")
-  private static void printOtelResourceAttributes() {
-    logger.verbose("#### start OTEL_RESOURCE_ATTRIBUTES: \n");
-    logger.verbose(System.getenv("OTEL_RESOURCE_ATTRIBUTES"));
-    logger.verbose("#### end OTEL_RESOURCE_ATTRIBUTES");
   }
 
   @Nullable
