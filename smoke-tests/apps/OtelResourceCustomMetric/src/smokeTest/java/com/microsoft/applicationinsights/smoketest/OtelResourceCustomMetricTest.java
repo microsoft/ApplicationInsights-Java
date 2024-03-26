@@ -76,7 +76,7 @@ abstract class OtelResourceCustomMetricTest {
   }
 
   private static Map<String, String> parseOtelResourceAttributes() {
-    String[] attributes = OtelResourceCustomMetricTest.OTEL_RESOURCE_ATTRIBUTES.split(",");
+    String[] attributes = OTEL_RESOURCE_ATTRIBUTES.split(",");
     Map<String, String> result = new HashMap<>();
     for (String attribute : attributes) {
       String[] keyValue = attribute.split("=");
