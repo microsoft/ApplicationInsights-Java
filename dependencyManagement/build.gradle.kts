@@ -29,7 +29,7 @@ val DEPENDENCY_BOMS = listOf(
   "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:${otelInstrumentationVersion}",
   "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${otelInstrumentationAlphaVersion}",
   "com.azure:azure-sdk-bom:1.2.21",
-  "io.netty:netty-bom:4.1.107.Final",
+  "io.netty:netty-bom:4.1.108.Final",
   "org.junit:junit-bom:5.10.2",
   "org.testcontainers:testcontainers-bom:1.19.7",
 )
@@ -63,9 +63,6 @@ val CORE_DEPENDENCIES = listOf(
   "io.opentelemetry.javaagent:opentelemetry-javaagent-extension-api:${otelInstrumentationAlphaVersion}",
   "io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap:${otelInstrumentationAlphaVersion}",
   "io.opentelemetry.javaagent:opentelemetry-javaagent-tooling:${otelInstrumentationAlphaVersion}",
-  // fix CVE-2023-52428 https://github.com/advisories/GHSA-gvpg-vgmx-xg6w
-  // TODO (heya) remove this once azure-identity is updated in April
-  "com.microsoft.azure:msal4j:1.14.3"
 )
 
 val DEPENDENCIES = listOf(
