@@ -26,9 +26,11 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
@@ -67,6 +69,17 @@ public class SmokeTestExtension
       "http://host.testcontainers.internal:4318";
   private static final String FAKE_PROFILER_ENDPOINT =
       "http://host.testcontainers.internal:6060/profiler/";
+
+  private static final Set<String> OTEL_PRE_AGGREGATED_STANDARD_METRIC_NAMES = new HashSet<>(6);
+
+  {
+    OTEL_PRE_AGGREGATED_STANDARD_METRIC_NAMES.add("http.server.request.duration");
+    OTEL_PRE_AGGREGATED_STANDARD_METRIC_NAMES.add("http.server.request.duration");
+    OTEL_PRE_AGGREGATED_STANDARD_METRIC_NAMES.add("http.server.duration");
+    OTEL_PRE_AGGREGATED_STANDARD_METRIC_NAMES.add("http.client.duration");
+    OTEL_PRE_AGGREGATED_STANDARD_METRIC_NAMES.add("rpc.client.duration");
+    OTEL_PRE_AGGREGATED_STANDARD_METRIC_NAMES.add("rpc.server.duration");
+  }
 
   private static final File appFile = new File(System.getProperty("ai.smoke-test.test-app-file"));
 
@@ -302,8 +315,12 @@ public class SmokeTestExtension
                 return false;
               }
               MetricData data = (MetricData) ((Data<?>) input.getData()).getBaseData();
-              String metricId = data.getProperties().get("_MS.MetricId");
-              return metricId != null && metricId.equals("requests/duration");
+              if (OTEL_PRE_AGGREGATED_STANDARD_METRIC_NAMES.contains(
+                  data.getMetrics().get(0).getName())) {
+                String metricId = data.getProperties().get("_MS.MetricId");
+                return metricId != null && metricId.equals("requests/duration");
+              }
+              return true;
             },
             10, // metrics should come in pretty quickly after spans
             TimeUnit.SECONDS);
