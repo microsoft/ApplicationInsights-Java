@@ -292,6 +292,13 @@ public class SecondEntryPoint
         new AiContextCustomizer<>(
             configuration.preview.connectionStringOverrides,
             configuration.preview.roleNameOverrides));
+
+    // needed for 2.x bridge
+    autoConfiguration.addResourceCustomizer(
+        (resource, configProperties) -> {
+          telemetryClient.setOtelResource(resource);
+          return resource;
+        });
   }
 
   private static SpanExporter buildTraceExporter(
