@@ -116,6 +116,9 @@ public class ConfigurationBuilder {
   private static final String APPLICATIONINSIGHTS_STATSBEAT_DISABLED =
       "APPLICATIONINSIGHTS_STATSBEAT_DISABLED";
 
+  private static final String APPLICATIONINSIGHTS_INSTRUMENTATION_LOGGING_ENABLED =
+      "APPLICATIONINSIGHTS_INSTRUMENTATION_LOGGING_ENABLED";
+
   // cannot use logger before loading configuration, so need to store warning messages locally until
   // logger is initialized
   private static final ConfigurationLogger configurationLogger = new ConfigurationLogger();
@@ -486,9 +489,21 @@ public class ConfigurationBuilder {
   }
 
   private static void loadLogCaptureEnvVar(Configuration config) {
-    String loggingEnvVar = getEnvVar(APPLICATIONINSIGHTS_INSTRUMENTATION_LOGGING_LEVEL);
-    if (loggingEnvVar != null) {
-      config.instrumentation.logging.level = loggingEnvVar;
+    String loggingLevel = getEnvVar(APPLICATIONINSIGHTS_INSTRUMENTATION_LOGGING_LEVEL);
+    if (loggingLevel != null) {
+      configurationLogger.debug(
+          "applying environment variable: {}={}",
+          APPLICATIONINSIGHTS_INSTRUMENTATION_LOGGING_LEVEL,
+          loggingLevel);
+      config.instrumentation.logging.level = loggingLevel;
+    }
+    String loggingEnabled = getEnvVar(APPLICATIONINSIGHTS_INSTRUMENTATION_LOGGING_ENABLED);
+    if (loggingEnabled != null) {
+      configurationLogger.debug(
+          "applying environment variable: {}={}",
+          APPLICATIONINSIGHTS_INSTRUMENTATION_LOGGING_ENABLED,
+          loggingEnabled);
+      config.instrumentation.logging.enabled = Boolean.parseBoolean(loggingEnabled);
     }
   }
 
