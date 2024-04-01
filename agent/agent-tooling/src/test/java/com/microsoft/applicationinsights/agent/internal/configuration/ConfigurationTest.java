@@ -457,6 +457,16 @@ class ConfigurationTest {
   }
 
   @Test
+  void shouldOverrideLoggingEnabled() throws IOException {
+    envVars.set("APPLICATIONINSIGHTS_INSTRUMENTATION_LOGGING_ENABLED", "false");
+
+    Configuration configuration = loadConfiguration();
+    ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
+
+    assertThat(configuration.instrumentation.logging.enabled).isEqualTo(false);
+  }
+
+  @Test
   void shouldOverrideJmxMetrics() throws IOException {
     String jmxMetricsJson =
         "[{\"objectName\": \"java.lang:type=ClassLoading\",\"attribute\": \"LoadedClassCount\",\"display\": \"Loaded Class Count from EnvVar\"},"
