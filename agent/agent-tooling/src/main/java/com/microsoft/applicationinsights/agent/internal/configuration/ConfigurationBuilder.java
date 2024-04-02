@@ -489,14 +489,6 @@ public class ConfigurationBuilder {
   }
 
   private static void loadLogCaptureEnvVar(Configuration config) {
-    String loggingLevel = getEnvVar(APPLICATIONINSIGHTS_INSTRUMENTATION_LOGGING_LEVEL);
-    if (loggingLevel != null) {
-      configurationLogger.debug(
-          "applying environment variable: {}={}",
-          APPLICATIONINSIGHTS_INSTRUMENTATION_LOGGING_LEVEL,
-          loggingLevel);
-      config.instrumentation.logging.level = loggingLevel;
-    }
     String loggingEnabled = getEnvVar(APPLICATIONINSIGHTS_INSTRUMENTATION_LOGGING_ENABLED);
     if (loggingEnabled != null) {
       configurationLogger.debug(
@@ -504,6 +496,16 @@ public class ConfigurationBuilder {
           APPLICATIONINSIGHTS_INSTRUMENTATION_LOGGING_ENABLED,
           loggingEnabled);
       config.instrumentation.logging.enabled = Boolean.parseBoolean(loggingEnabled);
+    }
+    if (config.instrumentation.logging.enabled) {
+      String loggingLevel = getEnvVar(APPLICATIONINSIGHTS_INSTRUMENTATION_LOGGING_LEVEL);
+      if (loggingLevel != null) {
+        configurationLogger.debug(
+            "applying environment variable: {}={}",
+            APPLICATIONINSIGHTS_INSTRUMENTATION_LOGGING_LEVEL,
+            loggingLevel);
+        config.instrumentation.logging.level = loggingLevel;
+      }
     }
   }
 
