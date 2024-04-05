@@ -82,7 +82,7 @@ dependencies {
   testImplementation("org.assertj:assertj-core")
   testImplementation("org.awaitility:awaitility")
   testImplementation("org.mockito:mockito-core")
-  testImplementation("uk.org.webcompere:system-stubs-jupiter:2.0.3")
+  testImplementation("com.azure:azure-core-test:1.24.0")
   testImplementation("io.github.hakky54:logcaptor")
 
   testCompileOnly("com.google.code.findbugs:jsr305")
