@@ -8,7 +8,7 @@ public final class ContextTagKeys {
 
   private static final ContextTagKeys INSTANCE = new ContextTagKeys();
 
-  public static ContextTagKeys getKeys() {
+  public static synchronized ContextTagKeys getKeys() {
     return INSTANCE;
   }
 
