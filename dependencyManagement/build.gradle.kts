@@ -72,13 +72,13 @@ val DEPENDENCIES = listOf(
   "commons-codec:commons-codec:1.16.1",
   "org.apache.commons:commons-text:1.11.0",
   "com.google.code.gson:gson:2.10.1",
-  "com.azure:azure-core-test:1.24.0", // this is not included in azure-sdk-bom
+  "com.azure:azure-core-test:1.24.1", // this is not included in azure-sdk-bom
   "org.assertj:assertj-core:3.25.3",
   "org.awaitility:awaitility:4.2.1",
   "io.github.hakky54:logcaptor:2.9.2",
   "com.microsoft.jfr:jfr-streaming:1.2.0",
   "com.google.code.findbugs:jsr305:3.0.2",
-  "com.github.spotbugs:spotbugs-annotations:4.8.3"
+  "com.github.spotbugs:spotbugs-annotations:4.8.4"
 )
 
 javaPlatform {
