@@ -118,7 +118,7 @@ public class FileStringLookupTest {
   }
 
   @Test
-  public void testFileWithCRLFLineTerminators() throws IOException {
+  public void testFileWithCrlfLineTerminators() throws IOException {
     Writer writer = Files.newBufferedWriter(file.toPath(), UTF_8, StandardOpenOption.APPEND);
     writer.write("\r\n");
     writer.close();
@@ -129,7 +129,7 @@ public class FileStringLookupTest {
   }
 
   @Test
-  public void testFileWithCRLineTerminators() throws IOException {
+  public void testFileWithCrLineTerminators() throws IOException {
     Writer writer = Files.newBufferedWriter(file.toPath(), UTF_8, StandardOpenOption.APPEND);
     writer.write("\r");
     writer.close();
@@ -140,7 +140,7 @@ public class FileStringLookupTest {
   }
 
   @Test
-  public void testFileWithLFLineTerminators() throws IOException {
+  public void testFileWithLfLineTerminators() throws IOException {
     Writer writer = Files.newBufferedWriter(file.toPath(), UTF_8, StandardOpenOption.APPEND);
     writer.write("\n");
     writer.close();
