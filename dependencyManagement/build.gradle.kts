@@ -11,9 +11,9 @@ data class DependencySet(val group: String, val version: String, val modules: Li
 val dependencyVersions = hashMapOf<String, String>()
 rootProject.extra["versions"] = dependencyVersions
 
-val otelVersion = "1.35.0"
-val otelInstrumentationAlphaVersion = "2.1.0-alpha"
-val otelInstrumentationVersion = "2.1.0"
+val otelVersion = "1.36.0"
+val otelInstrumentationAlphaVersion = "2.2.0-alpha"
+val otelInstrumentationVersion = "2.2.0"
 val otelContribAlphaVersion = "1.32.0-alpha"
 val byteBuddyVersion = "1.14.11"
 
@@ -29,8 +29,8 @@ val DEPENDENCY_BOMS = listOf(
   "io.opentelemetry:opentelemetry-bom-alpha:${otelVersion}-alpha",
   "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:${otelInstrumentationVersion}",
   "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${otelInstrumentationAlphaVersion}",
-  "com.azure:azure-sdk-bom:1.2.21",
-  "io.netty:netty-bom:4.1.107.Final",
+  "com.azure:azure-sdk-bom:1.2.22",
+  "io.netty:netty-bom:4.1.108.Final",
   "org.junit:junit-bom:5.10.2",
   "org.testcontainers:testcontainers-bom:1.19.7",
 )
@@ -63,25 +63,22 @@ val CORE_DEPENDENCIES = listOf(
   "io.opentelemetry.javaagent:opentelemetry-javaagent-extension-api:${otelInstrumentationAlphaVersion}",
   "io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap:${otelInstrumentationAlphaVersion}",
   "io.opentelemetry.javaagent:opentelemetry-javaagent-tooling:${otelInstrumentationAlphaVersion}",
-  // fix CVE-2023-52428 https://github.com/advisories/GHSA-gvpg-vgmx-xg6w
-  // TODO (heya) remove this once azure-identity is updated in April
-  "com.microsoft.azure:msal4j:1.14.3"
 )
 
 val DEPENDENCIES = listOf(
   "ch.qos.logback:logback-classic:1.3.14", // logback 1.4+ requires Java 11+
   "ch.qos.logback.contrib:logback-json-classic:0.1.5",
-  "com.uber.nullaway:nullaway:0.10.24",
+  "com.uber.nullaway:nullaway:0.10.25",
   "commons-codec:commons-codec:1.16.1",
   "org.apache.commons:commons-text:1.11.0",
   "com.google.code.gson:gson:2.10.1",
-  "com.azure:azure-core-test:1.24.0", // this is not included in azure-sdk-bom
+  "com.azure:azure-core-test:1.24.1", // this is not included in azure-sdk-bom
   "org.assertj:assertj-core:3.25.3",
   "org.awaitility:awaitility:4.2.1",
   "io.github.hakky54:logcaptor:2.9.2",
   "com.microsoft.jfr:jfr-streaming:1.2.0",
   "com.google.code.findbugs:jsr305:3.0.2",
-  "com.github.spotbugs:spotbugs-annotations:4.8.3"
+  "com.github.spotbugs:spotbugs-annotations:4.8.4"
 )
 
 javaPlatform {

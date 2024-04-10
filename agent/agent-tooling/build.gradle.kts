@@ -42,7 +42,7 @@ dependencies {
     exclude("org.ow2.asm", "asm")
   }
 
-  //  compileOnly("io.opentelemetry:opentelemetry-sdk-extension-tracing-incubator")
+  compileOnly("io.opentelemetry:opentelemetry-extension-incubator")
   compileOnly("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure")
   compileOnly("io.opentelemetry:opentelemetry-extension-trace-propagators")
 
@@ -90,7 +90,7 @@ dependencies {
 
 configurations.all {
   // temporarily overriding version until next azure-bom release in order to address CVE
-  resolutionStrategy.force("com.azure:azure-identity:1.11.4")
+  resolutionStrategy.force("com.azure:azure-identity:1.12.0")
 }
 
 configurations {
