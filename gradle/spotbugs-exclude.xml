@@ -4,34 +4,60 @@
     <Class name="com.microsoft.applicationinsights.agent.internal.init.LoggingLevelConfigurator"/>
     <Bug pattern="CT_CONSTRUCTOR_THROW"/> <!-- inner class exception thrown in constructor can be ignored -->
   </Match>
-
   <Match>
     <Class name="com.microsoft.applicationinsights.agent.internal.sampling.RateLimitedSamplingPercentage"/>
     <Bug pattern="CT_CONSTRUCTOR_THROW"/> <!-- inner class exception thrown in constructor can be ignored -->
   </Match>
-
   <Match>
     <Class name="com.microsoft.applicationinsights.agent.internal.telemetry.MetricFilter$IncludeExclude"/>
     <Bug pattern="CT_CONSTRUCTOR_THROW"/> <!-- inner class exception thrown in constructor can be ignored -->
   </Match>
-
   <Match>
     <Class name="com.microsoft.applicationinsights.agent.internal.configuration.Configuration$ProcessorAction"/>
     <Bug pattern="CT_CONSTRUCTOR_THROW"/> <!-- inner class exception thrown in constructor can be ignored -->
   </Match>
-
   <Match>
     <Class name="com.microsoft.gcmonitor.collectors.JmxGarbageCollectorStats"/>
     <Bug pattern="CT_CONSTRUCTOR_THROW"/> <!-- inner class exception thrown in constructor can be ignored -->
   </Match>
-
   <Match>
     <Class name="com.microsoft.applicationinsights.diagnostics.collection.libos.os.linux.LinuxKernelStats"/>
     <Bug pattern="CT_CONSTRUCTOR_THROW"/> <!-- inner class exception thrown in constructor can be ignored -->
   </Match>
-
   <Match>
     <Class name="com.microsoft.applicationinsights.agent.internal.diagnostics.status.StatusFile"/>
     <Bug pattern="ENV_USE_PROPERTY_INSTEAD_OF_ENV"/> <!-- inner class use env var 'HOME' instead of 'user.home' can be ignored -->
+  </Match>
+  <Match>
+    <Class name="com.microsoft.applicationinsights.agent.internal.legacyheaders.DelegatingPropagator"/>
+    <Bug pattern="SING_SINGLETON_HAS_NONPRIVATE_CONSTRUCTOR"/> <!-- inner class use non-private constructor can be ignored -->
+  </Match>
+  <Match>
+    <Class name="com.microsoft.applicationinsights.agent.internal.legacyheaders.DelegatingPropagator"/>
+    <Bug pattern="SING_SINGLETON_GETTER_NOT_SYNCHRONIZED"/> <!-- inner class use default encoding can be ignored -->
+  </Match>
+  <Match>
+    <Class name="com.microsoft.applicationinsights.agent.internal.configuration.ConfigurationBuilder$JsonOrigin"/>
+    <Bug pattern="SING_SINGLETON_GETTER_NOT_SYNCHRONIZED"/> <!-- inner class use default encoding can be ignored -->
+  </Match>
+  <Match>
+    <Class name="com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampler"/>
+    <Bug pattern="SING_SINGLETON_HAS_NONPRIVATE_CONSTRUCTOR"/> <!-- inner class use default encoding can be ignored -->
+  </Match>
+  <Match>
+    <Class name="com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampler"/>
+    <Bug pattern="SING_SINGLETON_GETTER_NOT_SYNCHRONIZED"/> <!-- inner class use default encoding can be ignored -->
+  </Match>
+  <Match>
+    <Class name="com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient"/>
+    <Bug pattern="SING_SINGLETON_HAS_NONPRIVATE_CONSTRUCTOR"/> <!-- inner class use non-private constructor can be ignored -->
+  </Match>
+  <Match>
+    <Class name="com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient"/>
+    <Bug pattern="SING_SINGLETON_GETTER_NOT_SYNCHRONIZED"/> <!-- inner class use default encoding can be ignored -->
+  </Match>
+  <Match>
+    <Class name="com.microsoft.applicationinsights.extensibility.context.ContextTagKeys"/>
+    <Bug pattern="SING_SINGLETON_GETTER_NOT_SYNCHRONIZED"/> <!-- inner class use default encoding can be ignored -->
   </Match>
 </FindBugsFilter>
