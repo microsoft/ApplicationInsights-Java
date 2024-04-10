@@ -56,4 +56,8 @@
     <Class name="com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient"/>
     <Bug pattern="SING_SINGLETON_GETTER_NOT_SYNCHRONIZED"/> <!-- inner class use default encoding can be ignored -->
   </Match>
+  <Match>
+    <Class name="com.microsoft.applicationinsights.extensibility.context.ContextTagKeys"/>
+    <Bug pattern="SING_SINGLETON_GETTER_NOT_SYNCHRONIZED"/> <!-- inner class use default encoding can be ignored -->
+  </Match>
 </FindBugsFilter>
