@@ -21,7 +21,8 @@ final class FileStringLookup implements StringLookup {
   @Override
   public String lookup(String key) {
     try {
-      String connectionString = new String(Files.readAllBytes(baseDir.resolve(key)), StandardCharsets.UTF_8);
+      String connectionString =
+          new String(Files.readAllBytes(baseDir.resolve(key)), StandardCharsets.UTF_8);
       return connectionString.trim();
     } catch (IOException | InvalidPathException e) {
       throw new IllegalArgumentException(
