@@ -170,7 +170,7 @@ public class FirstEntryPoint implements LoggingCustomizer {
     startupLogger.info(
         "Application Insights Java Agent {} started successfully (PID {}, JVM running for {} s)",
         agentVersion,
-        new PidFinder().getValue(),
+        new PidFinder().getValue(System::getenv),
         findJvmUptimeInSeconds());
 
     String javaVersion = System.getProperty("java.version");
@@ -205,7 +205,7 @@ public class FirstEntryPoint implements LoggingCustomizer {
         "Application Insights Java Agent "
             + agentVersion
             + " startup failed (PID "
-            + new PidFinder().getValue()
+            + new PidFinder().getValue(System::getenv)
             + ")";
 
     if (friendlyException != null) {

@@ -56,9 +56,9 @@ public class ApplicationInsightsCsvLayout extends PatternLayout {
         + formatForCsv(message)
         + "\""
         + ","
-        + applicationMetadataFactory.getSiteName().getValue()
+        + applicationMetadataFactory.getSiteName().getValue(System::getenv)
         + ","
-        + applicationMetadataFactory.getInstrumentationKey().getValue()
+        + applicationMetadataFactory.getInstrumentationKey().getValue(System::getenv)
         + ","
         + qualifiedSdkVersion
         + ","

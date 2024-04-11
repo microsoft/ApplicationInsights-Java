@@ -41,6 +41,6 @@ class JvmCompiler {
   }
 
   private static String pid() {
-    return new PidFinder().getValue();
+    return new PidFinder().getValue(System::getenv);
   }
 }

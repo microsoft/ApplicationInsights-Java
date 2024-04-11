@@ -189,7 +189,8 @@ public class SecondEntryPoint
 
     RpConfiguration rpConfiguration = FirstEntryPoint.getRpConfiguration();
     if (rpConfiguration != null) {
-      RpConfigurationPolling.startPolling(rpConfiguration, runtimeConfigurator);
+      RpConfigurationPolling.startPolling(
+          rpConfiguration, runtimeConfigurator, System::getenv, System::getProperty);
     }
 
     // initialize StatsbeatModule

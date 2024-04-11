@@ -74,7 +74,9 @@ class RpConfigurationPollingTest {
     // when
     RuntimeConfigurator runtimeConfigurator =
         new RuntimeConfigurator(telemetryClient, () -> null, config, item -> {}, null);
-    new RpConfigurationPolling(rpConfiguration, runtimeConfigurator).run();
+    new RpConfigurationPolling(
+            rpConfiguration, runtimeConfigurator, this::envVars, System::getProperty)
+        .run();
 
     // then
     assertThat(telemetryClient.getInstrumentationKey())
@@ -118,7 +120,9 @@ class RpConfigurationPollingTest {
     // when
     RuntimeConfigurator runtimeConfigurator =
         new RuntimeConfigurator(telemetryClient, () -> null, config, item -> {}, null);
-    new RpConfigurationPolling(rpConfiguration, runtimeConfigurator).run();
+    new RpConfigurationPolling(
+            rpConfiguration, runtimeConfigurator, this::envVars, System::getProperty)
+        .run();
 
     // then
     assertThat(telemetryClient.getInstrumentationKey())
@@ -131,5 +135,10 @@ class RpConfigurationPollingTest {
   @Nullable
   private static Double getCurrentSamplingPercentage() {
     return SamplingTestUtil.getCurrentSamplingPercentage(DelegatingSampler.getInstance());
+  }
+
+  @SuppressWarnings("MethodCanBeStatic")
+  private String envVars(String key) {
+    return envVars.get(key);
   }
 }

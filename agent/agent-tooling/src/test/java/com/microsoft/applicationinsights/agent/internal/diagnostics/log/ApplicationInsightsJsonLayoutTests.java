@@ -74,13 +74,13 @@ class ApplicationInsightsJsonLayoutTests {
 
     DiagnosticsValueFinder mockFinder = mock(DiagnosticsValueFinder.class);
     when(mockFinder.getName()).thenReturn(key);
-    when(mockFinder.getValue()).thenReturn(value);
+    when(mockFinder.getValue(null)).thenReturn(value);
     ourLayout.valueFinders.add(mockFinder);
 
     Map<String, Object> jsonMap = ourLayout.toJsonMap(logEvent);
     Map<String, Object> propertyMap = (Map<String, Object>) jsonMap.get(CUSTOM_FIELDS_PROP_NAME);
     verify(mockFinder, atLeastOnce()).getName();
-    verify(mockFinder, atLeastOnce()).getValue();
+    verify(mockFinder, atLeastOnce()).getValue(null);
     assertThat(propertyMap).containsEntry(key, value);
     assertThat(propertyMap).containsEntry("language", "java");
   }
@@ -92,12 +92,12 @@ class ApplicationInsightsJsonLayoutTests {
 
     DiagnosticsValueFinder nullValueFinder = mock(DiagnosticsValueFinder.class);
     when(nullValueFinder.getName()).thenReturn(oneKey);
-    when(nullValueFinder.getValue()).thenReturn(null);
+    when(nullValueFinder.getValue(null)).thenReturn(null);
     ourLayout.valueFinders.add(nullValueFinder);
 
     DiagnosticsValueFinder emptyValueFinder = mock(DiagnosticsValueFinder.class);
     when(emptyValueFinder.getName()).thenReturn(twoKey);
-    when(emptyValueFinder.getValue()).thenReturn("");
+    when(emptyValueFinder.getValue(null)).thenReturn("");
     ourLayout.valueFinders.add(emptyValueFinder);
 
     Map<String, Object> jsonMap = ourLayout.toJsonMap(logEvent);
@@ -105,9 +105,9 @@ class ApplicationInsightsJsonLayoutTests {
     Map<String, Object> propMap = (Map<String, Object>) jsonMap.get(CUSTOM_FIELDS_PROP_NAME);
 
     verify(nullValueFinder, atLeastOnce()).getName();
-    verify(nullValueFinder, atLeastOnce()).getValue();
+    verify(nullValueFinder, atLeastOnce()).getValue(null);
     verify(emptyValueFinder, atLeastOnce()).getName();
-    verify(emptyValueFinder, atLeastOnce()).getValue();
+    verify(emptyValueFinder, atLeastOnce()).getValue(null);
     assertThat(propMap).containsEntry(twoKey, UNKNOWN_VALUE);
     assertThat(propMap).containsEntry(oneKey, UNKNOWN_VALUE);
   }

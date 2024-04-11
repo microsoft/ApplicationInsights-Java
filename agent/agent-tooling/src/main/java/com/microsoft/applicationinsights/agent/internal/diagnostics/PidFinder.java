@@ -6,13 +6,14 @@ package com.microsoft.applicationinsights.agent.internal.diagnostics;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.lang.reflect.Method;
+import java.util.function.Function;
 import javax.annotation.Nullable;
 
 public class PidFinder extends CachedDiagnosticsValueFinder {
   public static final String PROPERTY_NAME = "PID";
 
   @Override
-  protected String populateValue() {
+  protected String populateValue(Function<String, String> envVarsFunction) {
     String java9pid = getPidUsingProcessHandle();
     if (java9pid != null) {
       return java9pid;

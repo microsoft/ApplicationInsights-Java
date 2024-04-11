@@ -51,7 +51,7 @@ public class ApplicationInsightsJsonLayout extends JsonLayout {
     add(OPERATION_NAME_PROP_NAME, true, getOperationName(event), jsonMap);
     add(DiagnosticsHelper.MDC_MESSAGE_ID, true, getMessageId(event), jsonMap);
     for (DiagnosticsValueFinder finder : valueFinders) {
-      String value = finder.getValue();
+      String value = finder.getValue(null);
       add(
           finder.getName(),
           true,

@@ -32,18 +32,23 @@ class SubscriptionIdFinderTest {
   @Test
   void happyPathWithValidSubscriptionIdInsideWebsiteOwnerNameVar() {
     envVars.put(SubscriptionIdFinder.WEBSITE_OWNER_NAME_ENV_VAR, "sub-id-123+NOT_SUB_ID");
-    String value = subIdFinder.getValue();
+    String value = subIdFinder.getValue(this::envVarsFunction);
     assertThat(value).isEqualTo("sub-id-123");
   }
 
   @Test
   void useUnknownWhenEnvVarIsUnset() {
-    assertThat(subIdFinder.getValue()).isEqualTo("unknown");
+    assertThat(subIdFinder.getValue(this::envVarsFunction)).isEqualTo("unknown");
   }
 
   @Test
   void useUnknownIfEnvVarHasUnexpectedFormat() {
     envVars.put(SubscriptionIdFinder.WEBSITE_OWNER_NAME_ENV_VAR, "NOT_VALID");
-    assertThat(subIdFinder.getValue()).isEqualTo("unknown");
+    assertThat(subIdFinder.getValue(this::envVarsFunction)).isEqualTo("unknown");
+  }
+
+  @SuppressWarnings("MethodCanBeStatic")
+  private String envVarsFunction(String key) {
+    return envVars.get(key);
   }
 }

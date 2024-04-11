@@ -3,6 +3,8 @@
 
 package com.microsoft.applicationinsights.agent.internal.diagnostics;
 
+import java.util.function.Function;
+
 public class InstrumentationKeyFinder implements DiagnosticsValueFinder {
 
   private static final String PREFIX = "InstrumentationKey=";
@@ -13,8 +15,8 @@ public class InstrumentationKeyFinder implements DiagnosticsValueFinder {
   }
 
   @Override
-  public String getValue() {
-    String connStr = System.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING");
+  public String getValue(Function<String, String> envVarsFunction) {
+    String connStr = envVarsFunction.apply("APPLICATIONINSIGHTS_CONNECTION_STRING");
     if (connStr != null && !connStr.isEmpty()) {
       String[] parts = connStr.split(";");
       String instrumentationKey = null;
@@ -27,6 +29,6 @@ public class InstrumentationKeyFinder implements DiagnosticsValueFinder {
       // return the last instrumentation key to match ConnectionString::parseInto
       return instrumentationKey;
     }
-    return System.getenv("APPINSIGHTS_INSTRUMENTATIONKEY");
+    return envVarsFunction.apply("APPINSIGHTS_INSTRUMENTATIONKEY");
   }
 }
