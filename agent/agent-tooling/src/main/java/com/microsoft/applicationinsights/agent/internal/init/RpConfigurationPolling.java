@@ -69,7 +69,8 @@ public class RpConfigurationPolling implements Runnable {
         RpConfiguration newRpConfiguration =
             RpConfigurationBuilder.loadJsonConfigFile(rpConfiguration.configPath);
 
-        ConfigurationBuilder.overlayFromEnv(newRpConfiguration);
+        ConfigurationBuilder.overlayFromEnv(
+            newRpConfiguration, System::getenv, System::getProperty);
 
         RuntimeConfiguration config = runtimeConfigurator.getCurrentConfigCopy();
 

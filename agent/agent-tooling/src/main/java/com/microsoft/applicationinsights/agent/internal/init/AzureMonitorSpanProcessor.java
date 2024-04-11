@@ -27,7 +27,7 @@ public class AzureMonitorSpanProcessor implements SpanProcessor {
     // Azure function host is emitting request, java agent doesn't.
     // parentSpan is not an instanceof ReadableSpan here, thus need to update operationName before
     // checking for ReadableSpan
-    if (ConfigurationBuilder.inAzureFunctionsWorker()) {
+    if (ConfigurationBuilder.inAzureFunctionsWorker(System::getenv)) {
       AzureFunctionsCustomDimensions customDimensions =
           AzureFunctionsCustomDimensions.fromContext(parentContext);
       if (customDimensions != null && customDimensions.operationName != null) {

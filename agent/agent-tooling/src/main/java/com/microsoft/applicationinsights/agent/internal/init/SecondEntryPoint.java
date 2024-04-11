@@ -620,7 +620,7 @@ public class SecondEntryPoint
 
     builder.addLogRecordProcessor(new AzureMonitorLogProcessor());
 
-    if (ConfigurationBuilder.inAzureFunctionsWorker()) {
+    if (ConfigurationBuilder.inAzureFunctionsWorker(System::getenv)) {
       builder.addLogRecordProcessor(new AzureFunctionsLogProcessor());
     }
 
@@ -647,7 +647,7 @@ public class SecondEntryPoint
     LogDataMapper mapper =
         new LogDataMapper(
             configuration.preview.captureLoggingLevelAsCustomDimension,
-            ConfigurationBuilder.inAzureFunctionsWorker(),
+            ConfigurationBuilder.inAzureFunctionsWorker(System::getenv),
             telemetryClient::populateDefaults);
 
     List<Configuration.SamplingOverride> logSamplingOverrides =

@@ -88,7 +88,9 @@ public class FirstEntryPoint implements LoggingCustomizer {
       DiagnosticsHelper.initRpIntegration(agentPath);
       // configuration is only read this early in order to extract logging configuration
       rpConfiguration = RpConfigurationBuilder.create(agentPath);
-      configuration = ConfigurationBuilder.create(agentPath, rpConfiguration);
+      configuration =
+          ConfigurationBuilder.create(
+              agentPath, rpConfiguration, System::getenv, System::getProperty);
 
       String codelessSdkNamePrefix = getCodelessSdkNamePrefix();
       if (codelessSdkNamePrefix != null) {
@@ -256,7 +258,8 @@ public class FirstEntryPoint implements LoggingCustomizer {
         selfDiagnostics.file.path =
             ConfigurationBuilder.overlayWithEnvVar(
                 ConfigurationBuilder.APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_FILE_PATH,
-                selfDiagnostics.file.path);
+                selfDiagnostics.file.path,
+                null);
         startupLogger = configureLogging(selfDiagnostics, agentPath);
 
         logStartupFailure(isFriendlyException, message, t);

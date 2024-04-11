@@ -5,25 +5,23 @@ package com.microsoft.applicationinsights.agent.internal.diagnostics;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.HashMap;
+import java.util.Map;
 import javax.annotation.Nullable;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
-import uk.org.webcompere.systemstubs.jupiter.SystemStub;
-import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 
-@ExtendWith(SystemStubsExtension.class)
 class SubscriptionIdFinderTest {
 
-  @SystemStub EnvironmentVariables envVars = new EnvironmentVariables();
-
   @Nullable private SubscriptionIdFinder subIdFinder;
+
+  private static final Map<String, String> envVars = new HashMap<>();
 
   @BeforeEach
   void setup() {
     subIdFinder = new SubscriptionIdFinder();
+    envVars.clear();
   }
 
   @AfterEach
@@ -33,7 +31,7 @@ class SubscriptionIdFinderTest {
 
   @Test
   void happyPathWithValidSubscriptionIdInsideWebsiteOwnerNameVar() {
-    envVars.set(SubscriptionIdFinder.WEBSITE_OWNER_NAME_ENV_VAR, "sub-id-123+NOT_SUB_ID");
+    envVars.put(SubscriptionIdFinder.WEBSITE_OWNER_NAME_ENV_VAR, "sub-id-123+NOT_SUB_ID");
     String value = subIdFinder.getValue();
     assertThat(value).isEqualTo("sub-id-123");
   }
@@ -45,7 +43,7 @@ class SubscriptionIdFinderTest {
 
   @Test
   void useUnknownIfEnvVarHasUnexpectedFormat() {
-    envVars.set(SubscriptionIdFinder.WEBSITE_OWNER_NAME_ENV_VAR, "NOT_VALID");
+    envVars.put(SubscriptionIdFinder.WEBSITE_OWNER_NAME_ENV_VAR, "NOT_VALID");
     assertThat(subIdFinder.getValue()).isEqualTo("unknown");
   }
 }
