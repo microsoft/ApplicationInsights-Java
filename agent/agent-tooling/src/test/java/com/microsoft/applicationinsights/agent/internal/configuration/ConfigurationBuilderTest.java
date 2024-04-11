@@ -130,7 +130,7 @@ class ConfigurationBuilderTest {
     config.connectionString = testConnectionString;
     config.sampling.percentage = testSamplingPercentage;
 
-    ConfigurationBuilder.overlayFromEnv(config, System::getenv, System::getProperty);
+    ConfigurationBuilder.overlayFromEnv(config, this::envVars, this::systemProperties);
 
     assertThat(config.connectionString).isEqualTo(testConnectionString);
     assertThat(config.sampling.percentage).isEqualTo(testSamplingPercentage);
