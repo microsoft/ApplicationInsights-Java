@@ -11,6 +11,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
 import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 import java.util.Collections;
 import java.util.Map;
 import org.apache.commons.text.StringSubstitutor;
@@ -112,6 +113,39 @@ public class FileStringLookupTest {
   @Test
   public void testRelativePath() {
     String connectionString = "${file:./" + file.getName() + "}";
+    String value = stringSubstitutor.replace(connectionString);
+    assertThat(value).isEqualTo(CONNECTION_STRING);
+  }
+
+  @Test
+  public void testFileWithCrlfLineTerminators() throws IOException {
+    Writer writer = Files.newBufferedWriter(file.toPath(), UTF_8, StandardOpenOption.APPEND);
+    writer.write("\r\n");
+    writer.close();
+
+    String connectionString = "${file:" + file.getAbsolutePath() + "}";
+    String value = stringSubstitutor.replace(connectionString);
+    assertThat(value).isEqualTo(CONNECTION_STRING);
+  }
+
+  @Test
+  public void testFileWithCrLineTerminators() throws IOException {
+    Writer writer = Files.newBufferedWriter(file.toPath(), UTF_8, StandardOpenOption.APPEND);
+    writer.write("\r");
+    writer.close();
+
+    String connectionString = "${file:" + file.getAbsolutePath() + "}";
+    String value = stringSubstitutor.replace(connectionString);
+    assertThat(value).isEqualTo(CONNECTION_STRING);
+  }
+
+  @Test
+  public void testFileWithLfLineTerminators() throws IOException {
+    Writer writer = Files.newBufferedWriter(file.toPath(), UTF_8, StandardOpenOption.APPEND);
+    writer.write("\n");
+    writer.close();
+
+    String connectionString = "${file:" + file.getAbsolutePath() + "}";
     String value = stringSubstitutor.replace(connectionString);
     assertThat(value).isEqualTo(CONNECTION_STRING);
   }
