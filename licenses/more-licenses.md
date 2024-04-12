@@ -1,7 +1,7 @@
 
 # agent
 ## Dependency License Report
-_2024-03-27 03:10:08 UTC_
+_2024-04-09 03:58:13 UTC_
 ## Apache License, Version 2.0
 
 **1** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-annotations` **Version:** `2.16.2` 
@@ -177,47 +177,47 @@ _2024-03-27 03:10:08 UTC_
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
 
-**33** **Group:** `io.opentelemetry` **Name:** `opentelemetry-api` **Version:** `1.35.0` 
+**33** **Group:** `io.opentelemetry` **Name:** `opentelemetry-api` **Version:** `1.36.0` 
 > - **POM Project URL**: [https://github.com/open-telemetry/opentelemetry-java](https://github.com/open-telemetry/opentelemetry-java)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
-**34** **Group:** `io.opentelemetry` **Name:** `opentelemetry-api-events` **Version:** `1.35.0-alpha` 
+**34** **Group:** `io.opentelemetry` **Name:** `opentelemetry-api-events` **Version:** `1.36.0-alpha` 
 > - **POM Project URL**: [https://github.com/open-telemetry/opentelemetry-java](https://github.com/open-telemetry/opentelemetry-java)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
-**35** **Group:** `io.opentelemetry` **Name:** `opentelemetry-context` **Version:** `1.35.0` 
+**35** **Group:** `io.opentelemetry` **Name:** `opentelemetry-context` **Version:** `1.36.0` 
 > - **POM Project URL**: [https://github.com/open-telemetry/opentelemetry-java](https://github.com/open-telemetry/opentelemetry-java)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
-**36** **Group:** `io.opentelemetry` **Name:** `opentelemetry-extension-incubator` **Version:** `1.35.0-alpha` 
+**36** **Group:** `io.opentelemetry` **Name:** `opentelemetry-extension-incubator` **Version:** `1.36.0-alpha` 
 > - **POM Project URL**: [https://github.com/open-telemetry/opentelemetry-java](https://github.com/open-telemetry/opentelemetry-java)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
-**37** **Group:** `io.opentelemetry` **Name:** `opentelemetry-sdk` **Version:** `1.35.0` 
+**37** **Group:** `io.opentelemetry` **Name:** `opentelemetry-sdk` **Version:** `1.36.0` 
 > - **POM Project URL**: [https://github.com/open-telemetry/opentelemetry-java](https://github.com/open-telemetry/opentelemetry-java)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
-**38** **Group:** `io.opentelemetry` **Name:** `opentelemetry-sdk-common` **Version:** `1.35.0` 
+**38** **Group:** `io.opentelemetry` **Name:** `opentelemetry-sdk-common` **Version:** `1.36.0` 
 > - **POM Project URL**: [https://github.com/open-telemetry/opentelemetry-java](https://github.com/open-telemetry/opentelemetry-java)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
-**39** **Group:** `io.opentelemetry` **Name:** `opentelemetry-sdk-extension-autoconfigure` **Version:** `1.35.0` 
+**39** **Group:** `io.opentelemetry` **Name:** `opentelemetry-sdk-extension-autoconfigure` **Version:** `1.36.0` 
 > - **POM Project URL**: [https://github.com/open-telemetry/opentelemetry-java](https://github.com/open-telemetry/opentelemetry-java)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
-**40** **Group:** `io.opentelemetry` **Name:** `opentelemetry-sdk-extension-autoconfigure-spi` **Version:** `1.35.0` 
+**40** **Group:** `io.opentelemetry` **Name:** `opentelemetry-sdk-extension-autoconfigure-spi` **Version:** `1.36.0` 
 > - **POM Project URL**: [https://github.com/open-telemetry/opentelemetry-java](https://github.com/open-telemetry/opentelemetry-java)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
-**41** **Group:** `io.opentelemetry` **Name:** `opentelemetry-sdk-logs` **Version:** `1.35.0` 
+**41** **Group:** `io.opentelemetry` **Name:** `opentelemetry-sdk-logs` **Version:** `1.36.0` 
 > - **POM Project URL**: [https://github.com/open-telemetry/opentelemetry-java](https://github.com/open-telemetry/opentelemetry-java)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
-**42** **Group:** `io.opentelemetry` **Name:** `opentelemetry-sdk-metrics` **Version:** `1.35.0` 
+**42** **Group:** `io.opentelemetry` **Name:** `opentelemetry-sdk-metrics` **Version:** `1.36.0` 
 > - **POM Project URL**: [https://github.com/open-telemetry/opentelemetry-java](https://github.com/open-telemetry/opentelemetry-java)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
-**43** **Group:** `io.opentelemetry` **Name:** `opentelemetry-sdk-trace` **Version:** `1.35.0` 
+**43** **Group:** `io.opentelemetry` **Name:** `opentelemetry-sdk-trace` **Version:** `1.36.0` 
 > - **POM Project URL**: [https://github.com/open-telemetry/opentelemetry-java](https://github.com/open-telemetry/opentelemetry-java)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
@@ -346,7 +346,7 @@ _2024-03-27 03:10:08 UTC_
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**66** **Group:** `com.azure` **Name:** `azure-identity` **Version:** `1.11.4` 
+**66** **Group:** `com.azure` **Name:** `azure-identity` **Version:** `1.12.0` 
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
@@ -374,13 +374,13 @@ _2024-03-27 03:10:08 UTC_
 > - **Manifest License**: "SPDX-License-Identifier: MIT";link="https://opensource.org/licenses/MIT" (Not Packaged)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**73** **Group:** `com.microsoft.azure` **Name:** `msal4j` **Version:** `1.14.3` 
+**73** **Group:** `com.microsoft.azure` **Name:** `msal4j` **Version:** `1.15.0` 
 > - **Project URL**: [https://github.com/AzureAD/microsoft-authentication-library-for-java](https://github.com/AzureAD/microsoft-authentication-library-for-java)
 > - **Manifest License**: "MIT License" (Not Packaged)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**74** **Group:** `com.microsoft.azure` **Name:** `msal4j-persistence-extension` **Version:** `1.2.0` 
-> - **POM Project URL**: [https://github.com/AzureAD/microsoft-authentication-extensions-for-java](https://github.com/AzureAD/microsoft-authentication-extensions-for-java)
+**74** **Group:** `com.microsoft.azure` **Name:** `msal4j-persistence-extension` **Version:** `1.3.0` 
+> - **POM Project URL**: [https://github.com/AzureAD/microsoft-authentication-library-for-java](https://github.com/AzureAD/microsoft-authentication-library-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
 **75** **Group:** `com.microsoft.jfr` **Name:** `jfr-streaming` **Version:** `1.2.0` 

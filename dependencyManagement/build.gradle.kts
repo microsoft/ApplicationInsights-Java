@@ -11,9 +11,9 @@ data class DependencySet(val group: String, val version: String, val modules: Li
 val dependencyVersions = hashMapOf<String, String>()
 rootProject.extra["versions"] = dependencyVersions
 
-val otelVersion = "1.35.0"
-val otelInstrumentationAlphaVersion = "2.1.0-alpha"
-val otelInstrumentationVersion = "2.1.0"
+val otelVersion = "1.36.0"
+val otelInstrumentationAlphaVersion = "2.2.0-alpha"
+val otelInstrumentationVersion = "2.2.0"
 val otelContribAlphaVersion = "1.32.0-alpha"
 
 rootProject.extra["otelVersion"] = otelVersion
@@ -68,17 +68,17 @@ val CORE_DEPENDENCIES = listOf(
 val DEPENDENCIES = listOf(
   "ch.qos.logback:logback-classic:1.3.14", // logback 1.4+ requires Java 11+
   "ch.qos.logback.contrib:logback-json-classic:0.1.5",
-  "com.uber.nullaway:nullaway:0.10.24",
+  "com.uber.nullaway:nullaway:0.10.25",
   "commons-codec:commons-codec:1.16.1",
   "org.apache.commons:commons-text:1.11.0",
   "com.google.code.gson:gson:2.10.1",
-  "com.azure:azure-core-test:1.24.0", // this is not included in azure-sdk-bom
+  "com.azure:azure-core-test:1.24.1", // this is not included in azure-sdk-bom
   "org.assertj:assertj-core:3.25.3",
   "org.awaitility:awaitility:4.2.1",
   "io.github.hakky54:logcaptor:2.9.2",
   "com.microsoft.jfr:jfr-streaming:1.2.0",
   "com.google.code.findbugs:jsr305:3.0.2",
-  "com.github.spotbugs:spotbugs-annotations:4.8.3"
+  "com.github.spotbugs:spotbugs-annotations:4.8.4"
 )
 
 javaPlatform {

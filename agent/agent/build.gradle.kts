@@ -84,6 +84,7 @@ tasks {
       exclude(dependency("io.opentelemetry:opentelemetry-api"))
       exclude(dependency("io.opentelemetry:opentelemetry-api-metrics"))
       exclude(dependency("io.opentelemetry:opentelemetry-context"))
+      exclude(dependency("io.opentelemetry:opentelemetry-extension-incubator"))
     }
   }
 
@@ -227,6 +228,6 @@ configurations {
     exclude("com.fasterxml.jackson.dataformat", "jackson-dataformat-xml")
     exclude("com.fasterxml.woodstox", "woodstox-core")
     // temporarily overriding version until next azure-bom release in order to address CVE
-    resolutionStrategy.force("com.azure:azure-identity:1.11.4")
+    resolutionStrategy.force("com.azure:azure-identity:1.12.0")
   }
 }
