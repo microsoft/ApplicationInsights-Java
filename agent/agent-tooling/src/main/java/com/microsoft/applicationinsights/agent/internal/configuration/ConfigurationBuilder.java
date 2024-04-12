@@ -761,7 +761,7 @@ public class ConfigurationBuilder {
     loadLogCaptureEnvVar(config);
     loadJmxMetricsEnvVar(config);
 
-    addDefaultJmxMetricsIfNotPresent(config);
+    addDefaultJmxMetricsIfNotPresent(config); // Current Thread Count & Loaded Class Count
     overlayProfilerEnvVars(config);
     overlayAadEnvVars(config);
     overlayInstrumentationEnabledEnvVars(config);

@@ -42,7 +42,7 @@ public class PerformanceCounterInitializer {
   public static void initialize(Configuration configuration) {
 
     PerformanceCounterContainer.INSTANCE.setCollectionFrequencyInSec(
-        configuration.metricIntervalSeconds);
+        configuration.metricIntervalSeconds); // report interval
 
     if (logger.isDebugEnabled()) {
       PerformanceCounterContainer.INSTANCE.setLogAvailableJmxMetrics();
@@ -52,21 +52,21 @@ public class PerformanceCounterInitializer {
 
     PerformanceCounterContainer.INSTANCE.register(
         new ProcessCpuPerformanceCounter(
-            configuration.preview.useNormalizedValueForNonNormalizedCpuPercentage));
-    PerformanceCounterContainer.INSTANCE.register(new ProcessMemoryPerformanceCounter());
-    PerformanceCounterContainer.INSTANCE.register(new FreeMemoryPerformanceCounter());
+            configuration.preview.useNormalizedValueForNonNormalizedCpuPercentage)); // "% Processor Time", instance: "<pid>"
+    PerformanceCounterContainer.INSTANCE.register(new ProcessMemoryPerformanceCounter()); // Private Bytes
+    PerformanceCounterContainer.INSTANCE.register(new FreeMemoryPerformanceCounter()); // Available Bytes
 
     if (!isAgentRunningInSandboxEnvWindows()) {
       // system cpu and process disk i/o
-      PerformanceCounterContainer.INSTANCE.register(new OshiPerformanceCounter());
+      PerformanceCounterContainer.INSTANCE.register(new OshiPerformanceCounter()); // % Processor Time, instance: "_Total" & IO Data Bytes/sec
     }
 
     ThreadMXBean threadBean = ManagementFactory.getThreadMXBean();
     if (threadBean.isSynchronizerUsageSupported()) {
-      PerformanceCounterContainer.INSTANCE.register(new DeadLockDetectorPerformanceCounter());
+      PerformanceCounterContainer.INSTANCE.register(new DeadLockDetectorPerformanceCounter()); // Suspected Deadlocked Threads
     }
-    PerformanceCounterContainer.INSTANCE.register(new JvmHeapMemoryUsedPerformanceCounter());
-    PerformanceCounterContainer.INSTANCE.register(new GcPerformanceCounter());
+    PerformanceCounterContainer.INSTANCE.register(new JvmHeapMemoryUsedPerformanceCounter()); // Heap Memory Used (MB) & percentage
+    PerformanceCounterContainer.INSTANCE.register(new GcPerformanceCounter()); // GC Total Count and Time
   }
 
   private static boolean isAgentRunningInSandboxEnvWindows() {
