@@ -14,22 +14,20 @@ import com.microsoft.applicationinsights.agent.internal.sampling.Samplers;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
 import javax.annotation.Nullable;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
-import uk.org.webcompere.systemstubs.jupiter.SystemStub;
-import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 
-@ExtendWith(SystemStubsExtension.class)
 class RpConfigurationPollingTest {
 
-  @SystemStub EnvironmentVariables envVars = new EnvironmentVariables();
+  public static final Map<String, String> envVars = new HashMap<>();
 
   @BeforeEach
   void beforeEach() {
+    envVars.clear();
     // default sampler at startup is "Sampler.alwaysOff()", and this test relies on real sampler
     Configuration config = new Configuration();
     config.sampling.percentage = 100.0;
@@ -76,7 +74,9 @@ class RpConfigurationPollingTest {
     // when
     RuntimeConfigurator runtimeConfigurator =
         new RuntimeConfigurator(telemetryClient, () -> null, config, item -> {}, null);
-    new RpConfigurationPolling(rpConfiguration, runtimeConfigurator).run();
+    new RpConfigurationPolling(
+            rpConfiguration, runtimeConfigurator, this::envVars, System::getProperty)
+        .run();
 
     // then
     assertThat(telemetryClient.getInstrumentationKey())
@@ -106,10 +106,10 @@ class RpConfigurationPollingTest {
             RpConfigurationPollingTest.class.getResource("/applicationinsights-rp.json").toURI());
     rpConfiguration.lastModifiedTime = 0;
 
-    envVars.set(
+    envVars.put(
         "APPLICATIONINSIGHTS_CONNECTION_STRING",
         "InstrumentationKey=22222222-2222-2222-2222-222222222222");
-    envVars.set("APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE", "24");
+    envVars.put("APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE", "24");
 
     // pre-check
     assertThat(telemetryClient.getInstrumentationKey())
@@ -120,7 +120,9 @@ class RpConfigurationPollingTest {
     // when
     RuntimeConfigurator runtimeConfigurator =
         new RuntimeConfigurator(telemetryClient, () -> null, config, item -> {}, null);
-    new RpConfigurationPolling(rpConfiguration, runtimeConfigurator).run();
+    new RpConfigurationPolling(
+            rpConfiguration, runtimeConfigurator, this::envVars, System::getProperty)
+        .run();
 
     // then
     assertThat(telemetryClient.getInstrumentationKey())
@@ -133,5 +135,10 @@ class RpConfigurationPollingTest {
   @Nullable
   private static Double getCurrentSamplingPercentage() {
     return SamplingTestUtil.getCurrentSamplingPercentage(DelegatingSampler.getInstance());
+  }
+
+  @SuppressWarnings("MethodCanBeStatic")
+  private String envVars(String key) {
+    return envVars.get(key);
   }
 }

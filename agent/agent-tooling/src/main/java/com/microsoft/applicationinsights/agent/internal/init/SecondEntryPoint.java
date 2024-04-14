@@ -189,7 +189,8 @@ public class SecondEntryPoint
 
     RpConfiguration rpConfiguration = FirstEntryPoint.getRpConfiguration();
     if (rpConfiguration != null) {
-      RpConfigurationPolling.startPolling(rpConfiguration, runtimeConfigurator);
+      RpConfigurationPolling.startPolling(
+          rpConfiguration, runtimeConfigurator, System::getenv, System::getProperty);
     }
 
     // initialize StatsbeatModule
@@ -620,7 +621,7 @@ public class SecondEntryPoint
 
     builder.addLogRecordProcessor(new AzureMonitorLogProcessor());
 
-    if (ConfigurationBuilder.inAzureFunctionsWorker()) {
+    if (ConfigurationBuilder.inAzureFunctionsWorker(System::getenv)) {
       builder.addLogRecordProcessor(new AzureFunctionsLogProcessor());
     }
 
@@ -647,7 +648,7 @@ public class SecondEntryPoint
     LogDataMapper mapper =
         new LogDataMapper(
             configuration.preview.captureLoggingLevelAsCustomDimension,
-            ConfigurationBuilder.inAzureFunctionsWorker(),
+            ConfigurationBuilder.inAzureFunctionsWorker(System::getenv),
             telemetryClient::populateDefaults);
 
     List<Configuration.SamplingOverride> logSamplingOverrides =

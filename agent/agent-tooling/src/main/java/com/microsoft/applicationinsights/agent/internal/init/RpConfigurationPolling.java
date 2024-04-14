@@ -16,6 +16,7 @@ import java.nio.file.attribute.FileTime;
 import java.util.Objects;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.function.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,15 +26,24 @@ public class RpConfigurationPolling implements Runnable {
 
   private volatile RpConfiguration rpConfiguration;
   private final RuntimeConfigurator runtimeConfigurator;
+  private final Function<String, String> envVarsFunction;
+  private final Function<String, String> systemPropertiesFunction;
 
   public static void startPolling(
-      RpConfiguration rpConfiguration, RuntimeConfigurator runtimeConfigurator) {
+      RpConfiguration rpConfiguration,
+      RuntimeConfigurator runtimeConfigurator,
+      Function<String, String> envVarsFunction,
+      Function<String, String> systemPropertiesFunction) {
 
     ScheduledExecutorService executor =
         Executors.newSingleThreadScheduledExecutor(
             ThreadPoolUtils.createDaemonThreadFactory(RpConfigurationPolling.class));
     executor.scheduleWithFixedDelay(
-        new RpConfigurationPolling(rpConfiguration, runtimeConfigurator), 60, 60, SECONDS);
+        new RpConfigurationPolling(
+            rpConfiguration, runtimeConfigurator, envVarsFunction, systemPropertiesFunction),
+        60,
+        60,
+        SECONDS);
     // the condition below will always be false, but by referencing the executor it ensures the
     // executor can't become unreachable in the middle of the scheduleWithFixedDelay() method
     // execution above (and prior to the task being registered), which can lead to the executor
@@ -45,9 +55,15 @@ public class RpConfigurationPolling implements Runnable {
   }
 
   // visible for testing
-  RpConfigurationPolling(RpConfiguration rpConfiguration, RuntimeConfigurator runtimeConfigurator) {
+  RpConfigurationPolling(
+      RpConfiguration rpConfiguration,
+      RuntimeConfigurator runtimeConfigurator,
+      Function<String, String> envVarsFunction,
+      Function<String, String> systemPropertiesFunction) {
     this.rpConfiguration = rpConfiguration;
     this.runtimeConfigurator = runtimeConfigurator;
+    this.envVarsFunction = envVarsFunction;
+    this.systemPropertiesFunction = systemPropertiesFunction;
   }
 
   @Override
@@ -69,7 +85,8 @@ public class RpConfigurationPolling implements Runnable {
         RpConfiguration newRpConfiguration =
             RpConfigurationBuilder.loadJsonConfigFile(rpConfiguration.configPath);
 
-        ConfigurationBuilder.overlayFromEnv(newRpConfiguration);
+        ConfigurationBuilder.overlayFromEnv(
+            newRpConfiguration, envVarsFunction, systemPropertiesFunction);
 
         RuntimeConfiguration config = runtimeConfigurator.getCurrentConfigCopy();
 

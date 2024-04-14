@@ -29,11 +29,11 @@ public class EtwAppender extends AppenderBase<ILoggingEvent> {
     ApplicationMetadataFactory metadata = DiagnosticsHelper.getMetadataFactory();
 
     proto = new IpaInfo();
-    proto.setAppName(metadata.getSiteName().getValue());
-    proto.setExtensionVersion(metadata.getSdkVersion().getValue());
-    proto.setSubscriptionId(metadata.getSubscriptionId().getValue());
-    proto.setInstrumentationKey(metadata.getInstrumentationKey().getValue());
-    etwProvider = new EtwProvider(metadata.getSdkVersion().getValue());
+    proto.setAppName(metadata.getSiteName().getValue(System::getenv));
+    proto.setExtensionVersion(metadata.getSdkVersion().getValue(System::getenv));
+    proto.setSubscriptionId(metadata.getSubscriptionId().getValue(System::getenv));
+    proto.setInstrumentationKey(metadata.getInstrumentationKey().getValue(System::getenv));
+    etwProvider = new EtwProvider(metadata.getSdkVersion().getValue(System::getenv));
   }
 
   @Override

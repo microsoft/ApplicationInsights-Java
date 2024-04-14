@@ -267,7 +267,7 @@ public class StatusFile {
   static Map<String, Object> getJsonMap() {
     Map<String, Object> map = new LinkedHashMap<>(CONSTANT_VALUES);
     for (DiagnosticsValueFinder finder : VALUE_FINDERS) {
-      String value = finder.getValue();
+      String value = finder.getValue(System::getenv);
       if (value != null && !value.isEmpty()) {
         map.put(capitalize(finder.getName()), value);
       }

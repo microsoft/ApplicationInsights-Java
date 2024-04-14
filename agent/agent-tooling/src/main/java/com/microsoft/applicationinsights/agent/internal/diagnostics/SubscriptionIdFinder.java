@@ -3,14 +3,16 @@
 
 package com.microsoft.applicationinsights.agent.internal.diagnostics;
 
+import java.util.function.Function;
+
 public class SubscriptionIdFinder extends CachedDiagnosticsValueFinder {
 
   // visible for testing
   static final String WEBSITE_OWNER_NAME_ENV_VAR = "WEBSITE_OWNER_NAME";
 
   @Override
-  protected String populateValue() {
-    String envValue = System.getenv(WEBSITE_OWNER_NAME_ENV_VAR);
+  protected String populateValue(Function<String, String> envVarsFunction) {
+    String envValue = envVarsFunction.apply(WEBSITE_OWNER_NAME_ENV_VAR);
     if (envValue == null || envValue.isEmpty()) {
       return "unknown";
     }

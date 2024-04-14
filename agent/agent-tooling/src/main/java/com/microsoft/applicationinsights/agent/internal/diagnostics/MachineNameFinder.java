@@ -3,6 +3,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.diagnostics;
 
+import java.util.function.Function;
 import javax.annotation.Nullable;
 
 public class MachineNameFinder extends CachedDiagnosticsValueFinder {
@@ -10,12 +11,12 @@ public class MachineNameFinder extends CachedDiagnosticsValueFinder {
 
   @Override
   @Nullable
-  protected String populateValue() {
-    String computerName = System.getenv("COMPUTERNAME");
+  protected String populateValue(Function<String, String> envVarsFunction) {
+    String computerName = envVarsFunction.apply("COMPUTERNAME");
     if (computerName != null) {
       return computerName;
     }
-    String hostname = System.getenv("HOSTNAME");
+    String hostname = envVarsFunction.apply("HOSTNAME");
     if (hostname != null) {
       return hostname;
     }

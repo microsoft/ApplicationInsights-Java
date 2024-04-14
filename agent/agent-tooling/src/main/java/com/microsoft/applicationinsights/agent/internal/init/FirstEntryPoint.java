@@ -88,7 +88,9 @@ public class FirstEntryPoint implements LoggingCustomizer {
       DiagnosticsHelper.initRpIntegration(agentPath);
       // configuration is only read this early in order to extract logging configuration
       rpConfiguration = RpConfigurationBuilder.create(agentPath);
-      configuration = ConfigurationBuilder.create(agentPath, rpConfiguration);
+      configuration =
+          ConfigurationBuilder.create(
+              agentPath, rpConfiguration, System::getenv, System::getProperty);
 
       String codelessSdkNamePrefix = getCodelessSdkNamePrefix();
       if (codelessSdkNamePrefix != null) {
@@ -168,7 +170,7 @@ public class FirstEntryPoint implements LoggingCustomizer {
     startupLogger.info(
         "Application Insights Java Agent {} started successfully (PID {}, JVM running for {} s)",
         agentVersion,
-        new PidFinder().getValue(),
+        new PidFinder().getValue(System::getenv),
         findJvmUptimeInSeconds());
 
     String javaVersion = System.getProperty("java.version");
@@ -203,7 +205,7 @@ public class FirstEntryPoint implements LoggingCustomizer {
         "Application Insights Java Agent "
             + agentVersion
             + " startup failed (PID "
-            + new PidFinder().getValue()
+            + new PidFinder().getValue(System::getenv)
             + ")";
 
     if (friendlyException != null) {
@@ -256,7 +258,8 @@ public class FirstEntryPoint implements LoggingCustomizer {
         selfDiagnostics.file.path =
             ConfigurationBuilder.overlayWithEnvVar(
                 ConfigurationBuilder.APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_FILE_PATH,
-                selfDiagnostics.file.path);
+                selfDiagnostics.file.path,
+                System::getenv);
         startupLogger = configureLogging(selfDiagnostics, agentPath);
 
         logStartupFailure(isFriendlyException, message, t);

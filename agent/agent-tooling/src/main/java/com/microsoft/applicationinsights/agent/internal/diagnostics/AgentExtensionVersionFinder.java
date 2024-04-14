@@ -3,6 +3,8 @@
 
 package com.microsoft.applicationinsights.agent.internal.diagnostics;
 
+import java.util.function.Function;
+
 public class AgentExtensionVersionFinder extends CachedDiagnosticsValueFinder {
 
   /**
@@ -13,8 +15,8 @@ public class AgentExtensionVersionFinder extends CachedDiagnosticsValueFinder {
       "ApplicationInsightsAgent_EXTENSION_VERSION";
 
   @Override
-  protected String populateValue() {
-    return System.getenv(AGENT_EXTENSION_VERSION_ENVIRONMENT_VARIABLE);
+  protected String populateValue(Function<String, String> envVarsFunction) {
+    return envVarsFunction.apply(AGENT_EXTENSION_VERSION_ENVIRONMENT_VARIABLE);
   }
 
   @Override

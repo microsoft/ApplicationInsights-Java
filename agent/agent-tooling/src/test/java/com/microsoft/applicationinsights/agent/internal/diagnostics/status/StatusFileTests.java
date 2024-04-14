@@ -14,6 +14,7 @@ import com.microsoft.applicationinsights.agent.internal.diagnostics.DiagnosticsT
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
@@ -21,29 +22,25 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
-import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
-import uk.org.webcompere.systemstubs.jupiter.SystemStub;
-import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 
 @Disabled("failing on CI when deleted the @TempDir")
-@ExtendWith(SystemStubsExtension.class)
 class StatusFileTests {
 
   @TempDir File tempFolder;
 
-  @SystemStub EnvironmentVariables envVars = new EnvironmentVariables();
-
   private static final String TEST_IKEY = "fake-ikey-123";
   private static final String FAKE_VERSION = "0.0.1-test";
 
+  private static final Map<String, String> envVars = new HashMap<>();
+
   @BeforeEach
   void setup() {
+    envVars.clear();
     // TODO these tests currently only pass on windows
     assumeTrue(DiagnosticsHelper.isOsWindows());
-    envVars.set("APPINSIGHTS_INSTRUMENTATIONKEY", TEST_IKEY);
-    envVars.set(
+    envVars.put("APPINSIGHTS_INSTRUMENTATIONKEY", TEST_IKEY);
+    envVars.put(
         AgentExtensionVersionFinder.AGENT_EXTENSION_VERSION_ENVIRONMENT_VARIABLE, FAKE_VERSION);
   }
 
@@ -69,14 +66,14 @@ class StatusFileTests {
   @Test
   void homeEnvVarUpdatesBaseDir() {
     String homeDir = "/temp/test";
-    envVars.set(StatusFile.HOME_ENV_VAR, homeDir);
+    envVars.put(StatusFile.HOME_ENV_VAR, homeDir);
     assertThat(StatusFile.initLogDir()).isEqualTo("/temp/test/LogFiles/ApplicationInsights");
   }
 
   @Test
   void siteLogDirHasPrecedenceOverHome() {
     String homeDir = "/this/is/wrong";
-    envVars.set(StatusFile.HOME_ENV_VAR, homeDir);
+    envVars.put(StatusFile.HOME_ENV_VAR, homeDir);
     System.setProperty("site.logdir", "/the/correct/dir");
     assertThat(StatusFile.initLogDir()).isEqualTo("/the/correct/dir/ApplicationInsights");
   }
@@ -110,7 +107,7 @@ class StatusFileTests {
   @Test
   void connectionStringWorksToo() {
     String ikey = "a-different-ikey-456789";
-    envVars.set("APPLICATIONINSIGHTS_CONNECTION_STRING", "InstrumentationKey=" + ikey);
+    envVars.put("APPLICATIONINSIGHTS_CONNECTION_STRING", "InstrumentationKey=" + ikey);
     Map<String, Object> jsonMap = StatusFile.getJsonMap();
     assertThat(jsonMap).containsEntry("Ikey", ikey);
   }

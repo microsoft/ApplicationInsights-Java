@@ -82,7 +82,6 @@ dependencies {
   testImplementation("org.assertj:assertj-core")
   testImplementation("org.awaitility:awaitility")
   testImplementation("org.mockito:mockito-core")
-  testImplementation("uk.org.webcompere:system-stubs-jupiter:2.0.3")
   testImplementation("io.github.hakky54:logcaptor")
 
   testCompileOnly("com.google.code.findbugs:jsr305")
@@ -91,4 +90,10 @@ dependencies {
 configurations.all {
   // temporarily overriding version until next azure-bom release in order to address CVE
   resolutionStrategy.force("com.azure:azure-identity:1.12.0")
+}
+
+configurations {
+  "implementation" {
+    exclude(group = "net.bytebuddy", module = "byte-buddy") // we use byte-buddy-dep
+  }
 }

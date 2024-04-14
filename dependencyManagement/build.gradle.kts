@@ -15,6 +15,7 @@ val otelVersion = "1.36.0"
 val otelInstrumentationAlphaVersion = "2.2.0-alpha"
 val otelInstrumentationVersion = "2.2.0"
 val otelContribAlphaVersion = "1.32.0-alpha"
+val byteBuddyVersion = "1.14.11"
 
 rootProject.extra["otelVersion"] = otelVersion
 rootProject.extra["otelInstrumentationVersion"] = otelInstrumentationVersion
@@ -22,7 +23,7 @@ rootProject.extra["otelInstrumentationAlphaVersion"] = otelInstrumentationAlphaV
 rootProject.extra["otelContribAlphaVersion"] = otelContribAlphaVersion
 
 val DEPENDENCY_BOMS = listOf(
-  "com.fasterxml.jackson:jackson-bom:2.16.2",
+  "com.fasterxml.jackson:jackson-bom:2.17.0",
   "com.google.guava:guava-bom:33.1.0-jre",
   "io.opentelemetry:opentelemetry-bom:${otelVersion}",
   "io.opentelemetry:opentelemetry-bom-alpha:${otelVersion}-alpha",
@@ -37,7 +38,6 @@ val DEPENDENCY_BOMS = listOf(
 val autoServiceVersion = "1.1.1"
 val autoValueVersion = "1.10.4"
 val errorProneVersion = "2.26.1"
-val byteBuddyVersion = "1.12.18"
 val jmhVersion = "1.37"
 val mockitoVersion = "4.11.0"
 val slf4jVersion = "2.0.12"
