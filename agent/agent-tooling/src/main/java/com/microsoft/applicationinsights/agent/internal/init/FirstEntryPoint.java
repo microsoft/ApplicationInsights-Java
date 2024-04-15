@@ -258,8 +258,7 @@ public class FirstEntryPoint implements LoggingCustomizer {
         selfDiagnostics.file.path =
             ConfigurationBuilder.overlayWithEnvVar(
                 ConfigurationBuilder.APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_FILE_PATH,
-                selfDiagnostics.file.path,
-                System::getenv);
+                selfDiagnostics.file.path);
         startupLogger = configureLogging(selfDiagnostics, agentPath);
 
         logStartupFailure(isFriendlyException, message, t);

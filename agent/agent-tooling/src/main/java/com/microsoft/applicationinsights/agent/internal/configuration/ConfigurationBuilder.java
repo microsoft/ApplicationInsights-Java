@@ -126,6 +126,11 @@ public class ConfigurationBuilder {
   public static final String CONFIGURATION_OPTIONS_LINK =
       "https://go.microsoft.com/fwlink/?linkid=2153358";
 
+  private final Path agentJarPath;
+  private final @Nullable RpConfiguration rpConfiguration;
+  private final Function<String, String> envVarsFunction;
+  private final Function<String, String> systemPropsFunction;
+
   // using deprecated fields to give warning message to user if they are still using them
   public static Configuration create(
       Path agentJarPath,
@@ -133,11 +138,27 @@ public class ConfigurationBuilder {
       Function<String, String> envVarsFunction,
       Function<String, String> systemPropsFunction)
       throws IOException {
-    Configuration config =
-        loadConfigurationFile(agentJarPath, envVarsFunction, systemPropsFunction);
+
+    return new ConfigurationBuilder(
+            agentJarPath, rpConfiguration, envVarsFunction, systemPropsFunction)
+        .build();
+  }
+
+  private ConfigurationBuilder(
+      Path agentJarPath,
+      @Nullable RpConfiguration rpConfiguration,
+      Function<String, String> envVarsFunction,
+      Function<String, String> systemPropsFunction) {
+    this.agentJarPath = agentJarPath;
+    this.rpConfiguration = rpConfiguration;
+    this.envVarsFunction = envVarsFunction;
+    this.systemPropsFunction = systemPropsFunction;
+  }
+
+  private Configuration build() throws IOException {
+    Configuration config = loadConfigurationFile();
     logConfigurationWarnings(config);
-    overlayConfiguration(
-        agentJarPath, rpConfiguration, config, envVarsFunction, systemPropsFunction);
+    overlayConfiguration(config);
     return config;
   }
 
@@ -277,14 +298,8 @@ public class ConfigurationBuilder {
     logWarningIfUsingInternalAttributes(config);
   }
 
-  private static void overlayConfiguration(
-      Path agentJarPath,
-      RpConfiguration rpConfiguration,
-      Configuration config,
-      Function<String, String> envVarsFunction,
-      Function<String, String> systemPropsFunction)
-      throws IOException {
-    overlayFromEnv(config, agentJarPath.getParent(), envVarsFunction, systemPropsFunction);
+  private void overlayConfiguration(Configuration config) throws IOException {
+    overlayFromEnv(config);
     config.sampling.percentage = roundToNearest(config.sampling.percentage, true);
     for (SamplingOverride override : config.sampling.overrides) {
       supportSamplingOverridesOldSemConv(override);
@@ -444,8 +459,7 @@ public class ConfigurationBuilder {
     }
   }
 
-  static void overlayProfilerEnvVars(
-      Configuration config, Function<String, String> envVarsFunction) {
+  void overlayProfilerEnvVars(Configuration config) {
     String enabledString = Boolean.toString(config.preview.profiler.enabled);
 
     String overlayedValue =
@@ -475,8 +489,7 @@ public class ConfigurationBuilder {
     return jvmName != null && jvmName.contains("OpenJ9");
   }
 
-  private static void overlayAadEnvVars(
-      Configuration config, Function<String, String> envVarsFunction) {
+  private void overlayAadEnvVars(Configuration config) {
     String aadAuthString = getEnvVar(APPLICATIONINSIGHTS_AUTHENTICATION_STRING, envVarsFunction);
     if (aadAuthString != null) {
       Map<String, String> keyValueMap;
@@ -504,8 +517,7 @@ public class ConfigurationBuilder {
     }
   }
 
-  private static void loadLogCaptureEnvVar(
-      Configuration config, Function<String, String> envVarsFunction) {
+  private void loadLogCaptureEnvVar(Configuration config) {
     String loggingEnabled =
         getEnvVar(APPLICATIONINSIGHTS_INSTRUMENTATION_LOGGING_ENABLED, envVarsFunction);
     if (loggingEnabled != null) {
@@ -529,8 +541,7 @@ public class ConfigurationBuilder {
   }
 
   // TODO deprecate this
-  private static void loadJmxMetricsEnvVar(
-      Configuration config, Function<String, String> envVarsFunction) throws IOException {
+  private void loadJmxMetricsEnvVar(Configuration config) throws IOException {
     String jmxMetricsEnvVarJson = getEnvVar(APPLICATIONINSIGHTS_JMX_METRICS, envVarsFunction);
 
     // JmxMetrics env variable has higher precedence over jmxMetrics config from
@@ -574,8 +585,7 @@ public class ConfigurationBuilder {
     return false;
   }
 
-  private static void overlayInstrumentationEnabledEnvVars(
-      Configuration config, Function<String, String> envVarsFunction) {
+  private void overlayInstrumentationEnabledEnvVars(Configuration config) {
     config.instrumentation.azureSdk.enabled =
         overlayWithEnvVar(
             "APPLICATIONINSIGHTS_INSTRUMENTATION_AZURE_SDK_ENABLED",
@@ -628,18 +638,14 @@ public class ConfigurationBuilder {
             envVarsFunction);
   }
 
-  private static Configuration loadConfigurationFile(
-      Path agentJarPath,
-      Function<String, String> envVarsFunction,
-      Function<String, String> systemPropsFunction) {
+  private Configuration loadConfigurationFile() {
     String configurationContent =
         getEnvVar(APPLICATIONINSIGHTS_CONFIGURATION_CONTENT, envVarsFunction);
     if (configurationContent != null) {
-      return getConfigurationFromEnvVar(configurationContent, envVarsFunction);
+      return getConfigurationFromEnvVar(configurationContent);
     }
 
-    Configuration configFromProperty =
-        extractConfigFromProperty(agentJarPath, envVarsFunction, systemPropsFunction);
+    Configuration configFromProperty = extractConfigFromProperty();
     if (configFromProperty != null) {
       return configFromProperty;
     }
@@ -678,10 +684,7 @@ public class ConfigurationBuilder {
   }
 
   @Nullable
-  private static Configuration extractConfigFromProperty(
-      Path agentJarPath,
-      Function<String, String> envVarsFunction,
-      Function<String, String> systemPropsFunction) {
+  private Configuration extractConfigFromProperty() {
     String configPathStr = getConfigPath(envVarsFunction, systemPropsFunction);
     if (configPathStr != null) {
       Path configPath = agentJarPath.resolveSibling(configPathStr);
@@ -716,16 +719,12 @@ public class ConfigurationBuilder {
   }
 
   // visible for testing
-  static void overlayFromEnv(
-      Configuration config,
-      Path baseDir,
-      Function<String, String> envVarsFunction,
-      Function<String, String> systemPropertiesFunction)
-      throws IOException {
+  void overlayFromEnv(Configuration config) throws IOException {
     // load connection string from a file if connection string is in the format of
     // "${file:mounted_connection_string_file.txt}"
     Map<String, StringLookup> stringLookupMap =
-        Collections.singletonMap(StringLookupFactory.KEY_FILE, new FileStringLookup(baseDir));
+        Collections.singletonMap(
+            StringLookupFactory.KEY_FILE, new FileStringLookup(agentJarPath.getParent()));
     StringLookup stringLookup =
         StringLookupFactory.INSTANCE.interpolatorStringLookup(stringLookupMap, null, false);
     StringSubstitutor stringSubstitutor = new StringSubstitutor(stringLookup);
@@ -743,7 +742,7 @@ public class ConfigurationBuilder {
     }
     config.connectionString =
         overlayConnectionStringFromEnv(
-            replacedConnectionString, envVarsFunction, systemPropertiesFunction);
+            replacedConnectionString, envVarsFunction, systemPropsFunction);
     if (isTrimEmpty(config.role.name)) {
       // only use WEBSITE_SITE_NAME as a fallback
       config.role.name = getWebsiteSiteNameEnvVar(envVarsFunction);
@@ -754,7 +753,7 @@ public class ConfigurationBuilder {
             APPLICATIONINSIGHTS_ROLE_NAME_ENV,
             config.role.name,
             envVarsFunction,
-            systemPropertiesFunction);
+            systemPropsFunction);
 
     if (isTrimEmpty(config.role.instance)) {
       // only use WEBSITE_INSTANCE_ID as a fallback
@@ -766,7 +765,7 @@ public class ConfigurationBuilder {
             APPLICATIONINSIGHTS_ROLE_INSTANCE_ENV,
             config.role.instance,
             envVarsFunction,
-            systemPropertiesFunction);
+            systemPropsFunction);
 
     config.sampling.percentage =
         overlayWithEnvVar(
@@ -778,7 +777,7 @@ public class ConfigurationBuilder {
             config.sampling.requestsPerSecond,
             envVarsFunction);
 
-    config.proxy = overlayProxyFromEnv(config.proxy, envVarsFunction);
+    config.proxy = overlayProxyFromEnv(config.proxy);
 
     config.selfDiagnostics.level =
         overlayWithEnvVar(
@@ -830,13 +829,13 @@ public class ConfigurationBuilder {
             config.preview.statsbeat.disabled,
             envVarsFunction);
 
-    loadLogCaptureEnvVar(config, envVarsFunction);
-    loadJmxMetricsEnvVar(config, envVarsFunction);
+    loadLogCaptureEnvVar(config);
+    loadJmxMetricsEnvVar(config);
 
     addDefaultJmxMetricsIfNotPresent(config);
-    overlayProfilerEnvVars(config, envVarsFunction);
-    overlayAadEnvVars(config, envVarsFunction);
-    overlayInstrumentationEnabledEnvVars(config, envVarsFunction);
+    overlayProfilerEnvVars(config);
+    overlayAadEnvVars(config);
+    overlayInstrumentationEnabledEnvVars(config);
   }
 
   public static void overlayFromEnv(
@@ -880,8 +879,7 @@ public class ConfigurationBuilder {
     return null;
   }
 
-  private static Configuration.Proxy overlayProxyFromEnv(
-      Configuration.Proxy proxy, Function<String, String> envVarsFunction) {
+  private Configuration.Proxy overlayProxyFromEnv(Configuration.Proxy proxy) {
     String proxyEnvVar = getEnvVar(APPLICATIONINSIGHTS_PROXY, envVarsFunction);
     if (proxyEnvVar == null) {
       if (proxy.password != null) {
@@ -988,6 +986,10 @@ public class ConfigurationBuilder {
       return value;
     }
     return overlayWithEnvVar(envVarName, defaultValue, envVarsFunction);
+  }
+
+  public static String overlayWithEnvVar(String name, String defaultValue) {
+    return overlayWithEnvVar(name, defaultValue, System::getenv);
   }
 
   public static String overlayWithEnvVar(
@@ -1098,8 +1100,7 @@ public class ConfigurationBuilder {
     }
   }
 
-  static Configuration getConfigurationFromEnvVar(
-      String json, Function<String, String> envVarsFunction) {
+  private static Configuration getConfigurationFromEnvVar(String json) {
 
     Configuration configuration = getConfiguration(json, JsonOrigin.ENV_VAR);
 
@@ -1253,6 +1254,4 @@ public class ConfigurationBuilder {
 
     return rounded;
   }
-
-  private ConfigurationBuilder() {}
 }
