@@ -127,7 +127,8 @@ public class ConfigurationBuilder {
       "https://go.microsoft.com/fwlink/?linkid=2153358";
 
   private final Path agentJarPath;
-  private final @Nullable RpConfiguration rpConfiguration;
+  @Nullable
+  private final RpConfiguration rpConfiguration;
   private final Function<String, String> envVarsFunction;
   private final Function<String, String> systemPropsFunction;
 
