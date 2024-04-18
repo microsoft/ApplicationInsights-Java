@@ -11,10 +11,10 @@ data class DependencySet(val group: String, val version: String, val modules: Li
 val dependencyVersions = hashMapOf<String, String>()
 rootProject.extra["versions"] = dependencyVersions
 
-val otelVersion = "1.36.0"
-val otelInstrumentationAlphaVersion = "2.2.0-alpha"
-val otelInstrumentationVersion = "2.2.0"
-val otelContribAlphaVersion = "1.32.0-alpha"
+val otelVersion = "1.37.0"
+val otelInstrumentationAlphaVersion = "2.3.0-alpha"
+val otelInstrumentationVersion = "2.3.0"
+val otelContribAlphaVersion = "1.34.0-alpha"
 val byteBuddyVersion = "1.14.11"
 
 rootProject.extra["otelVersion"] = otelVersion
@@ -30,7 +30,7 @@ val DEPENDENCY_BOMS = listOf(
   "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:${otelInstrumentationVersion}",
   "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${otelInstrumentationAlphaVersion}",
   "com.azure:azure-sdk-bom:1.2.22",
-  "io.netty:netty-bom:4.1.108.Final",
+  "io.netty:netty-bom:4.1.109.Final",
   "org.junit:junit-bom:5.10.2",
   "org.testcontainers:testcontainers-bom:1.19.7",
 )
@@ -70,7 +70,7 @@ val DEPENDENCIES = listOf(
   "ch.qos.logback.contrib:logback-json-classic:0.1.5",
   "com.uber.nullaway:nullaway:0.10.25",
   "commons-codec:commons-codec:1.16.1",
-  "org.apache.commons:commons-text:1.11.0",
+  "org.apache.commons:commons-text:1.12.0",
   "com.google.code.gson:gson:2.10.1",
   "com.azure:azure-core-test:1.24.1", // this is not included in azure-sdk-bom
   "org.assertj:assertj-core:3.25.3",
