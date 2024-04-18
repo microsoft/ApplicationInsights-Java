@@ -70,7 +70,7 @@ val DEPENDENCIES = listOf(
   "ch.qos.logback.contrib:logback-json-classic:0.1.5",
   "com.uber.nullaway:nullaway:0.10.25",
   "commons-codec:commons-codec:1.16.1",
-  "org.apache.commons:commons-text:1.11.0",
+  "org.apache.commons:commons-text:1.12.0",
   "com.google.code.gson:gson:2.10.1",
   "com.azure:azure-core-test:1.24.1", // this is not included in azure-sdk-bom
   "org.assertj:assertj-core:3.25.3",
