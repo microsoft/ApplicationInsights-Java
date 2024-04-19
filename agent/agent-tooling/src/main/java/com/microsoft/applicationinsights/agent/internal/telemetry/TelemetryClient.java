@@ -237,7 +237,7 @@ public class TelemetryClient {
     if (tempDir == null) {
       telemetryPipelineListener =
           new DiagnosticTelemetryPipelineListener(
-              "Sending telemetry to the ingestion service", false, " (telemetry will be lost)");
+              "Sending telemetry to the ingestion service", true, " (telemetry will be lost)");
     } else {
       telemetryPipelineListener =
           TelemetryPipelineListener.composite(
@@ -245,9 +245,7 @@ public class TelemetryClient {
               // warnings when storing to disk and retrying shortly afterwards anyways
               // will log if that retry from disk fails
               new DiagnosticTelemetryPipelineListener(
-                  "Sending telemetry to the ingestion service",
-                  true,
-                  " (telemetry will be stored to disk and retried)"),
+                  "Sending telemetry to the ingestion service", false, ""),
               new LocalStorageTelemetryPipelineListener(
                   diskPersistenceMaxSizeMb,
                   TempDirs.getSubDir(tempDir, TELEMETRY_FOLDER_NAME),
