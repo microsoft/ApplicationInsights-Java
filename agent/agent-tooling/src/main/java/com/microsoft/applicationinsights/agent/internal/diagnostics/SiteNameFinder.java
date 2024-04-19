@@ -3,6 +3,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.diagnostics;
 
+import java.util.function.Function;
 import javax.annotation.Nullable;
 
 public class SiteNameFinder extends CachedDiagnosticsValueFinder {
@@ -18,8 +19,8 @@ public class SiteNameFinder extends CachedDiagnosticsValueFinder {
 
   @Override
   @Nullable
-  protected String populateValue() {
-    String value = System.getenv(SiteNameFinder.WEBSITE_SITE_NAME_ENV_VAR);
+  protected String populateValue(Function<String, String> envVarsFunction) {
+    String value = envVarsFunction.apply(SiteNameFinder.WEBSITE_SITE_NAME_ENV_VAR);
     return value == null || value.isEmpty() ? null : value;
   }
 }

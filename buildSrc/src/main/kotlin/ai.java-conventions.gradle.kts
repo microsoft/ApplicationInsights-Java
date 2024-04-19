@@ -150,6 +150,7 @@ dependencyCheck {
   skipConfigurations = listOf("errorprone", "spotbugs", "checkstyle", "annotationProcessor")
   failBuildOnCVSS = 0f // fail on any reported CVE
   suppressionFile = rootProject.file("buildscripts/dependency-check-suppressions.xml").absolutePath;
+  nvd.apiKey = System.getenv("NVD_API_KEY")
 }
 
 if (!path.startsWith(":smoke-tests")) {

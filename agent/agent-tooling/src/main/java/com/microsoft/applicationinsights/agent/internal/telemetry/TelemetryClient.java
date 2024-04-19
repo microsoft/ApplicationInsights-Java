@@ -52,6 +52,7 @@ public class TelemetryClient {
   @Nullable private static volatile TelemetryClient active;
 
   private final AppIdSupplier appIdSupplier;
+  private volatile Resource otelResource;
 
   @Nullable private volatile ConnectionString connectionString;
   @Nullable private volatile StatsbeatConnectionString statsbeatConnectionString;
@@ -227,13 +228,16 @@ public class TelemetryClient {
         LazyHttpClient.newHttpPipeLine(
             aadAuthentication,
             new NetworkStatsbeatHttpPipelinePolicy(statsbeatModule.getNetworkStatsbeat()));
-    TelemetryPipeline telemetryPipeline = new TelemetryPipeline(httpPipeline);
+    // TODO (heya) refactor the following by using AzureMonitorHelper.createTelemetryItemExporter by
+    // passing in getNonessentialStatsbeat
+    TelemetryPipeline telemetryPipeline =
+        new TelemetryPipeline(httpPipeline, statsbeatModule::shutdown);
 
     TelemetryPipelineListener telemetryPipelineListener;
     if (tempDir == null) {
       telemetryPipelineListener =
           new DiagnosticTelemetryPipelineListener(
-              "Sending telemetry to the ingestion service", false, " (telemetry will be lost)");
+              "Sending telemetry to the ingestion service", true, " (telemetry will be lost)");
     } else {
       telemetryPipelineListener =
           TelemetryPipelineListener.composite(
@@ -241,9 +245,7 @@ public class TelemetryClient {
               // warnings when storing to disk and retrying shortly afterwards anyways
               // will log if that retry from disk fails
               new DiagnosticTelemetryPipelineListener(
-                  "Sending telemetry to the ingestion service",
-                  true,
-                  " (telemetry will be stored to disk and retried)"),
+                  "Sending telemetry to the ingestion service", false, ""),
               new LocalStorageTelemetryPipelineListener(
                   diskPersistenceMaxSizeMb,
                   TempDirs.getSubDir(tempDir, TELEMETRY_FOLDER_NAME),
@@ -319,7 +321,7 @@ public class TelemetryClient {
 
   private <T extends AbstractTelemetryBuilder> T newTelemetryBuilder(Supplier<T> creator) {
     T telemetry = creator.get();
-    populateDefaults(telemetry, Resource.getDefault());
+    populateDefaults(telemetry, otelResource);
     return telemetry;
   }
 
@@ -328,14 +330,14 @@ public class TelemetryClient {
       // not sure if connectionString can be null in Azure Functions
       telemetryBuilder.setConnectionString(connectionString);
     }
+    telemetryBuilder.setResource(resource);
     for (Map.Entry<String, String> entry : globalTags.entrySet()) {
       telemetryBuilder.addTag(entry.getKey(), entry.getValue());
     }
     for (Map.Entry<String, String> entry : globalProperties.entrySet()) {
       telemetryBuilder.addProperty(entry.getKey(), entry.getValue());
     }
-    ResourceParser.updateRoleNameAndInstance(
-        telemetryBuilder, resource, com.azure.core.util.Configuration.getGlobalConfiguration());
+    new ResourceParser().updateRoleNameAndInstance(telemetryBuilder, resource);
   }
 
   @Nullable
@@ -403,6 +405,10 @@ public class TelemetryClient {
 
   public void setQuickPulse(@Nullable QuickPulse quickPulse) {
     this.quickPulse = quickPulse;
+  }
+
+  public void setOtelResource(Resource resource) {
+    otelResource = resource;
   }
 
   public static class Builder {
@@ -475,11 +481,7 @@ public class TelemetryClient {
       return this;
     }
 
-    public Builder setConnectionStrings(
-        @Nullable String connectionString,
-        @Nullable String statsbeatInstrumentationKey,
-        @Nullable String statsbeatEndpoint) {
-
+    public Builder setConnectionStrings(@Nullable String connectionString) {
       if (Strings.isNullOrEmpty(connectionString)) {
         this.connectionString = null;
         this.statsbeatConnectionString = null;
@@ -487,7 +489,9 @@ public class TelemetryClient {
         this.connectionString = ConnectionString.parse(connectionString);
         this.statsbeatConnectionString =
             StatsbeatConnectionString.create(
-                this.connectionString, statsbeatInstrumentationKey, statsbeatEndpoint);
+                this.connectionString,
+                System.getProperty("applicationinsights.testing.statsbeat.ikey"),
+                System.getProperty("applicationinsights.testing.statsbeat.endpoint"));
         if (this.statsbeatConnectionString == null) {
           statsbeatModule.shutdown();
         }

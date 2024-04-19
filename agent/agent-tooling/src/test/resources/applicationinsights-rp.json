@@ -1,6 +1,6 @@
 {
-  "connectionString": "InstrumentationKey=00000000-0000-0000-0000-000000000000",
+  "connectionString": "InstrumentationKey=11111111-1111-1111-1111-111111111111",
   "sampling": {
-    "percentage": 10
+    "percentage": 9.9
   }
 }

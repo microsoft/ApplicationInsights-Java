@@ -148,7 +148,7 @@ public class PerformanceMonitoringService {
             diagnosticEngineFactory.create(diagnosticEngineExecutorService);
 
         if (diagnosticEngine != null) {
-          diagnosticEngine.init(Integer.parseInt(new PidFinder().getValue()));
+          diagnosticEngine.init(Integer.parseInt(new PidFinder().getValue(System::getenv)));
         } else {
           diagnosticEngineExecutorService.shutdown();
         }

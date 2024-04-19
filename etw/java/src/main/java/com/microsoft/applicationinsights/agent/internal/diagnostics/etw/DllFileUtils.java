@@ -40,7 +40,12 @@ class DllFileUtils {
     }
 
     if (!dllPath.exists()) {
-      dllPath.mkdirs();
+      try {
+        dllPath.mkdirs();
+      } catch (SecurityException e) {
+        throw new IllegalStateException(
+            "Failed to create a folder AISDK/native for the native dll.", e);
+      }
     }
 
     if (!dllPath.exists() || !dllPath.canRead() || !dllPath.canWrite()) {

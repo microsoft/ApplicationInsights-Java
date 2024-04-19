@@ -5,6 +5,7 @@ on:
 jobs:
   release:
     runs-on: ubuntu-latest
+    permissions: write-all
     outputs:
       version: ${{ steps.create-github-release.outputs.version }}
     steps:
@@ -52,9 +53,10 @@ jobs:
                             $VERSION \
                             applicationinsights-agent-$VERSION.jar
 
-          echo "::set-output name=version::$VERSION"
+          echo "version=$VERSION" >> ${GITHUB_OUTPUT}
 
   create-docs-pull-request:
+    permissions: write-all
     needs:
       - release
     uses: ./.github/workflows/reusable-create-docs-pull-request.yml
@@ -64,6 +66,7 @@ jobs:
       AARON_MAXWELL_TOKEN: ${{ secrets.AARON_MAXWELL_TOKEN }}
 
   create-version-bump-pull-request:
+    permissions: write-all
     needs:
       - release
     uses: ./.github/workflows/reusable-create-version-bump-pull-request.yml

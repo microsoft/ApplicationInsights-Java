@@ -1,0 +1,41 @@
+{
+  "role": {
+    "name": "testrolename",
+    "instance": "testroleinstance"
+  },
+  "sampling": {
+    "percentage": 100
+  },
+  "preview": {
+    "captureHttpServerHeaders": {
+      "requestHeaders": [
+        "host"
+      ],
+      "responseHeaders": [
+        "abc-def"
+      ]
+    },
+    "captureHttpClientHeaders": {
+      "requestHeaders": [
+        "abc-def"
+      ],
+      "responseHeaders": [
+        "date"
+      ]
+    },
+    "sampling": {
+      "overrides": [
+        {
+          "attributes": [
+            {
+              "key": "http.request.header.abc_def",
+              "value": "nope",
+              "matchType": "strict"
+            }
+          ],
+          "percentage": 0
+        }
+      ]
+    }
+  }
+}

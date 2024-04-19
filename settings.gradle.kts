@@ -2,15 +2,15 @@ import org.apache.tools.ant.taskdefs.condition.Os
 
 pluginManagement {
   plugins {
-    id("com.github.ben-manes.versions") version "0.48.0"
-    id("com.github.jk1.dependency-license-report") version "2.5"
-    id("me.champeau.jmh") version "0.7.1"
+    id("com.github.ben-manes.versions") version "0.51.0"
+    id("com.github.jk1.dependency-license-report") version "2.7"
+    id("me.champeau.jmh") version "0.7.2"
     id("com.gradle.plugin-publish") version "1.2.1"
   }
 }
 
 plugins {
-  id("com.gradle.enterprise") version "3.15"
+  id("com.gradle.enterprise") version "3.17.2"
 }
 
 dependencyResolutionManagement {
@@ -98,13 +98,14 @@ hideFromDependabot(":smoke-tests:apps:Diagnostics")
 hideFromDependabot(":smoke-tests:apps:Diagnostics:JfrFileReader")
 hideFromDependabot(":smoke-tests:apps:DiagnosticExtension:MockExtension")
 hideFromDependabot(":smoke-tests:apps:DiagnosticExtension")
-hideFromDependabot(":smoke-tests:apps:DotInJmxMetric")
+hideFromDependabot(":smoke-tests:apps:JmxMetric")
 hideFromDependabot(":smoke-tests:apps:gRPC")
 hideFromDependabot(":smoke-tests:apps:HeartBeat")
 hideFromDependabot(":smoke-tests:apps:HttpClients")
 hideFromDependabot(":smoke-tests:apps:HttpHeaders")
 hideFromDependabot(":smoke-tests:apps:HttpPreaggregatedMetrics")
 hideFromDependabot(":smoke-tests:apps:HttpServer4xx")
+hideFromDependabot(":smoke-tests:apps:HttpServer")
 hideFromDependabot(":smoke-tests:apps:InheritedAttributes")
 hideFromDependabot(":smoke-tests:apps:InstrumentationKeyOverrides")
 hideFromDependabot(":smoke-tests:apps:JavaProfiler")
@@ -126,6 +127,8 @@ hideFromDependabot(":smoke-tests:apps:NonDaemonThreads")
 hideFromDependabot(":smoke-tests:apps:OpenTelemetryApiSupport")
 hideFromDependabot(":smoke-tests:apps:OpenTelemetryApiLogBridge")
 hideFromDependabot(":smoke-tests:apps:OpenTelemetryMetric")
+hideFromDependabot(":smoke-tests:apps:OtelResourceCustomMetric")
+hideFromDependabot(":smoke-tests:apps:OtlpMetrics")
 hideFromDependabot(":smoke-tests:apps:PreAggMetricsWithRoleNameOverridesAndSampling")
 hideFromDependabot(":smoke-tests:apps:PreferForwardedUrlScheme")
 hideFromDependabot(":smoke-tests:apps:RateLimitedSampling")

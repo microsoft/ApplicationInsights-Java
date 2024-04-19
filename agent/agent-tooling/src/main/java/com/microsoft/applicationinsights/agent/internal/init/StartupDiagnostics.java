@@ -129,6 +129,6 @@ class StartupDiagnostics {
   }
 
   private static String pid() {
-    return new PidFinder().getValue();
+    return new PidFinder().getValue(System::getenv);
   }
 }

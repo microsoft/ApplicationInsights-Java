@@ -90,4 +90,8 @@ public class ExceptionDetails {
   public void setParsedStack(List<StackFrame> value) {
     this.parsedStack = value;
   }
+
+  public String getStack() {
+    return stack;
+  }
 }

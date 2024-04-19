@@ -57,9 +57,10 @@ public class LoggingConfigurator {
   void configure() {
     loggerContext.getLogger(ROOT_LOGGER_NAME).detachAndStopAllAppenders();
 
-    if (DiagnosticsHelper.isAppSvcRpIntegration()) {
+    // only enable ETW when it's INTEGRATED_AUTO
+    if (DiagnosticsHelper.isAppSvcRpIntegratedAuto()) {
       configureAppSvc();
-    } else if (DiagnosticsHelper.isFunctionsRpIntegration()) {
+    } else if (DiagnosticsHelper.isFunctionsRpIntegratedAuto()) {
       configureFunctions();
     } else if (destination == null || destination.equalsIgnoreCase("file+console")) {
       configureFileAndConsole();
@@ -203,7 +204,7 @@ public class LoggingConfigurator {
     appender.setName("CONSOLE");
 
     // format Functions diagnostic log as comma separated
-    if (DiagnosticsHelper.isFunctionsRpIntegration()) {
+    if (DiagnosticsHelper.isFunctionsRpIntegratedAuto()) {
       appender.setLayout(
           new ApplicationInsightsCsvLayout(PropertyHelper.getQualifiedSdkVersionString()));
     } else {

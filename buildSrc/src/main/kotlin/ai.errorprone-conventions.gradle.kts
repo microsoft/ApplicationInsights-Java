@@ -61,6 +61,8 @@ tasks {
 
         disable("CanIgnoreReturnValueSuggester")
 
+        disable("NonFinalStaticField")
+
         // YodaConditions may improve safety in some cases. The argument of increased
         // cognitive load is dubious.
         disable("YodaCondition")

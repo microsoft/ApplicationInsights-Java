@@ -32,7 +32,7 @@ abstract class TelemetryProcessorsTest {
     assertThat(telemetry.rd.getProperties()).containsEntry("attribute1", "testValue1");
     assertThat(telemetry.rd.getProperties()).containsEntry("attribute2", "testValue2");
     assertThat(telemetry.rd.getProperties()).containsEntry("sensitiveAttribute1", "sensitiveData1");
-    assertThat(telemetry.rd.getProperties().get("httpPath")).isEqualTo("/TelemetryProcessors/test");
+    assertThat(telemetry.rd.getProperties()).containsEntry("httpPath", "/TelemetryProcessors/test");
     assertThat(telemetry.rd.getProperties()).hasSize(5);
     assertThat(telemetry.rd.getProperties())
         .containsEntry("_MS.ProcessedByMetricExtractors", "True");
@@ -52,8 +52,8 @@ abstract class TelemetryProcessorsTest {
     assertThat(telemetry.rd.getProperties()).containsEntry("attribute1", "testValue1");
     assertThat(telemetry.rd.getProperties()).containsEntry("attribute2", "testValue2");
     assertThat(telemetry.rd.getProperties()).containsEntry("sensitiveAttribute1", "redacted");
-    assertThat(telemetry.rd.getProperties().get("httpPath"))
-        .isEqualTo("/TelemetryProcessors/sensitivedata");
+    assertThat(telemetry.rd.getProperties())
+        .containsEntry("httpPath", "/TelemetryProcessors/sensitivedata");
     assertThat(telemetry.rd.getProperties()).hasSize(5);
     assertThat(telemetry.rd.getProperties())
         .containsEntry("_MS.ProcessedByMetricExtractors", "True");

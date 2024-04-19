@@ -1,0 +1,22 @@
+{
+  "role": {
+    "name": "testrolename",
+    "instance": "testroleinstance"
+  },
+  "sampling": {
+    "percentage": 100
+  },
+  "metricIntervalSeconds": 5,
+  "customDimensions": {
+    "tag1": "abc",
+    "tag2": "def",
+    "service.version": "123"
+  },
+  "internal": {
+    "statsbeat": {
+      "disabledAll": false,
+      "shortIntervalSeconds": 5,
+      "longIntervalSeconds": 5
+    }
+  }
+}

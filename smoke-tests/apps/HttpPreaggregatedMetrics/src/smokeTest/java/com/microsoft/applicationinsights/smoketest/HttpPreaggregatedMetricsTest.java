@@ -46,9 +46,9 @@ abstract class HttpPreaggregatedMetricsTest {
     verifyHttpclientRequestsAndDependencies("https://mock.codes/200?q=spaces%20test");
 
     List<Envelope> clientMetrics =
-        testing.mockedIngestion.waitForMetricItems("http.client.duration", 3);
+        testing.mockedIngestion.waitForMetricItems("http.client.request.duration", 3);
     List<Envelope> serverMetrics =
-        testing.mockedIngestion.waitForMetricItems("http.server.duration", 1);
+        testing.mockedIngestion.waitForMetricItems("http.server.request.duration", 1);
 
     verifyHttpClientPreAggregatedMetrics(clientMetrics);
     verifyHttpServerPreAggregatedMetrics(serverMetrics, synthetic);
@@ -161,9 +161,10 @@ abstract class HttpPreaggregatedMetricsTest {
     assertThat(dataPoints).hasSize(1);
     DataPoint dataPoint = dataPoints.get(0);
     assertThat(dataPoint.getCount()).isEqualTo(1);
-    assertThat(dataPoint.getValue()).isGreaterThan(0d).isLessThan(60 * 1000.0);
-    assertThat(dataPoint.getMin()).isGreaterThan(0d).isLessThan(60 * 1000.0);
-    assertThat(dataPoint.getMax()).isGreaterThan(0d).isLessThan(60 * 1000.0);
+    double greaterThan = type.equals("server") ? 200.0f : 0.0f;
+    assertThat(dataPoint.getValue()).isGreaterThan(greaterThan).isLessThan(60 * 1000.0);
+    assertThat(dataPoint.getMin()).isGreaterThan(greaterThan).isLessThan(60 * 1000.0);
+    assertThat(dataPoint.getMax()).isGreaterThan(greaterThan).isLessThan(60 * 1000.0);
     Map<String, String> properties = metricData.getProperties();
     String expectedSuccess = "200".equals(resultCode) ? "True" : "False";
     if ("client".equals(type)) {

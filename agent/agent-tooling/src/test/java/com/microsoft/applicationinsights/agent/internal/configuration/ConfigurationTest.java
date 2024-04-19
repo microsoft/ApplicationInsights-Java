@@ -21,24 +21,27 @@ import io.opentelemetry.api.common.AttributeKey;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
-import org.junit.jupiter.api.extension.ExtendWith;
-import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
-import uk.org.webcompere.systemstubs.jupiter.SystemStub;
-import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
-import uk.org.webcompere.systemstubs.properties.SystemProperties;
 
-@ExtendWith(SystemStubsExtension.class)
 class ConfigurationTest {
 
-  @SystemStub EnvironmentVariables envVars = new EnvironmentVariables();
-  @SystemStub SystemProperties systemProperties = new SystemProperties();
+  private static final Map<String, String> envVars = new HashMap<>();
+  private static final Map<String, String> systemProperties = new HashMap<>();
+
+  @BeforeEach
+  void setup() {
+    envVars.clear();
+    systemProperties.clear();
+  }
 
   @Test
   void shouldParse() throws IOException {
@@ -82,12 +85,13 @@ class ConfigurationTest {
             + "\"display\":\"Code Cache Used from EnvVar\"}]";
     String contentJson =
         "{\"jmxMetrics\": " + jmxMetricsJson + "," + "\"role\":{" + "\"name\":\"testrole\"" + "}}";
-    envVars.set("APPLICATIONINSIGHTS_CONFIGURATION_CONTENT", contentJson);
-    envVars.set(
+    envVars.put("APPLICATIONINSIGHTS_CONFIGURATION_CONTENT", contentJson);
+    envVars.put(
         "APPLICATIONINSIGHTS_CONNECTION_STRING",
         "InstrumentationKey=11111111-1111-1111-1111-111111111111");
 
-    Configuration configuration = ConfigurationBuilder.create(Paths.get("."), null);
+    Configuration configuration =
+        ConfigurationBuilder.create(Paths.get("."), null, this::envVars, this::systemProperties);
 
     assertThat(configuration.connectionString)
         .isEqualTo("InstrumentationKey=11111111-1111-1111-1111-111111111111");
@@ -105,17 +109,20 @@ class ConfigurationTest {
 
   @Test
   void shouldThrowFromEnvVarIfEmbeddedConnectionStringAndAppSvcRpIntegration() {
-    DiagnosticsHelper.appSvcRpIntegration = true;
+    DiagnosticsHelper.setAppSvcRpIntegratedAuto(true);
     try {
       String contentJson =
           "{\"connectionString\":\"InstrumentationKey=55555555-5555-5555-5555-555555555555\","
               + "\"role\":{\"name\":\"testrole\"}}";
-      envVars.set("APPLICATIONINSIGHTS_CONFIGURATION_CONTENT", contentJson);
+      envVars.put("APPLICATIONINSIGHTS_CONFIGURATION_CONTENT", contentJson);
 
-      assertThatThrownBy(() -> ConfigurationBuilder.create(Paths.get("."), null))
+      assertThatThrownBy(
+              () ->
+                  ConfigurationBuilder.create(
+                      Paths.get("."), null, this::envVars, this::systemProperties))
           .isInstanceOf(ConfigurationBuilder.ConfigurationException.class);
     } finally {
-      DiagnosticsHelper.appSvcRpIntegration = false;
+      DiagnosticsHelper.setAppSvcRpIntegratedAuto(false);
     }
   }
 
@@ -240,7 +247,6 @@ class ConfigurationTest {
 
   @Test
   void shouldParseAuthenticationConfiguration() throws IOException {
-
     Configuration configuration = loadConfiguration("applicationinsights_aadauth.json");
     assertThat(configuration.connectionString)
         .isEqualTo("InstrumentationKey=00000000-0000-0000-0000-000000000000");
@@ -254,10 +260,12 @@ class ConfigurationTest {
 
   @Test
   void shouldUseDefaults() throws IOException {
-    envVars.set("WEBSITE_SITE_NAME", "Role Name From Website Env");
-    envVars.set("WEBSITE_INSTANCE_ID", "role instance from website env");
+    envVars.put("WEBSITE_SITE_NAME", "Role Name From Website Env");
+    envVars.put("WEBSITE_INSTANCE_ID", "role instance from website env");
 
     Configuration configuration = loadConfiguration();
+    ConfigurationBuilder.overlayFromEnv(
+        configuration, Paths.get("."), this::envVars, this::systemProperties);
 
     assertThat(configuration.connectionString)
         .isEqualTo("InstrumentationKey=00000000-0000-0000-0000-000000000000");
@@ -271,25 +279,36 @@ class ConfigurationTest {
 
   @Test
   void shouldOverrideConnectionStringWithEnvVar() throws IOException {
-    envVars.set(
+    envVars.put(
         "APPLICATIONINSIGHTS_CONNECTION_STRING",
         "InstrumentationKey=11111111-1111-1111-1111-111111111111");
-
     Configuration configuration = loadConfiguration();
-    ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
+    ConfigurationBuilder.overlayFromEnv(
+        configuration, Paths.get("."), this::envVars, this::systemProperties);
 
     assertThat(configuration.connectionString)
         .isEqualTo("InstrumentationKey=11111111-1111-1111-1111-111111111111");
   }
 
+  @SuppressWarnings("MethodCanBeStatic")
+  private String envVars(String key) {
+    return envVars.get(key);
+  }
+
+  @SuppressWarnings("MethodCanBeStatic")
+  private String systemProperties(String key) {
+    return systemProperties.get(key);
+  }
+
   @Test
   void shouldOverrideConnectionStringWithSysProp() throws IOException {
-    systemProperties.set(
+    systemProperties.put(
         "applicationinsights.connection.string",
         "InstrumentationKey=11111111-1111-1111-1111-111111111111");
 
     Configuration configuration = loadConfiguration();
-    ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
+    ConfigurationBuilder.overlayFromEnv(
+        configuration, Paths.get("."), this::envVars, this::systemProperties);
 
     assertThat(configuration.connectionString)
         .isEqualTo("InstrumentationKey=11111111-1111-1111-1111-111111111111");
@@ -297,15 +316,16 @@ class ConfigurationTest {
 
   @Test
   void shouldOverrideConnectionStringWithBothEnvVarAndSysProp() throws IOException {
-    envVars.set(
+    envVars.put(
         "APPLICATIONINSIGHTS_CONNECTION_STRING",
         "InstrumentationKey=11111111-1111-1111-1111-111111111111");
-    systemProperties.set(
+    systemProperties.put(
         "applicationinsights.connection.string",
         "InstrumentationKey=22222222-2222-2222-2222-222222222222");
 
     Configuration configuration = loadConfiguration();
-    ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
+    ConfigurationBuilder.overlayFromEnv(
+        configuration, Paths.get("."), this::envVars, this::systemProperties);
 
     assertThat(configuration.connectionString)
         .isEqualTo("InstrumentationKey=22222222-2222-2222-2222-222222222222");
@@ -313,147 +333,171 @@ class ConfigurationTest {
 
   @Test
   void shouldOverrideRoleNameWithEnvVar() throws IOException {
-    envVars.set("APPLICATIONINSIGHTS_ROLE_NAME", "role name from env");
+    envVars.put("APPLICATIONINSIGHTS_ROLE_NAME", "role name from env");
 
-    envVars.set("WEBSITE_SITE_NAME", "Role Name From Website Env");
+    envVars.put("WEBSITE_SITE_NAME", "Role Name From Website Env");
 
     Configuration configuration = loadConfiguration();
-    ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
+    ConfigurationBuilder.overlayFromEnv(
+        configuration, Paths.get("."), this::envVars, this::systemProperties);
 
     assertThat(configuration.role.name).isEqualTo("role name from env");
   }
 
   @Test
   void shouldOverrideRoleNameWithSysProp() throws IOException {
-    systemProperties.set("applicationinsights.role.name", "role name from sys");
+    systemProperties.put("applicationinsights.role.name", "role name from sys");
 
-    envVars.set("WEBSITE_SITE_NAME", "Role Name From Website Env");
+    envVars.put("WEBSITE_SITE_NAME", "Role Name From Website Env");
 
     Configuration configuration = loadConfiguration();
-    ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
+    ConfigurationBuilder.overlayFromEnv(
+        configuration, Paths.get("."), this::envVars, this::systemProperties);
 
     assertThat(configuration.role.name).isEqualTo("role name from sys");
   }
 
   @Test
   void shouldOverrideRoleNameWithBothEnvVarAndSysProp() throws IOException {
-    envVars.set("APPLICATIONINSIGHTS_ROLE_NAME", "role name from env");
-    systemProperties.set("applicationinsights.role.name", "role name from sys");
+    envVars.put("APPLICATIONINSIGHTS_ROLE_NAME", "role name from env");
+    systemProperties.put("applicationinsights.role.name", "role name from sys");
 
-    envVars.set("WEBSITE_SITE_NAME", "Role Name From Website Env");
+    envVars.put("WEBSITE_SITE_NAME", "Role Name From Website Env");
 
     Configuration configuration = loadConfiguration();
-    ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
+    ConfigurationBuilder.overlayFromEnv(
+        configuration, Paths.get("."), this::envVars, this::systemProperties);
 
     assertThat(configuration.role.name).isEqualTo("role name from sys");
   }
 
   @Test
   void shouldOverrideRoleNameWithWebsiteEnvVar() throws IOException {
-    envVars.set("WEBSITE_SITE_NAME", "Role Name From Website Env");
+    envVars.put("WEBSITE_SITE_NAME", "Role Name From Website Env");
 
     Configuration configuration = loadConfiguration("applicationinsights_NoRole.json");
-    ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
+    ConfigurationBuilder.overlayFromEnv(
+        configuration, Paths.get("."), this::envVars, this::systemProperties);
 
     assertThat(configuration.role.name).isEqualTo("Role Name From Website Env");
   }
 
   @Test
   void shouldNotOverrideRoleNameWithWebsiteEnvVar() throws IOException {
-    envVars.set("WEBSITE_SITE_NAME", "Role Name From Website Env");
+    envVars.put("WEBSITE_SITE_NAME", "Role Name From Website Env");
 
     Configuration configuration = loadConfiguration();
-    ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
+    ConfigurationBuilder.overlayFromEnv(
+        configuration, Paths.get("."), this::envVars, this::systemProperties);
 
     assertThat(configuration.role.name).isEqualTo("Something Good");
   }
 
   @Test
-  void shouldOverrideRoleNameWithLowercaseWebsiteEnvVarOnAzFn() throws IOException {
-    envVars.set("FUNCTIONS_WORKER_RUNTIME", "java");
-    envVars.set("WEBSITE_SITE_NAME", "Role Name From Website Env");
+  void con() throws IOException {
+    envVars.put("FUNCTIONS_WORKER_RUNTIME", "java");
+    envVars.put("WEBSITE_SITE_NAME", "Role Name From Website Env");
 
     Configuration configuration = loadConfiguration("applicationinsights_NoRole.json");
-    ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
+    ConfigurationBuilder.overlayFromEnv(
+        configuration, Paths.get("."), this::envVars, this::systemProperties);
 
     assertThat(configuration.role.name).isEqualTo("role name from website env");
   }
 
   @Test
   void shouldOverrideRoleInstanceWithEnvVar() throws IOException {
-    envVars.set("APPLICATIONINSIGHTS_ROLE_INSTANCE", "role instance from env");
+    envVars.put("APPLICATIONINSIGHTS_ROLE_INSTANCE", "role instance from env");
 
-    envVars.set("WEBSITE_INSTANCE_ID", "role instance from website env");
+    envVars.put("WEBSITE_INSTANCE_ID", "role instance from website env");
 
     Configuration configuration = loadConfiguration();
-    ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
+    ConfigurationBuilder.overlayFromEnv(
+        configuration, Paths.get("."), this::envVars, this::systemProperties);
 
     assertThat(configuration.role.instance).isEqualTo("role instance from env");
   }
 
   @Test
   void shouldOverrideRoleInstanceWithSysProp() throws IOException {
-    systemProperties.set("applicationinsights.role.instance", "role instance from sys");
+    systemProperties.put("applicationinsights.role.instance", "role instance from sys");
 
-    envVars.set("WEBSITE_INSTANCE_ID", "role instance from website env");
+    envVars.put("WEBSITE_INSTANCE_ID", "role instance from website env");
 
     Configuration configuration = loadConfiguration();
-    ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
+    ConfigurationBuilder.overlayFromEnv(
+        configuration, Paths.get("."), this::envVars, this::systemProperties);
 
     assertThat(configuration.role.instance).isEqualTo("role instance from sys");
   }
 
   @Test
   void shouldOverrideRoleInstanceWithBothEnvVarAndSysProp() throws IOException {
-    envVars.set("APPLICATIONINSIGHTS_ROLE_INSTANCE", "role instance from env");
-    systemProperties.set("applicationinsights.role.instance", "role instance from sys");
+    envVars.put("APPLICATIONINSIGHTS_ROLE_INSTANCE", "role instance from env");
+    systemProperties.put("applicationinsights.role.instance", "role instance from sys");
 
-    envVars.set("WEBSITE_INSTANCE_ID", "role instance from website env");
+    envVars.put("WEBSITE_INSTANCE_ID", "role instance from website env");
 
     Configuration configuration = loadConfiguration();
-    ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
+    ConfigurationBuilder.overlayFromEnv(
+        configuration, Paths.get("."), this::envVars, this::systemProperties);
 
     assertThat(configuration.role.instance).isEqualTo("role instance from sys");
   }
 
   @Test
   void shouldOverrideRoleInstanceWithWebsiteEnvVar() throws IOException {
-    envVars.set("WEBSITE_INSTANCE_ID", "role instance from website env");
+    envVars.put("WEBSITE_INSTANCE_ID", "role instance from website env");
 
     Configuration configuration = loadConfiguration("applicationinsights_NoRole.json");
-    ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
+    ConfigurationBuilder.overlayFromEnv(
+        configuration, Paths.get("."), this::envVars, this::systemProperties);
 
     assertThat(configuration.role.instance).isEqualTo("role instance from website env");
   }
 
   @Test
   void shouldNotOverrideRoleInstanceWithWebsiteEnvVar() throws IOException {
-    envVars.set("WEBSITE_INSTANCE_ID", "role instance from website env");
+    envVars.put("WEBSITE_INSTANCE_ID", "role instance from website env");
 
     Configuration configuration = loadConfiguration();
-    ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
+    ConfigurationBuilder.overlayFromEnv(
+        configuration, Paths.get("."), this::envVars, this::systemProperties);
 
     assertThat(configuration.role.instance).isEqualTo("xyz123");
   }
 
   @Test
   void shouldOverrideSamplingPercentage() throws IOException {
-    envVars.set("APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE", "0.25");
+    envVars.put("APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE", "0.25");
 
     Configuration configuration = loadConfiguration();
-    ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
+    ConfigurationBuilder.overlayFromEnv(
+        configuration, Paths.get("."), this::envVars, this::systemProperties);
 
     assertThat(configuration.sampling.percentage).isEqualTo(0.25f);
   }
 
   @Test
   void shouldOverrideLogCaptureThreshold() throws IOException {
-    envVars.set("APPLICATIONINSIGHTS_INSTRUMENTATION_LOGGING_LEVEL", "TRACE");
+    envVars.put("APPLICATIONINSIGHTS_INSTRUMENTATION_LOGGING_LEVEL", "TRACE");
 
     Configuration configuration = loadConfiguration();
-    ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
+    ConfigurationBuilder.overlayFromEnv(
+        configuration, Paths.get("."), this::envVars, this::systemProperties);
 
     assertThat(configuration.instrumentation.logging.level).isEqualTo("TRACE");
+  }
+
+  @Test
+  void shouldOverrideLoggingEnabled() throws IOException {
+    envVars.put("APPLICATIONINSIGHTS_INSTRUMENTATION_LOGGING_ENABLED", "false");
+
+    Configuration configuration = loadConfiguration();
+    ConfigurationBuilder.overlayFromEnv(
+        configuration, Paths.get("."), this::envVars, this::systemProperties);
+
+    assertThat(configuration.instrumentation.logging.enabled).isEqualTo(false);
   }
 
   @Test
@@ -461,10 +505,11 @@ class ConfigurationTest {
     String jmxMetricsJson =
         "[{\"objectName\": \"java.lang:type=ClassLoading\",\"attribute\": \"LoadedClassCount\",\"display\": \"Loaded Class Count from EnvVar\"},"
             + "{\"objectName\": \"java.lang:type=MemoryPool,name=Code Cache\",\"attribute\": \"Usage.used\",\"display\": \"Code Cache Used from EnvVar\"}]";
-    envVars.set("APPLICATIONINSIGHTS_JMX_METRICS", jmxMetricsJson);
+    envVars.put("APPLICATIONINSIGHTS_JMX_METRICS", jmxMetricsJson);
 
     Configuration configuration = loadConfiguration();
-    ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
+    ConfigurationBuilder.overlayFromEnv(
+        configuration, Paths.get("."), this::envVars, this::systemProperties);
 
     List<JmxMetric> jmxMetrics = parseJmxMetricsJson(jmxMetricsJson);
     assertThat(jmxMetrics.size()).isEqualTo(2);
@@ -478,160 +523,176 @@ class ConfigurationTest {
 
   @Test
   void shouldOverrideSelfDiagnosticsLevel() throws IOException {
-    envVars.set("APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_LEVEL", "DEBUG");
+    envVars.put("APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_LEVEL", "DEBUG");
 
     Configuration configuration = loadConfiguration();
-    ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
+    ConfigurationBuilder.overlayFromEnv(
+        configuration, Paths.get("."), this::envVars, this::systemProperties);
 
     assertThat(configuration.selfDiagnostics.level).isEqualTo("DEBUG");
   }
 
   @Test
   void shouldOverrideSelfDiagnosticsFilePath() throws IOException {
-    envVars.set("APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_FILE_PATH", "/tmp/ai.log");
+    envVars.put("APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_FILE_PATH", "/tmp/ai.log");
 
     Configuration configuration = loadConfiguration();
-    ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
+    ConfigurationBuilder.overlayFromEnv(
+        configuration, Paths.get("."), this::envVars, this::systemProperties);
 
     assertThat(configuration.selfDiagnostics.file.path).isEqualTo("/tmp/ai.log");
   }
 
   @Test
   void shouldOverridePreviewSpringIntegrationInstrumentation() throws IOException {
-    envVars.set("APPLICATIONINSIGHTS_PREVIEW_INSTRUMENTATION_SPRING_INTEGRATION_ENABLED", "true");
+    envVars.put("APPLICATIONINSIGHTS_PREVIEW_INSTRUMENTATION_SPRING_INTEGRATION_ENABLED", "true");
 
     Configuration configuration = loadConfiguration();
-    ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
+    ConfigurationBuilder.overlayFromEnv(
+        configuration, Paths.get("."), this::envVars, this::systemProperties);
 
     assertThat(configuration.preview.instrumentation.springIntegration.enabled).isTrue();
   }
 
   @Test
   void shouldOverridePreviewLiveMetricsEnabled() throws IOException {
-    envVars.set("APPLICATIONINSIGHTS_PREVIEW_LIVE_METRICS_ENABLED", "false");
+    envVars.put("APPLICATIONINSIGHTS_PREVIEW_LIVE_METRICS_ENABLED", "false");
 
     Configuration configuration = loadConfiguration();
-    ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
+    ConfigurationBuilder.overlayFromEnv(
+        configuration, Paths.get("."), this::envVars, this::systemProperties);
 
     assertThat(configuration.preview.liveMetrics.enabled).isFalse();
   }
 
   @Test
   void shouldOverrideInstrumentationAzureSdkEnabled() throws IOException {
-    envVars.set("APPLICATIONINSIGHTS_INSTRUMENTATION_AZURE_SDK_ENABLED", "false");
+    envVars.put("APPLICATIONINSIGHTS_INSTRUMENTATION_AZURE_SDK_ENABLED", "false");
 
     Configuration configuration = loadConfiguration();
-    ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
+    ConfigurationBuilder.overlayFromEnv(
+        configuration, Paths.get("."), this::envVars, this::systemProperties);
 
     assertThat(configuration.instrumentation.azureSdk.enabled).isFalse();
   }
 
   @Test
   void shouldOverrideInstrumentationCassandraEnabled() throws IOException {
-    envVars.set("APPLICATIONINSIGHTS_INSTRUMENTATION_CASSANDRA_ENABLED", "false");
+    envVars.put("APPLICATIONINSIGHTS_INSTRUMENTATION_CASSANDRA_ENABLED", "false");
 
     Configuration configuration = loadConfiguration();
-    ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
+    ConfigurationBuilder.overlayFromEnv(
+        configuration, Paths.get("."), this::envVars, this::systemProperties);
 
     assertThat(configuration.instrumentation.cassandra.enabled).isFalse();
   }
 
   @Test
   void shouldOverrideInstrumentationJdbcEnabled() throws IOException {
-    envVars.set("APPLICATIONINSIGHTS_INSTRUMENTATION_JDBC_ENABLED", "false");
+    envVars.put("APPLICATIONINSIGHTS_INSTRUMENTATION_JDBC_ENABLED", "false");
 
     Configuration configuration = loadConfiguration();
-    ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
+    ConfigurationBuilder.overlayFromEnv(
+        configuration, Paths.get("."), this::envVars, this::systemProperties);
 
     assertThat(configuration.instrumentation.jdbc.enabled).isFalse();
   }
 
   @Test
   void shouldOverrideInstrumentationJmsEnabled() throws IOException {
-    envVars.set("APPLICATIONINSIGHTS_INSTRUMENTATION_JMS_ENABLED", "false");
+    envVars.put("APPLICATIONINSIGHTS_INSTRUMENTATION_JMS_ENABLED", "false");
 
     Configuration configuration = loadConfiguration();
-    ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
+    ConfigurationBuilder.overlayFromEnv(
+        configuration, Paths.get("."), this::envVars, this::systemProperties);
 
     assertThat(configuration.instrumentation.jms.enabled).isFalse();
   }
 
   @Test
   void shouldOverrideInstrumentationKafkaEnabled() throws IOException {
-    envVars.set("APPLICATIONINSIGHTS_INSTRUMENTATION_KAFKA_ENABLED", "false");
+    envVars.put("APPLICATIONINSIGHTS_INSTRUMENTATION_KAFKA_ENABLED", "false");
 
     Configuration configuration = loadConfiguration();
-    ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
+    ConfigurationBuilder.overlayFromEnv(
+        configuration, Paths.get("."), this::envVars, this::systemProperties);
 
     assertThat(configuration.instrumentation.kafka.enabled).isFalse();
   }
 
   @Test
   void shouldOverrideInstrumentationMicrometerEnabled() throws IOException {
-    envVars.set("APPLICATIONINSIGHTS_INSTRUMENTATION_MICROMETER_ENABLED", "false");
+    envVars.put("APPLICATIONINSIGHTS_INSTRUMENTATION_MICROMETER_ENABLED", "false");
 
     Configuration configuration = loadConfiguration();
-    ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
+    ConfigurationBuilder.overlayFromEnv(
+        configuration, Paths.get("."), this::envVars, this::systemProperties);
 
     assertThat(configuration.instrumentation.micrometer.enabled).isFalse();
   }
 
   @Test
   void shouldOverrideInstrumentationMongoEnabled() throws IOException {
-    envVars.set("APPLICATIONINSIGHTS_INSTRUMENTATION_MONGO_ENABLED", "false");
+    envVars.put("APPLICATIONINSIGHTS_INSTRUMENTATION_MONGO_ENABLED", "false");
 
     Configuration configuration = loadConfiguration();
-    ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
+    ConfigurationBuilder.overlayFromEnv(
+        configuration, Paths.get("."), this::envVars, this::systemProperties);
 
     assertThat(configuration.instrumentation.mongo.enabled).isFalse();
   }
 
   @Test
   void shouldOverrideInstrumentationRabbitmqEnabled() throws IOException {
-    envVars.set("APPLICATIONINSIGHTS_INSTRUMENTATION_RABBITMQ_ENABLED", "true");
+    envVars.put("APPLICATIONINSIGHTS_INSTRUMENTATION_RABBITMQ_ENABLED", "true");
 
     Configuration configuration = loadConfiguration();
-    ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
+    ConfigurationBuilder.overlayFromEnv(
+        configuration, Paths.get("."), this::envVars, this::systemProperties);
 
     assertThat(configuration.instrumentation.rabbitmq.enabled).isTrue();
   }
 
   @Test
   void shouldOverrideInstrumentationRedisEnabled() throws IOException {
-    envVars.set("APPLICATIONINSIGHTS_INSTRUMENTATION_REDIS_ENABLED", "false");
+    envVars.put("APPLICATIONINSIGHTS_INSTRUMENTATION_REDIS_ENABLED", "false");
 
     Configuration configuration = loadConfiguration();
-    ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
+    ConfigurationBuilder.overlayFromEnv(
+        configuration, Paths.get("."), this::envVars, this::systemProperties);
 
     assertThat(configuration.instrumentation.redis.enabled).isFalse();
   }
 
   @Test
   void shouldOverrideInstrumentationSpringSchedulingEnabled() throws IOException {
-    envVars.set("APPLICATIONINSIGHTS_INSTRUMENTATION_SPRING_SCHEDULING_ENABLED", "false");
+    envVars.put("APPLICATIONINSIGHTS_INSTRUMENTATION_SPRING_SCHEDULING_ENABLED", "false");
 
     Configuration configuration = loadConfiguration();
-    ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
+    ConfigurationBuilder.overlayFromEnv(
+        configuration, Paths.get("."), this::envVars, this::systemProperties);
 
     assertThat(configuration.instrumentation.springScheduling.enabled).isFalse();
   }
 
   @Test
   void shouldOverrideAadAuthenticationConfig() throws IOException {
-    envVars.set("APPLICATIONINSIGHTS_AUTHENTICATION_STRING", "Authorization=AAD;ClientId=12345678");
+    envVars.put("APPLICATIONINSIGHTS_AUTHENTICATION_STRING", "Authorization=AAD;ClientId=12345678");
 
     Configuration configuration = loadConfiguration("applicationinsights_aadauthenv.json");
-    ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
+    ConfigurationBuilder.overlayFromEnv(
+        configuration, Paths.get("."), this::envVars, this::systemProperties);
 
     assertThat(configuration.authentication.enabled).isTrue();
     assertThat(configuration.authentication.type).isEqualTo(Configuration.AuthenticationType.UAMI);
     assertThat(configuration.authentication.clientId).isEqualTo("12345678");
     assertThat(configuration.authentication.clientSecret).isNull();
 
-    envVars.set("APPLICATIONINSIGHTS_AUTHENTICATION_STRING", "Authorization=AAD;ClientId=");
+    envVars.put("APPLICATIONINSIGHTS_AUTHENTICATION_STRING", "Authorization=AAD;ClientId=");
 
     Configuration configuration2 = loadConfiguration("applicationinsights_aadauthenv.json");
-    ConfigurationBuilder.overlayFromEnv(configuration2, Paths.get("."));
+    ConfigurationBuilder.overlayFromEnv(
+        configuration2, Paths.get("."), this::envVars, this::systemProperties);
 
     assertThat(configuration2.authentication.enabled).isTrue();
     assertThat(configuration2.authentication.type).isEqualTo(Configuration.AuthenticationType.SAMI);
@@ -641,21 +702,23 @@ class ConfigurationTest {
 
   @Test
   void shouldOverrideStatsbeatDisabledConfig() throws IOException {
-    envVars.set("APPLICATIONINSIGHTS_STATSBEAT_DISABLED", "true");
+    envVars.put("APPLICATIONINSIGHTS_STATSBEAT_DISABLED", "true");
 
     Configuration configuration =
         loadConfiguration("applicationinsights_statsbeatdisabledenv.json");
     assertThat(configuration.preview.statsbeat.disabled).isFalse();
 
-    ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
+    ConfigurationBuilder.overlayFromEnv(
+        configuration, Paths.get("."), this::envVars, this::systemProperties);
     assertThat(configuration.preview.statsbeat.disabled).isTrue();
 
-    envVars.set("APPLICATIONINSIGHTS_STATSBEAT_DISABLED", "false");
+    envVars.put("APPLICATIONINSIGHTS_STATSBEAT_DISABLED", "false");
     Configuration configuration2 =
         loadConfiguration("applicationinsights_statsbeatdisabledenv.json");
     assertThat(configuration2.preview.statsbeat.disabled).isFalse();
 
-    ConfigurationBuilder.overlayFromEnv(configuration2, Paths.get("."));
+    ConfigurationBuilder.overlayFromEnv(
+        configuration2, Paths.get("."), this::envVars, this::systemProperties);
     assertThat(configuration2.preview.statsbeat.disabled).isFalse();
   }
 

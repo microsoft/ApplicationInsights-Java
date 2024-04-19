@@ -7,6 +7,7 @@ import static java.util.Arrays.asList;
 import static java.util.concurrent.TimeUnit.DAYS;
 import static java.util.concurrent.TimeUnit.MINUTES;
 
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.PropertyHelper;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.applicationinsights.agent.internal.common.FriendlyException;
@@ -64,6 +65,7 @@ public class Configuration {
   public void validate() {
     instrumentation.logging.getSeverityThreshold();
     authentication.validate();
+    sampling.validate();
     preview.validate();
   }
 
@@ -165,6 +167,14 @@ public class Configuration {
 
     // this config option only existed in one BETA release (3.4.0-BETA)
     @Deprecated @Nullable public Double limitPerSecond;
+
+    public List<SamplingOverride> overrides = new ArrayList<>();
+
+    private void validate() {
+      for (SamplingOverride samplingOverride : overrides) {
+        samplingOverride.validate();
+      }
+    }
   }
 
   public static class SamplingPreview {
@@ -191,7 +201,7 @@ public class Configuration {
     // future goal: make parentBased sampling the default if item count is received via tracestate
     public boolean parentBased;
 
-    public List<SamplingOverride> overrides = new ArrayList<>();
+    @Deprecated public List<SamplingOverride> overrides = new ArrayList<>();
   }
 
   public static class JmxMetric {
@@ -281,8 +291,6 @@ public class Configuration {
     // when something goes wrong.
     public boolean disabledAll = false;
 
-    public String instrumentationKey;
-    public String endpoint;
     public long shortIntervalSeconds = MINUTES.toSeconds(15); // default to 15 minutes
     public long longIntervalSeconds = DAYS.toSeconds(1); // default to daily
   }
@@ -512,6 +520,8 @@ public class Configuration {
         new DisabledByDefaultInstrumentation();
 
     public DisabledByDefaultInstrumentation r2dbc = new DisabledByDefaultInstrumentation();
+
+    public DisabledByDefaultInstrumentation pekko = new DisabledByDefaultInstrumentation();
   }
 
   public static class PreviewStatsbeat {
@@ -618,7 +628,7 @@ public class Configuration {
     public int maxHistory = 1;
 
     private static String getDefaultPath() {
-      if (!SdkVersionPrefixHolder.isRpIntegration()) {
+      if (!PropertyHelper.isRpIntegration()) {
         if (isRuntimeAttached()) { // With runtime attachment, the agent jar is located in a temp
           // folder that is dropped when the JVM shuts down
           String userDir = System.getProperty("user.dir");
@@ -626,8 +636,8 @@ public class Configuration {
         }
         return DEFAULT_NAME; // this will be relative to the directory where agent jar is located
       }
-      if (DiagnosticsHelper.isAppSvcRpIntegration()
-          || DiagnosticsHelper.isFunctionsRpIntegration()) {
+      if (DiagnosticsHelper.isAppSvcRpIntegratedAuto()
+          || DiagnosticsHelper.isFunctionsRpIntegratedAuto()) {
         return StatusFile.getLogDir() + File.separator + DEFAULT_NAME;
       }
       // azure spring cloud
@@ -936,7 +946,13 @@ public class Configuration {
                   + " processors here: https://go.microsoft.com/fwlink/?linkid=2151557");
         }
         if (matchType == MatchType.REGEXP && attribute.value != null) {
-          validateRegex(attribute.value, processorType);
+          validateRegex(String.valueOf(attribute.value), processorType);
+        }
+
+        // regex matches always convert the value to string first, so no need to validate the regex
+        // type.
+        if (matchType == MatchType.STRICT) {
+          attribute.validate();
         }
       }
 
@@ -1095,7 +1111,94 @@ public class Configuration {
 
   public static class ProcessorAttribute {
     public String key;
-    public String value;
+    public Object value;
+    public AttributeType type =
+        AttributeType.STRING; // default to string for backward compatibility
+
+    public AttributeKey<?> getAttributeKey() {
+      switch (type) {
+        case STRING:
+          return AttributeKey.stringKey(key);
+        case BOOLEAN:
+          return AttributeKey.booleanKey(key);
+        case LONG:
+          return AttributeKey.longKey(key);
+        case DOUBLE:
+          return AttributeKey.doubleKey(key);
+        case STRING_ARRAY:
+          return AttributeKey.stringArrayKey(key);
+        case BOOLEAN_ARRAY:
+          return AttributeKey.booleanArrayKey(key);
+        case LONG_ARRAY:
+          return AttributeKey.longArrayKey(key);
+        case DOUBLE_ARRAY:
+          return AttributeKey.doubleArrayKey(key);
+      }
+      throw new IllegalStateException("Unexpected attribute key type: " + type);
+    }
+
+    public Object getAttributeValue() {
+      if (value instanceof Integer) {
+        if (type == AttributeType.LONG) {
+          return ((Integer) value).longValue();
+        } else if (type == AttributeType.DOUBLE) {
+          return ((Integer) value).doubleValue();
+        }
+      }
+      return value;
+    }
+
+    public void validate() {
+      if (type == AttributeType.STRING && value != null && !(value instanceof String)) {
+        throw new FriendlyException(
+            "Telemetry processor attribute '"
+                + key
+                + "' has type of String, but the value is not a String.",
+            "Please provide a json value which matches the attribute type.");
+      } else if (type == AttributeType.LONG && !(getAttributeValue() instanceof Long)) {
+        throw new FriendlyException(
+            "Telemetry processor attribute '"
+                + key
+                + "' has type of Long or Integer, but the value is not a Long nor an Integer.",
+            "Please provide a json value which matches the attribute type.");
+      } else if (type == AttributeType.DOUBLE && !(getAttributeValue() instanceof Double)) {
+        throw new FriendlyException(
+            "Telemetry processor attribute '"
+                + key
+                + "' has type of Double or Integer, but the value is not a Double nor an Integer.",
+            "Please provide a json value which matches the attribute type.");
+      } else if (type == AttributeType.BOOLEAN && !(value instanceof Boolean)) {
+        throw new FriendlyException(
+            "Telemetry processor attribute '"
+                + key
+                + "' has type of Boolean, but the value is not a Boolean.",
+            "Please provide a json value which matches the attribute type.");
+      } else if (type == AttributeType.STRING_ARRAY && !(value instanceof List)) {
+        throw new FriendlyException(
+            "Telemetry processor attribute '"
+                + key
+                + "' has type of an array of String, but the value is not an array of String.",
+            "Please provide a json value which matches the attribute type.");
+      } else if (type == AttributeType.LONG_ARRAY && !(value instanceof List)) {
+        throw new FriendlyException(
+            "Telemetry processor attribute '"
+                + key
+                + "' has type of an array of Long or Integer, but the value is not an array of Long nor Integer.",
+            "Please provide a json value which matches the attribute type.");
+      } else if (type == AttributeType.DOUBLE_ARRAY && !(value instanceof List)) {
+        throw new FriendlyException(
+            "Telemetry processor attribute '"
+                + key
+                + "' has type of an array of Double or Integer, but the value is not an array of Double nor Integer.",
+            "Please provide a json value which matches the attribute type.");
+      } else if (type == AttributeType.BOOLEAN_ARRAY && !(value instanceof List)) {
+        throw new FriendlyException(
+            "Telemetry processor attribute '"
+                + key
+                + "' has type of an array of Boolean, but the value is not an array of Boolean.",
+            "Please provide a json value which matches the attribute type.");
+      }
+    }
   }
 
   public static class ExtractAttribute {
@@ -1165,10 +1268,10 @@ public class Configuration {
   }
 
   public static class ProcessorAction {
-    @Nullable public final AttributeKey<String> key;
+    @Nullable public AttributeKey<String> key;
     public final ProcessorActionType action;
     public final String value;
-    @Nullable public final AttributeKey<String> fromAttribute;
+    @Nullable public AttributeKey<String> fromAttribute;
     @Nullable public final ExtractAttribute extractAttribute;
     @Nullable public final MaskAttribute maskAttribute;
 
@@ -1421,12 +1524,13 @@ public class Configuration {
   }
 
   public static class AadAuthentication {
+    // AAD can also be configured using APPLICATIONINSIGHTS_AUTHENTICATION_STRING
     public boolean enabled;
     public AuthenticationType type;
     public String clientId;
-    public String tenantId;
-    public String clientSecret;
-    public String authorityHost;
+    @Deprecated public String tenantId;
+    @Deprecated public String clientSecret;
+    @Deprecated public String authorityHost;
 
     public void validate() {
       if (!enabled) {
@@ -1436,31 +1540,29 @@ public class Configuration {
         throw new FriendlyException(
             "AAD Authentication configuration is missing authentication \"type\".",
             "Please provide a valid authentication \"type\" under the \"authentication\" configuration. "
-                + "Learn more about authentication configuration here: https://docs.microsoft.com/en-us/azure/azure-monitor/app/java-standalone-config");
+                + "Learn more about authentication configuration here: https://docs.microsoft.com/en-us/azure/azure-monitor/app/java-standalone-config#authentication");
       }
-
       if (type == AuthenticationType.UAMI) {
         if (isEmpty(clientId)) {
           throw new FriendlyException(
               "AAD Authentication configuration of type User Assigned Managed Identity is missing \"clientId\".",
               "Please provide a valid \"clientId\" under the \"authentication\" configuration. "
-                  + "Learn more about authentication configuration here: https://docs.microsoft.com/en-us/azure/azure-monitor/app/java-standalone-config");
+                  + "Learn more about authentication configuration here: https://docs.microsoft.com/en-us/azure/azure-monitor/app/java-standalone-config#authentication");
         }
       }
-
       if (type == AuthenticationType.CLIENTSECRET) {
         if (isEmpty(clientId)) {
           throw new FriendlyException(
               "AAD Authentication configuration of type Client Secret Identity is missing \"clientId\".",
               "Please provide a valid \"clientId\" under the \"authentication\" configuration. "
-                  + "Learn more about authentication configuration here: https://docs.microsoft.com/en-us/azure/azure-monitor/app/java-standalone-config");
+                  + "Learn more about authentication configuration here: https://docs.microsoft.com/en-us/azure/azure-monitor/app/java-standalone-config#authentication");
         }
 
         if (isEmpty(tenantId)) {
           throw new FriendlyException(
               "AAD Authentication configuration of type Client Secret Identity is missing \"tenantId\".",
               "Please provide a valid \"tenantId\" under the \"authentication\" configuration. "
-                  + "Learn more about authentication configuration here: https://docs.microsoft.com/en-us/azure/azure-monitor/app/java-standalone-config");
+                  + "Learn more about authentication configuration here: https://docs.microsoft.com/en-us/azure/azure-monitor/app/java-standalone-config#authentication");
         }
 
         if (isEmpty(clientSecret)) {
@@ -1474,10 +1576,12 @@ public class Configuration {
   }
 
   public enum AuthenticationType {
-    // TODO (kyralama) should these use @JsonProperty to bind lowercase like other enums?
-    UAMI,
-    SAMI,
+    UAMI, // APPLICATIONINSIGHTS_AUTHENTICATION_STRING=Authorization=AAD;ClientId={Client id of the
+    // User-Assigned Identity}
+    SAMI, // APPLICATIONINSIGHTS_AUTHENTICATION_STRING=Authorization=AAD,
+    @Deprecated
     VSCODE,
+    @Deprecated
     CLIENTSECRET
   }
 }

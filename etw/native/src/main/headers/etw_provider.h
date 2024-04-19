@@ -26,7 +26,7 @@
 #include <windows.h>
 #include <TraceLoggingProvider.h>
 #include <string>
-#include "com_microsoft_applicationinsights_agent_bootstrap_diagnostics_etw_EtwProvider.h"
+#include "com_microsoft_applicationinsights_agent_internal_diagnostics_etw_EtwProvider.h"
 
 TRACELOGGING_DECLARE_PROVIDER(provider_EtwHandle);
 

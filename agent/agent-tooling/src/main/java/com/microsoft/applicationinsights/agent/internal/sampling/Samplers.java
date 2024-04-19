@@ -13,7 +13,6 @@ public class Samplers {
 
   public static Sampler getSampler(
       Configuration.Sampling sampling, Configuration.SamplingPreview samplingPreview) {
-
     Sampler sampler;
     if (sampling.requestsPerSecond != null) {
       SamplingPercentage requestSamplingPercentage =
@@ -21,18 +20,23 @@ public class Samplers {
       SamplingPercentage parentlessDependencySamplingPercentage = SamplingPercentage.fixed(100);
       sampler = new AiSampler(requestSamplingPercentage, parentlessDependencySamplingPercentage);
     } else if (sampling.percentage != null) {
-      SamplingPercentage samplingPercentage = SamplingPercentage.fixed(sampling.percentage);
+      SamplingPercentage samplingPercentage;
+      if (sampling.percentage == 100) {
+        samplingPercentage = SamplingPercentage.useIngestionSampling();
+      } else {
+        samplingPercentage = SamplingPercentage.fixed(sampling.percentage);
+      }
       sampler = new AiSampler(samplingPercentage, samplingPercentage);
     } else {
       throw new AssertionError("ConfigurationBuilder should have set the default sampling");
     }
 
     List<SamplingOverride> requestSamplingOverrides =
-        samplingPreview.overrides.stream()
+        sampling.overrides.stream()
             .filter(SamplingOverride::isForRequestTelemetry)
             .collect(Collectors.toList());
     List<SamplingOverride> dependencySamplingOverrides =
-        samplingPreview.overrides.stream()
+        sampling.overrides.stream()
             .filter(SamplingOverride::isForDependencyTelemetry)
             .collect(Collectors.toList());
 

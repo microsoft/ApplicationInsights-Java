@@ -230,7 +230,7 @@ public class StatusFile {
       justification =
           "The constructed file path cannot be controlled by an end user of the instrumented application)")
   private static boolean writable() {
-    if (!DiagnosticsHelper.isAppSvcRpIntegration()) {
+    if (!DiagnosticsHelper.isAppSvcRpIntegratedAuto()) {
       return false;
     }
     return new File(logDir).canWrite();
@@ -267,7 +267,7 @@ public class StatusFile {
   static Map<String, Object> getJsonMap() {
     Map<String, Object> map = new LinkedHashMap<>(CONSTANT_VALUES);
     for (DiagnosticsValueFinder finder : VALUE_FINDERS) {
-      String value = finder.getValue();
+      String value = finder.getValue(System::getenv);
       if (value != null && !value.isEmpty()) {
         map.put(capitalize(finder.getName()), value);
       }

@@ -1,16 +1,16 @@
 # This is a Gradle generated file for dependency locking.
 # Manual edits can break the build and are not advised.
 # This file is expected to be part of source control.
-com.azure:azure-sdk-bom:1.2.16=runtimeClasspath
-com.fasterxml.jackson:jackson-bom:2.15.2=runtimeClasspath
-com.google.errorprone:error_prone_annotations:2.21.1=runtimeClasspath
-com.google.guava:guava-bom:32.1.2-jre=runtimeClasspath
-io.netty:netty-bom:4.1.97.Final=runtimeClasspath
-io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:1.30.0-alpha=runtimeClasspath
-io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:1.30.0=runtimeClasspath
-io.opentelemetry:opentelemetry-bom-alpha:1.30.1-alpha=runtimeClasspath
-io.opentelemetry:opentelemetry-bom:1.30.1=runtimeClasspath
-org.junit:junit-bom:5.10.0=runtimeClasspath
-org.slf4j:slf4j-api:2.0.9=runtimeClasspath
-org.testcontainers:testcontainers-bom:1.19.0=runtimeClasspath
+com.azure:azure-sdk-bom:1.2.22=runtimeClasspath
+com.fasterxml.jackson:jackson-bom:2.17.0=runtimeClasspath
+com.google.errorprone:error_prone_annotations:2.26.1=runtimeClasspath
+com.google.guava:guava-bom:33.1.0-jre=runtimeClasspath
+io.netty:netty-bom:4.1.109.Final=runtimeClasspath
+io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:2.3.0-alpha=runtimeClasspath
+io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:2.3.0=runtimeClasspath
+io.opentelemetry:opentelemetry-bom-alpha:1.37.0-alpha=runtimeClasspath
+io.opentelemetry:opentelemetry-bom:1.37.0=runtimeClasspath
+org.junit:junit-bom:5.10.2=runtimeClasspath
+org.slf4j:slf4j-api:2.0.13=runtimeClasspath
+org.testcontainers:testcontainers-bom:1.19.7=runtimeClasspath
 empty=

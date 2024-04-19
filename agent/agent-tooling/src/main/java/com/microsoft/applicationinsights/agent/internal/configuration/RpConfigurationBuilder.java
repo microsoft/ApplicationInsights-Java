@@ -27,7 +27,7 @@ public class RpConfigurationBuilder {
   public static RpConfiguration create(Path agentJarPath) throws IOException {
     Path configPath;
     String configPathString =
-        ConfigurationBuilder.getEnvVar(APPLICATIONINSIGHTS_RP_CONFIGURATION_FILE);
+        ConfigurationBuilder.getEnvVar(APPLICATIONINSIGHTS_RP_CONFIGURATION_FILE, System::getenv);
 
     if (configPathString != null) {
       configPath = new File(configPathString).toPath();

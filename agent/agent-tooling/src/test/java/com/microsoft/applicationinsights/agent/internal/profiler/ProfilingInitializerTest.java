@@ -214,10 +214,11 @@ public class ProfilingInitializerTest {
         null);
   }
 
+  @SuppressWarnings("DirectInvocationOnMock")
   private static ProfilingInitializer createProfilingInitializer() {
     TelemetryClient client = Mockito.mock(TelemetryClient.class);
-    MessageTelemetryBuilder messageBuilder = Mockito.mock(MessageTelemetryBuilder.class);
-    Mockito.when(client.newMessageTelemetryBuilder()).thenReturn(messageBuilder);
+    MessageTelemetryBuilder messageTelemetryBuilder = MessageTelemetryBuilder.create();
+    Mockito.when(client.newMessageTelemetryBuilder()).thenReturn(messageTelemetryBuilder);
     Mockito.when(client.getConnectionString())
         .thenReturn(
             ConnectionString.parse(

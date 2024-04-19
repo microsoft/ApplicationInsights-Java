@@ -1,5 +1,56 @@
 # CHANGELOG
 
+## Version 3.5.1 GA (03/11/2024)
+
+### Bug fixes:
+
+* Fix sampling overrides for http.target when url.query is present ([#3588](https://github.com/microsoft/ApplicationInsights-Java/pull/3588))
+* Support url.query from OTel stable HTTP semconv ([#3581](https://github.com/microsoft/ApplicationInsights-Java/pull/3581))
+* Fix ETW initialization failure for App Service Windows ([#3571](https://github.com/microsoft/ApplicationInsights-Java/pull/3571))
+* Fix ingestion sampling([#3578](https://github.com/microsoft/ApplicationInsights-Java/pull/3578))
+
+## Version 3.5.0 GA (02/29/2024)
+
+### Breaking changes
+
+* ⚠️⚠️ Stable HTTP semantic conventions are now emitted ⚠️⚠️
+TOO MANY CHANGES TO LIST HERE, be sure to review the full [list of changes](https://github.com/open-telemetry/semantic-conventions/blob/main/docs/http/migration-guide.md#summary-of-changes).
+
+### Enhancements:
+
+* Update to OpenTelemetry Java 2.1.0 ([#3418](https://github.com/microsoft/ApplicationInsights-Java/pull/3418))
+* Support stable HTTP semantic conventions ([#3418](https://github.com/microsoft/ApplicationInsights-Java/pull/3418))
+* GA sampling overrides ([#3463](https://github.com/microsoft/ApplicationInsights-Java/pull/3463))
+* Collect JMX metrics via OTLP ([#3406](https://github.com/microsoft/ApplicationInsights-Java/pull/3406))
+* Support OpenTelemetry Java instrumentation Agent Extension ([#3493](https://github.com/microsoft/ApplicationInsights-Java/pull/3493))
+* Support Pekko instrumentation ([#3517](https://github.com/microsoft/ApplicationInsights-Java/pull/3517))
+
+### Bug fixes:
+
+* Fix ETW log for non-auto attach ([#3560](https://github.com/microsoft/ApplicationInsights-Java/pull/3560))
+* Fix duplicate exceptions ([#3555](https://github.com/microsoft/ApplicationInsights-Java/pull/3555))
+
+## Version 3.4.19 GA (12/20/2023)
+
+### Enhancements:
+
+* Update to OpenTelemetry Java 1.32 ([#3394](https://github.com/microsoft/ApplicationInsights-Java/pull/3394))
+* Update to azure-monitor-opentelemetry-exporter to 1.0.0-beta.15 ([#3360](https://github.com/microsoft/ApplicationInsights-Java/pull/3360))
+* Support non-string type telemetry processor attributes ([#3388](https://github.com/microsoft/ApplicationInsights-Java/pull/3388))
+* Double pumping JMX metrics to OTLP and Breeze ([#3406](https://github.com/microsoft/ApplicationInsights-Java/pull/3406))
+
+## Version 3.4.18 GA (10/30/2023)
+
+### Enhancements:
+
+* Update to OpenTelemetry Java 1.31 ([#3341](https://github.com/microsoft/ApplicationInsights-Java/pull/3341))
+* Update to azure-monitor-opentelemetry-exporter to 1.0.0-beta.13 ([#3356](https://github.com/microsoft/ApplicationInsights-Java/pull/3356))
+* Collect operation name for Azure Function ([#3311](https://github.com/microsoft/ApplicationInsights-Java/pull/3311))
+
+### Bug fixes:
+
+* Fix Statsbeat when using dormant Application Insights instrumentation keys ([#37176](https://github.com/Azure/azure-sdk-for-java/pull/37176))
+
 ## Version 3.4.17 GA (09/18/2023)
 
 ### Enhancements:

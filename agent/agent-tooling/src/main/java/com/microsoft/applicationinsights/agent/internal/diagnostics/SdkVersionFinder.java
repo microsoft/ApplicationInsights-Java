@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.Properties;
+import java.util.function.Function;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -20,7 +21,7 @@ public class SdkVersionFinder extends CachedDiagnosticsValueFinder {
   }
 
   @Override
-  protected String populateValue() {
+  protected String populateValue(Function<String, String> envVarsFunction) {
     return value;
   }
 

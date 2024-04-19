@@ -6,7 +6,6 @@ package com.microsoft.applicationinsights.agent.internal.configuration;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static uk.org.webcompere.systemstubs.SystemStubs.withEnvironmentVariable;
 
 import com.microsoft.applicationinsights.agent.internal.common.FriendlyException;
 import java.io.File;
@@ -15,6 +14,8 @@ import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,10 +28,15 @@ class ConfigurationBuilderTest {
   private File connectionStringFile;
   @TempDir File temp;
 
+  private static final Map<String, String> envVars = new HashMap<>();
+  private static final Map<String, String> systemProperties = new HashMap<>();
+
   // TODO (heya) clean up the rest of resource files. We can create them at test runtime. Be
   // consistent with connectionStringFile.
   @BeforeEach
   public void setup() throws IOException {
+    envVars.clear();
+    systemProperties.clear();
     connectionStringFile = File.createTempFile("test", ".txt", temp);
     Writer writer = Files.newBufferedWriter(connectionStringFile.toPath(), UTF_8);
     writer.write(CONNECTION_STRING);
@@ -124,7 +130,7 @@ class ConfigurationBuilderTest {
     config.connectionString = testConnectionString;
     config.sampling.percentage = testSamplingPercentage;
 
-    ConfigurationBuilder.overlayFromEnv(config);
+    ConfigurationBuilder.overlayFromEnv(config, this::envVars, this::systemProperties);
 
     assertThat(config.connectionString).isEqualTo(testConnectionString);
     assertThat(config.sampling.percentage).isEqualTo(testSamplingPercentage);
@@ -134,104 +140,117 @@ class ConfigurationBuilderTest {
   void testRpConfigurationOverlayWithEnvVarAndSysPropPopulated() throws Exception {
     String testConnectionString = "test-connection-string";
     double testSamplingPercentage = 10.0;
+    envVars.put("APPLICATIONINSIGHTS_CONNECTION_STRING", testConnectionString);
+    envVars.put("APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE", String.valueOf(testSamplingPercentage));
+    RpConfiguration config = new RpConfiguration();
 
-    withEnvironmentVariable("APPLICATIONINSIGHTS_CONNECTION_STRING", testConnectionString)
-        .and("APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE", String.valueOf(testSamplingPercentage))
-        .execute(
-            () -> {
-              RpConfiguration config = new RpConfiguration();
+    config.connectionString = String.format("original-%s", testConnectionString);
+    config.sampling.percentage = testSamplingPercentage + 1.0;
 
-              config.connectionString = String.format("original-%s", testConnectionString);
-              config.sampling.percentage = testSamplingPercentage + 1.0;
+    ConfigurationBuilder.overlayFromEnv(config, this::envVars, this::systemProperties);
 
-              ConfigurationBuilder.overlayFromEnv(config);
+    assertThat(config.connectionString).isEqualTo(testConnectionString);
+    assertThat(config.sampling.percentage).isEqualTo(testSamplingPercentage);
+  }
 
-              assertThat(config.connectionString).isEqualTo(testConnectionString);
-              assertThat(config.sampling.percentage).isEqualTo(testSamplingPercentage);
-            });
+  @SuppressWarnings("MethodCanBeStatic")
+  private String envVars(String key) {
+    return envVars.get(key);
+  }
+
+  @SuppressWarnings("MethodCanBeStatic")
+  private String systemProperties(String key) {
+    return systemProperties.get(key);
   }
 
   @Test
   void testOverlayWithEnvVarWithGoodFileStringLookupFormat() throws Exception {
     Configuration configuration = new Configuration();
     configuration.connectionString = "${file:" + connectionStringFile.getAbsolutePath() + "}";
-    ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
+    ConfigurationBuilder.overlayFromEnv(
+        configuration, Paths.get("."), this::envVars, this::systemProperties);
     assertThat(configuration.connectionString).isEqualTo(CONNECTION_STRING);
   }
 
   @Test
   void testOverlayWithEnvVarWithBadFileStringLookupFormat() throws Exception {
     Configuration configuration = new Configuration();
-    configuration.connectionString = "${file:" + connectionStringFile.getAbsolutePath();
-    ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
-    assertThat(configuration.connectionString).isEqualTo(configuration.connectionString);
+    String filename = "${file:" + connectionStringFile.getAbsolutePath();
+    configuration.connectionString = filename;
+    assertFriendlyExceptionThrown(configuration, filename);
 
-    configuration.connectionString = "${xyz:" + connectionStringFile.getAbsolutePath() + "}";
-    ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
-    assertThat(configuration.connectionString).isEqualTo(configuration.connectionString);
+    filename = "${xyz:" + connectionStringFile.getAbsolutePath() + "}";
+    configuration.connectionString = filename;
+    assertFriendlyExceptionThrown(configuration, filename);
 
-    configuration.connectionString = "file:" + connectionStringFile.getAbsolutePath() + "}";
-    ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
-    assertThat(configuration.connectionString).isEqualTo(configuration.connectionString);
+    filename = "file:" + connectionStringFile.getAbsolutePath() + "}";
+    configuration.connectionString = filename;
+    assertFriendlyExceptionThrown(configuration, filename);
 
-    configuration.connectionString = "file:" + connectionStringFile.getAbsolutePath();
-    ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
-    assertThat(configuration.connectionString).isEqualTo(configuration.connectionString);
+    filename = "file:" + connectionStringFile.getAbsolutePath();
+    configuration.connectionString = filename;
+    assertFriendlyExceptionThrown(configuration, filename);
 
     configuration.connectionString = CONNECTION_STRING;
-    ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
-    assertThat(configuration.connectionString).isEqualTo(configuration.connectionString);
+    ConfigurationBuilder.overlayFromEnv(
+        configuration, Paths.get("."), System::getenv, System::getProperty);
+    assertThat(configuration.connectionString).isEqualTo(CONNECTION_STRING);
+  }
+
+  private static void assertFriendlyExceptionThrown(Configuration configuration, String filename) {
+    assertThatThrownBy(
+            () ->
+                ConfigurationBuilder.overlayFromEnv(
+                    configuration, Paths.get("."), System::getenv, System::getProperty))
+        .isInstanceOf(FriendlyException.class);
+    assertThat(configuration.connectionString).isEqualTo(filename);
   }
 
   @Test
   void testConnectionStringEnvVarHasHigherPrecedenceOverFileLookup() throws Exception {
     String testConnectionString = "test-connection-string";
-    withEnvironmentVariable("APPLICATIONINSIGHTS_CONNECTION_STRING", testConnectionString)
-        .execute(
-            () -> {
-              Configuration configuration = new Configuration();
+    envVars.put("APPLICATIONINSIGHTS_CONNECTION_STRING", testConnectionString);
 
-              configuration.connectionString =
-                  "${file:" + connectionStringFile.getAbsolutePath() + "}";
-              ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
+    Configuration configuration = new Configuration();
 
-              assertThat(configuration.connectionString).isEqualTo(testConnectionString);
-            });
+    configuration.connectionString = "${file:" + connectionStringFile.getAbsolutePath() + "}";
+    ConfigurationBuilder.overlayFromEnv(
+        configuration, Paths.get("."), this::envVars, this::systemProperties);
+
+    assertThat(configuration.connectionString).isEqualTo(testConnectionString);
   }
 
   @Test
   void testProxyEnvOverlay() throws Exception {
-    withEnvironmentVariable("APPLICATIONINSIGHTS_PROXY", "https://me:passw@host:1234")
-        .execute(
-            () -> {
-              Configuration configuration = new Configuration();
+    envVars.put("APPLICATIONINSIGHTS_PROXY", "https://me:passw@host:1234");
+    Configuration configuration = new Configuration();
 
-              configuration.proxy.host = "old";
-              configuration.proxy.port = 555;
-              ConfigurationBuilder.overlayFromEnv(configuration, Paths.get("."));
+    configuration.proxy.host = "old";
+    configuration.proxy.port = 555;
+    ConfigurationBuilder.overlayFromEnv(
+        configuration, Paths.get("."), this::envVars, this::systemProperties);
 
-              assertThat(configuration.proxy.host).isEqualTo("host");
-              assertThat(configuration.proxy.port).isEqualTo(1234);
-              assertThat(configuration.proxy.username).isEqualTo("me");
-              assertThat(configuration.proxy.password).isEqualTo("passw");
-            });
+    assertThat(configuration.proxy.host).isEqualTo("host");
+    assertThat(configuration.proxy.port).isEqualTo(1234);
+    assertThat(configuration.proxy.username).isEqualTo("me");
+    assertThat(configuration.proxy.password).isEqualTo("passw");
   }
 
-  private static void runProfilerEnvOverlay(boolean fileValue, boolean expected) {
+  private void runProfilerEnvOverlay(boolean fileValue, boolean expected) {
     Configuration configuration = new Configuration();
     configuration.preview.profiler.enabled = fileValue;
-    ConfigurationBuilder.overlayProfilerEnvVars(configuration);
+    ConfigurationBuilder.overlayProfilerEnvVars(configuration, this::envVars);
     assertThat(configuration.preview.profiler.enabled).isEqualTo(expected);
   }
 
   @Test
   void testProfilerEnvOverlay() throws Exception {
     // Enabled in file overlayed false is disabled
-    withEnvironmentVariable("APPLICATIONINSIGHTS_PREVIEW_PROFILER_ENABLED", "false")
-        .execute(() -> runProfilerEnvOverlay(true, false));
+    envVars.put("APPLICATIONINSIGHTS_PREVIEW_PROFILER_ENABLED", "false");
+    runProfilerEnvOverlay(true, false);
 
     // Disabled in file overlayed true is enabled
-    withEnvironmentVariable("APPLICATIONINSIGHTS_PREVIEW_PROFILER_ENABLED", "true")
-        .execute(() -> runProfilerEnvOverlay(false, true));
+    envVars.put("APPLICATIONINSIGHTS_PREVIEW_PROFILER_ENABLED", "true");
+    runProfilerEnvOverlay(false, true);
   }
 }

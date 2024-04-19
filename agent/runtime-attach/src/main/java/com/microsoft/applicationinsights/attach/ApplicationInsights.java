@@ -3,7 +3,7 @@
 
 package com.microsoft.applicationinsights.attach;
 
-import io.opentelemetry.contrib.attach.CoreRuntimeAttach;
+import io.opentelemetry.contrib.attach.core.CoreRuntimeAttach;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -60,7 +60,7 @@ public final class ApplicationInsights {
       String appInsightResourceName = findAppInsightResourceName();
       CoreRuntimeAttach runtimeAttach = new CoreRuntimeAttach(appInsightResourceName);
 
-      runtimeAttach.attachJavaagentToCurrentJVM();
+      runtimeAttach.attachJavaagentToCurrentJvm();
     } catch (Throwable t) {
       logger.log(Level.WARNING, "Fail to runtime attach Application Insights", t);
     }

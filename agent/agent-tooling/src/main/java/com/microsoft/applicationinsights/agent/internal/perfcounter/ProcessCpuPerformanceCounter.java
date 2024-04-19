@@ -36,18 +36,9 @@ public class ProcessCpuPerformanceCounter implements PerformanceCounter {
   private static CpuPerformanceCounterCalculator getCpuPerformanceCounterCalculator() {
     try {
       return new CpuPerformanceCounterCalculator();
-    } catch (ThreadDeath td) {
-      throw td;
     } catch (Throwable t) {
-      try {
-        logger.error("Failed to create ProcessCpuPerformanceCounter", t);
-        return null;
-      } catch (ThreadDeath td) {
-        throw td;
-      } catch (Throwable t2) {
-        // chomp
-      }
-      throw new IllegalStateException("Failed to create ProcessCpuPerformanceCounter", t);
+      logger.error("Failed to create ProcessCpuPerformanceCounter", t);
+      return null;
     }
   }
 

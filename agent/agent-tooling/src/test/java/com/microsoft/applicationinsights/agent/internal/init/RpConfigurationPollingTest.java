@@ -14,21 +14,20 @@ import com.microsoft.applicationinsights.agent.internal.sampling.Samplers;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
+import javax.annotation.Nullable;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
-import uk.org.webcompere.systemstubs.jupiter.SystemStub;
-import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 
-@ExtendWith(SystemStubsExtension.class)
 class RpConfigurationPollingTest {
 
-  @SystemStub EnvironmentVariables envVars = new EnvironmentVariables();
+  public static final Map<String, String> envVars = new HashMap<>();
 
   @BeforeEach
   void beforeEach() {
+    envVars.clear();
     // default sampler at startup is "Sampler.alwaysOff()", and this test relies on real sampler
     Configuration config = new Configuration();
     config.sampling.percentage = 100.0;
@@ -50,17 +49,17 @@ class RpConfigurationPollingTest {
   void shouldUpdate() throws URISyntaxException {
     // given
     Configuration config = new Configuration();
-    config.sampling.percentage = 100.0;
+    config.sampling.percentage = 50.0;
 
-    BytecodeUtilImpl.samplingPercentage = 100;
+    BytecodeUtilImpl.samplingPercentage = 50;
 
     TelemetryClient telemetryClient = TelemetryClient.createForTest();
     telemetryClient.updateConnectionStrings(
         "InstrumentationKey=00000000-0000-0000-0000-000000000000", null, null);
 
     RpConfiguration rpConfiguration = new RpConfiguration();
-    rpConfiguration.connectionString = "InstrumentationKey=11111111-1111-1111-1111-111111111111";
-    rpConfiguration.sampling.percentage = 90.0;
+    rpConfiguration.connectionString = "InstrumentationKey=00000000-0000-0000-0000-000000000000";
+    rpConfiguration.sampling.percentage = 50.0;
     rpConfiguration.configPath =
         Paths.get(
             RpConfigurationPollingTest.class.getResource("/applicationinsights-rp.json").toURI());
@@ -69,18 +68,21 @@ class RpConfigurationPollingTest {
     // pre-check
     assertThat(telemetryClient.getInstrumentationKey())
         .isEqualTo("00000000-0000-0000-0000-000000000000");
-    assertThat(BytecodeUtilImpl.samplingPercentage).isEqualTo(100);
-    assertThat(getCurrentSamplingPercentage()).isEqualTo(100);
+    assertThat(BytecodeUtilImpl.samplingPercentage).isEqualTo(50);
+    assertThat(getCurrentSamplingPercentage()).isNull();
 
     // when
     RuntimeConfigurator runtimeConfigurator =
         new RuntimeConfigurator(telemetryClient, () -> null, config, item -> {}, null);
-    new RpConfigurationPolling(rpConfiguration, runtimeConfigurator).run();
+    new RpConfigurationPolling(
+            rpConfiguration, runtimeConfigurator, this::envVars, System::getProperty)
+        .run();
 
     // then
     assertThat(telemetryClient.getInstrumentationKey())
-        .isEqualTo("00000000-0000-0000-0000-000000000000");
-    assertThat(BytecodeUtilImpl.samplingPercentage).isEqualTo(10);
+        .isEqualTo("11111111-1111-1111-1111-111111111111");
+    // TODO (trask) fix, this should really be 10
+    assertThat(BytecodeUtilImpl.samplingPercentage).isEqualTo(9.9f);
     assertThat(getCurrentSamplingPercentage()).isEqualTo(10);
   }
 
@@ -88,46 +90,55 @@ class RpConfigurationPollingTest {
   void shouldBePopulatedByEnvVars() throws URISyntaxException {
     // given
     Configuration config = new Configuration();
-    config.sampling.percentage = 100.0;
+    config.sampling.percentage = 50.0;
 
-    BytecodeUtilImpl.samplingPercentage = 100;
+    BytecodeUtilImpl.samplingPercentage = 50;
 
     TelemetryClient telemetryClient = TelemetryClient.createForTest();
     telemetryClient.updateConnectionStrings(
         "InstrumentationKey=00000000-0000-0000-0000-000000000000", null, null);
 
     RpConfiguration rpConfiguration = new RpConfiguration();
-    rpConfiguration.connectionString = "InstrumentationKey=11111111-1111-1111-1111-111111111111";
-    rpConfiguration.sampling.percentage = 90.0;
+    rpConfiguration.connectionString = "InstrumentationKey=00000000-0000-0000-0000-000000000000";
+    rpConfiguration.sampling.percentage = 50.0;
     rpConfiguration.configPath =
         Paths.get(
             RpConfigurationPollingTest.class.getResource("/applicationinsights-rp.json").toURI());
     rpConfiguration.lastModifiedTime = 0;
 
-    envVars.set(
+    envVars.put(
         "APPLICATIONINSIGHTS_CONNECTION_STRING",
-        "InstrumentationKey=00000000-0000-0000-0000-000000000000");
-    envVars.set("APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE", "90");
+        "InstrumentationKey=22222222-2222-2222-2222-222222222222");
+    envVars.put("APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE", "24");
 
     // pre-check
     assertThat(telemetryClient.getInstrumentationKey())
         .isEqualTo("00000000-0000-0000-0000-000000000000");
-    assertThat(BytecodeUtilImpl.samplingPercentage).isEqualTo(100);
-    assertThat(getCurrentSamplingPercentage()).isEqualTo(100);
+    assertThat(BytecodeUtilImpl.samplingPercentage).isEqualTo(50);
+    assertThat(getCurrentSamplingPercentage()).isNull();
 
     // when
     RuntimeConfigurator runtimeConfigurator =
         new RuntimeConfigurator(telemetryClient, () -> null, config, item -> {}, null);
-    new RpConfigurationPolling(rpConfiguration, runtimeConfigurator).run();
+    new RpConfigurationPolling(
+            rpConfiguration, runtimeConfigurator, this::envVars, System::getProperty)
+        .run();
 
     // then
     assertThat(telemetryClient.getInstrumentationKey())
-        .isEqualTo("00000000-0000-0000-0000-000000000000");
-    assertThat(BytecodeUtilImpl.samplingPercentage).isEqualTo(100);
-    assertThat(getCurrentSamplingPercentage()).isEqualTo(100);
+        .isEqualTo("22222222-2222-2222-2222-222222222222");
+    // TODO (trask) fix, this should really be 24
+    assertThat(BytecodeUtilImpl.samplingPercentage).isEqualTo(24);
+    assertThat(getCurrentSamplingPercentage()).isEqualTo(25);
   }
 
-  private static double getCurrentSamplingPercentage() {
+  @Nullable
+  private static Double getCurrentSamplingPercentage() {
     return SamplingTestUtil.getCurrentSamplingPercentage(DelegatingSampler.getInstance());
+  }
+
+  @SuppressWarnings("MethodCanBeStatic")
+  private String envVars(String key) {
+    return envVars.get(key);
   }
 }

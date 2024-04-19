@@ -29,11 +29,11 @@ public class EtwAppender extends AppenderBase<ILoggingEvent> {
     ApplicationMetadataFactory metadata = DiagnosticsHelper.getMetadataFactory();
 
     proto = new IpaInfo();
-    proto.setAppName(metadata.getSiteName().getValue());
-    proto.setExtensionVersion(metadata.getSdkVersion().getValue());
-    proto.setSubscriptionId(metadata.getSubscriptionId().getValue());
-    proto.setInstrumentationKey(metadata.getInstrumentationKey().getValue());
-    etwProvider = new EtwProvider(metadata.getSdkVersion().getValue());
+    proto.setAppName(metadata.getSiteName().getValue(System::getenv));
+    proto.setExtensionVersion(metadata.getSdkVersion().getValue(System::getenv));
+    proto.setSubscriptionId(metadata.getSubscriptionId().getValue(System::getenv));
+    proto.setInstrumentationKey(metadata.getInstrumentationKey().getValue(System::getenv));
+    etwProvider = new EtwProvider(metadata.getSdkVersion().getValue(System::getenv));
   }
 
   @Override
@@ -45,7 +45,7 @@ public class EtwAppender extends AppenderBase<ILoggingEvent> {
       this.etwProvider.writeEvent(event);
     } catch (LinkageError | ApplicationInsightsEtwException e) {
       String message = "EtwProvider failed to initialize.";
-      LoggerFactory.getLogger(DiagnosticsHelper.DIAGNOSTICS_LOGGER_NAME).error(message, e);
+      LoggerFactory.getLogger(DiagnosticsHelper.DIAGNOSTICS_LOGGER_NAME).debug(message, e);
       addError(message, e);
 
       StatusFile.putValue("EtwProviderInitialized", "false");

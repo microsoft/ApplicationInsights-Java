@@ -4,8 +4,8 @@
 package com.microsoft.applicationinsights.agent.internal.diagnostics;
 
 import com.azure.monitor.opentelemetry.exporter.implementation.statsbeat.RpAttachType;
+import com.azure.monitor.opentelemetry.exporter.implementation.utils.PropertyHelper;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
-import com.microsoft.applicationinsights.agent.internal.configuration.SdkVersionPrefixHolder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -13,8 +13,8 @@ public class DiagnosticsHelper {
   private DiagnosticsHelper() {}
 
   // visible for testing
-  public static volatile boolean appSvcRpIntegration;
-  private static volatile boolean functionsRpIntegration;
+  private static volatile boolean appSvcRpIntegratedAuto;
+  private static volatile boolean functionsRpIntegratedAuto;
 
   private static final boolean isWindows;
 
@@ -34,33 +34,39 @@ public class DiagnosticsHelper {
 
   public static void initRpIntegration(Path agentPath) {
     // important to check FUNCTIONS_WORKER_RUNTIME before WEBSITE_SITE_NAME
-    // TODO (heya) how should we report functions windows users who are using app services
-    //  windows attach by manually setting the env vars (which was the old documented way)
+    // TODO (heya) refactor PropertyHelper and ResourceProvider to simplify logic for rp
     if ("java".equals(System.getenv("FUNCTIONS_WORKER_RUNTIME"))) {
-      SdkVersionPrefixHolder.setRpIntegrationChar('f');
-      functionsRpIntegration = true;
+      PropertyHelper.setRpIntegrationChar('f');
       setRpAttachType(agentPath, "functions.codeless");
+      if (RpAttachType.INTEGRATED_AUTO.equals(RpAttachType.getRpAttachType())) {
+        functionsRpIntegratedAuto = true;
+      }
     } else if (!Strings.isNullOrEmpty(System.getenv("WEBSITE_SITE_NAME"))) {
-      SdkVersionPrefixHolder.setRpIntegrationChar('a');
-      appSvcRpIntegration = true;
+      PropertyHelper.setRpIntegrationChar('a');
       setRpAttachType(agentPath, "appsvc.codeless");
-    } else if (!Strings.isNullOrEmpty(System.getenv("KUBERNETES_SERVICE_HOST"))) {
-      SdkVersionPrefixHolder.setRpIntegrationChar('k');
+      if (RpAttachType.INTEGRATED_AUTO.equals(RpAttachType.getRpAttachType())) {
+        appSvcRpIntegratedAuto = true;
+      }
+    } else if (!Strings.isNullOrEmpty(System.getenv("AKS_ARM_NAMESPACE_ID"))) {
+      // AKS_ARM_NAMESPACE_ID is an env var available in AKS only and it's also used as the AKS
+      // attach rate numerator
+      PropertyHelper.setRpIntegrationChar('k');
       setRpAttachType(agentPath, "aks.codeless");
     } else if (!Strings.isNullOrEmpty(
         System.getenv("APPLICATIONINSIGHTS_SPRINGCLOUD_SERVICE_ID"))) {
-      SdkVersionPrefixHolder.setRpIntegrationChar('s');
+      PropertyHelper.setRpIntegrationChar('s');
       setRpAttachType(agentPath, "springcloud.codeless");
+    } else {
+      RpAttachType.setRpAttachType(RpAttachType.STANDALONE_AUTO); // default
     }
-    // TODO (heya) detect VM environment by checking the AzureMetadataService response, manual only
   }
 
-  public static boolean isAppSvcRpIntegration() {
-    return appSvcRpIntegration;
+  public static boolean isAppSvcRpIntegratedAuto() {
+    return appSvcRpIntegratedAuto;
   }
 
-  public static boolean isFunctionsRpIntegration() {
-    return functionsRpIntegration;
+  public static boolean isFunctionsRpIntegratedAuto() {
+    return functionsRpIntegratedAuto;
   }
 
   public static ApplicationMetadataFactory getMetadataFactory() {
@@ -77,5 +83,10 @@ public class DiagnosticsHelper {
     } else {
       RpAttachType.setRpAttachType(RpAttachType.STANDALONE_AUTO);
     }
+  }
+
+  // only used by tests
+  public static void setAppSvcRpIntegratedAuto(boolean appSvcRpIntegratedAuto) {
+    DiagnosticsHelper.appSvcRpIntegratedAuto = appSvcRpIntegratedAuto;
   }
 }

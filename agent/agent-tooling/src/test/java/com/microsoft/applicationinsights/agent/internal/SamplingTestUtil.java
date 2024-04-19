@@ -14,10 +14,12 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 import java.util.Collections;
+import javax.annotation.Nullable;
 
 public class SamplingTestUtil {
 
-  public static double getCurrentSamplingPercentage(Sampler sampler) {
+  @Nullable
+  public static Double getCurrentSamplingPercentage(Sampler sampler) {
     SpanContext spanContext =
         SpanContext.createFromRemoteParent(
             "12341234123412341234123412341234",
@@ -36,7 +38,7 @@ public class SamplingTestUtil {
             Attributes.empty(),
             Collections.emptyList());
     Long itemCount = samplingResult.getAttributes().get(AiSemanticAttributes.ITEM_COUNT);
-    return 100.0 / itemCount;
+    return itemCount == null ? null : 100.0 / itemCount;
   }
 
   private SamplingTestUtil() {}

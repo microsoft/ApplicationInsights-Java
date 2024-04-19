@@ -18,11 +18,9 @@ import static org.assertj.core.data.MapEntry.entry;
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
 import com.microsoft.applicationinsights.smoketest.schemav2.EventData;
-import com.microsoft.applicationinsights.smoketest.schemav2.ExceptionData;
 import com.microsoft.applicationinsights.smoketest.schemav2.RemoteDependencyData;
 import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -60,26 +58,11 @@ abstract class SpringBootTest {
     List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
 
     Envelope rdEnvelope = rdList.get(0);
-    String operationId = rdEnvelope.getTags().get("ai.operation.id");
-    List<Envelope> edList =
-        testing.mockedIngestion.waitForItems(
-            input -> {
-              if (!"ExceptionData".equals(input.getData().getBaseType())) {
-                return false;
-              }
-              if (!operationId.equals(input.getTags().get("ai.operation.id"))) {
-                return false;
-              }
-              // lastly, filter out ExceptionData captured from tomcat logger
-              ExceptionData data = (ExceptionData) ((Data<?>) input.getData()).getBaseData();
-              return !data.getProperties().containsKey("LoggerName");
-            },
-            1,
-            10,
-            TimeUnit.SECONDS);
+    List<Envelope> exceptions = testing.mockedIngestion.waitForItems("ExceptionData", 1);
+    assertThat(exceptions).hasSize(1);
     assertThat(testing.mockedIngestion.getCountForType("EventData")).isZero();
 
-    Envelope edEnvelope1 = edList.get(0);
+    Envelope edEnvelope1 = exceptions.get(0);
 
     assertThat(rdEnvelope.getSampleRate()).isNull();
     assertThat(edEnvelope1.getSampleRate()).isNull();

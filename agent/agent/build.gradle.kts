@@ -82,9 +82,8 @@ tasks {
       // exclude known bootstrap dependencies - they can't appear in the inst/ directory
       exclude(dependency("org.slf4j:slf4j-api"))
       exclude(dependency("io.opentelemetry:opentelemetry-api"))
-      exclude(dependency("io.opentelemetry:opentelemetry-api-metrics"))
       exclude(dependency("io.opentelemetry:opentelemetry-context"))
-      exclude(dependency("io.opentelemetry:opentelemetry-semconv"))
+      exclude(dependency("io.opentelemetry:opentelemetry-api-incubator"))
     }
   }
 
@@ -110,6 +109,8 @@ tasks {
     // and so we have to hackily re-add it via agent/agent/src/main/resources
     exclude("inst/META-INF/services/io.opentelemetry.javaagent.slf4j.spi.SLF4JServiceProvider")
 
+    exclude("inst/io/prometheus/**")
+
     // this excludes the upstream classes, but not the distro classes since the exclusion step
     // takes place before the transformation step
     exclude("io/opentelemetry/javaagent/shaded/instrumentation/api/instrumenter/http/TemporaryMetricsView.class")
@@ -127,6 +128,7 @@ tasks {
       attributes(
         "Agent-Class" to "com.microsoft.applicationinsights.agent.Agent",
         "Premain-Class" to "com.microsoft.applicationinsights.agent.Agent",
+        "Main-Class" to "com.microsoft.applicationinsights.agent.Agent",
         "Can-Redefine-Classes" to true,
         "Can-Retransform-Classes" to true,
       )
@@ -224,5 +226,7 @@ configurations {
     // excluding unused dependencies for size (~1.8mb)
     exclude("com.fasterxml.jackson.dataformat", "jackson-dataformat-xml")
     exclude("com.fasterxml.woodstox", "woodstox-core")
+    // temporarily overriding version until next azure-bom release in order to address CVE
+    resolutionStrategy.force("com.azure:azure-identity:1.12.0")
   }
 }

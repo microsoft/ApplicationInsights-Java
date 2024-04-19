@@ -8,6 +8,7 @@ import static org.junit.Assert.assertEquals;
 
 import com.google.common.base.Stopwatch;
 import com.microsoft.applicationinsights.smoketest.fakeingestion.MockedAppInsightsIngestionServer;
+import com.microsoft.applicationinsights.smoketest.fakeingestion.MockedOtlpIngestionServer;
 import com.microsoft.applicationinsights.smoketest.fakeingestion.ProfilerState;
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.Domain;
@@ -60,7 +61,10 @@ public class SmokeTestExtension
 
   private static final int TELEMETRY_RECEIVE_TIMEOUT_SECONDS = 60;
 
-  private static final String FAKE_INGESTION_ENDPOINT = "http://host.testcontainers.internal:6060/";
+  private static final String FAKE_BREEZE_INGESTION_ENDPOINT =
+      "http://host.testcontainers.internal:6060/";
+  private static final String FAKE_OTLP_INGESTION_ENDPOINT =
+      "http://host.testcontainers.internal:4318";
   private static final String FAKE_PROFILER_ENDPOINT =
       "http://host.testcontainers.internal:6060/profiler/";
 
@@ -69,6 +73,8 @@ public class SmokeTestExtension
   // TODO (trask) make private and expose methods on AiSmokeTest(?)
   protected final MockedAppInsightsIngestionServer mockedIngestion =
       new MockedAppInsightsIngestionServer();
+
+  protected final MockedOtlpIngestionServer mockedOtlpIngestion = new MockedOtlpIngestionServer();
 
   private boolean useAgent;
   @Nullable private String agentConfigurationPath;
@@ -97,6 +103,8 @@ public class SmokeTestExtension
   private final File javaagentFile;
   private final File agentExtensionFile;
   private final Map<String, String> httpHeaders;
+  private final boolean useDefaultHttpPort;
+  private final boolean useOtlpEndpoint;
 
   public static SmokeTestExtension create() {
     return builder().build();
@@ -118,7 +126,9 @@ public class SmokeTestExtension
       String selfDiagnosticsLevel,
       File agentExtensionFile,
       ProfilerState profilerState,
-      Map<String, String> httpHeaders) {
+      Map<String, String> httpHeaders,
+      boolean useDefaultHttpPort,
+      boolean useOtlpEndpoint) {
     this.skipHealthCheck = skipHealthCheck;
     this.readOnly = readOnly;
     this.dependencyContainer = dependencyContainer;
@@ -129,9 +139,9 @@ public class SmokeTestExtension
         doNotSetConnectionString
             ? ""
             : "InstrumentationKey=00000000-0000-0000-0000-0FEEDDADBEEF;IngestionEndpoint="
-                + FAKE_INGESTION_ENDPOINT
+                + FAKE_BREEZE_INGESTION_ENDPOINT
                 + ";LiveEndpoint="
-                + FAKE_INGESTION_ENDPOINT
+                + FAKE_BREEZE_INGESTION_ENDPOINT
                 + ";ProfilerEndpoint="
                 + getProfilerEndpoint(profilerState);
 
@@ -144,6 +154,8 @@ public class SmokeTestExtension
     javaagentFile = new File(System.getProperty(javaagentPathSystemProperty));
 
     this.httpHeaders = httpHeaders;
+    this.useDefaultHttpPort = useDefaultHttpPort;
+    this.useOtlpEndpoint = useOtlpEndpoint;
   }
 
   private static String getProfilerEndpoint(ProfilerState profilerState) {
@@ -199,13 +211,20 @@ public class SmokeTestExtension
       currentImageAppFileName = appFile.getName();
     }
     mockedIngestion.startServer();
+    mockedIngestion.setRequestLoggingEnabled(true);
+    if (useOtlpEndpoint) {
+      mockedOtlpIngestion.startServer();
+    }
     network = Network.newNetwork();
     allContainers = new ArrayList<>();
     hostnameEnvVars = new HashMap<>();
     startDependencyContainers();
     startTestApplicationContainer();
+    // TODO (trask) how to wait for startup in this case?
+    if (useDefaultHttpPort) {
+      Thread.sleep(15000);
+    }
     clearOutAnyInitLogs();
-    mockedIngestion.setRequestLoggingEnabled(true);
   }
 
   @Override
@@ -230,11 +249,17 @@ public class SmokeTestExtension
 
   protected String getBaseUrl() {
     String appContext = getAppContext();
-    if (appContext.isEmpty()) {
-      return "http://localhost:" + appServerPort;
-    } else {
-      return "http://localhost:" + appServerPort + "/" + appContext;
+    StringBuilder sb = new StringBuilder();
+    sb.append("http://localhost");
+    if (appServerPort != 80) {
+      sb.append(':');
+      sb.append(appServerPort);
     }
+    if (!appContext.isEmpty()) {
+      sb.append('/');
+      sb.append(appContext);
+    }
+    return sb.toString();
   }
 
   protected String getAppContext() {
@@ -301,7 +326,7 @@ public class SmokeTestExtension
       dependencyContainer
           .withNetwork(network)
           .withNetworkAliases(containerName)
-          .withStartupTimeout(Duration.ofSeconds(90));
+          .withStartupTimeout(Duration.ofMinutes(5));
 
       Stopwatch stopwatch = Stopwatch.createStarted();
       dependencyContainer.start();
@@ -332,7 +357,7 @@ public class SmokeTestExtension
               .withNetwork(network)
               .withNetworkAliases(containerName)
               .withExposedPorts(dc.exposedPort())
-              .withStartupTimeout(Duration.ofSeconds(90));
+              .withStartupTimeout(Duration.ofMinutes(5));
       Stopwatch stopwatch = Stopwatch.createStarted();
       container.start();
       System.out.printf(
@@ -370,15 +395,25 @@ public class SmokeTestExtension
 
     // TODO (trask) make this port dynamic so can run tests in parallel
     Testcontainers.exposeHostPorts(6060);
+    Testcontainers.exposeHostPorts(4318);
 
     GenericContainer<?> container;
-    if (REMOTE_DEBUG) {
-      container =
-          new FixedHostPortGenericContainer<>(currentImageName)
-              .withFixedExposedPort(5005, 5005)
-              .withStartupTimeout(Duration.ofMinutes(5));
+    if (REMOTE_DEBUG || useDefaultHttpPort) {
+      FixedHostPortGenericContainer fixedPortContainer =
+          new FixedHostPortGenericContainer<>(currentImageName);
+      if (REMOTE_DEBUG) {
+        fixedPortContainer
+            .withFixedExposedPort(5005, 5005)
+            .withStartupTimeout(Duration.ofMinutes(5));
+      }
+      if (useDefaultHttpPort) {
+        fixedPortContainer.withFixedExposedPort(80, 8080);
+      } else {
+        fixedPortContainer.withExposedPorts(8080);
+      }
+      container = fixedPortContainer;
     } else {
-      container = new GenericContainer<>(currentImageName);
+      container = new GenericContainer<>(currentImageName).withExposedPorts(8080);
     }
 
     container =
@@ -387,8 +422,8 @@ public class SmokeTestExtension
             .withEnv("APPLICATIONINSIGHTS_CONNECTION_STRING", connectionString)
             .withEnv("APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_LEVEL", selfDiagnosticsLevel)
             .withEnv("OTEL_RESOURCE_ATTRIBUTES", otelResourceAttributesEnvVar)
+            .withEnv("APPLICATIONINSIGHTS_METRIC_INTERVAL_SECONDS", "1")
             .withNetwork(network)
-            .withExposedPorts(8080)
             .withFileSystemBind(
                 appFile.getAbsolutePath(),
                 currentImageAppDir + "/" + currentImageAppFileName,
@@ -396,13 +431,19 @@ public class SmokeTestExtension
 
     List<String> javaToolOptions = new ArrayList<>();
     javaToolOptions.add("-Dapplicationinsights.testing.batch-schedule-delay-millis=500");
-    javaToolOptions.add("-Dapplicationinsights.testing.metric-reader-interval-millis=500");
     if (agentExtensionFile != null) {
       javaToolOptions.add("-Dotel.javaagent.extensions=/" + agentExtensionFile.getName());
     }
     if (usesGlobalIngestionEndpoint) {
       javaToolOptions.add(
-          "-Dapplicationinsights.testing.global-ingestion-endpoint=" + FAKE_INGESTION_ENDPOINT);
+          "-Dapplicationinsights.testing.global-ingestion-endpoint="
+              + FAKE_BREEZE_INGESTION_ENDPOINT);
+    }
+    if (useOtlpEndpoint) {
+      // TODO (trask) don't use azure_monitor exporter for smoke test health check
+      javaToolOptions.add("-Dotel.metrics.exporter=otlp,azure_monitor");
+      javaToolOptions.add("-Dotel.exporter.otlp.metrics.endpoint=" + FAKE_OTLP_INGESTION_ENDPOINT);
+      javaToolOptions.add("-Dotel.exporter.otlp.protocol=http/protobuf");
     }
     if (REMOTE_DEBUG) {
       javaToolOptions.add(
@@ -410,6 +451,10 @@ public class SmokeTestExtension
     }
     if (useAgent) {
       javaToolOptions.add("-javaagent:/applicationinsights-agent.jar");
+      javaToolOptions.add(
+          "-Dapplicationinsights.testing.statsbeat.ikey=00000000-0000-0000-0000-0FEEDDADBEEG");
+      javaToolOptions.add(
+          "-Dapplicationinsights.testing.statsbeat.endpoint=http://host.testcontainers.internal:6060/");
     }
     container.withEnv("JAVA_TOOL_OPTIONS", String.join(" ", javaToolOptions));
 
@@ -486,8 +531,12 @@ public class SmokeTestExtension
     if (network != null) {
       network.close();
     }
+
     mockedIngestion.stopServer();
     mockedIngestion.setRequestLoggingEnabled(false);
+    if (useOtlpEndpoint) {
+      mockedOtlpIngestion.stopServer();
+    }
   }
 
   @SuppressWarnings("TypeParameterUnusedInFormals")

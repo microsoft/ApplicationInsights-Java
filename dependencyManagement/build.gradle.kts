@@ -11,10 +11,11 @@ data class DependencySet(val group: String, val version: String, val modules: Li
 val dependencyVersions = hashMapOf<String, String>()
 rootProject.extra["versions"] = dependencyVersions
 
-val otelVersion = "1.30.1"
-val otelInstrumentationAlphaVersion = "1.30.0-alpha"
-val otelInstrumentationVersion = "1.30.0"
-val otelContribAlphaVersion = "1.18.0-alpha"
+val otelVersion = "1.37.0"
+val otelInstrumentationAlphaVersion = "2.3.0-alpha"
+val otelInstrumentationVersion = "2.3.0"
+val otelContribAlphaVersion = "1.34.0-alpha"
+val byteBuddyVersion = "1.14.11"
 
 rootProject.extra["otelVersion"] = otelVersion
 rootProject.extra["otelInstrumentationVersion"] = otelInstrumentationVersion
@@ -22,27 +23,28 @@ rootProject.extra["otelInstrumentationAlphaVersion"] = otelInstrumentationAlphaV
 rootProject.extra["otelContribAlphaVersion"] = otelContribAlphaVersion
 
 val DEPENDENCY_BOMS = listOf(
-  "com.fasterxml.jackson:jackson-bom:2.15.2",
-  "com.google.guava:guava-bom:32.1.2-jre",
+  "com.fasterxml.jackson:jackson-bom:2.17.0",
+  "com.google.guava:guava-bom:33.1.0-jre",
   "io.opentelemetry:opentelemetry-bom:${otelVersion}",
   "io.opentelemetry:opentelemetry-bom-alpha:${otelVersion}-alpha",
   "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:${otelInstrumentationVersion}",
   "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${otelInstrumentationAlphaVersion}",
-  "com.azure:azure-sdk-bom:1.2.16",
-  "io.netty:netty-bom:4.1.97.Final",
-  "org.junit:junit-bom:5.10.0",
-  "org.testcontainers:testcontainers-bom:1.19.0",
+  "com.azure:azure-sdk-bom:1.2.22",
+  "io.netty:netty-bom:4.1.109.Final",
+  "org.junit:junit-bom:5.10.2",
+  "org.testcontainers:testcontainers-bom:1.19.7",
 )
 
 val autoServiceVersion = "1.1.1"
 val autoValueVersion = "1.10.4"
-val errorProneVersion = "2.21.1"
-val byteBuddyVersion = "1.12.18"
+val errorProneVersion = "2.26.1"
 val jmhVersion = "1.37"
 val mockitoVersion = "4.11.0"
-val slf4jVersion = "2.0.9"
+val slf4jVersion = "2.0.13"
 
 val CORE_DEPENDENCIES = listOf(
+  "io.opentelemetry:opentelemetry-semconv:1.30.1-alpha",
+  "io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-incubator:${otelInstrumentationAlphaVersion}",
   "com.google.auto.service:auto-service:${autoServiceVersion}",
   "com.google.auto.service:auto-service-annotations:${autoServiceVersion}",
   "com.google.auto.value:auto-value:${autoValueVersion}",
@@ -61,25 +63,22 @@ val CORE_DEPENDENCIES = listOf(
   "io.opentelemetry.javaagent:opentelemetry-javaagent-extension-api:${otelInstrumentationAlphaVersion}",
   "io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap:${otelInstrumentationAlphaVersion}",
   "io.opentelemetry.javaagent:opentelemetry-javaagent-tooling:${otelInstrumentationAlphaVersion}",
-  // temporarily overriding transitive dependency from azure-core until next azure-bom release
-  // which targets at least reactor-netty-http:1.1.1
-  "io.projectreactor.netty:reactor-netty-http:1.1.11",
 )
 
 val DEPENDENCIES = listOf(
-  "ch.qos.logback:logback-classic:1.3.11", // logback 1.4+ requires Java 11+
+  "ch.qos.logback:logback-classic:1.3.14", // logback 1.4+ requires Java 11+
   "ch.qos.logback.contrib:logback-json-classic:0.1.5",
-  "com.uber.nullaway:nullaway:0.10.14",
-  "commons-codec:commons-codec:1.16.0",
-  "org.apache.commons:commons-text:1.10.0",
+  "com.uber.nullaway:nullaway:0.10.25",
+  "commons-codec:commons-codec:1.16.1",
+  "org.apache.commons:commons-text:1.12.0",
   "com.google.code.gson:gson:2.10.1",
-  "com.azure:azure-core-test:1.20.0", // this is not included in azure-sdk-bom
-  "org.assertj:assertj-core:3.24.2",
-  "org.awaitility:awaitility:4.2.0",
-  "io.github.hakky54:logcaptor:2.9.0",
+  "com.azure:azure-core-test:1.24.1", // this is not included in azure-sdk-bom
+  "org.assertj:assertj-core:3.25.3",
+  "org.awaitility:awaitility:4.2.1",
+  "io.github.hakky54:logcaptor:2.9.2",
   "com.microsoft.jfr:jfr-streaming:1.2.0",
   "com.google.code.findbugs:jsr305:3.0.2",
-  "com.github.spotbugs:spotbugs-annotations:4.7.3"
+  "com.github.spotbugs:spotbugs-annotations:4.8.4"
 )
 
 javaPlatform {
