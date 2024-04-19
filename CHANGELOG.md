@@ -1,5 +1,18 @@
 # CHANGELOG
 
+## Version 3.5.2 GA (04/19/2024)
+
+### Enhancements:
+
+* Add an env var for disabling logging instrumentation
+  ([#3622](https://github.com/microsoft/ApplicationInsights-Java/pull/3622))
+* Trim the connecting string
+  ([#3629](https://github.com/microsoft/ApplicationInsights-Java/pull/3629))
+* Update to OpenTelemetry Java Instrumentation 2.3.0
+  ([#3649](https://github.com/microsoft/ApplicationInsights-Java/pull/3649))
+* Reduce logging
+  ([#3564](https://github.com/microsoft/ApplicationInsights-Java/pull/3564))
+
 ## Version 3.5.1 GA (03/11/2024)
 
 ### Bug fixes:
