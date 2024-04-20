@@ -51,6 +51,5 @@ abstract class SamplingOverridesThreadName {
 
   @Environment(TOMCAT_8_JAVA_21)
   static class Tomcat8Java21Test extends SamplingOverridesThreadName {}
-  
   // intentionally not including wildfly, since this test is set up for Tomcat thread names
 }
