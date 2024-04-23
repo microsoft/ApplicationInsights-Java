@@ -121,6 +121,7 @@ abstract class SamplingOverridesBackCompatTest {
 
   @Environment(TOMCAT_8_JAVA_21)
   static class Tomcat8Java21Test extends SamplingOverridesBackCompatTest {}
+
   @Environment(WILDFLY_13_JAVA_8)
   static class Wildfly13Java8Test extends SamplingOverridesBackCompatTest {}
 
