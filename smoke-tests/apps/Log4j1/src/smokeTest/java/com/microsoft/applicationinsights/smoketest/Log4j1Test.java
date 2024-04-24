@@ -6,7 +6,6 @@ package com.microsoft.applicationinsights.smoketest;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_11;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_11_OPENJ9;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_17;
-import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_19;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_21;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_8;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_8_OPENJ9;
@@ -142,9 +141,6 @@ abstract class Log4j1Test {
 
   @Environment(TOMCAT_8_JAVA_17)
   static class Tomcat8Java17Test extends Log4j1Test {}
-
-  @Environment(TOMCAT_8_JAVA_19)
-  static class Tomcat8Java19Test extends Log4j1Test {}
 
   @Environment(TOMCAT_8_JAVA_21)
   static class Tomcat8Java21Test extends Log4j1Test {}
