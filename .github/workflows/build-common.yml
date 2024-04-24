@@ -42,6 +42,12 @@ jobs:
           distribution: temurin
           java-version: 17
 
+      - name: Using a local standalone exporter dependency?
+        if: ${{ hashFiles('azure-monitor-opentelemetry-exporter-1.0.0-beta.*.jar') != '' }}
+        run: |
+          mvn -version
+          mvn install:install-file -Dfile="azure-monitor-opentelemetry-exporter-1.0.0-beta.22.jar" -DpomFile="azure-monitor-opentelemetry-exporter-1.0.0-beta.22.pom" -DgroupId="com.azure" -DartifactId="azure-monitor-opentelemetry-exporter" -Dversion="1.0.0-beta.22"
+
       - name: Generate license report
         uses: gradle/gradle-build-action@v3
         with:
@@ -81,7 +87,9 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      - run: |
+      - name: Using a local standalone exporter dependency?
+        if: ${{ hashFiles('azure-monitor-opentelemetry-exporter-1.0.0-beta.*.jar') != '' }}
+        run: |
           mvn -version
           mvn install:install-file -Dfile="azure-monitor-opentelemetry-exporter-1.0.0-beta.22.jar" -DpomFile="azure-monitor-opentelemetry-exporter-1.0.0-beta.22.pom" -DgroupId="com.azure" -DartifactId="azure-monitor-opentelemetry-exporter" -Dversion="1.0.0-beta.22"
 
@@ -133,7 +141,9 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      - run: |
+      - name: Using a local standalone exporter dependency?
+        if: ${{ hashFiles('azure-monitor-opentelemetry-exporter-1.0.0-beta.*.jar') != '' }}
+        run: |
           mvn -version
           mvn install:install-file -Dfile="azure-monitor-opentelemetry-exporter-1.0.0-beta.22.jar" -DpomFile="azure-monitor-opentelemetry-exporter-1.0.0-beta.22.pom" -DgroupId="com.azure" -DartifactId="azure-monitor-opentelemetry-exporter" -Dversion="1.0.0-beta.22"
 
@@ -160,7 +170,7 @@ jobs:
         run: |
           modules=$(ls -d smoke-tests/apps/* | sed 's/\/$//' | sed 's/\//:/g' | sed 's/^/:/')
           inner_json=$(echo $modules | xargs echo | sed 's/ /","/g')
-          echo "matrix={\"module\":[\"$inner_json\"]}" >> $GITHUB_OUTPUT  q
+          echo "matrix={\"module\":[\"$inner_json\"]}" >> $GITHUB_OUTPUT
 
   smoke-test:
     needs: setup-smoke-test-matrix
@@ -177,7 +187,9 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      - run: |
+      - name: Using a local standalone exporter dependency?
+        if: ${{ hashFiles('azure-monitor-opentelemetry-exporter-1.0.0-beta.*.jar') != '' }}
+        run: |
           mvn -version
           mvn install:install-file -Dfile="azure-monitor-opentelemetry-exporter-1.0.0-beta.22.jar" -DpomFile="azure-monitor-opentelemetry-exporter-1.0.0-beta.22.pom" -DgroupId="com.azure" -DartifactId="azure-monitor-opentelemetry-exporter" -Dversion="1.0.0-beta.22"
 
