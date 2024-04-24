@@ -45,8 +45,9 @@ jobs:
       - name: Using a local standalone exporter dependency?
         if: ${{ hashFiles('azure-monitor-opentelemetry-exporter-1.0.0-beta.*.jar') != '' }}
         run: |
+          exporter_version=$(ls azure-monitor-opentelemetry-exporter-1.0.0-beta.*.jar | sed 's/azure-monitor-opentelemetry-exporter-//g' | sed 's/.jar//g')
           mvn -version
-          mvn install:install-file -Dfile="azure-monitor-opentelemetry-exporter-1.0.0-beta.22.jar" -DpomFile="azure-monitor-opentelemetry-exporter-1.0.0-beta.22.pom" -DgroupId="com.azure" -DartifactId="azure-monitor-opentelemetry-exporter" -Dversion="1.0.0-beta.22"
+          mvn install:install-file -Dfile="azure-monitor-opentelemetry-exporter-$exporter_version.jar" -DpomFile="azure-monitor-opentelemetry-exporter-$exporter_version.pom" -DgroupId="com.azure" -DartifactId="azure-monitor-opentelemetry-exporter" -Dversion="$exporter_version"
 
       - name: Generate license report
         uses: gradle/gradle-build-action@v3
@@ -90,8 +91,9 @@ jobs:
       - name: Using a local standalone exporter dependency?
         if: ${{ hashFiles('azure-monitor-opentelemetry-exporter-1.0.0-beta.*.jar') != '' }}
         run: |
+          exporter_version=$(ls azure-monitor-opentelemetry-exporter-1.0.0-beta.*.jar | sed 's/azure-monitor-opentelemetry-exporter-//g' | sed 's/.jar//g')
           mvn -version
-          mvn install:install-file -Dfile="azure-monitor-opentelemetry-exporter-1.0.0-beta.22.jar" -DpomFile="azure-monitor-opentelemetry-exporter-1.0.0-beta.22.pom" -DgroupId="com.azure" -DartifactId="azure-monitor-opentelemetry-exporter" -Dversion="1.0.0-beta.22"
+          mvn install:install-file -Dfile="azure-monitor-opentelemetry-exporter-$exporter_version.jar" -DpomFile="azure-monitor-opentelemetry-exporter-$exporter_version.pom" -DgroupId="com.azure" -DartifactId="azure-monitor-opentelemetry-exporter" -Dversion="$exporter_version"
 
       - name: Assemble
         uses: gradle/gradle-build-action@v3
@@ -144,8 +146,9 @@ jobs:
       - name: Using a local standalone exporter dependency?
         if: ${{ hashFiles('azure-monitor-opentelemetry-exporter-1.0.0-beta.*.jar') != '' }}
         run: |
+          exporter_version=$(ls azure-monitor-opentelemetry-exporter-1.0.0-beta.*.jar | sed 's/azure-monitor-opentelemetry-exporter-//g' | sed 's/.jar//g')
           mvn -version
-          mvn install:install-file -Dfile="azure-monitor-opentelemetry-exporter-1.0.0-beta.22.jar" -DpomFile="azure-monitor-opentelemetry-exporter-1.0.0-beta.22.pom" -DgroupId="com.azure" -DartifactId="azure-monitor-opentelemetry-exporter" -Dversion="1.0.0-beta.22"
+          mvn install:install-file -Dfile="azure-monitor-opentelemetry-exporter-$exporter_version.jar" -DpomFile="azure-monitor-opentelemetry-exporter-$exporter_version.pom" -DgroupId="com.azure" -DartifactId="azure-monitor-opentelemetry-exporter" -Dversion="$exporter_version"
 
       - name: Test
         uses: gradle/gradle-build-action@v3
@@ -190,8 +193,9 @@ jobs:
       - name: Using a local standalone exporter dependency?
         if: ${{ hashFiles('azure-monitor-opentelemetry-exporter-1.0.0-beta.*.jar') != '' }}
         run: |
+          exporter_version=$(ls azure-monitor-opentelemetry-exporter-1.0.0-beta.*.jar | sed 's/azure-monitor-opentelemetry-exporter-//g' | sed 's/.jar//g')
           mvn -version
-          mvn install:install-file -Dfile="azure-monitor-opentelemetry-exporter-1.0.0-beta.22.jar" -DpomFile="azure-monitor-opentelemetry-exporter-1.0.0-beta.22.pom" -DgroupId="com.azure" -DartifactId="azure-monitor-opentelemetry-exporter" -Dversion="1.0.0-beta.22"
+          mvn install:install-file -Dfile="azure-monitor-opentelemetry-exporter-$exporter_version.jar" -DpomFile="azure-monitor-opentelemetry-exporter-$exporter_version.pom" -DgroupId="com.azure" -DartifactId="azure-monitor-opentelemetry-exporter" -Dversion="$exporter_version"
 
       - name: Test
         uses: gradle/gradle-build-action@v3
