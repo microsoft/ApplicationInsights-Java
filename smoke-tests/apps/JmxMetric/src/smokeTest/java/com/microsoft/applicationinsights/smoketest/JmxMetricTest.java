@@ -5,8 +5,7 @@ package com.microsoft.applicationinsights.smoketest;
 
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_11;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_17;
-import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_19;
-import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_20;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_21;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_8;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -179,7 +178,13 @@ abstract class JmxMetricTest {
 
     // This will indirectly check the occurrences of the optional gc metrics
     // and confirm that the wildcard metric has the expected value
-    assertThat(wildcardValueSum).isEqualTo(gcFirstMatch + gcSecondMatch);
+    // Java 21 returns 6 more CollectionCount for the wildcard metric comparing to other Java
+    // versions
+    if (testing.getCurrentEnvironment() == TOMCAT_8_JAVA_21) {
+      assertThat(wildcardValueSum).isEqualTo(gcFirstMatch + gcSecondMatch + 6);
+    } else {
+      assertThat(wildcardValueSum).isEqualTo(gcFirstMatch + gcSecondMatch);
+    }
 
     assertThat(metricNames).containsAll(jmxMetricsAllJavaVersionsBreeze);
   }
@@ -213,9 +218,6 @@ abstract class JmxMetricTest {
   @Environment(TOMCAT_8_JAVA_17)
   static class Tomcat8Java17Test extends JmxMetricTest {}
 
-  @Environment(TOMCAT_8_JAVA_19)
-  static class Tomcat8Java19Test extends JmxMetricTest {}
-
-  @Environment(TOMCAT_8_JAVA_20)
-  static class Tomcat8Java20Test extends JmxMetricTest {}
+  @Environment(TOMCAT_8_JAVA_21)
+  static class Tomcat8Java21Test extends JmxMetricTest {}
 }
