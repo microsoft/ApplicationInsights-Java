@@ -46,7 +46,7 @@ jobs:
           java-version: 17
 
       - name: Using a local standalone exporter dependency?
-        if: ${{ hashFiles('azure-monitor-opentelemetry-exporter-1.0.0-beta.*.jar') != '' }}
+        if: ${{ hashFiles('azure-monitor-opentelemetry-exporter-$EXPORTER_VERSION.jar') != '' }}
         run: |
           mvn -version
           mvn install:install-file -Dfile="azure-monitor-opentelemetry-exporter-$EXPORTER_VERSION.jar" -DpomFile="azure-monitor-opentelemetry-exporter-$EXPORTER_VERSION.pom" -DgroupId="com.azure" -DartifactId="azure-monitor-opentelemetry-exporter" -Dversion="$EXPORTER_VERSION"
@@ -91,7 +91,7 @@ jobs:
           java-version: 17
 
       - name: Using a local standalone exporter dependency?
-        if: ${{ hashFiles('azure-monitor-opentelemetry-exporter-1.0.0-beta.*.jar') != '' }}
+        if: ${{ hashFiles('azure-monitor-opentelemetry-exporter-$EXPORTER_VERSION.jar') != '' }}
         run: |
           mvn -version
           mvn install:install-file -Dfile="azure-monitor-opentelemetry-exporter-$EXPORTER_VERSION.jar" -DpomFile="azure-monitor-opentelemetry-exporter-$EXPORTER_VERSION.pom" -DgroupId="com.azure" -DartifactId="azure-monitor-opentelemetry-exporter" -Dversion="$EXPORTER_VERSION"
@@ -145,7 +145,7 @@ jobs:
           java-version: 17
 
       - name: Using a local standalone exporter dependency?
-        if: ${{ hashFiles('azure-monitor-opentelemetry-exporter-1.0.0-beta.*.jar') != '' }}
+        if: ${{ hashFiles('azure-monitor-opentelemetry-exporter-$EXPORTER_VERSION.jar') != '' }}
         run: |
           mvn -version
           mvn install:install-file -Dfile="azure-monitor-opentelemetry-exporter-$EXPORTER_VERSION.jar" -DpomFile="azure-monitor-opentelemetry-exporter-$EXPORTER_VERSION.pom" -DgroupId="com.azure" -DartifactId="azure-monitor-opentelemetry-exporter" -Dversion="$EXPORTER_VERSION"
@@ -191,7 +191,7 @@ jobs:
           java-version: 17
 
       - name: Using a local standalone exporter dependency?
-        if: ${{ hashFiles('azure-monitor-opentelemetry-exporter-1.0.0-beta.*.jar') != '' }}
+        if: ${{ hashFiles('azure-monitor-opentelemetry-exporter-$EXPORTER_VERSION.jar') != '' }}
         run: |
           mvn -version
           mvn install:install-file -Dfile="azure-monitor-opentelemetry-exporter-$EXPORTER_VERSION.jar" -DpomFile="azure-monitor-opentelemetry-exporter-$EXPORTER_VERSION.pom" -DgroupId="com.azure" -DartifactId="azure-monitor-opentelemetry-exporter" -Dversion="$EXPORTER_VERSION"
