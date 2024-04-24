@@ -6,6 +6,7 @@ package com.microsoft.applicationinsights.smoketest;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_11;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_17;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_21;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_21_OPENJ9;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_8;
 import static java.util.Collections.emptyMap;
 
@@ -43,5 +44,8 @@ abstract class DiagnosticExtensionTest {
   static class Java17Test extends DiagnosticExtensionTest {}
 
   @Environment(JAVA_21)
-  static class JavaPrereleaseTest extends DiagnosticExtensionTest {}
+  static class Java21Test extends DiagnosticExtensionTest {}
+
+  @Environment(JAVA_21_OPENJ9)
+  static class Java21OpenJ9Test extends DiagnosticExtensionTest {}
 }

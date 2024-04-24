@@ -6,6 +6,7 @@ package com.microsoft.applicationinsights.smoketest;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_11;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_17;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_21;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_21_OPENJ9;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_8;
 
 import org.junit.jupiter.api.Test;
@@ -31,5 +32,8 @@ abstract class JavaProfilerDisabledTest {
   static class Java17Test extends JavaProfilerDisabledTest {}
 
   @Environment(JAVA_21)
-  static class JavaPrereleaseTest extends JavaProfilerDisabledTest {}
+  static class Java21Test extends JavaProfilerDisabledTest {}
+
+  @Environment(JAVA_21_OPENJ9)
+  static class Java21OpenJ9Test extends JavaProfilerDisabledTest {}
 }

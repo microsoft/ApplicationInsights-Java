@@ -46,7 +46,8 @@ public enum EnvironmentValue {
   JAVA_11_OPENJ9("ibm-semeru-runtimes:open-11-jdk", ""),
   JAVA_17("eclipse-temurin:17", ""),
   JAVA_17_OPENJ9("ibm-semeru-runtimes:open-17-jdk", ""),
-  JAVA_21("openjdk:21", "");
+  JAVA_21("openjdk:21", ""),
+  JAVA_21_OPENJ9("ibm-semeru-runtimes:open-21-jdk", "");
 
   private final String imageName;
   private final String imageAppDir;

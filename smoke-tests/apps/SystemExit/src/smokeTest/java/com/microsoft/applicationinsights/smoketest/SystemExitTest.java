@@ -8,6 +8,7 @@ import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_17;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_17_OPENJ9;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_21;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_21_OPENJ9;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_8;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_8_OPENJ9;
 
@@ -59,5 +60,8 @@ abstract class SystemExitTest {
   static class Java17OpenJ9Test extends SystemExitTest {}
 
   @Environment(JAVA_21)
-  static class JavaPrereleaseTest extends SystemExitTest {}
+  static class Java21Test extends SystemExitTest {}
+
+  @Environment(JAVA_21_OPENJ9)
+  static class Java21OpenJ9Test extends SystemExitTest {}
 }

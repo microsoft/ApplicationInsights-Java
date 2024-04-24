@@ -8,6 +8,7 @@ import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_17;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_17_OPENJ9;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_21;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_21_OPENJ9;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_8;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_8_OPENJ9;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -97,5 +98,8 @@ abstract class SpringCloudStreamTest {
   static class Java17OpenJ9Test extends SpringCloudStreamTest {}
 
   @Environment(JAVA_21)
-  static class JavaPrereleaseTest extends SpringCloudStreamTest {}
+  static class Java21Test extends SpringCloudStreamTest {}
+
+  @Environment(JAVA_21_OPENJ9)
+  static class Java21OpenJ9Test extends SpringCloudStreamTest {}
 }

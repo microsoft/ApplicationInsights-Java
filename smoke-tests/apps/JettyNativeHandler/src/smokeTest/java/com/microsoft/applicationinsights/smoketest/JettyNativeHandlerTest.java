@@ -8,6 +8,7 @@ import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_17;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_17_OPENJ9;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_21;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_21_OPENJ9;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_8;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_8_OPENJ9;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -55,5 +56,8 @@ abstract class JettyNativeHandlerTest {
   static class Java17OpenJ9Test extends JettyNativeHandlerTest {}
 
   @Environment(JAVA_21)
-  static class JavaPrereleaseTest extends JettyNativeHandlerTest {}
+  static class Java21Test extends JettyNativeHandlerTest {}
+
+  @Environment(JAVA_21_OPENJ9)
+  static class Java21OpenJ9Test extends JettyNativeHandlerTest {}
 }
