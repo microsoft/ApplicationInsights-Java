@@ -79,6 +79,7 @@ public class SmokeTestExtension
   private boolean useAgent;
   @Nullable private String agentConfigurationPath;
   @Nullable private List<DependencyContainer> dependencyImages;
+  @Nullable private EnvironmentValue currentEnvironment;
 
   @Nullable private String currentImageName;
   @Nullable private String currentImageAppDir;
@@ -204,6 +205,7 @@ public class SmokeTestExtension
 
   private void prepareEnvironment(Environment environment) throws Exception {
     System.out.println("Preparing environment...");
+    currentEnvironment = environment.value();
     currentImageName = environment.value().getImageName();
     currentImageAppDir = environment.value().getImageAppDir();
     currentImageAppFileName = environment.value().getImageAppFileName();
@@ -225,6 +227,10 @@ public class SmokeTestExtension
       Thread.sleep(15000);
     }
     clearOutAnyInitLogs();
+  }
+
+  public EnvironmentValue getCurrentEnvironment() {
+    return currentEnvironment;
   }
 
   @Override

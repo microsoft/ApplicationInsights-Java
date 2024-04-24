@@ -5,7 +5,6 @@ package com.microsoft.applicationinsights.smoketest;
 
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_11;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_17;
-import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_20;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_21;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_8;
 
@@ -30,9 +29,6 @@ abstract class JavaProfilerDisabledTest {
 
   @Environment(JAVA_17)
   static class Java17Test extends JavaProfilerDisabledTest {}
-
-  @Environment(JAVA_20)
-  static class JavaLatestTest extends JavaProfilerDisabledTest {}
 
   @Environment(JAVA_21)
   static class JavaPrereleaseTest extends JavaProfilerDisabledTest {}

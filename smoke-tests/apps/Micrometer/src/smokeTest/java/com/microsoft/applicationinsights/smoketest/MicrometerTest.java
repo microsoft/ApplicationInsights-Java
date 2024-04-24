@@ -7,8 +7,6 @@ import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_11_OPENJ9;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_17;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_17_OPENJ9;
-import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_20;
-import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_20_OPENJ9;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_21;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_8;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_8_OPENJ9;
@@ -94,12 +92,6 @@ abstract class MicrometerTest {
 
   @Environment(JAVA_17_OPENJ9)
   static class Java17OpenJ9Test extends MicrometerTest {}
-
-  @Environment(JAVA_20)
-  static class JavaLatestTest extends MicrometerTest {}
-
-  @Environment(JAVA_20_OPENJ9)
-  static class JavaLatestOpenJ9Test extends MicrometerTest {}
 
   @Environment(JAVA_21)
   static class JavaPrereleaseTest extends MicrometerTest {}
