@@ -6,6 +6,8 @@ package com.microsoft.applicationinsights.agent.internal.perfcounter;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import oshi.SystemInfo;
@@ -32,7 +34,7 @@ public class OshiPerformanceCounter implements PerformanceCounter {
   private volatile CentralProcessor processor;
   private static final AtomicBoolean hasError = new AtomicBoolean();
 
-  @Override
+  /*@Override
   public void report(TelemetryClient telemetryClient) {
     // stop collecting oshi perf counters when initialization fails.
     if (hasError.get()) {
@@ -93,6 +95,33 @@ public class OshiPerformanceCounter implements PerformanceCounter {
     prevCollectionTimeMillis = currCollectionTimeMillis;
     prevProcessBytes = currProcessBytes;
     prevTotalProcessorMillis = currTotalProcessorMillis;
+  }*/
+
+  @Override
+  public void createMeter() {
+    GlobalOpenTelemetry.getMeter("com.microsoft.applicationinsights.defaultPerfCounters")
+        .gaugeBuilder("Process_IO_Data_Bytes") // Need to confirm the name later
+        .buildWithCallback(
+            observableDoubleMeasurement -> {
+              calculateValueForProcessIO(
+                  observableDoubleMeasurement);
+            });
+
+    GlobalOpenTelemetry.getMeter("com.microsoft.applicationinsights.defaultPerfCounters")
+        .gaugeBuilder("Percent_Processor_Time_Total") // Need to confirm the name later
+        .buildWithCallback(
+            observableDoubleMeasurement -> {
+              calculateValueForTotalCpu(
+                  observableDoubleMeasurement);
+            });
+  }
+
+  private void calculateValueForProcessIO(ObservableDoubleMeasurement observableDoubleMeasurement) {
+
+  }
+
+  private void calculateValueForTotalCpu(ObservableDoubleMeasurement observableDoubleMeasurement) {
+
   }
 
   private static void updateAttributes(OSProcess processInfo) {

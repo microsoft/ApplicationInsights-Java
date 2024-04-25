@@ -62,6 +62,11 @@ public enum PerformanceCounterContainer {
     performanceCounters.add(performanceCounter);
   }
 
+  public void createMeters() {
+    // call performance counter createMeter method
+    // use performance counter calculate value method
+  }
+
   /**
    * Sets the timeout to wait between collection of Performance Counters.
    *
@@ -120,7 +125,7 @@ public enum PerformanceCounterContainer {
               availableJmxMetricLogger.logAvailableJmxMetrics();
             }
 
-            TelemetryClient telemetryClient = TelemetryClient.getActive();
+            /*TelemetryClient telemetryClient = TelemetryClient.getActive();
 
             for (PerformanceCounter performanceCounter : performanceCounters) {
               try {
@@ -133,7 +138,7 @@ public enum PerformanceCounterContainer {
                     performanceCounter.getClass().getName(),
                     t);
               }
-            }
+            }*/
           }
         },
         collectionFrequencyInMillis,
