@@ -32,7 +32,6 @@ with any additional questions or comments.
 <!-- readme: collaborators -end -->
 
 ## Contributors
-
 <!-- readme: contributors -start -->
 <table>
 <tr>
