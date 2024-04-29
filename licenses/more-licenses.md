@@ -1,7 +1,7 @@
 
 # agent
 ## Dependency License Report
-_2024-04-26 03:26:39 UTC_
+_2024-04-29 08:28:21 UTC_
 ## Apache License, Version 2.0
 
 **1** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-annotations` **Version:** `2.17.0` 
@@ -36,7 +36,7 @@ _2024-04-26 03:26:39 UTC_
 > - **POM Project URL**: [http://stephenc.github.com/jcip-annotations](http://stephenc.github.com/jcip-annotations)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
 
-**6** **Group:** `com.google.errorprone` **Name:** `error_prone_annotations` **Version:** `2.26.1` 
+**6** **Group:** `com.google.errorprone` **Name:** `error_prone_annotations` **Version:** `2.27.0` 
 > - **Manifest Project URL**: [https://errorprone.info/error_prone_annotations](https://errorprone.info/error_prone_annotations)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
@@ -64,12 +64,12 @@ _2024-04-26 03:26:39 UTC_
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
 
-**11** **Group:** `commons-codec` **Name:** `commons-codec` **Version:** `1.16.1` 
+**11** **Group:** `commons-codec` **Name:** `commons-codec` **Version:** `1.17.0` 
 > - **Project URL**: [https://commons.apache.org/proper/commons-codec/](https://commons.apache.org/proper/commons-codec/)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
-> - **Embedded license files**: [commons-codec-1.16.1.jar/META-INF/LICENSE.txt](commons-codec-1.16.1.jar/META-INF/LICENSE.txt) 
-    - [commons-codec-1.16.1.jar/META-INF/NOTICE.txt](commons-codec-1.16.1.jar/META-INF/NOTICE.txt)
+> - **Embedded license files**: [commons-codec-1.17.0.jar/META-INF/LICENSE.txt](commons-codec-1.17.0.jar/META-INF/LICENSE.txt) 
+    - [commons-codec-1.17.0.jar/META-INF/NOTICE.txt](commons-codec-1.17.0.jar/META-INF/NOTICE.txt)
 
 **12** **Group:** `io.netty` **Name:** `netty-buffer` **Version:** `4.1.109.Final` 
 > - **Manifest Project URL**: [https://netty.io/](https://netty.io/)
