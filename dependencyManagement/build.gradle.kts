@@ -29,7 +29,7 @@ val DEPENDENCY_BOMS = listOf(
   "io.opentelemetry:opentelemetry-bom-alpha:${otelVersion}-alpha",
   "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:${otelInstrumentationVersion}",
   "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${otelInstrumentationAlphaVersion}",
-  "com.azure:azure-sdk-bom:1.2.22",
+  "com.azure:azure-sdk-bom:1.2.23",
   "io.netty:netty-bom:4.1.109.Final",
   "org.junit:junit-bom:5.10.2",
   "org.testcontainers:testcontainers-bom:1.19.7",
@@ -37,7 +37,7 @@ val DEPENDENCY_BOMS = listOf(
 
 val autoServiceVersion = "1.1.1"
 val autoValueVersion = "1.10.4"
-val errorProneVersion = "2.26.1"
+val errorProneVersion = "2.27.0"
 val jmhVersion = "1.37"
 val mockitoVersion = "4.11.0"
 val slf4jVersion = "2.0.13"
@@ -69,10 +69,10 @@ val DEPENDENCIES = listOf(
   "ch.qos.logback:logback-classic:1.3.14", // logback 1.4+ requires Java 11+
   "ch.qos.logback.contrib:logback-json-classic:0.1.5",
   "com.uber.nullaway:nullaway:0.10.25",
-  "commons-codec:commons-codec:1.16.1",
+  "commons-codec:commons-codec:1.17.0",
   "org.apache.commons:commons-text:1.12.0",
   "com.google.code.gson:gson:2.10.1",
-  "com.azure:azure-core-test:1.24.1", // this is not included in azure-sdk-bom
+  "com.azure:azure-core-test:1.24.2", // this is not included in azure-sdk-bom
   "org.assertj:assertj-core:3.25.3",
   "org.awaitility:awaitility:4.2.1",
   "io.github.hakky54:logcaptor:2.9.2",

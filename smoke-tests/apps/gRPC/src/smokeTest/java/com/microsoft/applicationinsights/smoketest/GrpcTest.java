@@ -7,9 +7,8 @@ import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_11_OPENJ9;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_17;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_17_OPENJ9;
-import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_20;
-import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_20_OPENJ9;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_21;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_21_OPENJ9;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_8;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_8_OPENJ9;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -221,12 +220,9 @@ abstract class GrpcTest {
   @Environment(JAVA_17_OPENJ9)
   static class Java17OpenJ9Test extends GrpcTest {}
 
-  @Environment(JAVA_20)
-  static class JavaLatestTest extends GrpcTest {}
-
-  @Environment(JAVA_20_OPENJ9)
-  static class JavaLatestOpenJ9Test extends GrpcTest {}
-
   @Environment(JAVA_21)
-  static class JavaPrereleaseTest extends GrpcTest {}
+  static class Java21Test extends GrpcTest {}
+
+  @Environment(JAVA_21_OPENJ9)
+  static class Java21OpenJ9Test extends GrpcTest {}
 }

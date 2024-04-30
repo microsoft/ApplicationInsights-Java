@@ -1,7 +1,7 @@
 
 # agent
 ## Dependency License Report
-_2024-04-23 16:45:53 PDT_
+_2024-04-29 08:28:21 UTC_
 ## Apache License, Version 2.0
 
 **1** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-annotations` **Version:** `2.17.0` 
@@ -36,7 +36,7 @@ _2024-04-23 16:45:53 PDT_
 > - **POM Project URL**: [http://stephenc.github.com/jcip-annotations](http://stephenc.github.com/jcip-annotations)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
 
-**6** **Group:** `com.google.errorprone` **Name:** `error_prone_annotations` **Version:** `2.26.1` 
+**6** **Group:** `com.google.errorprone` **Name:** `error_prone_annotations` **Version:** `2.27.0` 
 > - **Manifest Project URL**: [https://errorprone.info/error_prone_annotations](https://errorprone.info/error_prone_annotations)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
@@ -64,12 +64,12 @@ _2024-04-23 16:45:53 PDT_
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
 
-**11** **Group:** `commons-codec` **Name:** `commons-codec` **Version:** `1.16.1` 
+**11** **Group:** `commons-codec` **Name:** `commons-codec` **Version:** `1.17.0` 
 > - **Project URL**: [https://commons.apache.org/proper/commons-codec/](https://commons.apache.org/proper/commons-codec/)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
-> - **Embedded license files**: [commons-codec-1.16.1.jar/META-INF/LICENSE.txt](commons-codec-1.16.1.jar/META-INF/LICENSE.txt) 
-    - [commons-codec-1.16.1.jar/META-INF/NOTICE.txt](commons-codec-1.16.1.jar/META-INF/NOTICE.txt)
+> - **Embedded license files**: [commons-codec-1.17.0.jar/META-INF/LICENSE.txt](commons-codec-1.17.0.jar/META-INF/LICENSE.txt) 
+    - [commons-codec-1.17.0.jar/META-INF/NOTICE.txt](commons-codec-1.17.0.jar/META-INF/NOTICE.txt)
 
 **12** **Group:** `io.netty` **Name:** `netty-buffer` **Version:** `4.1.109.Final` 
 > - **Manifest Project URL**: [https://netty.io/](https://netty.io/)
@@ -217,15 +217,15 @@ _2024-04-23 16:45:53 PDT_
 > - **POM Project URL**: [https://github.com/open-telemetry/opentelemetry-java](https://github.com/open-telemetry/opentelemetry-java)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
-**43** **Group:** `io.projectreactor` **Name:** `reactor-core` **Version:** `3.4.34` 
+**43** **Group:** `io.projectreactor` **Name:** `reactor-core` **Version:** `3.4.36` 
 > - **POM Project URL**: [https://github.com/reactor/reactor-core](https://github.com/reactor/reactor-core)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
 
-**44** **Group:** `io.projectreactor.netty` **Name:** `reactor-netty-core` **Version:** `1.0.40` 
+**44** **Group:** `io.projectreactor.netty` **Name:** `reactor-netty-core` **Version:** `1.0.43` 
 > - **POM Project URL**: [https://github.com/reactor/reactor-netty](https://github.com/reactor/reactor-netty)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
-**45** **Group:** `io.projectreactor.netty` **Name:** `reactor-netty-http` **Version:** `1.0.40` 
+**45** **Group:** `io.projectreactor.netty` **Name:** `reactor-netty-http` **Version:** `1.0.43` 
 > - **POM Project URL**: [https://github.com/reactor/reactor-netty](https://github.com/reactor/reactor-netty)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
@@ -334,11 +334,11 @@ _2024-04-23 16:45:53 PDT_
 
 ## MIT License
 
-**63** **Group:** `com.azure` **Name:** `azure-core` **Version:** `1.47.0` 
+**63** **Group:** `com.azure` **Name:** `azure-core` **Version:** `1.48.0` 
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**64** **Group:** `com.azure` **Name:** `azure-core-http-netty` **Version:** `1.14.1` 
+**64** **Group:** `com.azure` **Name:** `azure-core-http-netty` **Version:** `1.14.2` 
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
@@ -353,51 +353,55 @@ _2024-04-23 16:45:53 PDT_
 **67** **Group:** `com.azure` **Name:** `azure-monitor-opentelemetry-exporter` **Version:** `1.0.0-beta.22` 
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**68** **Group:** `com.azure` **Name:** `azure-storage-blob` **Version:** `12.25.3` 
+**68** **Group:** `com.azure` **Name:** `azure-storage-blob` **Version:** `12.25.4` 
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**69** **Group:** `com.azure` **Name:** `azure-storage-common` **Version:** `12.24.3` 
+**69** **Group:** `com.azure` **Name:** `azure-storage-common` **Version:** `12.24.4` 
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**70** **Group:** `com.azure` **Name:** `azure-storage-internal-avro` **Version:** `12.10.3` 
+**70** **Group:** `com.azure` **Name:** `azure-storage-internal-avro` **Version:** `12.10.4` 
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**71** **Group:** `com.github.oshi` **Name:** `oshi-core` **Version:** `6.6.0` 
+**71** **Group:** `com.azure` **Name:** `azure-xml` **Version:** `1.0.0` 
+> - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
+> - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
+
+**72** **Group:** `com.github.oshi` **Name:** `oshi-core` **Version:** `6.6.0` 
 > - **Manifest Project URL**: [https://github.com/oshi/oshi/oshi-core](https://github.com/oshi/oshi/oshi-core)
 > - **Manifest License**: "SPDX-License-Identifier: MIT";link="https://opensource.org/licenses/MIT" (Not Packaged)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**72** **Group:** `com.microsoft.azure` **Name:** `msal4j` **Version:** `1.15.0` 
+**73** **Group:** `com.microsoft.azure` **Name:** `msal4j` **Version:** `1.15.0` 
 > - **Project URL**: [https://github.com/AzureAD/microsoft-authentication-library-for-java](https://github.com/AzureAD/microsoft-authentication-library-for-java)
 > - **Manifest License**: "MIT License" (Not Packaged)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**73** **Group:** `com.microsoft.azure` **Name:** `msal4j-persistence-extension` **Version:** `1.3.0` 
+**74** **Group:** `com.microsoft.azure` **Name:** `msal4j-persistence-extension` **Version:** `1.3.0` 
 > - **POM Project URL**: [https://github.com/AzureAD/microsoft-authentication-library-for-java](https://github.com/AzureAD/microsoft-authentication-library-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**74** **Group:** `com.microsoft.jfr` **Name:** `jfr-streaming` **Version:** `1.2.0` 
+**75** **Group:** `com.microsoft.jfr` **Name:** `jfr-streaming` **Version:** `1.2.0` 
 > - **POM Project URL**: [https://github.com/Microsoft/jfr-streaming](https://github.com/Microsoft/jfr-streaming)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**75** **Group:** `org.slf4j` **Name:** `jcl-over-slf4j` **Version:** `2.0.13` 
+**76** **Group:** `org.slf4j` **Name:** `jcl-over-slf4j` **Version:** `2.0.13` 
 > - **Project URL**: [http://www.slf4j.org](http://www.slf4j.org)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 > - **Embedded license files**: [jcl-over-slf4j-2.0.13.jar/META-INF/LICENSE.txt](jcl-over-slf4j-2.0.13.jar/META-INF/LICENSE.txt)
 
-**76** **Group:** `org.slf4j` **Name:** `slf4j-api` **Version:** `2.0.13` 
+**77** **Group:** `org.slf4j` **Name:** `slf4j-api` **Version:** `2.0.13` 
 > - **Project URL**: [http://www.slf4j.org](http://www.slf4j.org)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 > - **Embedded license files**: [slf4j-api-2.0.13.jar/META-INF/LICENSE.txt](slf4j-api-2.0.13.jar/META-INF/LICENSE.txt)
 
 ## MIT-0
 
-**77** **Group:** `org.reactivestreams` **Name:** `reactive-streams` **Version:** `1.0.4` 
+**78** **Group:** `org.reactivestreams` **Name:** `reactive-streams` **Version:** `1.0.4` 
 > - **Manifest Project URL**: [http://reactive-streams.org](http://reactive-streams.org)
 > - **POM Project URL**: [http://www.reactive-streams.org/](http://www.reactive-streams.org/)
 > - **POM License**: MIT-0 - [https://spdx.org/licenses/MIT-0.html](https://spdx.org/licenses/MIT-0.html)
