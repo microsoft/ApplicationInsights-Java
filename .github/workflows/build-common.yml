@@ -46,7 +46,7 @@ jobs:
           java-version: 17
 
       - name: Using a local standalone exporter dependency?
-        if: ${{ hashFiles('azure-monitor-opentelemetry-exporter-$EXPORTER_VERSION.jar') != '' }}
+        if: ${{ hashFiles('azure-monitor-opentelemetry-exporter-1.0.0-beta.*.jar') != '' }}
         run: |
           echo "exporter_version: $EXPORTER_VERSION"
           mvn -version
@@ -92,7 +92,7 @@ jobs:
           java-version: 17
 
       - name: Using a local standalone exporter dependency?
-        if: ${{ hashFiles('azure-monitor-opentelemetry-exporter-$EXPORTER_VERSION.jar') != '' }}
+        if: ${{ hashFiles('azure-monitor-opentelemetry-exporter-1.0.0-beta.*.jar') != '' }}
         run: |
           echo "exporter_version: $EXPORTER_VERSION"
           mvn -version
@@ -147,7 +147,7 @@ jobs:
           java-version: 17
 
       - name: Using a local standalone exporter dependency?
-        if: ${{ hashFiles('azure-monitor-opentelemetry-exporter-$EXPORTER_VERSION.jar') != '' }}
+        if: ${{ hashFiles('azure-monitor-opentelemetry-exporter-1.0.0-beta.*.jar') != '' }}
         run: |
           echo "exporter_version: $EXPORTER_VERSION"
           mvn -version
@@ -194,7 +194,7 @@ jobs:
           java-version: 17
 
       - name: Using a local standalone exporter dependency?
-        if: ${{ hashFiles('azure-monitor-opentelemetry-exporter-$EXPORTER_VERSION.jar') != '' }}
+        if: ${{ hashFiles('azure-monitor-opentelemetry-exporter-1.0.0-beta.*.jar') != '' }}
         run: |
           echo "exporter_version: $EXPORTER_VERSION"
           mvn -version
