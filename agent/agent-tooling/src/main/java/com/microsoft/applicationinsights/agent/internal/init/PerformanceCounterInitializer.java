@@ -13,6 +13,7 @@ import com.microsoft.applicationinsights.agent.internal.perfcounter.FreeMemoryPe
 import com.microsoft.applicationinsights.agent.internal.perfcounter.GcPerformanceCounter;
 import com.microsoft.applicationinsights.agent.internal.perfcounter.JmxAttributeData;
 import com.microsoft.applicationinsights.agent.internal.perfcounter.JmxDataFetcher;
+import com.microsoft.applicationinsights.agent.internal.perfcounter.JmxMetricPerformanceCounter;
 import com.microsoft.applicationinsights.agent.internal.perfcounter.JvmHeapMemoryUsedPerformanceCounter;
 import com.microsoft.applicationinsights.agent.internal.perfcounter.OshiPerformanceCounter;
 import com.microsoft.applicationinsights.agent.internal.perfcounter.PerformanceCounterContainer;
@@ -25,6 +26,7 @@ import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -47,6 +49,19 @@ public class PerformanceCounterInitializer {
     if (logger.isDebugEnabled()) {
       PerformanceCounterContainer.INSTANCE.setLogAvailableJmxMetrics();
     }
+
+    // We don't want these two to be flowing to the OTLP endpoint
+    // because in the long term we will probably be deprecating these
+    // in favor of the otel instrumentation runtime metrics that relay
+    // the same information.
+    registerCounterInContainer("java.land.type=Threading",
+        "Current Thread Count",
+        "ThreadCount",
+        configuration.jmxMetrics);
+    registerCounterInContainer("java.lang:type=ClassLoading",
+        "Loaded Class Count",
+        "LoadedClassCount",
+        configuration.jmxMetrics);
 
     loadCustomJmxPerfCounters(configuration.jmxMetrics);
 
@@ -74,6 +89,23 @@ public class PerformanceCounterInitializer {
     return qualifiedSdkVersion.startsWith("awr") || qualifiedSdkVersion.startsWith("fwr");
   }
 
+  private static void registerCounterInContainer(String objectName, String metricName, String attribute, List<Configuration.JmxMetric> jmxMetricsList) {
+    if(!isMetricInConfig(objectName, attribute, jmxMetricsList)) {
+      JmxAttributeData attributeData = new JmxAttributeData(metricName, attribute);
+      JmxMetricPerformanceCounter jmxPerfCounter = new JmxMetricPerformanceCounter(objectName,
+          Arrays.asList(attributeData));
+      PerformanceCounterContainer.INSTANCE.register(jmxPerfCounter);
+    }
+  }
+
+  private static boolean isMetricInConfig(String objectName, String attribute, List<Configuration.JmxMetric> jmxMetricsList) {
+    for (Configuration.JmxMetric metric : jmxMetricsList) {
+      if (metric.objectName.equals(objectName) && metric.attribute.equals(attribute)) {
+          return true;
+      }
+    }
+    return false;
+  }
   /**
    * The method will load the Jmx performance counters requested by the user to the system: 1. Build
    * a map where the key is the Jmx object name and the value is a list of requested attributes. 2.
