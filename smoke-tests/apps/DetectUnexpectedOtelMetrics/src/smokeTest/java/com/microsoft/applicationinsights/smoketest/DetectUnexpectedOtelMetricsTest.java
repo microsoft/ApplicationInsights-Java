@@ -49,6 +49,8 @@ abstract class DetectUnexpectedOtelMetricsTest {
     EXPECTED_METRIC_NAMES.add("GC Total Time");
 
     // adding stable metrics from otel.instrumentation.runtime-telemetry
+    // link:
+    // https://github.com/open-telemetry/semantic-conventions/blob/main/docs/runtime/jvm-metrics.md
     EXPECTED_METRIC_NAMES.add("jvm.memory.used"); // heap memory used in bytes
     EXPECTED_METRIC_NAMES.add("jvm.memory.committed");
     // the measure of max obtainable memory, can be used by customer
