@@ -54,11 +54,13 @@ public class PerformanceCounterInitializer {
     // because in the long term we will probably be deprecating these
     // in favor of the otel instrumentation runtime metrics that relay
     // the same information.
-    registerCounterInContainer("java.land.type=Threading",
+    registerCounterInContainer(
+        "java.land.type=Threading",
         "Current Thread Count",
         "ThreadCount",
         configuration.jmxMetrics);
-    registerCounterInContainer("java.lang:type=ClassLoading",
+    registerCounterInContainer(
+        "java.lang:type=ClassLoading",
         "Loaded Class Count",
         "LoadedClassCount",
         configuration.jmxMetrics);
@@ -89,23 +91,29 @@ public class PerformanceCounterInitializer {
     return qualifiedSdkVersion.startsWith("awr") || qualifiedSdkVersion.startsWith("fwr");
   }
 
-  private static void registerCounterInContainer(String objectName, String metricName, String attribute, List<Configuration.JmxMetric> jmxMetricsList) {
-    if(!isMetricInConfig(objectName, attribute, jmxMetricsList)) {
+  private static void registerCounterInContainer(
+      String objectName,
+      String metricName,
+      String attribute,
+      List<Configuration.JmxMetric> jmxMetricsList) {
+    if (!isMetricInConfig(objectName, attribute, jmxMetricsList)) {
       JmxAttributeData attributeData = new JmxAttributeData(metricName, attribute);
-      JmxMetricPerformanceCounter jmxPerfCounter = new JmxMetricPerformanceCounter(objectName,
-          Arrays.asList(attributeData));
+      JmxMetricPerformanceCounter jmxPerfCounter =
+          new JmxMetricPerformanceCounter(objectName, Arrays.asList(attributeData));
       PerformanceCounterContainer.INSTANCE.register(jmxPerfCounter);
     }
   }
 
-  private static boolean isMetricInConfig(String objectName, String attribute, List<Configuration.JmxMetric> jmxMetricsList) {
+  private static boolean isMetricInConfig(
+      String objectName, String attribute, List<Configuration.JmxMetric> jmxMetricsList) {
     for (Configuration.JmxMetric metric : jmxMetricsList) {
       if (metric.objectName.equals(objectName) && metric.attribute.equals(attribute)) {
-          return true;
+        return true;
       }
     }
     return false;
   }
+
   /**
    * The method will load the Jmx performance counters requested by the user to the system: 1. Build
    * a map where the key is the Jmx object name and the value is a list of requested attributes. 2.

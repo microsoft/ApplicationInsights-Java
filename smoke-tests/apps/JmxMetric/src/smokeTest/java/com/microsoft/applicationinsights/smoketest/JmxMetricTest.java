@@ -53,9 +53,9 @@ abstract class JmxMetricTest {
    * Generation,type=GarbageCollector. (the corrresponding metric names are GCYoung and GCOld)
    *
    * <p>- Loaded Class Count: This covers the case of collecting a default jmx metric that the
-   * customer did not specify in applicationInsights.json. This metric is only expected to flow
-   * to Breeze at the current moment. In the future we may deprecate this in favor of analogous
-   * metric that is emitted via otel instrumentation runtime metrics (enabled for this repo).
+   * customer did not specify in applicationInsights.json. This metric is only expected to flow to
+   * Breeze at the current moment. In the future we may deprecate this in favor of analogous metric
+   * that is emitted via otel instrumentation runtime metrics (enabled for this repo).
    *
    * <p>- BooleanJmxMetric: This covers the case of a jmx metric attribute with a boolean value.
    *
