@@ -87,8 +87,8 @@ abstract class JmxMetricTest {
   @Test
   @TargetUri("/test")
   void doMostBasicTest() throws Exception {
-    verifyJmxMetricsSentToBreeze();
     verifyJmxMetricsSentToOtlpEndpoint();
+    verifyJmxMetricsSentToBreeze();
   }
 
   @SuppressWarnings({"PreferJavaTimeOverload"})
@@ -122,12 +122,13 @@ abstract class JmxMetricTest {
                 }
               }
 
+              System.out.println("Printing metrics names to # of occurrences for otlp");
               for (Map.Entry<String, Integer> entry : occurrences.entrySet()) {
                 System.out.println(entry.toString());
               }
               // confirm that those metrics received once or twice
               // (the collector seems to run for 5-10 sec)
-              assertThat(occurrences.keySet()).hasSize(6);
+              assertThat(occurrences.keySet()).hasSize(jmxMetricsAllJavaVersionsOtlp.size());
               for (int value : occurrences.values()) {
                 assertThat(value).isBetween(1, 8);
               }
@@ -136,7 +137,7 @@ abstract class JmxMetricTest {
 
   private void verifyJmxMetricsSentToBreeze() throws Exception {
     List<Envelope> metricItems =
-        testing.mockedIngestion.waitForItems(JmxMetricTest::isJmxMetric, 1, 10, TimeUnit.SECONDS);
+        testing.mockedIngestion.waitForItems(JmxMetricTest::isJmxMetric, 7, 10, TimeUnit.SECONDS);
 
     assertThat(metricItems).hasSizeBetween(7, 16);
 

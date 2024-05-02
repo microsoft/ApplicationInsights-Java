@@ -22,6 +22,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Predicate;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -48,8 +49,7 @@ abstract class DetectUnexpectedOtelMetricsTest {
     EXPECTED_METRIC_NAMES.add("GC Total Count");
     EXPECTED_METRIC_NAMES.add("GC Total Time");
 
-    // adding metrics from otel.instrumentation.runtime-telemetry
-    // most are stable except the last six.
+    // adding stable metrics from otel.instrumentation.runtime-telemetry
     EXPECTED_METRIC_NAMES.add("jvm.memory.used"); // heap memory used in bytes
     EXPECTED_METRIC_NAMES.add("jvm.memory.committed");
     // the measure of max obtainable memory, can be used by customer
@@ -64,12 +64,6 @@ abstract class DetectUnexpectedOtelMetricsTest {
     EXPECTED_METRIC_NAMES.add("jvm.cpu.time");
     EXPECTED_METRIC_NAMES.add("jvm.cpu.count");
     EXPECTED_METRIC_NAMES.add("jvm.cpu.recent_utilization");
-    EXPECTED_METRIC_NAMES.add("jvm.memory.init");
-    EXPECTED_METRIC_NAMES.add("jvm.system.cpu.utilization");
-    EXPECTED_METRIC_NAMES.add("jvm.system.cpu.load_1m");
-    EXPECTED_METRIC_NAMES.add("jvm.buffer.memory.usage");
-    EXPECTED_METRIC_NAMES.add("jvm.buffer.memory.limit");
-    EXPECTED_METRIC_NAMES.add("jvm.buffer.count");
   }
 
   @Test
