@@ -72,7 +72,7 @@ val DEPENDENCIES = listOf(
   "commons-codec:commons-codec:1.17.0",
   "org.apache.commons:commons-text:1.12.0",
   "com.google.code.gson:gson:2.10.1",
-  "com.azure:azure-core-test:1.24.2", // this is not included in azure-sdk-bom
+  "com.azure:azure-core-test:1.25.0", // this is not included in azure-sdk-bom
   "org.assertj:assertj-core:3.25.3",
   "org.awaitility:awaitility:4.2.1",
   "io.github.hakky54:logcaptor:2.9.2",
