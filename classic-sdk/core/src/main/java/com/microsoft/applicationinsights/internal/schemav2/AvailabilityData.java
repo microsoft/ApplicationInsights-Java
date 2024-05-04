@@ -4,12 +4,13 @@
 package com.microsoft.applicationinsights.internal.schemav2;
 
 import com.microsoft.applicationinsights.telemetry.Duration;
+import javax.annotation.Nonnull;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 public class AvailabilityData {
 
-  private String id;
+  @Nonnull private String id;
   private String name;
   private Duration duration = new Duration(0);
   private boolean success;
