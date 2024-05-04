@@ -4,13 +4,13 @@
 package com.microsoft.applicationinsights.internal.schemav2;
 
 import com.microsoft.applicationinsights.telemetry.Duration;
-import javax.annotation.Nonnull;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 public class AvailabilityData {
 
-  @Nonnull private String id;
+  private String id;
   private String name;
   private Duration duration = new Duration(0);
   private boolean success;
@@ -20,7 +20,7 @@ public class AvailabilityData {
   private ConcurrentMap<String, String> properties;
   private ConcurrentMap<String, Double> measurements;
 
-  public AvailabilityData() {}
+  public AvailabilityData() {id =  UUID.randomUUID().toString();}
 
   public String getId() {
     return id;
