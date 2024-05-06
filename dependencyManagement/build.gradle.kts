@@ -24,7 +24,7 @@ rootProject.extra["otelContribAlphaVersion"] = otelContribAlphaVersion
 
 val DEPENDENCY_BOMS = listOf(
   "com.fasterxml.jackson:jackson-bom:2.17.0",
-  "com.google.guava:guava-bom:33.1.0-jre",
+  "com.google.guava:guava-bom:33.2.0-jre",
   "io.opentelemetry:opentelemetry-bom:${otelVersion}",
   "io.opentelemetry:opentelemetry-bom-alpha:${otelVersion}-alpha",
   "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:${otelInstrumentationVersion}",
@@ -37,7 +37,7 @@ val DEPENDENCY_BOMS = listOf(
 
 val autoServiceVersion = "1.1.1"
 val autoValueVersion = "1.10.4"
-val errorProneVersion = "2.27.0"
+val errorProneVersion = "2.27.1"
 val jmhVersion = "1.37"
 val mockitoVersion = "4.11.0"
 val slf4jVersion = "2.0.13"
@@ -68,17 +68,17 @@ val CORE_DEPENDENCIES = listOf(
 val DEPENDENCIES = listOf(
   "ch.qos.logback:logback-classic:1.3.14", // logback 1.4+ requires Java 11+
   "ch.qos.logback.contrib:logback-json-classic:0.1.5",
-  "com.uber.nullaway:nullaway:0.10.25",
+  "com.uber.nullaway:nullaway:0.10.26",
   "commons-codec:commons-codec:1.17.0",
   "org.apache.commons:commons-text:1.12.0",
   "com.google.code.gson:gson:2.10.1",
-  "com.azure:azure-core-test:1.24.2", // this is not included in azure-sdk-bom
+  "com.azure:azure-core-test:1.25.0", // this is not included in azure-sdk-bom
   "org.assertj:assertj-core:3.25.3",
   "org.awaitility:awaitility:4.2.1",
   "io.github.hakky54:logcaptor:2.9.2",
   "com.microsoft.jfr:jfr-streaming:1.2.0",
   "com.google.code.findbugs:jsr305:3.0.2",
-  "com.github.spotbugs:spotbugs-annotations:4.8.4"
+  "com.github.spotbugs:spotbugs-annotations:4.8.5"
 )
 
 javaPlatform {
