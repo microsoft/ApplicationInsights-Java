@@ -48,7 +48,7 @@ abstract class OtlpTest {
 
     // verify pre-aggregated standard metric sent to Application Insights endpoint
     List<Envelope> standardMetricsList =
-        testing.mockedIngestion.waitForItems("MetricData", OtlpTest::isStandardMetric, 1);
+        testing.mockedIngestion.waitForItems("MetricData", OtlpTest::isHttpServerRequestDurationMetric, 2);
     Envelope standardMetricEnvelope = standardMetricsList.get(0);
     MetricData standardMetricData =
         (MetricData) ((Data<?>) standardMetricEnvelope.getData()).getBaseData();
@@ -95,7 +95,7 @@ abstract class OtlpTest {
     return false;
   }
 
-  private static boolean isStandardMetric(Envelope envelope) {
+  private static boolean isHttpServerRequestDurationMetric(Envelope envelope) {
     if (envelope.getData().getBaseType().equals("MetricData")) {
       MetricData data = (MetricData) ((Data<?>) envelope.getData()).getBaseData();
       return data.getMetrics().get(0).getName().equals("http.server.request.duration");
