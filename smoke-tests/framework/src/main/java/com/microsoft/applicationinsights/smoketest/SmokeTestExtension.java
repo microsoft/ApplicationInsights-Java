@@ -667,21 +667,6 @@ public class SmokeTestExtension
     };
   }
 
-  public static Predicate<Envelope> getStandardMetricPredicate(String name) {
-    Objects.requireNonNull(name, "name");
-    return input -> {
-      if (input == null) {
-        return false;
-      }
-      if (!input.getData().getBaseType().equals("MetricData")) {
-        return false;
-      }
-      MetricData md = getBaseData(input);
-      return name.equals(md.getMetrics().get(0).getName())
-          && md.getProperties().get("_MS.MetricId") != null;
-    };
-  }
-
   public static Predicate<Envelope> getMetricPredicate(
       String name, String secondPredicate, boolean isRolename) {
     Objects.requireNonNull(name, "name");
@@ -702,6 +687,21 @@ public class SmokeTestExtension
               ? secondPredicate.equals(input.getTags().get("ai.cloud.role"))
               : secondPredicate.equals(input.getIKey());
       return name.equals(md.getMetrics().get(0).getName()) && isSecondPredicateValid;
+    };
+  }
+
+  public static Predicate<Envelope> getStandardMetricPredicate(String name) {
+    Objects.requireNonNull(name, "name");
+    return input -> {
+      if (input == null) {
+        return false;
+      }
+      if (!input.getData().getBaseType().equals("MetricData")) {
+        return false;
+      }
+      MetricData md = getBaseData(input);
+      return name.equals(md.getMetrics().get(0).getName())
+          && md.getProperties().get("_MS.MetricId") != null;
     };
   }
 }
