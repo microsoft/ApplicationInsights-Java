@@ -99,12 +99,11 @@ class ConfigurationTest {
 
     List<JmxMetric> jmxMetrics = parseJmxMetricsJson(jmxMetricsJson);
     assertThat(jmxMetrics.size()).isEqualTo(2);
-    assertThat(configuration.jmxMetrics.size()).isEqualTo(3);
+    assertThat(configuration.jmxMetrics.size()).isEqualTo(2);
     assertThat(configuration.jmxMetrics.get(0).name)
         .isEqualTo(jmxMetrics.get(0).name); // class count is overridden by the env var
     assertThat(configuration.jmxMetrics.get(1).name)
         .isEqualTo(jmxMetrics.get(1).name); // code cache is overridden by the env var
-    assertThat("Current Thread Count").isEqualTo(configuration.jmxMetrics.get(2).name);
   }
 
   @Test
@@ -513,12 +512,11 @@ class ConfigurationTest {
 
     List<JmxMetric> jmxMetrics = parseJmxMetricsJson(jmxMetricsJson);
     assertThat(jmxMetrics.size()).isEqualTo(2);
-    assertThat(configuration.jmxMetrics.size()).isEqualTo(3);
+    assertThat(configuration.jmxMetrics.size()).isEqualTo(2);
     assertThat(configuration.jmxMetrics.get(0).name)
         .isEqualTo(jmxMetrics.get(0).name); // class count is overridden by the env var
     assertThat(configuration.jmxMetrics.get(1).name)
         .isEqualTo(jmxMetrics.get(1).name); // code cache is overridden by the env var
-    assertThat("Current Thread Count").isEqualTo(configuration.jmxMetrics.get(2).name);
   }
 
   @Test

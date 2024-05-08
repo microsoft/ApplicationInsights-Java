@@ -55,7 +55,7 @@ public class PerformanceCounterInitializer {
     // in favor of the otel instrumentation runtime metrics that relay
     // the same information.
     registerCounterInContainer(
-        "java.land.type=Threading",
+        "java.lang:type=Threading",
         "Current Thread Count",
         "ThreadCount",
         configuration.jmxMetrics);
