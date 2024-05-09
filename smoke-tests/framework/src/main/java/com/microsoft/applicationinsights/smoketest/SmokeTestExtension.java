@@ -690,8 +690,8 @@ public class SmokeTestExtension
     };
   }
 
-  public static Predicate<Envelope> getStandardMetricPredicate(String name) {
-    Objects.requireNonNull(name, "name");
+  public static Predicate<Envelope> getStandardMetricPredicate(String metricId) {
+    Objects.requireNonNull(metricId, "metricId");
     return input -> {
       if (input == null) {
         return false;
@@ -700,8 +700,7 @@ public class SmokeTestExtension
         return false;
       }
       MetricData md = getBaseData(input);
-      return name.equals(md.getMetrics().get(0).getName())
-          && md.getProperties().get("_MS.MetricId") != null;
+      return metricId.equals(md.getProperties().get("_MS.MetricId"));
     };
   }
 }

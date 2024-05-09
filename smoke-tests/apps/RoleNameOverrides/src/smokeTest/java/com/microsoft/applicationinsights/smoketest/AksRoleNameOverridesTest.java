@@ -57,13 +57,13 @@ abstract class AksRoleNameOverridesTest {
     assertThat(mdList.get(0).getTags()).containsEntry("ai.cloud.roleInstance", roleInstance);
 
     List<Envelope> clientMetrics =
-        testing.mockedIngestion.waitForStandardMetricItems("http.client.request.duration", 1);
+        testing.mockedIngestion.waitForStandardMetricItems("dependencies/duration", 1);
     Map<String, String> clientTags = clientMetrics.get(0).getTags();
     assertThat(clientTags.get("ai.cloud.role")).isEqualTo(roleName);
     assertThat(clientTags.get("ai.cloud.roleInstance")).isEqualTo(roleInstance);
 
     List<Envelope> serverMetrics =
-        testing.mockedIngestion.waitForStandardMetricItems("http.server.request.duration", 1);
+        testing.mockedIngestion.waitForStandardMetricItems("requests/duration", 1);
     Map<String, String> serverTags = serverMetrics.get(0).getTags();
     assertThat(serverTags.get("ai.cloud.role")).isEqualTo(roleName);
     assertThat(serverTags.get("ai.cloud.roleInstance")).isEqualTo(roleInstance);

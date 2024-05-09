@@ -59,7 +59,7 @@ abstract class OtlpTest {
 
     // verify pre-aggregated standard metric sent to Application Insights endpoint
     List<Envelope> standardMetrics =
-        testing.mockedIngestion.waitForStandardMetricItems("http.server.request.duration", 1);
+        testing.mockedIngestion.waitForStandardMetricItems("requests/duration", 1);
     Envelope standardMetricEnvelope = standardMetrics.get(0);
     MetricData standardMetricData =
         (MetricData) ((Data<?>) standardMetricEnvelope.getData()).getBaseData();

@@ -98,9 +98,9 @@ abstract class ConnectionStringOverridesTest {
     // and metrics too
 
     List<Envelope> clientMetrics =
-        testing.mockedIngestion.waitForStandardMetricItems("http.client.request.duration", 1);
+        testing.mockedIngestion.waitForStandardMetricItems("dependencies/duration", 1);
     List<Envelope> serverMetrics =
-        testing.mockedIngestion.waitForStandardMetricItems("http.server.request.duration", 1);
+        testing.mockedIngestion.waitForStandardMetricItems("requests/duration", 1);
 
     verifyHttpClientPreAggregatedMetrics(clientMetrics, iKey);
     verifyHttpServerPreAggregatedMetrics(serverMetrics, iKey);
