@@ -92,9 +92,16 @@ abstract class PreAggMetricsWithRoleNameOverridesAndSamplingTest {
     for (Envelope requestEnvelope : requestEnvelopes) {
       assertThat(requestEnvelope.getSampleRate()).isEqualTo(50);
     }
-    for (Envelope messageEnvelope : messageEnvelopes) {
-      assertThat(messageEnvelope.getSampleRate()).isEqualTo(50);
-    }
+
+    // not all Message would have sample rate set, for example logs with LoggerName of
+    // "smoketestapp"
+    messageEnvelopes.stream()
+        .filter(e -> e.getSampleRate() != null)
+        .forEach(
+            e -> {
+              assertThat(e.getSampleRate()).isEqualTo(50);
+            });
+
     for (Envelope rdEnvelope : requestEnvelopes) {
       String operationId = rdEnvelope.getTags().get("ai.operation.id");
       List<Envelope> rddList =
