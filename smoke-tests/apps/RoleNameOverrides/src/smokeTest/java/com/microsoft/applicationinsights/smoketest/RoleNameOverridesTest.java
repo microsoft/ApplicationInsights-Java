@@ -98,9 +98,9 @@ abstract class RoleNameOverridesTest {
     // and metrics too
 
     List<Envelope> clientMetrics =
-        testing.mockedIngestion.waitForMetricItems("http.client.request.duration", 1);
+        testing.mockedIngestion.waitForStandardMetricItems("dependencies/duration", 1);
     List<Envelope> serverMetrics =
-        testing.mockedIngestion.waitForMetricItems("http.server.request.duration", 1);
+        testing.mockedIngestion.waitForStandardMetricItems("requests/duration", 1);
 
     verifyHttpClientPreAggregatedMetrics(clientMetrics, roleName);
     verifyHttpServerPreAggregatedMetrics(serverMetrics, roleName);
