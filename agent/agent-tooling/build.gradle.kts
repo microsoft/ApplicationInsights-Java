@@ -21,7 +21,7 @@ dependencies {
   implementation(project(":agent:agent-profiler:agent-diagnostics"))
   implementation(project(":etw:java"))
 
-  implementation("com.azure:azure-monitor-opentelemetry-exporter:1.0.0-beta.21")
+  implementation("com.azure:azure-monitor-opentelemetry-exporter:1.0.0-beta.22")
   compileOnly("io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap")
   compileOnly("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling")
   compileOnly("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-common-bootstrap")
@@ -89,7 +89,7 @@ dependencies {
 
 configurations.all {
   // temporarily overriding version until next azure-bom release in order to address CVE
-  resolutionStrategy.force("com.azure:azure-identity:1.12.0")
+  resolutionStrategy.force("com.azure:azure-identity:1.12.1")
 }
 
 configurations {

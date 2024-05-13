@@ -676,7 +676,6 @@ class ConfigurationTest {
   @Test
   void shouldOverrideAadAuthenticationConfig() throws IOException {
     envVars.put("APPLICATIONINSIGHTS_AUTHENTICATION_STRING", "Authorization=AAD;ClientId=12345678");
-
     Configuration configuration = loadConfiguration("applicationinsights_aadauthenv.json");
     ConfigurationBuilder.overlayFromEnv(
         configuration, Paths.get("."), this::envVars, this::systemProperties);
@@ -686,8 +685,7 @@ class ConfigurationTest {
     assertThat(configuration.authentication.clientId).isEqualTo("12345678");
     assertThat(configuration.authentication.clientSecret).isNull();
 
-    envVars.put("APPLICATIONINSIGHTS_AUTHENTICATION_STRING", "Authorization=AAD;ClientId=");
-
+    envVars.put("APPLICATIONINSIGHTS_AUTHENTICATION_STRING", "Authorization=AAD");
     Configuration configuration2 = loadConfiguration("applicationinsights_aadauthenv.json");
     ConfigurationBuilder.overlayFromEnv(
         configuration2, Paths.get("."), this::envVars, this::systemProperties);
@@ -696,6 +694,18 @@ class ConfigurationTest {
     assertThat(configuration2.authentication.type).isEqualTo(Configuration.AuthenticationType.SAMI);
     assertThat(configuration2.authentication.clientId).isNull();
     assertThat(configuration2.authentication.clientSecret).isNull();
+
+    envVars.put(
+        "APPLICATIONINSIGHTS_AUTHENTICATION_STRING",
+        "Authorization=AAD;ClientId=12345678;ClientSecret=clientsecret123");
+    Configuration configuration3 = loadConfiguration("applicationinsights_aadauthenv.json");
+    ConfigurationBuilder.overlayFromEnv(
+        configuration3, Paths.get("."), this::envVars, this::systemProperties);
+    assertThat(configuration3.authentication.enabled).isTrue();
+    assertThat(configuration3.authentication.type)
+        .isEqualTo(Configuration.AuthenticationType.CLIENTSECRET);
+    assertThat(configuration3.authentication.clientId).isEqualTo("12345678");
+    assertThat(configuration3.authentication.clientSecret).isEqualTo("clientsecret123");
   }
 
   @Test
