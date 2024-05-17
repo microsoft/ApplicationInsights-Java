@@ -178,7 +178,6 @@ public class FirstEntryPoint implements LoggingCustomizer {
     String javaHome = System.getProperty("java.home");
     startupLogger.info("Java version: {}, vendor: {}, home: {}", javaVersion, javaVendor, javaHome);
 
-
     MDC.put(DiagnosticsHelper.MDC_PROP_OPERATION, "Startup");
     try (MDC.MDCCloseable ignored = INITIALIZATION_SUCCESS.makeActive()) {
       LoggerFactory.getLogger(DiagnosticsHelper.DIAGNOSTICS_LOGGER_NAME)
