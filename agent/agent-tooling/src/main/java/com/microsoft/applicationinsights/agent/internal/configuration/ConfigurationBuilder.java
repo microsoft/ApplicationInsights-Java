@@ -301,6 +301,8 @@ public class ConfigurationBuilder {
     // only fall back to default sampling configuration after all overlays have been performed
     if (config.sampling.requestsPerSecond == null && config.sampling.percentage == null) {
       config.sampling.requestsPerSecond = 5.0;
+      configurationLogger.info(
+          "Some telemetry data may miss. Indeed, Application Insights applies by default from the 3.4.0 a sampling to reduce the cost. You can change the default sampling configuration: https://learn.microsoft.com/azure/azure-monitor/app/java-standalone-config");
     }
     // only set role instance to host name as a last resort
     if (config.role.instance == null) {

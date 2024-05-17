@@ -178,12 +178,6 @@ public class FirstEntryPoint implements LoggingCustomizer {
     String javaHome = System.getProperty("java.home");
     startupLogger.info("Java version: {}, vendor: {}, home: {}", javaVersion, javaVendor, javaHome);
 
-    boolean userHasChangedDefaultSampling =
-        configuration.sampling.percentage == null && configuration.sampling.requestsPerSecond == 5;
-    if (userHasChangedDefaultSampling) {
-      startupLogger.info(
-          "Some telemetry data may miss. Indeed, Application Insights applies by default from the 3.4.0 a sampling to reduce the cost. You can change the default sampling configuration: https://learn.microsoft.com/azure/azure-monitor/app/java-standalone-config");
-    }
 
     MDC.put(DiagnosticsHelper.MDC_PROP_OPERATION, "Startup");
     try (MDC.MDCCloseable ignored = INITIALIZATION_SUCCESS.makeActive()) {
