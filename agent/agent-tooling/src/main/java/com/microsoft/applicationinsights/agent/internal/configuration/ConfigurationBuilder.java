@@ -743,10 +743,10 @@ public class ConfigurationBuilder {
         && !replacedConnectionString.startsWith("InstrumentationKey=")
         && config.connectionString.equals(replacedConnectionString)) {
       throw new FriendlyException(
-          "Error loading connection string from a file (\""
+          "Your connection string seems to have a wrong format: \""
               + config.connectionString
               + "\").\n"
-              + "Please use this format instead:"
+              + "If you want to load the connection string from a file, please use this format:"
               + "\n{ \"connectionString\": \"${file:connection-string-file.txt}\" }\n",
           "Learn more about configuration options here: " + CONFIGURATION_OPTIONS_LINK);
     }
