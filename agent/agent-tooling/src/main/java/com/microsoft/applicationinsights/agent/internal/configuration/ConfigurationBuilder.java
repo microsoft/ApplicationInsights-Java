@@ -746,7 +746,7 @@ public class ConfigurationBuilder {
           "You connection seems to have a wrong format: \""
               + config.connectionString
               + "\").\n"
-              + "If you want to read the connection string from a file, please use this format:"
+              + "If you want to load the connection string from a file, please use this format:"
               + "\n{ \"connectionString\": \"${file:connection-string-file.txt}\" }\n",
           "Learn more about configuration options here: " + CONFIGURATION_OPTIONS_LINK);
     }
