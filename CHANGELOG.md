@@ -1,5 +1,21 @@
 # CHANGELOG
 
+## Version 3.5.3 GA (05/21/2024)
+
+### Enhancements:
+* Display a message about sampling at start-up
+  ([#3676](https://github.com/microsoft/ApplicationInsights-Java/pull/3676))
+* Support clientsecret via env var
+  ([#3692](https://github.com/microsoft/ApplicationInsights-Java/pull/3692))
+* Display a message about sampling at start-up
+  ([#3700](https://github.com/microsoft/ApplicationInsights-Java/pull/3700))
+* Fail if HTTP status code used in sampling override
+  ([#3708](https://github.com/microsoft/ApplicationInsights-Java/pull/3708))
+* Fix misleading connection string message
+  ([#3709](https://github.com/microsoft/ApplicationInsights-Java/pull/3709))
+* Update to OpenTelemetry Java Instrumentation 2.4.0
+  ([#3711](https://github.com/microsoft/ApplicationInsights-Java/pull/3711))
+
 ## Version 3.5.2 GA (04/19/2024)
 
 ### Enhancements:
