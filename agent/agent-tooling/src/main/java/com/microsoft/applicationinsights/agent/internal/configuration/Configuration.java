@@ -723,7 +723,7 @@ public class Configuration {
         throw new FriendlyException(
             "You can't use the \""
                 + httpStatusCodeKey
-                + "\" attribute for sampling overrides because you can only use the attributes set at the start of the span.",
+                + "\" attribute for sampling overrides because you can only use the attributes set at the start of a span.",
             "Please remove the \""
                 + httpStatusCodeKey
                 + "\" attribute from the sampling override configuration and look at https://learn.microsoft.com/azure/azure-monitor/app/java-standalone-sampling-overrides for an alternative solution.");
