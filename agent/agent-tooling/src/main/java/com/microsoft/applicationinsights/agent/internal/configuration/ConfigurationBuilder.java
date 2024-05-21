@@ -743,7 +743,7 @@ public class ConfigurationBuilder {
         && !replacedConnectionString.startsWith("InstrumentationKey=")
         && config.connectionString.equals(replacedConnectionString)) {
       throw new FriendlyException(
-          "You connection string seems to have a wrong format: \""
+          "Your connection string seems to have a wrong format: \""
               + config.connectionString
               + "\").\n"
               + "If you want to load the connection string from a file, please use this format:"
