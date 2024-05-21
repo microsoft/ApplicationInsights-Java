@@ -3,7 +3,7 @@
 ## Version 3.5.3 GA (05/21/2024)
 
 ### Enhancements:
-* Display a message about sampling at start-up
+* Emit stable OpenTelemetry HTTP metrics
   ([#3676](https://github.com/microsoft/ApplicationInsights-Java/pull/3676))
 * Support clientsecret via env var
   ([#3692](https://github.com/microsoft/ApplicationInsights-Java/pull/3692))
