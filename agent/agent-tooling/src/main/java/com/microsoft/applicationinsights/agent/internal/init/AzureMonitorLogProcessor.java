@@ -40,9 +40,9 @@ public class AzureMonitorLogProcessor implements LogRecordProcessor {
     ReadableSpan readableSpan = (ReadableSpan) currentSpan;
     logRecord.setAttribute(
         AiSemanticAttributes.OPERATION_NAME, OperationNames.getOperationName(readableSpan));
-    Long itemCount = readableSpan.getAttribute(AiSemanticAttributes.ITEM_COUNT);
-    if (itemCount != null) {
-      logRecord.setAttribute(AiSemanticAttributes.ITEM_COUNT, itemCount);
+    Double sampleRate = readableSpan.getAttribute(AiSemanticAttributes.SAMPLE_RATE);
+    if (sampleRate != null) {
+      logRecord.setAttribute(AiSemanticAttributes.SAMPLE_RATE, sampleRate);
     }
   }
 

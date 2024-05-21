@@ -159,12 +159,12 @@ public class Configuration {
 
   public static class Sampling {
 
-    // fixed percentage of requests
-    @Nullable public Double percentage;
-
     // default is 5 requests per second (set in ConfigurationBuilder if neither percentage nor
     // requestsPerSecond was configured)
     @Nullable public Double requestsPerSecond;
+
+    // fixed percentage of requests
+    @Nullable public Double percentage;
 
     // this config option only existed in one BETA release (3.4.0-BETA)
     @Deprecated @Nullable public Double limitPerSecond;
@@ -201,6 +201,8 @@ public class Configuration {
     //
     // future goal: make parentBased sampling the default if item count is received via tracestate
     public boolean parentBased;
+
+    public boolean suppressIngestionSampling;
 
     @Deprecated public List<SamplingOverride> overrides = new ArrayList<>();
   }

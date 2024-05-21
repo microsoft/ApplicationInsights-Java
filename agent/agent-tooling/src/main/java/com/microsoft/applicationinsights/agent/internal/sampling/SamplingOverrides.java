@@ -70,7 +70,7 @@ public class SamplingOverrides {
         }
       }
       samplingPercentage = SamplingPercentage.fixed(override.percentage);
-      sampler = new AiSampler(samplingPercentage, samplingPercentage, false);
+      sampler = new AiSampler(samplingPercentage, samplingPercentage, true, false);
     }
 
     Sampler getSampler() {
