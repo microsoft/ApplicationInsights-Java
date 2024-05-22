@@ -130,6 +130,9 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
       // in case using another exporter
       properties.put("otel.service.name", configuration.role.name);
     }
+    if (configuration.role.instance != null) {
+      properties.put("otel.service.instance.id", configuration.role.instance);
+    }
 
     return properties;
   }
