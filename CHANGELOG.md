@@ -15,6 +15,8 @@
   ([#3709](https://github.com/microsoft/ApplicationInsights-Java/pull/3709))
 * Update to OpenTelemetry Java Instrumentation 2.4.0
   ([#3711](https://github.com/microsoft/ApplicationInsights-Java/pull/3711))
+* Introduce explicit option to disable ingestion sampling
+  ([#3713](https://github.com/microsoft/ApplicationInsights-Java/pull/3713))
 
 ## Version 3.5.2 GA (04/19/2024)
 
