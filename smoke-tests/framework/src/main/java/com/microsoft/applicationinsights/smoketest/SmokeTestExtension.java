@@ -689,4 +689,18 @@ public class SmokeTestExtension
       return name.equals(md.getMetrics().get(0).getName()) && isSecondPredicateValid;
     };
   }
+
+  public static Predicate<Envelope> getStandardMetricPredicate(String metricId) {
+    Objects.requireNonNull(metricId, "metricId");
+    return input -> {
+      if (input == null) {
+        return false;
+      }
+      if (!input.getData().getBaseType().equals("MetricData")) {
+        return false;
+      }
+      MetricData md = getBaseData(input);
+      return metricId.equals(md.getProperties().get("_MS.MetricId"));
+    };
+  }
 }

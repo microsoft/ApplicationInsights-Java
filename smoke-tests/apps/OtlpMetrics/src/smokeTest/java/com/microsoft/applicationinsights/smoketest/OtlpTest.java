@@ -46,10 +46,21 @@ abstract class OtlpTest {
     MetricData metricData = (MetricData) ((Data<?>) metricEnvelope.getData()).getBaseData();
     assertThat(metricData.getMetrics().get(0).getName()).isEqualTo("histogram-test-otlp-exporter");
 
+    // verify stable otel metric sent to Application Insights endpoint
+    List<Envelope> stableOtelMetrics =
+        testing.mockedIngestion.waitForItems("MetricData", OtlpTest::isStableOtelMetric, 1);
+    Envelope stableOtelMetricEnvelope = stableOtelMetrics.get(0);
+    assertThat(
+            ((MetricData) ((Data<?>) stableOtelMetricEnvelope.getData()).getBaseData())
+                .getMetrics()
+                .get(0)
+                .getName())
+        .isEqualTo("http.server.request.duration");
+
     // verify pre-aggregated standard metric sent to Application Insights endpoint
-    List<Envelope> standardMetricsList =
-        testing.mockedIngestion.waitForItems("MetricData", OtlpTest::isStandardMetric, 1);
-    Envelope standardMetricEnvelope = standardMetricsList.get(0);
+    List<Envelope> standardMetrics =
+        testing.mockedIngestion.waitForStandardMetricItems("requests/duration", 1);
+    Envelope standardMetricEnvelope = standardMetrics.get(0);
     MetricData standardMetricData =
         (MetricData) ((Data<?>) standardMetricEnvelope.getData()).getBaseData();
     assertThat(standardMetricData.getMetrics().get(0).getName())
@@ -95,10 +106,11 @@ abstract class OtlpTest {
     return false;
   }
 
-  private static boolean isStandardMetric(Envelope envelope) {
+  private static boolean isStableOtelMetric(Envelope envelope) {
     if (envelope.getData().getBaseType().equals("MetricData")) {
       MetricData data = (MetricData) ((Data<?>) envelope.getData()).getBaseData();
-      return data.getMetrics().get(0).getName().equals("http.server.request.duration");
+      return data.getMetrics().get(0).getName().equals("http.server.request.duration")
+          && data.getProperties().get("http.response.status_code") != null;
     }
     return false;
   }

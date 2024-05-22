@@ -14,14 +14,10 @@ import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.WILDF
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
-import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
 import com.microsoft.applicationinsights.smoketest.schemav2.MetricData;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.function.Predicate;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -47,6 +43,8 @@ abstract class DetectUnexpectedOtelMetricsTest {
     EXPECTED_METRIC_NAMES.add("% Of Max Heap Memory Used");
     EXPECTED_METRIC_NAMES.add("GC Total Count");
     EXPECTED_METRIC_NAMES.add("GC Total Time");
+    EXPECTED_METRIC_NAMES.add("http.server.request.duration");
+    EXPECTED_METRIC_NAMES.add("http.client.request.duration");
   }
 
   @Test
@@ -64,29 +62,6 @@ abstract class DetectUnexpectedOtelMetricsTest {
                     },
                     1))
         .isInstanceOf(TimeoutException.class);
-  }
-
-  // wait for at least one unexpected otel metrics for failure case or timeout for success
-  public List<Envelope> waitForItemsUnexpectedOtelMetric(String type, Predicate<Envelope> condition)
-      throws InterruptedException, ExecutionException, TimeoutException {
-    return testing.mockedIngestion.waitForItems(
-        new Predicate<Envelope>() {
-          @Override
-          public boolean test(Envelope input) {
-            if (!input.getData().getBaseType().equals(type)) {
-              return false;
-            }
-            MetricData md = (MetricData) ((Data<?>) input.getData()).getBaseData();
-            if ("_OTELRESOURCE_".equals(md.getMetrics().get(0).getName())
-                || md.getProperties().containsKey("_MS.MetricId")) {
-              return false;
-            }
-            return condition.test(input);
-          }
-        },
-        1,
-        10,
-        TimeUnit.SECONDS);
   }
 
   @Environment(TOMCAT_8_JAVA_8)
