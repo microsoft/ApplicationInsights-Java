@@ -302,7 +302,7 @@ public class ConfigurationBuilder {
     if (config.sampling.requestsPerSecond == null && config.sampling.percentage == null) {
       config.sampling.requestsPerSecond = 5.0;
       configurationLogger.info(
-          "Some telemetry data may miss. Indeed, Application Insights applies by default from the 3.4.0 a sampling to reduce the cost. You can change the default sampling configuration: https://learn.microsoft.com/azure/azure-monitor/app/java-standalone-config");
+          "Some telemetry may be sampled out because the default rate-limited sampling configuration has been applied starting from 3.4.0 in order to reduce default billing cost. You can set the sampling configuration explicitly: https://learn.microsoft.com/azure/azure-monitor/app/java-standalone-config");
     }
     // only set role instance to host name as a last resort
     if (config.role.instance == null) {
