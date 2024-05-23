@@ -17,6 +17,10 @@ class ConfigurationLogger {
     messages.add(new Message(ConfigurationLogLevel.WARN, message, args));
   }
 
+  public void info(String message, Object... args) {
+    messages.add(new Message(ConfigurationLogLevel.INFO, message, args));
+  }
+
   void debug(String message, Object... args) {
     messages.add(new Message(ConfigurationLogLevel.DEBUG, message, args));
   }
@@ -48,6 +52,12 @@ class ConfigurationLogger {
       @Override
       public void log(Logger logger, String message, Object... args) {
         logger.warn(message, args);
+      }
+    },
+    INFO {
+      @Override
+      public void log(Logger logger, String message, Object... args) {
+        logger.info(message, args);
       }
     },
     DEBUG {
