@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## Version 3.5.3 GA (05/21/2024)
+## Version 3.5.3 GA (05/24/2024)
 
 ### Enhancements:
 * Emit stable OpenTelemetry HTTP metrics
@@ -17,6 +17,8 @@
   ([#3711](https://github.com/microsoft/ApplicationInsights-Java/pull/3711))
 * Introduce explicit option to disable ingestion sampling
   ([#3713](https://github.com/microsoft/ApplicationInsights-Java/pull/3713))
+* Enable _otelresource_ custom metrics in AKS private integration only
+* ([#3710](https://github.com/microsoft/ApplicationInsights-Java/pull/3710))
 
 ## Version 3.5.2 GA (04/19/2024)
 
