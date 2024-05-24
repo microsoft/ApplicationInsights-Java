@@ -35,7 +35,7 @@ abstract class SamplingOverrides2Test {
     }
     for (Envelope rd : rddList) {
       // 99.99 will suppress ingestion sampling while still resulting in item count 1
-      assertThat(rd.getSampleRate()).isEqualTo(99.99);
+      assertThat(rd.getSampleRate()).isEqualTo(99.99f);
     }
   }
 
