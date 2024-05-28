@@ -15,6 +15,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
+import com.microsoft.applicationinsights.smoketest.schemav2.MetricData;
 import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
 import java.util.List;
 import java.util.Map;
@@ -39,6 +40,12 @@ abstract class AksRoleNameOverridesTest {
 
   private static void verifyRoleNameAndInstance(String roleName, String roleInstance)
       throws Exception {
+
+    // verify _OTELRESOURCE_ custom metric per role name
+    List<Envelope> otelResourceMetrics =
+        testing.mockedIngestion.waitForMetricItems("_OTELRESOURCE_", roleName, 1, true);
+    verifyOtelResourceAttributeCustomMetric(otelResourceMetrics);
+
     List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
     Envelope rdEnvelope = rdList.get(0);
     assertThat(rdEnvelope.getTags()).containsEntry("ai.cloud.role", roleName);
@@ -67,6 +74,22 @@ abstract class AksRoleNameOverridesTest {
     Map<String, String> serverTags = serverMetrics.get(0).getTags();
     assertThat(serverTags.get("ai.cloud.role")).isEqualTo(roleName);
     assertThat(serverTags.get("ai.cloud.roleInstance")).isEqualTo(roleInstance);
+  }
+
+  private static void verifyOtelResourceAttributeCustomMetric(List<Envelope> otelResourceMetrics) {
+    Map<String, String> tags = otelResourceMetrics.get(0).getTags();
+    assertThat(tags.get("ai.internal.sdkVersion")).isNotNull();
+    assertThat(tags.get("ai.cloud.roleInstance")).isEqualTo("test-pod-name");
+    assertThat(tags.get("ai.cloud.role")).isEqualTo("test-deployment-name");
+
+    MetricData otelResourceMetricData =
+        (MetricData) ((Data<?>) otelResourceMetrics.get(0).getData()).getBaseData();
+    Map<String, String> properties = otelResourceMetricData.getProperties();
+    assertThat(properties.get("cloud.provider")).isEqualTo("Azure");
+    assertThat(properties.get("cloud.platform")).isEqualTo("azure_aks");
+    assertThat(properties.get("telemetry.sdk.language")).isEqualTo("java");
+    assertThat(properties.get("service.name")).isEqualTo("test-deployment-name");
+    assertThat(properties.get("service.instance.id")).isEqualTo("test-pod-name");
   }
 
   @Environment(TOMCAT_8_JAVA_8)

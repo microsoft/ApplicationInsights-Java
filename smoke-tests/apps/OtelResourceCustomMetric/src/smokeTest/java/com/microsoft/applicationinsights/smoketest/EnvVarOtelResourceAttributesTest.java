@@ -25,7 +25,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 @UseAgent
-abstract class OtelResourceCustomMetricTest {
+abstract class EnvVarOtelResourceAttributesTest {
 
   private static final String OTEL_RESOURCE_ATTRIBUTES =
       "cloud.resource_id=/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxdfcdaa1/resourceGroups/fake-aks-cluster-name/providers/Microsoft.ContainerService/managedClusters/aks-vanilla-1,cloud.region=eastus,k8s.cluster.name=aks-vanilla-1,k8s.pod.namespace=default,k8s.node.name=aks-agentpool-19737836-vmss000001,k8s.pod.name=customer-test-app-78d8bf887c-nplmk,k8s.pod.uid=efa8fdda-873c-4a6f-b02a-8d3b00bc34a7,k8s.container.name=test-app-java,cloud.provider=Azure,cloud.platform=azure_aks,k8s.replicaset.name=customer-java-very-big-756899c8b6,k8s.deployment.name=customer-java-very-big,k8s.replicaset.uid=69ef5d52-c770-4ec7-a3a2-2e2e8e885b3d";
@@ -34,10 +34,8 @@ abstract class OtelResourceCustomMetricTest {
   static final SmokeTestExtension testing =
       SmokeTestExtension.builder().otelResourceAttributesEnvVar(OTEL_RESOURCE_ATTRIBUTES).build();
 
-  private static final int COUNT = 100;
-
   @Test
-  @TargetUri(value = "/app", callCount = COUNT)
+  @TargetUri(value = "/app")
   void testApp() {
     List<Envelope> metricsEnvelops = testing.mockedIngestion.getItemsEnvelopeDataType("MetricData");
     List<Envelope> otelResourceCustomMetrics = new ArrayList<>();
@@ -62,7 +60,8 @@ abstract class OtelResourceCustomMetricTest {
 
   private static void validateTags(Envelope envelope) {
     Map<String, String> tags = envelope.getTags();
-    assertThat(tags.get("ai.internal.sdkVersion")).isNotNull();
+    assertThat(tags).hasSize(3);
+    assertThat(tags).containsKey("ai.internal.sdkVersion");
     assertThat(tags).containsEntry("ai.cloud.roleInstance", "customer-test-app-78d8bf887c-nplmk");
     assertThat(tags).containsEntry("ai.cloud.role", "customer-java-very-big");
   }
@@ -87,26 +86,26 @@ abstract class OtelResourceCustomMetricTest {
   }
 
   @Environment(TOMCAT_8_JAVA_8)
-  static class Tomcat8Java8Test extends OtelResourceCustomMetricTest {}
+  static class Tomcat8Java8Test extends EnvVarOtelResourceAttributesTest {}
 
   @Environment(TOMCAT_8_JAVA_8_OPENJ9)
-  static class Tomcat8Java8OpenJ9Test extends OtelResourceCustomMetricTest {}
+  static class Tomcat8Java8OpenJ9Test extends EnvVarOtelResourceAttributesTest {}
 
   @Environment(TOMCAT_8_JAVA_11)
-  static class Tomcat8Java11Test extends OtelResourceCustomMetricTest {}
+  static class Tomcat8Java11Test extends EnvVarOtelResourceAttributesTest {}
 
   @Environment(TOMCAT_8_JAVA_11_OPENJ9)
-  static class Tomcat8Java11OpenJ9Test extends OtelResourceCustomMetricTest {}
+  static class Tomcat8Java11OpenJ9Test extends EnvVarOtelResourceAttributesTest {}
 
   @Environment(TOMCAT_8_JAVA_17)
-  static class Tomcat8Java17Test extends OtelResourceCustomMetricTest {}
+  static class Tomcat8Java17Test extends EnvVarOtelResourceAttributesTest {}
 
   @Environment(TOMCAT_8_JAVA_21)
-  static class Tomcat8Java21Test extends OtelResourceCustomMetricTest {}
+  static class Tomcat8Java21Test extends EnvVarOtelResourceAttributesTest {}
 
   @Environment(WILDFLY_13_JAVA_8)
-  static class Wildfly13Java8Test extends OtelResourceCustomMetricTest {}
+  static class Wildfly13Java8Test extends EnvVarOtelResourceAttributesTest {}
 
   @Environment(WILDFLY_13_JAVA_8_OPENJ9)
-  static class Wildfly13Java8OpenJ9Test extends OtelResourceCustomMetricTest {}
+  static class Wildfly13Java8OpenJ9Test extends EnvVarOtelResourceAttributesTest {}
 }
