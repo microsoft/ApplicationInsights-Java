@@ -27,6 +27,8 @@ import javax.annotation.Nullable;
 // * adds item count to span attribute if it is sampled
 public class AiSampler implements Sampler {
 
+  private final double SAMPLE_RATE_TO_DISABLE_INGESTION_SAMPLING = 99.99;
+
   private final boolean suppressIngestionSampling;
   private final boolean localParentBased;
   private final SamplingPercentage requestSamplingPercentage;
@@ -98,9 +100,9 @@ public class AiSampler implements Sampler {
 
     if (sp == 100) {
       // ingestion sampling is applied when sample rate is 100 (or missing)
-      // so we set it to 99.99 which will bypass ingestion sampling (and will still be stored as
-      // item count 1)
-      sp = 99.99;
+      // so we set it to 99.99 which will bypass ingestion sampling
+      // (and will still be stored as item count 1)
+      sp = SAMPLE_RATE_TO_DISABLE_INGESTION_SAMPLING;
     }
 
     SamplingResult samplingResult = recordAndSampleWithSampleRateMap.get(sp);
