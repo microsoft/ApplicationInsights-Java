@@ -27,7 +27,7 @@ import javax.annotation.Nullable;
 // * adds item count to span attribute if it is sampled
 public class AiSampler implements Sampler {
 
-  private final double SAMPLE_RATE_TO_DISABLE_INGESTION_SAMPLING = 99.99;
+  private static final double SAMPLE_RATE_TO_DISABLE_INGESTION_SAMPLING = 99.99;
 
   private final boolean suppressIngestionSampling;
   private final boolean localParentBased;
