@@ -125,10 +125,10 @@ public class AiSampler implements Sampler {
       return SamplingResult.drop();
     }
     if (parentSpan instanceof ReadableSpan) {
-      Double sampleRate =
+      Double parentSampleRate =
           ((ReadableSpan) parentSpan).getAttribute(AiSemanticAttributes.SAMPLE_RATE);
-      if (sampleRate != null) {
-        return new RecordAndSampleWithItemCount(sampleRate);
+      if (parentSampleRate != null) {
+        return new RecordAndSampleWithItemCount(parentSampleRate);
       }
     }
     return null;
