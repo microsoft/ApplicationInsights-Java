@@ -202,7 +202,7 @@ public class Configuration {
     // future goal: make parentBased sampling the default if item count is received via tracestate
     public boolean parentBased;
 
-    public boolean suppressIngestionSampling;
+    public boolean ingestionSamplingEnabled = true;
 
     @Deprecated public List<SamplingOverride> overrides = new ArrayList<>();
   }

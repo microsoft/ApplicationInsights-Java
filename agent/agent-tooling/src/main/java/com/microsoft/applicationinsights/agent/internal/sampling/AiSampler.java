@@ -29,7 +29,7 @@ public class AiSampler implements Sampler {
 
   private static final double SAMPLE_RATE_TO_DISABLE_INGESTION_SAMPLING = 99.99;
 
-  private final boolean suppressIngestionSampling;
+  private final boolean ingestionSamplingEnabled;
   private final boolean localParentBased;
   private final SamplingPercentage requestSamplingPercentage;
   // when localParentBased=false, then this applies to all dependencies, not only parentless
@@ -39,22 +39,22 @@ public class AiSampler implements Sampler {
   public AiSampler(
       SamplingPercentage requestSamplingPercentage,
       SamplingPercentage parentlessDependencySamplingPercentage,
-      boolean suppressIngestionSampling) {
+      boolean ingestionSamplingEnabled) {
     this(
         requestSamplingPercentage,
         parentlessDependencySamplingPercentage,
-        suppressIngestionSampling,
+        ingestionSamplingEnabled,
         true);
   }
 
   public AiSampler(
       SamplingPercentage requestSamplingPercentage,
       SamplingPercentage parentlessDependencySamplingPercentage,
-      boolean suppressIngestionSampling,
+      boolean ingestionSamplingEnabled,
       boolean localParentBased) {
     this.requestSamplingPercentage = requestSamplingPercentage;
     this.parentlessDependencySamplingPercentage = parentlessDependencySamplingPercentage;
-    this.suppressIngestionSampling = suppressIngestionSampling;
+    this.ingestionSamplingEnabled = ingestionSamplingEnabled;
     this.localParentBased = localParentBased;
   }
 
@@ -94,7 +94,7 @@ public class AiSampler implements Sampler {
       return SamplingResult.drop();
     }
 
-    if (sp == 100 && !suppressIngestionSampling) {
+    if (sp == 100 && ingestionSamplingEnabled) {
       return SamplingResult.recordAndSample();
     }
 

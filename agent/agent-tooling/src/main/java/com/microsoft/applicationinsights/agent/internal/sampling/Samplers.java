@@ -22,12 +22,12 @@ public class Samplers {
           new AiSampler(
               requestSamplingPercentage,
               parentlessDependencySamplingPercentage,
-              samplingPreview.suppressIngestionSampling);
+              samplingPreview.ingestionSamplingEnabled);
     } else if (sampling.percentage != null) {
       SamplingPercentage samplingPercentage = SamplingPercentage.fixed(sampling.percentage);
       sampler =
           new AiSampler(
-              samplingPercentage, samplingPercentage, samplingPreview.suppressIngestionSampling);
+              samplingPercentage, samplingPercentage, samplingPreview.ingestionSamplingEnabled);
     } else {
       throw new AssertionError("ConfigurationBuilder should have set the default sampling");
     }

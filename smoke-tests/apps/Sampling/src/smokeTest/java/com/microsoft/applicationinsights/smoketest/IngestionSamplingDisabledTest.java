@@ -21,8 +21,8 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-@UseAgent("applicationinsights-no-ingestion-sampling.json")
-abstract class NoIngestionSamplingTest {
+@UseAgent("applicationinsights-ingestion-sampling-disabled.json")
+abstract class IngestionSamplingDisabledTest {
 
   @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.create();
 
@@ -62,29 +62,29 @@ abstract class NoIngestionSamplingTest {
   }
 
   @Environment(TOMCAT_8_JAVA_8)
-  static class Tomcat8Java8Test extends NoIngestionSamplingTest {}
+  static class Tomcat8Java8Test extends IngestionSamplingDisabledTest {}
 
   @Environment(TOMCAT_8_JAVA_8_OPENJ9)
-  static class Tomcat8Java8OpenJ9Test extends NoIngestionSamplingTest {}
+  static class Tomcat8Java8OpenJ9Test extends IngestionSamplingDisabledTest {}
 
   @Environment(TOMCAT_8_JAVA_11)
-  static class Tomcat8Java11Test extends NoIngestionSamplingTest {}
+  static class Tomcat8Java11Test extends IngestionSamplingDisabledTest {}
 
   @Environment(TOMCAT_8_JAVA_11_OPENJ9)
-  static class Tomcat8Java11OpenJ9Test extends NoIngestionSamplingTest {}
+  static class Tomcat8Java11OpenJ9Test extends IngestionSamplingDisabledTest {}
 
   @Environment(TOMCAT_8_JAVA_17)
-  static class Tomcat8Java17Test extends NoIngestionSamplingTest {}
+  static class Tomcat8Java17Test extends IngestionSamplingDisabledTest {}
 
   @Environment(TOMCAT_8_JAVA_21)
-  static class Tomcat8Java21Test extends NoIngestionSamplingTest {}
+  static class Tomcat8Java21Test extends IngestionSamplingDisabledTest {}
 
   @Environment(TOMCAT_8_JAVA_21_OPENJ9)
-  static class Tomcat8Java21OpenJ9Test extends NoIngestionSamplingTest {}
+  static class Tomcat8Java21OpenJ9Test extends IngestionSamplingDisabledTest {}
 
   @Environment(WILDFLY_13_JAVA_8)
-  static class Wildfly13Java8Test extends NoIngestionSamplingTest {}
+  static class Wildfly13Java8Test extends IngestionSamplingDisabledTest {}
 
   @Environment(WILDFLY_13_JAVA_8_OPENJ9)
-  static class Wildfly13Java8OpenJ9Test extends NoIngestionSamplingTest {}
+  static class Wildfly13Java8OpenJ9Test extends IngestionSamplingDisabledTest {}
 }
