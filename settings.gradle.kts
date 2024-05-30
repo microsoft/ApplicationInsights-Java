@@ -3,14 +3,14 @@ import org.apache.tools.ant.taskdefs.condition.Os
 pluginManagement {
   plugins {
     id("com.github.ben-manes.versions") version "0.51.0"
-    id("com.github.jk1.dependency-license-report") version "2.7"
+    id("com.github.jk1.dependency-license-report") version "2.8"
     id("me.champeau.jmh") version "0.7.2"
     id("com.gradle.plugin-publish") version "1.2.1"
   }
 }
 
 plugins {
-  id("com.gradle.enterprise") version "3.17.2"
+  id("com.gradle.enterprise") version "3.17.4"
 }
 
 dependencyResolutionManagement {

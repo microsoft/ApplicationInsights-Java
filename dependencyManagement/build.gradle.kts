@@ -11,10 +11,10 @@ data class DependencySet(val group: String, val version: String, val modules: Li
 val dependencyVersions = hashMapOf<String, String>()
 rootProject.extra["versions"] = dependencyVersions
 
-val otelVersion = "1.37.0"
-val otelInstrumentationAlphaVersion = "2.3.0-alpha"
-val otelInstrumentationVersion = "2.3.0"
-val otelContribAlphaVersion = "1.34.0-alpha"
+val otelVersion = "1.38.0"
+val otelInstrumentationAlphaVersion = "2.4.0-alpha"
+val otelInstrumentationVersion = "2.4.0"
+val otelContribAlphaVersion = "1.35.0-alpha"
 val byteBuddyVersion = "1.14.11"
 
 rootProject.extra["otelVersion"] = otelVersion
@@ -30,7 +30,7 @@ val DEPENDENCY_BOMS = listOf(
   "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:${otelInstrumentationVersion}",
   "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${otelInstrumentationAlphaVersion}",
   "com.azure:azure-sdk-bom:1.2.23",
-  "io.netty:netty-bom:4.1.109.Final",
+  "io.netty:netty-bom:4.1.110.Final",
   "org.junit:junit-bom:5.10.2",
   "org.testcontainers:testcontainers-bom:1.19.8",
 )
@@ -71,9 +71,9 @@ val DEPENDENCIES = listOf(
   "com.uber.nullaway:nullaway:0.10.26",
   "commons-codec:commons-codec:1.17.0",
   "org.apache.commons:commons-text:1.12.0",
-  "com.google.code.gson:gson:2.10.1",
+  "com.google.code.gson:gson:2.11.0",
   "com.azure:azure-core-test:1.25.0", // this is not included in azure-sdk-bom
-  "org.assertj:assertj-core:3.25.3",
+  "org.assertj:assertj-core:3.26.0",
   "org.awaitility:awaitility:4.2.1",
   "io.github.hakky54:logcaptor:2.9.2",
   "com.microsoft.jfr:jfr-streaming:1.2.0",

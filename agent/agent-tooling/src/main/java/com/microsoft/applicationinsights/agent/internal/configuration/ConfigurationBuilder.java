@@ -301,6 +301,8 @@ public class ConfigurationBuilder {
     // only fall back to default sampling configuration after all overlays have been performed
     if (config.sampling.requestsPerSecond == null && config.sampling.percentage == null) {
       config.sampling.requestsPerSecond = 5.0;
+      configurationLogger.info(
+          "Some telemetry may be sampled out because a default sampling configuration was added in version 3.4.0 to reduce the default billing cost. You can set the sampling configuration explicitly: https://learn.microsoft.com/azure/azure-monitor/app/java-standalone-config#sampling");
     }
     // only set role instance to host name as a last resort
     if (config.role.instance == null) {
@@ -716,10 +718,10 @@ public class ConfigurationBuilder {
         && !replacedConnectionString.startsWith("InstrumentationKey=")
         && config.connectionString.equals(replacedConnectionString)) {
       throw new FriendlyException(
-          "Error loading connection string from a file (\""
+          "Your connection string seems to have a wrong format: \""
               + config.connectionString
               + "\").\n"
-              + "Please use this format instead:"
+              + "If you want to load the connection string from a file, please use this format:"
               + "\n{ \"connectionString\": \"${file:connection-string-file.txt}\" }\n",
           "Learn more about configuration options here: " + CONFIGURATION_OPTIONS_LINK);
     }

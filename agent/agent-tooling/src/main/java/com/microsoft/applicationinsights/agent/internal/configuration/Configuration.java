@@ -15,6 +15,7 @@ import com.microsoft.applicationinsights.agent.internal.diagnostics.DiagnosticsH
 import com.microsoft.applicationinsights.agent.internal.diagnostics.status.StatusFile;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.logs.Severity;
+import io.opentelemetry.semconv.HttpAttributes;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -716,6 +717,16 @@ public class Configuration {
         throw new FriendlyException(
             "A sampling override configuration has an attribute section with a \"value\" that is missing a \"matchType\".",
             "Please provide a \"matchType\" under the attribute section of the sampling override configuration.");
+      }
+      String httpStatusCodeKey = HttpAttributes.HTTP_RESPONSE_STATUS_CODE.getKey();
+      if (httpStatusCodeKey.equals(key)) {
+        throw new FriendlyException(
+            "You can't use the \""
+                + httpStatusCodeKey
+                + "\" attribute for sampling overrides because you can only use the attributes set at the start of a span.",
+            "Please remove the \""
+                + httpStatusCodeKey
+                + "\" attribute from the sampling override configuration and look at https://learn.microsoft.com/azure/azure-monitor/app/java-standalone-sampling-overrides for an alternative solution.");
       }
       if (matchType == MatchType.REGEXP) {
         if (isEmpty(value)) {
