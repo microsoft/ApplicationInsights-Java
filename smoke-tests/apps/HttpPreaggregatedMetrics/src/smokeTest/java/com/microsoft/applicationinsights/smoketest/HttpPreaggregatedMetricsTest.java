@@ -42,7 +42,7 @@ abstract class HttpPreaggregatedMetricsTest {
   }
 
   private void testHttpUrlConnectionAndSynthetic(boolean synthetic) throws Exception {
-    verifyHttpclientRequestsAndDependencies("https://mock.codes/200?q=spaces%20test");
+    verifyHttpclientRequestsAndDependencies("http://host.testcontainers.internal:6060/mock/200?q=spaces%20test");
 
     List<Envelope> clientMetrics =
         testing.mockedIngestion.waitForStandardMetricItems("dependencies/duration", 3);
@@ -62,29 +62,29 @@ abstract class HttpPreaggregatedMetricsTest {
     assertThat(telemetry.rdd1.getData()).isEqualTo(successUrlWithQueryString);
     assertThat(telemetry.rd.getSuccess()).isTrue();
     assertThat(telemetry.rdEnvelope.getSampleRate()).isNull();
-    assertThat(telemetry.rdd1.getName()).isEqualTo("GET /200");
+    assertThat(telemetry.rdd1.getName()).isEqualTo("GET /mock/200");
     assertThat(telemetry.rdd1.getType()).isEqualTo("Http");
-    assertThat(telemetry.rdd1.getTarget()).isEqualTo("mock.codes");
+    assertThat(telemetry.rdd1.getTarget()).isEqualTo("host.testcontainers.internal:6060");
     assertThat(telemetry.rdd1.getResultCode()).isEqualTo("200");
     assertThat(telemetry.rdd1.getProperties())
         .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
     assertThat(telemetry.rdd1.getSuccess()).isTrue();
     assertThat(telemetry.rddEnvelope1.getSampleRate()).isNull();
 
-    assertThat(telemetry.rdd2.getName()).isEqualTo("GET /404");
-    assertThat(telemetry.rdd2.getData()).isEqualTo("https://mock.codes/404");
+    assertThat(telemetry.rdd2.getName()).isEqualTo("GET /mock/404");
+    assertThat(telemetry.rdd2.getData()).isEqualTo("http://host.testcontainers.internal:6060/mock/404");
     assertThat(telemetry.rdd2.getType()).isEqualTo("Http");
-    assertThat(telemetry.rdd2.getTarget()).isEqualTo("mock.codes");
+    assertThat(telemetry.rdd2.getTarget()).isEqualTo("host.testcontainers.internal:6060");
     assertThat(telemetry.rdd2.getResultCode()).isEqualTo("404");
     assertThat(telemetry.rdd2.getProperties())
         .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
     assertThat(telemetry.rdd2.getSuccess()).isFalse();
     assertThat(telemetry.rddEnvelope2.getSampleRate()).isNull();
 
-    assertThat(telemetry.rdd3.getName()).isEqualTo("GET /500");
-    assertThat(telemetry.rdd3.getData()).isEqualTo("https://mock.codes/500");
+    assertThat(telemetry.rdd3.getName()).isEqualTo("GET /mock/500");
+    assertThat(telemetry.rdd3.getData()).isEqualTo("http://host.testcontainers.internal:6060/mock/500");
     assertThat(telemetry.rdd3.getType()).isEqualTo("Http");
-    assertThat(telemetry.rdd3.getTarget()).isEqualTo("mock.codes");
+    assertThat(telemetry.rdd3.getTarget()).isEqualTo("host.testcontainers.internal:6060");
     assertThat(telemetry.rdd3.getResultCode()).isEqualTo("500");
     assertThat(telemetry.rdd3.getProperties())
         .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
@@ -171,7 +171,7 @@ abstract class HttpPreaggregatedMetricsTest {
       assertThat(properties.get("_MS.MetricId")).isEqualTo("dependencies/duration");
       assertThat(properties.get("dependency/resultCode")).isEqualTo(resultCode);
       assertThat(properties.get("Dependency.Success")).isEqualTo(expectedSuccess);
-      assertThat(properties.get("dependency/target")).isEqualTo("mock.codes");
+      assertThat(properties.get("dependency/target")).isEqualTo("host.testcontainers.internal:6060");
       assertThat(properties.get("Dependency.Type")).isEqualTo("Http");
       assertThat(properties.get("operation/synthetic")).isEqualTo("False");
     } else {

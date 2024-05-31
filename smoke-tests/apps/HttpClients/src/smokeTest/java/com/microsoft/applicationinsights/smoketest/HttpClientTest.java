@@ -68,11 +68,11 @@ abstract class HttpClientTest {
   @TargetUri("/springWebClient")
   void testSpringWebClient() throws Exception {
     // TODO investigate why %2520 is captured instead of %20
-    verify("https://mock.codes/200?q=spaces%2520test");
+    verify("http://host.testcontainers.internal:6060/mock/200?q=spaces%2520test");
   }
 
   private static void verify() throws Exception {
-    verify("https://mock.codes/200?q=spaces%20test");
+    verify("http://host.testcontainers.internal:6060/mock/200?q=spaces%20test");
   }
 
   private static void verify(String successUrlWithQueryString) throws Exception {
@@ -84,30 +84,30 @@ abstract class HttpClientTest {
     // TODO (trask) add this check in all smoke tests?
     assertThat(telemetry.rdEnvelope.getSampleRate()).isNull();
 
-    assertThat(telemetry.rdd1.getName()).isEqualTo("GET /200");
+    assertThat(telemetry.rdd1.getName()).isEqualTo("GET /mock/200");
     assertThat(telemetry.rdd1.getData()).isEqualTo(successUrlWithQueryString);
     assertThat(telemetry.rdd1.getType()).isEqualTo("Http");
-    assertThat(telemetry.rdd1.getTarget()).isEqualTo("mock.codes");
+    assertThat(telemetry.rdd1.getTarget()).isEqualTo("host.testcontainers.internal:6060");
     assertThat(telemetry.rdd1.getResultCode()).isEqualTo("200");
     assertThat(telemetry.rdd1.getProperties())
         .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
     assertThat(telemetry.rdd1.getSuccess()).isTrue();
     assertThat(telemetry.rddEnvelope1.getSampleRate()).isNull();
 
-    assertThat(telemetry.rdd2.getName()).isEqualTo("GET /404");
-    assertThat(telemetry.rdd2.getData()).isEqualTo("https://mock.codes/404");
+    assertThat(telemetry.rdd2.getName()).isEqualTo("GET /mock/404");
+    assertThat(telemetry.rdd2.getData()).isEqualTo("http://host.testcontainers.internal:6060/mock/404");
     assertThat(telemetry.rdd2.getType()).isEqualTo("Http");
-    assertThat(telemetry.rdd2.getTarget()).isEqualTo("mock.codes");
+    assertThat(telemetry.rdd2.getTarget()).isEqualTo("host.testcontainers.internal:6060");
     assertThat(telemetry.rdd2.getResultCode()).isEqualTo("404");
     assertThat(telemetry.rdd2.getProperties())
         .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
     assertThat(telemetry.rdd2.getSuccess()).isFalse();
     assertThat(telemetry.rddEnvelope2.getSampleRate()).isNull();
 
-    assertThat(telemetry.rdd3.getName()).isEqualTo("GET /500");
-    assertThat(telemetry.rdd3.getData()).isEqualTo("https://mock.codes/500");
+    assertThat(telemetry.rdd3.getName()).isEqualTo("GET /mock/500");
+    assertThat(telemetry.rdd3.getData()).isEqualTo("http://host.testcontainers.internal:6060/mock/500");
     assertThat(telemetry.rdd3.getType()).isEqualTo("Http");
-    assertThat(telemetry.rdd3.getTarget()).isEqualTo("mock.codes");
+    assertThat(telemetry.rdd3.getTarget()).isEqualTo("host.testcontainers.internal:6060");
     assertThat(telemetry.rdd3.getResultCode()).isEqualTo("500");
     assertThat(telemetry.rdd3.getProperties())
         .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
