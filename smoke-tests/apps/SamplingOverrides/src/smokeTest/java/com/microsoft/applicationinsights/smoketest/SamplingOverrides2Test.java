@@ -11,7 +11,10 @@ import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCA
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_8_OPENJ9;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.WILDFLY_13_JAVA_8;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.WILDFLY_13_JAVA_8_OPENJ9;
+import static org.assertj.core.api.Assertions.assertThat;
 
+import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -23,8 +26,17 @@ abstract class SamplingOverrides2Test {
   @Test
   @TargetUri(value = "/login", callCount = 100)
   void testSampling() throws Exception {
-    testing.mockedIngestion.waitForItems("RequestData", 100);
-    testing.mockedIngestion.waitForItems("RemoteDependencyData", 100);
+    List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 100);
+    List<Envelope> rddList = testing.mockedIngestion.waitForItems("RemoteDependencyData", 100);
+
+    for (Envelope rd : rdList) {
+      // 99.99 will suppress ingestion sampling while still resulting in item count 1
+      assertThat(rd.getSampleRate()).isEqualTo(99.99f);
+    }
+    for (Envelope rd : rddList) {
+      // 99.99 will suppress ingestion sampling while still resulting in item count 1
+      assertThat(rd.getSampleRate()).isEqualTo(99.99f);
+    }
   }
 
   @Environment(TOMCAT_8_JAVA_8)

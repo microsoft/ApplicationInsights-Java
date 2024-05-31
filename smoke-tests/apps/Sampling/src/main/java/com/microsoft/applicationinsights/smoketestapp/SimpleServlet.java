@@ -13,10 +13,10 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-@WebServlet("/sampling")
-public class SimpleSamplingServlet extends HttpServlet {
+@WebServlet("/simple")
+public class SimpleServlet extends HttpServlet {
 
-  private static final Logger logger = Logger.getLogger(SimpleSamplingServlet.class.getName());
+  private static final Logger logger = Logger.getLogger(SimpleServlet.class.getName());
 
   private final TelemetryClient client = new TelemetryClient();
 

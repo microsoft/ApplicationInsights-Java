@@ -18,15 +18,16 @@ public class Samplers {
       SamplingPercentage requestSamplingPercentage =
           SamplingPercentage.rateLimited(sampling.requestsPerSecond);
       SamplingPercentage parentlessDependencySamplingPercentage = SamplingPercentage.fixed(100);
-      sampler = new AiSampler(requestSamplingPercentage, parentlessDependencySamplingPercentage);
+      sampler =
+          new AiSampler(
+              requestSamplingPercentage,
+              parentlessDependencySamplingPercentage,
+              samplingPreview.ingestionSamplingEnabled);
     } else if (sampling.percentage != null) {
-      SamplingPercentage samplingPercentage;
-      if (sampling.percentage == 100) {
-        samplingPercentage = SamplingPercentage.useIngestionSampling();
-      } else {
-        samplingPercentage = SamplingPercentage.fixed(sampling.percentage);
-      }
-      sampler = new AiSampler(samplingPercentage, samplingPercentage);
+      SamplingPercentage samplingPercentage = SamplingPercentage.fixed(sampling.percentage);
+      sampler =
+          new AiSampler(
+              samplingPercentage, samplingPercentage, samplingPreview.ingestionSamplingEnabled);
     } else {
       throw new AssertionError("ConfigurationBuilder should have set the default sampling");
     }
