@@ -85,14 +85,14 @@ public class HttpClientServlet extends HttpServlet {
     }
 
     if (executeGetUrl != null) {
-      executeGetUrl.execute("https://mock.codes/200?q=spaces%20test");
+      executeGetUrl.execute("http://host.testcontainers.internal:6060/mock/200?q=spaces%20test");
       try {
-        executeGetUrl.execute("https://mock.codes/404");
+        executeGetUrl.execute("http://host.testcontainers.internal:6060/mock/404");
       } catch (Exception e) {
         // HttpURLConnection throws exception on 404 and 500
       }
       try {
-        executeGetUrl.execute("https://mock.codes/500");
+        executeGetUrl.execute("http://host.testcontainers.internal:6060/mock/500");
       } catch (Exception e) {
         // HttpURLConnection throws exception on 404 and 500
       }

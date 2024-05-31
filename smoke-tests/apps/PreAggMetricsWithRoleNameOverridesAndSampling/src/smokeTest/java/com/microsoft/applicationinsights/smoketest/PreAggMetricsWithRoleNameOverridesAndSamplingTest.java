@@ -120,9 +120,9 @@ abstract class PreAggMetricsWithRoleNameOverridesAndSamplingTest {
       assertThat(rd.getSuccess()).isTrue();
 
       assertThat(rdd.getType()).isEqualTo("Http");
-      assertThat(rdd.getTarget()).isEqualTo("mock.codes");
-      assertThat(rdd.getName()).isEqualTo("GET /200");
-      assertThat(rdd.getData()).isEqualTo("https://mock.codes/200");
+      assertThat(rdd.getTarget()).isEqualTo("host.testcontainers.internal:6060");
+      assertThat(rdd.getName()).isEqualTo("GET /mock/200");
+      assertThat(rdd.getData()).isEqualTo("http://host.testcontainers.internal:6060/mock/200");
       assertThat(rdd.getResultCode()).isEqualTo("200");
       assertThat(rdd.getSuccess()).isTrue();
 
@@ -171,7 +171,8 @@ abstract class PreAggMetricsWithRoleNameOverridesAndSamplingTest {
       assertThat(properties.get("_MS.MetricId")).isEqualTo("dependencies/duration");
       assertThat(properties.get("dependency/resultCode")).isEqualTo(resultCode);
       assertThat(properties.get("Dependency.Success")).isEqualTo(expectedSuccess);
-      assertThat(properties.get("dependency/target")).isEqualTo("mock.codes");
+      assertThat(properties.get("dependency/target"))
+          .isEqualTo("host.testcontainers.internal:6060");
       assertThat(properties.get("Dependency.Type")).isEqualTo("Http");
     } else {
       assertThat(properties).hasSize(7);
