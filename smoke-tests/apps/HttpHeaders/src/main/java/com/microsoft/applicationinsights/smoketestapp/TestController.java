@@ -34,7 +34,7 @@ public class TestController {
   }
 
   private void callMockCodes200(boolean nope) throws IOException {
-    URL obj = new URL("https://mock.codes/200");
+    URL obj = new URL("http://host.testcontainers.internal:6060/mock/200");
 
     HttpURLConnection connection = (HttpURLConnection) obj.openConnection();
     connection.setRequestProperty("abc-def", nope ? "nope" : "testing123");

@@ -27,24 +27,34 @@ import javax.annotation.Nullable;
 // * adds item count to span attribute if it is sampled
 public class AiSampler implements Sampler {
 
+  private static final double SAMPLE_RATE_TO_DISABLE_INGESTION_SAMPLING = 99.99;
+
+  private final boolean ingestionSamplingEnabled;
   private final boolean localParentBased;
   private final SamplingPercentage requestSamplingPercentage;
   // when localParentBased=false, then this applies to all dependencies, not only parentless
   private final SamplingPercentage parentlessDependencySamplingPercentage;
-  private final Cache<Long, SamplingResult> recordAndSampleWithItemCountMap = Cache.bounded(100);
+  private final Cache<Double, SamplingResult> recordAndSampleWithSampleRateMap = Cache.bounded(100);
 
   public AiSampler(
       SamplingPercentage requestSamplingPercentage,
-      SamplingPercentage parentlessDependencySamplingPercentage) {
-    this(requestSamplingPercentage, parentlessDependencySamplingPercentage, true);
+      SamplingPercentage parentlessDependencySamplingPercentage,
+      boolean ingestionSamplingEnabled) {
+    this(
+        requestSamplingPercentage,
+        parentlessDependencySamplingPercentage,
+        ingestionSamplingEnabled,
+        true);
   }
 
   public AiSampler(
       SamplingPercentage requestSamplingPercentage,
       SamplingPercentage parentlessDependencySamplingPercentage,
+      boolean ingestionSamplingEnabled,
       boolean localParentBased) {
     this.requestSamplingPercentage = requestSamplingPercentage;
     this.parentlessDependencySamplingPercentage = parentlessDependencySamplingPercentage;
+    this.ingestionSamplingEnabled = ingestionSamplingEnabled;
     this.localParentBased = localParentBased;
   }
 
@@ -76,24 +86,29 @@ public class AiSampler implements Sampler {
               : parentlessDependencySamplingPercentage.get();
     }
 
-    if (sp == SamplingPercentage.USE_INGESTION_SAMPLING) {
-      return SamplingResult.recordAndSample();
-    }
-
     if (sp == 0) {
       return SamplingResult.drop();
     }
 
-    if (!shouldRecordAndSample(traceId, sp)) {
+    if (sp != 100 && !shouldRecordAndSample(traceId, sp)) {
       return SamplingResult.drop();
     }
 
-    // sp cannot be 0 here
-    long itemCount = Math.round(100.0 / sp);
-    SamplingResult samplingResult = recordAndSampleWithItemCountMap.get(itemCount);
+    if (sp == 100 && ingestionSamplingEnabled) {
+      return SamplingResult.recordAndSample();
+    }
+
+    if (sp == 100) {
+      // ingestion sampling is applied when sample rate is 100 (or missing)
+      // so we set it to 99.99 which will bypass ingestion sampling
+      // (and will still be stored as item count 1)
+      sp = SAMPLE_RATE_TO_DISABLE_INGESTION_SAMPLING;
+    }
+
+    SamplingResult samplingResult = recordAndSampleWithSampleRateMap.get(sp);
     if (samplingResult == null) {
-      samplingResult = new RecordAndSampleWithItemCount(itemCount);
-      recordAndSampleWithItemCountMap.put(itemCount, samplingResult);
+      samplingResult = new RecordAndSampleWithItemCount(sp);
+      recordAndSampleWithSampleRateMap.put(sp, samplingResult);
     }
     return samplingResult;
   }
@@ -112,9 +127,10 @@ public class AiSampler implements Sampler {
       return SamplingResult.drop();
     }
     if (parentSpan instanceof ReadableSpan) {
-      Long itemCount = ((ReadableSpan) parentSpan).getAttribute(AiSemanticAttributes.ITEM_COUNT);
-      if (itemCount != null) {
-        return new RecordAndSampleWithItemCount(itemCount);
+      Double parentSampleRate =
+          ((ReadableSpan) parentSpan).getAttribute(AiSemanticAttributes.SAMPLE_RATE);
+      if (parentSampleRate != null) {
+        return new RecordAndSampleWithItemCount(parentSampleRate);
       }
     }
     return null;
@@ -141,8 +157,8 @@ public class AiSampler implements Sampler {
 
     private final Attributes attributes;
 
-    RecordAndSampleWithItemCount(long itemCount) {
-      attributes = Attributes.builder().put(AiSemanticAttributes.ITEM_COUNT, itemCount).build();
+    RecordAndSampleWithItemCount(double sampleRate) {
+      attributes = Attributes.builder().put(AiSemanticAttributes.SAMPLE_RATE, sampleRate).build();
     }
 
     @Override
