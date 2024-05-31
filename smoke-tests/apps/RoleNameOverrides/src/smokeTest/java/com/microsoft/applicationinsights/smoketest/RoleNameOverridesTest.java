@@ -139,7 +139,8 @@ abstract class RoleNameOverridesTest {
       assertThat(properties.get("_MS.MetricId")).isEqualTo("dependencies/duration");
       assertThat(properties.get("dependency/resultCode")).isEqualTo(resultCode);
       assertThat(properties.get("Dependency.Success")).isEqualTo(expectedSuccess);
-      assertThat(properties.get("dependency/target")).isEqualTo("host.testcontainers.internal:6060");
+      assertThat(properties.get("dependency/target"))
+          .isEqualTo("host.testcontainers.internal:6060");
       assertThat(properties.get("Dependency.Type")).isEqualTo("Http");
     } else {
       assertThat(properties).hasSize(7);

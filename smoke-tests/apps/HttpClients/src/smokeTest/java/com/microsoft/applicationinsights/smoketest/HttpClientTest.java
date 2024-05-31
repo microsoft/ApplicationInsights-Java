@@ -95,7 +95,8 @@ abstract class HttpClientTest {
     assertThat(telemetry.rddEnvelope1.getSampleRate()).isNull();
 
     assertThat(telemetry.rdd2.getName()).isEqualTo("GET /mock/404");
-    assertThat(telemetry.rdd2.getData()).isEqualTo("http://host.testcontainers.internal:6060/mock/404");
+    assertThat(telemetry.rdd2.getData())
+        .isEqualTo("http://host.testcontainers.internal:6060/mock/404");
     assertThat(telemetry.rdd2.getType()).isEqualTo("Http");
     assertThat(telemetry.rdd2.getTarget()).isEqualTo("host.testcontainers.internal:6060");
     assertThat(telemetry.rdd2.getResultCode()).isEqualTo("404");
@@ -105,7 +106,8 @@ abstract class HttpClientTest {
     assertThat(telemetry.rddEnvelope2.getSampleRate()).isNull();
 
     assertThat(telemetry.rdd3.getName()).isEqualTo("GET /mock/500");
-    assertThat(telemetry.rdd3.getData()).isEqualTo("http://host.testcontainers.internal:6060/mock/500");
+    assertThat(telemetry.rdd3.getData())
+        .isEqualTo("http://host.testcontainers.internal:6060/mock/500");
     assertThat(telemetry.rdd3.getType()).isEqualTo("Http");
     assertThat(telemetry.rdd3.getTarget()).isEqualTo("host.testcontainers.internal:6060");
     assertThat(telemetry.rdd3.getResultCode()).isEqualTo("500");

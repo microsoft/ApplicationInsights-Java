@@ -42,7 +42,8 @@ abstract class HttpPreaggregatedMetricsTest {
   }
 
   private void testHttpUrlConnectionAndSynthetic(boolean synthetic) throws Exception {
-    verifyHttpclientRequestsAndDependencies("http://host.testcontainers.internal:6060/mock/200?q=spaces%20test");
+    verifyHttpclientRequestsAndDependencies(
+        "http://host.testcontainers.internal:6060/mock/200?q=spaces%20test");
 
     List<Envelope> clientMetrics =
         testing.mockedIngestion.waitForStandardMetricItems("dependencies/duration", 3);
@@ -72,7 +73,8 @@ abstract class HttpPreaggregatedMetricsTest {
     assertThat(telemetry.rddEnvelope1.getSampleRate()).isNull();
 
     assertThat(telemetry.rdd2.getName()).isEqualTo("GET /mock/404");
-    assertThat(telemetry.rdd2.getData()).isEqualTo("http://host.testcontainers.internal:6060/mock/404");
+    assertThat(telemetry.rdd2.getData())
+        .isEqualTo("http://host.testcontainers.internal:6060/mock/404");
     assertThat(telemetry.rdd2.getType()).isEqualTo("Http");
     assertThat(telemetry.rdd2.getTarget()).isEqualTo("host.testcontainers.internal:6060");
     assertThat(telemetry.rdd2.getResultCode()).isEqualTo("404");
@@ -82,7 +84,8 @@ abstract class HttpPreaggregatedMetricsTest {
     assertThat(telemetry.rddEnvelope2.getSampleRate()).isNull();
 
     assertThat(telemetry.rdd3.getName()).isEqualTo("GET /mock/500");
-    assertThat(telemetry.rdd3.getData()).isEqualTo("http://host.testcontainers.internal:6060/mock/500");
+    assertThat(telemetry.rdd3.getData())
+        .isEqualTo("http://host.testcontainers.internal:6060/mock/500");
     assertThat(telemetry.rdd3.getType()).isEqualTo("Http");
     assertThat(telemetry.rdd3.getTarget()).isEqualTo("host.testcontainers.internal:6060");
     assertThat(telemetry.rdd3.getResultCode()).isEqualTo("500");
@@ -171,7 +174,8 @@ abstract class HttpPreaggregatedMetricsTest {
       assertThat(properties.get("_MS.MetricId")).isEqualTo("dependencies/duration");
       assertThat(properties.get("dependency/resultCode")).isEqualTo(resultCode);
       assertThat(properties.get("Dependency.Success")).isEqualTo(expectedSuccess);
-      assertThat(properties.get("dependency/target")).isEqualTo("host.testcontainers.internal:6060");
+      assertThat(properties.get("dependency/target"))
+          .isEqualTo("host.testcontainers.internal:6060");
       assertThat(properties.get("Dependency.Type")).isEqualTo("Http");
       assertThat(properties.get("operation/synthetic")).isEqualTo("False");
     } else {
