@@ -269,7 +269,7 @@ public class ConfigurationBuilder {
               + "If you're on premise, you can use APPLICATIONINSIGHTS_AUTHENTICATION_STRING environment variable to pass the client ID and secret, "
               + "e.g. APPLICATIONINSIGHTS_AUTHENTICATION_STRING=Authorization=AAD;ClientId={CLIENT_ID};ClientSecret={CLIENT_SECRET}.");
     }
-    if (config.sampling.percentage != null && config.sampling.requestsPerSecond != null) {
+    if (config.sampling.requestsPerSecond != null && config.sampling.percentage != null) {
       configurationLogger.warn(
           "Sampling \"requestsPerSecond\" and \"percentage\" should not be used at the same time."
               + " Please remove one of them.");
@@ -301,6 +301,8 @@ public class ConfigurationBuilder {
     // only fall back to default sampling configuration after all overlays have been performed
     if (config.sampling.requestsPerSecond == null && config.sampling.percentage == null) {
       config.sampling.requestsPerSecond = 5.0;
+      configurationLogger.info(
+          "Some telemetry may be sampled out because a default sampling configuration was added in version 3.4.0 to reduce the default billing cost. You can set the sampling configuration explicitly: https://learn.microsoft.com/azure/azure-monitor/app/java-standalone-config#sampling");
     }
     // only set role instance to host name as a last resort
     if (config.role.instance == null) {

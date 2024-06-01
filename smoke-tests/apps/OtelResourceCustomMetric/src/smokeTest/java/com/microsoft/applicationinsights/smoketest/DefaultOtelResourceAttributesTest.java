@@ -13,53 +13,49 @@ import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.WILDF
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.WILDFLY_13_JAVA_8_OPENJ9;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
+import com.microsoft.applicationinsights.smoketest.schemav2.MetricData;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-@UseAgent("applicationinsights2.json")
-abstract class SamplingOverrides2Test {
+@UseAgent
+abstract class DefaultOtelResourceAttributesTest {
 
   @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.create();
 
   @Test
-  @TargetUri(value = "/login", callCount = 100)
-  void testSampling() throws Exception {
-    List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 100);
-    List<Envelope> rddList = testing.mockedIngestion.waitForItems("RemoteDependencyData", 100);
-
-    for (Envelope rd : rdList) {
-      // 99.99 will suppress ingestion sampling while still resulting in item count 1
-      assertThat(rd.getSampleRate()).isEqualTo(99.99f);
-    }
-    for (Envelope rd : rddList) {
-      // 99.99 will suppress ingestion sampling while still resulting in item count 1
-      assertThat(rd.getSampleRate()).isEqualTo(99.99f);
-    }
+  @TargetUri(value = "/app")
+  void testApp() {
+    List<Envelope> metricsEnvelops = testing.mockedIngestion.getItemsEnvelopeDataType("MetricData");
+    metricsEnvelops.stream()
+        .map(envelope -> (MetricData) ((Data<?>) envelope.getData()).getBaseData())
+        .map(metricData -> metricData.getMetrics().get(0).getName())
+        .forEach(name -> assertThat(name).isNotEqualTo("_OTELRESOURCE_"));
   }
 
   @Environment(TOMCAT_8_JAVA_8)
-  static class Tomcat8Java8Test extends SamplingOverrides2Test {}
+  static class Tomcat8Java8Test extends DefaultOtelResourceAttributesTest {}
 
   @Environment(TOMCAT_8_JAVA_8_OPENJ9)
-  static class Tomcat8Java8OpenJ9Test extends SamplingOverrides2Test {}
+  static class Tomcat8Java8OpenJ9Test extends DefaultOtelResourceAttributesTest {}
 
   @Environment(TOMCAT_8_JAVA_11)
-  static class Tomcat8Java11Test extends SamplingOverrides2Test {}
+  static class Tomcat8Java11Test extends DefaultOtelResourceAttributesTest {}
 
   @Environment(TOMCAT_8_JAVA_11_OPENJ9)
-  static class Tomcat8Java11OpenJ9Test extends SamplingOverrides2Test {}
+  static class Tomcat8Java11OpenJ9Test extends DefaultOtelResourceAttributesTest {}
 
   @Environment(TOMCAT_8_JAVA_17)
-  static class Tomcat8Java17Test extends SamplingOverrides2Test {}
+  static class Tomcat8Java17Test extends DefaultOtelResourceAttributesTest {}
 
   @Environment(TOMCAT_8_JAVA_21)
-  static class Tomcat8Java21Test extends SamplingOverrides2Test {}
+  static class Tomcat8Java21Test extends DefaultOtelResourceAttributesTest {}
 
   @Environment(WILDFLY_13_JAVA_8)
-  static class Wildfly13Java8Test extends SamplingOverrides2Test {}
+  static class Wildfly13Java8Test extends DefaultOtelResourceAttributesTest {}
 
   @Environment(WILDFLY_13_JAVA_8_OPENJ9)
-  static class Wildfly13Java8OpenJ9Test extends SamplingOverrides2Test {}
+  static class Wildfly13Java8OpenJ9Test extends DefaultOtelResourceAttributesTest {}
 }

@@ -28,7 +28,7 @@ public class OtelResourceCustomMetric extends HttpServlet {
       return;
     }
     if (pathInfo.startsWith("/app")) {
-      httpUrlConnection("https://mock.codes/200");
+      httpUrlConnection("http://host.testcontainers.internal:6060/mock/200");
       logger.info("hello");
       return;
     }

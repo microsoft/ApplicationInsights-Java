@@ -506,9 +506,9 @@ public class BytecodeUtilImpl implements BytecodeUtilDelegate {
     }
 
     if (isPartOfTheCurrentTrace && applySampling && span instanceof ReadableSpan) {
-      Long itemCount = ((ReadableSpan) span).getAttribute(AiSemanticAttributes.ITEM_COUNT);
-      if (itemCount != null) {
-        telemetryBuilder.setSampleRate(100.0f / itemCount);
+      Double sampleRate = ((ReadableSpan) span).getAttribute(AiSemanticAttributes.SAMPLE_RATE);
+      if (sampleRate != null) {
+        telemetryBuilder.setSampleRate(sampleRate.floatValue());
       }
     }
 
