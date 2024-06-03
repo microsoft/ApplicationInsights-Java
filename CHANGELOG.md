@@ -5,7 +5,7 @@
 ### Enhancements:
 * Emit stable OpenTelemetry HTTP metrics
   ([#3676](https://github.com/microsoft/ApplicationInsights-Java/pull/3676))
-* Support clientsecret via env var
+* Support AAD clientsecret via env var
   ([#3692](https://github.com/microsoft/ApplicationInsights-Java/pull/3692))
 * Display a message about sampling at start-up
   ([#3700](https://github.com/microsoft/ApplicationInsights-Java/pull/3700))
@@ -17,7 +17,7 @@
   ([#3711](https://github.com/microsoft/ApplicationInsights-Java/pull/3711))
 * Introduce explicit option to disable ingestion sampling
   ([#3713](https://github.com/microsoft/ApplicationInsights-Java/pull/3713))
-* Emit `_APPRESOURCEPREVIEW_` custom metrics only in Application Insights private preview integration for AKS
+* Remove `_APPRESOURCEPREVIEW_` custom metric as it is still in preview
 * ([#3710](https://github.com/microsoft/ApplicationInsights-Java/pull/3710))
 
 ## Version 3.5.2 GA (04/19/2024)
