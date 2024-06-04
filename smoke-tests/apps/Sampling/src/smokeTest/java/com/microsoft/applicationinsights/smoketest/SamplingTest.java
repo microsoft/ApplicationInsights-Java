@@ -27,7 +27,7 @@ abstract class SamplingTest {
   @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.create();
 
   @Test
-  @TargetUri(value = "/sampling", callCount = 100)
+  @TargetUri(value = "/simple", callCount = 100)
   void testSampling() throws Exception {
     // super super low chance that number of sampled requests is less than 25
     long start = System.nanoTime();

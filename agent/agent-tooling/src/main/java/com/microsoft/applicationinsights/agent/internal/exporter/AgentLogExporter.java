@@ -105,13 +105,7 @@ public class AgentLogExporter implements LogRecordExporter {
           continue;
         }
 
-        Long itemCount = null;
-        if (samplingPercentage != null) {
-          // samplingPercentage cannot be 0 here
-          itemCount = Math.round(100.0 / samplingPercentage);
-        }
-
-        TelemetryItem telemetryItem = mapper.map(log, stack, itemCount);
+        TelemetryItem telemetryItem = mapper.map(log, stack, samplingPercentage);
         telemetryItemConsumer.accept(telemetryItem);
 
         exportingLogLogger.recordSuccess();

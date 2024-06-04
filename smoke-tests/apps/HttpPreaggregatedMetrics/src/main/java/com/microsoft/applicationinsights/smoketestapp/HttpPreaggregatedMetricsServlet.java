@@ -27,14 +27,14 @@ public class HttpPreaggregatedMetricsServlet extends HttpServlet {
     if (!pathInfo.equals("/httpUrlConnection")) {
       throw new ServletException("Unexpected url: " + pathInfo);
     }
-    httpUrlConnection("https://mock.codes/200?q=spaces%20test");
+    httpUrlConnection("http://host.testcontainers.internal:6060/mock/200?q=spaces%20test");
     try {
-      httpUrlConnection("https://mock.codes/404");
+      httpUrlConnection("http://host.testcontainers.internal:6060/mock/404");
     } catch (Exception e) {
       // HttpURLConnection throws exception on 404 and 500
     }
     try {
-      httpUrlConnection("https://mock.codes/500");
+      httpUrlConnection("http://host.testcontainers.internal:6060/mock/500");
     } catch (Exception e) {
       // HttpURLConnection throws exception on 404 and 500
     }

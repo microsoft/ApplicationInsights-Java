@@ -44,24 +44,6 @@ abstract class DetectUnexpectedOtelMetricsTest {
     EXPECTED_METRIC_NAMES.add("GC Total Count");
     EXPECTED_METRIC_NAMES.add("GC Total Time");
 
-    // adding stable metrics from otel.instrumentation.runtime-telemetry
-    // link:
-    // https://github.com/open-telemetry/semantic-conventions/blob/main/docs/runtime/jvm-metrics.md
-    EXPECTED_METRIC_NAMES.add("jvm.memory.used"); // heap memory used in bytes
-    EXPECTED_METRIC_NAMES.add("jvm.memory.committed");
-    // the measure of max obtainable memory, can be used by customer
-    // to calculate a percentage if needed
-    EXPECTED_METRIC_NAMES.add("jvm.memory.limit");
-    EXPECTED_METRIC_NAMES.add("jvm.memory.used_after_last_gc");
-    EXPECTED_METRIC_NAMES.add("jvm.gc.duration"); // same as GC Total Time
-    EXPECTED_METRIC_NAMES.add("jvm.thread.count"); // same as Current Thread Count
-    EXPECTED_METRIC_NAMES.add("jvm.class.loaded"); // same as Loaded Class Count
-    EXPECTED_METRIC_NAMES.add("jvm.class.unloaded");
-    EXPECTED_METRIC_NAMES.add("jvm.class.count");
-    EXPECTED_METRIC_NAMES.add("jvm.cpu.time");
-    EXPECTED_METRIC_NAMES.add("jvm.cpu.count");
-    EXPECTED_METRIC_NAMES.add("jvm.cpu.recent_utilization");
-
     EXPECTED_METRIC_NAMES.add("http.server.request.duration");
     EXPECTED_METRIC_NAMES.add("http.client.request.duration");
   }

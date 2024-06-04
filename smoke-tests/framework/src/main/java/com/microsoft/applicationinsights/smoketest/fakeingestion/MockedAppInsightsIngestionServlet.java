@@ -148,6 +148,12 @@ class MockedAppInsightsIngestionServlet extends HttpServlet {
       return;
     }
 
+    if (req.getPathInfo().startsWith("/mock/")) {
+      String code = req.getPathInfo().substring("/mock/".length());
+      resp.setStatus(Integer.parseInt(code));
+      return;
+    }
+
     if ("/".equals(req.getPathInfo())) {
       // just to help with debugging when hitting the endpoint manually
       resp.getWriter().append("Fake AI Endpoint Online");

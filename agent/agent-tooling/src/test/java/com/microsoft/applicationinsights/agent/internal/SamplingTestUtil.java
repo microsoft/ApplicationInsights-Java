@@ -37,8 +37,7 @@ public class SamplingTestUtil {
             SpanKind.SERVER,
             Attributes.empty(),
             Collections.emptyList());
-    Long itemCount = samplingResult.getAttributes().get(AiSemanticAttributes.ITEM_COUNT);
-    return itemCount == null ? null : 100.0 / itemCount;
+    return samplingResult.getAttributes().get(AiSemanticAttributes.SAMPLE_RATE);
   }
 
   private SamplingTestUtil() {}

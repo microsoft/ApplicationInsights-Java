@@ -121,10 +121,6 @@ abstract class JmxMetricTest {
                 }
               }
 
-              System.out.println("Printing metrics names to # of occurrences for otlp");
-              for (Map.Entry<String, Integer> entry : occurrences.entrySet()) {
-                System.out.println(entry.toString());
-              }
               // confirm that those metrics received once or twice
               // (the collector seems to run for 5-10 sec)
               assertThat(occurrences.keySet()).hasSize(jmxMetricsAllJavaVersionsOtlp.size());

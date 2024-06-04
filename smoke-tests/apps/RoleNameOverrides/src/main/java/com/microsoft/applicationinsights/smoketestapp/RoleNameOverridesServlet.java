@@ -28,7 +28,7 @@ public class RoleNameOverridesServlet extends HttpServlet {
       return;
     }
     if (pathInfo.startsWith("/app") || pathInfo.equals("/testAks")) {
-      httpUrlConnection("https://mock.codes/200");
+      httpUrlConnection("http://host.testcontainers.internal:6060/mock/200");
       logger.info("hello");
       return;
     }

@@ -199,7 +199,6 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
       properties.put("otel.instrumentation.reactor-netty.enabled", "true");
     }
     properties.put("otel.instrumentation.rxjava.enabled", "true");
-    properties.put("otel.instrumentation.runtime-telemetry.enabled", "true");
 
     properties.put("otel.instrumentation.servlet.enabled", "true");
     properties.put("otel.instrumentation.spring-core.enabled", "true");

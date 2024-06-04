@@ -1,5 +1,25 @@
 # CHANGELOG
 
+## Version 3.5.3 GA (05/24/2024)
+
+### Enhancements:
+* Emit stable OpenTelemetry HTTP metrics
+  ([#3676](https://github.com/microsoft/ApplicationInsights-Java/pull/3676))
+* Support AAD clientsecret via env var
+  ([#3692](https://github.com/microsoft/ApplicationInsights-Java/pull/3692))
+* Display a message about sampling at start-up
+  ([#3700](https://github.com/microsoft/ApplicationInsights-Java/pull/3700))
+* Fail if HTTP status code used in sampling override
+  ([#3708](https://github.com/microsoft/ApplicationInsights-Java/pull/3708))
+* Fix misleading connection string message
+  ([#3709](https://github.com/microsoft/ApplicationInsights-Java/pull/3709))
+* Update to OpenTelemetry Java Instrumentation 2.4.0
+  ([#3711](https://github.com/microsoft/ApplicationInsights-Java/pull/3711))
+* Introduce explicit option to disable ingestion sampling
+  ([#3713](https://github.com/microsoft/ApplicationInsights-Java/pull/3713))
+* Remove `_APPRESOURCEPREVIEW_` custom metric as it is still in preview
+* ([#3710](https://github.com/microsoft/ApplicationInsights-Java/pull/3710))
+
 ## Version 3.5.2 GA (04/19/2024)
 
 ### Enhancements:

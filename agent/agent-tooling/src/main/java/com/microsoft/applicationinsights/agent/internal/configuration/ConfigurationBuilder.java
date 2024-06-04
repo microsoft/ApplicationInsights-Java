@@ -269,7 +269,7 @@ public class ConfigurationBuilder {
               + "If you're on premise, you can use APPLICATIONINSIGHTS_AUTHENTICATION_STRING environment variable to pass the client ID and secret, "
               + "e.g. APPLICATIONINSIGHTS_AUTHENTICATION_STRING=Authorization=AAD;ClientId={CLIENT_ID};ClientSecret={CLIENT_SECRET}.");
     }
-    if (config.sampling.percentage != null && config.sampling.requestsPerSecond != null) {
+    if (config.sampling.requestsPerSecond != null && config.sampling.percentage != null) {
       configurationLogger.warn(
           "Sampling \"requestsPerSecond\" and \"percentage\" should not be used at the same time."
               + " Please remove one of them.");
