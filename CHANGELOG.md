@@ -18,7 +18,7 @@
 * Introduce explicit option to disable ingestion sampling
   ([#3713](https://github.com/microsoft/ApplicationInsights-Java/pull/3713))
 * Remove `_APPRESOURCEPREVIEW_` custom metric as it is still in preview
-* ([#3710](https://github.com/microsoft/ApplicationInsights-Java/pull/3710))
+  ([#3710](https://github.com/microsoft/ApplicationInsights-Java/pull/3710))
 
 ## Version 3.5.2 GA (04/19/2024)
 
