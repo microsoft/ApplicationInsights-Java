@@ -3,12 +3,6 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
-import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.RegisterExtension;
-
-import java.util.List;
-
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_11;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_11_OPENJ9;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_17;
@@ -19,6 +13,11 @@ import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.WILDF
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.WILDFLY_13_JAVA_8_OPENJ9;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
+
+import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
+import java.util.List;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 @UseAgent("applicationinsights-ingestion-sampling-disabled.json")
 abstract class RateLimitedSamplingIngestionSamplingDisabledTest {
