@@ -52,13 +52,9 @@ abstract class JmxMetricTest {
    * <p>- Higher than Java 8: G1 Young Generation,type=GarbageCollector, G1 Old
    * Generation,type=GarbageCollector. (the corrresponding metric names are GCYoung and GCOld)
    *
-   * <p>- Loaded_Class_Count: This covers the case of collecting a default jmx metric that the
-   * customer did not specify in applicationInsights.json. Also note that there are underscores
-   * instead of spaces, as we are emitting the metric via OpenTelemetry now. We intend to implement
-   * a change in azure-sdk-for-java repo to have the metrics still emit with spaces to Breeze, but
-   * the OTEL collector will still get the metric names with _. When that change gets merged &
-   * incorporated, we will need to change this/DetectUnexpectedOtelMetrics test so that the Breeze
-   * verification expects our default jmx metrics with spaces.
+   * <p>- Loaded Class Count: This covers the case of collecting a default jmx metric that the
+   * customer did not specify in applicationInsights.json. TODO deprecate this in favor of analogous
+   * metric that is emitted via OTel instrumentation runtime metrics.
    *
    * <p>- BooleanJmxMetric: This covers the case of a jmx metric attribute with a boolean value.
    *
@@ -81,7 +77,6 @@ abstract class JmxMetricTest {
               "NameWithDot",
               "DefaultJmxMetricNameOverride",
               "WildcardJmxMetric",
-              "Loaded_Class_Count",
               "BooleanJmxMetric",
               "DotInAttributeNameAsPathSeparator"));
 
@@ -91,8 +86,8 @@ abstract class JmxMetricTest {
   @Test
   @TargetUri("/test")
   void doMostBasicTest() throws Exception {
-    verifyJmxMetricsSentToBreeze();
     verifyJmxMetricsSentToOtlpEndpoint();
+    verifyJmxMetricsSentToBreeze();
   }
 
   @SuppressWarnings({"PreferJavaTimeOverload"})
@@ -126,12 +121,9 @@ abstract class JmxMetricTest {
                 }
               }
 
-              for (Map.Entry<String, Integer> entry : occurrences.entrySet()) {
-                System.out.println(entry.toString());
-              }
               // confirm that those metrics received once or twice
               // (the collector seems to run for 5-10 sec)
-              assertThat(occurrences.keySet()).hasSize(6);
+              assertThat(occurrences.keySet()).hasSize(jmxMetricsAllJavaVersionsOtlp.size());
               for (int value : occurrences.values()) {
                 assertThat(value).isBetween(1, 8);
               }
@@ -140,7 +132,7 @@ abstract class JmxMetricTest {
 
   private void verifyJmxMetricsSentToBreeze() throws Exception {
     List<Envelope> metricItems =
-        testing.mockedIngestion.waitForItems(JmxMetricTest::isJmxMetric, 1, 10, TimeUnit.SECONDS);
+        testing.mockedIngestion.waitForItems(JmxMetricTest::isJmxMetric, 7, 10, TimeUnit.SECONDS);
 
     assertThat(metricItems).hasSizeBetween(7, 16);
 

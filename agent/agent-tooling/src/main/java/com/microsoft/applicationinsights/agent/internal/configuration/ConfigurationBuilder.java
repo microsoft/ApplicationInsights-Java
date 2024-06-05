@@ -558,33 +558,6 @@ public class ConfigurationBuilder {
     }
   }
 
-  private static void addDefaultJmxMetricsIfNotPresent(Configuration config) {
-    if (!jmxMetricExists(config.jmxMetrics, "java.lang:type=Threading", "ThreadCount")) {
-      JmxMetric threadCountJmxMetric = new JmxMetric();
-      threadCountJmxMetric.name = "Current Thread Count";
-      threadCountJmxMetric.objectName = "java.lang:type=Threading";
-      threadCountJmxMetric.attribute = "ThreadCount";
-      config.jmxMetrics.add(threadCountJmxMetric);
-    }
-    if (!jmxMetricExists(config.jmxMetrics, "java.lang:type=ClassLoading", "LoadedClassCount")) {
-      JmxMetric classCountJmxMetric = new JmxMetric();
-      classCountJmxMetric.name = "Loaded Class Count";
-      classCountJmxMetric.objectName = "java.lang:type=ClassLoading";
-      classCountJmxMetric.attribute = "LoadedClassCount";
-      config.jmxMetrics.add(classCountJmxMetric);
-    }
-  }
-
-  private static boolean jmxMetricExists(
-      List<JmxMetric> jmxMetrics, String objectName, String attribute) {
-    for (JmxMetric metric : jmxMetrics) {
-      if (metric.objectName.equals(objectName) && metric.attribute.equals(attribute)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
   private static void overlayInstrumentationEnabledEnvVars(
       Configuration config, Function<String, String> envVarsFunction) {
     config.instrumentation.azureSdk.enabled =
@@ -844,7 +817,6 @@ public class ConfigurationBuilder {
     loadLogCaptureEnvVar(config, envVarsFunction);
     loadJmxMetricsEnvVar(config, envVarsFunction);
 
-    addDefaultJmxMetricsIfNotPresent(config);
     overlayProfilerEnvVars(config, envVarsFunction);
     overlayAadEnvVars(config, envVarsFunction);
     overlayInstrumentationEnabledEnvVars(config, envVarsFunction);

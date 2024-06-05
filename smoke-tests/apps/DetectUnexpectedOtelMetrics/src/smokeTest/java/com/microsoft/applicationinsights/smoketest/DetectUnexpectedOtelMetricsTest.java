@@ -43,6 +43,7 @@ abstract class DetectUnexpectedOtelMetricsTest {
     EXPECTED_METRIC_NAMES.add("% Of Max Heap Memory Used");
     EXPECTED_METRIC_NAMES.add("GC Total Count");
     EXPECTED_METRIC_NAMES.add("GC Total Time");
+
     EXPECTED_METRIC_NAMES.add("http.server.request.duration");
     EXPECTED_METRIC_NAMES.add("http.client.request.duration");
   }
