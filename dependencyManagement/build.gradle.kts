@@ -77,7 +77,7 @@ val DEPENDENCIES = listOf(
   "io.github.hakky54:logcaptor:2.9.3",
   "com.microsoft.jfr:jfr-streaming:1.2.0",
   "com.google.code.findbugs:jsr305:3.0.2",
-  "com.github.spotbugs:spotbugs-annotations:4.8.5"
+  "com.github.spotbugs:spotbugs-annotations:4.8.6"
 )
 
 javaPlatform {
