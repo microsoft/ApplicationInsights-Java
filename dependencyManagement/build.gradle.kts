@@ -74,7 +74,7 @@ val DEPENDENCIES = listOf(
   "com.azure:azure-core-test:1.26.0", // this is not included in azure-sdk-bom
   "org.assertj:assertj-core:3.26.0",
   "org.awaitility:awaitility:4.2.1",
-  "io.github.hakky54:logcaptor:2.9.2",
+  "io.github.hakky54:logcaptor:2.9.3",
   "com.microsoft.jfr:jfr-streaming:1.2.0",
   "com.google.code.findbugs:jsr305:3.0.2",
   "com.github.spotbugs:spotbugs-annotations:4.8.5"
