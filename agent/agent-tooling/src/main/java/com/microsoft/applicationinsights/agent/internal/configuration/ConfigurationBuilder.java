@@ -743,7 +743,8 @@ public class ConfigurationBuilder {
     String replacedConnectionString = stringSubstitutor.replace(config.connectionString);
     if (replacedConnectionString != null
         && !replacedConnectionString.startsWith("InstrumentationKey=")
-        && config.connectionString.equals(replacedConnectionString)) {
+        && config.connectionString.equals(replacedConnectionString)
+        && System.getenv(APPLICATIONINSIGHTS_CONNECTION_STRING_ENV) == null) {
       throw new FriendlyException(
           "Your connection string seems to have a wrong format: \""
               + config.connectionString
