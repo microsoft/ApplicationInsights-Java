@@ -60,6 +60,7 @@ abstract class HttpPreaggregatedMetricsTest {
 
     assertThat(telemetry.rd.getProperties())
         .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
+    assertThat(telemetry.rd.getSuccess()).isTrue();
     assertThat(telemetry.rdd1.getData()).isEqualTo(successUrlWithQueryString);
     assertThat(telemetry.rd.getSuccess()).isTrue();
     assertThat(telemetry.rdEnvelope.getSampleRate()).isNull();
@@ -167,8 +168,8 @@ abstract class HttpPreaggregatedMetricsTest {
     assertThat(dataPoint.getValue()).isGreaterThan(greaterThan).isLessThan(60 * 1000.0);
     assertThat(dataPoint.getMin()).isGreaterThan(greaterThan).isLessThan(60 * 1000.0);
     assertThat(dataPoint.getMax()).isGreaterThan(greaterThan).isLessThan(60 * 1000.0);
+    String expectedSuccess = Integer.parseInt(resultCode) < 400 ? "True" : "False";
     Map<String, String> properties = metricData.getProperties();
-    String expectedSuccess = "200".equals(resultCode) ? "True" : "False";
     if ("client".equals(type)) {
       assertThat(properties).hasSize(9);
       assertThat(properties.get("_MS.MetricId")).isEqualTo("dependencies/duration");

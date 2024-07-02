@@ -14,6 +14,12 @@ import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.WILDF
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.data.MapEntry.entry;
 
+import com.microsoft.applicationinsights.smoketest.schemav2.Data;
+import com.microsoft.applicationinsights.smoketest.schemav2.DataPoint;
+import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
+import com.microsoft.applicationinsights.smoketest.schemav2.MetricData;
+import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -35,6 +41,23 @@ abstract class HttpServer4xxDefaultTest {
     assertThat(telemetry.rd.getProperties())
         .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
     assertThat(telemetry.rd.getMeasurements()).isEmpty();
+
+    List<Envelope> serverMetrics =
+        testing.mockedIngestion.waitForStandardMetricItems("requests/duration", 1);
+    MetricData metricData = (MetricData) ((Data<?>) serverMetrics.get(0).getData()).getBaseData();
+    List<DataPoint> dataPoints = metricData.getMetrics();
+    assertThat(dataPoints).hasSize(1);
+    DataPoint dataPoint = dataPoints.get(0);
+    assertThat(dataPoint.getCount()).isEqualTo(1);
+
+    Map<String, String> properties = metricData.getProperties();
+    assertThat(properties).hasSize(7);
+    assertThat(properties.get("_MS.MetricId")).isEqualTo("requests/duration");
+    assertThat(properties.get("request/resultCode")).isEqualTo("400");
+    assertThat(properties.get("Request.Success")).isEqualTo("False");
+    assertThat(properties.get("cloud/roleInstance")).isEqualTo("testroleinstance");
+    assertThat(properties.get("cloud/roleName")).isEqualTo("testrolename");
+    assertThat(properties.get("_MS.IsAutocollected")).isEqualTo("True");
   }
 
   @Environment(TOMCAT_8_JAVA_8)
