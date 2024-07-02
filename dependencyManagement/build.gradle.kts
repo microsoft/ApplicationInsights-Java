@@ -11,9 +11,9 @@ data class DependencySet(val group: String, val version: String, val modules: Li
 val dependencyVersions = hashMapOf<String, String>()
 rootProject.extra["versions"] = dependencyVersions
 
-val otelVersion = "1.38.0"
-val otelInstrumentationAlphaVersion = "2.4.0-alpha"
-val otelInstrumentationVersion = "2.4.0"
+val otelVersion = "1.39.0"
+val otelInstrumentationAlphaVersion = "2.5.0-alpha"
+val otelInstrumentationVersion = "2.5.0"
 val otelContribAlphaVersion = "1.35.0-alpha"
 val byteBuddyVersion = "1.14.11"
 
@@ -30,7 +30,7 @@ val DEPENDENCY_BOMS = listOf(
   "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${otelInstrumentationAlphaVersion}",
   "com.azure:azure-sdk-bom:1.2.24",
   "io.netty:netty-bom:4.1.111.Final",
-  "org.junit:junit-bom:5.10.2",
+  "org.junit:junit-bom:5.10.3",
   "org.testcontainers:testcontainers-bom:1.19.8",
 )
 
@@ -74,10 +74,10 @@ val DEPENDENCIES = listOf(
   "com.azure:azure-core-test:1.26.0", // this is not included in azure-sdk-bom
   "org.assertj:assertj-core:3.26.0",
   "org.awaitility:awaitility:4.2.1",
-  "io.github.hakky54:logcaptor:2.9.2",
+  "io.github.hakky54:logcaptor:2.9.3",
   "com.microsoft.jfr:jfr-streaming:1.2.0",
   "com.google.code.findbugs:jsr305:3.0.2",
-  "com.github.spotbugs:spotbugs-annotations:4.8.5"
+  "com.github.spotbugs:spotbugs-annotations:4.8.6"
 )
 
 javaPlatform {

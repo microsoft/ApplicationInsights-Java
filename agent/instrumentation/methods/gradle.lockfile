@@ -4,10 +4,10 @@
 com.azure:azure-sdk-bom:1.2.24=runtimeClasspath
 com.fasterxml.jackson:jackson-bom:2.17.1=runtimeClasspath
 io.netty:netty-bom:4.1.111.Final=runtimeClasspath
-io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:2.4.0-alpha=runtimeClasspath
-io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:2.4.0=runtimeClasspath
-io.opentelemetry:opentelemetry-bom-alpha:1.38.0-alpha=runtimeClasspath
-io.opentelemetry:opentelemetry-bom:1.38.0=runtimeClasspath
-org.junit:junit-bom:5.10.2=runtimeClasspath
+io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:2.5.0-alpha=runtimeClasspath
+io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:2.5.0=runtimeClasspath
+io.opentelemetry:opentelemetry-bom-alpha:1.39.0-alpha=runtimeClasspath
+io.opentelemetry:opentelemetry-bom:1.39.0=runtimeClasspath
+org.junit:junit-bom:5.10.3=runtimeClasspath
 org.testcontainers:testcontainers-bom:1.19.8=runtimeClasspath
 empty=
