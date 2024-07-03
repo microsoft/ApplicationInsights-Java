@@ -268,7 +268,7 @@ public class SecondEntryPoint
             (metricExporter, configProperties) -> {
               if (metricExporter
                   instanceof AzureMonitorMetricExporterProvider.MarkerMetricExporter) {
-                return buildMetricExporter(configuration, telemetryClient, metricFilters);
+                return buildMetricExporter(configuration, telemetryClient, metricFilters, quickPulse);
               } else {
                 return metricExporter;
               }
@@ -321,12 +321,13 @@ public class SecondEntryPoint
   private static MetricExporter buildMetricExporter(
       Configuration configuration,
       TelemetryClient telemetryClient,
-      List<MetricFilter> metricFilters) {
+      List<MetricFilter> metricFilters,
+      QuickPulse quickPulse) {
     MetricDataMapper mapper =
         new MetricDataMapper(
             telemetryClient::populateDefaults, configuration.preview.captureHttpServer4xxAsError);
     return new AgentMetricExporter(
-        metricFilters, mapper, telemetryClient.getMetricsBatchItemProcessor());
+        metricFilters, mapper, quickPulse, telemetryClient.getMetricsBatchItemProcessor());
   }
 
   private static LogRecordExporter buildLogRecordExporter(
