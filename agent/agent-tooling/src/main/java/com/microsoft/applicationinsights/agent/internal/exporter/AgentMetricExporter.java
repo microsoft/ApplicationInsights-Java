@@ -76,6 +76,7 @@ public class AgentMetricExporter implements MetricExporter {
       if (MetricFilter.shouldSkip(metricData.getName(), metricFilters)) {
         continue;
       }
+      System.out.println("exporting metric: {}" + metricData);
       logger.debug("exporting metric: {}", metricData);
       try {
 //        mapper.map(metricData, telemetryItemConsumer);
