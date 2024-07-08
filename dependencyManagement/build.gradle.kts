@@ -23,7 +23,7 @@ rootProject.extra["otelInstrumentationAlphaVersion"] = otelInstrumentationAlphaV
 rootProject.extra["otelContribAlphaVersion"] = otelContribAlphaVersion
 
 val DEPENDENCY_BOMS = listOf(
-  "com.fasterxml.jackson:jackson-bom:2.17.1",
+  "com.fasterxml.jackson:jackson-bom:2.17.2",
   "io.opentelemetry:opentelemetry-bom:${otelVersion}",
   "io.opentelemetry:opentelemetry-bom-alpha:${otelVersion}-alpha",
   "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:${otelInstrumentationVersion}",
