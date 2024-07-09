@@ -17,6 +17,7 @@ import com.azure.core.http.policy.DefaultRedirectStrategy;
 import com.azure.core.http.policy.HttpLogOptions;
 import com.azure.core.http.policy.HttpLoggingPolicy;
 import com.azure.core.http.policy.HttpPipelinePolicy;
+import com.azure.core.http.policy.HttpPolicyProviders;
 import com.azure.core.http.policy.RedirectPolicy;
 import com.azure.core.util.Context;
 import com.azure.identity.ClientSecretCredentialBuilder;
@@ -128,6 +129,10 @@ public class LazyHttpClient implements HttpClient {
     // Add Logging Policy. Can be enabled using AZURE_LOG_LEVEL.
     // TODO set the logging level based on self diagnostic log level set by user
     policies.add(new HttpLoggingPolicy(new HttpLogOptions()));
+
+    // add policies to httpclient instance via HttpPolicyProviders.addAfterRetryPolicies(policies)
+    HttpPolicyProviders.addAfterRetryPolicies(policies);
+
     HttpPipelineBuilder pipelineBuilder = new HttpPipelineBuilder().httpClient(INSTANCE);
     pipelineBuilder.policies(policies.toArray(new HttpPipelinePolicy[0]));
     return pipelineBuilder.build();
