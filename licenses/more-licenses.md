@@ -1,36 +1,36 @@
 
 # agent
 ## Dependency License Report
-_2024-07-02 03:44:17 UTC_
+_2024-07-08 03:55:59 UTC_
 ## Apache License, Version 2.0
 
-**1** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-annotations` **Version:** `2.17.1` 
+**1** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-annotations` **Version:** `2.17.2` 
 > - **Project URL**: [https://github.com/FasterXML/jackson](https://github.com/FasterXML/jackson)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
-> - **Embedded license files**: [jackson-annotations-2.17.1.jar/META-INF/LICENSE](jackson-annotations-2.17.1.jar/META-INF/LICENSE) 
-    - [jackson-annotations-2.17.1.jar/META-INF/NOTICE](jackson-annotations-2.17.1.jar/META-INF/NOTICE)
+> - **Embedded license files**: [jackson-annotations-2.17.2.jar/META-INF/LICENSE](jackson-annotations-2.17.2.jar/META-INF/LICENSE) 
+    - [jackson-annotations-2.17.2.jar/META-INF/NOTICE](jackson-annotations-2.17.2.jar/META-INF/NOTICE)
 
-**2** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-core` **Version:** `2.17.1` 
+**2** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-core` **Version:** `2.17.2` 
 > - **Project URL**: [https://github.com/FasterXML/jackson-core](https://github.com/FasterXML/jackson-core)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
-> - **Embedded license files**: [jackson-core-2.17.1.jar/META-INF/LICENSE](jackson-core-2.17.1.jar/META-INF/LICENSE) 
-    - [jackson-core-2.17.1.jar/META-INF/NOTICE](jackson-core-2.17.1.jar/META-INF/NOTICE)
+> - **Embedded license files**: [jackson-core-2.17.2.jar/META-INF/LICENSE](jackson-core-2.17.2.jar/META-INF/LICENSE) 
+    - [jackson-core-2.17.2.jar/META-INF/NOTICE](jackson-core-2.17.2.jar/META-INF/NOTICE)
 
-**3** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-databind` **Version:** `2.17.1` 
+**3** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-databind` **Version:** `2.17.2` 
 > - **Project URL**: [https://github.com/FasterXML/jackson](https://github.com/FasterXML/jackson)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
-> - **Embedded license files**: [jackson-databind-2.17.1.jar/META-INF/LICENSE](jackson-databind-2.17.1.jar/META-INF/LICENSE) 
-    - [jackson-databind-2.17.1.jar/META-INF/NOTICE](jackson-databind-2.17.1.jar/META-INF/NOTICE)
+> - **Embedded license files**: [jackson-databind-2.17.2.jar/META-INF/LICENSE](jackson-databind-2.17.2.jar/META-INF/LICENSE) 
+    - [jackson-databind-2.17.2.jar/META-INF/NOTICE](jackson-databind-2.17.2.jar/META-INF/NOTICE)
 
-**4** **Group:** `com.fasterxml.jackson.datatype` **Name:** `jackson-datatype-jsr310` **Version:** `2.17.1` 
+**4** **Group:** `com.fasterxml.jackson.datatype` **Name:** `jackson-datatype-jsr310` **Version:** `2.17.2` 
 > - **Manifest Project URL**: [https://github.com/FasterXML/jackson-modules-java8/jackson-datatype-jsr310](https://github.com/FasterXML/jackson-modules-java8/jackson-datatype-jsr310)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
-> - **Embedded license files**: [jackson-datatype-jsr310-2.17.1.jar/META-INF/LICENSE](jackson-datatype-jsr310-2.17.1.jar/META-INF/LICENSE) 
-    - [jackson-datatype-jsr310-2.17.1.jar/META-INF/NOTICE](jackson-datatype-jsr310-2.17.1.jar/META-INF/NOTICE)
+> - **Embedded license files**: [jackson-datatype-jsr310-2.17.2.jar/META-INF/LICENSE](jackson-datatype-jsr310-2.17.2.jar/META-INF/LICENSE) 
+    - [jackson-datatype-jsr310-2.17.2.jar/META-INF/NOTICE](jackson-datatype-jsr310-2.17.2.jar/META-INF/NOTICE)
 
 **5** **Group:** `com.github.stephenc.jcip` **Name:** `jcip-annotations` **Version:** `1.0-1` 
 > - **POM Project URL**: [http://stephenc.github.com/jcip-annotations](http://stephenc.github.com/jcip-annotations)
@@ -225,15 +225,15 @@ _2024-07-02 03:44:17 UTC_
 > - **POM Project URL**: [https://github.com/open-telemetry/semantic-conventions-java](https://github.com/open-telemetry/semantic-conventions-java)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
-**45** **Group:** `io.projectreactor` **Name:** `reactor-core` **Version:** `3.4.36` 
+**45** **Group:** `io.projectreactor` **Name:** `reactor-core` **Version:** `3.4.38` 
 > - **POM Project URL**: [https://github.com/reactor/reactor-core](https://github.com/reactor/reactor-core)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
 
-**46** **Group:** `io.projectreactor.netty` **Name:** `reactor-netty-core` **Version:** `1.0.43` 
+**46** **Group:** `io.projectreactor.netty` **Name:** `reactor-netty-core` **Version:** `1.0.45` 
 > - **POM Project URL**: [https://github.com/reactor/reactor-netty](https://github.com/reactor/reactor-netty)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
-**47** **Group:** `io.projectreactor.netty` **Name:** `reactor-netty-http` **Version:** `1.0.43` 
+**47** **Group:** `io.projectreactor.netty` **Name:** `reactor-netty-http` **Version:** `1.0.45` 
 > - **POM Project URL**: [https://github.com/reactor/reactor-netty](https://github.com/reactor/reactor-netty)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
@@ -342,11 +342,11 @@ _2024-07-02 03:44:17 UTC_
 
 ## MIT License
 
-**65** **Group:** `com.azure` **Name:** `azure-core` **Version:** `1.49.0` 
+**65** **Group:** `com.azure` **Name:** `azure-core` **Version:** `1.49.1` 
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**66** **Group:** `com.azure` **Name:** `azure-core-http-netty` **Version:** `1.15.0` 
+**66** **Group:** `com.azure` **Name:** `azure-core-http-netty` **Version:** `1.15.1` 
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
@@ -361,15 +361,15 @@ _2024-07-02 03:44:17 UTC_
 **69** **Group:** `com.azure` **Name:** `azure-monitor-opentelemetry-exporter` **Version:** `1.0.0-beta.25` 
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**70** **Group:** `com.azure` **Name:** `azure-storage-blob` **Version:** `12.26.0` 
+**70** **Group:** `com.azure` **Name:** `azure-storage-blob` **Version:** `12.26.1` 
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**71** **Group:** `com.azure` **Name:** `azure-storage-common` **Version:** `12.25.0` 
+**71** **Group:** `com.azure` **Name:** `azure-storage-common` **Version:** `12.25.1` 
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**72** **Group:** `com.azure` **Name:** `azure-storage-internal-avro` **Version:** `12.11.0` 
+**72** **Group:** `com.azure` **Name:** `azure-storage-internal-avro` **Version:** `12.11.1` 
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
