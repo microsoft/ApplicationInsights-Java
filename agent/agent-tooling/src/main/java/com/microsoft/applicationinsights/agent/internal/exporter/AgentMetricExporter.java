@@ -56,7 +56,7 @@ public class AgentMetricExporter implements MetricExporter {
     this.quickPulseConsumer =
         telemetryItem -> {
           if (quickPulse != null) {
-            quickPulse.add(telemetryItem);
+            quickPulse.add(telemetryItem, true);
           }
           TelemetryObservers.INSTANCE
               .getObservers()
