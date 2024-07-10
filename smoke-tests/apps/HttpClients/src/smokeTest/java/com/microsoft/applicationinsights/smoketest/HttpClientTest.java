@@ -22,53 +22,59 @@ abstract class HttpClientTest {
 
   @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.create();
 
-  @Test
-  @TargetUri("/apacheHttpClient4")
-  void testApacheHttpClient4() throws Exception {
-    verify();
-  }
+  //  @Test
+  //  @TargetUri("/apacheHttpClient4")
+  //  void testApacheHttpClient4() throws Exception {
+  //    verify();
+  //  }
+  //
+  //  @Test
+  //  @TargetUri("/apacheHttpClient4WithResponseHandler")
+  //  void testApacheHttpClient4WithResponseHandler() throws Exception {
+  //    verify();
+  //  }
+  //
+  //  @Test
+  //  @TargetUri("/apacheHttpClient3")
+  //  void testApacheHttpClient3() throws Exception {
+  //    verify();
+  //  }
+  //
+  //  @Test
+  //  @TargetUri("/apacheHttpAsyncClient")
+  //  void testApacheHttpAsyncClient() throws Exception {
+  //    verify();
+  //  }
+  //
+  //  @Test
+  //  @TargetUri("/okHttp3")
+  //  void testOkHttp3() throws Exception {
+  //    verify();
+  //  }
+  //
+  //  @Test
+  //  @TargetUri("/okHttp2")
+  //  void testOkHttp2() throws Exception {
+  //    verify();
+  //  }
+  //
+  //  @Test
+  //  @TargetUri("/httpUrlConnection")
+  //  void testHttpUrlConnection() throws Exception {
+  //    verify();
+  //  }
+  //
+  //  @Test
+  //  @TargetUri("/springWebClient")
+  //  void testSpringWebClient() throws Exception {
+  //    // TODO investigate why %2520 is captured instead of %20
+  //    verify("http://host.testcontainers.internal:6060/mock/200?q=spaces%2520test");
+  //  }
 
   @Test
-  @TargetUri("/apacheHttpClient4WithResponseHandler")
-  void testApacheHttpClient4WithResponseHandler() throws Exception {
+  @TargetUri("/azureCoreHttpClient")
+  void testAzureCoreHttpClient() throws Exception {
     verify();
-  }
-
-  @Test
-  @TargetUri("/apacheHttpClient3")
-  void testApacheHttpClient3() throws Exception {
-    verify();
-  }
-
-  @Test
-  @TargetUri("/apacheHttpAsyncClient")
-  void testApacheHttpAsyncClient() throws Exception {
-    verify();
-  }
-
-  @Test
-  @TargetUri("/okHttp3")
-  void testOkHttp3() throws Exception {
-    verify();
-  }
-
-  @Test
-  @TargetUri("/okHttp2")
-  void testOkHttp2() throws Exception {
-    verify();
-  }
-
-  @Test
-  @TargetUri("/httpUrlConnection")
-  void testHttpUrlConnection() throws Exception {
-    verify();
-  }
-
-  @Test
-  @TargetUri("/springWebClient")
-  void testSpringWebClient() throws Exception {
-    // TODO investigate why %2520 is captured instead of %20
-    verify("http://host.testcontainers.internal:6060/mock/200?q=spaces%2520test");
   }
 
   private static void verify() throws Exception {

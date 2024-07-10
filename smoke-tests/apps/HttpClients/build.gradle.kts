@@ -3,6 +3,7 @@ plugins {
 }
 
 dependencies {
+  implementation("com.azure:azure-core")
   implementation("org.apache.httpcomponents:httpclient:4.5.13")
   implementation("org.apache.httpcomponents:httpasyncclient:4.1.4")
   implementation("commons-httpclient:commons-httpclient:3.1")

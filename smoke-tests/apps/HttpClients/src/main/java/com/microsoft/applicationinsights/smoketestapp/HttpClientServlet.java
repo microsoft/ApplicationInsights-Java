@@ -3,9 +3,12 @@
 
 package com.microsoft.applicationinsights.smoketestapp;
 
+import static com.azure.core.http.HttpMethod.POST;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.concurrent.ExecutionException;
 import javax.servlet.ServletException;
@@ -80,6 +83,9 @@ public class HttpClientServlet extends HttpServlet {
       case "/httpUrlConnection":
         executeGetUrl = this::httpUrlConnection;
         break;
+      case "/azureCoreHttpClient":
+        executeGetUrl = this::azureCoreHttpClient;
+        break;
       default:
         throw new ServletException("Unexpected url: " + pathInfo);
     }
@@ -97,6 +103,16 @@ public class HttpClientServlet extends HttpServlet {
         // HttpURLConnection throws exception on 404 and 500
       }
     }
+  }
+
+  @SuppressWarnings("SystemOut")
+  private void azureCoreHttpClient(String url) throws MalformedURLException {
+    com.azure.core.http.HttpClient client = com.azure.core.http.HttpClient.createDefault();
+    com.azure.core.http.HttpRequest request =
+        new com.azure.core.http.HttpRequest(POST, new URL("https://mock.codes/200"));
+    com.azure.core.http.HttpResponse response = client.send(request).block();
+    assert response != null;
+    System.out.println(response.getBodyAsString().block());
   }
 
   private void apacheHttpClient4(String url) throws IOException {

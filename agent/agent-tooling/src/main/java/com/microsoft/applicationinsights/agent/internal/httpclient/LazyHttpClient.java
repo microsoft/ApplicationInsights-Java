@@ -118,6 +118,7 @@ public class LazyHttpClient implements HttpClient {
     return newHttpPipeLine(aadConfiguration, new RedirectPolicy(new DefaultRedirectStrategy()));
   }
 
+  @SuppressWarnings("SystemOut")
   public static HttpPipeline newHttpPipeLine(
       @Nullable Configuration.AadAuthentication aadConfiguration,
       HttpPipelinePolicy... additionalPolicies) {
@@ -132,6 +133,13 @@ public class LazyHttpClient implements HttpClient {
 
     // add policies to httpclient instance via HttpPolicyProviders.addAfterRetryPolicies(policies)
     HttpPolicyProviders.addAfterRetryPolicies(policies);
+
+    // TODO - to be removed
+    System.out.println("Policies in the pipeline: " + policies.size());
+    for (HttpPipelinePolicy policy : policies) {
+      System.out.println("policy: " + policy.getClass().getName());
+    }
+    System.out.println("End of policies in the pipeline");
 
     HttpPipelineBuilder pipelineBuilder = new HttpPipelineBuilder().httpClient(INSTANCE);
     pipelineBuilder.policies(policies.toArray(new HttpPipelinePolicy[0]));
