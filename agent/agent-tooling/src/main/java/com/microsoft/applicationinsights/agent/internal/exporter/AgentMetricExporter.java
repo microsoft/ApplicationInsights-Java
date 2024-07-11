@@ -76,10 +76,10 @@ public class AgentMetricExporter implements MetricExporter {
       if (MetricFilter.shouldSkip(metricData.getName(), metricFilters)) {
         continue;
       }
-      System.out.println("exporting metric: {}" + metricData);
+//      System.out.println("exporting metric: {}" + metricData); for debugging purposes
       logger.debug("exporting metric: {}", metricData);
       try {
-//        mapper.map(metricData, telemetryItemConsumer);
+//        mapper.map(metricData, telemetryItemConsumer); previous method for mapping data for Breeze
         mapper.mapMetrics(metricData, telemetryItemConsumer, quickPulseConsumer);
         exportingMetricLogger.recordSuccess();
       } catch (Throwable t) {
