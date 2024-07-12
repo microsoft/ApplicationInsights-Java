@@ -60,14 +60,20 @@ import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.InstrumentSelector;
+import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.View;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.export.CollectionRegistration;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
+import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.internal.view.AiViewRegistry;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -216,6 +222,8 @@ public class SecondEntryPoint
     // TODO (trask) add this method to AutoConfigurationCustomizer upstream?
     ((AutoConfiguredOpenTelemetrySdkBuilder) autoConfiguration).disableShutdownHook();
 
+    QuickPulseMetricReader liveMetricReader = new QuickPulseMetricReader();
+
     QuickPulse quickPulse;
     if (configuration.preview.liveMetrics.enabled) {
       quickPulse =
@@ -229,7 +237,8 @@ public class SecondEntryPoint
               telemetryClient.getRoleName(),
               telemetryClient.getRoleInstance(),
               configuration.preview.useNormalizedValueForNonNormalizedCpuPercentage,
-              FirstEntryPoint.getAgentVersion());
+              FirstEntryPoint.getAgentVersion(),
+              liveMetricReader);
     } else {
       quickPulse = null;
     }
@@ -273,6 +282,10 @@ public class SecondEntryPoint
                 return metricExporter;
               }
             })
+        .addMeterProviderCustomizer((meterProviderBuilder, configProperties) -> {
+          meterProviderBuilder.registerMetricReader(liveMetricReader);
+          return meterProviderBuilder;
+        })
         .addLogRecordExporterCustomizer(
             (logRecordExporter, configProperties) -> {
               if (logRecordExporter
@@ -754,5 +767,38 @@ public class SecondEntryPoint
               });
         });
     return overallResult;
+  }
+
+  // move to own file
+  // compare with PeriodicMetricReader and PrometheusMetricReader
+  public static class QuickPulseMetricReader implements MetricReader {
+
+    private volatile CollectionRegistration collectionRegistration = CollectionRegistration.noop();
+
+    @Override
+    public void register(CollectionRegistration registration) {
+      // this should get (once) called when the OpenTelemetry SDK is created
+      collectionRegistration = registration;
+    }
+
+    @Override
+    public CompletableResultCode forceFlush() {
+      return CompletableResultCode.ofSuccess();
+    }
+
+    @Override
+    public CompletableResultCode shutdown() {
+      return CompletableResultCode.ofSuccess();
+    }
+
+    // this will be called on-demand from Quick Pulse code
+    Collection<MetricData> collectAllMetrics() {
+      return collectionRegistration.collectAllMetrics();
+    }
+
+    @Override
+    public AggregationTemporality getAggregationTemporality(InstrumentType instrumentType) {
+      return AggregationTemporality.DELTA;
+    }
   }
 }
