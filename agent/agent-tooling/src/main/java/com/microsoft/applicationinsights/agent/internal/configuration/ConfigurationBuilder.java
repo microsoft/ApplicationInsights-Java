@@ -875,7 +875,7 @@ public class ConfigurationBuilder {
                 + " the username and password, e.g."
                 + " APPLICATIONINSIGHTS_PROXY=https://myuser:mypassword@myproxy:8888");
         if (proxy.host != null
-            && (proxy.host.startsWith("http") || proxy.host.startsWith("https"))) {
+            && (proxy.host.startsWith("http://") || proxy.host.startsWith("https://"))) {
           throw new FriendlyException(
               "The proxy host should not start with http:// or https://",
               "Please remove http:// or https:// from the proxy host.");
