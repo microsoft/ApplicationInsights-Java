@@ -874,6 +874,12 @@ public class ConfigurationBuilder {
                 + " APPLICATIONINSIGHTS_PROXY environment variable instead which supports passing"
                 + " the username and password, e.g."
                 + " APPLICATIONINSIGHTS_PROXY=https://myuser:mypassword@myproxy:8888");
+        if (proxy.host != null
+            && (proxy.host.startsWith("http://") || proxy.host.startsWith("https://"))) {
+          throw new FriendlyException(
+              "The proxy host should not start with http:// or https://",
+              "Please remove http:// or https:// from the proxy host.");
+        }
       }
       return proxy;
     }
