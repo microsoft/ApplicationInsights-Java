@@ -17,6 +17,7 @@ import com.azure.monitor.opentelemetry.exporter.implementation.configuration.Con
 import com.azure.monitor.opentelemetry.exporter.implementation.heartbeat.HeartbeatExporter;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.QuickPulse;
+import com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.QuickPulseMetricReader;
 import com.azure.monitor.opentelemetry.exporter.implementation.statsbeat.Feature;
 import com.azure.monitor.opentelemetry.exporter.implementation.statsbeat.StatsbeatModule;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorHelper;
@@ -60,14 +61,20 @@ import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.InstrumentSelector;
+//import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.View;
+//import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+//import io.opentelemetry.sdk.metrics.data.MetricData;
+//import io.opentelemetry.sdk.metrics.export.CollectionRegistration;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
+//import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.internal.view.AiViewRegistry;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.io.File;
 import java.util.ArrayList;
+//import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -216,6 +223,8 @@ public class SecondEntryPoint
     // TODO (trask) add this method to AutoConfigurationCustomizer upstream?
     ((AutoConfiguredOpenTelemetrySdkBuilder) autoConfiguration).disableShutdownHook();
 
+    QuickPulseMetricReader liveMetricReader = new QuickPulseMetricReader();
+
     QuickPulse quickPulse;
     if (configuration.preview.liveMetrics.enabled) {
       quickPulse =
@@ -229,6 +238,10 @@ public class SecondEntryPoint
               telemetryClient.getRoleName(),
               telemetryClient.getRoleInstance(),
               configuration.preview.useNormalizedValueForNonNormalizedCpuPercentage,
+              liveMetricReader,
+              new MetricDataMapper(
+                  telemetryClient::populateDefaults,
+                  configuration.preview.captureHttpServer4xxAsError),
               FirstEntryPoint.getAgentVersion());
     } else {
       quickPulse = null;
@@ -268,11 +281,15 @@ public class SecondEntryPoint
             (metricExporter, configProperties) -> {
               if (metricExporter
                   instanceof AzureMonitorMetricExporterProvider.MarkerMetricExporter) {
-                return buildMetricExporter(configuration, telemetryClient, metricFilters, quickPulse);
+                return buildMetricExporter(configuration, telemetryClient, metricFilters);
               } else {
                 return metricExporter;
               }
             })
+        .addMeterProviderCustomizer((meterProviderBuilder, configProperties) -> {
+          meterProviderBuilder.registerMetricReader(liveMetricReader);
+          return meterProviderBuilder;
+        })
         .addLogRecordExporterCustomizer(
             (logRecordExporter, configProperties) -> {
               if (logRecordExporter
@@ -321,13 +338,12 @@ public class SecondEntryPoint
   private static MetricExporter buildMetricExporter(
       Configuration configuration,
       TelemetryClient telemetryClient,
-      List<MetricFilter> metricFilters,
-      QuickPulse quickPulse) {
+      List<MetricFilter> metricFilters) {
     MetricDataMapper mapper =
         new MetricDataMapper(
             telemetryClient::populateDefaults, configuration.preview.captureHttpServer4xxAsError);
     return new AgentMetricExporter(
-        metricFilters, mapper, quickPulse, telemetryClient.getMetricsBatchItemProcessor());
+        metricFilters, mapper, telemetryClient.getMetricsBatchItemProcessor());
   }
 
   private static LogRecordExporter buildLogRecordExporter(

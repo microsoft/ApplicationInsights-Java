@@ -13,7 +13,6 @@ import com.microsoft.applicationinsights.agent.internal.telemetry.BatchItemProce
 import com.microsoft.applicationinsights.agent.internal.telemetry.MetricFilter;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryObservers;
-import com.azure.monitor.opentelemetry.exporter.implementation.quickpulse.QuickPulse;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
@@ -25,7 +24,6 @@ import java.util.List;
 import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import javax.annotation.Nullable;
 
 public class AgentMetricExporter implements MetricExporter {
 
@@ -37,27 +35,15 @@ public class AgentMetricExporter implements MetricExporter {
   private final List<MetricFilter> metricFilters;
   private final MetricDataMapper mapper;
   private final Consumer<TelemetryItem> telemetryItemConsumer;
-  private final Consumer<TelemetryItem> quickPulseConsumer;
 
   public AgentMetricExporter(
       List<MetricFilter> metricFilters,
       MetricDataMapper mapper,
-      @Nullable QuickPulse quickPulse,
       BatchItemProcessor batchItemProcessor) {
     this.metricFilters = metricFilters;
     this.mapper = mapper;
     this.telemetryItemConsumer =
         telemetryItem -> {
-          TelemetryObservers.INSTANCE
-              .getObservers()
-              .forEach(consumer -> consumer.accept(telemetryItem));
-          batchItemProcessor.trackAsync(telemetryItem);
-        };
-    this.quickPulseConsumer =
-        telemetryItem -> {
-          if (quickPulse != null) {
-            quickPulse.add(telemetryItem, true);
-          }
           TelemetryObservers.INSTANCE
               .getObservers()
               .forEach(consumer -> consumer.accept(telemetryItem));
@@ -76,17 +62,14 @@ public class AgentMetricExporter implements MetricExporter {
       if (MetricFilter.shouldSkip(metricData.getName(), metricFilters)) {
         continue;
       }
-//      System.out.println("exporting metric: {}" + metricData); for debugging purposes
       logger.debug("exporting metric: {}", metricData);
       try {
-//        mapper.map(metricData, telemetryItemConsumer); previous method for mapping data for Breeze
-        mapper.mapMetrics(metricData, telemetryItemConsumer, quickPulseConsumer);
+        mapper.map(metricData, telemetryItemConsumer);
         exportingMetricLogger.recordSuccess();
       } catch (Throwable t) {
         exportingMetricLogger.recordFailure(t.getMessage(), t, EXPORTER_MAPPING_ERROR);
       }
     }
-
     // always returning success, because all error handling is performed internally
     return CompletableResultCode.ofSuccess();
   }
