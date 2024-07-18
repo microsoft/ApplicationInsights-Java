@@ -105,7 +105,8 @@ public class SecondEntryPoint
     if (Strings.isNullOrEmpty(configuration.connectionString)) {
       if (!configuration.connectionStringConfiguredAtRuntime) {
         throw new FriendlyException(
-            "No connection string provided", "Please provide connection string.");
+            "No connection string provided",
+            "Please provide connection string: https://learn.microsoft.com/en-us/azure/azure-monitor/app/java-standalone-config");
       }
     }
     // TODO (trask) should configuration validation be performed earlier?
