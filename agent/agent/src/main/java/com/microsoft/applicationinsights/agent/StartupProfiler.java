@@ -17,12 +17,21 @@ import java.nio.file.Files;
 
 final class StartupProfiler {
 
+  private static final String APPLICATIONINSIGHTS_STARTUP_PROFILTER_FILE_PATH =
+      "APPLICATIONINSIGHTS_STARTUP_PROFILTER_FILE_PATH";
+
   @SuppressWarnings("SystemOut")
   public static void start() {
-    String tempDirectory = System.getProperty("java.io.tmpdir");
-    File folder = new File(tempDirectory, "applicationinsights");
+    String startupProfilerFilePath = System.getenv(APPLICATIONINSIGHTS_STARTUP_PROFILTER_FILE_PATH);
+    File folder;
+    if (startupProfilerFilePath != null && !startupProfilerFilePath.isEmpty()) {
+      folder = new File(startupProfilerFilePath);
+    } else {
+      String tempDirectory = System.getProperty("java.io.tmpdir");
+      folder = new File(tempDirectory, "applicationinsights");
+    }
     if (!folder.exists() && !folder.mkdirs()) {
-      System.out.println("Failed to create directory: " + tempDirectory);
+      System.out.println("Failed to create directory: " + folder.getPath());
       return;
     }
 
