@@ -165,24 +165,16 @@ jobs:
             -Porg.gradle.java.installations.paths=${{ steps.setup-test-java.outputs.path }}
             -Porg.gradle.java.installations.auto-download=false ${{ inputs.no-build-cache && ' --no-build-cache' || '' }}
 
-  setup-smoke-test-matrix:
-    runs-on: ubuntu-latest
-    outputs:
-      matrix: ${{ steps.set-matrix.outputs.matrix }}
-    steps:
-      - uses: actions/checkout@v4
-
-      - id: set-matrix
-        run: |
-          modules=$(ls -d smoke-tests/apps/* | sed 's/\/$//' | sed 's/\//:/g' | sed 's/^/:/')
-          inner_json=$(echo $modules | xargs echo | sed 's/ /","/g')
-          echo "matrix={\"module\":[\"$inner_json\"]}" >> $GITHUB_OUTPUT
-
   smoke-test:
-    needs: setup-smoke-test-matrix
     runs-on: ubuntu-latest
     strategy:
-      matrix: ${{fromJson(needs.setup-smoke-test-matrix.outputs.matrix)}}
+      matrix:
+        module:
+          - ":smoke-tests:apps:PreAggMetricsWithRoleNameOverridesAndSampling"
+          - ":smoke-tests:apps:PreAggMetricsWithRoleNameOverridesAndSampling"
+          - ":smoke-tests:apps:PreAggMetricsWithRoleNameOverridesAndSampling"
+          - ":smoke-tests:apps:PreAggMetricsWithRoleNameOverridesAndSampling"
+          - ":smoke-tests:apps:PreAggMetricsWithRoleNameOverridesAndSampling"
       fail-fast: false
     steps:
       - uses: actions/checkout@v4
