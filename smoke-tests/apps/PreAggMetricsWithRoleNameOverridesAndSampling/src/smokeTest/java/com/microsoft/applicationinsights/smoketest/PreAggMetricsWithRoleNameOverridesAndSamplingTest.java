@@ -32,7 +32,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 @UseAgent
 abstract class PreAggMetricsWithRoleNameOverridesAndSamplingTest {
 
-  @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.create();
+  @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.builder().setSelfDiagnosticsLevel("debug").build();
 
   private static final int COUNT = 100;
 
