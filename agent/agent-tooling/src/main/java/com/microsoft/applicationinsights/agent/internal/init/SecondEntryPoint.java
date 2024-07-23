@@ -106,7 +106,7 @@ public class SecondEntryPoint
       if (!configuration.connectionStringConfiguredAtRuntime) {
         throw new FriendlyException(
             "No connection string provided",
-            "Please provide connection string: https://learn.microsoft.com/en-us/azure/azure-monitor/app/java-standalone-config");
+            "Please provide connection string: https://go.microsoft.com/fwlink/?linkid=2153358");
       }
     }
     // TODO (trask) should configuration validation be performed earlier?
