@@ -15,7 +15,9 @@ import com.microsoft.applicationinsights.agent.internal.sampling.SamplingOverrid
 import com.microsoft.applicationinsights.agent.internal.telemetry.BatchItemProcessor;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryObservers;
+import io.opentelemetry.api.logs.LoggerProvider;
 import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.javaagent.bootstrap.CallDepth;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
@@ -71,6 +73,22 @@ public class AgentLogExporter implements LogRecordExporter {
 
   @Override
   public CompletableResultCode export(Collection<LogRecordData> logs) {
+    // this will prevent any (debug) logging performed during export from being (re-)captured
+    // and (re-)exported
+    //
+    // this is only known to be an issue on Wildfly, which redirects System.out back to a logging
+    // library which is itself instrumented by OpenTelemetry Java agent
+    // (see OutOfMemoryWithDebugLevelTest for repro)
+    CallDepth callDepth = CallDepth.forClass(LoggerProvider.class);
+    callDepth.getAndIncrement();
+    try {
+      return internalExport(logs);
+    } finally {
+      callDepth.decrementAndGet();
+    }
+  }
+
+  private CompletableResultCode internalExport(Collection<LogRecordData> logs) {
     if (TelemetryClient.getActive().getConnectionString() == null) {
       // Azure Functions consumption plan
       logger.debug("Instrumentation key is null or empty. Fail to export logs.");

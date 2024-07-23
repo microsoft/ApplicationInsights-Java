@@ -9,7 +9,9 @@ import com.azure.core.util.logging.ClientLogger;
 import com.azure.monitor.opentelemetry.exporter.implementation.logging.OperationLogger;
 import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
 import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryItemExporter;
+import io.opentelemetry.api.logs.LoggerProvider;
 import io.opentelemetry.internal.shaded.jctools.queues.MpscArrayQueue;
+import io.opentelemetry.javaagent.bootstrap.CallDepth;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.DaemonThreadFactory;
 import java.util.ArrayList;
@@ -169,6 +171,22 @@ public final class BatchItemProcessor {
 
     @Override
     public void run() {
+      // this will prevent any (debug) logging performed during export from being (re-)captured
+      // and (re-)exported
+      //
+      // this is only known to be an issue on Wildfly, which redirects System.out back to a logging
+      // library which is itself instrumented by OpenTelemetry Java agent
+      // (see OutOfMemoryWithDebugLevelTest for repro)
+      CallDepth callDepth = CallDepth.forClass(LoggerProvider.class);
+      callDepth.getAndIncrement();
+      try {
+        internalRun();
+      } finally {
+        callDepth.decrementAndGet();
+      }
+    }
+
+    public void internalRun() {
       updateNextExportTime();
 
       while (continueWork) {
