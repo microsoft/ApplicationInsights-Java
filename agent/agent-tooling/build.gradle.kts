@@ -87,11 +87,6 @@ dependencies {
   testCompileOnly("com.google.code.findbugs:jsr305")
 }
 
-configurations.all {
-  // temporarily overriding version until next azure-bom release in order to address CVE
-  resolutionStrategy.force("com.azure:azure-identity:1.13.0")
-}
-
 configurations {
   "implementation" {
     exclude(group = "net.bytebuddy", module = "byte-buddy") // we use byte-buddy-dep
