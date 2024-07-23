@@ -280,10 +280,11 @@ public class SecondEntryPoint
                 return metricExporter;
               }
             })
-        .addMeterProviderCustomizer((meterProviderBuilder, configProperties) -> {
-          meterProviderBuilder.registerMetricReader(liveMetricReader);
-          return meterProviderBuilder;
-        })
+        .addMeterProviderCustomizer(
+            (meterProviderBuilder, configProperties) -> {
+              meterProviderBuilder.registerMetricReader(liveMetricReader);
+              return meterProviderBuilder;
+            })
         .addLogRecordExporterCustomizer(
             (logRecordExporter, configProperties) -> {
               if (logRecordExporter
