@@ -17,12 +17,12 @@ import java.nio.file.Files;
 
 final class StartupProfiler {
 
-  private static final String APPLICATIONINSIGHTS_STARTUP_PROFILTER_FILE_PATH =
-      "APPLICATIONINSIGHTS_STARTUP_PROFILTER_FILE_PATH";
+  private static final String APPLICATIONINSIGHTS_STARTUP_PROFILER_FILE_PATH =
+      "APPLICATIONINSIGHTS_STARTUP_PROFILER_FILE_PATH";
 
   @SuppressWarnings("SystemOut")
   public static void start() {
-    String startupProfilerFilePath = System.getenv(APPLICATIONINSIGHTS_STARTUP_PROFILTER_FILE_PATH);
+    String startupProfilerFilePath = System.getenv(APPLICATIONINSIGHTS_STARTUP_PROFILER_FILE_PATH);
     File folder;
     if (startupProfilerFilePath != null && !startupProfilerFilePath.isEmpty()) {
       folder = new File(startupProfilerFilePath);
