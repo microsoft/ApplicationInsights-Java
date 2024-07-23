@@ -707,41 +707,19 @@ public class ConfigurationBuilder {
       Function<String, String> systemPropertiesFunction)
       throws IOException {
 
+    // load connection string from a file if connection string is in the format of
+    // "${file:mounted_connection_string_file.txt}"
+    Map<String, StringLookup> stringLookupMap =
+        Collections.singletonMap(StringLookupFactory.KEY_FILE, new FileStringLookup(baseDir));
+    StringLookup stringLookup =
+        StringLookupFactory.INSTANCE.interpolatorStringLookup(stringLookupMap, null, false);
+    StringSubstitutor stringSubstitutor = new StringSubstitutor(stringLookup);
     config.connectionString =
         overlayConnectionStringFromEnv(
-            config.connectionString, envVarsFunction, systemPropertiesFunction);
+            stringSubstitutor.replace(config.connectionString),
+            envVarsFunction,
+            systemPropertiesFunction);
 
-    if (config.connectionString != null && config.connectionString.startsWith("${file:")) {
-      // load connection string from a file if connection string is in the format of
-      // "${file:mounted_connection_string_file.txt}"
-      Map<String, StringLookup> stringLookupMap =
-          Collections.singletonMap(StringLookupFactory.KEY_FILE, new FileStringLookup(baseDir));
-      StringLookup stringLookup =
-          StringLookupFactory.INSTANCE.interpolatorStringLookup(stringLookupMap, null, false);
-      StringSubstitutor stringSubstitutor = new StringSubstitutor(stringLookup);
-      String replacedConnectionString = stringSubstitutor.replace(config.connectionString);
-      if (replacedConnectionString != null
-          && !replacedConnectionString.startsWith("InstrumentationKey=")
-          && config.connectionString.equals(replacedConnectionString)) {
-        throw new FriendlyException(
-            "Your connection string seems to have a wrong format: \""
-                + replacedConnectionString
-                + "\").\n"
-                + "If you want to load the connection string from a file, please use this format:"
-                + "\n{ \"connectionString\": \"${file:connection-string-file.txt}\" }\n",
-            "Learn more about configuration options here: " + CONFIGURATION_OPTIONS_LINK);
-      }
-      config.connectionString = replacedConnectionString;
-    } else if (config.connectionString != null
-        && !config.connectionString.startsWith("InstrumentationKey=")) {
-      throw new FriendlyException(
-          "Your connection string seems to have a wrong format: \""
-              + config.connectionString
-              + "\").\n"
-              + "If you want to load the connection string from a file, please use this format:"
-              + "\n{ \"connectionString\": \"${file:connection-string-file.txt}\" }\n",
-          "Learn more about configuration options here: " + CONFIGURATION_OPTIONS_LINK);
-    }
     if (isTrimEmpty(config.role.name)) {
       // only use WEBSITE_SITE_NAME as a fallback
       config.role.name = getWebsiteSiteNameEnvVar(envVarsFunction);
