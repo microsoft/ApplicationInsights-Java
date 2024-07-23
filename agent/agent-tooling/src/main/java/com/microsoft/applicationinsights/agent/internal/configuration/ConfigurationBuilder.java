@@ -725,13 +725,22 @@ public class ConfigurationBuilder {
           && config.connectionString.equals(replacedConnectionString)) {
         throw new FriendlyException(
             "Your connection string seems to have a wrong format: \""
-                + config.connectionString
+                + replacedConnectionString
                 + "\").\n"
                 + "If you want to load the connection string from a file, please use this format:"
                 + "\n{ \"connectionString\": \"${file:connection-string-file.txt}\" }\n",
             "Learn more about configuration options here: " + CONFIGURATION_OPTIONS_LINK);
       }
       config.connectionString = replacedConnectionString;
+    } else if (config.connectionString != null
+        && !config.connectionString.startsWith("InstrumentationKey=")) {
+      throw new FriendlyException(
+          "Your connection string seems to have a wrong format: \""
+              + config.connectionString
+              + "\").\n"
+              + "If you want to load the connection string from a file, please use this format:"
+              + "\n{ \"connectionString\": \"${file:connection-string-file.txt}\" }\n",
+          "Learn more about configuration options here: " + CONFIGURATION_OPTIONS_LINK);
     }
     if (isTrimEmpty(config.role.name)) {
       // only use WEBSITE_SITE_NAME as a fallback

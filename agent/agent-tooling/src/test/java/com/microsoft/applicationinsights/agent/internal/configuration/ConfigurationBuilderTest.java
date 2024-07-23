@@ -208,7 +208,7 @@ class ConfigurationBuilderTest {
 
   @Test
   void testConnectionStringEnvVarHasHigherPrecedenceOverFileLookup() throws Exception {
-    String testConnectionString = "test-connection-string";
+    String testConnectionString = "InstrumentationKey=00000000-0000-0000-0000-000000000000";
     envVars.put("APPLICATIONINSIGHTS_CONNECTION_STRING", testConnectionString);
 
     Configuration configuration = new Configuration();
