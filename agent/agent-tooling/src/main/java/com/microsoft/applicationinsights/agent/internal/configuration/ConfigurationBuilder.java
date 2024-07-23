@@ -706,7 +706,6 @@ public class ConfigurationBuilder {
       Function<String, String> envVarsFunction,
       Function<String, String> systemPropertiesFunction)
       throws IOException {
-
     // load connection string from a file if connection string is in the format of
     // "${file:mounted_connection_string_file.txt}"
     Map<String, StringLookup> stringLookupMap =
