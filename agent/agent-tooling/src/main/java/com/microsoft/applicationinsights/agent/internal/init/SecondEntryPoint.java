@@ -264,7 +264,9 @@ public class SecondEntryPoint
         .addLogRecordProcessorCustomizer(
             (logRecordProcessor, configProperties) -> {
               if (firstLogRecordProcessor.getAndSet(false)) {
-                // hack to register log record processors in front of the batch log processor
+                // hack to run our log record processors first, before any other log processors
+                // (in particular before the batch log processor which performs the export)
+                // see https://github.com/open-telemetry/opentelemetry-java/issues/6599
                 List<LogRecordProcessor> logRecordProcessors =
                     getLogRecordProcessors(configuration);
                 logRecordProcessors.add(logRecordProcessor);
