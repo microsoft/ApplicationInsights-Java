@@ -73,11 +73,11 @@ public class AgentLogExporter implements LogRecordExporter {
 
   @Override
   public CompletableResultCode export(Collection<LogRecordData> logs) {
-    // this will prevent any (debug) logging performed during export from being (re-)captured
-    // and (re-)exported
+    // incrementing CallDepth for LoggerProvider causes the OpenTelemetry Java agent logging
+    // instrumentation to back off
     //
-    // this is only known to be an issue on Wildfly, which redirects System.out back to a logging
-    // library which is itself instrumented by OpenTelemetry Java agent
+    // note: recursive log capture is only known to be an issue on Wildfly, because it redirects
+    // System.out back to a logging library which is itself instrumented by OpenTelemetry Java agent
     // (see OutOfMemoryWithDebugLevelTest for repro)
     CallDepth callDepth = CallDepth.forClass(LoggerProvider.class);
     callDepth.getAndIncrement();
