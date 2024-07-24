@@ -56,7 +56,7 @@ import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizer;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizerProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.AutoConfigureListener;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.logs.SdkLoggerProviderBuilder;
+import io.opentelemetry.sdk.logs.LogRecordProcessor;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.InstrumentSelector;
@@ -75,6 +75,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
@@ -236,6 +237,8 @@ public class SecondEntryPoint
     }
     telemetryClient.setQuickPulse(quickPulse);
 
+    AtomicBoolean firstLogRecordProcessor = new AtomicBoolean(true);
+
     autoConfiguration
         .addPropertiesSupplier(
             () -> {
@@ -258,6 +261,20 @@ public class SecondEntryPoint
               return props;
             })
         .addPropertiesCustomizer(new AiConfigCustomizer())
+        .addLogRecordProcessorCustomizer(
+            (logRecordProcessor, configProperties) -> {
+              if (firstLogRecordProcessor.getAndSet(false)) {
+                // hack to run our log record processors first, before any other log processors
+                // (in particular before the batch log processor which performs the export)
+                // see https://github.com/open-telemetry/opentelemetry-java/issues/6599
+                List<LogRecordProcessor> logRecordProcessors =
+                    getLogRecordProcessors(configuration);
+                logRecordProcessors.add(logRecordProcessor);
+                return LogRecordProcessor.composite(
+                    logRecordProcessors.toArray(new LogRecordProcessor[0]));
+              }
+              return logRecordProcessor;
+            })
         .addSpanExporterCustomizer(
             (spanExporter, configProperties) -> {
               if (spanExporter instanceof AzureMonitorSpanExporterProvider.MarkerSpanExporter) {
@@ -286,9 +303,7 @@ public class SecondEntryPoint
         .addTracerProviderCustomizer(
             (builder, otelConfig) -> configureTracing(builder, configuration))
         .addMeterProviderCustomizer(
-            (builder, otelConfig) -> configureMetrics(builder, configuration))
-        .addLoggerProviderCustomizer(
-            (builder, otelConfig) -> configureLogging(builder, configuration));
+            (builder, otelConfig) -> configureMetrics(builder, configuration));
 
     AiContextCustomizerHolder.setInstance(
         new AiContextCustomizer<>(
@@ -617,28 +632,28 @@ public class SecondEntryPoint
   // QuickPulse is injected into the logging pipeline because QuickPulse displays exception
   // telemetry and exception telemetry can be reported as either span events or as log records with
   // an exception stack traces
-  private static SdkLoggerProviderBuilder configureLogging(
-      SdkLoggerProviderBuilder builder, Configuration configuration) {
+  private static List<LogRecordProcessor> getLogRecordProcessors(Configuration configuration) {
+    List<LogRecordProcessor> logRecordProcessors = new ArrayList<>();
 
-    builder.addLogRecordProcessor(new AzureMonitorLogProcessor());
+    logRecordProcessors.add(new AzureMonitorLogProcessor());
 
     if (ConfigurationBuilder.inAzureFunctionsWorker(System::getenv)) {
-      builder.addLogRecordProcessor(new AzureFunctionsLogProcessor());
+      logRecordProcessors.add(new AzureFunctionsLogProcessor());
     }
 
     if (!configuration.preview.inheritedAttributes.isEmpty()) {
-      builder.addLogRecordProcessor(
+      logRecordProcessors.add(
           new InheritedAttributesLogProcessor(configuration.preview.inheritedAttributes));
     }
     // adding this even if there are no connectionStringOverrides, in order to support
     // "ai.preview.connection_string" being set programmatically on CONSUMER spans
     // (or "ai.preview.instrumentation_key" for backwards compatibility)
-    builder.addLogRecordProcessor(new InheritedConnectionStringLogProcessor());
+    logRecordProcessors.add(new InheritedConnectionStringLogProcessor());
     // adding this even if there are no roleNameOverrides, in order to support
     // "ai.preview.service_name" being set programmatically on CONSUMER spans
-    builder.addLogRecordProcessor(new InheritedRoleNameLogProcessor());
+    logRecordProcessors.add(new InheritedRoleNameLogProcessor());
 
-    return builder;
+    return logRecordProcessors;
   }
 
   private static LogRecordExporter createLogExporter(
