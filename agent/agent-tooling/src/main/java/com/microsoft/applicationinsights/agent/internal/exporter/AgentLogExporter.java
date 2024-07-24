@@ -77,8 +77,9 @@ public class AgentLogExporter implements LogRecordExporter {
     // instrumentation to back off
     //
     // note: recursive log capture is only known to be an issue on Wildfly, because it redirects
-    // System.out back to a logging library which is itself instrumented by OpenTelemetry Java agent
-    // (see OutOfMemoryWithDebugLevelTest for repro)
+    // System.out back to a logging library which is itself instrumented by the Java agent
+    //
+    // see OutOfMemoryWithDebugLevelTest for repro that will fail without this code
     CallDepth callDepth = CallDepth.forClass(LoggerProvider.class);
     callDepth.getAndIncrement();
     try {
