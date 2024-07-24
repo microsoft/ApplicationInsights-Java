@@ -18,15 +18,13 @@ public class AlternativeJfrConfigurationsTest {
   private static void assertForAllConfigs(
       Configuration.ProfilerConfiguration config, Consumer<String> assertion) {
 
-    assertion.accept(AlternativeJfrConfigurations.getCpuProfileConfig(config).getConfiguration());
+    assertion.accept(AlternativeJfrConfigurations.getCpuProfileConfig(config).toString());
 
-    assertion.accept(
-        AlternativeJfrConfigurations.getMemoryProfileConfig(config).getConfiguration());
+    assertion.accept(AlternativeJfrConfigurations.getMemoryProfileConfig(config).toString());
 
-    assertion.accept(
-        AlternativeJfrConfigurations.getManualProfileConfig(config).getConfiguration());
+    assertion.accept(AlternativeJfrConfigurations.getManualProfileConfig(config).toString());
 
-    assertion.accept(AlternativeJfrConfigurations.getSpanProfileConfig(config).getConfiguration());
+    assertion.accept(AlternativeJfrConfigurations.getSpanProfileConfig(config).toString());
   }
 
   // To be able to remove sensitive events

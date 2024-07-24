@@ -10,7 +10,7 @@ dependencies {
   compileOnly("com.google.auto.value:auto-value-annotations")
   annotationProcessor("com.google.auto.value:auto-value")
 
-  implementation("com.microsoft.jfr:jfr-streaming")
+  implementation("io.opentelemetry.contrib:opentelemetry-jfr-connection:1.37.0-alpha")
   implementation("com.azure:azure-storage-blob")
 
   implementation(project(":agent:agent-profiler:agent-alerting-api"))
@@ -46,7 +46,7 @@ dependencies {
   compileOnly("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure")
   compileOnly("io.opentelemetry:opentelemetry-extension-trace-propagators")
 
-  implementation("com.github.oshi:oshi-core:6.6.1") {
+  implementation("com.github.oshi:oshi-core:6.6.2") {
     exclude("org.slf4j", "slf4j-api")
   }
 

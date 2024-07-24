@@ -11,9 +11,9 @@ data class DependencySet(val group: String, val version: String, val modules: Li
 val dependencyVersions = hashMapOf<String, String>()
 rootProject.extra["versions"] = dependencyVersions
 
-val otelVersion = "1.39.0"
-val otelInstrumentationAlphaVersion = "2.5.0-alpha"
-val otelInstrumentationVersion = "2.5.0"
+val otelVersion = "1.40.0"
+val otelInstrumentationAlphaVersion = "2.6.0-alpha"
+val otelInstrumentationVersion = "2.6.0"
 val otelContribAlphaVersion = "1.35.0-alpha"
 val byteBuddyVersion = "1.14.11"
 
@@ -29,14 +29,14 @@ val DEPENDENCY_BOMS = listOf(
   "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:${otelInstrumentationVersion}",
   "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${otelInstrumentationAlphaVersion}",
   "com.azure:azure-sdk-bom:1.2.25",
-  "io.netty:netty-bom:4.1.111.Final",
+  "io.netty:netty-bom:4.1.112.Final",
   "org.junit:junit-bom:5.10.3",
-  "org.testcontainers:testcontainers-bom:1.19.8",
+  "org.testcontainers:testcontainers-bom:1.20.0",
 )
 
 val autoServiceVersion = "1.1.1"
 val autoValueVersion = "1.11.0"
-val errorProneVersion = "2.28.0"
+val errorProneVersion = "2.29.2"
 val jmhVersion = "1.37"
 val mockitoVersion = "4.11.0"
 val slf4jVersion = "2.0.13"
@@ -68,14 +68,14 @@ val DEPENDENCIES = listOf(
   "ch.qos.logback:logback-classic:1.3.14", // logback 1.4+ requires Java 11+
   "ch.qos.logback.contrib:logback-json-classic:0.1.5",
   "com.uber.nullaway:nullaway:0.11.0",
-  "commons-codec:commons-codec:1.17.0",
+  "commons-codec:commons-codec:1.17.1",
   "org.apache.commons:commons-text:1.12.0",
   "com.google.code.gson:gson:2.11.0",
-  "com.azure:azure-core-test:1.26.0", // this is not included in azure-sdk-bom
+  "com.azure:azure-core-test:1.26.1", // this is not included in azure-sdk-bom
   "org.assertj:assertj-core:3.26.3",
   "org.awaitility:awaitility:4.2.1",
   "io.github.hakky54:logcaptor:2.9.3",
-  "com.microsoft.jfr:jfr-streaming:1.2.0",
+  "io.opentelemetry.contrib:opentelemetry-jfr-connection:1.37.0-alpha",
   "com.google.code.findbugs:jsr305:3.0.2",
   "com.github.spotbugs:spotbugs-annotations:4.8.6"
 )
