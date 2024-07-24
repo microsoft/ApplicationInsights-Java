@@ -377,7 +377,7 @@ _2024-07-24 15:00:23 UTC_
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**74** **Group:** `com.github.oshi` **Name:** `oshi-core` **Version:** `6.6.1` 
+**74** **Group:** `com.github.oshi` **Name:** `oshi-core` **Version:** `6.6.2` 
 > - **Manifest Project URL**: [https://github.com/oshi/oshi/oshi-core](https://github.com/oshi/oshi/oshi-core)
 > - **Manifest License**: "SPDX-License-Identifier: MIT";link="https://opensource.org/licenses/MIT" (Not Packaged)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
