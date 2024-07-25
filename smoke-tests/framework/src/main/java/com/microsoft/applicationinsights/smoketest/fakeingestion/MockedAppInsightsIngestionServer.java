@@ -103,13 +103,12 @@ public class MockedAppInsightsIngestionServer {
 
   public <T extends Domain> List<T> getMessageDataInRequest(int numItems)
       throws ExecutionException, InterruptedException, TimeoutException {
-    List<Envelope> items = waitForItems("MessageData", numItems);
+    List<Envelope> items =
+        waitForItems("MessageData", e -> e.getTags().containsKey("ai.operation.id"), numItems);
     List<T> dataItems = new ArrayList<>();
     for (Envelope e : items) {
-      if (e.getTags().containsKey("ai.operation.id")) {
-        Data<T> dt = (Data<T>) e.getData();
-        dataItems.add(dt.getBaseData());
-      }
+      Data<T> dt = (Data<T>) e.getData();
+      dataItems.add(dt.getBaseData());
     }
     return dataItems;
   }

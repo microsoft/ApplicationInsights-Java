@@ -1,7 +1,7 @@
 
 # agent
 ## Dependency License Report
-_2024-07-24 12:04:08 PDT_
+_2024-07-25 16:39:41 CEST_
 ## Apache License, Version 2.0
 
 **1** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-annotations` **Version:** `2.17.2` 
