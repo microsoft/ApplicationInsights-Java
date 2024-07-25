@@ -11,6 +11,8 @@ Application Insights Java 3.5.4 GA (07/29/2024)
 ([#3776](https://github.com/microsoft/ApplicationInsights-Java/pull/3676))
 * Help the user to configure the connection string
 ([#3788](https://github.com/microsoft/ApplicationInsights-Java/pull/3788))
+* Update browser loader version
+([#3765](https://github.com/microsoft/ApplicationInsights-Java/pull/3765))
 
 ### CVE
 * Fix CVE-2024-35255
