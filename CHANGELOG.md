@@ -1,6 +1,6 @@
 # CHANGELOG
 
-Application Insights Java 3.5.4 GA (07/29/2024)
+## Version 3.5.4 GA (07/29/2024)
 
 ### Bug fixes
 * Fix possible OOM with Wildfly
