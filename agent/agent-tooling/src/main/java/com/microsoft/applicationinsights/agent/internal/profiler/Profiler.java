@@ -10,12 +10,11 @@ import com.microsoft.applicationinsights.agent.internal.profiler.upload.UploadSe
 import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
 import com.microsoft.applicationinsights.alerting.config.AlertConfiguration;
 import com.microsoft.applicationinsights.alerting.config.AlertMetricType;
-import com.microsoft.jfr.FlightRecorderConnection;
-import com.microsoft.jfr.JfrStreamingException;
-import com.microsoft.jfr.Recording;
-import com.microsoft.jfr.RecordingConfiguration;
-import com.microsoft.jfr.RecordingOptions;
-import com.microsoft.jfr.dcmd.FlightRecorderDiagnosticCommandConnection;
+import io.opentelemetry.contrib.jfr.connection.FlightRecorderConnection;
+import io.opentelemetry.contrib.jfr.connection.JfrConnectionException;
+import io.opentelemetry.contrib.jfr.connection.Recording;
+import io.opentelemetry.contrib.jfr.connection.RecordingConfiguration;
+import io.opentelemetry.contrib.jfr.connection.RecordingOptions;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -30,7 +29,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
-import javax.management.InstanceNotFoundException;
 import javax.management.MBeanServerConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -91,8 +89,6 @@ public class Profiler {
    * Call init before run.
    *
    * @throws IOException Trouble communicating with MBean server
-   * @throws InstanceNotFoundException The JVM does not support JFR, or experimental option is not
-   *     enabled.
    */
   public void initialize(
       UploadService uploadService, ScheduledExecutorService scheduledExecutorService)
@@ -107,9 +103,9 @@ public class Profiler {
     MBeanServerConnection mbeanServer = ManagementFactory.getPlatformMBeanServer();
     try {
       flightRecorderConnection = FlightRecorderConnection.connect(mbeanServer);
-    } catch (JfrStreamingException | InstanceNotFoundException jfrStreamingException) {
+    } catch (JfrConnectionException jfrConnectionException) {
       // Possibly an older JVM, try using Diagnostic command
-      flightRecorderConnection = FlightRecorderDiagnosticCommandConnection.connect(mbeanServer);
+      flightRecorderConnection = FlightRecorderConnection.diagnosticCommandConnection(mbeanServer);
     }
   }
 
@@ -207,7 +203,7 @@ public class Profiler {
       logger.error("Failed to start JFR recording", ioException);
       CompletableFuture<?> future = new CompletableFuture<>();
       future.completeExceptionally(ioException);
-    } catch (JfrStreamingException internalError) {
+    } catch (JfrConnectionException internalError) {
       logger.error("Internal JFR Error", internalError);
       CompletableFuture<?> future = new CompletableFuture<>();
       future.completeExceptionally(internalError);
@@ -246,26 +242,26 @@ public class Profiler {
       recording.dump(recordingFile.getAbsolutePath());
     } catch (IOException e) {
       logger.error("Failed to close recording", e);
-    } catch (JfrStreamingException internalError) {
+    } catch (JfrConnectionException internalError) {
       // Sometimes the  mbean dump fails...Try alternative of streaming data out
       try {
         writeFileFromStream(recording, recordingFile);
       } catch (IOException e) {
         logger.error("Failed to close recording", e);
-      } catch (JfrStreamingException e) {
+      } catch (JfrConnectionException e) {
         logger.error("Internal JFR Error", e);
       }
     } finally {
       try {
         recording.close();
-      } catch (IOException e) {
+      } catch (IOException | JfrConnectionException e) {
         logger.error("Failed to close recording", e);
       }
     }
   }
 
   private static void writeFileFromStream(Recording recording, File recordingFile)
-      throws IOException, JfrStreamingException {
+      throws IOException, JfrConnectionException {
     if (recordingFile.exists()) {
       recordingFile.delete();
     }

@@ -11,9 +11,18 @@
       CVE-2023-36415 affects azure-identity across multiple languages.
       The CVE was fixed in azure-identity versions: Java 1.11.0, Python 1.15.0, JS 3.4.0.
       But the tooling is unaware of the version differences between the different language artifacts
-      and so it is flagging the usage of azure-identity (Java) 1.11.0, since it's less than 3.4.0.
+      and so it is flagging the usage of azure-identity (Java) 1.11.0, since it's less than 1.15.0 and 3.4.0.
     </notes>
     <cve>CVE-2023-36415</cve>
+  </suppress>
+  <suppress>
+    <notes>
+      CVE-2024-35255 affects azure-identity across multiple languages.
+      The CVE was fixed in azure-identity versions: Java 1.12.2, Python 1.16.1, JS 4.2.1.
+      But the tooling is unaware of the version differences between the different language artifacts
+      and so it is flagging the usage of azure-identity (Java) 1.12.2, since it's less than 1.16.1 and 4.2.1.
+    </notes>
+    <cve>CVE-2024-35255</cve>
   </suppress>
   <suppress>
     <notes>

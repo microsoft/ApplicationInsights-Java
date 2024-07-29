@@ -11,9 +11,9 @@ data class DependencySet(val group: String, val version: String, val modules: Li
 val dependencyVersions = hashMapOf<String, String>()
 rootProject.extra["versions"] = dependencyVersions
 
-val otelVersion = "1.39.0"
-val otelInstrumentationAlphaVersion = "2.5.0-alpha"
-val otelInstrumentationVersion = "2.5.0"
+val otelVersion = "1.40.0"
+val otelInstrumentationAlphaVersion = "2.6.0-alpha"
+val otelInstrumentationVersion = "2.6.0"
 val otelContribAlphaVersion = "1.35.0-alpha"
 val byteBuddyVersion = "1.14.11"
 
@@ -36,7 +36,7 @@ val DEPENDENCY_BOMS = listOf(
 
 val autoServiceVersion = "1.1.1"
 val autoValueVersion = "1.11.0"
-val errorProneVersion = "2.29.0"
+val errorProneVersion = "2.29.2"
 val jmhVersion = "1.37"
 val mockitoVersion = "4.11.0"
 val slf4jVersion = "2.0.13"
@@ -75,7 +75,7 @@ val DEPENDENCIES = listOf(
   "org.assertj:assertj-core:3.26.3",
   "org.awaitility:awaitility:4.2.1",
   "io.github.hakky54:logcaptor:2.9.3",
-  "com.microsoft.jfr:jfr-streaming:1.2.0",
+  "io.opentelemetry.contrib:opentelemetry-jfr-connection:1.37.0-alpha",
   "com.google.code.findbugs:jsr305:3.0.2",
   "com.github.spotbugs:spotbugs-annotations:4.8.6"
 )
