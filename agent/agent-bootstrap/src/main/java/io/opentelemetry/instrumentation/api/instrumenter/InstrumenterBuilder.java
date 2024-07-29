@@ -39,7 +39,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 
-// copied from OpenTelemetry Instrumentation 1.31.0
+// copied from OpenTelemetry Instrumentation 2.6.0
 
 /**
  * A builder of an {@link Instrumenter}.
@@ -74,6 +74,7 @@ public final class InstrumenterBuilder<REQUEST, RESPONSE> {
   SpanStatusExtractor<? super REQUEST, ? super RESPONSE> spanStatusExtractor =
       SpanStatusExtractor.getDefault();
   ErrorCauseExtractor errorCauseExtractor = ErrorCauseExtractor.getDefault();
+  boolean propagateOperationListenersToOnEnd = false;
   boolean enabled = true;
 
   InstrumenterBuilder(
@@ -366,7 +367,8 @@ public final class InstrumenterBuilder<REQUEST, RESPONSE> {
   }
 
   SpanSuppressor buildSpanSuppressor() {
-    return spanSuppressionStrategy.create(getSpanKeysFromAttributesExtractors());
+    return new SpanSuppressors.ByContextKey(
+        spanSuppressionStrategy.create(getSpanKeysFromAttributesExtractors()));
   }
 
   private Set<SpanKey> getSpanKeysFromAttributesExtractors() {
@@ -379,6 +381,10 @@ public final class InstrumenterBuilder<REQUEST, RESPONSE> {
               return spanKey == null ? Stream.of() : Stream.of(spanKey);
             })
         .collect(Collectors.toSet());
+  }
+
+  private void propagateOperationListenersToOnEnd() {
+    propagateOperationListenersToOnEnd = true;
   }
 
   private interface InstrumenterConstructor<RQ, RS> {
@@ -416,6 +422,12 @@ public final class InstrumenterBuilder<REQUEST, RESPONSE> {
               TextMapSetter<RQ> setter,
               SpanKindExtractor<RQ> spanKindExtractor) {
             return builder.buildDownstreamInstrumenter(setter, spanKindExtractor);
+          }
+
+          @Override
+          public <RQ, RS> void propagateOperationListenersToOnEnd(
+              InstrumenterBuilder<RQ, RS> builder) {
+            builder.propagateOperationListenersToOnEnd();
           }
         });
   }
