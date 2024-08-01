@@ -14,13 +14,11 @@ rootProject.extra["versions"] = dependencyVersions
 val otelVersion = "1.40.0"
 val otelInstrumentationAlphaVersion = "2.6.0-alpha"
 val otelInstrumentationVersion = "2.6.0"
-val otelContribAlphaVersion = "1.35.0-alpha"
 val byteBuddyVersion = "1.14.11"
 
 rootProject.extra["otelVersion"] = otelVersion
 rootProject.extra["otelInstrumentationVersion"] = otelInstrumentationVersion
 rootProject.extra["otelInstrumentationAlphaVersion"] = otelInstrumentationAlphaVersion
-rootProject.extra["otelContribAlphaVersion"] = otelContribAlphaVersion
 
 val DEPENDENCY_BOMS = listOf(
   "com.fasterxml.jackson:jackson-bom:2.17.2",
