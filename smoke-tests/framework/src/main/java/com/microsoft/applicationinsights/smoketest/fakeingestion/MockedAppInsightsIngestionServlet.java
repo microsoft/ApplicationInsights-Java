@@ -65,7 +65,9 @@ class MockedAppInsightsIngestionServlet extends HttpServlet {
   List<Envelope> getItemsByType(String type) {
     Objects.requireNonNull(type, "type");
     synchronized (multimapLock) {
-      return type2envelope.get(type);
+      // need to make a copy to avoid ConcurrentModificationException
+      // if the caller iterates over it at the same time as another telemetry item arrives
+      return new ArrayList<>(type2envelope.get(type));
     }
   }
 
