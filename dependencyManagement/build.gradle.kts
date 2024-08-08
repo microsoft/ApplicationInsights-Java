@@ -37,7 +37,7 @@ val autoValueVersion = "1.11.0"
 val errorProneVersion = "2.29.2"
 val jmhVersion = "1.37"
 val mockitoVersion = "4.11.0"
-val slf4jVersion = "2.0.13"
+val slf4jVersion = "2.0.14"
 
 val CORE_DEPENDENCIES = listOf(
   "io.opentelemetry:opentelemetry-semconv:1.30.1-alpha",
@@ -71,7 +71,7 @@ val DEPENDENCIES = listOf(
   "com.google.code.gson:gson:2.11.0",
   "com.azure:azure-core-test:1.26.2", // this is not included in azure-sdk-bom
   "org.assertj:assertj-core:3.26.3",
-  "org.awaitility:awaitility:4.2.1",
+  "org.awaitility:awaitility:4.2.2",
   "io.github.hakky54:logcaptor:2.9.3",
   "io.opentelemetry.contrib:opentelemetry-jfr-connection:1.37.0-alpha",
   "com.google.code.findbugs:jsr305:3.0.2",
