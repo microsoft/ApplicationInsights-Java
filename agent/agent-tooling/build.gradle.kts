@@ -21,7 +21,7 @@ dependencies {
   implementation(project(":agent:agent-profiler:agent-diagnostics"))
   implementation(project(":etw:java"))
 
-  implementation("com.azure:azure-monitor-opentelemetry-exporter:1.0.0-beta.26")
+  implementation("com.azure:azure-monitor-opentelemetry-exporter:1.0.0-beta.28")
   compileOnly("io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap")
   compileOnly("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling")
   compileOnly("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-common-bootstrap")
@@ -85,6 +85,11 @@ dependencies {
   testImplementation("io.github.hakky54:logcaptor")
 
   testCompileOnly("com.google.code.findbugs:jsr305")
+}
+
+configurations.all {
+  // temporarily overriding version until latest azure-json is part of azure-core
+  resolutionStrategy.force("com.azure:azure-json:1.2.0")
 }
 
 configurations {
