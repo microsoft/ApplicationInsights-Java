@@ -41,18 +41,21 @@ public final class Tracestate {
     for (String item : values) {
       Matcher m = MEMBER_FORMAT_RE.matcher(item);
       if (!m.find()) {
-        throw new IllegalArgumentException(String.format("invalid string %s in tracestate", item));
+        throw new IllegalArgumentException(
+            String.format(Locale.ROOT, "invalid string %s in tracestate", item));
       }
       String key = m.group(1);
       String value = m.group(3);
       if (internalList.get(key) != null) {
-        throw new IllegalArgumentException(String.format("duplicated keys %s in tracestate", key));
+        throw new IllegalArgumentException(
+            String.format(Locale.ROOT, "duplicated keys %s in tracestate", key));
       }
       internalList.put(key, value);
     }
     if (internalList.size() > MAX_KEY_VALUE_PAIRS) {
       throw new IllegalArgumentException(
-          String.format("cannot have more than %d key-value pairs", MAX_KEY_VALUE_PAIRS));
+          String.format(
+              Locale.ROOT, "cannot have more than %d key-value pairs", MAX_KEY_VALUE_PAIRS));
     }
     internalString = toInternalString();
   }
