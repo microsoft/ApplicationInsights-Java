@@ -4,6 +4,7 @@
 package com.microsoft.applicationinsights.web.internal.correlation.tracecontext;
 
 import java.util.LinkedHashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -19,7 +20,7 @@ public final class Tracestate {
 
   private static final String DELIMITER_FORMAT = "[ \\t]*,[ \\t]*";
   private static final String MEMBER_FORMAT =
-      String.format("(%s)(=)(%s)", KEY_FORMAT, VALUE_FORMAT);
+      String.format(Locale.ROOT, "(%s)(=)(%s)", KEY_FORMAT, VALUE_FORMAT);
 
   private static final Pattern DELIMITER_FORMAT_RE = Pattern.compile(DELIMITER_FORMAT);
   private static final Pattern MEMBER_FORMAT_RE = Pattern.compile("^" + MEMBER_FORMAT + "$");
