@@ -124,25 +124,21 @@ abstract class CoreAndFilter2xTest {
     List<ExceptionData> exceptions =
         testing.mockedIngestion.getTelemetryDataByTypeInRequest("ExceptionData");
     assertThat(exceptions)
-        .anySatisfy(
+        .satisfiesExactlyInAnyOrder(
             e -> {
               assertThat(e.getExceptions().get(0).getTypeName()).isEqualTo("java.lang.Exception");
               assertThat(e.getExceptions().get(0).getMessage()).isEqualTo(expectedName);
               assertThat(e.getProperties()).isEmpty();
               assertThat(e.getMeasurements()).isEmpty();
               assertThat(e.getSeverityLevel()).isEqualTo(SeverityLevel.ERROR);
-            });
-    assertThat(exceptions)
-        .anySatisfy(
+            },
             e -> {
               assertThat(e.getExceptions().get(0).getTypeName()).isEqualTo("java.lang.Exception");
               assertThat(e.getExceptions().get(0).getMessage()).isEqualTo(expectedName);
               assertThat(e.getProperties()).containsEntry("key", expectedProperties);
               assertThat(e.getMeasurements()).containsEntry("key", expectedMetrice);
               assertThat(e.getSeverityLevel()).isEqualTo(SeverityLevel.ERROR);
-            });
-    assertThat(exceptions)
-        .anySatisfy(
+            },
             e -> {
               assertThat(e.getExceptions().get(0).getTypeName()).isEqualTo("java.lang.Exception");
               assertThat(e.getExceptions().get(0).getMessage()).isEqualTo(expectedName);
