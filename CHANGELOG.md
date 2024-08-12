@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## Version 3.6.0 GA (TBD)
+
+### Enhancements:
+* Migrate from Jackson to Azure-json
+([#3790](https://github.com/microsoft/ApplicationInsights-Java/pull/3790))
+* Disable publication of gradle module metadata for runtime-attach
+([#3823](https://github.com/microsoft/ApplicationInsights-Java/pull/3823))
+
 ## Version 3.5.4 GA (07/29/2024)
 
 ### Bug fixes

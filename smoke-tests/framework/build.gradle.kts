@@ -11,7 +11,7 @@ tasks {
 dependencies {
   implementation("com.google.guava:guava")
   implementation("org.junit.jupiter:junit-jupiter")
-  implementation("org.apache.commons:commons-lang3:3.15.0")
+  implementation("org.apache.commons:commons-lang3:3.16.0")
 
   implementation("com.google.code.gson:gson")
   implementation("org.apache.httpcomponents:httpclient:4.5.14")
@@ -24,7 +24,7 @@ dependencies {
   // this is exposed in SmokeTestExtension API
   api("org.testcontainers:testcontainers:1.20.1")
 
-  implementation("org.awaitility:awaitility:4.2.1")
+  implementation("org.awaitility:awaitility:4.2.2")
 
   implementation("ch.qos.logback:logback-classic")
 
