@@ -4,6 +4,7 @@
 package com.microsoft.applicationinsights.agent.internal.perfcounter;
 
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.slf4j.Logger;
@@ -115,7 +116,8 @@ public class OshiPerformanceCounter implements PerformanceCounter {
   // use for calculating I/O bytes
   private static long getProcessBytesLinux(int processId) {
     Map<String, String> io =
-        FileUtil.getKeyValueMapFromFile(String.format(ProcPath.PID_IO, processId), ":");
+        FileUtil.getKeyValueMapFromFile(
+            String.format(Locale.ROOT, ProcPath.PID_IO, processId), ":");
     long bytesRead = ParseUtil.parseLongOrDefault(io.getOrDefault("read_bytes", ""), 0L);
     long bytesWritten = ParseUtil.parseLongOrDefault(io.getOrDefault("write_bytes", ""), 0L);
     return bytesRead + bytesWritten;

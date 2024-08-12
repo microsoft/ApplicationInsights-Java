@@ -3,6 +3,8 @@
 
 package com.microsoft.applicationinsights.agent.internal.diagnostics.etw.events.model;
 
+import java.util.Locale;
+
 public abstract class IpaEtwEventBase implements IpaEtwEvent {
   private String extensionVersion;
   private String appName;
@@ -92,7 +94,7 @@ public abstract class IpaEtwEventBase implements IpaEtwEvent {
     if (messageArgs == null || messageArgs.length == 0) {
       return fmt == null ? "" : fmt;
     } else {
-      return String.format(fmt, messageArgs);
+      return String.format(Locale.ROOT, fmt, messageArgs);
     }
   }
 

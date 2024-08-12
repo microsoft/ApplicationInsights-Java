@@ -15,6 +15,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -144,7 +145,7 @@ class ConfigurationBuilderTest {
     envVars.put("APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE", String.valueOf(testSamplingPercentage));
     RpConfiguration config = new RpConfiguration();
 
-    config.connectionString = String.format("original-%s", testConnectionString);
+    config.connectionString = String.format(Locale.ROOT, "original-%s", testConnectionString);
     config.sampling.percentage = testSamplingPercentage + 1.0;
 
     ConfigurationBuilder.overlayFromEnv(config, this::envVars, this::systemProperties);

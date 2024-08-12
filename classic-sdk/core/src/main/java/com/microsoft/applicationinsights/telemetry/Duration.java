@@ -3,6 +3,7 @@
 
 package com.microsoft.applicationinsights.telemetry;
 
+import java.util.Locale;
 import java.util.Objects;
 
 /**
@@ -106,11 +107,11 @@ public final class Duration {
   public String toString() {
     StringBuilder sb = new StringBuilder();
     if (days != 0) {
-      sb.append(String.format("%02d.", days));
+      sb.append(String.format(Locale.ROOT, "%02d.", days));
     }
-    sb.append(String.format("%02d:%02d:%02d", hours, minutes, seconds));
+    sb.append(String.format(Locale.ROOT, "%02d:%02d:%02d", hours, minutes, seconds));
     if (milliseconds > 0) {
-      sb.append(String.format(".%03d0000", milliseconds));
+      sb.append(String.format(Locale.ROOT, ".%03d0000", milliseconds));
     }
     return sb.toString();
   }
