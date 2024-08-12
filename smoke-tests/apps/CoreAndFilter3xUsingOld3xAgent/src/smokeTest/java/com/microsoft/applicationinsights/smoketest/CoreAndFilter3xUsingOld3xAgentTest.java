@@ -128,26 +128,30 @@ abstract class CoreAndFilter3xUsingOld3xAgentTest {
         testing.mockedIngestion.getTelemetryDataByTypeInRequest("ExceptionData");
     assertThat(exceptions)
         .anySatisfy(
-            e ->
-                assertThat(e.getExceptions())
-                    .extracting(ExceptionDetails::getMessage)
-                    .contains(expectedName));
-    assertThat(exceptions)
-        .anySatisfy(
             e -> {
-              assertThat(e.getExceptions())
-                  .extracting(ExceptionDetails::getMessage)
-                  .contains(expectedName);
-              assertThat(e.getProperties()).containsEntry("key", expectedProperties);
-              assertThat(e.getMeasurements()).containsEntry("key", expectedMetrice);
+              assertThat(e.getExceptions().get(0).getTypeName()).isEqualTo("java.lang.Exception");
+              assertThat(e.getExceptions().get(0).getMessage()).isEqualTo(expectedName);
+              assertThat(e.getProperties()).isEmpty();
+              assertThat(e.getMeasurements()).isEmpty();
+              assertThat(e.getSeverityLevel()).isEqualTo(SeverityLevel.ERROR);
             });
     assertThat(exceptions)
         .anySatisfy(
             e -> {
-              assertThat(e.getExceptions())
-                  .extracting(ExceptionDetails::getMessage)
-                  .contains(expectedName);
+              assertThat(e.getExceptions().get(0).getTypeName()).isEqualTo("java.lang.Exception");
+              assertThat(e.getExceptions().get(0).getMessage()).isEqualTo(expectedName);
+              assertThat(e.getProperties()).containsEntry("key", expectedProperties);
+              assertThat(e.getMeasurements()).containsEntry("key", expectedMetrice);
               assertThat(e.getSeverityLevel()).isEqualTo(SeverityLevel.ERROR);
+            });
+    assertThat(exceptions)
+        .anySatisfy(
+            e -> {
+              assertThat(e.getExceptions().get(0).getTypeName()).isEqualTo("java.lang.Exception");
+              assertThat(e.getExceptions().get(0).getMessage()).isEqualTo(expectedName);
+              assertThat(e.getProperties()).isEmpty();
+              assertThat(e.getMeasurements()).isEmpty();
+              assertThat(e.getSeverityLevel()).isEqualTo(SeverityLevel.WARNING);
             });
 
     SmokeTestExtension.assertParentChild(
@@ -485,6 +489,7 @@ abstract class CoreAndFilter3xUsingOld3xAgentTest {
     assertThat(rd.getSuccess()).isFalse();
 
     ExceptionDetails details = getExceptionDetails(ed);
+    assertThat(details.getTypeName()).isEqualTo("javax.servlet.ServletException");
     assertThat(details.getMessage()).isEqualTo("This is a auto thrown exception !");
   }
 
