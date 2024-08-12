@@ -332,10 +332,18 @@ public class TelemetryClient {
     }
     telemetryBuilder.setResource(resource);
     for (Map.Entry<String, String> entry : globalTags.entrySet()) {
-      telemetryBuilder.addTag(entry.getKey(), entry.getValue());
+      // avoid putting null value into map. azure-json allows null values by default; whereas,
+      // jackson doesn't
+      if (!Strings.isNullOrEmpty(entry.getValue())) {
+        telemetryBuilder.addTag(entry.getKey(), entry.getValue());
+      }
     }
     for (Map.Entry<String, String> entry : globalProperties.entrySet()) {
-      telemetryBuilder.addProperty(entry.getKey(), entry.getValue());
+      // avoid putting null value into map. azure-json allows null values by default; whereas,
+      // jackson doesn't
+      if (!Strings.isNullOrEmpty(entry.getValue())) {
+        telemetryBuilder.addProperty(entry.getKey(), entry.getValue());
+      }
     }
     new ResourceParser().updateRoleNameAndInstance(telemetryBuilder, resource);
   }
@@ -500,18 +508,14 @@ public class TelemetryClient {
     }
 
     public Builder setRoleName(@Nullable String roleName) {
-      if (!Strings.isNullOrEmpty(roleName)) {
-        this.roleName = roleName;
-        globalTags.put(ContextTagKeys.AI_CLOUD_ROLE.toString(), roleName);
-      }
+      this.roleName = roleName;
+      globalTags.put(ContextTagKeys.AI_CLOUD_ROLE.toString(), roleName);
       return this;
     }
 
     public Builder setRoleInstance(@Nullable String roleInstance) {
-      if (!Strings.isNullOrEmpty(roleInstance)) {
-        this.roleInstance = roleInstance;
-        globalTags.put(ContextTagKeys.AI_CLOUD_ROLE_INSTANCE.toString(), roleInstance);
-      }
+      this.roleInstance = roleInstance;
+      globalTags.put(ContextTagKeys.AI_CLOUD_ROLE_INSTANCE.toString(), roleInstance);
       return this;
     }
 
