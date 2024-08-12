@@ -24,9 +24,4 @@ tasks {
       attributes("Automatic-Module-Name" to "com.microsoft.applicationinsights.attach")
     }
   }
-
-  // disabling the publication of Gradle Module Metadata
-  withType<GenerateModuleMetadata>().configureEach {
-    enabled = false
-  }
 }

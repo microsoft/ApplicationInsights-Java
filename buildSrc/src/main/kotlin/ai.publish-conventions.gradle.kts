@@ -55,3 +55,12 @@ publishing {
     }
   }
 }
+
+tasks {
+    // Because we reconfigure publishing to only include the shadow jar, the Gradle metadata is not correct.
+    // Since we are fully bundled and have no dependencies, Gradle metadata wouldn't provide any advantage over
+    // the POM anyways so in practice we shouldn't be losing anything.
+    withType<GenerateModuleMetadata>().configureEach {
+      enabled = false
+    }
+}
