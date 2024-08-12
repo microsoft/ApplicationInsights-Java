@@ -6,6 +6,7 @@ package com.microsoft.applicationinsights.agent.internal.perfcounter;
 import com.azure.monitor.opentelemetry.exporter.implementation.utils.ThreadPoolUtils;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -76,9 +77,11 @@ public enum PerformanceCounterContainer {
     if (collectionFrequencyInSec < MIN_COLLECTION_FREQUENCY_IN_SEC) {
       String errorMessage =
           String.format(
+              Locale.ROOT,
               "Collecting Interval: illegal value '%d'. The minimum value, '%d', "
                   + "is used instead.",
-              collectionFrequencyInSec, MIN_COLLECTION_FREQUENCY_IN_SEC);
+              collectionFrequencyInSec,
+              MIN_COLLECTION_FREQUENCY_IN_SEC);
       logger.error(errorMessage);
 
       collectionFrequencyInSec = MIN_COLLECTION_FREQUENCY_IN_SEC;
