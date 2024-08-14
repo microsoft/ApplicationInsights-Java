@@ -39,7 +39,7 @@ public class SimpleTrackExceptionServlet extends HttpServlet {
     client.trackException(exception, properties, metrics);
 
     ExceptionTelemetry et = new ExceptionTelemetry(exception);
-    et.setSeverityLevel(SeverityLevel.Error);
+    et.setSeverityLevel(SeverityLevel.Warning);
     client.track(et);
   }
 }

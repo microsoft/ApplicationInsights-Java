@@ -93,6 +93,7 @@ abstract class ClassicSdkLogbackInterop2xTest {
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
     ExceptionData ed = (ExceptionData) ((Data<?>) edEnvelope.getData()).getBaseData();
 
+    assertThat(ed.getExceptions().get(0).getTypeName()).isEqualTo("java.lang.Exception");
     assertThat(ed.getExceptions().get(0).getMessage()).isEqualTo("Fake Exception");
     assertThat(ed.getSeverityLevel()).isEqualTo(SeverityLevel.ERROR);
     assertThat(ed.getProperties()).containsEntry("Logger Message", "This is an exception!");

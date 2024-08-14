@@ -332,10 +332,18 @@ public class TelemetryClient {
     }
     telemetryBuilder.setResource(resource);
     for (Map.Entry<String, String> entry : globalTags.entrySet()) {
-      telemetryBuilder.addTag(entry.getKey(), entry.getValue());
+      // avoid putting null value into map. azure-json allows null values by default; whereas,
+      // jackson doesn't
+      if (!Strings.isNullOrEmpty(entry.getValue())) {
+        telemetryBuilder.addTag(entry.getKey(), entry.getValue());
+      }
     }
     for (Map.Entry<String, String> entry : globalProperties.entrySet()) {
-      telemetryBuilder.addProperty(entry.getKey(), entry.getValue());
+      // avoid putting null value into map. azure-json allows null values by default; whereas,
+      // jackson doesn't
+      if (!Strings.isNullOrEmpty(entry.getValue())) {
+        telemetryBuilder.addProperty(entry.getKey(), entry.getValue());
+      }
     }
     new ResourceParser().updateRoleNameAndInstance(telemetryBuilder, resource);
   }

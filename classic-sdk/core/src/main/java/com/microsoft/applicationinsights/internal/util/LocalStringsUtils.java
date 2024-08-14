@@ -6,12 +6,13 @@ package com.microsoft.applicationinsights.internal.util;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class LocalStringsUtils {
 
   private static final SimpleDateFormat simpleDateFormat =
-      new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZZ");
+      new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZZ", Locale.ROOT);
 
   public static boolean isNullOrEmpty(String value) {
     return value == null || value.isEmpty();

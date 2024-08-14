@@ -114,6 +114,7 @@ abstract class Log4j1Test {
     List<ExceptionDetails> details = ed.getExceptions();
     ExceptionDetails ex = details.get(0);
 
+    assertThat(ex.getTypeName()).isEqualTo("java.lang.Exception");
     assertThat(ex.getMessage()).isEqualTo("Fake Exception");
     assertThat(ed.getSeverityLevel()).isEqualTo(SeverityLevel.ERROR);
     assertThat(ed.getProperties()).containsEntry("Logger Message", "This is an exception!");

@@ -10,6 +10,7 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -22,7 +23,7 @@ import java.util.regex.Pattern;
 public final class TimestampContract {
   // Cant use ISO_INSTANT as it does not pad the nanos to 7 figures
   private static final DateTimeFormatter FORMATTER =
-      DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.nX");
+      DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.nX", Locale.ROOT);
 
   private static final Pattern TIMESTAMP_PATTERN = Pattern.compile(".*\\.([0-9]+)Z$");
 

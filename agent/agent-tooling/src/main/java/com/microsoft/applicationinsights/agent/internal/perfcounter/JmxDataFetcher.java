@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import javax.management.AttributeNotFoundException;
@@ -44,7 +45,7 @@ public class JmxDataFetcher {
     MBeanServer server = ManagementFactory.getPlatformMBeanServer();
     Set<ObjectName> objects = server.queryNames(new ObjectName(objectName), null);
     if (objects.isEmpty()) {
-      String errorMsg = String.format("Cannot find object name '%s'", objectName);
+      String errorMsg = String.format(Locale.ROOT, "Cannot find object name '%s'", objectName);
       throw new IllegalArgumentException(errorMsg);
     }
 
@@ -81,7 +82,7 @@ public class JmxDataFetcher {
     Set<ObjectName> objects = server.queryNames(new ObjectName(objectName), null);
     logger.trace("Matching object names for pattern {}: {}", objectName, objects.toString());
     if (objects.isEmpty()) {
-      String errorMsg = String.format("Cannot find object name '%s'", objectName);
+      String errorMsg = String.format(Locale.ROOT, "Cannot find object name '%s'", objectName);
       throw new IllegalArgumentException(errorMsg);
     }
 

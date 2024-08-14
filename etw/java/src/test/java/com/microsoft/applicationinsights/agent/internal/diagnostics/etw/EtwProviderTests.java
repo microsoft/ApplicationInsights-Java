@@ -15,6 +15,7 @@ import com.microsoft.applicationinsights.agent.internal.diagnostics.etw.events.I
 import com.microsoft.applicationinsights.agent.internal.diagnostics.etw.events.model.IpaEtwEventBase;
 import com.microsoft.applicationinsights.agent.internal.diagnostics.etw.events.model.IpaEtwEventErrorBase;
 import java.io.File;
+import java.util.Locale;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import org.apache.commons.lang3.RandomUtils;
@@ -216,8 +217,13 @@ class EtwProviderTests {
     @Override
     public String toString() {
       return String.format(
+          Locale.ROOT,
           "{ verbose: %d, info: %d, warn: %d, error: %d, critical: %d }",
-          verbose, info, warn, error, critical);
+          verbose,
+          info,
+          warn,
+          error,
+          critical);
     }
 
     void plus(EventCounts operand) {
@@ -260,7 +266,7 @@ class EtwProviderTests {
       if (RandomUtils.nextInt(0, warnChance) == 0) {
         Throwable exception = null;
         if (RandomUtils.nextBoolean()) {
-          exception = new Exception(String.format("Exeption %d", i));
+          exception = new Exception(String.format(Locale.ROOT, "Exeption %d", i));
         }
         ep.writeEvent(createWarn("test.warn", "testEventsOnLoop", exception, "i=%d", i));
         accumulator.warn++;
@@ -268,7 +274,7 @@ class EtwProviderTests {
       if (RandomUtils.nextInt(0, errorChance) == 0) {
         Throwable exception = null;
         if (RandomUtils.nextBoolean()) {
-          exception = new Exception(String.format("Exeption %d", i));
+          exception = new Exception(String.format(Locale.ROOT, "Exeption %d", i));
         }
         ep.writeEvent(createError("test.error", "testEventsOnLoop", exception, "i=%d", i));
         accumulator.error++;
@@ -276,7 +282,7 @@ class EtwProviderTests {
       if (RandomUtils.nextInt(0, criticalChance) == 0) {
         Throwable exception = null;
         if (RandomUtils.nextBoolean()) {
-          exception = new Exception(String.format("Exeption %d", i));
+          exception = new Exception(String.format(Locale.ROOT, "Exeption %d", i));
         }
         ep.writeEvent(createCritical("test.critical", "testEventsOnLoop", exception, "i=%d", i));
         accumulator.critical++;
@@ -296,7 +302,9 @@ class EtwProviderTests {
                 + printTimer
                 + "ms "
                 + String.format(
-                    "(avg=%.3fms)", ((double) printTimer / (double) accumulator.sum())));
+                    Locale.ROOT,
+                    "(avg=%.3fms)",
+                    ((double) printTimer / (double) accumulator.sum())));
         printTimer = 0;
         accumulator.reset();
       }
@@ -312,6 +320,8 @@ class EtwProviderTests {
             + totalElapsedTime
             + "ms "
             + String.format(
-                "(avg=%.3fms)", ((double) totalElapsedTime / (double) totalEvents.sum())));
+                Locale.ROOT,
+                "(avg=%.3fms)",
+                ((double) totalElapsedTime / (double) totalEvents.sum())));
   }
 }

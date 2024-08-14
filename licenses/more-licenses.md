@@ -1,7 +1,7 @@
 
 # agent
 ## Dependency License Report
-_2024-07-25 16:39:41 CEST_
+_2024-08-12 03:55:56 UTC_
 ## Apache License, Version 2.0
 
 **1** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-annotations` **Version:** `2.17.2` 
@@ -36,7 +36,7 @@ _2024-07-25 16:39:41 CEST_
 > - **POM Project URL**: [http://stephenc.github.com/jcip-annotations](http://stephenc.github.com/jcip-annotations)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
 
-**6** **Group:** `com.google.errorprone` **Name:** `error_prone_annotations` **Version:** `2.29.2` 
+**6** **Group:** `com.google.errorprone` **Name:** `error_prone_annotations` **Version:** `2.30.0` 
 > - **Manifest Project URL**: [https://errorprone.info/error_prone_annotations](https://errorprone.info/error_prone_annotations)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
@@ -277,12 +277,12 @@ _2024-07-25 16:39:41 CEST_
 > - **Embedded license files**: [commons-text-1.12.0.jar/META-INF/LICENSE.txt](commons-text-1.12.0.jar/META-INF/LICENSE.txt) 
     - [commons-text-1.12.0.jar/META-INF/NOTICE.txt](commons-text-1.12.0.jar/META-INF/NOTICE.txt)
 
-**55** **Group:** `org.slf4j` **Name:** `jcl-over-slf4j` **Version:** `2.0.13` 
+**55** **Group:** `org.slf4j` **Name:** `jcl-over-slf4j` **Version:** `2.0.16` 
 > - **Project URL**: [http://www.slf4j.org](http://www.slf4j.org)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
-> - **Embedded license files**: [jcl-over-slf4j-2.0.13.jar/META-INF/LICENSE.txt](jcl-over-slf4j-2.0.13.jar/META-INF/LICENSE.txt)
+> - **Embedded license files**: [jcl-over-slf4j-2.0.16.jar/META-INF/LICENSE.txt](jcl-over-slf4j-2.0.16.jar/META-INF/LICENSE.txt)
 
 ## Eclipse Public License - v 1.0
 
@@ -346,34 +346,34 @@ _2024-07-25 16:39:41 CEST_
 
 ## MIT License
 
-**66** **Group:** `com.azure` **Name:** `azure-core` **Version:** `1.49.1` 
+**66** **Group:** `com.azure` **Name:** `azure-core` **Version:** `1.50.0` 
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**67** **Group:** `com.azure` **Name:** `azure-core-http-netty` **Version:** `1.15.1` 
+**67** **Group:** `com.azure` **Name:** `azure-core-http-netty` **Version:** `1.15.2` 
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**68** **Group:** `com.azure` **Name:** `azure-identity` **Version:** `1.13.0` 
+**68** **Group:** `com.azure` **Name:** `azure-identity` **Version:** `1.13.1` 
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**69** **Group:** `com.azure` **Name:** `azure-json` **Version:** `1.1.0` 
+**69** **Group:** `com.azure` **Name:** `azure-json` **Version:** `1.2.0` 
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**69** **Group:** `com.azure` **Name:** `azure-monitor-opentelemetry-exporter` **Version:** `1.0.0-beta.26` 
+**70** **Group:** `com.azure` **Name:** `azure-monitor-opentelemetry-exporter` **Version:** `1.0.0-beta.28` 
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**71** **Group:** `com.azure` **Name:** `azure-storage-blob` **Version:** `12.26.1` 
+**71** **Group:** `com.azure` **Name:** `azure-storage-blob` **Version:** `12.27.0` 
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**72** **Group:** `com.azure` **Name:** `azure-storage-common` **Version:** `12.25.1` 
+**72** **Group:** `com.azure` **Name:** `azure-storage-common` **Version:** `12.26.0` 
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**73** **Group:** `com.azure` **Name:** `azure-storage-internal-avro` **Version:** `12.11.1` 
+**73** **Group:** `com.azure` **Name:** `azure-storage-internal-avro` **Version:** `12.12.0` 
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
@@ -386,7 +386,7 @@ _2024-07-25 16:39:41 CEST_
 > - **Manifest License**: "SPDX-License-Identifier: MIT";link="https://opensource.org/licenses/MIT" (Not Packaged)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**76** **Group:** `com.microsoft.azure` **Name:** `msal4j` **Version:** `1.15.1` 
+**76** **Group:** `com.microsoft.azure` **Name:** `msal4j` **Version:** `1.16.1` 
 > - **Project URL**: [https://github.com/AzureAD/microsoft-authentication-library-for-java](https://github.com/AzureAD/microsoft-authentication-library-for-java)
 > - **Manifest License**: "MIT License" (Not Packaged)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
@@ -395,17 +395,17 @@ _2024-07-25 16:39:41 CEST_
 > - **POM Project URL**: [https://github.com/AzureAD/microsoft-authentication-library-for-java](https://github.com/AzureAD/microsoft-authentication-library-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**78** **Group:** `org.slf4j` **Name:** `jcl-over-slf4j` **Version:** `2.0.13` 
+**78** **Group:** `org.slf4j` **Name:** `jcl-over-slf4j` **Version:** `2.0.16` 
 > - **Project URL**: [http://www.slf4j.org](http://www.slf4j.org)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
-> - **Embedded license files**: [jcl-over-slf4j-2.0.13.jar/META-INF/LICENSE.txt](jcl-over-slf4j-2.0.13.jar/META-INF/LICENSE.txt)
+> - **Embedded license files**: [jcl-over-slf4j-2.0.16.jar/META-INF/LICENSE.txt](jcl-over-slf4j-2.0.16.jar/META-INF/LICENSE.txt)
 
-**79** **Group:** `org.slf4j` **Name:** `slf4j-api` **Version:** `2.0.13` 
+**79** **Group:** `org.slf4j` **Name:** `slf4j-api` **Version:** `2.0.16` 
 > - **Project URL**: [http://www.slf4j.org](http://www.slf4j.org)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
-> - **Embedded license files**: [slf4j-api-2.0.13.jar/META-INF/LICENSE.txt](slf4j-api-2.0.13.jar/META-INF/LICENSE.txt)
+> - **Embedded license files**: [slf4j-api-2.0.16.jar/META-INF/LICENSE.txt](slf4j-api-2.0.16.jar/META-INF/LICENSE.txt)
 
 ## MIT-0
 
