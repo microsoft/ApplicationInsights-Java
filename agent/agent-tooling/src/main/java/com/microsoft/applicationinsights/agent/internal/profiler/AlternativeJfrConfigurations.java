@@ -5,8 +5,9 @@ package com.microsoft.applicationinsights.agent.internal.profiler;
 
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.alerting.config.AlertMetricType;
-import com.microsoft.jfr.RecordingConfiguration;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import io.opentelemetry.contrib.jfr.connection.JfcFileConfiguration;
+import io.opentelemetry.contrib.jfr.connection.RecordingConfiguration;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
@@ -34,11 +35,11 @@ class AlternativeJfrConfigurations {
       ProfileTypes profile, String reducedProfile, String diagnosticProfile) {
     switch (profile) {
       case PROFILE_WITHOUT_ENV_DATA:
-        return new RecordingConfiguration.JfcFileConfiguration(
+        return new JfcFileConfiguration(
             Objects.requireNonNull(
                 AlternativeJfrConfigurations.class.getResourceAsStream(reducedProfile)));
       case DIAGNOSTIC_PROFILE:
-        return new RecordingConfiguration.JfcFileConfiguration(
+        return new JfcFileConfiguration(
             Objects.requireNonNull(
                 AlternativeJfrConfigurations.class.getResourceAsStream(diagnosticProfile)));
       default:
@@ -79,7 +80,7 @@ class AlternativeJfrConfigurations {
         logger.warn(
             "Diagnostics have been enabled, however a custom JFR config was provided. This is likely to prevent diagnostics from functioning");
       }
-      return new RecordingConfiguration.JfcFileConfiguration(fis);
+      return new JfcFileConfiguration(fis);
     }
 
     try {

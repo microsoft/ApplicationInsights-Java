@@ -1,5 +1,31 @@
 # CHANGELOG
 
+## Version 3.6.0 GA (TBD)
+
+### Enhancements:
+* Migrate from Jackson to Azure-json
+([#3790](https://github.com/microsoft/ApplicationInsights-Java/pull/3790))
+* Disable publication of gradle module metadata for runtime-attach
+([#3823](https://github.com/microsoft/ApplicationInsights-Java/pull/3823))
+
+## Version 3.5.4 GA (07/29/2024)
+
+### Bug fixes
+* Fix possible OOM with Wildfly
+([#3796](https://github.com/microsoft/ApplicationInsights-Java/pull/3796))
+
+### Enhancements:
+* Fail to start-up if proxy host contains http or https
+([#3776](https://github.com/microsoft/ApplicationInsights-Java/pull/3676))
+* Help the user to configure the connection string
+([#3788](https://github.com/microsoft/ApplicationInsights-Java/pull/3788))
+* Update browser loader version
+([#3765](https://github.com/microsoft/ApplicationInsights-Java/pull/3765))
+
+### CVE
+* Fix CVE-2024-35255
+([#3771](https://github.com/microsoft/ApplicationInsights-Java/pull/3771))
+
 ## Version 3.5.3 GA (05/24/2024)
 
 ### Enhancements:

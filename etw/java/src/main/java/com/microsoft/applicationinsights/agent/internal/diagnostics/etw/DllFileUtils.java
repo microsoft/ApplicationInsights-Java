@@ -12,6 +12,7 @@ import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,7 +65,8 @@ class DllFileUtils {
     }
     try (InputStream in = classLoader.getResourceAsStream(libraryToLoad)) {
       if (in == null) {
-        throw new IllegalStateException(String.format("Failed to find '%s' in jar", libraryToLoad));
+        throw new IllegalStateException(
+            String.format(Locale.ROOT, "Failed to find '%s' in jar", libraryToLoad));
       }
       byte[] buffer = new byte[8192];
       try (OutputStream out = new FileOutputStream(dllOnDisk, false)) {

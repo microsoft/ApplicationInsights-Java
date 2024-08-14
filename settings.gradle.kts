@@ -10,7 +10,7 @@ pluginManagement {
 }
 
 plugins {
-  id("com.gradle.enterprise") version "3.17.5"
+  id("com.gradle.enterprise") version "3.17.6"
 }
 
 dependencyResolutionManagement {
@@ -128,6 +128,7 @@ hideFromDependabot(":smoke-tests:apps:OpenTelemetryApiLogBridge")
 hideFromDependabot(":smoke-tests:apps:OpenTelemetryMetric")
 hideFromDependabot(":smoke-tests:apps:OtelResourceCustomMetric")
 hideFromDependabot(":smoke-tests:apps:OtlpMetrics")
+hideFromDependabot(":smoke-tests:apps:OutOfMemoryWithDebugLevel")
 hideFromDependabot(":smoke-tests:apps:PreAggMetricsWithRoleNameOverridesAndSampling")
 hideFromDependabot(":smoke-tests:apps:PreferForwardedUrlScheme")
 hideFromDependabot(":smoke-tests:apps:RateLimitedSampling")

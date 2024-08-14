@@ -15,6 +15,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -144,7 +145,7 @@ class ConfigurationBuilderTest {
     envVars.put("APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE", String.valueOf(testSamplingPercentage));
     RpConfiguration config = new RpConfiguration();
 
-    config.connectionString = String.format("original-%s", testConnectionString);
+    config.connectionString = String.format(Locale.ROOT, "original-%s", testConnectionString);
     config.sampling.percentage = testSamplingPercentage + 1.0;
 
     ConfigurationBuilder.overlayFromEnv(config, this::envVars, this::systemProperties);
@@ -173,42 +174,8 @@ class ConfigurationBuilderTest {
   }
 
   @Test
-  void testOverlayWithEnvVarWithBadFileStringLookupFormat() throws Exception {
-    Configuration configuration = new Configuration();
-    String filename = "${file:" + connectionStringFile.getAbsolutePath();
-    configuration.connectionString = filename;
-    assertFriendlyExceptionThrown(configuration, filename);
-
-    filename = "${xyz:" + connectionStringFile.getAbsolutePath() + "}";
-    configuration.connectionString = filename;
-    assertFriendlyExceptionThrown(configuration, filename);
-
-    filename = "file:" + connectionStringFile.getAbsolutePath() + "}";
-    configuration.connectionString = filename;
-    assertFriendlyExceptionThrown(configuration, filename);
-
-    filename = "file:" + connectionStringFile.getAbsolutePath();
-    configuration.connectionString = filename;
-    assertFriendlyExceptionThrown(configuration, filename);
-
-    configuration.connectionString = CONNECTION_STRING;
-    ConfigurationBuilder.overlayFromEnv(
-        configuration, Paths.get("."), System::getenv, System::getProperty);
-    assertThat(configuration.connectionString).isEqualTo(CONNECTION_STRING);
-  }
-
-  private static void assertFriendlyExceptionThrown(Configuration configuration, String filename) {
-    assertThatThrownBy(
-            () ->
-                ConfigurationBuilder.overlayFromEnv(
-                    configuration, Paths.get("."), System::getenv, System::getProperty))
-        .isInstanceOf(FriendlyException.class);
-    assertThat(configuration.connectionString).isEqualTo(filename);
-  }
-
-  @Test
   void testConnectionStringEnvVarHasHigherPrecedenceOverFileLookup() throws Exception {
-    String testConnectionString = "test-connection-string";
+    String testConnectionString = "InstrumentationKey=00000000-0000-0000-0000-000000000000";
     envVars.put("APPLICATIONINSIGHTS_CONNECTION_STRING", testConnectionString);
 
     Configuration configuration = new Configuration();
