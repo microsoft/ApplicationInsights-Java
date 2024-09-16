@@ -29,12 +29,12 @@ jobs:
           # this is the personal access token used for "gh repo sync" below
           GH_TOKEN: ${{ secrets.AARON_MAXWELL_TOKEN }}
         run: |
-          gh repo sync AaronMaxwell/azure-docs-pr \
-              --source MicrosoftDocs/azure-docs-pr
+          gh repo sync AaronMaxwell/azure-monitor-docs-pr \
+              --source MicrosoftDocs/azure-monitor-docs-pr
 
       - uses: actions/checkout@v4
         with:
-          repository: AaronMaxwell/azure-docs-pr
+          repository: AaronMaxwell/azure-monitor-docs-pr
           # this is the personal access token used for "git push" below
           token: ${{ secrets.AARON_MAXWELL_TOKEN }}
 
@@ -76,11 +76,11 @@ jobs:
 
           echo ========================================
           echo To create PR, go to
-          echo https://github.com/MicrosoftDocs/azure-docs-pr/compare/main...AaronMaxwell:azure-docs-pr:${branch}?expand=1
+          echo https://github.com/MicrosoftDocs/azure-monitor-docs-pr/compare/main...AaronMaxwell:azure-docs-pr:${branch}?expand=1
           echo ========================================
 
           # TODO (trask) create PR automatically
           # gh pr create --title "$message" \
           #              --body "$body" \
-          #              --repo MicrosoftDocs/azure-docs-pr \
+          #              --repo MicrosoftDocs/azure-monitor-docs-pr \
           #              --base main
