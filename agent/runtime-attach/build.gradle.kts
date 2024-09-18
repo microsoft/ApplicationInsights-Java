@@ -10,7 +10,7 @@ val otelVersion: String by project
 val agent: Configuration by configurations.creating
 
 dependencies {
-  implementation("io.opentelemetry.contrib:opentelemetry-runtime-attach-core:1.38.0-alpha")
+  implementation("io.opentelemetry.contrib:opentelemetry-runtime-attach-core:1.39.0-alpha")
   agent(project(":agent:agent", configuration = "shadow"))
 }
 
