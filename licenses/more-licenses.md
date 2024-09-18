@@ -1,7 +1,7 @@
 
 # agent
 ## Dependency License Report
-_2024-09-16 15:06:46 PDT_
+_2024-09-18 03:28:20 UTC_
 ## Apache License, Version 2.0
 
 **1** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-annotations` **Version:** `2.17.2` 
@@ -217,7 +217,7 @@ _2024-09-16 15:06:46 PDT_
 > - **POM Project URL**: [https://github.com/open-telemetry/opentelemetry-java](https://github.com/open-telemetry/opentelemetry-java)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
-**43** **Group:** `io.opentelemetry.contrib` **Name:** `opentelemetry-jfr-connection` **Version:** `1.38.0-alpha` 
+**43** **Group:** `io.opentelemetry.contrib` **Name:** `opentelemetry-jfr-connection` **Version:** `1.39.0-alpha` 
 > - **POM Project URL**: [https://github.com/open-telemetry/opentelemetry-java-contrib](https://github.com/open-telemetry/opentelemetry-java-contrib)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
