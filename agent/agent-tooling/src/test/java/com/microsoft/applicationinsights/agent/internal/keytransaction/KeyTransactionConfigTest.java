@@ -44,11 +44,18 @@ class KeyTransactionConfigTest {
     assertThat(marsMissionStartCriteria.getOperator()).isEqualTo(EQUALS);
     assertThat(marsMissionStartCriteria.getValue()).isEqualTo("mars");
 
-    assertThat(marsMissionKeyTransactionConfig.getEndCriteria()).hasSize(1);
-    KeyTransactionConfig.Criterion marsMissionEndCriteria =
+    assertThat(marsMissionKeyTransactionConfig.getEndCriteria()).hasSize(2);
+
+    KeyTransactionConfig.Criterion marsMissionEndCriteria1 =
         marsMissionKeyTransactionConfig.getEndCriteria().get(0);
-    assertThat(marsMissionEndCriteria.getField().getKey()).isEqualTo("messaging.todo");
-    assertThat(marsMissionEndCriteria.getOperator()).isEqualTo(EQUALS);
-    assertThat(marsMissionEndCriteria.getValue()).isEqualTo("todo");
+    assertThat(marsMissionEndCriteria1.getField().getKey()).isEqualTo("messaging.operation");
+    assertThat(marsMissionEndCriteria1.getOperator()).isEqualTo(EQUALS);
+    assertThat(marsMissionEndCriteria1.getValue()).isEqualTo("process");
+
+    KeyTransactionConfig.Criterion marsMissionEndCriteria2 =
+        marsMissionKeyTransactionConfig.getEndCriteria().get(0);
+    assertThat(marsMissionEndCriteria2.getField().getKey()).isEqualTo("messaging.destination.name");
+    assertThat(marsMissionEndCriteria2.getOperator()).isEqualTo(EQUALS);
+    assertThat(marsMissionEndCriteria2.getValue()).isEqualTo("space");
   }
 }

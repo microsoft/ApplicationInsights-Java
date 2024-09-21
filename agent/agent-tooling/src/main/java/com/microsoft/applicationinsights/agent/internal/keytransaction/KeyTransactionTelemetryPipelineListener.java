@@ -44,7 +44,7 @@ public class KeyTransactionTelemetryPipelineListener implements TelemetryPipelin
       return;
     }
 
-    if (parsedResponse.getSdkConfigurations() != null) {
+    if (parsedResponse.getSdkConfigurations() != null && !KeyTransactionConfigSupplier.USE_HARDCODED_CONFIG) {
       KeyTransactionConfigSupplier.getInstance().set(
           parsedResponse.getSdkConfigurations()
               .stream()

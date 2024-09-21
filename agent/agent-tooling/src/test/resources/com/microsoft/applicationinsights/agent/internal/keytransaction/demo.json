@@ -31,9 +31,14 @@
         ],
         "EndCriteria": [
           {
-            "Field": "messaging.todo",
+            "Field": "messaging.operation",
             "Operator": "==",
-            "Value": "todo"
+            "Value": "process"
+          },
+          {
+            "Field": "messaging.destination.name",
+            "Operator": "==",
+            "Value": "space"
           }
         ]
       }
