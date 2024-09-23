@@ -84,6 +84,9 @@ public final class KeyTransactionSampler implements Sampler {
     SamplingResult result =
         fallback.shouldSample(parentContext, traceId, name, spanKind, attributes, parentLinks);
 
+    if (existingKeyTransactions.isEmpty() && startKeyTransactions.isEmpty()) {
+      return result;
+    }
     return new TransactionSamplingResult(
         existingKeyTransactions, startKeyTransactions, endKeyTransactions, result);
   }

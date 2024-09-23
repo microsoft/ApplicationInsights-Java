@@ -55,7 +55,7 @@ public class Samplers {
       // as
       // it will ensure consistent traces, however it does not accurately compute item counts, since
       // item counts are not propagated in trace state (yet)
-      return Sampler.parentBasedBuilder(sampler).build();
+      sampler = Sampler.parentBasedBuilder(sampler).build();
     }
 
     if (KeyTransactionConfigSupplier.KEY_TRANSACTIONS_ENABLED) {
