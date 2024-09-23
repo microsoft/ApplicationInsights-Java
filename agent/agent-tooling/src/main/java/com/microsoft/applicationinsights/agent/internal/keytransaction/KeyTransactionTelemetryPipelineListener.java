@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 package com.microsoft.applicationinsights.agent.internal.keytransaction;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -21,11 +24,11 @@ import org.slf4j.LoggerFactory;
 
 public class KeyTransactionTelemetryPipelineListener implements TelemetryPipelineListener {
 
-  private static final Logger logger = LoggerFactory.getLogger(
-      KeyTransactionTelemetryPipelineListener.class);
+  private static final Logger logger =
+      LoggerFactory.getLogger(KeyTransactionTelemetryPipelineListener.class);
 
-  private static final OperationLogger operationLogger = new OperationLogger(
-      TelemetryItemExporter.class, "Parsing response from ingestion service");
+  private static final OperationLogger operationLogger =
+      new OperationLogger(TelemetryItemExporter.class, "Parsing response from ingestion service");
 
   @Override
   public void onResponse(TelemetryPipelineRequest request, TelemetryPipelineResponse response) {
@@ -44,19 +47,19 @@ public class KeyTransactionTelemetryPipelineListener implements TelemetryPipelin
       return;
     }
 
-    if (parsedResponse.getSdkConfigurations() != null && !KeyTransactionConfigSupplier.USE_HARDCODED_CONFIG) {
-      KeyTransactionConfigSupplier.getInstance().set(
-          parsedResponse.getSdkConfigurations()
-              .stream()
-              .map(SdkConfiguration::getValue)
-              .collect(toList())
-      );
+    if (parsedResponse.getSdkConfigurations() != null
+        && !KeyTransactionConfigSupplier.USE_HARDCODED_CONFIG) {
+      KeyTransactionConfigSupplier.getInstance()
+          .set(
+              parsedResponse.getSdkConfigurations().stream()
+                  .map(SdkConfiguration::getValue)
+                  .collect(toList()));
     }
   }
 
   @Override
-  public void onException(TelemetryPipelineRequest telemetryPipelineRequest, String s,
-      Throwable throwable) {
+  public void onException(
+      TelemetryPipelineRequest telemetryPipelineRequest, String s, Throwable throwable) {
     // ignore
   }
 

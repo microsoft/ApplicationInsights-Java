@@ -257,8 +257,9 @@ public class TelemetryClient {
     }
 
     if (KeyTransactionConfigSupplier.KEY_TRANSACTIONS_ENABLED) {
-      telemetryPipelineListener = TelemetryPipelineListener.composite(telemetryPipelineListener,
-          new KeyTransactionTelemetryPipelineListener());
+      telemetryPipelineListener =
+          TelemetryPipelineListener.composite(
+              telemetryPipelineListener, new KeyTransactionTelemetryPipelineListener());
     }
 
     return BatchItemProcessor.builder(

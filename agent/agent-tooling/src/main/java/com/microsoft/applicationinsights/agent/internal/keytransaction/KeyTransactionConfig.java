@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 package com.microsoft.applicationinsights.agent.internal.keytransaction;
 
 import com.azure.json.JsonReader;
@@ -26,25 +29,26 @@ public class KeyTransactionConfig {
   }
 
   public static KeyTransactionConfig fromJson(JsonReader jsonReader) throws IOException {
-    return jsonReader.readObject((reader) -> {
-      KeyTransactionConfig deserializedValue = new KeyTransactionConfig();
+    return jsonReader.readObject(
+        (reader) -> {
+          KeyTransactionConfig deserializedValue = new KeyTransactionConfig();
 
-      while (reader.nextToken() != JsonToken.END_OBJECT) {
-        String fieldName = reader.getFieldName();
-        reader.nextToken();
-        if ("Name".equals(fieldName)) {
-          deserializedValue.name = reader.getString();
-        } else if ("StartCriteria".equals(fieldName)) {
-          deserializedValue.startCriteria = reader.readArray(Criterion::fromJson);
-        } else if ("EndCriteria".equals(fieldName)) {
-          deserializedValue.endCriteria = reader.readArray(Criterion::fromJson);
-        } else {
-          reader.skipChildren();
-        }
-      }
+          while (reader.nextToken() != JsonToken.END_OBJECT) {
+            String fieldName = reader.getFieldName();
+            reader.nextToken();
+            if ("Name".equals(fieldName)) {
+              deserializedValue.name = reader.getString();
+            } else if ("StartCriteria".equals(fieldName)) {
+              deserializedValue.startCriteria = reader.readArray(Criterion::fromJson);
+            } else if ("EndCriteria".equals(fieldName)) {
+              deserializedValue.endCriteria = reader.readArray(Criterion::fromJson);
+            } else {
+              reader.skipChildren();
+            }
+          }
 
-      return deserializedValue;
-    });
+          return deserializedValue;
+        });
   }
 
   public static boolean matches(Attributes attributes, List<Criterion> criteria) {
@@ -98,30 +102,33 @@ public class KeyTransactionConfig {
     }
 
     public static Criterion fromJson(JsonReader jsonReader) throws IOException {
-      return jsonReader.readObject((reader) -> {
-        Criterion deserializedValue = new Criterion();
+      return jsonReader.readObject(
+          (reader) -> {
+            Criterion deserializedValue = new Criterion();
 
-        while (reader.nextToken() != JsonToken.END_OBJECT) {
-          String fieldName = reader.getFieldName();
-          reader.nextToken();
-          if ("Field".equals(fieldName)) {
-            deserializedValue.field = AttributeKey.stringKey(reader.getString());
-          } else if ("Operator".equals(fieldName)) {
-            deserializedValue.operator = Operator.from(reader.getString());
-          } else if ("Value".equals(fieldName)) {
-            deserializedValue.value = reader.getString();
-          } else {
-            reader.skipChildren();
-          }
-        }
+            while (reader.nextToken() != JsonToken.END_OBJECT) {
+              String fieldName = reader.getFieldName();
+              reader.nextToken();
+              if ("Field".equals(fieldName)) {
+                deserializedValue.field = AttributeKey.stringKey(reader.getString());
+              } else if ("Operator".equals(fieldName)) {
+                deserializedValue.operator = Operator.from(reader.getString());
+              } else if ("Value".equals(fieldName)) {
+                deserializedValue.value = reader.getString();
+              } else {
+                reader.skipChildren();
+              }
+            }
 
-        return deserializedValue;
-      });
+            return deserializedValue;
+          });
     }
   }
 
   public enum Operator {
-    EQUALS, STARTSWITH, CONTAINS;
+    EQUALS,
+    STARTSWITH,
+    CONTAINS;
 
     private static Operator from(String value) {
       switch (value) {

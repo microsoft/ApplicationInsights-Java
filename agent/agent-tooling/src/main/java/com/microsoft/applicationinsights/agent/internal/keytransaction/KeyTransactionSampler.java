@@ -1,7 +1,5 @@
-/*
- * Copyright The OpenTelemetry Authors
- * SPDX-License-Identifier: Apache-2.0
- */
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 
 package com.microsoft.applicationinsights.agent.internal.keytransaction;
 
@@ -33,8 +31,8 @@ public final class KeyTransactionSampler implements Sampler {
     this.fallback = fallback;
   }
 
-  public static KeyTransactionSampler create(Supplier<List<KeyTransactionConfig>> configs,
-      Sampler fallback) {
+  public static KeyTransactionSampler create(
+      Supplier<List<KeyTransactionConfig>> configs, Sampler fallback) {
     return new KeyTransactionSampler(configs, fallback);
   }
 
@@ -56,8 +54,7 @@ public final class KeyTransactionSampler implements Sampler {
     List<KeyTransactionConfig> configs = this.configs.get();
 
     Set<String> existingKeyTransactions =
-        KeyTransactionTraceState.getKeyTransactionStartTimes(spanContext.getTraceState())
-            .keySet();
+        KeyTransactionTraceState.getKeyTransactionStartTimes(spanContext.getTraceState()).keySet();
 
     List<String> startKeyTransactions = new ArrayList<>();
     List<String> endKeyTransactions = new ArrayList<>();
@@ -65,7 +62,8 @@ public final class KeyTransactionSampler implements Sampler {
 
       if (existingKeyTransactions.contains(config.getName())) {
         // consider ending it
-        if (!config.getEndCriteria().isEmpty() && KeyTransactionConfig.matches(attributes, config.getEndCriteria())) {
+        if (!config.getEndCriteria().isEmpty()
+            && KeyTransactionConfig.matches(attributes, config.getEndCriteria())) {
           endKeyTransactions.add(config.getName());
         }
       } else {
@@ -83,11 +81,11 @@ public final class KeyTransactionSampler implements Sampler {
 
     // always delegate to fallback sampler to give it a chance to also modify trace state
     // or capture additional attributes
-    SamplingResult result = fallback.shouldSample(parentContext, traceId, name, spanKind,
-        attributes, parentLinks);
+    SamplingResult result =
+        fallback.shouldSample(parentContext, traceId, name, spanKind, attributes, parentLinks);
 
-    return new TransactionSamplingResult(existingKeyTransactions, startKeyTransactions,
-        endKeyTransactions, result);
+    return new TransactionSamplingResult(
+        existingKeyTransactions, startKeyTransactions, endKeyTransactions, result);
   }
 
   @Override
@@ -107,8 +105,10 @@ public final class KeyTransactionSampler implements Sampler {
     private final Collection<String> endKeyTransactions;
     private final SamplingResult delegate;
 
-    private TransactionSamplingResult(Collection<String> existingKeyTransactions,
-        Collection<String> startKeyTransactions, Collection<String> endKeyTransactions,
+    private TransactionSamplingResult(
+        Collection<String> existingKeyTransactions,
+        Collection<String> startKeyTransactions,
+        Collection<String> endKeyTransactions,
         SamplingResult delegate) {
 
       this.existingKeyTransactions = existingKeyTransactions;
@@ -158,9 +158,10 @@ public final class KeyTransactionSampler implements Sampler {
       // may not match span start time exactly
       long startTime = System.currentTimeMillis();
 
-      String newValue = startKeyTransactions.stream()
-          .map(name -> name + ":" + startTime)
-          .collect(Collectors.joining(";"));
+      String newValue =
+          startKeyTransactions.stream()
+              .map(name -> name + ":" + startTime)
+              .collect(Collectors.joining(";"));
 
       String existingValue = updatedTraceState.get(KeyTransactionTraceState.TRACE_STATE_KEY);
 

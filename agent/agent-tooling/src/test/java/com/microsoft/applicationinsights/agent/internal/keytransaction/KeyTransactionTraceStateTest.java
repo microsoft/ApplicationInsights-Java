@@ -1,11 +1,13 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 package com.microsoft.applicationinsights.agent.internal.keytransaction;
-
-import org.junit.jupiter.api.Test;
-
-import java.util.Map;
 
 import static com.microsoft.applicationinsights.agent.internal.keytransaction.KeyTransactionTraceState.getKeyTransactionStartTimes;
 import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.Map;
+import org.junit.jupiter.api.Test;
 
 class KeyTransactionTraceStateTest {
 

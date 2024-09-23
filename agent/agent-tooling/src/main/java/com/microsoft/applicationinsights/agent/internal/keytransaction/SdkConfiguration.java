@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 package com.microsoft.applicationinsights.agent.internal.keytransaction;
 
 import com.azure.json.JsonReader;
@@ -18,22 +21,23 @@ public class SdkConfiguration {
   }
 
   static SdkConfiguration fromJson(JsonReader jsonReader) throws IOException {
-    return jsonReader.readObject((reader) -> {
-      SdkConfiguration deserializedValue = new SdkConfiguration();
+    return jsonReader.readObject(
+        (reader) -> {
+          SdkConfiguration deserializedValue = new SdkConfiguration();
 
-      while (reader.nextToken() != JsonToken.END_OBJECT) {
-        String fieldName = reader.getFieldName();
-        reader.nextToken();
-        if ("Key".equals(fieldName)) {
-          deserializedValue.key = reader.getString();
-        } else if ("Value".equals(fieldName)) {
-          deserializedValue.value = KeyTransactionConfig.fromJson(reader);
-        } else {
-          reader.skipChildren();
-        }
-      }
+          while (reader.nextToken() != JsonToken.END_OBJECT) {
+            String fieldName = reader.getFieldName();
+            reader.nextToken();
+            if ("Key".equals(fieldName)) {
+              deserializedValue.key = reader.getString();
+            } else if ("Value".equals(fieldName)) {
+              deserializedValue.value = KeyTransactionConfig.fromJson(reader);
+            } else {
+              reader.skipChildren();
+            }
+          }
 
-      return deserializedValue;
-    });
+          return deserializedValue;
+        });
   }
 }

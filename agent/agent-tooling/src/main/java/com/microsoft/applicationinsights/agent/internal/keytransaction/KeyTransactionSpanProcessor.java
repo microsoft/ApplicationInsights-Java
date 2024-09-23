@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 package com.microsoft.applicationinsights.agent.internal.keytransaction;
 
 import static io.opentelemetry.api.common.AttributeType.BOOLEAN;
@@ -17,18 +20,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-
 public class KeyTransactionSpanProcessor implements SpanProcessor {
 
   // TODO remove global state
   public static volatile DoubleHistogram keyTransactionHistogram;
 
   public static void initMeterProvider(MeterProvider meterProvider) {
-    keyTransactionHistogram = meterProvider.get("keytransactions")
-        .histogramBuilder("key_transaction.duration")
-        .setDescription("Key transaction duration")
-        .setUnit("s")
-        .build();
+    keyTransactionHistogram =
+        meterProvider
+            .get("keytransactions")
+            .histogramBuilder("key_transaction.duration")
+            .setDescription("Key transaction duration")
+            .setUnit("s")
+            .build();
   }
 
   @Override
@@ -37,15 +41,18 @@ public class KeyTransactionSpanProcessor implements SpanProcessor {
     // copy key_transaction.<name> attributes down to child spans
     Span parentSpan = Span.fromContext(context);
     if (parentSpan instanceof ReadableSpan) {
-      ((ReadableSpan) parentSpan).getAttributes().forEach((key, value) -> {
-        if (key.getKey().startsWith("key_transaction.")
-            && !key.getKey().startsWith("key_transaction.started.")
-            && !key.getKey().startsWith("key_transaction.ended.")
-            && key.getType() == BOOLEAN
-            && value instanceof Boolean) {
-          readWriteSpan.setAttribute((AttributeKey<Boolean>) key, (Boolean) value);
-        }
-      });
+      ((ReadableSpan) parentSpan)
+          .getAttributes()
+          .forEach(
+              (key, value) -> {
+                if (key.getKey().startsWith("key_transaction.")
+                    && !key.getKey().startsWith("key_transaction.started.")
+                    && !key.getKey().startsWith("key_transaction.ended.")
+                    && key.getType() == BOOLEAN
+                    && value instanceof Boolean) {
+                  readWriteSpan.setAttribute((AttributeKey<Boolean>) key, (Boolean) value);
+                }
+              });
     }
   }
 
@@ -70,23 +77,27 @@ public class KeyTransactionSpanProcessor implements SpanProcessor {
     List<String> keyTransactionNames = new ArrayList<>();
     List<String> startedKeyTransactions = new ArrayList<>();
     List<String> endedKeyTransactions = new ArrayList<>();
-    readableSpan.getAttributes().forEach((attributeKey, value) -> {
-      String key = attributeKey.getKey();
-      if (key.startsWith("key_transaction.started.")) {
-        startedKeyTransactions.add(key.substring("key_transaction.started.".length()));
-      } else if (key.startsWith("key_transaction.ended.")) {
-        endedKeyTransactions.add(key.substring("key_transaction.ended.".length()));
-      } else if (key.startsWith("key_transaction.")) {
-        keyTransactionNames.add(key.substring("key_transaction.".length()));
-      }
-    });
+    readableSpan
+        .getAttributes()
+        .forEach(
+            (attributeKey, value) -> {
+              String key = attributeKey.getKey();
+              if (key.startsWith("key_transaction.started.")) {
+                startedKeyTransactions.add(key.substring("key_transaction.started.".length()));
+              } else if (key.startsWith("key_transaction.ended.")) {
+                endedKeyTransactions.add(key.substring("key_transaction.ended.".length()));
+              } else if (key.startsWith("key_transaction.")) {
+                keyTransactionNames.add(key.substring("key_transaction.".length()));
+              }
+            });
 
     if (keyTransactionNames.isEmpty()) {
       return;
     }
 
-    Map<String, Long> keyTransactionStartTimes = KeyTransactionTraceState.getKeyTransactionStartTimes(
-        readableSpan.getSpanContext().getTraceState());
+    Map<String, Long> keyTransactionStartTimes =
+        KeyTransactionTraceState.getKeyTransactionStartTimes(
+            readableSpan.getSpanContext().getTraceState());
 
     long endTime = System.currentTimeMillis();
 
@@ -95,8 +106,8 @@ public class KeyTransactionSpanProcessor implements SpanProcessor {
 
       double duration = (endTime - startTime) / 1000.0;
 
-      AttributesBuilder attributes = Attributes.builder()
-          .put("key_transaction", keyTransactionName);
+      AttributesBuilder attributes =
+          Attributes.builder().put("key_transaction", keyTransactionName);
 
       if (startedKeyTransactions.contains(keyTransactionName)) {
         attributes.put("key_transaction.started", true);
