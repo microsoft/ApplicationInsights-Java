@@ -23,7 +23,7 @@ import java.util.Map;
 public class KeyTransactionSpanProcessor implements SpanProcessor {
 
   // TODO remove global state
-  public static volatile DoubleHistogram keyTransactionHistogram;
+  private static volatile DoubleHistogram keyTransactionHistogram;
 
   public static void initMeterProvider(MeterProvider meterProvider) {
     keyTransactionHistogram =

@@ -3,6 +3,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.keytransaction;
 
+import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 
 import com.azure.json.JsonProviders;
@@ -28,7 +29,9 @@ public class KeyTransactionConfigSupplier implements Supplier<List<KeyTransactio
     return instance;
   }
 
-  private volatile List<KeyTransactionConfig> configs;
+  private volatile List<KeyTransactionConfig> configs = emptyList();
+
+  private KeyTransactionConfigSupplier() {}
 
   @Override
   public List<KeyTransactionConfig> get() {

@@ -28,9 +28,9 @@ class KeyTransactionConfigTest {
     assertThat(earthOrbitKeyTransactionConfig.getStartCriteria()).hasSize(1);
     KeyTransactionConfig.Criterion earthOrbitStartCriteria =
         earthOrbitKeyTransactionConfig.getStartCriteria().get(0);
-    assertThat(earthOrbitStartCriteria.getField().getKey()).isEqualTo("http.path");
+    assertThat(earthOrbitStartCriteria.getField().getKey()).isEqualTo("url.path");
     assertThat(earthOrbitStartCriteria.getOperator()).isEqualTo(EQUALS);
-    assertThat(earthOrbitStartCriteria.getValue()).isEqualTo("earth");
+    assertThat(earthOrbitStartCriteria.getValue()).isEqualTo("/earth");
 
     assertThat(earthOrbitKeyTransactionConfig.getEndCriteria()).isEmpty();
 
@@ -43,9 +43,9 @@ class KeyTransactionConfigTest {
     assertThat(marsMissionKeyTransactionConfig.getStartCriteria()).hasSize(1);
     KeyTransactionConfig.Criterion marsMissionStartCriteria =
         marsMissionKeyTransactionConfig.getStartCriteria().get(0);
-    assertThat(marsMissionStartCriteria.getField().getKey()).isEqualTo("http.path");
+    assertThat(marsMissionStartCriteria.getField().getKey()).isEqualTo("url.path");
     assertThat(marsMissionStartCriteria.getOperator()).isEqualTo(EQUALS);
-    assertThat(marsMissionStartCriteria.getValue()).isEqualTo("mars");
+    assertThat(marsMissionStartCriteria.getValue()).isEqualTo("/mars");
 
     assertThat(marsMissionKeyTransactionConfig.getEndCriteria()).hasSize(2);
 
@@ -56,7 +56,7 @@ class KeyTransactionConfigTest {
     assertThat(marsMissionEndCriteria1.getValue()).isEqualTo("process");
 
     KeyTransactionConfig.Criterion marsMissionEndCriteria2 =
-        marsMissionKeyTransactionConfig.getEndCriteria().get(0);
+        marsMissionKeyTransactionConfig.getEndCriteria().get(1);
     assertThat(marsMissionEndCriteria2.getField().getKey()).isEqualTo("messaging.destination.name");
     assertThat(marsMissionEndCriteria2.getOperator()).isEqualTo(EQUALS);
     assertThat(marsMissionEndCriteria2.getValue()).isEqualTo("space");
