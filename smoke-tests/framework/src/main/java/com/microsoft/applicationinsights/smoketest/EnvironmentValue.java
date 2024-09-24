@@ -27,6 +27,12 @@ public enum EnvironmentValue {
   TOMCAT_8_JAVA_21_OPENJ9(
       "ghcr.io/open-telemetry/opentelemetry-java-instrumentation/smoke-test-servlet-tomcat:8.5.98-jdk21-openj9-20240419.8749862078",
       "/server/webapps"),
+//  TOMCAT_8_JAVA_23(
+//      "ghcr.io/open-telemetry/opentelemetry-java-instrumentation/smoke-test-servlet-tomcat:8.5.98-jdk23-20240419.8749862078",
+//      "/server/webapps"),
+//  TOMCAT_8_JAVA_23_OPENJ9(
+//      "ghcr.io/open-telemetry/opentelemetry-java-instrumentation/smoke-test-servlet-tomcat:8.5.98-jdk23-openj9-20240419.8749862078",
+//      "/server/webapps"),
   WILDFLY_13_JAVA_8(
       "ghcr.io/open-telemetry/opentelemetry-java-instrumentation/smoke-test-servlet-wildfly:13.0.0.Final-jdk8-20221129.3575751672",
       "/opt/jboss/wildfly/standalone/deployments"),
@@ -45,8 +51,10 @@ public enum EnvironmentValue {
   JAVA_11_OPENJ9("ibm-semeru-runtimes:open-11-jdk", ""),
   JAVA_17("eclipse-temurin:17", ""),
   JAVA_17_OPENJ9("ibm-semeru-runtimes:open-17-jdk", ""),
-  JAVA_21("openjdk:21", ""),
-  JAVA_21_OPENJ9("ibm-semeru-runtimes:open-21-jdk", "");
+  JAVA_21("eclipse-temurin:21", ""),
+  JAVA_21_OPENJ9("ibm-semeru-runtimes:open-21-jdk", ""),
+  JAVA_23("eclipse-temurin:23", ""),
+  JAVA_23_OPENJ9("ibm-semeru-runtimes:open-23-jdk", "");
 
   private final String imageName;
   private final String imageAppDir;
