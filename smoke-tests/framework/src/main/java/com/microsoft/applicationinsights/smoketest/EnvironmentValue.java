@@ -7,42 +7,41 @@ import javax.annotation.Nullable;
 
 public enum EnvironmentValue {
   TOMCAT_8_JAVA_8(
-      "ghcr.io/open-telemetry/opentelemetry-java-instrumentation/smoke-test-servlet-tomcat:8.5.72-jdk8-20221129.3575751672",
+      "ghcr.io/open-telemetry/opentelemetry-java-instrumentation/smoke-test-servlet-tomcat:8.5.98-jdk8-20240926.11049343243",
       "/server/webapps"),
   TOMCAT_8_JAVA_8_OPENJ9(
-      "ghcr.io/open-telemetry/opentelemetry-java-instrumentation/smoke-test-servlet-tomcat:8.5.72-jdk8-openj9-20221129.3575751672",
+      "ghcr.io/open-telemetry/opentelemetry-java-instrumentation/smoke-test-servlet-tomcat:8.5.98-jdk8-openj9-20240926.11049343243",
       "/server/webapps"),
   TOMCAT_8_JAVA_11(
-      "ghcr.io/open-telemetry/opentelemetry-java-instrumentation/smoke-test-servlet-tomcat:8.5.72-jdk11-20221129.3575751672",
+      "ghcr.io/open-telemetry/opentelemetry-java-instrumentation/smoke-test-servlet-tomcat:8.5.98-jdk11-20240926.11049343243",
       "/server/webapps"),
   TOMCAT_8_JAVA_11_OPENJ9(
-      "ghcr.io/open-telemetry/opentelemetry-java-instrumentation/smoke-test-servlet-tomcat:8.5.72-jdk11-openj9-20221129.3575751672",
+      "ghcr.io/open-telemetry/opentelemetry-java-instrumentation/smoke-test-servlet-tomcat:8.5.98-jdk11-openj9-20240926.11049343243",
       "/server/webapps"),
   TOMCAT_8_JAVA_17(
-      "ghcr.io/open-telemetry/opentelemetry-java-instrumentation/smoke-test-servlet-tomcat:8.5.72-jdk17-20221129.3575751672",
+      "ghcr.io/open-telemetry/opentelemetry-java-instrumentation/smoke-test-servlet-tomcat:8.5.98-jdk17-20240926.11049343243",
       "/server/webapps"),
   TOMCAT_8_JAVA_21(
-      "ghcr.io/open-telemetry/opentelemetry-java-instrumentation/smoke-test-servlet-tomcat:8.5.98-jdk21-20240419.8749862078",
+      "ghcr.io/open-telemetry/opentelemetry-java-instrumentation/smoke-test-servlet-tomcat:8.5.98-jdk21-20240926.11049343243",
       "/server/webapps"),
   TOMCAT_8_JAVA_21_OPENJ9(
-      "ghcr.io/open-telemetry/opentelemetry-java-instrumentation/smoke-test-servlet-tomcat:8.5.98-jdk21-openj9-20240419.8749862078",
+      "ghcr.io/open-telemetry/opentelemetry-java-instrumentation/smoke-test-servlet-tomcat:8.5.98-jdk21-openj9-20240926.11049343243",
       "/server/webapps"),
-  // TODO (trask) re-enable when we have a new version of the image
-  //  TOMCAT_8_JAVA_23(
-  // "ghcr.io/open-telemetry/opentelemetry-java-instrumentation/smoke-test-servlet-tomcat:8.5.98-jdk23-20240419.8749862078",
-  //      "/server/webapps"),
-  //  TOMCAT_8_JAVA_23_OPENJ9(
-  // "ghcr.io/open-telemetry/opentelemetry-java-instrumentation/smoke-test-servlet-tomcat:8.5.98-jdk23-openj9-20240419.8749862078",
-  //      "/server/webapps"),
+  TOMCAT_8_JAVA_23(
+      "ghcr.io/open-telemetry/opentelemetry-java-instrumentation/smoke-test-servlet-tomcat:8.5.98-jdk23-20240926.11049343243",
+      "/server/webapps"),
+  TOMCAT_8_JAVA_23_OPENJ9(
+      "ghcr.io/open-telemetry/opentelemetry-java-instrumentation/smoke-test-servlet-tomcat:8.5.98-jdk23-openj9-20240926.11049343243",
+      "/server/webapps"),
   WILDFLY_13_JAVA_8(
-      "ghcr.io/open-telemetry/opentelemetry-java-instrumentation/smoke-test-servlet-wildfly:13.0.0.Final-jdk8-20221129.3575751672",
+      "ghcr.io/open-telemetry/opentelemetry-java-instrumentation/smoke-test-servlet-wildfly:13.0.0.Final-jdk8-20240926.11049343243",
       "/opt/jboss/wildfly/standalone/deployments"),
   WILDFLY_13_JAVA_8_OPENJ9(
-      "ghcr.io/open-telemetry/opentelemetry-java-instrumentation/smoke-test-servlet-wildfly:13.0.0.Final-jdk8-openj9-20221129.3575751672",
+      "ghcr.io/open-telemetry/opentelemetry-java-instrumentation/smoke-test-servlet-wildfly:13.0.0.Final-jdk8-openj9-20240926.11049343243",
       "/opt/jboss/wildfly/standalone/deployments"),
 
   LIBERTY_20_JAVA_8(
-      "ghcr.io/open-telemetry/opentelemetry-java-instrumentation/smoke-test-servlet-liberty:21.0.0.10-jdk8-20221129.3575751672",
+      "ghcr.io/open-telemetry/opentelemetry-java-instrumentation/smoke-test-servlet-liberty:21.0.0.10-jdk8-20240926.11049343243",
       "/config/apps",
       "app.war"),
 
