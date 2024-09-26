@@ -44,7 +44,7 @@ public enum EnvironmentValue {
       "/opt/jboss/wildfly/standalone/deployments"),
 
   LIBERTY_20_JAVA_8(
-      "ghcr.io/open-telemetry/opentelemetry-java-instrumentation/smoke-test-servlet-liberty:21.0.0.10-jdk8-20240926.11049343243",
+      "ghcr.io/open-telemetry/opentelemetry-java-instrumentation/smoke-test-servlet-liberty:20.0.0.12-jdk8-20240926.11049343243",
       "/config/apps",
       "app.war"),
 
