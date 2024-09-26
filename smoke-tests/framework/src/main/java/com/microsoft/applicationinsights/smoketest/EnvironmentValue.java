@@ -21,6 +21,9 @@ public enum EnvironmentValue {
   TOMCAT_8_JAVA_17(
       "ghcr.io/open-telemetry/opentelemetry-java-instrumentation/smoke-test-servlet-tomcat:8.5.98-jdk17-20240926.11049343243",
       "/server/webapps"),
+  TOMCAT_8_JAVA_17_OPENJ9(
+      "ghcr.io/open-telemetry/opentelemetry-java-instrumentation/smoke-test-servlet-tomcat:8.5.98-jdk17-openj9-20240926.11049343243",
+      "/server/webapps"),
   TOMCAT_8_JAVA_21(
       "ghcr.io/open-telemetry/opentelemetry-java-instrumentation/smoke-test-servlet-tomcat:8.5.98-jdk21-20240926.11049343243",
       "/server/webapps"),
