@@ -22,7 +22,7 @@ dependencies {
   implementation("io.opentelemetry.proto:opentelemetry-proto:1.3.2-alpha")
 
   // this is exposed in SmokeTestExtension API
-  api("org.testcontainers:testcontainers:1.20.1")
+  api("org.testcontainers:testcontainers:1.20.2")
 
   implementation("org.awaitility:awaitility:4.2.2")
 
