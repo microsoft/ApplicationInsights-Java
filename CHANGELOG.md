@@ -1,12 +1,18 @@
 # CHANGELOG
 
-## Version 3.6.0 GA (TBD)
+## Version 3.6.0 GA (10/03/2024)
 
-### Enhancements:
-* Migrate from Jackson to Azure-json
-([#3790](https://github.com/microsoft/ApplicationInsights-Java/pull/3790))
-* Disable publication of gradle module metadata for runtime-attach
-([#3823](https://github.com/microsoft/ApplicationInsights-Java/pull/3823))
+### Enhancements
+
+* Update to OpenTelemetry Java Instrumentation 2.8.0
+  ([#3871](https://github.com/microsoft/ApplicationInsights-Java/pull/3871))
+* Better populate exception type name and message from span events
+  ([Azure/azure-sdk-for-java#41397](https://github.com/Azure/azure-sdk-for-java/pull/41397))
+
+### Bug fixes
+
+* Disable publication of gradle module metadata for all artifacts
+  ([#3836](https://github.com/microsoft/ApplicationInsights-Java/pull/3836))
 
 ## Version 3.5.4 GA (07/29/2024)
 
