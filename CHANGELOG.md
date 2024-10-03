@@ -8,6 +8,10 @@
   ([#3871](https://github.com/microsoft/ApplicationInsights-Java/pull/3871))
 * Better populate exception type name and message from span events
   ([Azure/azure-sdk-for-java#41397](https://github.com/Azure/azure-sdk-for-java/pull/41397))
+* Internal migration to Azure Json library
+  ([#3790](https://github.com/microsoft/ApplicationInsights-Java/pull/3790))
+* Changed live metrics CPU/Memory perf counter metrics to emit normalized process CPU and process physical memory bytes.
+  ([Azure/azure-sdk-for-java#42147](https://github.com/Azure/azure-sdk-for-java/pull/42147))
 
 ### Bug fixes
 
