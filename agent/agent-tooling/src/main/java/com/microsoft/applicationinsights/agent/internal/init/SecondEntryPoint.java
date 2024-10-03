@@ -230,7 +230,6 @@ public class SecondEntryPoint
               telemetryClient::getInstrumentationKey,
               telemetryClient.getRoleName(),
               telemetryClient.getRoleInstance(),
-              configuration.preview.useNormalizedValueForNonNormalizedCpuPercentage,
               FirstEntryPoint.getAgentVersion());
     } else {
       quickPulse = null;
