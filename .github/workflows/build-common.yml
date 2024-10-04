@@ -117,7 +117,8 @@ jobs:
           - 8
           - 11
           - 17
-          - 18
+          - 21
+          - 23
         vm:
           - hotspot
           # TODO (trask) enable once profiler supports OpenJ9
