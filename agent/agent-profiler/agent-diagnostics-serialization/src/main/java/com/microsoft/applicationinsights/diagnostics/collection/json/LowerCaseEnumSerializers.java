@@ -3,39 +3,65 @@
 
 package com.microsoft.applicationinsights.diagnostics.collection.json;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.SerializerProvider;
+import com.azure.json.JsonSerializable;
+import com.azure.json.JsonWriter;
 import java.io.IOException;
-import java.util.Locale;
 
 public class LowerCaseEnumSerializers {
 
   private LowerCaseEnumSerializers() {}
 
-  public static class LowerCaseEnumSerializer<T extends Enum<T>> extends JsonSerializer<T> {
+  public static class LowerCaseEnumSerializer<T extends Enum<T>>
+      implements JsonSerializable<LowerCaseEnumSerializer<T>> {
+    private final T value;
+
+    public LowerCaseEnumSerializer(T value) {
+      this.value = value;
+    }
+
     @Override
-    public void serialize(T value, JsonGenerator gen, SerializerProvider serializers)
-        throws IOException {
-      gen.writeString(value.name().toLowerCase(Locale.ROOT).replace("_", "-"));
+    public JsonWriter toJson(JsonWriter jsonWriter) throws IOException {
+      jsonWriter.writeStartObject();
+      jsonWriter.writeStringField("value", value.name());
+      jsonWriter.writeEndObject();
+      return jsonWriter;
     }
   }
 
-  public static class LowerCaseEnumDeSerializer<T extends Enum<T>> extends JsonDeserializer<T> {
-
-    private final Class<T> clazz;
+  public static class LowerCaseEnumDeSerializer<T extends Enum<T>>
+      implements JsonSerializable<LowerCaseEnumDeSerializer<T>> {
+    private Class<T> clazz;
+    private T value;
 
     public LowerCaseEnumDeSerializer(Class<T> clazz) {
       this.clazz = clazz;
     }
 
+    public Class<T> getClazz() {
+      return clazz;
+    }
+
+    public LowerCaseEnumDeSerializer<T> setClazz(Class<T> clazz) {
+      this.clazz = clazz;
+      return this;
+    }
+
+    public T getValue() {
+      return value;
+    }
+
+    public LowerCaseEnumDeSerializer<T> setValue(T value) {
+      this.value = value;
+      return this;
+    }
+
     @Override
-    public T deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
-      return Enum.valueOf(
-          clazz, p.getValueAsString().toUpperCase(Locale.ROOT).replaceAll("-", "_"));
+    public JsonWriter toJson(JsonWriter jsonWriter) throws IOException {
+      jsonWriter.writeStartObject();
+      jsonWriter.writeStringField("clazz", clazz.getName());
+      jsonWriter.writeStringField("value", value.name());
+      jsonWriter.writeEndObject();
+      return jsonWriter;
     }
   }
 }

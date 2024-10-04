@@ -3,6 +3,11 @@
 
 package com.microsoft.applicationinsights.diagnostics.jfr;
 
+import com.azure.json.JsonReader;
+import com.azure.json.JsonSerializable;
+import com.azure.json.JsonToken;
+import com.azure.json.JsonWriter;
+import java.io.IOException;
 import jdk.jfr.Category;
 import jdk.jfr.Description;
 import jdk.jfr.Event;
@@ -18,23 +23,61 @@ import jdk.jfr.StackTrace;
 @Description("MachineStats")
 @StackTrace(false)
 @Period("beginChunk")
-public class MachineStats extends Event {
+public class MachineStats extends Event implements JsonSerializable<MachineStats> {
   public static final String NAME =
       "com.microsoft.applicationinsights.diagnostics.jfr.MachineStats";
-  private final double contextSwitchesPerMs;
+  private double contextSwitchesPerMs;
 
-  private final int coreCount;
-
-  public MachineStats(double contextSwitchesPerMs, int coreCount) {
-    this.contextSwitchesPerMs = contextSwitchesPerMs;
-    this.coreCount = coreCount;
-  }
+  private int coreCount;
 
   public double getContextSwitchesPerMs() {
     return contextSwitchesPerMs;
   }
 
+  public MachineStats setContextSwitchesPerMs(double contextSwitchesPerMs) {
+    this.contextSwitchesPerMs = contextSwitchesPerMs;
+    return this;
+  }
+
   public int getCoreCount() {
     return coreCount;
+  }
+
+  public MachineStats setCoreCount(int coreCount) {
+    this.coreCount = coreCount;
+    return this;
+  }
+
+  @Override
+  public JsonWriter toJson(JsonWriter jsonWriter) throws IOException {
+    return jsonWriter
+        .writeStartObject()
+        .writeDoubleField("contextSwitchesPerMs", contextSwitchesPerMs)
+        .writeIntField("coreCount", coreCount)
+        .writeEndObject();
+  }
+
+  public static MachineStats fromJson(JsonReader jsonReader) throws IOException {
+    return jsonReader.readObject(
+        reader -> {
+          MachineStats deserializedValue = new MachineStats();
+
+          while (reader.nextToken() != JsonToken.END_OBJECT) {
+            String fieldName = reader.getFieldName();
+            reader.nextToken();
+            // In this case field names are case-sensitive but this could be replaced with
+            // 'equalsIgnoreCase' to
+            // make them case-insensitive.
+            if ("contextSwitchesPerMs".equals(fieldName)) {
+              deserializedValue.setContextSwitchesPerMs(reader.getDouble());
+            } else if ("coreCount".equals(fieldName)) {
+              deserializedValue.setCoreCount(reader.getInt());
+            } else {
+              reader.skipChildren();
+            }
+          }
+
+          return deserializedValue;
+        });
   }
 }

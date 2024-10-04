@@ -3,16 +3,17 @@
 
 package com.microsoft.applicationinsights.diagnostics.appinsights;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.azure.json.JsonProviders;
+import com.azure.json.JsonWriter;
 import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
 import com.microsoft.applicationinsights.diagnostics.DiagnosisResult;
 import com.microsoft.applicationinsights.diagnostics.DiagnosticEngine;
-import com.microsoft.applicationinsights.diagnostics.collection.json.AlertApiModule;
 import com.microsoft.applicationinsights.diagnostics.jfr.AlertBreachJfrEvent;
 import com.microsoft.applicationinsights.diagnostics.jfr.CodeOptimizerDiagnosticsJfrInit;
 import com.microsoft.applicationinsights.diagnostics.jfr.MachineStats;
 import com.microsoft.applicationinsights.diagnostics.jfr.SystemStatsProvider;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
@@ -30,14 +31,12 @@ public class CodeOptimizerDiagnosticEngineJfr implements DiagnosticEngine {
       LoggerFactory.getLogger(CodeOptimizerDiagnosticEngineJfr.class);
   public static final int SEMAPHORE_TIMEOUT_IN_SEC = 10;
   public static final long TIME_BEFORE_END_OF_PROFILE_TO_EMIT_EVENT = 10L;
-  private final ObjectMapper mapper;
   private final ScheduledExecutorService executorService;
   private final Semaphore semaphore = new Semaphore(1, false);
   private int thisPid;
 
   public CodeOptimizerDiagnosticEngineJfr(ScheduledExecutorService executorService) {
     this.executorService = executorService;
-    this.mapper = new ObjectMapper().registerModule(new AlertApiModule());
   }
 
   @Override
@@ -146,12 +145,14 @@ public class CodeOptimizerDiagnosticEngineJfr implements DiagnosticEngine {
   }
 
   private void emitAlertBreachJfrEvent(AlertBreach alert) {
-    try {
-      String serializedBreach = mapper.writeValueAsString(alert);
-      AlertBreachJfrEvent event = new AlertBreachJfrEvent(serializedBreach);
+    ;
+    try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        JsonWriter writer = JsonProviders.createWriter(outputStream)) {
+      alert.toJson(writer).flush();
+      AlertBreachJfrEvent event = new AlertBreachJfrEvent().setAlertBreach(outputStream.toString());
       event.commit();
       LOGGER.debug("Emitted Code Optimizer Diagnostic Event");
-    } catch (JsonProcessingException e) {
+    } catch (IOException e) {
       LOGGER.error("Failed to create breach JFR event", e);
     }
   }

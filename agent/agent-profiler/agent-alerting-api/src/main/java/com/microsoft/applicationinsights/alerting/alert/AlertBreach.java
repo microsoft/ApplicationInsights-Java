@@ -3,44 +3,70 @@
 
 package com.microsoft.applicationinsights.alerting.alert;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.azure.json.JsonSerializable;
+import com.azure.json.JsonWriter;
 import com.google.auto.value.AutoValue;
 import com.microsoft.applicationinsights.alerting.config.AlertConfiguration;
 import com.microsoft.applicationinsights.alerting.config.AlertMetricType;
+import java.io.IOException;
 import java.util.UUID;
 
 /** Represents a breach of an alert threshold. */
 @AutoValue
-@JsonSerialize(as = AlertBreach.class)
-@JsonDeserialize(builder = AlertBreach.Builder.class)
-@JsonIgnoreProperties(ignoreUnknown = true)
-public abstract class AlertBreach {
+public abstract class AlertBreach implements JsonSerializable<AlertBreach> {
 
-  @JsonProperty("type")
+  private AlertMetricType type;
+  private double alertValue;
+  private AlertConfiguration alertConfiguration;
+  private double cpuMetric;
+  private double memoryUsage;
+  private String profileId = UUID.randomUUID().toString();
+
   public abstract AlertMetricType getType();
 
+  public AlertBreach setType(AlertMetricType type) {
+    this.type = type;
+    return this;
+  }
+
   // Value of the telemetry at the time of the breach
-  @JsonProperty("alertValue")
   public abstract double getAlertValue();
 
-  @JsonProperty("alertConfiguration")
+  public AlertBreach setAlertValue(double alertValue) {
+    this.alertValue = alertValue;
+    return this;
+  }
+
   public abstract AlertConfiguration getAlertConfiguration();
 
+  public AlertBreach setAlertConfiguration(AlertConfiguration alertConfiguration) {
+    this.alertConfiguration = alertConfiguration;
+    return this;
+  }
+
   // CPU usage at the time of the breach
-  @JsonProperty(value = "cpuMetric")
   public abstract double getCpuMetric();
 
+  public AlertBreach setCpuMetric(double cpuMetric) {
+    this.cpuMetric = cpuMetric;
+    return this;
+  }
+
   // MEMORY usage at the time of the breach
-  @JsonProperty(value = "memoryUsage")
   public abstract double getMemoryUsage();
 
+  public AlertBreach setMemoryUsage(double memoryUsage) {
+    this.memoryUsage = memoryUsage;
+    return this;
+  }
+
   // Unique ID for profile/breach
-  @JsonProperty("profileId")
   public abstract String getProfileId();
+
+  public AlertBreach setProfileId(String profileId) {
+    this.profileId = profileId;
+    return this;
+  }
 
   public abstract Builder toBuilder();
 
@@ -51,33 +77,53 @@ public abstract class AlertBreach {
         .setProfileId(UUID.randomUUID().toString());
   }
 
+  @Override
+  public JsonWriter toJson(JsonWriter jsonWriter) throws IOException {
+    jsonWriter.writeStartObject();
+    jsonWriter.writeStringField("type", type.name());
+    jsonWriter.writeDoubleField("alertValue", alertValue);
+    jsonWriter.writeJsonField("alertConfiguration", alertConfiguration);
+    jsonWriter.writeDoubleField("cpuMetric", cpuMetric);
+    jsonWriter.writeDoubleField("memoryUsage", memoryUsage);
+    jsonWriter.writeStringField("profileId", profileId);
+    jsonWriter.writeEndObject();
+    return jsonWriter;
+  }
+
   @AutoValue.Builder
-  @JsonIgnoreProperties(ignoreUnknown = true)
-  public abstract static class Builder {
+  public abstract static class Builder implements JsonSerializable<Builder> {
+    private AlertMetricType type;
+    private double alertValue;
+    private AlertConfiguration alertConfiguration;
+    private double cpuMetric;
+    private double memoryUsage;
+    private final String profileId = UUID.randomUUID().toString();
 
-    @JsonCreator
-    public static Builder builder() {
-      return AlertBreach.builder();
-    }
-
-    @JsonProperty("type")
     public abstract Builder setType(AlertMetricType type);
 
-    @JsonProperty("alertValue")
     public abstract Builder setAlertValue(double alertValue);
 
-    @JsonProperty("alertConfiguration")
     public abstract Builder setAlertConfiguration(AlertConfiguration alertConfiguration);
 
-    @JsonProperty(value = "cpuMetric")
     public abstract Builder setCpuMetric(double cpuMetric);
 
-    @JsonProperty(value = "memoryUsage")
     public abstract Builder setMemoryUsage(double memoryUsage);
 
-    @JsonProperty("profileId")
     public abstract Builder setProfileId(String profileId);
 
     public abstract AlertBreach build();
+
+    @Override
+    public JsonWriter toJson(JsonWriter jsonWriter) throws IOException {
+      jsonWriter.writeStartObject();
+      jsonWriter.writeStringField("type", type.name());
+      jsonWriter.writeDoubleField("alertValue", alertValue);
+      jsonWriter.writeJsonField("alertConfiguration", alertConfiguration);
+      jsonWriter.writeDoubleField("cpuMetric", cpuMetric);
+      jsonWriter.writeDoubleField("memoryUsage", memoryUsage);
+      jsonWriter.writeStringField("profileId", profileId);
+      jsonWriter.writeEndObject();
+      return jsonWriter;
+    }
   }
 }

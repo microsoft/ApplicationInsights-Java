@@ -11,8 +11,7 @@ dependencies {
   implementation(project(":agent:agent-profiler:agent-alerting-api"))
 
   compileOnly("org.slf4j:slf4j-api")
-  compileOnly("com.fasterxml.jackson.core:jackson-annotations")
-  compileOnly("com.fasterxml.jackson.core:jackson-databind")
+  compileOnly("com.azure:azure-json")
 
   compileOnly("com.google.auto.service:auto-service")
   annotationProcessor("com.google.auto.service:auto-service")

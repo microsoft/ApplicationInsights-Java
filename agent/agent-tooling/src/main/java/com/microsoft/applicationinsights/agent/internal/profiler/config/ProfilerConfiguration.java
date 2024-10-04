@@ -3,8 +3,6 @@
 
 package com.microsoft.applicationinsights.agent.internal.profiler.config;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.util.StdDateFormat;
 import com.google.auto.value.AutoValue;
 import com.microsoft.applicationinsights.alerting.aiconfig.AlertingConfig;
@@ -29,16 +27,14 @@ public abstract class ProfilerConfiguration {
     DEFAULT_DATE = defaultDate;
   }
 
-  @JsonCreator
   public static ProfilerConfiguration create(
-      @JsonProperty("lastModified") Date lastModified,
-      @JsonProperty("enabled") boolean enabled,
-      @JsonProperty("collectionPlan") String collectionPlan,
-      @JsonProperty("cpuTriggerConfiguration") String cpuTriggerConfiguration,
-      @JsonProperty("memoryTriggerConfiguration") String memoryTriggerConfiguration,
-      @JsonProperty("defaultConfiguration") String defaultConfiguration,
-      @JsonProperty("requestTriggerConfiguration")
-          List<AlertingConfig.RequestTrigger> requestTriggerConfiguration) {
+      Date lastModified,
+      boolean enabled,
+      String collectionPlan,
+      String cpuTriggerConfiguration,
+      String memoryTriggerConfiguration,
+      String defaultConfiguration,
+      List<AlertingConfig.RequestTrigger> requestTriggerConfiguration) {
 
     return new AutoValue_ProfilerConfiguration(
         lastModified,
