@@ -33,7 +33,7 @@ public class AlertApiModule {
     }
   }
 
-  private <T extends Enum<T>> void addSerializer(JsonWriter jsonWriter, Class<T> clazz)
+  private static <T extends Enum<T>> void addSerializer(JsonWriter jsonWriter, Class<T> clazz)
       throws IOException {
     jsonWriter.writeStartObject(clazz.getSimpleName());
     for (T enumConstant : clazz.getEnumConstants()) {
@@ -43,7 +43,7 @@ public class AlertApiModule {
     jsonWriter.writeEndObject();
   }
 
-  private <T extends Enum<T>> T addDeserializer(JsonReader jsonReader, Class<T> clazz)
+  private static <T extends Enum<T>> T addDeserializer(JsonReader jsonReader, Class<T> clazz)
       throws IOException {
     return jsonReader.readObject(
         reader -> {
