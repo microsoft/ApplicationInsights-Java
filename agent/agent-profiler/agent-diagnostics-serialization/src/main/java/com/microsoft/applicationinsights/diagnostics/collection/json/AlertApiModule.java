@@ -22,7 +22,7 @@ public class AlertApiModule {
     addEnumConfig(AlertingConfig.RequestAggregationType.class);
   }
 
-  private <T extends Enum<T>> void addEnumConfig(Class<T> clazz) {
+  private static <T extends Enum<T>> void addEnumConfig(Class<T> clazz) {
     try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         JsonWriter jsonWriter = JsonProviders.createWriter(outputStream);
         JsonReader jsonReader = JsonProviders.createReader(outputStream.toByteArray())) {
