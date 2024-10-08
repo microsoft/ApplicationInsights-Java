@@ -166,28 +166,28 @@ public class ProfilingInitializerTest {
 
   @NotNull
   private static ProfilerConfiguration unconfiguredState() {
-    return ProfilerConfiguration.create(
-        ProfilerConfiguration.DEFAULT_DATE,
-        true,
-        "",
-        "--cpu-threshold 80 --cpu-trigger-profilingDuration 120 --cpu-trigger-cooldown 14400 --cpu-trigger-enabled true",
-        "--memory-threshold 80 --memory-trigger-profilingDuration 120 --memory-trigger-cooldown 14400 --memory-trigger-enabled true",
-        null,
-        null);
+    return new ProfilerConfiguration()
+        .setLastModified(ProfilerConfiguration.DEFAULT_DATE)
+        .setEnabled(true)
+        .setCollectionPlan("")
+        .setCpuTriggerConfiguration(
+            "--cpu-threshold 80 --cpu-trigger-profilingDuration 120 --cpu-trigger-cooldown 14400 --cpu-trigger-enabled true")
+        .setMemoryTriggerConfiguration(
+            "--memory-threshold 80 --memory-trigger-profilingDuration 120 --memory-trigger-cooldown 14400 --memory-trigger-enabled true");
   }
 
   @NotNull
   private static ProfilerConfiguration userConfiguredTriggersState(boolean triggersEnabled) {
-    return ProfilerConfiguration.create(
-        new Date(Instant.now().toEpochMilli()),
-        true,
-        "",
-        "--cpu-threshold 80 --cpu-trigger-profilingDuration 120 --cpu-trigger-cooldown 14400 --cpu-trigger-enabled "
-            + triggersEnabled,
-        "--memory-threshold 80 --memory-trigger-profilingDuration 120 --memory-trigger-cooldown 14400 --memory-trigger-enabled "
-            + triggersEnabled,
-        null,
-        null);
+    return new ProfilerConfiguration()
+        .setLastModified(new Date(Instant.now().toEpochMilli()))
+        .setEnabled(true)
+        .setCollectionPlan("")
+        .setCpuTriggerConfiguration(
+            "--cpu-threshold 80 --cpu-trigger-profilingDuration 120 --cpu-trigger-cooldown 14400 --cpu-trigger-enabled "
+                + triggersEnabled)
+        .setMemoryTriggerConfiguration(
+            "--memory-threshold 80 --memory-trigger-profilingDuration 120 --memory-trigger-cooldown 14400 --memory-trigger-enabled "
+                + triggersEnabled);
   }
 
   @NotNull
@@ -200,18 +200,19 @@ public class ProfilingInitializerTest {
       expiration = Instant.now().plus(100, ChronoUnit.SECONDS);
     }
 
-    return ProfilerConfiguration.create(
-        new Date(Instant.now().minus(10, ChronoUnit.SECONDS).toEpochMilli()),
-        true,
-        "--single --mode immediate --immediate-profiling-duration 120  --expiration "
-            + toBinaryDate(expiration)
-            + " --settings-moniker a-settings-moniker",
-        "--cpu-threshold 80 --cpu-trigger-profilingDuration 120 --cpu-trigger-cooldown 14400 --cpu-trigger-enabled "
-            + triggersEnabled,
-        "--memory-threshold 80 --memory-trigger-profilingDuration 120 --memory-trigger-cooldown 14400 --memory-trigger-enabled "
-            + triggersEnabled,
-        null,
-        null);
+    return new ProfilerConfiguration()
+        .setLastModified(new Date(Instant.now().minus(10, ChronoUnit.SECONDS).toEpochMilli()))
+        .setEnabled(true)
+        .setCollectionPlan(
+            "--single --mode immediate --immediate-profiling-duration 120  --expiration "
+                + toBinaryDate(expiration)
+                + " --settings-moniker a-settings-moniker")
+        .setCpuTriggerConfiguration(
+            "--cpu-threshold 80 --cpu-trigger-profilingDuration 120 --cpu-trigger-cooldown 14400 --cpu-trigger-enabled "
+                + triggersEnabled)
+        .setMemoryTriggerConfiguration(
+            "--memory-threshold 80 --memory-trigger-profilingDuration 120 --memory-trigger-cooldown 14400 --memory-trigger-enabled "
+                + triggersEnabled);
   }
 
   @SuppressWarnings("DirectInvocationOnMock")
