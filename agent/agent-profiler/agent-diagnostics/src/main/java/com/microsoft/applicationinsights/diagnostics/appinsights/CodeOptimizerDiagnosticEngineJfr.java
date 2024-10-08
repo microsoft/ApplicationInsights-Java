@@ -144,7 +144,6 @@ public class CodeOptimizerDiagnosticEngineJfr implements DiagnosticEngine {
     machineStats.commit();
   }
 
-  @SuppressWarnings("DefaultCharset")
   private static void emitAlertBreachJfrEvent(AlertBreach alert) {
     try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         JsonWriter writer = JsonProviders.createWriter(outputStream)) {
