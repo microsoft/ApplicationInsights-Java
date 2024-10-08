@@ -8,7 +8,6 @@ if (project.properties.containsKey("publish-diagnostics")) {
 }
 
 dependencies {
-  implementation(project(":agent:agent-profiler:agent-diagnostics-serialization"))
   implementation(project(":agent:agent-profiler:agent-alerting-api"))
   implementation(project(":agent:agent-profiler:agent-diagnostics-api"))
   implementation(project(":agent:agent-profiler:agent-diagnostics-jfr"))
