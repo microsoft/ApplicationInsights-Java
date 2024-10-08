@@ -132,7 +132,7 @@ public class CodeOptimizerDiagnosticEngineJfr implements DiagnosticEngine {
         TimeUnit.SECONDS);
   }
 
-  private void emitInfo(AlertBreach alert) {
+  private static void emitInfo(AlertBreach alert) {
     LOGGER.debug("Emitting Code Optimizer Diagnostic Event");
     emitAlertBreachJfrEvent(alert);
     CodeOptimizerDiagnosticsJfrInit.emitCGroupData();
@@ -144,8 +144,8 @@ public class CodeOptimizerDiagnosticEngineJfr implements DiagnosticEngine {
     machineStats.commit();
   }
 
-  private void emitAlertBreachJfrEvent(AlertBreach alert) {
-    ;
+  @SuppressWarnings("DefaultCharset")
+  private static void emitAlertBreachJfrEvent(AlertBreach alert) {
     try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         JsonWriter writer = JsonProviders.createWriter(outputStream)) {
       alert.toJson(writer).flush();

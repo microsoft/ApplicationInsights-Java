@@ -60,8 +60,6 @@ public class ProcessData implements ProcessInfo, JsonSerializable<ProcessData> {
     SENSITIVE_ARGS_PATTERNS = Collections.unmodifiableList(patterns);
   }
 
-  public ProcessData() {}
-
   public static String sanetiseArg(String name) {
 
     for (String pattern : SENSITIVE_ARGS_PATTERNS) {
@@ -70,6 +68,8 @@ public class ProcessData implements ProcessInfo, JsonSerializable<ProcessData> {
 
     return name;
   }
+
+  public ProcessData() {}
 
   public ProcessData(String name, int pid) {
     setName(name).setPid(pid);
@@ -130,7 +130,7 @@ public class ProcessData implements ProcessInfo, JsonSerializable<ProcessData> {
     return metaData;
   }
 
-  public ProcessData setMetaData(Map<String, String> metaData) {
+  public ProcessData setMetaData(@Nullable Map<String, String> metaData) {
     this.metaData = metaData != null ? Collections.unmodifiableMap(metaData) : null;
     return this;
   }
