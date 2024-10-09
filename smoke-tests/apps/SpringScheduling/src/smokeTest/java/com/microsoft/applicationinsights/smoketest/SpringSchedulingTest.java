@@ -15,7 +15,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
+import com.microsoft.applicationinsights.smoketest.schemav2.ExceptionData;
+import com.microsoft.applicationinsights.smoketest.schemav2.ExceptionDetails;
 import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
+import com.microsoft.applicationinsights.smoketest.schemav2.SeverityLevel;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import org.junit.jupiter.api.Test;
@@ -68,6 +72,41 @@ abstract class SpringSchedulingTest {
         2,
         10,
         TimeUnit.SECONDS);
+
+    List<Envelope> exceptionEnvelopes =
+        testing.mockedIngestion.getItemsEnvelopeDataType("ExceptionData");
+
+    assertThat(exceptionEnvelopes)
+        .anySatisfy(
+            envelope -> {
+              ExceptionData ed = (ExceptionData) ((Data<?>) envelope.getData()).getBaseData();
+              List<ExceptionDetails> details = ed.getExceptions();
+              ExceptionDetails ex = details.get(0);
+              assertThat(ex.getTypeName()).isEqualTo("java.lang.RuntimeException");
+              assertThat(ex.getMessage()).isEqualTo("exceptional");
+              assertThat(ed.getSeverityLevel()).isEqualTo(SeverityLevel.ERROR);
+              assertThat(ed.getProperties())
+                  .containsEntry("Logger Message", "Unexpected error occurred in scheduled task");
+              assertThat(ed.getProperties()).containsEntry("SourceType", "Logger");
+              assertThat(ed.getProperties())
+                  .containsEntry(
+                      "LoggerName",
+                      "org.springframework.scheduling.support.TaskUtils$LoggingErrorHandler");
+              assertThat(ed.getProperties()).containsKey("ThreadName");
+              assertThat(ed.getProperties()).hasSize(4);
+            });
+
+    assertThat(exceptionEnvelopes)
+        .anySatisfy(
+            envelope -> {
+              ExceptionData ed = (ExceptionData) ((Data<?>) envelope.getData()).getBaseData();
+              List<ExceptionDetails> details = ed.getExceptions();
+              ExceptionDetails ex = details.get(0);
+              assertThat(ex.getTypeName()).isEqualTo("java.lang.RuntimeException");
+              assertThat(ex.getMessage()).isEqualTo("exceptional");
+              assertThat(ed.getSeverityLevel()).isNull();
+              assertThat(ed.getProperties()).isEmpty();
+            });
   }
 
   @Environment(TOMCAT_8_JAVA_8)
