@@ -9,27 +9,10 @@ pluginManagement {
   }
 }
 
-plugins {
-  id("com.gradle.enterprise") version "3.18.1"
-}
-
 dependencyResolutionManagement {
   repositories {
     mavenCentral()
     mavenLocal()
-  }
-}
-
-val isCI = System.getenv("CI") != null
-gradleEnterprise {
-  buildScan {
-    termsOfServiceUrl = "https://gradle.com/terms-of-service"
-    termsOfServiceAgree = "yes"
-
-    if (isCI) {
-      publishAlways()
-      tag("CI")
-    }
   }
 }
 
