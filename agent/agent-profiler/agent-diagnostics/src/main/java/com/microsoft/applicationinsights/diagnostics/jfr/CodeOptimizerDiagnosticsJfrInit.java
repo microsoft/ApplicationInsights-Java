@@ -38,7 +38,7 @@ public class CodeOptimizerDiagnosticsJfrInit {
           List<Double> telemetry = statsReader.readTelemetry();
 
           if (telemetry != null && telemetry.size() > 0) {
-            new Telemetry(telemetry).commit();
+            new Telemetry().setTelemetry(telemetry).commit();
           } else {
             logFailure("No telemetry data present", null, telemetryFailureLogCount);
           }

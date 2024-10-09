@@ -3,29 +3,87 @@
 
 package com.microsoft.applicationinsights.agent.internal.profiler.service;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.auto.value.AutoValue;
+import com.azure.json.JsonReader;
+import com.azure.json.JsonSerializable;
+import com.azure.json.JsonToken;
+import com.azure.json.JsonWriter;
+import java.io.IOException;
 
 /** Result of uploading an artifact to service profiler. */
-@AutoValue
-public abstract class ArtifactAcceptedResponse {
+public class ArtifactAcceptedResponse implements JsonSerializable<ArtifactAcceptedResponse> {
 
-  @JsonCreator
-  public static ArtifactAcceptedResponse create(
-      @JsonProperty("acceptedTime") String acceptedTime,
-      @JsonProperty("blobUri") String blobUri,
-      @JsonProperty("correlationId") String correlationId,
-      @JsonProperty("stampId") String stampId) {
+  private String acceptedTime;
+  private String stampId;
+  private String correlationId;
+  private String blobUri;
 
-    return new AutoValue_ArtifactAcceptedResponse(acceptedTime, stampId, correlationId, blobUri);
+  public String getAcceptedTime() {
+    return acceptedTime;
   }
 
-  public abstract String getAcceptedTime();
+  public ArtifactAcceptedResponse setAcceptedTime(String acceptedTime) {
+    this.acceptedTime = acceptedTime;
+    return this;
+  }
 
-  public abstract String getStampId();
+  public String getStampId() {
+    return stampId;
+  }
 
-  public abstract String getCorrelationId();
+  public ArtifactAcceptedResponse setStampId(String stampId) {
+    this.stampId = stampId;
+    return this;
+  }
 
-  public abstract String getBlobUri();
+  public String getCorrelationId() {
+    return correlationId;
+  }
+
+  public ArtifactAcceptedResponse setCorrelationId(String correlationId) {
+    this.correlationId = correlationId;
+    return this;
+  }
+
+  public String getBlobUri() {
+    return blobUri;
+  }
+
+  public ArtifactAcceptedResponse setBlobUri(String blobUri) {
+    this.blobUri = blobUri;
+    return this;
+  }
+
+  @Override
+  public JsonWriter toJson(JsonWriter jsonWriter) throws IOException {
+    jsonWriter.writeStartObject();
+    jsonWriter.writeStringField("acceptedTime", acceptedTime);
+    jsonWriter.writeStringField("stampId", stampId);
+    jsonWriter.writeStringField("correlationId", correlationId);
+    jsonWriter.writeStringField("blobUri", blobUri);
+    jsonWriter.writeEndObject();
+    return jsonWriter;
+  }
+
+  public static ArtifactAcceptedResponse fromJson(JsonReader jsonReader) throws IOException {
+    return jsonReader.readObject(
+        reader -> {
+          ArtifactAcceptedResponse deserializedArtifactAcceptedResponse =
+              new ArtifactAcceptedResponse();
+          while (reader.nextToken() != JsonToken.END_OBJECT) {
+            String fieldName = reader.getFieldName();
+            if ("acceptedTime".equals(fieldName)) {
+              deserializedArtifactAcceptedResponse.setAcceptedTime(reader.getString());
+            } else if ("stampId".equals(fieldName)) {
+              deserializedArtifactAcceptedResponse.setStampId(reader.getString());
+            } else if ("correlationId".equals(fieldName)) {
+              deserializedArtifactAcceptedResponse.setCorrelationId(reader.getString());
+            } else if ("blobUri".equals(fieldName)) {
+              deserializedArtifactAcceptedResponse.setBlobUri(reader.getString());
+            } else {
+              reader.skipChildren();
+            }
+          }
+          return deserializedArtifactAcceptedResponse;
+        });
+  }
 }

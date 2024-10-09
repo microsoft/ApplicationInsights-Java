@@ -16,7 +16,12 @@ public class LinuxMemoryInfoReader extends TwoStepProcReader implements MemoryIn
   private int freeInKbIndex = -1;
   private int virtualMemoryTotalInKbIndex = -1;
   private int virtualMemoryUsedInKbIndex = -1;
-  private MemoryInfo memoryInfo = new MemoryInfo(-1, -1, -1, -1);
+  private MemoryInfo memoryInfo =
+      new MemoryInfo()
+          .setTotalInKb(-1)
+          .setFreeInKb(-1)
+          .setVirtualMemoryTotalInKb(-1)
+          .setVirtualMemoryUsedInKb(-1);
 
   public LinuxMemoryInfoReader() {
     super(new File(MEMINFO));
@@ -46,7 +51,11 @@ public class LinuxMemoryInfoReader extends TwoStepProcReader implements MemoryIn
     long virtualMemoryTotalInKb = readMemoryNumber(lines[virtualMemoryTotalInKbIndex]);
     long virtualMemoryUsedInKb = readMemoryNumber(lines[virtualMemoryUsedInKbIndex]);
 
-    return new MemoryInfo(totalInKb, freeInKb, virtualMemoryTotalInKb, virtualMemoryUsedInKb);
+    return new MemoryInfo()
+        .setTotalInKb(totalInKb)
+        .setFreeInKb(freeInKb)
+        .setVirtualMemoryTotalInKb(virtualMemoryTotalInKb)
+        .setVirtualMemoryUsedInKb(virtualMemoryUsedInKb);
   }
 
   private static long readMemoryNumber(String line) {

@@ -11,7 +11,7 @@ import com.azure.core.http.HttpPipeline;
 import com.azure.core.http.HttpPipelineBuilder;
 import com.azure.core.test.TestBase;
 import com.azure.core.test.TestMode;
-import com.fasterxml.jackson.core.JsonParseException;
+import com.azure.json.implementation.jackson.core.JsonParseException;
 import com.microsoft.applicationinsights.agent.internal.profiler.service.ServiceProfilerClient;
 import java.io.IOException;
 import java.net.MalformedURLException;
