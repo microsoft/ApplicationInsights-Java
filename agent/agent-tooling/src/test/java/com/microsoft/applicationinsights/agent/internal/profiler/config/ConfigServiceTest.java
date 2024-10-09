@@ -11,7 +11,7 @@ import com.azure.core.http.HttpPipeline;
 import com.azure.core.http.HttpPipelineBuilder;
 import com.azure.core.test.TestBase;
 import com.azure.core.test.TestMode;
-import com.fasterxml.jackson.databind.exc.InvalidDefinitionException;
+import com.azure.json.implementation.jackson.core.JsonParseException;
 import com.microsoft.applicationinsights.agent.internal.profiler.service.ServiceProfilerClient;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -61,7 +61,7 @@ class ConfigServiceTest extends TestBase {
     ConfigService configService = new ConfigService(serviceProfilerClient);
     Mono<ProfilerConfiguration> result = configService.pullSettings();
 
-    assertThatThrownBy(result::block).hasRootCauseInstanceOf(InvalidDefinitionException.class);
+    assertThatThrownBy(result::block).hasRootCauseInstanceOf(JsonParseException.class);
   }
 
   private HttpPipeline getHttpPipeline() {
