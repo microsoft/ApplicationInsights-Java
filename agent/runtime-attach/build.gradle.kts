@@ -6,7 +6,6 @@ plugins {
 base.archivesName.set("applicationinsights-runtime-attach")
 
 val otelContribAlphaVersion: String by project
-val otelVersion: String by project
 val agent: Configuration by configurations.creating
 
 dependencies {
