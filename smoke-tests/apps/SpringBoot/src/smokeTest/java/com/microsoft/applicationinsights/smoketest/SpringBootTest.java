@@ -17,8 +17,11 @@ import static org.assertj.core.data.MapEntry.entry;
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
 import com.microsoft.applicationinsights.smoketest.schemav2.EventData;
+import com.microsoft.applicationinsights.smoketest.schemav2.ExceptionData;
+import com.microsoft.applicationinsights.smoketest.schemav2.ExceptionDetails;
 import com.microsoft.applicationinsights.smoketest.schemav2.RemoteDependencyData;
 import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
+import com.microsoft.applicationinsights.smoketest.schemav2.SeverityLevel;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -63,16 +66,33 @@ abstract class SpringBootTest {
 
     Envelope edEnvelope1 = exceptions.get(0);
 
+    // assert on edEnvelope1
+
     assertThat(rdEnvelope.getSampleRate()).isNull();
     assertThat(edEnvelope1.getSampleRate()).isNull();
 
     RequestData rd = testing.getTelemetryDataForType(0, "RequestData");
+    ExceptionData ed = (ExceptionData) ((Data<?>) edEnvelope1.getData()).getBaseData();
+
+    List<ExceptionDetails> details = ed.getExceptions();
+    ExceptionDetails ex = details.get(0);
 
     assertThat(rd.getName()).isEqualTo("GET /SpringBoot/throwsException");
     assertThat(rd.getResponseCode()).isEqualTo("500");
     assertThat(rd.getProperties())
         .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
     assertThat(rd.getSuccess()).isFalse();
+
+    assertThat(ex.getTypeName()).isEqualTo("javax.servlet.ServletException");
+    assertThat(ex.getMessage()).isEqualTo("This is an exception");
+    assertThat(ed.getSeverityLevel()).isEqualTo(SeverityLevel.ERROR);
+    assertThat(ed.getProperties())
+        .containsKey("Logger Message"); // specific message varies by app server
+    assertThat(ed.getProperties()).containsEntry("SourceType", "Logger");
+    assertThat(ed.getProperties())
+        .containsKey("LoggerName"); // specific logger varies by app server
+    assertThat(ed.getProperties()).containsKey("ThreadName");
+    assertThat(ed.getProperties()).hasSize(4);
 
     SmokeTestExtension.assertParentChild(
         rd, rdEnvelope, edEnvelope1, "GET /SpringBoot/throwsException");
