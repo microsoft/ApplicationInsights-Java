@@ -163,10 +163,17 @@ public class ProfilingInitializer {
   }
 
   private void logProfilerPullError(Throwable e) {
+    String exceptionMessage = e.getMessage();
+    boolean displayByosMessage = exceptionMessage.contains("Received error code 403 from");
+    String byosMessage =
+        " If you bring your own storage, please follow these instructions: "
+            + "https://learn.microsoft.com/azure/azure-monitor/profiler/profiler-bring-your-own-storage";
+    String logMessage =
+        "Error pulling service profiler settings." + (displayByosMessage ? byosMessage : "");
     if (currentlyEnabled.get()) {
-      logger.error("Error pulling service profiler settings", e);
+      logger.error(logMessage, e);
     } else {
-      logger.debug("Error pulling service profiler settings", e);
+      logger.debug(logMessage, e);
     }
   }
 
