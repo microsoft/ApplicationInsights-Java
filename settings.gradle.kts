@@ -15,6 +15,9 @@ plugins {
 
 dependencyResolutionManagement {
   repositories {
+    maven {
+      url = uri("https://pkgs.dev.azure.com/github-private/microsoft/_packaging/microsoft_PublicPackages/maven/v1")
+    }
     mavenCentral()
     mavenLocal()
   }
