@@ -10,13 +10,14 @@ pluginManagement {
 }
 
 plugins {
-  id("com.gradle") version "3.18.1"
+  id("com.gradle.enterprise") version "3.18.1"
 }
 
 dependencyResolutionManagement {
   repositories {
     mavenCentral()
     mavenLocal()
+    gradlePluginPortal()
   }
 }
 
