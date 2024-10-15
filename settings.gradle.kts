@@ -11,7 +11,7 @@ pluginManagement {
 
 plugins {
   if (System.getenv("GRADLE_OPTS") != null) {
-    id("com.gradle:gradle-enterprise-gradle-plugin") version "3.18.1"
+    id("com.gradle") version "3.18.1"
   } else {
     id("com.gradle.enterprise") version "3.18.1"
   }
