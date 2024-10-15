@@ -10,7 +10,7 @@ pluginManagement {
 }
 
 plugins {
-  id("com.gradle.enterprise.gradle.plugin") version "3.18.1"
+  id("com.gradle") version "3.18.1"
 }
 
 dependencyResolutionManagement {
