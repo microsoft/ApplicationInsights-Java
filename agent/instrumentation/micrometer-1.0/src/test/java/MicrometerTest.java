@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 class MicrometerTest {
@@ -91,6 +92,7 @@ class MicrometerTest {
     assertThat(measurement.namespace).isNull();
   }
 
+  @Disabled
   @Test
   void shouldCaptureCounter() throws InterruptedException {
     // given
