@@ -26,7 +26,7 @@ import org.junit.jupiter.api.Test;
 
 class MicrometerTest {
 
-  private static final long SLEEP_MILLISECONDS = 2000;
+  private static final long SLEEP_MILLISECONDS = 3000;
 
   private static final AgentTestingMicrometerDelegate delegate =
       new AgentTestingMicrometerDelegate();
