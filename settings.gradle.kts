@@ -13,7 +13,6 @@ dependencyResolutionManagement {
   repositories {
     mavenCentral()
     mavenLocal()
-    gradlePluginPortal()
   }
 }
 
