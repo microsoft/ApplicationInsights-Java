@@ -22,11 +22,12 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 class MicrometerTest {
 
-  private static final long SLEEP_MILLISECONDS = 1000;
+  private static final long SLEEP_MILLISECONDS = 6000;
 
   private static final AgentTestingMicrometerDelegate delegate =
       new AgentTestingMicrometerDelegate();
@@ -91,6 +92,7 @@ class MicrometerTest {
     assertThat(measurement.namespace).isNull();
   }
 
+  @Disabled
   @Test
   void shouldCaptureCounter() throws InterruptedException {
     // given

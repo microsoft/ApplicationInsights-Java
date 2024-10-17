@@ -22,4 +22,9 @@ public class SpringSchedulingApp extends SpringBootServletInitializer {
   public void fixedRateScheduler() {
     System.out.println("Hello world.");
   }
+
+  @Scheduled(fixedRate = 100)
+  public void exceptional() {
+    throw new RuntimeException("exceptional");
+  }
 }
