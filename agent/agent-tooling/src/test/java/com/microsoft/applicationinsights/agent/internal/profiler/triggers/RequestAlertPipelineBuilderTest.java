@@ -57,7 +57,12 @@ public class RequestAlertPipelineBuilderTest {
         actualAlertingConfig.aggregation.type.name());
     Assertions.assertEquals(
         expectedRequesttrigger.threshold.type.name(), actualAlertingConfig.threshold.type.name());
-    Assertions.assertEquals(expectedRequesttrigger.throttling, actualAlertingConfig.throttling);
+    Assertions.assertEquals(
+        expectedRequesttrigger.threshold.value, actualAlertingConfig.threshold.value);
+    Assertions.assertEquals(
+        expectedRequesttrigger.throttling.type.name(), actualAlertingConfig.throttling.type.name());
+    Assertions.assertEquals(
+        expectedRequesttrigger.throttling.value, actualAlertingConfig.throttling.value);
     Assertions.assertEquals(
         expectedRequesttrigger.profileDuration, actualAlertingConfig.profileDuration);
   }
