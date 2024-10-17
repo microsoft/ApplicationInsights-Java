@@ -2,6 +2,12 @@
 <suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
   <suppress>
     <notes>
+      CVE-2024-43591 only affects Azure CLI (it does not affect any Java libraries)
+    </notes>
+    <cve>CVE-2024-43591</cve>
+  </suppress>
+  <suppress>
+    <notes>
       CVE-2023-36052 only affects Azure CLI (it does not affect any Java libraries)
     </notes>
     <cve>CVE-2023-36052</cve>
