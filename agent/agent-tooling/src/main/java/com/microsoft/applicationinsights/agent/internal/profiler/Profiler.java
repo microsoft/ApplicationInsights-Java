@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
+import java.nio.file.Files;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -92,7 +93,7 @@ public class Profiler {
    */
   public void initialize(
       UploadService uploadService, ScheduledExecutorService scheduledExecutorService)
-      throws Exception {
+      throws IOException, InstanceNotFoundException, JfrStreamingException {
     this.uploadService = uploadService;
     this.scheduledExecutorService = scheduledExecutorService;
 
@@ -263,9 +264,12 @@ public class Profiler {
   private static void writeFileFromStream(Recording recording, File recordingFile)
       throws IOException, JfrConnectionException {
     if (recordingFile.exists()) {
-      recordingFile.delete();
+      Files.delete(recordingFile.toPath());
     }
-    recordingFile.createNewFile();
+
+    if (!recordingFile.createNewFile()) {
+      logger.error("File creation failed");
+    }
 
     try (BufferedInputStream stream = new BufferedInputStream(recording.getStream(null, null));
         FileOutputStream fos = new FileOutputStream(recordingFile)) {
@@ -284,7 +288,7 @@ public class Profiler {
       // delete uploaded profile
       if (activeRecordingFile != null && activeRecordingFile.exists()) {
         if (!activeRecordingFile.delete()) {
-          logger.error("Failed to remove file " + activeRecordingFile.getAbsolutePath());
+          logger.error("Failed to remove file {}", activeRecordingFile.getAbsolutePath());
         }
       }
       activeRecordingFile = null;
