@@ -8,8 +8,8 @@ import com.azure.core.http.HttpMethod;
 import com.azure.core.http.HttpPipeline;
 import com.azure.core.http.HttpRequest;
 import com.azure.core.http.HttpResponse;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.azure.json.JsonProviders;
+import com.azure.json.JsonReader;
 import com.microsoft.applicationinsights.agent.internal.profiler.config.ProfilerConfiguration;
 import com.microsoft.applicationinsights.agent.internal.profiler.util.TimestampContract;
 import java.io.IOException;
@@ -26,9 +26,6 @@ import reactor.core.publisher.Mono;
 public class ServiceProfilerClient {
 
   private static final Logger logger = LoggerFactory.getLogger(ServiceProfilerClient.class);
-
-  private static final ObjectMapper mapper =
-      new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
   private static final String PROFILER_API_PREFIX = "api/profileragent/v4";
 
@@ -108,9 +105,8 @@ public class ServiceProfilerClient {
                 // this shouldn't happen, the mono should complete with a response or a failure
                 return Mono.error(new AssertionError("response body mono returned empty"));
               }
-              try {
-                ArtifactAcceptedResponse data =
-                    mapper.readValue(json, ArtifactAcceptedResponse.class);
+              try (JsonReader reader = JsonProviders.createReader(json)) {
+                ArtifactAcceptedResponse data = ArtifactAcceptedResponse.fromJson(reader);
                 if (data == null) {
                   return Mono.error(new IllegalStateException("Failed to deserialize response"));
                 }
@@ -165,8 +161,8 @@ public class ServiceProfilerClient {
         .getBodyAsString()
         .flatMap(
             body -> {
-              try {
-                return Mono.just(mapper.readValue(body, ProfilerConfiguration.class));
+              try (JsonReader jsonReader = JsonProviders.createReader(body)) {
+                return Mono.just(ProfilerConfiguration.fromJson(jsonReader));
               } catch (IOException e) {
                 return Mono.error(e);
               }

@@ -8,5 +8,5 @@ public enum AlertMetricType {
   MEMORY,
   PERIODIC,
   MANUAL,
-  REQUEST
+  REQUEST;
 }

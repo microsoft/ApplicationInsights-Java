@@ -8,8 +8,7 @@ if (project.properties.containsKey("publish-diagnostics")) {
 }
 
 dependencies {
-  compileOnly("com.fasterxml.jackson.core:jackson-annotations")
-  compileOnly("com.fasterxml.jackson.core:jackson-databind")
+  compileOnly("com.azure:azure-json")
   compileOnly("com.google.auto.value:auto-value-annotations")
   annotationProcessor("com.google.auto.value:auto-value")
 }

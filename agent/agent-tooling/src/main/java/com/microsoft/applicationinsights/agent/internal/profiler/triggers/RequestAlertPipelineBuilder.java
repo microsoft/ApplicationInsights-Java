@@ -70,40 +70,45 @@ class RequestAlertPipelineBuilder {
         AlertingConfig.RequestTriggerType.valueOf(configuration.type.name());
 
     AlertingConfig.RequestFilter filter =
-        new AlertingConfig.RequestFilter(
-            AlertingConfig.RequestFilterType.valueOf(configuration.filter.type.name()),
-            configuration.filter.value);
+        new AlertingConfig.RequestFilter()
+            .setType(AlertingConfig.RequestFilterType.valueOf(configuration.filter.type.name()))
+            .setValue(configuration.filter.value);
 
     AlertingConfig.RequestAggregationConfig requestAggregationConfig =
-        new AlertingConfig.RequestAggregationConfig(
-            configuration.aggregation.configuration.thresholdMillis,
-            configuration.aggregation.configuration.minimumSamples);
+        new AlertingConfig.RequestAggregationConfig()
+            .setThresholdMillis(configuration.aggregation.configuration.thresholdMillis)
+            .setMinimumSamples(configuration.aggregation.configuration.minimumSamples);
 
     AlertingConfig.RequestAggregation aggregation =
-        new AlertingConfig.RequestAggregation(
-            AlertingConfig.RequestAggregationType.valueOf(configuration.aggregation.type.name()),
-            configuration.aggregation.windowSizeMillis,
-            requestAggregationConfig);
+        new AlertingConfig.RequestAggregation()
+            .setType(
+                AlertingConfig.RequestAggregationType.valueOf(
+                    configuration.aggregation.type.name()))
+            .setWindowSizeMillis(configuration.aggregation.windowSizeMillis)
+            .setConfiguration(requestAggregationConfig);
 
     AlertingConfig.RequestTriggerThreshold requestTriggerThreshold =
-        new AlertingConfig.RequestTriggerThreshold(
-            AlertingConfig.RequestTriggerThresholdType.valueOf(configuration.threshold.type.name()),
-            configuration.threshold.value);
+        new AlertingConfig.RequestTriggerThreshold()
+            .setType(
+                AlertingConfig.RequestTriggerThresholdType.valueOf(
+                    configuration.threshold.type.name()))
+            .setValue(configuration.threshold.value);
 
     AlertingConfig.RequestTriggerThrottling throttling =
-        new AlertingConfig.RequestTriggerThrottling(
-            AlertingConfig.RequestTriggerThrottlingType.valueOf(
-                configuration.throttling.type.name()),
-            configuration.throttling.value);
+        new AlertingConfig.RequestTriggerThrottling()
+            .setType(
+                AlertingConfig.RequestTriggerThrottlingType.valueOf(
+                    configuration.throttling.type.name()))
+            .setValue(configuration.throttling.value);
 
-    return new AlertingConfig.RequestTrigger(
-        configuration.name,
-        type,
-        filter,
-        aggregation,
-        requestTriggerThreshold,
-        throttling,
-        configuration.profileDuration);
+    return new AlertingConfig.RequestTrigger()
+        .setName(configuration.name)
+        .setType(type)
+        .setFilter(filter)
+        .setAggregation(aggregation)
+        .setThreshold(requestTriggerThreshold)
+        .setThrottling(throttling)
+        .setProfileDuration(configuration.profileDuration);
   }
 
   @Nullable

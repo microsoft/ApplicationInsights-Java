@@ -22,7 +22,7 @@ import java.util.regex.Pattern;
  */
 public final class TimestampContract {
   // Cant use ISO_INSTANT as it does not pad the nanos to 7 figures
-  private static final DateTimeFormatter FORMATTER =
+  public static final DateTimeFormatter FORMATTER =
       DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.nX", Locale.ROOT);
 
   private static final Pattern TIMESTAMP_PATTERN = Pattern.compile(".*\\.([0-9]+)Z$");

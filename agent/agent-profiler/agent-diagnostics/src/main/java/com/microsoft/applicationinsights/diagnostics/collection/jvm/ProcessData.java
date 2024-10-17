@@ -3,9 +3,10 @@
 
 package com.microsoft.applicationinsights.diagnostics.collection.jvm;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.azure.json.JsonSerializable;
+import com.azure.json.JsonWriter;
 import com.microsoft.applicationinsights.diagnostics.collection.libos.process.ProcessInfo;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -18,13 +19,13 @@ import javax.annotation.Nullable;
 /**
  * Represents information about a running process. Also attempts to redact any sensitive arguments.
  */
-public class ProcessData implements ProcessInfo {
+public class ProcessData implements ProcessInfo, JsonSerializable<ProcessData> {
 
-  private final String name;
-  private final int pid;
-  private final String uid;
+  private String name;
+  private int pid;
+  private String uid = UUID.randomUUID().toString();
 
-  @Nullable private final Map<String, String> metaData;
+  @Nullable private Map<String, String> metaData;
 
   private static final List<String> SENSITIVE_PROPERTIES_ARGS =
       Arrays.asList(
@@ -68,49 +69,81 @@ public class ProcessData implements ProcessInfo {
     return name;
   }
 
+  public ProcessData() {}
+
   public ProcessData(String name, int pid) {
-    this(name, pid, UUID.randomUUID().toString());
+    setName(name).setPid(pid);
   }
 
   public ProcessData(String name, int pid, Map<String, String> metaData) {
-    this(name, pid, UUID.randomUUID().toString(), metaData);
+    setName(name).setPid(pid).setMetaData(metaData);
   }
 
   public ProcessData(String name, int pid, String uid) {
-    this(name, pid, uid, null);
+    setName(name).setPid(pid).setUid(uid);
   }
 
   public ProcessData(String name) {
-    this(sanetiseArg(name), -1, UUID.randomUUID().toString(), null);
+    setName(name).setPid(-1);
   }
 
   public ProcessData(ProcessInfo clone) {
-    this(
-        (clone == null ? "Unknown" : clone.getName()),
-        (clone == null ? -1 : clone.getPid()),
-        (clone == null ? UUID.randomUUID().toString() : clone.getUid()),
-        (clone == null ? null : clone.getMetaData()));
+    setName(clone == null ? "Unknown" : clone.getName())
+        .setPid(clone == null ? -1 : clone.getPid())
+        .setUid(clone == null ? UUID.randomUUID().toString() : clone.getUid())
+        .setMetaData(clone == null ? null : clone.getMetaData());
   }
 
-  @JsonCreator
-  public ProcessData(
-      @JsonProperty("name") String name,
-      @JsonProperty("pid") int pid,
-      @Nullable @JsonProperty("uid") String uid,
-      @Nullable @JsonProperty("metaData") Map<String, String> metaData) {
-    this.name = sanetiseArg(name);
-    this.pid = pid;
-    if (uid == null) {
-      this.uid = UUID.randomUUID().toString();
-    } else {
-      this.uid = uid;
-    }
+  @Override
+  public String getName() {
+    return name;
+  }
 
-    if (metaData != null) {
-      this.metaData = Collections.unmodifiableMap(metaData);
-    } else {
-      this.metaData = null;
-    }
+  public ProcessData setName(String name) {
+    this.name = sanetiseArg(name);
+    return this;
+  }
+
+  @Override
+  public int getPid() {
+    return pid;
+  }
+
+  public ProcessData setPid(int pid) {
+    this.pid = pid;
+    return this;
+  }
+
+  @Override
+  public String getUid() {
+    return uid;
+  }
+
+  public ProcessData setUid(String uid) {
+    this.uid = uid;
+    return this;
+  }
+
+  @Override
+  @Nullable
+  public Map<String, String> getMetaData() {
+    return metaData;
+  }
+
+  public ProcessData setMetaData(@Nullable Map<String, String> metaData) {
+    this.metaData = metaData != null ? Collections.unmodifiableMap(metaData) : null;
+    return this;
+  }
+
+  @Override
+  public JsonWriter toJson(JsonWriter jsonWriter) throws IOException {
+    jsonWriter.writeStartObject();
+    jsonWriter.writeStringField("name", name);
+    jsonWriter.writeIntField("pid", pid);
+    jsonWriter.writeStringField("uid", uid);
+    jsonWriter.writeMapField("metaData", metaData, JsonWriter::writeString);
+    jsonWriter.writeEndObject();
+    return jsonWriter;
   }
 
   // @ExistsForTesting
@@ -125,21 +158,6 @@ public class ProcessData implements ProcessInfo {
   // @ExistsForTesting
   protected static ProcessData create(String name, int pid, @Nullable String uid) {
     return new ProcessData(name, pid, uid);
-  }
-
-  @Override
-  public String getName() {
-    return name;
-  }
-
-  @Override
-  public int getPid() {
-    return pid;
-  }
-
-  @Override
-  public String getUid() {
-    return uid;
   }
 
   @Override
@@ -177,11 +195,5 @@ public class ProcessData implements ProcessInfo {
       return false;
     }
     return pid == other.pid;
-  }
-
-  @Override
-  @Nullable
-  public Map<String, String> getMetaData() {
-    return metaData;
   }
 }
