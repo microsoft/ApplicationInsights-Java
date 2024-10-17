@@ -11,18 +11,19 @@ data class DependencySet(val group: String, val version: String, val modules: Li
 val dependencyVersions = hashMapOf<String, String>()
 rootProject.extra["versions"] = dependencyVersions
 
-val otelVersion = "1.42.1"
+val otelSdkVersion = "1.42.1"
 val otelInstrumentationAlphaVersion = "2.8.0-alpha"
 val otelInstrumentationVersion = "2.8.0"
 val byteBuddyVersion = "1.14.11"
 
-rootProject.extra["otelVersion"] = otelVersion
+rootProject.extra["otelSdkVersion"] = otelSdkVersion
 rootProject.extra["otelInstrumentationVersion"] = otelInstrumentationVersion
 rootProject.extra["otelInstrumentationAlphaVersion"] = otelInstrumentationAlphaVersion
 
 val DEPENDENCY_BOMS = listOf(
-  "io.opentelemetry:opentelemetry-bom:${otelVersion}",
-  "io.opentelemetry:opentelemetry-bom-alpha:${otelVersion}-alpha",
+  "com.fasterxml.jackson:jackson-bom:2.17.2",
+  "io.opentelemetry:opentelemetry-bom:${otelSdkVersion}",
+  "io.opentelemetry:opentelemetry-bom-alpha:${otelSdkVersion}-alpha",
   "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:${otelInstrumentationVersion}",
   "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${otelInstrumentationAlphaVersion}",
   "com.azure:azure-sdk-bom:1.2.28",

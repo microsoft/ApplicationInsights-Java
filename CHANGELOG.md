@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## Version 3.6.1 GA (10/09/2024)
+
+### Bug fixes
+
+* Regression introduced in 3.6.0 where some exception telemetry records were missing a required field causing them to be rejected by the ingestion service
+  ([Azure/azure-sdk-for-java#42241](https://github.com/Azure/azure-sdk-for-java/pull/42241))
+
 ## Version 3.6.0 GA (10/03/2024)
 
 ### Enhancements

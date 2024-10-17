@@ -12,12 +12,12 @@ muzzle {
 }
 
 val otelInstrumentationAlphaVersion: String by project
-val otelVersion: String by project
+val otelInstrumentationVersion: String by project
 
 dependencies {
   compileOnly("com.microsoft.azure:applicationinsights-web:2.3.0")
 
-  testImplementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:$otelVersion")
+  testImplementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:$otelInstrumentationVersion")
 
   testImplementation("com.microsoft.azure:applicationinsights-web:2.3.0")
   testImplementation("javax.servlet:javax.servlet-api:3.0.1")
