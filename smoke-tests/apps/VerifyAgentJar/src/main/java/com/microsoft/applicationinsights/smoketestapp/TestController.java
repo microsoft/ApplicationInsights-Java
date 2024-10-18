@@ -22,7 +22,9 @@ public class TestController {
   private static final long ONE_MEGABYTE = 1024 * 1024;
 
   // current jar size 37872243 version 3.4.18
-  private static final long CURRENT_AGENT_JAR_SIZE = 38968320;
+  // there was a 4mb bump from 3.6.1 to 3.6.2 due to bytebuddy 1.15.5 becoming a multi-release jar
+  // which effectively doubled the size of the bytebuddy jar from 4mb to 8mb
+  private static final long CURRENT_AGENT_JAR_SIZE = 43798057;
 
   @GetMapping("/")
   public String root() {
