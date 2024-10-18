@@ -11,10 +11,9 @@ data class DependencySet(val group: String, val version: String, val modules: Li
 val dependencyVersions = hashMapOf<String, String>()
 rootProject.extra["versions"] = dependencyVersions
 
-val otelSdkVersion = "1.42.1"
-val otelInstrumentationAlphaVersion = "2.8.0-alpha"
-val otelInstrumentationVersion = "2.8.0"
-val byteBuddyVersion = "1.14.11"
+val otelSdkVersion = "1.43.0"
+val otelInstrumentationAlphaVersion = "2.9.0-alpha"
+val otelInstrumentationVersion = "2.9.0"
 
 rootProject.extra["otelSdkVersion"] = otelSdkVersion
 rootProject.extra["otelInstrumentationVersion"] = otelInstrumentationVersion
@@ -73,7 +72,7 @@ val DEPENDENCIES = listOf(
   "org.assertj:assertj-core:3.26.3",
   "org.awaitility:awaitility:4.2.2",
   "io.github.hakky54:logcaptor:2.9.3",
-  "io.opentelemetry.contrib:opentelemetry-jfr-connection:1.39.0-alpha",
+  "io.opentelemetry.contrib:opentelemetry-jfr-connection:1.40.0-alpha",
   "com.google.code.findbugs:jsr305:3.0.2",
   "com.github.spotbugs:spotbugs-annotations:4.8.6"
 )
