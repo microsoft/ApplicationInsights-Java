@@ -4,7 +4,7 @@
 package com.microsoft.applicationinsights.alerting.analysis.pipelines;
 
 // This class name must end in MXBean (case sensitive)
-@SuppressWarnings("checkstyle:AbbreviationAsWordInName")
+@SuppressWarnings({"checkstyle:AbbreviationAsWordInName", "IdentifierName"})
 public interface AlertPipelineMXBean {
 
   // Attributes
