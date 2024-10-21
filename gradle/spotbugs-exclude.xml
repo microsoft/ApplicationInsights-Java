@@ -66,6 +66,6 @@
   </Match>
   <Match>
     <Class name="com.microsoft.applicationinsights.agent.internal.profiler.config.ProfilerConfiguration"/>
-    <Bug pattern="STCAL_STATIC_SIMPLE_DATE_FORMAT_INSTANCE"/> <!-- inner class use default encoding can be ignored -->
+    <Bug pattern="STCAL_INVOKE_ON_STATIC_DATE_FORMAT_INSTANCE"/> <!-- inner class use default encoding can be ignored -->
   </Match>
 </FindBugsFilter>
