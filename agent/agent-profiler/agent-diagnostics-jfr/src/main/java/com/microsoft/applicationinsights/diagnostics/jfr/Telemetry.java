@@ -28,10 +28,10 @@ import jdk.jfr.StackTrace;
 public class Telemetry extends Event implements JsonSerializable<Telemetry> {
   public static final String NAME = "com.microsoft.applicationinsights.diagnostics.jfr.Telemetry";
 
-  public static final int LATEST_VERSION = 3;
+  private static final int LATEST_VERSION = 3;
 
-  public int version = 1;
-  public String telemetry;
+  private int version = 1;
+  private String telemetry;
 
   public int getVersion() {
     return version;
