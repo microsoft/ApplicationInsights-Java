@@ -23,7 +23,7 @@ Please provide the following information:
  - Additional relevant libraries (with version, if applicable):
 
 ### Logs
-[Turn on SDK logs](https://docs.microsoft.com/en-us/azure/application-insights/app-insights-java-troubleshoot#debug-data-from-the-sdk) and attach/paste them to the issue. If using an application server, also attach any relevant server logs.
+[Turn on SDK logs](https://learn.microsoft.com/en-us/azure/azure-monitor/app/java-standalone-config#self-diagnostics) and attach/paste them to the issue. If using an application server, also attach any relevant server logs.
 
 _Be sure to remove any private information from the logs before posting!_
 
