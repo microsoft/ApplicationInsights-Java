@@ -171,9 +171,9 @@ abstract class JmxMetricTest {
 
     // This will indirectly check the occurrences of the optional gc metrics
     // and confirm that the wildcard metric has the expected value
-    // Java 21 returns 6 more CollectionCount for the wildcard metric comparing to other Java
+    // Java 21+ returns 6 more CollectionCount for the wildcard metric comparing to other Java
     // versions
-    if (testing.getCurrentEnvironment() == TOMCAT_8_JAVA_21) {
+    if (testing.getCurrentEnvironment() == TOMCAT_8_JAVA_21 || testing.getCurrentEnvironment() == TOMCAT_8_JAVA_23) {
       assertThat(wildcardValueSum).isEqualTo(gcFirstMatch + gcSecondMatch + 6);
     } else {
       assertThat(wildcardValueSum).isEqualTo(gcFirstMatch + gcSecondMatch);
