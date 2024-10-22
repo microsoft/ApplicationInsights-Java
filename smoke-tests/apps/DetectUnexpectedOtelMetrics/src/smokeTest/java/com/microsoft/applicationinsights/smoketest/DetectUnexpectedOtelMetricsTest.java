@@ -70,34 +70,34 @@ abstract class DetectUnexpectedOtelMetricsTest {
   }
 
   @Environment(TOMCAT_8_JAVA_8)
-  static class Tomcat8Java8Test extends DetectUnexpectedOtelMetricsTest  {}
+  static class Tomcat8Java8Test extends DetectUnexpectedOtelMetricsTest {}
 
   @Environment(TOMCAT_8_JAVA_8_OPENJ9)
-  static class Tomcat8Java8OpenJ9Test extends DetectUnexpectedOtelMetricsTest  {}
+  static class Tomcat8Java8OpenJ9Test extends DetectUnexpectedOtelMetricsTest {}
 
   @Environment(TOMCAT_8_JAVA_11)
-  static class Tomcat8Java11Test extends DetectUnexpectedOtelMetricsTest  {}
+  static class Tomcat8Java11Test extends DetectUnexpectedOtelMetricsTest {}
 
   @Environment(TOMCAT_8_JAVA_11_OPENJ9)
-  static class Tomcat8Java11OpenJ9Test extends DetectUnexpectedOtelMetricsTest  {}
+  static class Tomcat8Java11OpenJ9Test extends DetectUnexpectedOtelMetricsTest {}
 
   @Environment(TOMCAT_8_JAVA_17)
-  static class Tomcat8Java17Test extends DetectUnexpectedOtelMetricsTest  {}
+  static class Tomcat8Java17Test extends DetectUnexpectedOtelMetricsTest {}
 
   @Environment(TOMCAT_8_JAVA_17_OPENJ9)
-  static class Tomcat8Java17OpenJ9Test extends DetectUnexpectedOtelMetricsTest  {}
+  static class Tomcat8Java17OpenJ9Test extends DetectUnexpectedOtelMetricsTest {}
 
   @Environment(TOMCAT_8_JAVA_21)
-  static class Tomcat8Java21Test extends DetectUnexpectedOtelMetricsTest  {}
+  static class Tomcat8Java21Test extends DetectUnexpectedOtelMetricsTest {}
 
   @Environment(TOMCAT_8_JAVA_21_OPENJ9)
-  static class Tomcat8Java21OpenJ9Test extends DetectUnexpectedOtelMetricsTest  {}
+  static class Tomcat8Java21OpenJ9Test extends DetectUnexpectedOtelMetricsTest {}
 
   @Environment(TOMCAT_8_JAVA_23)
-  static class Tomcat8Java23Test extends DetectUnexpectedOtelMetricsTest  {}
+  static class Tomcat8Java23Test extends DetectUnexpectedOtelMetricsTest {}
 
   @Environment(TOMCAT_8_JAVA_23_OPENJ9)
-  static class Tomcat8Java23OpenJ9Test extends DetectUnexpectedOtelMetricsTest  {}
+  static class Tomcat8Java23OpenJ9Test extends DetectUnexpectedOtelMetricsTest {}
 
   @Environment(WILDFLY_13_JAVA_8)
   static class Wildfly13Java8Test extends DetectUnexpectedOtelMetricsTest {}
