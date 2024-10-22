@@ -9,8 +9,8 @@ import com.azure.json.JsonWriter;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.profiler.testutil.TestTimeSource;
 import com.microsoft.applicationinsights.alerting.aiconfig.AlertingConfig;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -22,7 +22,6 @@ import org.junit.jupiter.api.TestFactory;
 
 public class RequestAlertPipelineBuilderTest {
 
-  @SuppressWarnings("DefaultCharset")
   @Test
   public void configurationIsCorrectlyDuplicated() throws IOException {
     Configuration.RequestTrigger expectedRequesttrigger = new Configuration.RequestTrigger();
@@ -37,10 +36,10 @@ public class RequestAlertPipelineBuilderTest {
         RequestAlertPipelineBuilder.buildRequestTriggerConfiguration(expectedRequesttrigger);
 
     String alertingConfigStr;
-    try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        JsonWriter writer = JsonProviders.createWriter(outputStream)) {
+    try (StringWriter stringWriter = new StringWriter();
+        JsonWriter writer = JsonProviders.createWriter(stringWriter)) {
       config.toJson(writer).flush();
-      alertingConfigStr = outputStream.toString();
+      alertingConfigStr = stringWriter.toString();
     }
     AlertingConfig.RequestTrigger actualAlertingConfig;
     try (JsonReader reader = JsonProviders.createReader(alertingConfigStr)) {

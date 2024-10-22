@@ -12,8 +12,8 @@ import com.microsoft.applicationinsights.diagnostics.jfr.AlertBreachJfrEvent;
 import com.microsoft.applicationinsights.diagnostics.jfr.CodeOptimizerDiagnosticsJfrInit;
 import com.microsoft.applicationinsights.diagnostics.jfr.MachineStats;
 import com.microsoft.applicationinsights.diagnostics.jfr.SystemStatsProvider;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
@@ -144,12 +144,11 @@ public class CodeOptimizerDiagnosticEngineJfr implements DiagnosticEngine {
     machineStats.commit();
   }
 
-  @SuppressWarnings("DefaultCharset")
   private static void emitAlertBreachJfrEvent(AlertBreach alert) {
-    try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        JsonWriter writer = JsonProviders.createWriter(outputStream)) {
+    try (StringWriter stringWriter = new StringWriter();
+        JsonWriter writer = JsonProviders.createWriter(stringWriter)) {
       alert.toJson(writer).flush();
-      AlertBreachJfrEvent event = new AlertBreachJfrEvent().setAlertBreach(outputStream.toString());
+      AlertBreachJfrEvent event = new AlertBreachJfrEvent().setAlertBreach(stringWriter.toString());
       event.commit();
       LOGGER.debug("Emitted Code Optimizer Diagnostic Event");
     } catch (IOException e) {
