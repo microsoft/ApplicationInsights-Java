@@ -80,7 +80,9 @@ public abstract class AlertBreach implements JsonSerializable<AlertBreach> {
   @Override
   public JsonWriter toJson(JsonWriter jsonWriter) throws IOException {
     jsonWriter.writeStartObject();
-    jsonWriter.writeStringField("type", type.name());
+    if (type != null) {
+      jsonWriter.writeStringField("type", type.name());
+    }
     jsonWriter.writeDoubleField("alertValue", alertValue);
     jsonWriter.writeJsonField("alertConfiguration", alertConfiguration);
     jsonWriter.writeDoubleField("cpuMetric", cpuMetric);
