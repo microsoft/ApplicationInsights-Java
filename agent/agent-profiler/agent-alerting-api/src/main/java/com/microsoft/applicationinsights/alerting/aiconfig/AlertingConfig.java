@@ -40,7 +40,9 @@ public class AlertingConfig {
     @Override
     public JsonWriter toJson(JsonWriter jsonWriter) throws IOException {
       jsonWriter.writeStartObject();
-      jsonWriter.writeStringField("type", type.name());
+      if (type != null) {
+        jsonWriter.writeStringField("type", type.name());
+      }
       jsonWriter.writeStringField("value", value);
       jsonWriter.writeEndObject();
       return jsonWriter;
@@ -164,7 +166,9 @@ public class AlertingConfig {
     @Override
     public JsonWriter toJson(JsonWriter jsonWriter) throws IOException {
       jsonWriter.writeStartObject();
-      jsonWriter.writeStringField("type", type.name());
+      if (type != null) {
+        jsonWriter.writeStringField("type", type.name());
+      }
       jsonWriter.writeLongField("windowSizeMillis", windowSizeMillis);
       jsonWriter.writeJsonField("configuration", configuration);
       jsonWriter.writeEndObject();
@@ -232,7 +236,9 @@ public class AlertingConfig {
     @Override
     public JsonWriter toJson(JsonWriter jsonWriter) throws IOException {
       jsonWriter.writeStartObject();
-      jsonWriter.writeStringField("type", type.name());
+      if (type != null) {
+        jsonWriter.writeStringField("type", type.name());
+      }
       jsonWriter.writeFloatField("value", value);
       jsonWriter.writeEndObject();
       return jsonWriter;
@@ -290,7 +296,9 @@ public class AlertingConfig {
     @Override
     public JsonWriter toJson(JsonWriter jsonWriter) throws IOException {
       jsonWriter.writeStartObject();
-      jsonWriter.writeStringField("type", type.name());
+      if (type != null) {
+        jsonWriter.writeStringField("type", type.name());
+      }
       jsonWriter.writeLongField("value", value);
       jsonWriter.writeEndObject();
       return jsonWriter;

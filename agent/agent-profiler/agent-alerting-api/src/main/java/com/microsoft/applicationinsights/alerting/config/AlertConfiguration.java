@@ -67,7 +67,9 @@ public abstract class AlertConfiguration implements JsonSerializable<AlertConfig
   @Override
   public JsonWriter toJson(JsonWriter jsonWriter) throws IOException {
     jsonWriter.writeStartObject();
-    jsonWriter.writeStringField("type", type.name());
+    if (type != null) {
+      jsonWriter.writeStringField("type", type.name());
+    }
     jsonWriter.writeBooleanField("enabled", enabled);
     jsonWriter.writeFloatField("threshold", threshold);
     jsonWriter.writeIntField("profileDurationSeconds", profileDurationSeconds);
@@ -113,7 +115,9 @@ public abstract class AlertConfiguration implements JsonSerializable<AlertConfig
     @Override
     public JsonWriter toJson(JsonWriter jsonWriter) throws IOException {
       jsonWriter.writeStartObject();
-      jsonWriter.writeStringField("type", type.name());
+      if (type != null) {
+        jsonWriter.writeStringField("type", type.name());
+      }
       jsonWriter.writeBooleanField("enabled", enabled);
       jsonWriter.writeFloatField("threshold", threshold);
       jsonWriter.writeIntField("profileDurationSeconds", profileDurationSeconds);

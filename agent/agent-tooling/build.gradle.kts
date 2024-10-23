@@ -41,7 +41,6 @@ dependencies {
   implementation("com.azure:azure-identity") {
     exclude("org.ow2.asm", "asm")
   }
-  implementation("com.azure:azure-json")
 
   compileOnly("io.opentelemetry:opentelemetry-api-incubator")
   compileOnly("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure")
