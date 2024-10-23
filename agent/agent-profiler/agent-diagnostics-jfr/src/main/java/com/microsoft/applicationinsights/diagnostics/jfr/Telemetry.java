@@ -85,9 +85,6 @@ public class Telemetry extends Event implements JsonSerializable<Telemetry> {
           while (reader.nextToken() != JsonToken.END_OBJECT) {
             String fieldName = reader.getFieldName();
             reader.nextToken();
-            // In this case field names are case-sensitive but this could be replaced with
-            // 'equalsIgnoreCase' to
-            // make them case-insensitive.
             if ("version".equals(fieldName)) {
               deserializedValue.setVersion(reader.getInt());
             } else if ("telemetry".equals(fieldName)) {

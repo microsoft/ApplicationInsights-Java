@@ -65,9 +65,6 @@ public class MachineStats extends Event implements JsonSerializable<MachineStats
           while (reader.nextToken() != JsonToken.END_OBJECT) {
             String fieldName = reader.getFieldName();
             reader.nextToken();
-            // In this case field names are case-sensitive but this could be replaced with
-            // 'equalsIgnoreCase' to
-            // make them case-insensitive.
             if ("contextSwitchesPerMs".equals(fieldName)) {
               deserializedValue.setContextSwitchesPerMs(reader.getDouble());
             } else if ("coreCount".equals(fieldName)) {
