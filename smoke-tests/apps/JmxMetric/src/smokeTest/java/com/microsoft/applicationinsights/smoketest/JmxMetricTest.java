@@ -217,4 +217,9 @@ abstract class JmxMetricTest {
 
   @Environment(TOMCAT_8_JAVA_23)
   static class Tomcat8Java23Test extends JmxMetricTest {}
+
+  // this smoke test doesn't work on OpenJ9 because it specifically
+  // targets JMX metrics present in Hotspot JVM
+  // TODO (trask) remove the test dependency on Hotspot, or create a
+  // second test to target OpenJ9
 }
