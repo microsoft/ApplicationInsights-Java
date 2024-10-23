@@ -5,7 +5,7 @@
 ### Enhancements
 
 * Update azure-monitor-opentelemetry-exporter to 1.0.0-beta.31
-  ([#3932](https://github.com/microsoft/ApplicationInsights-Java/pull/3932))
+  ([1.0.0-beta.31](https://github.com/Azure/azure-sdk-for-java/blob/main/sdk/monitor/azure-monitor-opentelemetry-exporter/CHANGELOG.md#100-beta31-2024-10-23))
 
 ## Version 3.6.1 GA (10/09/2024)
 
