@@ -26,7 +26,7 @@ import jdk.jfr.StackTrace;
 public class CGroupData extends Event implements JsonSerializable<CGroupData> {
 
   public static final String NAME = "com.microsoft.applicationinsights.diagnostics.jfr.CGroupData";
-  public static final int CGROUP_DATA_ABSENT = -2;
+  public static final int CGROUP_DATA_ABSENT = -2; // No CGroup data was found for this value
 
   // Limit of the kernel memory
   private long kmemLimit; // /sys/fs/cgroup/memory/memory.kmem.limit_in_bytes
@@ -108,9 +108,6 @@ public class CGroupData extends Event implements JsonSerializable<CGroupData> {
           while (reader.nextToken() != JsonToken.END_OBJECT) {
             String fieldName = reader.getFieldName();
             reader.nextToken();
-            // In this case field names are case-sensitive but this could be replaced with
-            // 'equalsIgnoreCase' to
-            // make them case-insensitive.
             if ("kmemLimit".equals(fieldName)) {
               deserializedValue.setKmemLimit(reader.getLong());
             } else if ("memoryLimit".equals(fieldName)) {

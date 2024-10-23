@@ -24,16 +24,16 @@ public class RequestAlertPipelineBuilderTest {
 
   @Test
   public void configurationIsCorrectlyDuplicated() throws IOException {
-    Configuration.RequestTrigger expectedRequesttrigger = new Configuration.RequestTrigger();
-    expectedRequesttrigger.filter.type = Configuration.RequestFilterType.NAME_REGEX;
-    expectedRequesttrigger.filter.value = "foo.*";
-    expectedRequesttrigger.threshold.value = 0.75f;
+    Configuration.RequestTrigger expectedRequestTrigger = new Configuration.RequestTrigger();
+    expectedRequestTrigger.filter.type = Configuration.RequestFilterType.NAME_REGEX;
+    expectedRequestTrigger.filter.value = "foo.*";
+    expectedRequestTrigger.threshold.value = 0.75f;
 
     TestTimeSource timeSource = new TestTimeSource();
     timeSource.setNow(Instant.EPOCH);
 
     AlertingConfig.RequestTrigger config =
-        RequestAlertPipelineBuilder.buildRequestTriggerConfiguration(expectedRequesttrigger);
+        RequestAlertPipelineBuilder.buildRequestTriggerConfiguration(expectedRequestTrigger);
 
     String alertingConfigStr;
     try (StringWriter stringWriter = new StringWriter();
@@ -46,24 +46,24 @@ public class RequestAlertPipelineBuilderTest {
       actualAlertingConfig = AlertingConfig.RequestTrigger.fromJson(reader);
     }
 
-    Assertions.assertEquals(expectedRequesttrigger.name, actualAlertingConfig.name);
-    Assertions.assertEquals(expectedRequesttrigger.type.name(), actualAlertingConfig.type.name());
+    Assertions.assertEquals(expectedRequestTrigger.name, actualAlertingConfig.name);
+    Assertions.assertEquals(expectedRequestTrigger.type.name(), actualAlertingConfig.type.name());
     Assertions.assertEquals(
-        expectedRequesttrigger.filter.type.name(), actualAlertingConfig.filter.type.name());
-    Assertions.assertEquals(expectedRequesttrigger.filter.value, actualAlertingConfig.filter.value);
+        expectedRequestTrigger.filter.type.name(), actualAlertingConfig.filter.type.name());
+    Assertions.assertEquals(expectedRequestTrigger.filter.value, actualAlertingConfig.filter.value);
     Assertions.assertEquals(
-        expectedRequesttrigger.aggregation.type.name(),
+        expectedRequestTrigger.aggregation.type.name(),
         actualAlertingConfig.aggregation.type.name());
     Assertions.assertEquals(
-        expectedRequesttrigger.threshold.type.name(), actualAlertingConfig.threshold.type.name());
+        expectedRequestTrigger.threshold.type.name(), actualAlertingConfig.threshold.type.name());
     Assertions.assertEquals(
-        expectedRequesttrigger.threshold.value, actualAlertingConfig.threshold.value);
+        expectedRequestTrigger.threshold.value, actualAlertingConfig.threshold.value);
     Assertions.assertEquals(
-        expectedRequesttrigger.throttling.type.name(), actualAlertingConfig.throttling.type.name());
+        expectedRequestTrigger.throttling.type.name(), actualAlertingConfig.throttling.type.name());
     Assertions.assertEquals(
-        expectedRequesttrigger.throttling.value, actualAlertingConfig.throttling.value);
+        expectedRequestTrigger.throttling.value, actualAlertingConfig.throttling.value);
     Assertions.assertEquals(
-        expectedRequesttrigger.profileDuration, actualAlertingConfig.profileDuration);
+        expectedRequestTrigger.profileDuration, actualAlertingConfig.profileDuration);
   }
 
   @TestFactory
