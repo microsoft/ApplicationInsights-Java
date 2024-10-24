@@ -3,38 +3,81 @@
 
 package com.microsoft.applicationinsights.alerting.config;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.azure.json.JsonSerializable;
+import com.azure.json.JsonWriter;
 import com.google.auto.value.AutoValue;
 import com.microsoft.applicationinsights.alerting.aiconfig.AlertingConfig;
+import java.io.IOException;
 import javax.annotation.Nullable;
 
 /** Alert configuration for a given telemetry type. */
 @AutoValue
-@JsonSerialize(as = AlertConfiguration.class)
-@JsonDeserialize(builder = AlertConfiguration.Builder.class)
-public abstract class AlertConfiguration {
+public abstract class AlertConfiguration implements JsonSerializable<AlertConfiguration> {
 
-  @JsonProperty("type")
+  protected AlertMetricType type;
+  protected boolean enabled;
+  protected float threshold;
+  protected int profileDurationSeconds;
+  protected int cooldownSeconds;
+  protected AlertingConfig.RequestTrigger requestTrigger;
+
   public abstract AlertMetricType getType();
 
-  @JsonProperty("enabled")
+  public AlertConfiguration setType(AlertMetricType type) {
+    this.type = type;
+    return this;
+  }
+
   public abstract boolean isEnabled();
 
-  @JsonProperty("threshold")
+  public AlertConfiguration setEnabled(boolean enabled) {
+    this.enabled = enabled;
+    return this;
+  }
+
   public abstract float getThreshold();
 
-  @JsonProperty("profileDuration")
+  public AlertConfiguration setThreshold(float threshold) {
+    this.threshold = threshold;
+    return this;
+  }
+
   public abstract int getProfileDurationSeconds();
 
-  @JsonProperty("cooldown")
+  public AlertConfiguration setProfileDurationSeconds(int profileDurationSeconds) {
+    this.profileDurationSeconds = profileDurationSeconds;
+    return this;
+  }
+
   public abstract int getCooldownSeconds();
 
+  public AlertConfiguration setCooldownSeconds(int cooldownSeconds) {
+    this.cooldownSeconds = cooldownSeconds;
+    return this;
+  }
+
   @Nullable
-  @JsonProperty("requestTrigger")
   public abstract AlertingConfig.RequestTrigger getRequestTrigger();
+
+  public AlertConfiguration setRequestTrigger(AlertingConfig.RequestTrigger requestTrigger) {
+    this.requestTrigger = requestTrigger;
+    return this;
+  }
+
+  @Override
+  public JsonWriter toJson(JsonWriter jsonWriter) throws IOException {
+    jsonWriter.writeStartObject();
+    if (type != null) {
+      jsonWriter.writeStringField("type", type.name());
+    }
+    jsonWriter.writeBooleanField("enabled", enabled);
+    jsonWriter.writeFloatField("threshold", threshold);
+    jsonWriter.writeIntField("profileDurationSeconds", profileDurationSeconds);
+    jsonWriter.writeIntField("cooldownSeconds", cooldownSeconds);
+    jsonWriter.writeJsonField("requestTrigger", requestTrigger);
+    jsonWriter.writeEndObject();
+    return jsonWriter;
+  }
 
   public static Builder builder() {
     // TODO (trask) which of these is really required?
@@ -46,31 +89,42 @@ public abstract class AlertConfiguration {
   }
 
   @AutoValue.Builder
-  public abstract static class Builder {
-    @JsonCreator
-    public static Builder builder() {
-      return AlertConfiguration.builder();
-    }
+  public abstract static class Builder implements JsonSerializable<Builder> {
+    private AlertMetricType type;
+    private boolean enabled;
+    private float threshold;
+    private int profileDurationSeconds;
+    private int cooldownSeconds;
+    private AlertingConfig.RequestTrigger requestTrigger;
 
-    @JsonProperty("enabled")
     public abstract Builder setEnabled(boolean enabled);
 
-    @JsonProperty("threshold")
     public abstract Builder setThreshold(float threshold);
 
-    @JsonProperty("profileDuration")
     public abstract Builder setProfileDurationSeconds(int profileDurationSeconds);
 
-    @JsonProperty("cooldown")
     public abstract Builder setCooldownSeconds(int cooldownSeconds);
 
-    @JsonProperty("type")
     public abstract Builder setType(AlertMetricType type);
 
-    @JsonProperty("requestTrigger")
     public abstract Builder setRequestTrigger(
         @Nullable AlertingConfig.RequestTrigger requestTrigger);
 
     public abstract AlertConfiguration build();
+
+    @Override
+    public JsonWriter toJson(JsonWriter jsonWriter) throws IOException {
+      jsonWriter.writeStartObject();
+      if (type != null) {
+        jsonWriter.writeStringField("type", type.name());
+      }
+      jsonWriter.writeBooleanField("enabled", enabled);
+      jsonWriter.writeFloatField("threshold", threshold);
+      jsonWriter.writeIntField("profileDurationSeconds", profileDurationSeconds);
+      jsonWriter.writeIntField("cooldownSeconds", cooldownSeconds);
+      jsonWriter.writeJsonField("requestTrigger", requestTrigger);
+      jsonWriter.writeEndObject();
+      return jsonWriter;
+    }
   }
 }

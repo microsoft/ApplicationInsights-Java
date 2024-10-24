@@ -36,7 +36,6 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -74,10 +73,12 @@ public class SystemStatsProvider {
     }
   }
 
+  @SuppressWarnings("unchecked")
   private static <T> T getSingleton(Class<T> clazz) {
     return (T) singletons.get(clazz).get();
   }
 
+  @SuppressWarnings("unchecked")
   private static <T> T getSingleton(Class<T> clazz, Supplier<T> supplier) {
     AtomicReference<T> current = (AtomicReference<T>) singletons.get(clazz);
 
@@ -110,12 +111,14 @@ public class SystemStatsProvider {
         () -> {
           try {
             CGroupDataReader reader = buildCGroupDataReader();
-            return new CGroupData(
-                reader.getKmemLimit(),
-                reader.getMemoryLimit(),
-                reader.getMemorySoftLimit(),
-                reader.getCpuLimit(),
-                reader.getCpuPeriod());
+            CGroupData data = new CGroupData();
+
+            return data.setKmemLimit(reader.getKmemLimit())
+                .setMemoryLimit(reader.getMemoryLimit())
+                .setMemorySoftLimit(reader.getMemorySoftLimit())
+                .setCpuLimit(reader.getCpuLimit())
+                .setCpuPeriod(reader.getCpuPeriod());
+
           } catch (RuntimeException | OperatingSystemInteractionException e) {
             LOGGER.warn("No CGroup data present");
             return null;
@@ -127,9 +130,9 @@ public class SystemStatsProvider {
     return getSingleton(
         MachineStats.class,
         () ->
-            new MachineStats(
-                getCalibration().getContextSwitchingRate(),
-                new RuntimeCoreCounter().getCoreCount()));
+            new MachineStats()
+                .setContextSwitchesPerMs(getCalibration().getContextSwitchingRate())
+                .setCoreCount(new RuntimeCoreCounter().getCoreCount()));
   }
 
   private static Calibration getCalibration() {
@@ -170,7 +173,6 @@ public class SystemStatsProvider {
     }
   }
 
-  @Nullable
   @SuppressWarnings("checkstyle:AbbreviationAsWordInName")
   private static ProcessDumper getProcessDumper() {
     ThisPidSupplier pidSupplier = getSingleton(ThisPidSupplier.class);
