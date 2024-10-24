@@ -34,6 +34,7 @@ class VariousCollectorsTest {
   }
 
   @Test
+  // see https://github.com/microsoft/ApplicationInsights-Java/pull/3878#issuecomment-2431980712
   @EnabledForJreRange(max = JAVA_17)
   void testG1() throws Exception {
     testGc("-XX:+UseG1GC", 50);
