@@ -96,7 +96,6 @@ public class AgentLogExporter implements LogRecordExporter {
       return CompletableResultCode.ofFailure();
     }
     for (LogRecordData log : logs) {
-      logger.debug("exporting log: {}", log);
       try {
         int severityNumber = log.getSeverity().getSeverityNumber();
         if (severityNumber < severityThreshold) {
@@ -123,6 +122,8 @@ public class AgentLogExporter implements LogRecordExporter {
           // capture it
           continue;
         }
+
+        logger.debug("exporting log: {}", log);
 
         TelemetryItem telemetryItem = mapper.map(log, stack, samplingPercentage);
         telemetryItemConsumer.accept(telemetryItem);
