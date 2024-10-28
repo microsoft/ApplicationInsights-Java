@@ -4,8 +4,13 @@
 
 ### Enhancements
 
-* Update azure-monitor-opentelemetry-exporter to 1.0.0-beta.31
-  ([1.0.0-beta.31](https://github.com/Azure/azure-sdk-for-java/blob/main/sdk/monitor/azure-monitor-opentelemetry-exporter/CHANGELOG.md#100-beta31-2024-10-23))
+* Update to OpenTelemetry Java Instrumentation [2.9.0](https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/tag/v2.9.0)
+  ([#3917](https://github.com/microsoft/ApplicationInsights-Java/pull/3917))
+
+* Update azure-monitor-opentelemetry-exporter to [1.0.0-beta.31](https://github.com/Azure/azure-sdk-for-java/blob/main/sdk/monitor/azure-monitor-opentelemetry-exporter/CHANGELOG.md#100-beta31-2024-10-23)
+  ([#3917](https://github.com/microsoft/ApplicationInsights-Java/pull/3932))
+  Please check out the release note for a fix that restored self-diagnostics logging for payload.
+
 
 ## Version 3.6.1 GA (10/09/2024)
 
