@@ -3,6 +3,7 @@
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 
 import com.microsoft.applicationinsights.agent.bootstrap.MicrometerUtil;
 import io.micrometer.core.instrument.Clock;
@@ -26,8 +27,6 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 class MicrometerTest {
-
-  private static final long SLEEP_MILLISECONDS = 6000;
 
   private static final AgentTestingMicrometerDelegate delegate =
       new AgentTestingMicrometerDelegate();
@@ -57,15 +56,14 @@ class MicrometerTest {
   }
 
   @Test
-  void shouldCaptureTimeGauge() throws InterruptedException {
+  void shouldCaptureTimeGauge() {
     // given
     CompositeMeterRegistry registry = Metrics.globalRegistry;
     TimeGauge.builder("test-time-gauge", "", MILLISECONDS, obj -> 11.0).register(registry);
 
-    // when
-    Thread.sleep(SLEEP_MILLISECONDS);
-
     // then
+    await().until(() -> getLastMeasurement("test-time-gauge") != null);
+
     AgentTestingMicrometerDelegate.Measurement measurement = getLastMeasurement("test-time-gauge");
     assertThat(measurement.value).isEqualTo(11);
     assertThat(measurement.count).isNull();
@@ -75,15 +73,16 @@ class MicrometerTest {
   }
 
   @Test
-  void shouldCaptureGauge() throws InterruptedException {
+  void shouldCaptureGauge() {
     // given
     CompositeMeterRegistry registry = Metrics.globalRegistry;
 
     // when
     Gauge.builder("test-gauge", () -> 22.0).register(registry);
-    Thread.sleep(SLEEP_MILLISECONDS);
 
     // then
+    await().until(() -> getLastMeasurement("test-gauge") != null);
+
     AgentTestingMicrometerDelegate.Measurement measurement = getLastMeasurement("test-gauge");
     assertThat(measurement.value).isEqualTo(22);
     assertThat(measurement.count).isNull();
@@ -94,16 +93,17 @@ class MicrometerTest {
 
   @Disabled
   @Test
-  void shouldCaptureCounter() throws InterruptedException {
+  void shouldCaptureCounter() {
     // given
     CompositeMeterRegistry registry = Metrics.globalRegistry;
 
     // when
     Counter counter = Counter.builder("test-counter").register(registry);
     counter.increment(3.3);
-    Thread.sleep(SLEEP_MILLISECONDS);
 
     // then
+    await().until(() -> getLastMeasurement("test-counter") != null);
+
     AgentTestingMicrometerDelegate.Measurement measurement = getLastMeasurement("test-counter");
     assertThat(measurement.value).isEqualTo(3.3);
     assertThat(measurement.count).isNull();
@@ -113,7 +113,7 @@ class MicrometerTest {
   }
 
   @Test
-  void shouldCaptureTimer() throws InterruptedException {
+  void shouldCaptureTimer() {
     // given
     CompositeMeterRegistry registry = Metrics.globalRegistry;
     Timer timer = Timer.builder("test-timer").register(registry);
@@ -121,9 +121,10 @@ class MicrometerTest {
     // when
     timer.record(Duration.ofMillis(44));
     timer.record(Duration.ofMillis(55));
-    Thread.sleep(SLEEP_MILLISECONDS);
 
     // then
+    await().until(() -> getLastMeasurement("test-timer") != null);
+
     AgentTestingMicrometerDelegate.Measurement measurement = getLastMeasurement("test-timer");
     assertThat(measurement.value).isEqualTo(99);
     assertThat(measurement.count).isEqualTo(2);
@@ -134,7 +135,7 @@ class MicrometerTest {
   }
 
   @Test
-  void shouldCaptureDistributionSummary() throws InterruptedException {
+  void shouldCaptureDistributionSummary() {
     // given
     CompositeMeterRegistry registry = Metrics.globalRegistry;
     DistributionSummary distributionSummary =
@@ -143,9 +144,10 @@ class MicrometerTest {
     // when
     distributionSummary.record(4.4);
     distributionSummary.record(5.5);
-    Thread.sleep(SLEEP_MILLISECONDS);
 
     // then
+    await().until(() -> getLastMeasurement("test-summary") != null);
+
     AgentTestingMicrometerDelegate.Measurement measurement = getLastMeasurement("test-summary");
     assertThat(measurement.value).isEqualTo(9.9);
     assertThat(measurement.count).isEqualTo(2);
@@ -156,7 +158,7 @@ class MicrometerTest {
   }
 
   @Test
-  void shouldCaptureLongTaskTimer() throws InterruptedException {
+  void shouldCaptureLongTaskTimer() {
     // given
     CompositeMeterRegistry registry = Metrics.globalRegistry;
 
@@ -186,9 +188,16 @@ class MicrometerTest {
               });
         });
 
-    Thread.sleep(SLEEP_MILLISECONDS);
-
     // then
+    await()
+        .untilAsserted(
+            () -> {
+              AgentTestingMicrometerDelegate.Measurement activeMeasurement =
+                  getLastMeasurement("test-long-task-timer_active");
+              assertThat(activeMeasurement).isNotNull();
+              assertThat(activeMeasurement.value).isEqualTo(2);
+            });
+
     AgentTestingMicrometerDelegate.Measurement activeMeasurement =
         getLastMeasurement("test-long-task-timer_active");
     assertThat(activeMeasurement.value).isEqualTo(2);
@@ -207,15 +216,16 @@ class MicrometerTest {
   }
 
   @Test
-  void shouldCaptureFunctionCounter() throws InterruptedException {
+  void shouldCaptureFunctionCounter() {
     // given
     CompositeMeterRegistry registry = Metrics.globalRegistry;
 
     // when
     FunctionCounter.builder("test-function-counter", "", obj -> 6.6).register(registry);
-    Thread.sleep(SLEEP_MILLISECONDS);
 
     // then
+    await().until(() -> getLastMeasurement("test-function-counter") != null);
+
     AgentTestingMicrometerDelegate.Measurement measurements =
         getLastMeasurement("test-function-counter");
     assertThat(measurements.value).isEqualTo(6.6);
@@ -226,16 +236,17 @@ class MicrometerTest {
   }
 
   @Test
-  void shouldCaptureFunctionTimer() throws InterruptedException {
+  void shouldCaptureFunctionTimer() {
     // given
     CompositeMeterRegistry registry = Metrics.globalRegistry;
 
     // when
     FunctionTimer.builder("test-function-timer", "", obj -> 2, obj -> 4.4, MILLISECONDS)
         .register(registry);
-    Thread.sleep(SLEEP_MILLISECONDS);
 
     // then
+    await().until(() -> getLastMeasurement("test-function-timer") != null);
+
     AgentTestingMicrometerDelegate.Measurement measurement =
         getLastMeasurement("test-function-timer");
     assertThat(measurement.value).isEqualTo(4.4);
@@ -245,11 +256,14 @@ class MicrometerTest {
     assertThat(measurement.namespace).isNull();
   }
 
-  public AgentTestingMicrometerDelegate.Measurement getLastMeasurement(String name) {
+  private static AgentTestingMicrometerDelegate.Measurement getLastMeasurement(String name) {
     List<AgentTestingMicrometerDelegate.Measurement> measurements =
         delegate.getMeasurements().stream()
             .filter(measurement -> measurement.name.equals(name) && measurement.value != 0)
             .collect(Collectors.toList());
+    if (measurements.isEmpty()) {
+      return null;
+    }
     return measurements.get(measurements.size() - 1);
   }
 }
