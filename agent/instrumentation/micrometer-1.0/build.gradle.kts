@@ -31,7 +31,8 @@ dependencies {
     exclude("io.micrometer", "micrometer-core")
   }
 
-  testImplementation("io.micrometer:micrometer-core:1.1.0")
+  // there's a bug in earlier micrometer versions that
+  testImplementation("io.micrometer:micrometer-core:1.13.6")
 
   // TODO remove when start using io.opentelemetry.instrumentation.javaagent-instrumentation plugin
   add("codegen", "io.opentelemetry.javaagent:opentelemetry-javaagent-tooling:$otelInstrumentationAlphaVersion")
@@ -42,6 +43,6 @@ dependencies {
 
 tasks {
   withType<Test>().configureEach {
-    jvmArgs("-Dapplicationinsights.internal.micrometer.step.millis=1000")
+    jvmArgs("-Dapplicationinsights.internal.micrometer.step.millis=100")
   }
 }

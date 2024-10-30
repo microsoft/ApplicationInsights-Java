@@ -206,6 +206,15 @@ class MicrometerTest {
     assertThat(activeMeasurement.max).isNull();
     assertThat(activeMeasurement.namespace).isNull();
 
+    await()
+        .untilAsserted(
+            () -> {
+              AgentTestingMicrometerDelegate.Measurement durationMeasurement =
+                  getLastMeasurement("test-long-task-timer_duration");
+              assertThat(durationMeasurement).isNotNull();
+              assertThat(durationMeasurement.value).isGreaterThan(50);
+            });
+
     AgentTestingMicrometerDelegate.Measurement durationMeasurement =
         getLastMeasurement("test-long-task-timer_duration");
     assertThat(durationMeasurement.value).isGreaterThan(50);
