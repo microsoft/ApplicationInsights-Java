@@ -20,6 +20,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledForJreRange;
 import org.junit.jupiter.api.condition.EnabledOnOs;
 
+@Disabled // TODO (trask) too flaky since we stopped re-running tests automatically on failure
 class VariousCollectorsTest {
 
   @Test
