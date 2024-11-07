@@ -194,15 +194,6 @@ public class SmokeTestExtension
     prepareEnvironment(environment);
   }
 
-  @Override
-  public void testFailed(ExtensionContext context, Throwable cause) {
-    if (targetContainer != null) {
-      System.out.println("Test failure detected.");
-      System.out.println("Container logs:");
-      System.out.println(targetContainer.getLogs());
-    }
-  }
-
   private void prepareEnvironment(Environment environment) throws Exception {
     System.out.println("Preparing environment...");
     currentEnvironment = environment.value();
@@ -529,6 +520,11 @@ public class SmokeTestExtension
   @Override
   public void afterAll(ExtensionContext context) throws Exception {
     if (allContainers != null) {
+      if (targetContainer != null) {
+        System.out.println("Test failure detected.");
+        System.out.println("Container logs:");
+        System.out.println(targetContainer.getLogs());
+      }
       System.out.println("Stopping containers...");
       for (GenericContainer<?> container : allContainers) {
         container.stop();
