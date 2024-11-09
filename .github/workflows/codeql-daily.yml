@@ -10,7 +10,11 @@ jobs:
     permissions:
       actions: read  # for github/codeql-action/init to get workflow details
       security-events: write  # for github/codeql-action/analyze to upload SARIF results
-    runs-on: ubuntu-latest
+    runs-on: windows-2019
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ java, cpp ]
 
     steps:
       - uses: actions/checkout@v4
@@ -24,12 +28,12 @@ jobs:
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
         with:
-          languages: java
+          languages: ${{ matrix.language }}
 
       - uses: gradle/gradle-build-action@v3
         with:
           # skipping build cache is needed so that all modules will be analyzed
-          arguments: assemble --no-build-cache
+          arguments: assemble -Dai.etw.native.build=release --no-build-cache
 
       - name: Perform CodeQL analysis
         uses: github/codeql-action/analyze@v3
