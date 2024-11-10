@@ -9,6 +9,8 @@ on:
 
 jobs:
   notify-if-needed:
+    permissions:
+      issues: write
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

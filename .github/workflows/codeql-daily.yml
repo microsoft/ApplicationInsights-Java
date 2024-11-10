@@ -32,6 +32,8 @@ jobs:
         uses: github/codeql-action/analyze@v3
 
   scheduled-job-notification:
+    permissions:
+      issues: write
     needs:
       - analyze
     if: always()
