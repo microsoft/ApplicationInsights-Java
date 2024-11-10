@@ -17,7 +17,11 @@ public class NoOpMemoryInfoReader implements MemoryInfoReader {
 
   @Override
   public MemoryInfo getMemoryInfo() {
-    return new MemoryInfo(-1, -1, -1, -1);
+    return new MemoryInfo()
+        .setTotalInKb(-1)
+        .setFreeInKb(-1)
+        .setVirtualMemoryTotalInKb(-1)
+        .setVirtualMemoryUsedInKb(-1);
   }
 
   @Override

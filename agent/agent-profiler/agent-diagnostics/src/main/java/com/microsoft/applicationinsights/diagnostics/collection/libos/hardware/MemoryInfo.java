@@ -3,45 +3,64 @@
 
 package com.microsoft.applicationinsights.diagnostics.collection.libos.hardware;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.azure.json.JsonSerializable;
+import com.azure.json.JsonWriter;
+import java.io.IOException;
 
-public class MemoryInfo {
+public class MemoryInfo implements JsonSerializable<MemoryInfo> {
 
-  private final long totalInKb;
+  private long totalInKb;
 
-  private final long freeInKb;
+  private long freeInKb;
 
-  private final long virtualMemoryTotalInKb;
+  private long virtualMemoryTotalInKb;
 
-  private final long virtualMemoryUsedInKb;
-
-  @JsonCreator
-  public MemoryInfo(
-      @JsonProperty("totalInKB") long totalInKb,
-      @JsonProperty("freeInKB") long freeInKb,
-      @JsonProperty("virtualMemoryTotalInKB") long virtualMemoryTotalInKb,
-      @JsonProperty("virtualMemoryUsedInKB") long virtualMemoryUsedInKb) {
-
-    this.totalInKb = totalInKb;
-    this.freeInKb = freeInKb;
-    this.virtualMemoryTotalInKb = virtualMemoryTotalInKb;
-    this.virtualMemoryUsedInKb = virtualMemoryUsedInKb;
-  }
+  private long virtualMemoryUsedInKb;
 
   public long getTotalInKb() {
     return totalInKb;
+  }
+
+  public MemoryInfo setTotalInKb(long totalInKb) {
+    this.totalInKb = totalInKb;
+    return this;
   }
 
   public long getFreeInKb() {
     return freeInKb;
   }
 
+  public MemoryInfo setFreeInKb(long freeInKb) {
+    this.freeInKb = freeInKb;
+    return this;
+  }
+
   public long getVirtualMemoryTotalInKb() {
     return virtualMemoryTotalInKb;
   }
 
+  public MemoryInfo setVirtualMemoryTotalInKb(long virtualMemoryTotalInKb) {
+    this.virtualMemoryTotalInKb = virtualMemoryTotalInKb;
+    return this;
+  }
+
   public long getVirtualMemoryUsedInKb() {
     return virtualMemoryUsedInKb;
+  }
+
+  public MemoryInfo setVirtualMemoryUsedInKb(long virtualMemoryUsedInKb) {
+    this.virtualMemoryUsedInKb = virtualMemoryUsedInKb;
+    return this;
+  }
+
+  @Override
+  public JsonWriter toJson(JsonWriter jsonWriter) throws IOException {
+    jsonWriter.writeStartObject();
+    jsonWriter.writeLongField("totalInKb", totalInKb);
+    jsonWriter.writeLongField("freeInKb", freeInKb);
+    jsonWriter.writeLongField("virtualMemoryTotalInKb", virtualMemoryTotalInKb);
+    jsonWriter.writeLongField("virtualMemoryUsedInKb", virtualMemoryUsedInKb);
+    jsonWriter.writeEndObject();
+    return jsonWriter;
   }
 }

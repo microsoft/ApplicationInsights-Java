@@ -78,20 +78,31 @@ class AlertConfigParserTest {
   @Test
   void requestTriggerIsBuilt() {
     AlertingConfig.RequestTrigger requestTrigger =
-        new AlertingConfig.RequestTrigger(
-            "test",
-            AlertingConfig.RequestTriggerType.LATENCY,
-            new AlertingConfig.RequestFilter(
-                AlertingConfig.RequestFilterType.NAME_REGEX, "/api/users/.*"),
-            new AlertingConfig.RequestAggregation(
-                AlertingConfig.RequestAggregationType.BREACH_RATIO,
-                7000,
-                new AlertingConfig.RequestAggregationConfig(10000, 10)),
-            new AlertingConfig.RequestTriggerThreshold(
-                AlertingConfig.RequestTriggerThresholdType.GREATER_THAN, 0.75f),
-            new AlertingConfig.RequestTriggerThrottling(
-                AlertingConfig.RequestTriggerThrottlingType.FIXED_DURATION_COOLDOWN, 1800),
-            10);
+        new AlertingConfig.RequestTrigger()
+            .setName("test")
+            .setType(AlertingConfig.RequestTriggerType.LATENCY)
+            .setFilter(
+                new AlertingConfig.RequestFilter()
+                    .setType(AlertingConfig.RequestFilterType.NAME_REGEX)
+                    .setValue("/api/users/.*"))
+            .setAggregation(
+                new AlertingConfig.RequestAggregation()
+                    .setType(AlertingConfig.RequestAggregationType.BREACH_RATIO)
+                    .setWindowSizeMillis(7000)
+                    .setConfiguration(
+                        new AlertingConfig.RequestAggregationConfig()
+                            .setThresholdMillis(10000)
+                            .setMinimumSamples(10)))
+            .setThreshold(
+                new AlertingConfig.RequestTriggerThreshold()
+                    .setType(AlertingConfig.RequestTriggerThresholdType.GREATER_THAN)
+                    .setValue(0.75f))
+            .setThrottling(
+                new AlertingConfig.RequestTriggerThrottling()
+                    .setType(AlertingConfig.RequestTriggerThrottlingType.FIXED_DURATION_COOLDOWN)
+                    .setValue(1800))
+            .setProfileDuration(10);
+
     List<AlertingConfig.RequestTrigger> requestTriggers = new ArrayList<>();
     requestTriggers.add(requestTrigger);
 

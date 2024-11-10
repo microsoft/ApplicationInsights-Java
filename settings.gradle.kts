@@ -33,7 +33,6 @@ include(":agent:agent-gc-monitor:gc-monitor-core")
 include(":agent:agent-gc-monitor:gc-monitor-tests")
 
 include(":agent:agent-profiler:agent-diagnostics-jfr")
-include(":agent:agent-profiler:agent-diagnostics-serialization")
 include(":agent:agent-profiler:agent-alerting-api")
 include(":agent:agent-profiler:agent-diagnostics-api")
 include(":agent:agent-profiler:agent-diagnostics")
