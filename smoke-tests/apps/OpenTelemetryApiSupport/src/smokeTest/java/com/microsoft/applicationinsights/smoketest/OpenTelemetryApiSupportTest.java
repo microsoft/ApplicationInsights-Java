@@ -6,7 +6,11 @@ package com.microsoft.applicationinsights.smoketest;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_11;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_11_OPENJ9;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_17;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_17_OPENJ9;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_21;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_21_OPENJ9;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_23;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_23_OPENJ9;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_8;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_8_OPENJ9;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.WILDFLY_13_JAVA_8;
@@ -138,8 +142,20 @@ abstract class OpenTelemetryApiSupportTest {
   @Environment(TOMCAT_8_JAVA_17)
   static class Tomcat8Java17Test extends OpenTelemetryApiSupportTest {}
 
+  @Environment(TOMCAT_8_JAVA_17_OPENJ9)
+  static class Tomcat8Java17OpenJ9Test extends OpenTelemetryApiSupportTest {}
+
   @Environment(TOMCAT_8_JAVA_21)
   static class Tomcat8Java21Test extends OpenTelemetryApiSupportTest {}
+
+  @Environment(TOMCAT_8_JAVA_21_OPENJ9)
+  static class Tomcat8Java21OpenJ9Test extends OpenTelemetryApiSupportTest {}
+
+  @Environment(TOMCAT_8_JAVA_23)
+  static class Tomcat8Java23Test extends OpenTelemetryApiSupportTest {}
+
+  @Environment(TOMCAT_8_JAVA_23_OPENJ9)
+  static class Tomcat8Java23OpenJ9Test extends OpenTelemetryApiSupportTest {}
 
   @Environment(WILDFLY_13_JAVA_8)
   static class Wildfly13Java8Test extends OpenTelemetryApiSupportTest {}

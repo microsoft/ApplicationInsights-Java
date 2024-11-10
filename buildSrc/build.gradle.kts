@@ -28,10 +28,10 @@ dependencies {
 
   // When updating, update above in plugins too
   implementation("com.diffplug.spotless:spotless-plugin-gradle:6.25.0")
-  implementation("com.github.spotbugs.snom:spotbugs-gradle-plugin:6.0.25")
+  implementation("com.github.spotbugs.snom:spotbugs-gradle-plugin:6.0.26")
   implementation("com.github.johnrengelman:shadow:8.1.1")
 
-  implementation("org.owasp:dependency-check-gradle:10.0.4")
+  implementation("org.owasp:dependency-check-gradle:11.1.0")
 
   implementation("io.opentelemetry.instrumentation:gradle-plugins:2.9.0-alpha")
 

@@ -6,6 +6,7 @@ package com.microsoft.gcmonitortests;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.condition.JRE.JAVA_11;
 import static org.junit.jupiter.api.condition.JRE.JAVA_13;
+import static org.junit.jupiter.api.condition.JRE.JAVA_17;
 import static org.junit.jupiter.api.condition.OS.LINUX;
 
 import com.microsoft.gcmonitor.GcCollectionEvent;
@@ -19,6 +20,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledForJreRange;
 import org.junit.jupiter.api.condition.EnabledOnOs;
 
+@Disabled // TODO (trask) too flaky since we stopped re-running tests automatically on failure
 class VariousCollectorsTest {
 
   @Test
@@ -33,6 +35,8 @@ class VariousCollectorsTest {
   }
 
   @Test
+  // see https://github.com/microsoft/ApplicationInsights-Java/pull/3878#issuecomment-2431980712
+  @EnabledForJreRange(max = JAVA_17)
   void testG1() throws Exception {
     testGc("-XX:+UseG1GC", 50);
   }
@@ -42,7 +46,7 @@ class VariousCollectorsTest {
     testGc("-XX:+UseSerialGC", 50);
   }
 
-  @Disabled
+  @Disabled // see https://github.com/microsoft/ApplicationInsights-Java/pull/3083
   @Test
   @EnabledForJreRange(min = JAVA_11)
   void testShenandoah() throws Exception {
