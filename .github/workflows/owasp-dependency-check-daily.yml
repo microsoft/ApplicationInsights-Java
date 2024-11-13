@@ -30,7 +30,8 @@ jobs:
           path: agent/agent/build/reports
 
   scheduled-job-notification:
-    permissions: write-all
+    permissions:
+      issues: write
     needs:
       - analyze
     if: always()
