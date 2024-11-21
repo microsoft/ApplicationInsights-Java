@@ -10,7 +10,7 @@ dependencies {
   compileOnly("com.google.auto.value:auto-value-annotations")
   annotationProcessor("com.google.auto.value:auto-value")
 
-  implementation("io.opentelemetry.contrib:opentelemetry-jfr-connection:1.40.0-alpha")
+  implementation("io.opentelemetry.contrib:opentelemetry-jfr-connection:1.41.0-alpha")
   implementation("com.azure:azure-storage-blob")
 
   implementation(project(":agent:agent-profiler:agent-alerting-api"))
