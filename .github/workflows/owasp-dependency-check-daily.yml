@@ -20,6 +20,8 @@ jobs:
           java-version: 17
 
       - uses: gradle/gradle-build-action@v3
+        env:
+          NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
         with:
           arguments: ":agent:agent:dependencyCheckAnalyze"
 
