@@ -19,9 +19,10 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      - uses: gradle/gradle-build-action@v3
-        with:
-          arguments: ":agent:agent:dependencyCheckAnalyze"
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - run: ./gradlew :agent:agent:dependencyCheckAnalyze
 
       - name: Upload report
         if: always()

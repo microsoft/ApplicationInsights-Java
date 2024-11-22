@@ -6,7 +6,7 @@ on:
       no-build-cache:
         type: boolean
         required: false
-        
+
 env:
   EXPORTER_VERSION: 1.0.0-beta.28 # to be updated with the latest version
 
@@ -22,10 +22,11 @@ jobs:
           distribution: temurin
           java-version: 17
 
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
       - name: Spotless
-        uses: gradle/gradle-build-action@v3
-        with:
-          arguments: spotlessCheck ${{ inputs.no-build-cache && '--no-build-cache' || '' }}
+        run: ./gradlew spotlessCheck ${{ inputs.no-build-cache && '--no-build-cache' || '' }}
 
   gradle-wrapper-validation:
     runs-on: ubuntu-latest
@@ -52,12 +53,11 @@ jobs:
           mvn -version
           mvn install:install-file -Dfile="azure-monitor-opentelemetry-exporter-${{ env.EXPORTER_VERSION }}.jar" -DpomFile="azure-monitor-opentelemetry-exporter-${{ env.EXPORTER_VERSION }}.pom" -DgroupId="com.azure" -DartifactId="azure-monitor-opentelemetry-exporter" -Dversion="${{ env.EXPORTER_VERSION }}"
 
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
       - name: Generate license report
-        uses: gradle/gradle-build-action@v3
-        with:
-          # ignore inputs.no-build-cache and always run with --no-build-cache
-          # see https://github.com/jk1/Gradle-License-Report/issues/231
-          arguments: generateLicenseReport --no-build-cache
+        run: ./gradlew generateLicenseReport ${{ inputs.no-build-cache && '--no-build-cache' || '' }}
 
       - name: Check licenses
         run: |
@@ -98,11 +98,12 @@ jobs:
           mvn -version
           mvn install:install-file -Dfile="azure-monitor-opentelemetry-exporter-${{ env.EXPORTER_VERSION }}.jar" -DpomFile="azure-monitor-opentelemetry-exporter-${{ env.EXPORTER_VERSION }}.pom" -DgroupId="com.azure" -DartifactId="azure-monitor-opentelemetry-exporter" -Dversion="${{ env.EXPORTER_VERSION }}"
 
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
       - name: Assemble
-        uses: gradle/gradle-build-action@v3
-        with:
-          # javadoc task fails sporadically fetching https://docs.oracle.com/javase/8/docs/api/
-          arguments: assemble -Dai.etw.native.build=release -x javadoc ${{ inputs.no-build-cache && '--no-build-cache' || '' }}
+        # javadoc task fails sporadically fetching https://docs.oracle.com/javase/8/docs/api/
+        run: ./gradlew assemble -Dai.etw.native.build=release -x javadoc ${{ inputs.no-build-cache && '--no-build-cache' || '' }}
 
       - name: Upload snapshot
         uses: actions/upload-artifact@v4
@@ -154,17 +155,17 @@ jobs:
           mvn -version
           mvn install:install-file -Dfile="azure-monitor-opentelemetry-exporter-${{ env.EXPORTER_VERSION }}.jar" -DpomFile="azure-monitor-opentelemetry-exporter-${{ env.EXPORTER_VERSION }}.pom" -DgroupId="com.azure" -DartifactId="azure-monitor-opentelemetry-exporter" -Dversion="${{ env.EXPORTER_VERSION }}"
 
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
       - name: Test
-        uses: gradle/gradle-build-action@v3
-        with:
-          # spotless is checked separately since it's a common source of failure
-          arguments: >
-            check
-            -x spotlessCheck
-            -PtestJavaVersion=${{ matrix.test-java-version }}
-            -PtestJavaVM=${{ matrix.vm }}
-            -Porg.gradle.java.installations.paths=${{ steps.setup-test-java.outputs.path }}
-            -Porg.gradle.java.installations.auto-download=false ${{ inputs.no-build-cache && ' --no-build-cache' || '' }}
+        # spotless is checked separately since it's a common source of failure
+        run: >
+          ./gradlew check -x spotlessCheck
+                          -PtestJavaVersion=${{ matrix.test-java-version }}
+                          -PtestJavaVM=${{ matrix.vm }}
+                          -Porg.gradle.java.installations.paths=${{ steps.setup-test-java.outputs.path }}
+                          -Porg.gradle.java.installations.auto-download=false ${{ inputs.no-build-cache && ' --no-build-cache' || '' }}
 
   setup-smoke-test-matrix:
     runs-on: ubuntu-latest
@@ -201,7 +202,8 @@ jobs:
           mvn -version
           mvn install:install-file -Dfile="azure-monitor-opentelemetry-exporter-${{ env.EXPORTER_VERSION }}.jar" -DpomFile="azure-monitor-opentelemetry-exporter-${{ env.EXPORTER_VERSION }}.pom" -DgroupId="com.azure" -DartifactId="azure-monitor-opentelemetry-exporter" -Dversion="${{ env.EXPORTER_VERSION }}"
 
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
       - name: Test
-        uses: gradle/gradle-build-action@v3
-        with:
-          arguments: ${{ matrix.module }}:smokeTest
+        run: ./gradlew ${{ matrix.module }}:smokeTest
