@@ -23,6 +23,8 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
 
       - run: ./gradlew :agent:agent:dependencyCheckAnalyze
+        env:
+          NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
 
       - name: Upload report
         if: always()
