@@ -103,7 +103,11 @@ jobs:
 
       - name: Assemble
         # javadoc task fails sporadically fetching https://docs.oracle.com/javase/8/docs/api/
-        run: ./gradlew assemble -Dai.etw.native.build=release -x javadoc ${{ inputs.no-build-cache && '--no-build-cache' || '' }}
+        run: >
+          ./gradlew assemble
+          "-Dai.etw.native.build=release"
+          -x javadoc
+          ${{ inputs.no-build-cache && '--no-build-cache' || '' }}
 
       - name: Upload snapshot
         uses: actions/upload-artifact@v4
@@ -167,7 +171,8 @@ jobs:
           -PtestJavaVersion=${{ matrix.test-java-version }}
           -PtestJavaVM=${{ matrix.vm }}
           "-Porg.gradle.java.installations.paths=${{ steps.setup-test-java.outputs.path }}"
-          -Porg.gradle.java.installations.auto-download=false ${{ inputs.no-build-cache && ' --no-build-cache' || '' }}
+          "-Porg.gradle.java.installations.auto-download=false"
+          ${{ inputs.no-build-cache && ' --no-build-cache' || '' }}
 
   setup-smoke-test-matrix:
     runs-on: ubuntu-latest
