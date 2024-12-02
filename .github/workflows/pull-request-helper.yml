@@ -20,8 +20,8 @@ jobs:
         run: |
           gh pr checkout $NUMBER
 
-      - name: Set up Gradle cache
-        uses: gradle/gradle-build-action@v3
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
         with:
           cache-read-only: true
 

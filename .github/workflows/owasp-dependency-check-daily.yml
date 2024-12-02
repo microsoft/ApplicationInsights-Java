@@ -19,11 +19,12 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      - uses: gradle/gradle-build-action@v3
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - run: ./gradlew :agent:agent:dependencyCheckAnalyze
         env:
           NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
-        with:
-          arguments: ":agent:agent:dependencyCheckAnalyze"
 
       - name: Upload report
         if: always()

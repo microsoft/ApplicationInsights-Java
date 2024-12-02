@@ -18,14 +18,15 @@ jobs:
           distribution: temurin
           java-version: 17
 
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
       - name: Build Application Insights Java agent
-        uses: gradle/gradle-build-action@v3
-        with:
-          arguments: assemble
+        run: ./gradlew assemble
 
       - name: Run chmod to make gradlew executable
         run: chmod +x perf-tests/gradlew
-      
+
       - name: Run perf test
         env:
           PERF_TEST_URL_PATTERN: ${{ secrets.PERF_TEST_URL_PATTERN }}
