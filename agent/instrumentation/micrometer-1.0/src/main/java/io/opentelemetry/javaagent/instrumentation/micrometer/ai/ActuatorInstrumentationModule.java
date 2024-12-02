@@ -5,6 +5,7 @@ package io.opentelemetry.javaagent.instrumentation.micrometer.ai;
 
 import static io.opentelemetry.javaagent.extension.matcher.AgentElementMatchers.hasClassesNamed;
 import static java.util.Collections.singletonList;
+import static net.bytebuddy.matcher.ElementMatchers.not;
 
 import com.google.auto.service.AutoService;
 import io.opentelemetry.javaagent.extension.instrumentation.HelperResourceBuilder;
@@ -24,7 +25,10 @@ public class ActuatorInstrumentationModule extends InstrumentationModule {
 
   @Override
   public ElementMatcher.Junction<ClassLoader> classLoaderMatcher() {
-    return hasClassesNamed("io.micrometer.core.instrument.Metrics");
+    return hasClassesNamed("io.micrometer.core.instrument.Metrics")
+        .and(
+            // added in micrometer 1.5
+            not(hasClassesNamed("io.micrometer.core.instrument.config.validate.Validated")));
   }
 
   @Override

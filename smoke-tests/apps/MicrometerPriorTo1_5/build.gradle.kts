@@ -4,5 +4,5 @@ plugins {
 
 dependencies {
   implementation("org.springframework.boot:spring-boot-starter-web:2.5.12")
-  implementation("io.micrometer:micrometer-core:1.5.0")
+  implementation("io.micrometer:micrometer-core:1.4.1")
 }
