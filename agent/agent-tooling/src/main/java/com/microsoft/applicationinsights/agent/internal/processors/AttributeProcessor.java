@@ -3,7 +3,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.processors;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.SpanDataMapper;
+import com.azure.monitor.opentelemetry.autoconfigure.implementation.SpanDataMapper;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.ProcessorAction;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.ProcessorConfig;
 import io.opentelemetry.api.common.AttributeKey;

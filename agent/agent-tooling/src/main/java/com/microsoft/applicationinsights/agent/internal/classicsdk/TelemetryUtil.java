@@ -3,9 +3,9 @@
 
 package com.microsoft.applicationinsights.agent.internal.classicsdk;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.builders.ExceptionDetailBuilder;
-import com.azure.monitor.opentelemetry.exporter.implementation.builders.StackFrameBuilder;
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
+import com.azure.monitor.opentelemetry.autoconfigure.implementation.builders.ExceptionDetailBuilder;
+import com.azure.monitor.opentelemetry.autoconfigure.implementation.builders.StackFrameBuilder;
+import com.azure.monitor.opentelemetry.autoconfigure.implementation.utils.Strings;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nullable;

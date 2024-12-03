@@ -3,8 +3,8 @@
 
 package com.microsoft.applicationinsights.agent.internal.perfcounter;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.builders.MessageTelemetryBuilder;
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedTime;
+import com.azure.monitor.opentelemetry.autoconfigure.implementation.builders.MessageTelemetryBuilder;
+import com.azure.monitor.opentelemetry.autoconfigure.implementation.utils.FormattedTime;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MonitorInfo;
