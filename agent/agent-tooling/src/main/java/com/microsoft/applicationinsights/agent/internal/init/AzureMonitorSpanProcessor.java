@@ -3,8 +3,8 @@
 
 package com.microsoft.applicationinsights.agent.internal.init;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.AiSemanticAttributes;
-import com.azure.monitor.opentelemetry.exporter.implementation.OperationNames;
+import com.azure.monitor.opentelemetry.autoconfigure.implementation.AiSemanticAttributes;
+import com.azure.monitor.opentelemetry.autoconfigure.implementation.OperationNames;
 import com.microsoft.applicationinsights.agent.bootstrap.AzureFunctionsCustomDimensions;
 import com.microsoft.applicationinsights.agent.internal.configuration.ConfigurationBuilder;
 import io.opentelemetry.api.trace.Span;

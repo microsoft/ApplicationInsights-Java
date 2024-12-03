@@ -3,26 +3,26 @@
 
 package com.microsoft.applicationinsights.agent.internal;
 
-import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.DependencyExtractor.DEPENDENCIES_DURATION;
-import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.DependencyExtractor.DEPENDENCY_RESULT_CODE;
-import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.DependencyExtractor.DEPENDENCY_SUCCESS;
-import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.DependencyExtractor.DEPENDENCY_TARGET;
-import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.DependencyExtractor.DEPENDENCY_TYPE;
-import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.ExtractorHelper.FALSE;
-import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.ExtractorHelper.MS_IS_AUTOCOLLECTED;
-import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.ExtractorHelper.MS_METRIC_ID;
-import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.ExtractorHelper.OPERATION_SYNTHETIC;
-import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.ExtractorHelper.TRUE;
-import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.RequestExtractor.REQUESTS_DURATION;
-import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.RequestExtractor.REQUEST_RESULT_CODE;
-import static com.azure.monitor.opentelemetry.exporter.implementation.preaggregatedmetrics.RequestExtractor.REQUEST_SUCCESS;
+import static com.azure.monitor.opentelemetry.autoconfigure.implementation.preaggregatedmetrics.DependencyExtractor.DEPENDENCIES_DURATION;
+import static com.azure.monitor.opentelemetry.autoconfigure.implementation.preaggregatedmetrics.DependencyExtractor.DEPENDENCY_RESULT_CODE;
+import static com.azure.monitor.opentelemetry.autoconfigure.implementation.preaggregatedmetrics.DependencyExtractor.DEPENDENCY_SUCCESS;
+import static com.azure.monitor.opentelemetry.autoconfigure.implementation.preaggregatedmetrics.DependencyExtractor.DEPENDENCY_TARGET;
+import static com.azure.monitor.opentelemetry.autoconfigure.implementation.preaggregatedmetrics.DependencyExtractor.DEPENDENCY_TYPE;
+import static com.azure.monitor.opentelemetry.autoconfigure.implementation.preaggregatedmetrics.ExtractorHelper.FALSE;
+import static com.azure.monitor.opentelemetry.autoconfigure.implementation.preaggregatedmetrics.ExtractorHelper.MS_IS_AUTOCOLLECTED;
+import static com.azure.monitor.opentelemetry.autoconfigure.implementation.preaggregatedmetrics.ExtractorHelper.MS_METRIC_ID;
+import static com.azure.monitor.opentelemetry.autoconfigure.implementation.preaggregatedmetrics.ExtractorHelper.OPERATION_SYNTHETIC;
+import static com.azure.monitor.opentelemetry.autoconfigure.implementation.preaggregatedmetrics.ExtractorHelper.TRUE;
+import static com.azure.monitor.opentelemetry.autoconfigure.implementation.preaggregatedmetrics.RequestExtractor.REQUESTS_DURATION;
+import static com.azure.monitor.opentelemetry.autoconfigure.implementation.preaggregatedmetrics.RequestExtractor.REQUEST_RESULT_CODE;
+import static com.azure.monitor.opentelemetry.autoconfigure.implementation.preaggregatedmetrics.RequestExtractor.REQUEST_SUCCESS;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.MetricDataMapper;
-import com.azure.monitor.opentelemetry.exporter.implementation.builders.MetricTelemetryBuilder;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricsData;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
+import com.azure.monitor.opentelemetry.autoconfigure.implementation.MetricDataMapper;
+import com.azure.monitor.opentelemetry.autoconfigure.implementation.builders.MetricTelemetryBuilder;
+import com.azure.monitor.opentelemetry.autoconfigure.implementation.models.MetricsData;
+import com.azure.monitor.opentelemetry.autoconfigure.implementation.models.TelemetryItem;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;

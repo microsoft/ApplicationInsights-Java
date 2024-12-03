@@ -3,7 +3,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.perfcounter;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.ThreadPoolUtils;
+import com.azure.monitor.opentelemetry.autoconfigure.implementation.utils.ThreadPoolUtils;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import java.util.List;
 import java.util.Locale;

@@ -3,7 +3,7 @@
 
 package com.microsoft.applicationinsights.agent.internal;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.AiSemanticAttributes;
+import com.azure.monitor.opentelemetry.autoconfigure.implementation.AiSemanticAttributes;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;

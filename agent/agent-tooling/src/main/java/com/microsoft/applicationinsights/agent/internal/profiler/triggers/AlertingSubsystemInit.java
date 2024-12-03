@@ -5,12 +5,12 @@ package com.microsoft.applicationinsights.agent.internal.profiler.triggers;
 
 import static com.microsoft.applicationinsights.agent.internal.perfcounter.MetricNames.TOTAL_CPU_PERCENTAGE;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.builders.EventTelemetryBuilder;
-import com.azure.monitor.opentelemetry.exporter.implementation.builders.MessageTelemetryBuilder;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricDataPoint;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.MetricsData;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.MonitorDomain;
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedTime;
+import com.azure.monitor.opentelemetry.autoconfigure.implementation.builders.EventTelemetryBuilder;
+import com.azure.monitor.opentelemetry.autoconfigure.implementation.builders.MessageTelemetryBuilder;
+import com.azure.monitor.opentelemetry.autoconfigure.implementation.models.MetricDataPoint;
+import com.azure.monitor.opentelemetry.autoconfigure.implementation.models.MetricsData;
+import com.azure.monitor.opentelemetry.autoconfigure.implementation.models.MonitorDomain;
+import com.azure.monitor.opentelemetry.autoconfigure.implementation.utils.FormattedTime;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.configuration.GcReportingLevel;
 import com.microsoft.applicationinsights.agent.internal.profiler.Profiler;

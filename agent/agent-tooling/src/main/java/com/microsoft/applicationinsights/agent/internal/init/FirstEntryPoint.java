@@ -6,7 +6,7 @@ package com.microsoft.applicationinsights.agent.internal.init;
 import static com.microsoft.applicationinsights.agent.internal.diagnostics.MsgId.INITIALIZATION_SUCCESS;
 import static com.microsoft.applicationinsights.agent.internal.diagnostics.MsgId.STARTUP_FAILURE_ERROR;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.PropertyHelper;
+import com.azure.monitor.opentelemetry.autoconfigure.implementation.utils.PropertyHelper;
 import com.google.auto.service.AutoService;
 import com.microsoft.applicationinsights.agent.internal.common.FriendlyException;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;

@@ -3,7 +3,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.sampling;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.RequestChecker;
+import com.azure.monitor.opentelemetry.autoconfigure.implementation.RequestChecker;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.SamplingOverride;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;

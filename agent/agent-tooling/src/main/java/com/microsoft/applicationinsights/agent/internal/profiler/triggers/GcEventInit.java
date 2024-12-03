@@ -3,8 +3,8 @@
 
 package com.microsoft.applicationinsights.agent.internal.profiler.triggers;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.builders.EventTelemetryBuilder;
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.FormattedTime;
+import com.azure.monitor.opentelemetry.autoconfigure.implementation.builders.EventTelemetryBuilder;
+import com.azure.monitor.opentelemetry.autoconfigure.implementation.utils.FormattedTime;
 import com.microsoft.applicationinsights.agent.internal.configuration.GcReportingLevel;
 import com.microsoft.applicationinsights.agent.internal.profiler.util.ServiceLoaderUtil;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;

@@ -4,7 +4,7 @@
 package com.microsoft.applicationinsights.agent.internal.init;
 
 import com.azure.core.util.logging.ClientLogger;
-import com.azure.monitor.opentelemetry.exporter.implementation.AiSemanticAttributes;
+import com.azure.monitor.opentelemetry.autoconfigure.implementation.AiSemanticAttributes;
 import com.microsoft.applicationinsights.agent.bootstrap.AzureFunctionsCustomDimensions;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.logs.LogRecordProcessor;
