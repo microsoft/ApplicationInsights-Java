@@ -72,7 +72,7 @@ val DEPENDENCIES = listOf(
   "org.assertj:assertj-core:3.26.3",
   "org.awaitility:awaitility:4.2.2",
   "io.github.hakky54:logcaptor:2.10.0",
-  "io.opentelemetry.contrib:opentelemetry-jfr-connection:1.40.0-alpha",
+  "io.opentelemetry.contrib:opentelemetry-jfr-connection:1.42.0-alpha",
   "com.google.code.findbugs:jsr305:3.0.2",
   "com.github.spotbugs:spotbugs-annotations:4.8.6"
 )
