@@ -33,7 +33,11 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.util.AbstractMap.SimpleEntry;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Properties;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -122,7 +126,7 @@ public class FirstEntryPoint implements LoggingCustomizer {
         startupLogger.trace("OS: " + System.getProperty("os.name"));
         startupLogger.trace("Classpath: " + System.getProperty("java.class.path"));
         startupLogger.trace("Netty versions: " + NettyVersions.extract());
-        startupLogger.trace("Env: " + System.getenv());
+        startupLogger.trace("Env: " + findEnvVariables());
         startupLogger.trace("System properties: " + findSystemProperties());
       }
 
@@ -136,6 +140,30 @@ public class FirstEntryPoint implements LoggingCustomizer {
     } catch (Exception e) {
       throw new IllegalStateException(e);
     }
+  }
+
+  private static Map<String, String> findEnvVariables() {
+    Map<String, String> env = System.getenv();
+    return env.entrySet().stream()
+        .map(
+            entry -> {
+              String key = entry.getKey();
+              String value = entry.getValue().toString();
+              String valueToDisplay = maskValueOfSensitiveKey(key, value);
+              return new SimpleEntry<>(key, valueToDisplay);
+            })
+        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+  }
+
+  private static String maskValueOfSensitiveKey(String key, String value) {
+    return isSensitive(key) ? "***" : value;
+  }
+
+  private static boolean isSensitive(String key) {
+    String keyInLowerCase = key.toLowerCase(Locale.ROOT);
+    return keyInLowerCase.contains("password")
+        || keyInLowerCase.contains("pwd")
+        || keyInLowerCase.contains("secret");
   }
 
   private static void checkTlsConnectionsToVirtualServersEnabled() {
@@ -156,7 +184,8 @@ public class FirstEntryPoint implements LoggingCustomizer {
           if (!firstProperty) {
             propsBuilder.append(", ");
           }
-          propsBuilder.append("(" + key + "=" + value + ")");
+          String valueToDisplay = maskValueOfSensitiveKey(key.toString(), value.toString());
+          propsBuilder.append("(" + key + "=" + valueToDisplay + ")");
         });
     return propsBuilder.toString();
   }
