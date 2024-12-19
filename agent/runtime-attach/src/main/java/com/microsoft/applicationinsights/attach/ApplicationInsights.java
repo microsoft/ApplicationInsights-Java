@@ -56,7 +56,7 @@ public final class ApplicationInsights {
     try {
       Optional<String> jsonConfig = findJsonConfigFromClasspath();
       if (!jsonConfig.isPresent()) {
-        jsonConfig = findJsonConfigFromDefaultFileInCurrentDir();
+        jsonConfig = findJsonConfigFromFileSystem();
       }
       if (jsonConfig.isPresent()) {
         System.setProperty(RUNTIME_ATTACHED_JSON_PROPERTY, jsonConfig.get());
@@ -85,7 +85,7 @@ public final class ApplicationInsights {
     return Optional.of(json);
   }
 
-  private static Optional<String> findJsonConfigFromDefaultFileInCurrentDir() {
+  private static Optional<String> findJsonConfigFromFileSystem() {
 
     InputStream configContentAsInputStream = findDefaultFileInCurrentDirAsStream();
 
@@ -118,7 +118,10 @@ public final class ApplicationInsights {
   }
 
   private static InputStream findDefaultFileInCurrentDirAsStream() {
-    File defaultFile = new File("applicationinsights.json");
+    File defaultFile = new File("config/applicationinsights.json");
+    if (!defaultFile.exists()) {
+      defaultFile = new File("applicationinsights.json");
+    }
     if (!defaultFile.exists()) {
       return null;
     }
