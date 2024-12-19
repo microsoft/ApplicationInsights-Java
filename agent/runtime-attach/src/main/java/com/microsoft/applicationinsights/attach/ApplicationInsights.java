@@ -5,10 +5,12 @@ package com.microsoft.applicationinsights.attach;
 
 import io.opentelemetry.contrib.attach.core.CoreRuntimeAttach;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -52,7 +54,10 @@ public final class ApplicationInsights {
     System.setProperty(RUNTIME_ATTACHED_ENABLED_PROPERTY, "true");
 
     try {
-      Optional<String> jsonConfig = findJsonConfig();
+      Optional<String> jsonConfig = findJsonConfigFromClasspath();
+      if (!jsonConfig.isPresent()) {
+        jsonConfig = findJsonConfigFromDefaultFileInCurrentDir();
+      }
       if (jsonConfig.isPresent()) {
         System.setProperty(RUNTIME_ATTACHED_JSON_PROPERTY, jsonConfig.get());
       }
@@ -66,11 +71,23 @@ public final class ApplicationInsights {
     }
   }
 
-  private static Optional<String> findJsonConfig() {
+  private static Optional<String> findJsonConfigFromClasspath() {
 
     String fileName = findJsonConfigFile();
 
     InputStream configContentAsInputStream = findResourceAsStream(fileName);
+
+    if (configContentAsInputStream == null) {
+      return Optional.empty();
+    }
+
+    String json = findJson(configContentAsInputStream);
+    return Optional.of(json);
+  }
+
+  private static Optional<String> findJsonConfigFromDefaultFileInCurrentDir() {
+
+    InputStream configContentAsInputStream = findDefaultFileInCurrentDirAsStream();
 
     if (configContentAsInputStream == null) {
       return Optional.empty();
@@ -98,6 +115,19 @@ public final class ApplicationInsights {
       throw new ConfigurationException(fileName + " not found on the class path");
     }
     return configContentAsInputStream;
+  }
+
+  private static InputStream findDefaultFileInCurrentDirAsStream() {
+    File defaultFile = new File("applicationinsights.json");
+    if (!defaultFile.exists()) {
+      return null;
+    }
+    try {
+      return Files.newInputStream(defaultFile.toPath());
+    } catch (IOException e) {
+      throw new IllegalStateException(
+          "Unexpected issue during loading of JSON configuration file: " + e.getMessage());
+    }
   }
 
   public static class ConfigurationException extends IllegalArgumentException {
