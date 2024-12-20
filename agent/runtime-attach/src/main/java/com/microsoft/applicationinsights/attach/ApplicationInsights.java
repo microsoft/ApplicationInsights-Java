@@ -4,7 +4,6 @@
 package com.microsoft.applicationinsights.attach;
 
 import io.opentelemetry.contrib.attach.core.CoreRuntimeAttach;
-import javax.annotation.Nullable;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -17,6 +16,7 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 
 /** This class allows you to attach the Application Insights agent for Java at runtime. */
 public final class ApplicationInsights {
