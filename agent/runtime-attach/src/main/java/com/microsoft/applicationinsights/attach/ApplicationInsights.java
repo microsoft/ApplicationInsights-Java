@@ -4,6 +4,7 @@
 package com.microsoft.applicationinsights.attach;
 
 import io.opentelemetry.contrib.attach.core.CoreRuntimeAttach;
+import javax.annotation.Nullable;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -81,23 +82,23 @@ public final class ApplicationInsights {
       return Optional.empty();
     }
 
-    String json = findJson(configContentAsInputStream);
+    String json = read(configContentAsInputStream);
     return Optional.of(json);
   }
 
   private static Optional<String> findJsonConfigFromFileSystem() {
 
-    InputStream configContentAsInputStream = findDefaultFileInCurrentDirAsStream();
+    InputStream configContentAsInputStream = findJsonConfigFromFileSystemAsStream();
 
     if (configContentAsInputStream == null) {
       return Optional.empty();
     }
 
-    String json = findJson(configContentAsInputStream);
+    String json = read(configContentAsInputStream);
     return Optional.of(json);
   }
 
-  private static String findJson(InputStream configContentAsInputStream) {
+  private static String read(InputStream configContentAsInputStream) {
     try (InputStreamReader inputStreamReader =
             new InputStreamReader(configContentAsInputStream, StandardCharsets.UTF_8);
         BufferedReader bufferedReader = new BufferedReader(inputStreamReader)) {
@@ -108,6 +109,7 @@ public final class ApplicationInsights {
     }
   }
 
+  @Nullable
   private static InputStream findResourceAsStream(String fileName) {
     InputStream configContentAsInputStream =
         ApplicationInsights.class.getResourceAsStream("/" + fileName);
@@ -117,7 +119,8 @@ public final class ApplicationInsights {
     return configContentAsInputStream;
   }
 
-  private static InputStream findDefaultFileInCurrentDirAsStream() {
+  @Nullable
+  private static InputStream findJsonConfigFromFileSystemAsStream() {
     File defaultFile = new File("config/applicationinsights.json");
     if (!defaultFile.exists()) {
       defaultFile = new File("applicationinsights.json");
