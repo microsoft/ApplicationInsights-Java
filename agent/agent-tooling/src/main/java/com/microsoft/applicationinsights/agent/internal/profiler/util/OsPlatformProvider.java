@@ -30,11 +30,11 @@ public final class OsPlatformProvider {
   }
 
   private static boolean isWindows() {
-    return getOsName().startsWith("Windows");
+    return getOsName().startsWith(WINDOWS);
   }
 
   private static boolean isLinux() {
-    return getOsName().startsWith("Linux") || getOsName().startsWith("LINUX");
+    return getOsName().startsWith(LINUX) || getOsName().startsWith("LINUX");
   }
 
   private static boolean isMac() {
