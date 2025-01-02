@@ -341,7 +341,7 @@ public class SecondEntryPoint
         new MetricDataMapper(
             telemetryClient::populateDefaults, configuration.preview.captureHttpServer4xxAsError);
     return new AgentMetricExporter(
-        metricFilters, mapper, telemetryClient.getMetricsBatchItemProcessor());
+        metricFilters, mapper, telemetryClient.getMetricsBatchItemProcessor(), configuration.instrumentation.micrometer.namespace);
   }
 
   private static LogRecordExporter buildLogRecordExporter(

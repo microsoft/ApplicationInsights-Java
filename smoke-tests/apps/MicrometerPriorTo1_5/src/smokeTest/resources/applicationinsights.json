@@ -1,0 +1,32 @@
+{
+  "role": {
+    "name": "testrolename",
+    "instance": "testroleinstance"
+  },
+  "sampling": {
+    "percentage": 100
+  },
+  "metricIntervalSeconds": 5,
+  "preview": {
+    "processors": [
+      {
+        "type": "metric-filter",
+        "exclude": {
+          "matchType": "strict",
+          "metricNames": [
+            "test_counter_exclude_me"
+          ]
+        }
+      },
+      {
+        "type": "metric-filter",
+        "exclude": {
+          "matchType": "regexp",
+          "metricNames": [
+            "exclude_me_.*"
+          ]
+        }
+      }
+    ]
+  }
+}
