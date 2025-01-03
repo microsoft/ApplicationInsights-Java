@@ -47,15 +47,15 @@ public class DiagnosticsHelper {
       if (RpAttachType.INTEGRATED_AUTO.equals(RpAttachType.getRpAttachType())) {
         appSvcRpIntegratedAuto = true;
       }
+    } else if (!Strings.isNullOrEmpty(
+        System.getenv("APPLICATIONINSIGHTS_SPRINGCLOUD_SERVICE_ID"))) {
+      PropertyHelper.setRpIntegrationChar('s');
+      setRpAttachType(agentPath, "springcloud.codeless");
     } else if (!Strings.isNullOrEmpty(System.getenv("AKS_ARM_NAMESPACE_ID"))) {
       // AKS_ARM_NAMESPACE_ID is an env var available in AKS only and it's also used as the AKS
       // attach rate numerator
       PropertyHelper.setRpIntegrationChar('k');
       setRpAttachType(agentPath, "aks.codeless");
-    } else if (!Strings.isNullOrEmpty(
-        System.getenv("APPLICATIONINSIGHTS_SPRINGCLOUD_SERVICE_ID"))) {
-      PropertyHelper.setRpIntegrationChar('s');
-      setRpAttachType(agentPath, "springcloud.codeless");
     } else {
       RpAttachType.setRpAttachType(RpAttachType.STANDALONE_AUTO); // default
     }
