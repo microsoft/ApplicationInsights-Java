@@ -49,6 +49,7 @@ public class DiagnosticsHelper {
       }
     } else if (!Strings.isNullOrEmpty(
         System.getenv("APPLICATIONINSIGHTS_SPRINGCLOUD_SERVICE_ID"))) {
+      // Spring Cloud needs to be checked before AKS since it runs on AKS
       PropertyHelper.setRpIntegrationChar('s');
       setRpAttachType(agentPath, "springcloud.codeless");
     } else if (!Strings.isNullOrEmpty(System.getenv("AKS_ARM_NAMESPACE_ID"))) {
