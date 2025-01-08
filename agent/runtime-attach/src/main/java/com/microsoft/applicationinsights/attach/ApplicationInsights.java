@@ -104,7 +104,7 @@ public final class ApplicationInsights {
         BufferedReader bufferedReader = new BufferedReader(inputStreamReader)) {
       return bufferedReader.lines().collect(Collectors.joining(""));
     } catch (IOException e) {
-      throw new IllegalStateException(
+      throw new ConfigurationException(
           "Unexpected issue during loading of JSON configuration file: " + e.getMessage());
     }
   }
@@ -131,7 +131,7 @@ public final class ApplicationInsights {
     try {
       return Files.newInputStream(defaultFile.toPath());
     } catch (IOException e) {
-      throw new IllegalStateException(
+      throw new ConfigurationException(
           "Unexpected issue during loading of JSON configuration file: " + e.getMessage());
     }
   }
