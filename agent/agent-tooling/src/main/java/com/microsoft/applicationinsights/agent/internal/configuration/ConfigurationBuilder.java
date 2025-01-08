@@ -5,7 +5,6 @@ package com.microsoft.applicationinsights.agent.internal.configuration;
 
 import com.azure.monitor.opentelemetry.autoconfigure.implementation.SemanticAttributes;
 import com.azure.monitor.opentelemetry.autoconfigure.implementation.statsbeat.RpAttachType;
-import com.azure.monitor.opentelemetry.autoconfigure.implementation.utils.HostName;
 import com.azure.monitor.opentelemetry.autoconfigure.implementation.utils.Strings;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -303,11 +302,6 @@ public class ConfigurationBuilder {
       config.sampling.requestsPerSecond = 5.0;
       configurationLogger.info(
           "Some telemetry may be sampled out because a default sampling configuration was added in version 3.4.0 to reduce the default billing cost. You can set the sampling configuration explicitly: https://learn.microsoft.com/azure/azure-monitor/app/java-standalone-config#sampling");
-    }
-    // only set role instance to host name as a last resort
-    if (config.role.instance == null) {
-      String hostname = HostName.get();
-      config.role.instance = hostname == null ? "unknown" : hostname;
     }
     supportTelemetryProcessorsOldSemConv(config);
   }

@@ -345,7 +345,7 @@ public class TelemetryClient {
         telemetryBuilder.addProperty(entry.getKey(), entry.getValue());
       }
     }
-    new ResourceParser().updateRoleNameAndInstance(telemetryBuilder, resource);
+    new ResourceParser().updateRoleNameAndInstanceAndVersion(telemetryBuilder, resource);
   }
 
   @Nullable
