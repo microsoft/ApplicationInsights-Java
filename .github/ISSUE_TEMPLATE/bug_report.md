@@ -25,7 +25,7 @@ Please provide the following information:
 ### Logs
 [Turn on SDK logs](https://learn.microsoft.com/en-us/azure/azure-monitor/app/java-standalone-config#self-diagnostics) and attach/paste them to the issue. If using an application server, also attach any relevant server logs.
 
-_Be sure to remove any private information from the logs before posting!_
+⚠ BE SURE TO REMOVE ANY PRIVATE INFORMATION FROM THE LOGS BEFORE POSTING ⚠
 
 ### Screenshots
 If applicable, add screenshots to help explain your problem.

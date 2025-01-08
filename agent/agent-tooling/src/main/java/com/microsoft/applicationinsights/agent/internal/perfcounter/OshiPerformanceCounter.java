@@ -125,8 +125,13 @@ public class OshiPerformanceCounter implements PerformanceCounter {
 
   private static long getTotalProcessorMillis(CentralProcessor processor) {
     long[] systemCpuLoadTicks = processor.getSystemCpuLoadTicks();
-    return systemCpuLoadTicks[TickType.USER.getIndex()]
-        + systemCpuLoadTicks[TickType.SYSTEM.getIndex()];
+    long total = 0;
+    for (int i = 0; i < systemCpuLoadTicks.length; i++) {
+      if (i != TickType.IDLE.getIndex() && i != TickType.IOWAIT.getIndex()) {
+        total += systemCpuLoadTicks[i];
+      }
+    }
+    return total;
   }
 
   private static void send(TelemetryClient telemetryClient, double value, String metricName) {
