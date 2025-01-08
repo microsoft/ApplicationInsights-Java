@@ -1,7 +1,7 @@
 # This is a Gradle generated file for dependency locking.
 # Manual edits can break the build and are not advised.
 # This file is expected to be part of source control.
-com.azure:azure-sdk-bom:1.2.29=runtimeClasspath
+com.azure:azure-sdk-bom:1.2.30=runtimeClasspath
 com.fasterxml.jackson:jackson-bom:2.18.2=runtimeClasspath
 io.netty:netty-bom:4.1.116.Final=runtimeClasspath
 io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:2.10.0-alpha=runtimeClasspath
