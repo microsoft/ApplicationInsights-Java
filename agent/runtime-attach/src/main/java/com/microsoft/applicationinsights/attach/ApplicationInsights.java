@@ -55,9 +55,10 @@ public final class ApplicationInsights {
     System.setProperty(RUNTIME_ATTACHED_ENABLED_PROPERTY, "true");
 
     try {
-      Optional<String> jsonConfig = findJsonConfigFromClasspath();
+      // check from file system first so user can override the classpath file
+      Optional<String> jsonConfig = findJsonConfigFromFileSystem();
       if (!jsonConfig.isPresent()) {
-        jsonConfig = findJsonConfigFromFileSystem();
+        jsonConfig = findJsonConfigFromClasspath();
       }
       if (jsonConfig.isPresent()) {
         System.setProperty(RUNTIME_ATTACHED_JSON_PROPERTY, jsonConfig.get());
