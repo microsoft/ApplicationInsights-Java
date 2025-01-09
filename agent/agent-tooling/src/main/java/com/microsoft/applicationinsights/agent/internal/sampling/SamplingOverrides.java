@@ -9,7 +9,6 @@ import com.microsoft.applicationinsights.agent.internal.configuration.Configurat
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.SamplingOverrideAttribute;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.sdk.trace.samplers.Sampler;
 import io.opentelemetry.semconv.SemanticAttributes;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,7 +31,7 @@ public class SamplingOverrides {
   }
 
   @Nullable
-  public Sampler getOverride(Attributes attributes) {
+  public AiSampler getOverride(Attributes attributes) {
     LazyHttpUrl lazyHttpUrl = new LazyHttpUrl(attributes);
     LazyHttpTarget lazyHttpTarget = new LazyHttpTarget(attributes);
     for (MatcherGroup matcherGroups : matcherGroups) {
@@ -43,20 +42,9 @@ public class SamplingOverrides {
     return null;
   }
 
-  // used to do sampling inside the log exporter
-  @Nullable
-  public Double getOverridePercentage(Attributes attributes) {
-    for (MatcherGroup matcherGroups : matcherGroups) {
-      if (matcherGroups.matches(attributes, null, null)) {
-        return matcherGroups.getPercentage();
-      }
-    }
-    return null;
-  }
-
   private static class MatcherGroup {
     private final List<TempPredicate> predicates;
-    private final Sampler sampler;
+    private final AiSampler sampler;
     // for now only support fixed percentage, but could extend sampling overrides to support
     // rate-limited sampling
     private final SamplingPercentage samplingPercentage;
@@ -70,15 +58,16 @@ public class SamplingOverrides {
         }
       }
       samplingPercentage = SamplingPercentage.fixed(override.percentage);
-      sampler = new AiSampler(samplingPercentage, samplingPercentage, false, false);
+      // setting sampleWhenLocalParentSampled = (override.percentage == 100) would end up the same
+      boolean sampleWhenLocalParentSampled = false;
+      boolean dropWhenLocalParentDropped = override.percentage < 100;
+      sampler =
+          AiSampler.createSamplingOverride(
+              samplingPercentage, sampleWhenLocalParentSampled, dropWhenLocalParentDropped);
     }
 
-    Sampler getSampler() {
+    AiSampler getSampler() {
       return sampler;
-    }
-
-    double getPercentage() {
-      return samplingPercentage.get();
     }
 
     private boolean matches(
