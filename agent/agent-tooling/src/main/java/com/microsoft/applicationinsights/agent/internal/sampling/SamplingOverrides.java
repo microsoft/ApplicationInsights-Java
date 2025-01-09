@@ -70,7 +70,16 @@ public class SamplingOverrides {
         }
       }
       samplingPercentage = SamplingPercentage.fixed(override.percentage);
-      sampler = new AiSampler(samplingPercentage, samplingPercentage, false, false);
+      // setting sampleWhenLocalParentSampled = (override.percentage == 100) would end up the same
+      boolean sampleWhenLocalParentSampled = false;
+      boolean dropWhenLocalParentDropped = override.percentage < 100;
+      sampler =
+          new AiSampler(
+              samplingPercentage,
+              samplingPercentage,
+              false,
+              sampleWhenLocalParentSampled,
+              dropWhenLocalParentDropped);
     }
 
     Sampler getSampler() {
