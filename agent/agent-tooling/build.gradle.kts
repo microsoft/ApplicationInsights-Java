@@ -10,7 +10,7 @@ dependencies {
   compileOnly("com.google.auto.value:auto-value-annotations")
   annotationProcessor("com.google.auto.value:auto-value")
 
-  implementation("io.opentelemetry.contrib:opentelemetry-jfr-connection:1.40.0-alpha")
+  implementation("io.opentelemetry.contrib:opentelemetry-jfr-connection:1.42.0-alpha")
   implementation("com.azure:azure-storage-blob")
 
   implementation(project(":agent:agent-profiler:agent-alerting-api"))
@@ -62,7 +62,7 @@ dependencies {
   testImplementation("io.opentelemetry:opentelemetry-sdk-testing")
 
   // TODO(trask): update tests, no need to use this anymore
-  testImplementation("com.squareup.okio:okio:3.9.1")
+  testImplementation("com.squareup.okio:okio:3.10.1")
 
   compileOnly(project(":agent:agent-bootstrap"))
   compileOnly("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api")
