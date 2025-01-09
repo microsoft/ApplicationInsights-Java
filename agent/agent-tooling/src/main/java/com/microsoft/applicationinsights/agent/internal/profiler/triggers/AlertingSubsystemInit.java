@@ -38,7 +38,7 @@ public class AlertingSubsystemInit {
   // TODO (trask) inject instead of using global
   private static volatile AlertingSubsystem alertingSubsystem;
 
-  private static final Logger logger = LoggerFactory.getLogger(AlertingSubsystem.class);
+  private static final Logger logger = LoggerFactory.getLogger(AlertingSubsystemInit.class);
 
   public static AlertingSubsystem create(
       Configuration.ProfilerConfiguration configuration,
