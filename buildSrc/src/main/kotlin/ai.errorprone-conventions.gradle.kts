@@ -40,6 +40,9 @@ tasks {
         // Doesn't work well with Java 8
         disable("FutureReturnValueIgnored")
 
+        // Needs Java 9+
+        disable("JavaDurationGetSecondsToToSeconds")
+
         // Require Guava
         disable("AutoValueImmutableFields")
         disable("StringSplitter")
