@@ -122,9 +122,18 @@ public class FirstEntryPoint implements LoggingCustomizer {
         startupLogger.debug("JAVA_TOOL_OPTIONS: " + System.getenv("JAVA_TOOL_OPTIONS"));
       }
 
+      String classPath = System.getProperty("java.class.path");
+      // class path null with a Spring Boot executable JAR
+      if (classPath != null
+          // JAR name in Maven central, the user could have renamed it
+          && classPath.contains("applicationinsights-agent")) {
+        startupLogger.warn(
+            "The applicationinsights-agent JAR is in the class path. You should remove it because it could lead to unexpected results. You should configure the Java agent with -javaagent. You can also use the runtime attachment with Spring Boot applications.");
+      }
+
       if (startupLogger.isTraceEnabled()) {
         startupLogger.trace("OS: " + System.getProperty("os.name"));
-        startupLogger.trace("Classpath: " + System.getProperty("java.class.path"));
+        startupLogger.trace("Classpath: " + classPath);
         startupLogger.trace("Netty versions: " + NettyVersions.extract());
         startupLogger.trace("Env: " + findEnvVariables());
         startupLogger.trace("System properties: " + findSystemProperties());
