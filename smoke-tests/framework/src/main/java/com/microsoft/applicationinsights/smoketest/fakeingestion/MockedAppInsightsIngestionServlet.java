@@ -140,6 +140,8 @@ class MockedAppInsightsIngestionServlet extends HttpServlet {
         type2envelope.put(baseType, envelope);
       }
     }
+
+    resp.getWriter().print("{}");
   }
 
   @Override

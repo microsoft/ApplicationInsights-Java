@@ -5,6 +5,8 @@ package com.microsoft.applicationinsights.agent.internal.sampling;
 
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.SamplingOverride;
+import com.microsoft.applicationinsights.agent.internal.keytransaction.KeyTransactionConfigSupplier;
+import com.microsoft.applicationinsights.agent.internal.keytransaction.KeyTransactionSampler;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -46,16 +48,21 @@ public class Samplers {
           new AiOverrideSampler(requestSamplingOverrides, dependencySamplingOverrides, sampler);
     }
 
-    if (!samplingPreview.parentBased) {
-      return sampler;
+    if (samplingPreview.parentBased) {
+      // when using parent-based sampling, sampling overrides still take precedence
+
+      // IMPORTANT, the parent-based sampler is useful for interop with other sampling mechanisms,
+      // as
+      // it will ensure consistent traces, however it does not accurately compute item counts, since
+      // item counts are not propagated in trace state (yet)
+      sampler = Sampler.parentBasedBuilder(sampler).build();
     }
 
-    // when using parent-based sampling, sampling overrides still take precedence
+    if (KeyTransactionConfigSupplier.KEY_TRANSACTIONS_ENABLED) {
+      sampler = KeyTransactionSampler.create(KeyTransactionConfigSupplier.getInstance(), sampler);
+    }
 
-    // IMPORTANT, the parent-based sampler is useful for interop with other sampling mechanisms, as
-    // it will ensure consistent traces, however it does not accurately compute item counts, since
-    // item counts are not propagated in trace state (yet)
-    return Sampler.parentBasedBuilder(sampler).build();
+    return sampler;
   }
 
   private Samplers() {}
