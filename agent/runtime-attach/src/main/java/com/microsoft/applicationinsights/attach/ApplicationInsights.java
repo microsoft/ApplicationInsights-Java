@@ -5,15 +5,18 @@ package com.microsoft.applicationinsights.attach;
 
 import io.opentelemetry.contrib.attach.core.CoreRuntimeAttach;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 
 /** This class allows you to attach the Application Insights agent for Java at runtime. */
 public final class ApplicationInsights {
@@ -52,7 +55,11 @@ public final class ApplicationInsights {
     System.setProperty(RUNTIME_ATTACHED_ENABLED_PROPERTY, "true");
 
     try {
-      Optional<String> jsonConfig = findJsonConfig();
+      // check from file system first so user can override the classpath file
+      Optional<String> jsonConfig = findJsonConfigFromFileSystem();
+      if (!jsonConfig.isPresent()) {
+        jsonConfig = findJsonConfigFromClasspath();
+      }
       if (jsonConfig.isPresent()) {
         System.setProperty(RUNTIME_ATTACHED_JSON_PROPERTY, jsonConfig.get());
       }
@@ -66,7 +73,7 @@ public final class ApplicationInsights {
     }
   }
 
-  private static Optional<String> findJsonConfig() {
+  private static Optional<String> findJsonConfigFromClasspath() {
 
     String fileName = findJsonConfigFile();
 
@@ -76,21 +83,34 @@ public final class ApplicationInsights {
       return Optional.empty();
     }
 
-    String json = findJson(configContentAsInputStream);
+    String json = read(configContentAsInputStream);
     return Optional.of(json);
   }
 
-  private static String findJson(InputStream configContentAsInputStream) {
+  private static Optional<String> findJsonConfigFromFileSystem() {
+
+    InputStream configContentAsInputStream = findJsonConfigFromFileSystemAsStream();
+
+    if (configContentAsInputStream == null) {
+      return Optional.empty();
+    }
+
+    String json = read(configContentAsInputStream);
+    return Optional.of(json);
+  }
+
+  private static String read(InputStream configContentAsInputStream) {
     try (InputStreamReader inputStreamReader =
             new InputStreamReader(configContentAsInputStream, StandardCharsets.UTF_8);
         BufferedReader bufferedReader = new BufferedReader(inputStreamReader)) {
       return bufferedReader.lines().collect(Collectors.joining(""));
     } catch (IOException e) {
-      throw new IllegalStateException(
+      throw new ConfigurationException(
           "Unexpected issue during loading of JSON configuration file: " + e.getMessage());
     }
   }
 
+  @Nullable
   private static InputStream findResourceAsStream(String fileName) {
     InputStream configContentAsInputStream =
         ApplicationInsights.class.getResourceAsStream("/" + fileName);
@@ -98,6 +118,23 @@ public final class ApplicationInsights {
       throw new ConfigurationException(fileName + " not found on the class path");
     }
     return configContentAsInputStream;
+  }
+
+  @Nullable
+  private static InputStream findJsonConfigFromFileSystemAsStream() {
+    File defaultFile = new File("config/applicationinsights.json");
+    if (!defaultFile.exists()) {
+      defaultFile = new File("applicationinsights.json");
+    }
+    if (!defaultFile.exists()) {
+      return null;
+    }
+    try {
+      return Files.newInputStream(defaultFile.toPath());
+    } catch (IOException e) {
+      throw new ConfigurationException(
+          "Unexpected issue during loading of JSON configuration file: " + e.getMessage());
+    }
   }
 
   public static class ConfigurationException extends IllegalArgumentException {
