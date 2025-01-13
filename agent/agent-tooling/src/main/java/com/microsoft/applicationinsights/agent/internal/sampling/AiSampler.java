@@ -30,7 +30,8 @@ public class AiSampler implements Sampler {
   private static final double SAMPLE_RATE_TO_DISABLE_INGESTION_SAMPLING = 99.99;
 
   private final boolean ingestionSamplingEnabled;
-  private final boolean localParentBased;
+  private final boolean sampleWhenLocalParentSampled;
+  private final boolean dropWhenLocalParentDropped;
   private final SamplingPercentage requestSamplingPercentage;
   // when localParentBased=false, then this applies to all dependencies, not only parentless
   private final SamplingPercentage parentlessDependencySamplingPercentage;
@@ -44,6 +45,7 @@ public class AiSampler implements Sampler {
         requestSamplingPercentage,
         parentlessDependencySamplingPercentage,
         ingestionSamplingEnabled,
+        true,
         true);
   }
 
@@ -51,11 +53,13 @@ public class AiSampler implements Sampler {
       SamplingPercentage requestSamplingPercentage,
       SamplingPercentage parentlessDependencySamplingPercentage,
       boolean ingestionSamplingEnabled,
-      boolean localParentBased) {
+      boolean sampleWhenLocalParentSampled,
+      boolean dropWhenLocalParentDropped) {
     this.requestSamplingPercentage = requestSamplingPercentage;
     this.parentlessDependencySamplingPercentage = parentlessDependencySamplingPercentage;
     this.ingestionSamplingEnabled = ingestionSamplingEnabled;
-    this.localParentBased = localParentBased;
+    this.sampleWhenLocalParentSampled = sampleWhenLocalParentSampled;
+    this.dropWhenLocalParentDropped = dropWhenLocalParentDropped;
   }
 
   @Override
@@ -66,7 +70,8 @@ public class AiSampler implements Sampler {
       SpanKind spanKind,
       Attributes attributes,
       List<LinkData> parentLinks) {
-    if (localParentBased) {
+
+    if (sampleWhenLocalParentSampled || dropWhenLocalParentDropped) {
       SamplingResult samplingResult = useLocalParentDecisionIfPossible(parentContext);
       if (samplingResult != null) {
         return samplingResult;
@@ -114,7 +119,7 @@ public class AiSampler implements Sampler {
   }
 
   @Nullable
-  private static SamplingResult useLocalParentDecisionIfPossible(Context parentContext) {
+  private SamplingResult useLocalParentDecisionIfPossible(Context parentContext) {
     // remote parent-based sampling messes up item counts since item count is not propagated in
     // tracestate (yet), but local parent-based sampling doesn't have this issue since we are
     // propagating item count locally
@@ -124,9 +129,9 @@ public class AiSampler implements Sampler {
       return null;
     }
     if (!parentSpanContext.isSampled()) {
-      return SamplingResult.drop();
+      return dropWhenLocalParentDropped ? SamplingResult.drop() : null;
     }
-    if (parentSpan instanceof ReadableSpan) {
+    if (sampleWhenLocalParentSampled && parentSpan instanceof ReadableSpan) {
       Double parentSampleRate =
           ((ReadableSpan) parentSpan).getAttribute(AiSemanticAttributes.SAMPLE_RATE);
       if (parentSampleRate != null) {
