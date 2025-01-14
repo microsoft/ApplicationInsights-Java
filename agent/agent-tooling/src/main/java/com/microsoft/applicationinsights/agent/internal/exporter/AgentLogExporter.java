@@ -23,6 +23,7 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import io.opentelemetry.sdk.trace.samplers.SamplingDecision;
+import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 import io.opentelemetry.semconv.SemanticAttributes;
 import java.util.Collection;
 import java.util.List;
@@ -122,12 +123,14 @@ public class AgentLogExporter implements LogRecordExporter {
 
         Double sampleRate = parentSpanSampleRate;
         if (sampler != null) {
-          if (sampler.shouldSampleLog(spanContext, parentSpanSampleRate).getDecision()
-              == SamplingDecision.DROP) {
+          SamplingResult samplingResult =
+              sampler.shouldSampleLog(spanContext, parentSpanSampleRate);
+          if (samplingResult.getDecision() == SamplingDecision.DROP) {
             continue;
           }
-          // sampling override percentage takes precedence
-          sampleRate = sampler.getParentlessDependencySamplingPercentage().get();
+          if (sampleRate == null) {
+            sampleRate = samplingResult.getAttributes().get(AiSemanticAttributes.SAMPLE_RATE);
+          }
         }
 
         logger.debug("exporting log: {}", log);
