@@ -3,7 +3,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.profiler.triggers;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.RequestChecker;
+import com.azure.monitor.opentelemetry.autoconfigure.implementation.RequestChecker;
 import com.microsoft.applicationinsights.alerting.AlertingSubsystem;
 import com.microsoft.applicationinsights.alerting.analysis.TimeSource;
 import com.microsoft.applicationinsights.alerting.analysis.data.TelemetryDataPoint;

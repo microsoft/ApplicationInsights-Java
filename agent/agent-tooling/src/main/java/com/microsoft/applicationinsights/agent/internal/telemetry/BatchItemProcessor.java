@@ -3,12 +3,12 @@
 
 package com.microsoft.applicationinsights.agent.internal.telemetry;
 
-import static com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMsgId.BATCH_ITEM_PROCESSOR_ERROR;
+import static com.azure.monitor.opentelemetry.autoconfigure.implementation.utils.AzureMonitorMsgId.BATCH_ITEM_PROCESSOR_ERROR;
 
 import com.azure.core.util.logging.ClientLogger;
-import com.azure.monitor.opentelemetry.exporter.implementation.logging.OperationLogger;
-import com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem;
-import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryItemExporter;
+import com.azure.monitor.opentelemetry.autoconfigure.implementation.logging.OperationLogger;
+import com.azure.monitor.opentelemetry.autoconfigure.implementation.models.TelemetryItem;
+import com.azure.monitor.opentelemetry.autoconfigure.implementation.pipeline.TelemetryItemExporter;
 import io.opentelemetry.api.logs.LoggerProvider;
 import io.opentelemetry.internal.shaded.jctools.queues.MpscArrayQueue;
 import io.opentelemetry.javaagent.bootstrap.CallDepth;

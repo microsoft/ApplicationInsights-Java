@@ -3,9 +3,9 @@
 
 package com.microsoft.applicationinsights.agent.internal.sampling;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.AiSemanticAttributes;
-import com.azure.monitor.opentelemetry.exporter.implementation.RequestChecker;
-import com.azure.monitor.opentelemetry.exporter.implementation.SamplingScoreGeneratorV2;
+import com.azure.monitor.opentelemetry.autoconfigure.implementation.AiSemanticAttributes;
+import com.azure.monitor.opentelemetry.autoconfigure.implementation.RequestChecker;
+import com.azure.monitor.opentelemetry.autoconfigure.implementation.SamplingScoreGeneratorV2;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;

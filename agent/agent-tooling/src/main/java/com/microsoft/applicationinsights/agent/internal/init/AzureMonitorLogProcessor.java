@@ -4,9 +4,9 @@
 package com.microsoft.applicationinsights.agent.internal.init;
 
 import com.azure.core.util.logging.ClientLogger;
-import com.azure.monitor.opentelemetry.exporter.implementation.AiSemanticAttributes;
-import com.azure.monitor.opentelemetry.exporter.implementation.OperationNames;
-import com.azure.monitor.opentelemetry.exporter.implementation.SemanticAttributes;
+import com.azure.monitor.opentelemetry.autoconfigure.implementation.AiSemanticAttributes;
+import com.azure.monitor.opentelemetry.autoconfigure.implementation.OperationNames;
+import com.azure.monitor.opentelemetry.autoconfigure.implementation.SemanticAttributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.instrumentation.api.instrumenter.LocalRootSpan;

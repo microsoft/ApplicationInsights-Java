@@ -3,7 +3,7 @@
 
 package io.opentelemetry.sdk.metrics.internal.view;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.AiSemanticAttributes;
+import com.azure.monitor.opentelemetry.autoconfigure.implementation.AiSemanticAttributes;
 import com.microsoft.applicationinsights.agent.internal.init.AiContextKeys;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
