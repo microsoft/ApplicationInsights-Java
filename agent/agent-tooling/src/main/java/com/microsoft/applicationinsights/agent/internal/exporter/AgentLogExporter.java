@@ -121,16 +121,18 @@ public class AgentLogExporter implements LogRecordExporter {
           continue;
         }
 
-        Double sampleRate = parentSpanSampleRate;
+        Double sampleRate = null;
         if (sampler != null) {
           SamplingResult samplingResult =
               sampler.shouldSampleLog(spanContext, parentSpanSampleRate);
-          if (samplingResult.getDecision() == SamplingDecision.DROP) {
+          if (samplingResult.getDecision() != SamplingDecision.RECORD_AND_SAMPLE) {
             continue;
           }
-          if (sampleRate == null) {
-            sampleRate = samplingResult.getAttributes().get(AiSemanticAttributes.SAMPLE_RATE);
-          }
+          sampleRate = samplingResult.getAttributes().get(AiSemanticAttributes.SAMPLE_RATE);
+        }
+
+        if (sampleRate == null) {
+          sampleRate = parentSpanSampleRate;
         }
 
         logger.debug("exporting log: {}", log);
