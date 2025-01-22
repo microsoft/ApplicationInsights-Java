@@ -1,5 +1,21 @@
 # CHANGELOG
 
+## Version 3.7.0 GA (01/22/2025)
+
+### Enhancements
+
+* Transition to azure-monitor-opentelemetry-autoconfigure 1.0.0-beta.1, in place of azure-monitor-opentelemetry-exporter [#4037](https://github.com/microsoft/ApplicationInsights-Java/pull/4037)
+* Support for Live Metrics Filtering [#43040](https://github.com/Azure/azure-sdk-for-java/pull/43040), [#43184](https://github.com/Azure/azure-sdk-for-java/pull/43184), [#43289](https://github.com/Azure/azure-sdk-for-java/pull/43289), [#43323](https://github.com/Azure/azure-sdk-for-java/pull/43323), [#43506](https://github.com/Azure/azure-sdk-for-java/pull/43506), [#43744](https://github.com/Azure/azure-sdk-for-java/pull/43744)
+* Update to Open Telemetry Instrumentation [#4034](https://github.com/microsoft/ApplicationInsights-Java/pull/4034)
+* Remove user sensitive data from self-diagnostics [#3976](https://github.com/microsoft/ApplicationInsights-Java/pull/3976)
+* Update to Gradle 8.11.1 [#3793](https://github.com/microsoft/ApplicationInsights-Java/pull/3973)
+
+### CVE
+* Exclude META-INF/versions from instrumentation [#4040](https://github.com/microsoft/ApplicationInsights-Java/pull/4040)
+
+### Bug fixes
+* Fix detection for Spring Cloud running on AKS in Statsbeat [#4000](https://github.com/microsoft/ApplicationInsights-Java/pull/4000)
+
 ## Version 3.6.2 GA (10/23/2024)
 
 ### Enhancements
