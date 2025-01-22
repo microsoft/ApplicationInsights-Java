@@ -4,14 +4,24 @@
 
 ### Enhancements
 
-* Transition to azure-monitor-opentelemetry-autoconfigure 1.0.0-beta.1, in place of azure-monitor-opentelemetry-exporter [#4037](https://github.com/microsoft/ApplicationInsights-Java/pull/4037)
-* Support for Live Metrics Filtering [#43040](https://github.com/Azure/azure-sdk-for-java/pull/43040), [#43184](https://github.com/Azure/azure-sdk-for-java/pull/43184), [#43289](https://github.com/Azure/azure-sdk-for-java/pull/43289), [#43323](https://github.com/Azure/azure-sdk-for-java/pull/43323), [#43506](https://github.com/Azure/azure-sdk-for-java/pull/43506), [#43744](https://github.com/Azure/azure-sdk-for-java/pull/43744)
-* Update to Open Telemetry Instrumentation [#4034](https://github.com/microsoft/ApplicationInsights-Java/pull/4034)
-* Remove user sensitive data from self-diagnostics [#3976](https://github.com/microsoft/ApplicationInsights-Java/pull/3976)
-* Update to Gradle 8.11.1 [#3793](https://github.com/microsoft/ApplicationInsights-Java/pull/3973)
+* Support for Live Metrics Filtering ([#43040](https://github.com/Azure/azure-sdk-for-java/pull/43040), [#43184](https://github.com/Azure/azure-sdk-for-java/pull/43184), [#43289](https://github.com/Azure/azure-sdk-for-java/pull/43289), [#43323](https://github.com/Azure/azure-sdk-for-java/pull/43323), [#43506](https://github.com/Azure/azure-sdk-for-java/pull/43506), [#43744](https://github.com/Azure/azure-sdk-for-java/pull/43744))
+* Update to OpenTelemetry Instrumentation 2.12.0 ([#4034](https://github.com/microsoft/ApplicationInsights-Java/pull/4034))
+* Remove user sensitive data from self-diagnostics ([#3976](https://github.com/microsoft/ApplicationInsights-Java/pull/3976))
+* Update OpenTelemetry dependency versions
+    ([#4013](https://github.com/microsoft/ApplicationInsights-Java/pull/4013))
+* Exclude `META-INF/maven/**` from agent jar to avoid CVE false positives ([#4040](https://github.com/microsoft/ApplicationInsights-Java/pull/4040))
+* Migrate profiler code from jackson json to azure json
+  ([#3896](https://github.com/microsoft/ApplicationInsights-Java/pull/3896))
+* Don't log Log Records if they are sampled out
+  ([#3936](https://github.com/microsoft/ApplicationInsights-Java/pull/3936))
+* Include NICE, IRQ, SOFTIRQ, and STEAL in `\\Processor(_Total)\\% Processor Time` metric
+  ([#3987](https://github.com/microsoft/ApplicationInsights-Java/pull/3987))
+* Add note to applicationinsights.log to make sure that private information is removed from the log
+  ([#4011](https://github.com/microsoft/ApplicationInsights-Java/pull/4011))
+* Support finding applicationinsights.json in current dir when using runtime attach
+  ([#3990](https://github.com/microsoft/ApplicationInsights-Java/pull/3990))
+* Add a warning message if the java agent if the applicationinsights-agent jar is in the classpath in Java 11  ([#4039](https://github.com/microsoft/ApplicationInsights-Java/pull/4039)) 
 
-### CVE
-* Exclude META-INF/versions from instrumentation [#4040](https://github.com/microsoft/ApplicationInsights-Java/pull/4040)
 
 ### Bug fixes
 * Fix detection for Spring Cloud running on AKS in Statsbeat [#4000](https://github.com/microsoft/ApplicationInsights-Java/pull/4000)
