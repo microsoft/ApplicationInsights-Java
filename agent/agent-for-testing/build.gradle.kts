@@ -86,7 +86,6 @@ fun CopySpec.isolateClasses(jars: Iterable<File>) {
     from(zipTree(it)) {
       into("inst")
       rename("^(.*)\\.class\$", "\$1.classdata")
-      exclude("META-INF/maven/**")
     }
   }
 }

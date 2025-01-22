@@ -207,6 +207,8 @@ fun CopySpec.isolateClasses(jars: Iterable<File>) {
       rename("^(.*)\\.class\$", "\$1.classdata")
       // Rename LICENSE file since it clashes with license dir on non-case sensitive FSs (i.e. Mac)
       rename("""^LICENSE$""", "LICENSE.renamed")
+      // excluding pom.xml files that are embedded in several dependencies
+      // in order to avoid false positives from security scanners
       exclude("META-INF/maven/**")
     }
   }
