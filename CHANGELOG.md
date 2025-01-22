@@ -20,7 +20,7 @@
   ([#4011](https://github.com/microsoft/ApplicationInsights-Java/pull/4011))
 * Support finding applicationinsights.json in current dir when using runtime attach
   ([#3990](https://github.com/microsoft/ApplicationInsights-Java/pull/3990))
-* Add a warning message if the java agent if the applicationinsights-agent jar is in the classpath in Java 11  ([#4039](https://github.com/microsoft/ApplicationInsights-Java/pull/4039)) 
+* Add a warning message if the applicationinsights-agent jar is in the classpath in Java 11  ([#4039](https://github.com/microsoft/ApplicationInsights-Java/pull/4039)) 
 
 
 ### Bug fixes
