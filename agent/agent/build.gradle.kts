@@ -207,6 +207,7 @@ fun CopySpec.isolateClasses(jars: Iterable<File>) {
       rename("^(.*)\\.class\$", "\$1.classdata")
       // Rename LICENSE file since it clashes with license dir on non-case sensitive FSs (i.e. Mac)
       rename("""^LICENSE$""", "LICENSE.renamed")
+      exclude("META-INF/maven/**")
     }
   }
   from("${rootProject.projectDir}/LICENSE") {
