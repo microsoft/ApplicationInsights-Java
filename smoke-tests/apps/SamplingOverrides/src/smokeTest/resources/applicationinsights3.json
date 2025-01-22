@@ -23,7 +23,7 @@
         "attributes": [
           {
             "key": "db.statement",
-            "value": "select count(*) from abc",
+            "value": "select * from abc",
             "matchType": "strict"
           }
         ],

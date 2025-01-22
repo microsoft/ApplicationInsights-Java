@@ -55,7 +55,7 @@ abstract class SamplingOverrides4Test {
         .getItemsEnvelopeDataType("RequestData")
         .forEach(
             item -> {
-              assertThat(item.getSampleRate()).isEqualTo(2);
+              assertThat(item.getSampleRate()).isEqualTo(50);
             });
     testing
         .mockedIngestion
