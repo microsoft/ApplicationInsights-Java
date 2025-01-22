@@ -31,7 +31,7 @@ public class SamplingOverrides {
   }
 
   @Nullable
-  public AiSampler getOverride(Attributes attributes) {
+  public AiSamplerForOverride getOverride(Attributes attributes) {
     LazyHttpUrl lazyHttpUrl = new LazyHttpUrl(attributes);
     LazyHttpTarget lazyHttpTarget = new LazyHttpTarget(attributes);
     for (MatcherGroup matcherGroups : matcherGroups) {
@@ -44,10 +44,7 @@ public class SamplingOverrides {
 
   private static class MatcherGroup {
     private final List<TempPredicate> predicates;
-    private final AiSampler sampler;
-    // for now only support fixed percentage, but could extend sampling overrides to support
-    // rate-limited sampling
-    private final SamplingPercentage samplingPercentage;
+    private final AiSamplerForOverride sampler;
 
     private MatcherGroup(SamplingOverride override) {
       predicates = new ArrayList<>();
@@ -57,16 +54,11 @@ public class SamplingOverrides {
           predicates.add(predicate);
         }
       }
-      samplingPercentage = SamplingPercentage.fixed(override.percentage);
-      // setting sampleWhenLocalParentSampled = (override.percentage == 100) would end up the same
-      boolean sampleWhenLocalParentSampled = false;
-      boolean dropWhenLocalParentDropped = override.percentage < 100;
-      sampler =
-          AiSampler.createSamplingOverride(
-              samplingPercentage, sampleWhenLocalParentSampled, dropWhenLocalParentDropped);
+      SamplingPercentage samplingPercentage = SamplingPercentage.fixed(override.percentage);
+      sampler = AiSamplerForOverride.create(samplingPercentage);
     }
 
-    AiSampler getSampler() {
+    AiSamplerForOverride getSampler() {
       return sampler;
     }
 

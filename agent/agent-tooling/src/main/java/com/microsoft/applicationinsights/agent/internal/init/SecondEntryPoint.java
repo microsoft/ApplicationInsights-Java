@@ -45,7 +45,7 @@ import com.microsoft.applicationinsights.agent.internal.processors.ExporterWithS
 import com.microsoft.applicationinsights.agent.internal.processors.LogExporterWithAttributeProcessor;
 import com.microsoft.applicationinsights.agent.internal.processors.SpanExporterWithAttributeProcessor;
 import com.microsoft.applicationinsights.agent.internal.profiler.triggers.AlertTriggerSpanProcessor;
-import com.microsoft.applicationinsights.agent.internal.sampling.AiSampler;
+import com.microsoft.applicationinsights.agent.internal.sampling.AiSamplerForOverride;
 import com.microsoft.applicationinsights.agent.internal.sampling.SamplingOverrides;
 import com.microsoft.applicationinsights.agent.internal.telemetry.BatchItemProcessor;
 import com.microsoft.applicationinsights.agent.internal.telemetry.MetricFilter;
@@ -581,7 +581,8 @@ public class SecondEntryPoint
               return false;
             },
             (span, event) -> {
-              AiSampler sampler = exceptionSamplingOverrides.getOverride(event.getAttributes());
+              AiSamplerForOverride sampler =
+                  exceptionSamplingOverrides.getOverride(event.getAttributes());
               return sampler != null
                   && sampler
                           .shouldSampleLog(

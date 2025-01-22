@@ -3,7 +3,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.exporter;
 
-import com.microsoft.applicationinsights.agent.internal.sampling.AiSampler;
+import com.microsoft.applicationinsights.agent.internal.sampling.SamplerUtil;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.opentelemetry.api.trace.SpanContext;
 import java.util.concurrent.ThreadLocalRandom;
@@ -23,7 +23,7 @@ public final class ExporterUtils {
       return false;
     }
     if (spanContext.isValid()) {
-      return AiSampler.shouldRecordAndSample(spanContext.getTraceId(), percentage);
+      return SamplerUtil.shouldRecordAndSample(spanContext.getTraceId(), percentage);
     }
     // this is a standalone log (not part of a trace), so randomly sample at the given percentage
     return ThreadLocalRandom.current().nextDouble() < percentage / 100;

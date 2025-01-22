@@ -4,7 +4,6 @@
 package com.microsoft.applicationinsights.agent.internal.sampling;
 
 import com.azure.monitor.opentelemetry.autoconfigure.implementation.AiSemanticAttributes;
-import com.azure.monitor.opentelemetry.autoconfigure.implementation.RequestChecker;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
@@ -17,34 +16,16 @@ import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 import java.util.List;
 import javax.annotation.Nullable;
 
-// this sampler does two things:
-// * implements same trace id hashing algorithm so that traces are sampled the same across multiple
-//   nodes when some of those nodes are being monitored by other Application Insights SDKs (and 2.x
-//   Java SDK)
-// * adds item count to span attribute if it is sampled
-public class AiSampler implements Sampler {
+public class AiSamplerForOverride implements Sampler {
 
-  private final SamplingPercentage requestSamplingPercentage;
-  private final SamplingPercentage parentlessDependencySamplingPercentage;
-  private final boolean ingestionSamplingEnabled;
+  private final SamplingPercentage samplingPercentage;
 
-  public static AiSampler create(
-      SamplingPercentage requestSamplingPercentage,
-      SamplingPercentage parentlessDependencySamplingPercentage,
-      boolean ingestionSamplingEnabled) {
-    return new AiSampler(
-        requestSamplingPercentage,
-        parentlessDependencySamplingPercentage,
-        ingestionSamplingEnabled);
+  public static AiSamplerForOverride create(SamplingPercentage samplingPercentage) {
+    return new AiSamplerForOverride(samplingPercentage);
   }
 
-  private AiSampler(
-      SamplingPercentage requestSamplingPercentage,
-      SamplingPercentage parentlessDependencySamplingPercentage,
-      boolean ingestionSamplingEnabled) {
-    this.requestSamplingPercentage = requestSamplingPercentage;
-    this.parentlessDependencySamplingPercentage = parentlessDependencySamplingPercentage;
-    this.ingestionSamplingEnabled = ingestionSamplingEnabled;
+  private AiSamplerForOverride(SamplingPercentage samplingPercentage) {
+    this.samplingPercentage = samplingPercentage;
   }
 
   @Override
@@ -64,33 +45,29 @@ public class AiSampler implements Sampler {
           ((ReadableSpan) parentSpan).getAttribute(AiSemanticAttributes.SAMPLE_RATE);
     }
 
+    return internalShouldSample(parentSpanContext, parentSpanSampleRate, traceId);
+  }
+
+  public SamplingResult shouldSampleLog(SpanContext spanContext, @Nullable Double spanSampleRate) {
+    return internalShouldSample(spanContext, spanSampleRate, spanContext.getTraceId());
+  }
+
+  private SamplingResult internalShouldSample(
+      SpanContext parentSpanContext, @Nullable Double parentSpanSampleRate, String traceId) {
+
     SamplingResult samplingResult =
         useLocalParentDecisionIfPossible(parentSpanContext, parentSpanSampleRate);
     if (samplingResult != null) {
       return samplingResult;
     }
 
-    double sp;
-    if (requestSamplingPercentage == parentlessDependencySamplingPercentage) {
-      // optimization for fixed-rate sampling
-      sp = requestSamplingPercentage.get();
-    } else {
-      boolean isRequest = RequestChecker.isRequest(spanKind, parentSpanContext, attributes::get);
-      sp =
-          isRequest
-              ? requestSamplingPercentage.get()
-              : parentlessDependencySamplingPercentage.get();
-    }
-
-    if (sp == 100 && ingestionSamplingEnabled) {
-      return SamplingResult.recordAndSample();
-    }
+    double sp = samplingPercentage.get();
 
     return SamplerUtil.shouldSample(traceId, sp);
   }
 
   @Nullable
-  private static SamplingResult useLocalParentDecisionIfPossible(
+  private SamplingResult useLocalParentDecisionIfPossible(
       SpanContext parentSpanContext, @Nullable Double parentSpanSampleRate) {
 
     // remote parent-based sampling messes up item counts since item count is not propagated in
@@ -101,12 +78,27 @@ public class AiSampler implements Sampler {
       return null;
     }
 
+    double sp = samplingPercentage.get();
+
     if (!parentSpanContext.isSampled()) {
-      return SamplingResult.drop();
+      if (sp < 100) {
+        // only 100% sampling override will override an unsampled parent!!
+        return SamplingResult.drop();
+      } else {
+        // falls back in this case to sp
+        return null;
+      }
     }
+
     if (parentSpanSampleRate == null) {
       return null;
     }
+
+    if (sp < parentSpanSampleRate || sp == 100) {
+      // falls back in this case to sp
+      return null;
+    }
+    // don't sample more dependencies than parent in this case
     return new SamplerUtil.RecordAndSampleWithItemCount(parentSpanSampleRate);
   }
 
