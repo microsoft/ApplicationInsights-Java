@@ -23,8 +23,16 @@ public class MockedQuickPulseServlet extends HttpServlet {
   private static final String MOCK_RESPONSE_JSON_DEFAULT_CONFIG =
       "{\"ETag\":\"fake::etag\",\"Metrics\":[],\"QuotaInfo\":null,\"DocumentStreams\":[{\"Id\":\"all-types-default\",\"DocumentFilterGroups\":[{\"TelemetryType\":\"Request\",\"Filters\":{\"Filters\":[{\"FieldName\":\"Success\",\"Predicate\":\"Equal\",\"Comparand\":\"false\"}]}},{\"TelemetryType\":\"Dependency\",\"Filters\":{\"Filters\":[{\"FieldName\":\"Success\",\"Predicate\":\"Equal\",\"Comparand\":\"false\"}]}},{\"TelemetryType\":\"Exception\",\"Filters\":{\"Filters\":[]}},{\"TelemetryType\":\"Event\",\"Filters\":{\"Filters\":[]}},{\"TelemetryType\":\"Trace\",\"Filters\":{\"Filters\":[]}}]}]}";
 
+  private volatile boolean loggingEnabled;
   public MockedQuickPulseServlet() {
 
+  }
+
+  @SuppressWarnings("SystemOut")
+  private void logit(String message) {
+    if (loggingEnabled) {
+      System.out.println("FAKE INGESTION: INFO - " + message);
+    }
   }
 
   @Override
@@ -36,20 +44,20 @@ public class MockedQuickPulseServlet extends HttpServlet {
       String body = sw.toString();
 
       String path = req.getPathInfo();
-      System.out.println("QuickPulse received: " + path);
-      if (path.equals("QuickPulse.svc/ping")) {
+      logit("QuickPulse received: " + path);
+      if (path.equals("/ping")) {
           liveMetricsPingReceived.incrementAndGet();
           pingBody.set(body);
-          System.out.println("ping body: " + body);
+          logit("ping body: " + body);
           // want the following request to be a post
           resp.setHeader("x-ms-qps-subscribed", "true");
           resp.setContentType("application/json");
           resp.getWriter().write(MOCK_RESPONSE_JSON_DEFAULT_CONFIG);
 
-      } else if (path.equals("QuickPulse.svc/post")) {
+      } else if (path.equals("/post")) {
           liveMetricsPostReceived.incrementAndGet();
           lastPostBody.set(body);
-          System.out.println("post body: " + body);
+          logit("post body: " + body);
           // continue to post
           resp.setHeader("x-ms-qps-subscribed", "true");
       } else {
@@ -71,6 +79,10 @@ public class MockedQuickPulseServlet extends HttpServlet {
 
   public String getLastPostBody() {
     return lastPostBody.get();
+  }
+
+  public void setRequestLoggingEnabled(boolean enabled) {
+    loggingEnabled = enabled;
   }
 
 }

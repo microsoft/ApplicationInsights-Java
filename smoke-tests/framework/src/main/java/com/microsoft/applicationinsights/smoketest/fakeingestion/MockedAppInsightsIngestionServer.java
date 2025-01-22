@@ -319,4 +319,8 @@ public class MockedAppInsightsIngestionServer {
   public void setRequestLoggingEnabled(boolean enabled) {
     servlet.setRequestLoggingEnabled(enabled);
   }
+
+  public void setQuickPulseRequestLoggingEnabled(boolean enabled) {
+    quickPulseServlet.setRequestLoggingEnabled(enabled);
+  }
 }

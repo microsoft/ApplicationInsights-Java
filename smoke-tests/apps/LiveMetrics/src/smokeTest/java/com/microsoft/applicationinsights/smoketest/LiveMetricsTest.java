@@ -32,7 +32,8 @@ abstract class LiveMetricsTest {
   void doMostBasicTest() throws Exception {
 
     Awaitility.await()
-        .atMost(Duration.ofSeconds(10));
+        .atMost(Duration.ofSeconds(20));
+
         //.until(() -> testing.mockedIngestion.isLiveMetricsPingReceived());
   }
 

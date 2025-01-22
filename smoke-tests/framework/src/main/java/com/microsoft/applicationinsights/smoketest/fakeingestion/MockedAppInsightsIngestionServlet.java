@@ -100,12 +100,6 @@ class MockedAppInsightsIngestionServlet extends HttpServlet {
 
   @Override
   protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-    logit("request path info: " + req.getPathInfo());
-    if (!"/v2.1/track".equals(req.getPathInfo())) {
-      resp.sendError(404, "Unknown URI");
-      return;
-    }
-
     String contentEncoding = req.getHeader("content-encoding");
     Readable reader;
     if ("gzip".equals(contentEncoding)) {

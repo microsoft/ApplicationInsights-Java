@@ -205,6 +205,7 @@ public class SmokeTestExtension
     }
     mockedIngestion.startServer();
     mockedIngestion.setRequestLoggingEnabled(true);
+    mockedIngestion.setQuickPulseRequestLoggingEnabled(true);
     if (useOtlpEndpoint) {
       mockedOtlpIngestion.startServer();
     }
@@ -536,6 +537,7 @@ public class SmokeTestExtension
 
     mockedIngestion.stopServer();
     mockedIngestion.setRequestLoggingEnabled(false);
+    mockedIngestion.setQuickPulseRequestLoggingEnabled(false);
     if (useOtlpEndpoint) {
       mockedOtlpIngestion.stopServer();
     }
