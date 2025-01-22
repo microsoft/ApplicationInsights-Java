@@ -24,7 +24,8 @@
 
 
 ### Bug fixes
-* Fix detection for Spring Cloud running on AKS in Statsbeat [#4000](https://github.com/microsoft/ApplicationInsights-Java/pull/4000)
+* Fix detection for Spring Cloud running on AKS in Statsbeat
+  ([#4000](https://github.com/microsoft/ApplicationInsights-Java/pull/4000))
 
 ## Version 3.6.2 GA (10/23/2024)
 
