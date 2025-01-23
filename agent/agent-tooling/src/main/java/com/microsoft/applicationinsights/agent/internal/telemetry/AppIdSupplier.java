@@ -3,17 +3,17 @@
 
 package com.microsoft.applicationinsights.agent.internal.telemetry;
 
-import static com.azure.monitor.opentelemetry.exporter.implementation.utils.AzureMonitorMsgId.APP_ID_ERROR;
+import static com.azure.monitor.opentelemetry.autoconfigure.implementation.utils.AzureMonitorMsgId.APP_ID_ERROR;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 import com.azure.core.http.HttpMethod;
 import com.azure.core.http.HttpRequest;
 import com.azure.core.http.HttpResponse;
 import com.azure.core.util.logging.ClientLogger;
-import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
-import com.azure.monitor.opentelemetry.exporter.implementation.logging.NetworkFriendlyExceptions;
-import com.azure.monitor.opentelemetry.exporter.implementation.logging.OperationLogger;
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.ThreadPoolUtils;
+import com.azure.monitor.opentelemetry.autoconfigure.implementation.configuration.ConnectionString;
+import com.azure.monitor.opentelemetry.autoconfigure.implementation.logging.NetworkFriendlyExceptions;
+import com.azure.monitor.opentelemetry.autoconfigure.implementation.logging.OperationLogger;
+import com.azure.monitor.opentelemetry.autoconfigure.implementation.utils.ThreadPoolUtils;
 import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
 import java.net.MalformedURLException;
 import java.net.URL;

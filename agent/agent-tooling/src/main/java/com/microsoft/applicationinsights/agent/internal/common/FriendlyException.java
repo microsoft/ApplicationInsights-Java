@@ -3,7 +3,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.common;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
+import com.azure.monitor.opentelemetry.autoconfigure.implementation.utils.Strings;
 import javax.annotation.Nullable;
 
 public class FriendlyException extends RuntimeException {

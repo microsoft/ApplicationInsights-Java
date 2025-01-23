@@ -6,7 +6,7 @@ package com.microsoft.applicationinsights.agent.internal.init;
 import static com.microsoft.applicationinsights.agent.internal.diagnostics.MsgId.INITIALIZATION_SUCCESS;
 import static com.microsoft.applicationinsights.agent.internal.diagnostics.MsgId.STARTUP_FAILURE_ERROR;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.PropertyHelper;
+import com.azure.monitor.opentelemetry.autoconfigure.implementation.utils.PropertyHelper;
 import com.google.auto.service.AutoService;
 import com.microsoft.applicationinsights.agent.internal.common.FriendlyException;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
@@ -126,6 +126,8 @@ public class FirstEntryPoint implements LoggingCustomizer {
       // class path null with a Spring Boot executable JAR
       if (classPath != null
           // JAR name in Maven central, the user could have renamed it
+          && isJavaVersionEqualOrGreaterThan11() // -javaagent content added to the classpath in
+          // Java 1.8
           && classPath.contains("applicationinsights-agent")) {
         startupLogger.warn(
             "The applicationinsights-agent JAR is in the class path. You should remove it because it could lead to unexpected results. You should configure the Java agent with -javaagent. You can also use the runtime attachment with Spring Boot applications.");
@@ -149,6 +151,11 @@ public class FirstEntryPoint implements LoggingCustomizer {
     } catch (Exception e) {
       throw new IllegalStateException(e);
     }
+  }
+
+  private static boolean isJavaVersionEqualOrGreaterThan11() {
+    String javaVersion = System.getProperty("java.vm.specification.version");
+    return !"1.8".equals(javaVersion) && !"9".equals(javaVersion) && !"10".equals(javaVersion);
   }
 
   private static Map<String, String> findEnvVariables() {

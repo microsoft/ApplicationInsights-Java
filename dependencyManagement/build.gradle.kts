@@ -11,11 +11,11 @@ data class DependencySet(val group: String, val version: String, val modules: Li
 val dependencyVersions = hashMapOf<String, String>()
 rootProject.extra["versions"] = dependencyVersions
 
-val otelSdkVersion = "1.45.0"
-val otelInstrumentationAlphaVersion = "2.11.0-alpha"
-val otelInstrumentationVersion = "2.11.0"
+val otelSdkVersion = "1.46.0"
+val otelInstrumentationAlphaVersion = "2.12.0-alpha"
+val otelInstrumentationVersion = "2.12.0"
+val otelContribVersion = "1.43.0"
 
-rootProject.extra["otelSdkVersion"] = otelSdkVersion
 rootProject.extra["otelInstrumentationVersion"] = otelInstrumentationVersion
 rootProject.extra["otelInstrumentationAlphaVersion"] = otelInstrumentationAlphaVersion
 
@@ -69,12 +69,13 @@ val DEPENDENCIES = listOf(
   "org.apache.commons:commons-text:1.13.0",
   "com.google.code.gson:gson:2.11.0",
   "com.azure:azure-core-test:1.26.2", // this is not included in azure-sdk-bom
-  "org.assertj:assertj-core:3.27.2",
+  "org.assertj:assertj-core:3.27.3",
   "org.awaitility:awaitility:4.2.2",
   "io.github.hakky54:logcaptor:2.10.1",
-  "io.opentelemetry.contrib:opentelemetry-jfr-connection:1.42.0-alpha",
+  "io.opentelemetry.contrib:opentelemetry-jfr-connection:${otelContribVersion}-alpha",
+  "io.opentelemetry.contrib:opentelemetry-runtime-attach-core:${otelContribVersion}-alpha",
   "com.google.code.findbugs:jsr305:3.0.2",
-  "com.github.spotbugs:spotbugs-annotations:4.8.6"
+  "com.github.spotbugs:spotbugs-annotations:4.9.0"
 )
 
 javaPlatform {

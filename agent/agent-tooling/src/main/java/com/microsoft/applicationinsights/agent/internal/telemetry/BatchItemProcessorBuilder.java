@@ -6,7 +6,7 @@ package com.microsoft.applicationinsights.agent.internal.telemetry;
 import static io.opentelemetry.api.internal.Utils.checkArgument;
 import static java.util.Objects.requireNonNull;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.pipeline.TelemetryItemExporter;
+import com.azure.monitor.opentelemetry.autoconfigure.implementation.pipeline.TelemetryItemExporter;
 import java.util.concurrent.TimeUnit;
 
 // copied from io.opentelemetry.sdk.trace.export.BatchSpanProcessorBuilder

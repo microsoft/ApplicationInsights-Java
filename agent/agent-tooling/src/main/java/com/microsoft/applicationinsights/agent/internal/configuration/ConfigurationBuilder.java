@@ -3,10 +3,10 @@
 
 package com.microsoft.applicationinsights.agent.internal.configuration;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.SemanticAttributes;
-import com.azure.monitor.opentelemetry.exporter.implementation.statsbeat.RpAttachType;
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.HostName;
-import com.azure.monitor.opentelemetry.exporter.implementation.utils.Strings;
+import com.azure.monitor.opentelemetry.autoconfigure.implementation.SemanticAttributes;
+import com.azure.monitor.opentelemetry.autoconfigure.implementation.statsbeat.RpAttachType;
+import com.azure.monitor.opentelemetry.autoconfigure.implementation.utils.HostName;
+import com.azure.monitor.opentelemetry.autoconfigure.implementation.utils.Strings;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;

@@ -3,8 +3,8 @@
 
 package com.microsoft.applicationinsights.agent.internal.profiler;
 
-import com.azure.monitor.opentelemetry.exporter.implementation.builders.MessageTelemetryBuilder;
-import com.azure.monitor.opentelemetry.exporter.implementation.configuration.ConnectionString;
+import com.azure.monitor.opentelemetry.autoconfigure.implementation.builders.MessageTelemetryBuilder;
+import com.azure.monitor.opentelemetry.autoconfigure.implementation.configuration.ConnectionString;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.configuration.GcReportingLevel;
 import com.microsoft.applicationinsights.agent.internal.profiler.config.ProfilerConfiguration;
