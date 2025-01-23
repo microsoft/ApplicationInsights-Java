@@ -16,11 +16,14 @@ import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCA
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_8_OPENJ9;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.WILDFLY_13_JAVA_8;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.WILDFLY_13_JAVA_8_OPENJ9;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.Duration;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import com.azure.json.JsonProviders;
+import com.azure.json.JsonReader;
 
 @UseAgent
 abstract class LiveMetricsTest {
@@ -29,12 +32,22 @@ abstract class LiveMetricsTest {
 
   @Test
   @TargetUri("/test")
-  void doMostBasicTest() throws Exception {
+  void testPingPostAndTelemetryDataFlow() throws Exception {
 
     Awaitility.await()
-        .atMost(Duration.ofSeconds(20));
+        .atMost(Duration.ofSeconds(15));
 
-        //.until(() -> testing.mockedIngestion.isLiveMetricsPingReceived());
+    assertThat(testing.mockedIngestion.getNumPingsReceived()).isEqualTo(1);
+    //ping body
+    String pingBody = testing.mockedIngestion.getLastPingBody();
+
+    // After the ping, we expect a post to happen roughly every second.
+    assertThat(testing.mockedIngestion.getNumPostsReceived()).isGreaterThanOrEqualTo(10);
+    String postBody = testing.mockedIngestion.getLastPostBody();
+
+    MonitoringDataPoint pingDataPoint = MonitoringDataPoint.fromJson(pingBody);
+
+
   }
 
   @Environment(TOMCAT_8_JAVA_8)
