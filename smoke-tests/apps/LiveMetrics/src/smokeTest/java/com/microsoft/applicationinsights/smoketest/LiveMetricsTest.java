@@ -18,12 +18,19 @@ import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.WILDF
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.WILDFLY_13_JAVA_8_OPENJ9;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.IOException;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
+import com.azure.json.JsonToken;
+import com.azure.monitor.opentelemetry.autoconfigure.implementation.quickpulse.swagger.models.DocumentIngress;
+import com.azure.monitor.opentelemetry.autoconfigure.implementation.quickpulse.swagger.models.DocumentStreamInfo;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import com.azure.json.JsonProviders;
 import com.azure.json.JsonReader;
+import com.azure.monitor.opentelemetry.autoconfigure.implementation.quickpulse.swagger.models.MonitoringDataPoint;
 
 @UseAgent
 abstract class LiveMetricsTest {
@@ -45,7 +52,14 @@ abstract class LiveMetricsTest {
     assertThat(testing.mockedIngestion.getNumPostsReceived()).isGreaterThanOrEqualTo(10);
     String postBody = testing.mockedIngestion.getLastPostBody();
 
-    MonitoringDataPoint pingDataPoint = MonitoringDataPoint.fromJson(pingBody);
+    // Verify that the telemetry data is in the last post body
+    JsonReader reader = JsonProviders.createReader(postBody);
+    List<MonitoringDataPoint> dataPoints = reader.readArray(MonitoringDataPoint::fromJson);
+    assertThat(dataPoints).hasSize(1);
+
+    MonitoringDataPoint dataPoint = dataPoints.get(0);
+    List<DocumentIngress> docs = dataPoint.getDocuments();
+
 
 
   }
