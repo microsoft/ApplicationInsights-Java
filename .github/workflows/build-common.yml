@@ -57,7 +57,9 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
 
       - name: Generate license report
-        run: ./gradlew generateLicenseReport ${{ inputs.no-build-cache && '--no-build-cache' || '' }}
+        run: |
+          # generateLicenseReport build caching appears to be broken so need to ignore build cache always
+          ./gradlew generateLicenseReport --no-build-cache
 
       - name: Check licenses
         run: |
