@@ -1,14 +1,12 @@
 package com.microsoft.applicationinsights.etw_testapp;
 
+import com.microsoft.applicationinsights.agent.internal.diagnostics.etw.DiagnosticsLoggerProxy;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.concurrent.atomic.AtomicInteger;
-
-import com.microsoft.applicationinsights.agent.internal.diagnostics.etw.DiagnosticsLoggerProxy;
 
 @RestController
 public class EtwTestController {
@@ -51,7 +49,6 @@ public class EtwTestController {
       default:
         return ResponseEntity.notFound().build();
     }
-    return ResponseEntity.ok(
-        level.toUpperCase() + " " + n + (t == null ? "" : "<br/>\n" + t.toString()));
+    return ResponseEntity.ok();
   }
 }
