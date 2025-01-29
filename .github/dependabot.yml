@@ -35,3 +35,19 @@ updates:
     schedule:
       interval: "daily"
     open-pull-requests-limit: 10
+
+  - package-ecosystem: "gradle"
+    directory: "/perf-tests"
+    registries:
+      - gradle-plugin-portal
+    schedule:
+      interval: "daily"
+    open-pull-requests-limit: 10
+
+  - package-ecosystem: "gradle"
+    directory: "/etw/etw-testapp"
+    registries:
+      - gradle-plugin-portal
+    schedule:
+      interval: "daily"
+    open-pull-requests-limit: 10
