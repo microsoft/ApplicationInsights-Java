@@ -223,6 +223,6 @@ configurations {
     exclude("com.fasterxml.jackson.dataformat", "jackson-dataformat-xml")
     exclude("com.fasterxml.woodstox", "woodstox-core")
     // temporarily overriding version until latest azure-json is part of azure-core
-    resolutionStrategy.force("com.azure:azure-json:1.3.0")
+    resolutionStrategy.force("com.azure:azure-json:1.4.0")
   }
 }
