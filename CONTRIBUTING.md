@@ -8,11 +8,11 @@ and discuss your ideas or propose the changes you wish to make.
 
 ## Building
 
-In order to build and test this whole repository you need JDK 11+.
+In order to build and test this whole repository you need JDK 17.
 
 ### Building from source
 
-Build using Java 11+:
+Build using Java 17:
 
 ```bash
 java -version
