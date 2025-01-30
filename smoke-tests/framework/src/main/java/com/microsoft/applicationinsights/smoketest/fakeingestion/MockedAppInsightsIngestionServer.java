@@ -279,20 +279,12 @@ public class MockedAppInsightsIngestionServer {
     return items;
   }
 
-  public int getNumPingsReceived() {
-    return quickPulseServlet.getNumPingsReceived();
+  public boolean isPingReceived() {
+    return quickPulseServlet.isPingReceived();
   }
 
-  public int getNumPostsReceived() {
-    return quickPulseServlet.getNumPostsReceived();
-  }
-
-  public String getLastPingBody() {
-    return quickPulseServlet.getPingBody();
-  }
-
-  public String getLastPostBody() {
-    return quickPulseServlet.getLastPostBody();
+  public List<String> getPostBodies() {
+    return quickPulseServlet.getPostBodies();
   }
 
   @SuppressWarnings("SystemOut")

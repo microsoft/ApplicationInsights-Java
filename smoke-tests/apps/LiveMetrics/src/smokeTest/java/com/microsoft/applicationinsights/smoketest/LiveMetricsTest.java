@@ -22,9 +22,11 @@ import java.io.IOException;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
-import com.azure.json.JsonToken;
 import com.azure.monitor.opentelemetry.autoconfigure.implementation.quickpulse.swagger.models.DocumentIngress;
-import com.azure.monitor.opentelemetry.autoconfigure.implementation.quickpulse.swagger.models.DocumentStreamInfo;
+import com.azure.monitor.opentelemetry.autoconfigure.implementation.quickpulse.swagger.models.Exception;
+import com.azure.monitor.opentelemetry.autoconfigure.implementation.quickpulse.swagger.models.Trace;
+import com.azure.monitor.opentelemetry.autoconfigure.implementation.quickpulse.swagger.models.DocumentType;
+import com.azure.monitor.opentelemetry.autoconfigure.implementation.quickpulse.swagger.models.MetricPoint;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -39,28 +41,68 @@ abstract class LiveMetricsTest {
 
   @Test
   @TargetUri("/test")
-  void testPingPostAndTelemetryDataFlow() throws Exception {
-
+  void testTelemetryDataFlow() throws java.lang.Exception {
     Awaitility.await()
-        .atMost(Duration.ofSeconds(15));
-
-    assertThat(testing.mockedIngestion.getNumPingsReceived()).isEqualTo(1);
-    //ping body
-    String pingBody = testing.mockedIngestion.getLastPingBody();
-
-    // After the ping, we expect a post to happen roughly every second.
-    assertThat(testing.mockedIngestion.getNumPostsReceived()).isGreaterThanOrEqualTo(10);
-    String postBody = testing.mockedIngestion.getLastPostBody();
-
-    // Verify that the telemetry data is in the last post body
-    JsonReader reader = JsonProviders.createReader(postBody);
-    List<MonitoringDataPoint> dataPoints = reader.readArray(MonitoringDataPoint::fromJson);
-    assertThat(dataPoints).hasSize(1);
-
-    MonitoringDataPoint dataPoint = dataPoints.get(0);
-    List<DocumentIngress> docs = dataPoint.getDocuments();
+        .atMost(Duration.ofSeconds(20));
 
 
+    assertThat(testing.mockedIngestion.isPingReceived()).isTrue();
+
+
+    List<String> postBodies = testing.mockedIngestion.getPostBodies();
+    assertThat(postBodies).hasSizeGreaterThan(0); // should post at least once
+
+    boolean foundExceptionDoc = false;
+    boolean foundTraceDoc = false;
+    boolean foundDependency = false;
+    boolean foundRequest = false;
+
+    for (String postBody : postBodies) {
+      // Verify that the telemetry data is in the last post body
+      List<MonitoringDataPoint> dataPoints = new ArrayList<>();
+      try {
+        JsonReader reader = JsonProviders.createReader(postBody);
+        dataPoints = reader.readArray(MonitoringDataPoint::fromJson);
+      } catch (IOException e) {
+        throw new java.lang.Exception("Failed to parse post request body", e);
+      }
+
+      assertThat(dataPoints).hasSize(1);
+      MonitoringDataPoint dataPoint = dataPoints.get(0);
+      List<DocumentIngress> docs = dataPoint.getDocuments();
+      List<MetricPoint> metrics = dataPoint.getMetrics();
+      // check that the expected documents are present
+      // With the default filtering configuration, we should only see the exception and trace documents.
+      // Request/Dep did not fail, so there should not be documents for those.
+
+      for (DocumentIngress doc : docs) {
+        if (doc.getDocumentType().equals(DocumentType.EXCEPTION) &&
+            ((Exception) doc).getExceptionMessage().equals("Fake Exception")) {
+          foundExceptionDoc = true;
+        } else if (doc.getDocumentType().equals(DocumentType.TRACE) &&
+            ((Trace) doc).getMessage().equals("This message should generate a trace")) {
+          foundTraceDoc = true;
+        }
+      }
+
+      // check that the expected metrics have the correct values
+
+      for (MetricPoint metric : metrics) {
+        String name = metric.getName();
+        double value = metric.getValue();
+        if (name.equals("\\ApplicationInsights\\Dependency Calls/Sec") && value == 1) {
+          foundDependency = true;
+        } else if (name.equals("\\ApplicationInsights\\Requests/Sec") && value == 1) {
+          foundRequest = true;
+        }
+      }
+
+    }
+
+    assertThat(foundExceptionDoc).isTrue();
+    assertThat(foundTraceDoc).isTrue();
+    assertThat(foundDependency).isTrue();
+    assertThat(foundRequest).isTrue();
 
   }
 
