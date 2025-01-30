@@ -87,11 +87,6 @@ dependencies {
   testCompileOnly("com.google.code.findbugs:jsr305")
 }
 
-configurations.all {
-  // temporarily overriding version until latest azure-json is part of azure-core
-  resolutionStrategy.force("com.azure:azure-json:1.3.0")
-}
-
 configurations {
   "implementation" {
     exclude(group = "net.bytebuddy", module = "byte-buddy") // we use byte-buddy-dep
