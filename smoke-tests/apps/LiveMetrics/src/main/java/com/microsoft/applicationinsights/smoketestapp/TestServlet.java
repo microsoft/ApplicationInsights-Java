@@ -3,13 +3,13 @@
 
 package com.microsoft.applicationinsights.smoketestapp;
 
+import io.opentelemetry.instrumentation.annotations.WithSpan;
 import java.io.IOException;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import io.opentelemetry.instrumentation.annotations.WithSpan;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 

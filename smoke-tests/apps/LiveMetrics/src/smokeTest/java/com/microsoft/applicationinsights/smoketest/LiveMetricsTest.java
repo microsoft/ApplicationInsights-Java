@@ -18,21 +18,21 @@ import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.WILDF
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.WILDFLY_13_JAVA_8_OPENJ9;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.azure.json.JsonProviders;
+import com.azure.json.JsonReader;
+import com.azure.monitor.opentelemetry.autoconfigure.implementation.quickpulse.swagger.models.DocumentIngress;
+import com.azure.monitor.opentelemetry.autoconfigure.implementation.quickpulse.swagger.models.DocumentType;
+import com.azure.monitor.opentelemetry.autoconfigure.implementation.quickpulse.swagger.models.Exception;
+import com.azure.monitor.opentelemetry.autoconfigure.implementation.quickpulse.swagger.models.MetricPoint;
+import com.azure.monitor.opentelemetry.autoconfigure.implementation.quickpulse.swagger.models.MonitoringDataPoint;
+import com.azure.monitor.opentelemetry.autoconfigure.implementation.quickpulse.swagger.models.Trace;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
-import com.azure.monitor.opentelemetry.autoconfigure.implementation.quickpulse.swagger.models.DocumentIngress;
-import com.azure.monitor.opentelemetry.autoconfigure.implementation.quickpulse.swagger.models.Exception;
-import com.azure.monitor.opentelemetry.autoconfigure.implementation.quickpulse.swagger.models.Trace;
-import com.azure.monitor.opentelemetry.autoconfigure.implementation.quickpulse.swagger.models.DocumentType;
-import com.azure.monitor.opentelemetry.autoconfigure.implementation.quickpulse.swagger.models.MetricPoint;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
-import com.azure.json.JsonProviders;
-import com.azure.json.JsonReader;
-import com.azure.monitor.opentelemetry.autoconfigure.implementation.quickpulse.swagger.models.MonitoringDataPoint;
 
 @UseAgent
 abstract class LiveMetricsTest {
@@ -42,12 +42,9 @@ abstract class LiveMetricsTest {
   @Test
   @TargetUri("/test")
   void testTelemetryDataFlow() throws java.lang.Exception {
-    Awaitility.await()
-        .atMost(Duration.ofSeconds(20));
-
+    Awaitility.await().atMost(Duration.ofSeconds(20));
 
     assertThat(testing.mockedIngestion.isPingReceived()).isTrue();
-
 
     List<String> postBodies = testing.mockedIngestion.getPostBodies();
     assertThat(postBodies).hasSizeGreaterThan(0); // should post at least once
@@ -58,35 +55,37 @@ abstract class LiveMetricsTest {
     boolean foundRequest = false;
 
     for (String postBody : postBodies) {
-      // Verify that the telemetry data is in the last post body
+      // Each post body is a list with a singular MonitoringDataPoint
       List<MonitoringDataPoint> dataPoints = new ArrayList<>();
       try {
         JsonReader reader = JsonProviders.createReader(postBody);
+        // See live metrics swagger to understand MonitoringDataPoint structure
         dataPoints = reader.readArray(MonitoringDataPoint::fromJson);
       } catch (IOException e) {
         throw new java.lang.Exception("Failed to parse post request body", e);
       }
 
+      // Because the mock ping/posts should succeed, we should only have one MonitoringDataPoint per
+      // post
       assertThat(dataPoints).hasSize(1);
       MonitoringDataPoint dataPoint = dataPoints.get(0);
       List<DocumentIngress> docs = dataPoint.getDocuments();
       List<MetricPoint> metrics = dataPoint.getMetrics();
-      // check that the expected documents are present
-      // With the default filtering configuration, we should only see the exception and trace documents.
-      // Request/Dep did not fail, so there should not be documents for those.
 
+      // check that the expected documents are present
+      // With the default filtering configuration, we should only see the exception and trace
+      // documents.
       for (DocumentIngress doc : docs) {
-        if (doc.getDocumentType().equals(DocumentType.EXCEPTION) &&
-            ((Exception) doc).getExceptionMessage().equals("Fake Exception")) {
+        if (doc.getDocumentType().equals(DocumentType.EXCEPTION)
+            && ((Exception) doc).getExceptionMessage().equals("Fake Exception")) {
           foundExceptionDoc = true;
-        } else if (doc.getDocumentType().equals(DocumentType.TRACE) &&
-            ((Trace) doc).getMessage().equals("This message should generate a trace")) {
+        } else if (doc.getDocumentType().equals(DocumentType.TRACE)
+            && ((Trace) doc).getMessage().equals("This message should generate a trace")) {
           foundTraceDoc = true;
         }
       }
 
-      // check that the expected metrics have the correct values
-
+      // See if dependency and request are counted
       for (MetricPoint metric : metrics) {
         String name = metric.getName();
         double value = metric.getValue();
@@ -96,14 +95,12 @@ abstract class LiveMetricsTest {
           foundRequest = true;
         }
       }
-
     }
 
     assertThat(foundExceptionDoc).isTrue();
     assertThat(foundTraceDoc).isTrue();
     assertThat(foundDependency).isTrue();
     assertThat(foundRequest).isTrue();
-
   }
 
   @Environment(TOMCAT_8_JAVA_8)

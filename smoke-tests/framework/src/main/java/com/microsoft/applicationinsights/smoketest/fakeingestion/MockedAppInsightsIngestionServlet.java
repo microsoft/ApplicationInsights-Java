@@ -97,7 +97,6 @@ class MockedAppInsightsIngestionServlet extends HttpServlet {
     throw new TimeoutException("timed out waiting for items");
   }
 
-
   @Override
   protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
     String contentEncoding = req.getHeader("content-encoding");
