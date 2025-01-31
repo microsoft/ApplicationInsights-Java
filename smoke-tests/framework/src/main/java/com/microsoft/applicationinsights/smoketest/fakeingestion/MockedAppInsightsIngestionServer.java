@@ -38,7 +38,7 @@ public class MockedAppInsightsIngestionServer {
 
     handler.addServletWithMapping(new ServletHolder(profilerSettingsServlet), "/profiler/*");
     handler.addServletWithMapping(new ServletHolder(quickPulseServlet), "/QuickPulseService.svc/*");
-    handler.addServletWithMapping(new ServletHolder(servlet), "/v2.1/track");
+    handler.addServletWithMapping(new ServletHolder(servlet), "/*");
   }
 
   @SuppressWarnings("SystemOut")
