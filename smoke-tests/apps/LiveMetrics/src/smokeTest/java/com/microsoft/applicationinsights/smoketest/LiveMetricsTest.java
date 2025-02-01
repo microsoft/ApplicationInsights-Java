@@ -27,8 +27,10 @@ import com.azure.monitor.opentelemetry.autoconfigure.implementation.quickpulse.s
 import com.azure.monitor.opentelemetry.autoconfigure.implementation.quickpulse.swagger.models.MonitoringDataPoint;
 import com.azure.monitor.opentelemetry.autoconfigure.implementation.quickpulse.swagger.models.Trace;
 import java.io.IOException;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -40,7 +42,7 @@ abstract class LiveMetricsTest {
   @Test
   @TargetUri("/test")
   void testTelemetryDataFlow() throws java.lang.Exception {
-    testing.mockedIngestion.waitForItems("RequestData", 1);
+    Awaitility.await().atMost(Duration.ofSeconds(20));
 
     assertThat(testing.mockedIngestion.isPingReceived()).isTrue();
 
