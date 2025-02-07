@@ -27,7 +27,6 @@ public class TestServlet extends HttpServlet {
 
   @WithSpan
   private void doWork() {
-    System.out.println("Doing work to generate a dependency call, exception, and trace.");
     logger.error("This message should generate an exception!", new Exception("Fake Exception"));
     logger.info("This message should generate a trace");
   }

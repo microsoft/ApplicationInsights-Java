@@ -6,6 +6,7 @@ package com.microsoft.applicationinsights.smoketest.fakeingestion;
 import com.google.common.io.CharStreams;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.rmi.ServerError;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -19,7 +20,7 @@ public class MockedQuickPulseServlet extends HttpServlet {
   private final List<String> postBodies = new ArrayList<>();
   private final Object lock = new Object();
 
-  private static final String MOCK_RESPONSE_JSON_DEFAULT_CONFIG =
+  private static final String BODY =
       "{\"ETag\":\"fake::etag\",\"Metrics\":[],\"QuotaInfo\":null,\"DocumentStreams\":[{\"Id\":\"all-types-default\",\"DocumentFilterGroups\":[{\"TelemetryType\":\"Request\",\"Filters\":{\"Filters\":[{\"FieldName\":\"Success\",\"Predicate\":\"Equal\",\"Comparand\":\"false\"}]}},{\"TelemetryType\":\"Dependency\",\"Filters\":{\"Filters\":[{\"FieldName\":\"Success\",\"Predicate\":\"Equal\",\"Comparand\":\"false\"}]}},{\"TelemetryType\":\"Exception\",\"Filters\":{\"Filters\":[]}},{\"TelemetryType\":\"Event\",\"Filters\":{\"Filters\":[]}},{\"TelemetryType\":\"Trace\",\"Filters\":{\"Filters\":[]}}]}]}";
 
   private volatile boolean loggingEnabled;
@@ -49,7 +50,7 @@ public class MockedQuickPulseServlet extends HttpServlet {
       resp.setHeader("x-ms-qps-configuration-etag", "fake::etag");
       resp.setHeader("x-ms-qps-subscribed", "true");
       resp.setContentType("application/json");
-      resp.getWriter().write(MOCK_RESPONSE_JSON_DEFAULT_CONFIG);
+      resp.getWriter().write(BODY);
 
     } else if (path.equals("/post")) {
       synchronized (lock) {
@@ -60,7 +61,7 @@ public class MockedQuickPulseServlet extends HttpServlet {
       resp.setHeader("x-ms-qps-subscribed", "true");
       resp.setHeader("x-ms-qps-configuration-etag", "fake::etag");
     } else {
-      resp.setStatus(404);
+      throw new ServerError("Unexpected path: " + path + " please fix the test/mock server setup", new Error());
     }
   }
 

@@ -39,6 +39,11 @@ abstract class LiveMetricsTest {
 
   @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.create();
 
+  private boolean foundExceptionDoc = false;
+  private boolean foundTraceDoc = false;
+  private boolean foundDependency = false;
+  private boolean foundRequest = false;
+
   @Test
   @TargetUri("/test")
   void testTelemetryDataFlow() throws java.lang.Exception {
@@ -51,58 +56,69 @@ abstract class LiveMetricsTest {
     List<String> postBodies = testing.mockedIngestion.getPostBodies();
     assertThat(postBodies).hasSizeGreaterThan(0); // should post at least once
 
-    boolean foundExceptionDoc = false;
-    boolean foundTraceDoc = false;
-    boolean foundDependency = false;
-    boolean foundRequest = false;
-
     for (String postBody : postBodies) {
-      // Each post body is a list with a singular MonitoringDataPoint
-      List<MonitoringDataPoint> dataPoints = new ArrayList<>();
-      try {
-        JsonReader reader = JsonProviders.createReader(postBody);
-        // See live metrics swagger to understand MonitoringDataPoint structure
-        dataPoints = reader.readArray(MonitoringDataPoint::fromJson);
-      } catch (IOException e) {
-        throw new java.lang.Exception("Failed to parse post request body", e);
-      }
-
-      // Because the mock ping/posts should succeed, we should only have one MonitoringDataPoint per
-      // post
-      assertThat(dataPoints).hasSize(1);
-      MonitoringDataPoint dataPoint = dataPoints.get(0);
-      List<DocumentIngress> docs = dataPoint.getDocuments();
-      List<MetricPoint> metrics = dataPoint.getMetrics();
-
-      // check that the expected documents are present
-      // With the default filtering configuration, we should only see the exception and trace
-      // documents.
-      for (DocumentIngress doc : docs) {
-        if (doc.getDocumentType().equals(DocumentType.EXCEPTION)
-            && ((Exception) doc).getExceptionMessage().equals("Fake Exception")) {
-          foundExceptionDoc = true;
-        } else if (doc.getDocumentType().equals(DocumentType.TRACE)
-            && ((Trace) doc).getMessage().equals("This message should generate a trace")) {
-          foundTraceDoc = true;
-        }
-      }
-
-      // See if dependency and request are counted
-      for (MetricPoint metric : metrics) {
-        String name = metric.getName();
-        double value = metric.getValue();
-        if (name.equals("\\ApplicationInsights\\Dependency Calls/Sec") && value == 1) {
-          foundDependency = true;
-        } else if (name.equals("\\ApplicationInsights\\Requests/Sec") && value == 1) {
-          foundRequest = true;
-        }
-      }
+      searchPostBody(postBody);
     }
 
     assertThat(foundExceptionDoc).isTrue();
     assertThat(foundTraceDoc).isTrue();
     assertThat(foundDependency).isTrue();
     assertThat(foundRequest).isTrue();
+  }
+
+  // check if the expected trace/exception documents are present.
+  // With the default filtering configuration, we should not see successful requests/dependencies,
+  // only trace and exception.
+  private void searchDocs(List<DocumentIngress> docs) {
+    for (DocumentIngress doc : docs) {
+      if (doc.getDocumentType().equals(DocumentType.EXCEPTION)
+          && ((Exception) doc).getExceptionMessage().equals("Fake Exception")) {
+        foundExceptionDoc = true;
+      } else if (doc.getDocumentType().equals(DocumentType.TRACE)
+          && ((Trace) doc).getMessage().equals("This message should generate a trace")) {
+        foundTraceDoc = true;
+      } else {
+        assertThat(doc.getDocumentType()).isNotEqualTo(DocumentType.REMOTE_DEPENDENCY);
+        assertThat(doc.getDocumentType()).isNotEqualTo(DocumentType.REQUEST);
+      }
+    }
+  }
+
+  private void searchMetrics(List<MetricPoint> metrics) {
+    for (MetricPoint metric : metrics) {
+      String name = metric.getName();
+      double value = metric.getValue();
+      if (name.equals("\\ApplicationInsights\\Dependency Calls/Sec") && value == 1) {
+        foundDependency = true;
+      } else if (name.equals("\\ApplicationInsights\\Requests/Sec") && value == 1) {
+        foundRequest = true;
+      } else if (name.equals("\\Process\\Physical Bytes") || name.equals("\\% Process\\Processor Time Normalized")) {
+        assertThat(value).isNotEqualTo(0);
+      }
+    }
+  }
+
+
+  private void searchPostBody(String postBody) {
+    // Each post body is a list with a singular MonitoringDataPoint
+    List<MonitoringDataPoint> dataPoints = new ArrayList<>();
+    try {
+      JsonReader reader = JsonProviders.createReader(postBody);
+      dataPoints = reader.readArray(MonitoringDataPoint::fromJson);
+    } catch (IOException e) {
+      throw new IllegalStateException("Failed to parse post request body", e);
+    }
+
+    // Because the mock ping/posts should succeed, we should only have one MonitoringDataPoint per
+    // post
+    assertThat(dataPoints).hasSize(1);
+    MonitoringDataPoint dataPoint = dataPoints.get(0);
+
+    List<DocumentIngress> docs = dataPoint.getDocuments();
+    List<MetricPoint> metrics = dataPoint.getMetrics();
+
+    searchDocs(docs);
+    searchMetrics(metrics);
   }
 
   @Environment(TOMCAT_8_JAVA_8)
