@@ -66,39 +66,6 @@ abstract class LiveMetricsTest {
     assertThat(foundRequest).isTrue();
   }
 
-  // check if the expected trace/exception documents are present.
-  // With the default filtering configuration, we should not see successful requests/dependencies,
-  // only trace and exception.
-  private void searchDocs(List<DocumentIngress> docs) {
-    for (DocumentIngress doc : docs) {
-      if (doc.getDocumentType().equals(DocumentType.EXCEPTION)
-          && ((Exception) doc).getExceptionMessage().equals("Fake Exception")) {
-        foundExceptionDoc = true;
-      } else if (doc.getDocumentType().equals(DocumentType.TRACE)
-          && ((Trace) doc).getMessage().equals("This message should generate a trace")) {
-        foundTraceDoc = true;
-      } else {
-        assertThat(doc.getDocumentType()).isNotEqualTo(DocumentType.REMOTE_DEPENDENCY);
-        assertThat(doc.getDocumentType()).isNotEqualTo(DocumentType.REQUEST);
-      }
-    }
-  }
-
-  private void searchMetrics(List<MetricPoint> metrics) {
-    for (MetricPoint metric : metrics) {
-      String name = metric.getName();
-      double value = metric.getValue();
-      if (name.equals("\\ApplicationInsights\\Dependency Calls/Sec") && value == 1) {
-        foundDependency = true;
-      } else if (name.equals("\\ApplicationInsights\\Requests/Sec") && value == 1) {
-        foundRequest = true;
-      } else if (name.equals("\\Process\\Physical Bytes") || name.equals("\\% Process\\Processor Time Normalized")) {
-        assertThat(value).isNotEqualTo(0);
-      }
-    }
-  }
-
-
   private void searchPostBody(String postBody) {
     // Each post body is a list with a singular MonitoringDataPoint
     List<MonitoringDataPoint> dataPoints = new ArrayList<>();
@@ -117,8 +84,72 @@ abstract class LiveMetricsTest {
     List<DocumentIngress> docs = dataPoint.getDocuments();
     List<MetricPoint> metrics = dataPoint.getMetrics();
 
-    searchDocs(docs);
-    searchMetrics(metrics);
+    confirmDocsAreFiltered(docs);
+    confirmPerfCountersNonZero(metrics);
+    foundExceptionDoc = foundExceptionDoc || hasException(docs);
+    foundTraceDoc = foundTraceDoc || hasTrace(docs);
+    foundDependency = foundDependency || hasDependency(metrics);
+    foundRequest = foundRequest || hasRequest(metrics);
+  }
+
+  private void confirmDocsAreFiltered(List<DocumentIngress> docs) {
+    for (DocumentIngress doc : docs) {
+      assertThat(doc.getDocumentType()).isNotEqualTo(DocumentType.REMOTE_DEPENDENCY);
+      assertThat(doc.getDocumentType()).isNotEqualTo(DocumentType.REQUEST);
+    }
+  }
+
+  private boolean hasException(List<DocumentIngress> docs) {
+    for (DocumentIngress doc : docs) {
+      if (doc.getDocumentType().equals(DocumentType.EXCEPTION)
+          && ((Exception) doc).getExceptionMessage().equals("Fake Exception")) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private boolean hasTrace(List<DocumentIngress> docs) {
+    for (DocumentIngress doc : docs) {
+      if (doc.getDocumentType().equals(DocumentType.TRACE)
+          && ((Trace) doc).getMessage().equals("This message should generate a trace")) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private boolean hasDependency(List<MetricPoint> metrics) {
+    for (MetricPoint metric : metrics) {
+      String name = metric.getName();
+      double value = metric.getValue();
+      if (name.equals("\\ApplicationInsights\\Dependency Calls/Sec")) {
+        return value == 1;
+      }
+    }
+    return false;
+  }
+
+  private boolean hasRequest(List<MetricPoint> metrics) {
+    for (MetricPoint metric : metrics) {
+      String name = metric.getName();
+      double value = metric.getValue();
+      if (name.equals("\\ApplicationInsights\\Requests/Sec")) {
+        return value == 1;
+      }
+    }
+    return false;
+  }
+
+  private void confirmPerfCountersNonZero(List<MetricPoint> metrics) {
+    for (MetricPoint metric : metrics) {
+      String name = metric.getName();
+      double value = metric.getValue();
+      if (name.equals("\\Process\\Physical Bytes")
+          || name.equals("\\% Process\\Processor Time Normalized")) {
+        assertThat(value).isNotEqualTo(0);
+      }
+    }
   }
 
   @Environment(TOMCAT_8_JAVA_8)

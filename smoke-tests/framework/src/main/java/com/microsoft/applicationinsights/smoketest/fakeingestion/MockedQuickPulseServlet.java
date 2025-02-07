@@ -61,7 +61,8 @@ public class MockedQuickPulseServlet extends HttpServlet {
       resp.setHeader("x-ms-qps-subscribed", "true");
       resp.setHeader("x-ms-qps-configuration-etag", "fake::etag");
     } else {
-      throw new ServerError("Unexpected path: " + path + " please fix the test/mock server setup", new Error());
+      throw new ServerError(
+          "Unexpected path: " + path + " please fix the test/mock server setup", new Error());
     }
   }
 
