@@ -6,7 +6,6 @@ package com.microsoft.applicationinsights.smoketest.fakeingestion;
 import com.google.common.io.CharStreams;
 import java.io.IOException;
 import java.io.StringWriter;
-import java.rmi.ServerError;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -61,8 +60,8 @@ public class MockedQuickPulseServlet extends HttpServlet {
       resp.setHeader("x-ms-qps-subscribed", "true");
       resp.setHeader("x-ms-qps-configuration-etag", "fake::etag");
     } else {
-      throw new ServerError(
-          "Unexpected path: " + path + " please fix the test/mock server setup", new Error());
+      throw new IllegalStateException(
+          "Unexpected path: " + path + " please fix the test/mock server setup");
     }
   }
 

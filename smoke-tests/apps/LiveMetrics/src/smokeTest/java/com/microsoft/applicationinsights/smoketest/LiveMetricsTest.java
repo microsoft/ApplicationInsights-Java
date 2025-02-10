@@ -39,11 +39,6 @@ abstract class LiveMetricsTest {
 
   @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.create();
 
-  private boolean foundExceptionDoc = false;
-  private boolean foundTraceDoc = false;
-  private boolean foundDependency = false;
-  private boolean foundRequest = false;
-
   @Test
   @TargetUri("/test")
   void testTelemetryDataFlow() throws java.lang.Exception {
@@ -51,103 +46,128 @@ abstract class LiveMetricsTest {
         .atMost(Duration.ofSeconds(60))
         .until(() -> testing.mockedIngestion.getCountForType("RequestData") == 1);
 
+    PostBodyVerifier postBodyVerifier = new PostBodyVerifier();
+
     assertThat(testing.mockedIngestion.isPingReceived()).isTrue();
 
     List<String> postBodies = testing.mockedIngestion.getPostBodies();
     assertThat(postBodies).hasSizeGreaterThan(0); // should post at least once
 
     for (String postBody : postBodies) {
-      searchPostBody(postBody);
+      postBodyVerifier.searchPostBody(postBody);
     }
 
-    assertThat(foundExceptionDoc).isTrue();
-    assertThat(foundTraceDoc).isTrue();
-    assertThat(foundDependency).isTrue();
-    assertThat(foundRequest).isTrue();
+    assertThat(postBodyVerifier.hasExceptionDoc()).isTrue();
+    assertThat(postBodyVerifier.hasTraceDoc()).isTrue();
+    assertThat(postBodyVerifier.hasDependency()).isTrue();
+    assertThat(postBodyVerifier.hasRequest()).isTrue();
   }
 
-  private void searchPostBody(String postBody) {
-    // Each post body is a list with a singular MonitoringDataPoint
-    List<MonitoringDataPoint> dataPoints = new ArrayList<>();
-    try {
-      JsonReader reader = JsonProviders.createReader(postBody);
-      dataPoints = reader.readArray(MonitoringDataPoint::fromJson);
-    } catch (IOException e) {
-      throw new IllegalStateException("Failed to parse post request body", e);
+  class PostBodyVerifier {
+    boolean foundExceptionDoc = false;
+    boolean foundTraceDoc = false;
+    boolean foundDependency = false;
+    boolean foundRequest = false;
+
+    public void searchPostBody(String postBody) {
+      // Each post body is a list with a singular MonitoringDataPoint
+      List<MonitoringDataPoint> dataPoints = new ArrayList<>();
+      try {
+        JsonReader reader = JsonProviders.createReader(postBody);
+        dataPoints = reader.readArray(MonitoringDataPoint::fromJson);
+      } catch (IOException e) {
+        throw new IllegalStateException("Failed to parse post request body", e);
+      }
+
+      // Because the mock ping/posts should succeed, we should only have one MonitoringDataPoint per
+      // post
+      assertThat(dataPoints).hasSize(1);
+      MonitoringDataPoint dataPoint = dataPoints.get(0);
+
+      List<DocumentIngress> docs = dataPoint.getDocuments();
+      List<MetricPoint> metrics = dataPoint.getMetrics();
+
+      confirmDocsAreFiltered(docs);
+      confirmPerfCountersNonZero(metrics);
+      foundExceptionDoc = foundExceptionDoc || hasException(docs);
+      foundTraceDoc = foundTraceDoc || hasTrace(docs);
+      foundDependency = foundDependency || hasDependency(metrics);
+      foundRequest = foundRequest || hasRequest(metrics);
     }
 
-    // Because the mock ping/posts should succeed, we should only have one MonitoringDataPoint per
-    // post
-    assertThat(dataPoints).hasSize(1);
-    MonitoringDataPoint dataPoint = dataPoints.get(0);
-
-    List<DocumentIngress> docs = dataPoint.getDocuments();
-    List<MetricPoint> metrics = dataPoint.getMetrics();
-
-    confirmDocsAreFiltered(docs);
-    confirmPerfCountersNonZero(metrics);
-    foundExceptionDoc = foundExceptionDoc || hasException(docs);
-    foundTraceDoc = foundTraceDoc || hasTrace(docs);
-    foundDependency = foundDependency || hasDependency(metrics);
-    foundRequest = foundRequest || hasRequest(metrics);
-  }
-
-  private void confirmDocsAreFiltered(List<DocumentIngress> docs) {
-    for (DocumentIngress doc : docs) {
-      assertThat(doc.getDocumentType()).isNotEqualTo(DocumentType.REMOTE_DEPENDENCY);
-      assertThat(doc.getDocumentType()).isNotEqualTo(DocumentType.REQUEST);
+    public boolean hasExceptionDoc() {
+      return foundExceptionDoc;
     }
-  }
 
-  private boolean hasException(List<DocumentIngress> docs) {
-    for (DocumentIngress doc : docs) {
-      if (doc.getDocumentType().equals(DocumentType.EXCEPTION)
-          && ((Exception) doc).getExceptionMessage().equals("Fake Exception")) {
-        return true;
+    public boolean hasTraceDoc() {
+      return foundTraceDoc;
+    }
+
+    public boolean hasDependency() {
+      return foundDependency;
+    }
+
+    public boolean hasRequest() {
+      return foundRequest;
+    }
+
+    private void confirmDocsAreFiltered(List<DocumentIngress> docs) {
+      for (DocumentIngress doc : docs) {
+        assertThat(doc.getDocumentType()).isNotEqualTo(DocumentType.REMOTE_DEPENDENCY);
+        assertThat(doc.getDocumentType()).isNotEqualTo(DocumentType.REQUEST);
       }
     }
-    return false;
-  }
 
-  private boolean hasTrace(List<DocumentIngress> docs) {
-    for (DocumentIngress doc : docs) {
-      if (doc.getDocumentType().equals(DocumentType.TRACE)
-          && ((Trace) doc).getMessage().equals("This message should generate a trace")) {
-        return true;
+    private boolean hasException(List<DocumentIngress> docs) {
+      for (DocumentIngress doc : docs) {
+        if (doc.getDocumentType().equals(DocumentType.EXCEPTION)
+            && ((Exception) doc).getExceptionMessage().equals("Fake Exception")) {
+          return true;
+        }
       }
+      return false;
     }
-    return false;
-  }
 
-  private boolean hasDependency(List<MetricPoint> metrics) {
-    for (MetricPoint metric : metrics) {
-      String name = metric.getName();
-      double value = metric.getValue();
-      if (name.equals("\\ApplicationInsights\\Dependency Calls/Sec")) {
-        return value == 1;
+    private boolean hasTrace(List<DocumentIngress> docs) {
+      for (DocumentIngress doc : docs) {
+        if (doc.getDocumentType().equals(DocumentType.TRACE)
+            && ((Trace) doc).getMessage().equals("This message should generate a trace")) {
+          return true;
+        }
       }
+      return false;
     }
-    return false;
-  }
 
-  private boolean hasRequest(List<MetricPoint> metrics) {
-    for (MetricPoint metric : metrics) {
-      String name = metric.getName();
-      double value = metric.getValue();
-      if (name.equals("\\ApplicationInsights\\Requests/Sec")) {
-        return value == 1;
+    private boolean hasDependency(List<MetricPoint> metrics) {
+      for (MetricPoint metric : metrics) {
+        String name = metric.getName();
+        double value = metric.getValue();
+        if (name.equals("\\ApplicationInsights\\Dependency Calls/Sec")) {
+          return value == 1;
+        }
       }
+      return false;
     }
-    return false;
-  }
 
-  private void confirmPerfCountersNonZero(List<MetricPoint> metrics) {
-    for (MetricPoint metric : metrics) {
-      String name = metric.getName();
-      double value = metric.getValue();
-      if (name.equals("\\Process\\Physical Bytes")
-          || name.equals("\\% Process\\Processor Time Normalized")) {
-        assertThat(value).isNotEqualTo(0);
+    private boolean hasRequest(List<MetricPoint> metrics) {
+      for (MetricPoint metric : metrics) {
+        String name = metric.getName();
+        double value = metric.getValue();
+        if (name.equals("\\ApplicationInsights\\Requests/Sec")) {
+          return value == 1;
+        }
+      }
+      return false;
+    }
+
+    private void confirmPerfCountersNonZero(List<MetricPoint> metrics) {
+      for (MetricPoint metric : metrics) {
+        String name = metric.getName();
+        double value = metric.getValue();
+        if (name.equals("\\Process\\Physical Bytes")
+            || name.equals("\\% Process\\Processor Time Normalized")) {
+          assertThat(value).isNotEqualTo(0);
+        }
       }
     }
   }
