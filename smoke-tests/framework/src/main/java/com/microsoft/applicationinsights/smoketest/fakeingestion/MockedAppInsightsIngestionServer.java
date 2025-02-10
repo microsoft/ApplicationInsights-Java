@@ -24,6 +24,7 @@ public class MockedAppInsightsIngestionServer {
 
   private final MockedAppInsightsIngestionServlet servlet;
   private final MockedProfilerSettingsServlet profilerSettingsServlet;
+  private final MockedQuickPulseServlet quickPulseServlet;
   private final Server server;
 
   public MockedAppInsightsIngestionServer() {
@@ -33,8 +34,10 @@ public class MockedAppInsightsIngestionServer {
 
     servlet = new MockedAppInsightsIngestionServlet();
     profilerSettingsServlet = new MockedProfilerSettingsServlet();
+    quickPulseServlet = new MockedQuickPulseServlet();
 
     handler.addServletWithMapping(new ServletHolder(profilerSettingsServlet), "/profiler/*");
+    handler.addServletWithMapping(new ServletHolder(quickPulseServlet), "/QuickPulseService.svc/*");
     handler.addServletWithMapping(new ServletHolder(servlet), "/*");
   }
 
@@ -276,8 +279,12 @@ public class MockedAppInsightsIngestionServer {
     return items;
   }
 
-  public boolean isLiveMetricsPingReceived() {
-    return servlet.isLiveMetricsPingReceived();
+  public boolean isPingReceived() {
+    return quickPulseServlet.isPingReceived();
+  }
+
+  public List<String> getPostBodies() {
+    return quickPulseServlet.getPostBodies();
   }
 
   @SuppressWarnings("SystemOut")
@@ -303,5 +310,9 @@ public class MockedAppInsightsIngestionServer {
 
   public void setRequestLoggingEnabled(boolean enabled) {
     servlet.setRequestLoggingEnabled(enabled);
+  }
+
+  public void setQuickPulseRequestLoggingEnabled(boolean enabled) {
+    quickPulseServlet.setRequestLoggingEnabled(enabled);
   }
 }
