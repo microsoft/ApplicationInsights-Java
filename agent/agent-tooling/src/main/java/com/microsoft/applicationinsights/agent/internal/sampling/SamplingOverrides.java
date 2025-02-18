@@ -10,7 +10,9 @@ import com.microsoft.applicationinsights.agent.internal.configuration.Configurat
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
-import io.opentelemetry.semconv.SemanticAttributes;
+import io.opentelemetry.semconv.UrlAttributes;
+import io.opentelemetry.semconv.incubating.HttpIncubatingAttributes;
+import io.opentelemetry.semconv.incubating.ThreadIncubatingAttributes;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -95,7 +97,7 @@ public class SamplingOverrides {
 
     static String getValueIncludingThreadName(
         Attributes attributes, AttributeKey<String> attributeKey) {
-      if (attributeKey.getKey().equals(SemanticAttributes.THREAD_NAME.getKey())) {
+      if (attributeKey.getKey().equals(ThreadIncubatingAttributes.THREAD_NAME.getKey())) {
         return Thread.currentThread().getName();
       } else {
         return attributes.get(attributeKey);
@@ -143,7 +145,7 @@ public class SamplingOverrides {
     public boolean test(
         Attributes attributes, LazyHttpUrl lazyHttpUrl, LazyHttpTarget lazyHttpTarget) {
       String val = MatcherGroup.getValueIncludingThreadName(attributes, key);
-      if (key.getKey().equals(SemanticAttributes.HTTP_TARGET.getKey())) {
+      if (key.getKey().equals(HttpIncubatingAttributes.HTTP_TARGET.getKey())) {
         val = lazyHttpTarget.get();
       }
       if (val == null && getHttpUrlKeyOldOrStableSemconv(key)) {
@@ -185,7 +187,7 @@ public class SamplingOverrides {
         @Nullable LazyHttpUrl lazyHttpUrl,
         @Nullable LazyHttpTarget lazyHttpTarget) {
       String val = MatcherGroup.getValueIncludingThreadName(attributes, key);
-      if (key.getKey().equals(SemanticAttributes.URL_PATH.getKey())) {
+      if (key.getKey().equals(UrlAttributes.URL_PATH.getKey())) {
         val = lazyHttpTarget.get();
       }
       if (val == null && getHttpUrlKeyOldOrStableSemconv(key) && lazyHttpUrl != null) {
@@ -236,7 +238,7 @@ public class SamplingOverrides {
         @Nullable LazyHttpUrl lazyHttpUrl,
         @Nullable LazyHttpTarget lazyHttpTarget) {
       String val = MatcherGroup.getValueIncludingThreadName(attributes, key);
-      if (key.getKey().equals(SemanticAttributes.HTTP_TARGET.getKey())) {
+      if (key.getKey().equals(HttpIncubatingAttributes.HTTP_TARGET.getKey())) {
         val = lazyHttpTarget.get();
       }
       if (val == null && getHttpUrlKeyOldOrStableSemconv(key) && lazyHttpUrl != null) {
@@ -267,8 +269,8 @@ public class SamplingOverrides {
 
   private static boolean getHttpUrlKeyOldOrStableSemconv(AttributeKey<String> key) {
     String keyString = key.getKey();
-    return keyString.equals(SemanticAttributes.HTTP_URL.getKey())
-        || keyString.equals(SemanticAttributes.URL_FULL.getKey());
+    return keyString.equals(HttpIncubatingAttributes.HTTP_URL.getKey())
+        || keyString.equals(UrlAttributes.URL_FULL.getKey());
   }
 
   // this is temporary until semantic attributes stabilize and we make breaking change
@@ -293,9 +295,9 @@ public class SamplingOverrides {
 
     private String get() {
       if (!initialized) {
-        String urlQuery = attributes.get(SemanticAttributes.URL_QUERY);
+        String urlQuery = attributes.get(UrlAttributes.URL_QUERY);
         value =
-            attributes.get(SemanticAttributes.URL_PATH) + (urlQuery != null ? "?" + urlQuery : "");
+            attributes.get(UrlAttributes.URL_PATH) + (urlQuery != null ? "?" + urlQuery : "");
         initialized = true;
       }
       return value;

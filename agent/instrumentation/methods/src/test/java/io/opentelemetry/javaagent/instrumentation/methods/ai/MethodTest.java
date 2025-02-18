@@ -11,13 +11,12 @@ package io.opentelemetry.javaagent.instrumentation.methods.ai;
 
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo;
-import static io.opentelemetry.semconv.SemanticAttributes.CODE_FUNCTION;
-import static io.opentelemetry.semconv.SemanticAttributes.CODE_NAMESPACE;
 
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.instrumentation.testing.junit.AgentInstrumentationExtension;
 import io.opentelemetry.instrumentation.testing.junit.InstrumentationExtension;
+import io.opentelemetry.semconv.incubating.CodeIncubatingAttributes;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
@@ -40,8 +39,10 @@ class MethodTest {
                     span.hasName("ConfigTracedCallable.call")
                         .hasKind(SpanKind.SERVER)
                         .hasAttributesSatisfyingExactly(
-                            equalTo(CODE_NAMESPACE, ConfigTracedCallable.class.getName()),
-                            equalTo(CODE_FUNCTION, "call"))));
+                            equalTo(
+                                CodeIncubatingAttributes.CODE_NAMESPACE,
+                                ConfigTracedCallable.class.getName()),
+                            equalTo(CodeIncubatingAttributes.CODE_FUNCTION, "call"))));
   }
 
   static class ConfigTracedCallable implements Callable<String> {
@@ -71,8 +72,10 @@ class MethodTest {
                     span.hasName("ConfigTracedCompletableFuture.getResult")
                         .hasKind(SpanKind.SERVER)
                         .hasAttributesSatisfyingExactly(
-                            equalTo(CODE_NAMESPACE, ConfigTracedCompletableFuture.class.getName()),
-                            equalTo(CODE_FUNCTION, "getResult"))));
+                            equalTo(
+                                CodeIncubatingAttributes.CODE_NAMESPACE,
+                                ConfigTracedCompletableFuture.class.getName()),
+                            equalTo(CodeIncubatingAttributes.CODE_FUNCTION, "getResult"))));
   }
 
   static class ConfigTracedCompletableFuture {

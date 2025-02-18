@@ -6,7 +6,6 @@ package com.microsoft.applicationinsights.agent.internal.init;
 import com.azure.core.util.logging.ClientLogger;
 import com.azure.monitor.opentelemetry.autoconfigure.implementation.AiSemanticAttributes;
 import com.azure.monitor.opentelemetry.autoconfigure.implementation.OperationNames;
-import com.azure.monitor.opentelemetry.autoconfigure.implementation.SemanticAttributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.instrumentation.api.instrumenter.LocalRootSpan;
@@ -14,6 +13,7 @@ import io.opentelemetry.sdk.internal.AttributesMap;
 import io.opentelemetry.sdk.logs.LogRecordProcessor;
 import io.opentelemetry.sdk.logs.ReadWriteLogRecord;
 import io.opentelemetry.sdk.trace.ReadableSpan;
+import io.opentelemetry.semconv.ExceptionAttributes;
 import java.lang.reflect.Field;
 import javax.annotation.Nullable;
 
@@ -93,7 +93,7 @@ public class AzureMonitorLogProcessor implements LogRecordProcessor {
         // TODO add `getAttribute()` to `ReadWriteLogRecord` upstream
         stacktrace =
             ((AttributesMap) attributesMapField.get(logRecord))
-                .get(SemanticAttributes.EXCEPTION_STACKTRACE);
+                .get(ExceptionAttributes.EXCEPTION_STACKTRACE);
       }
     } catch (Exception e) {
       logger.error(e.getMessage(), e);

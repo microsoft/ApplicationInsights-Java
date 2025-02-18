@@ -3,6 +3,7 @@
 
 package io.opentelemetry.javaagent.instrumentation.applicationinsightsweb;
 
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static net.bytebuddy.matcher.ElementMatchers.isMethod;
 import static net.bytebuddy.matcher.ElementMatchers.isPublic;
 import static net.bytebuddy.matcher.ElementMatchers.isStatic;
@@ -11,16 +12,19 @@ import static net.bytebuddy.matcher.ElementMatchers.not;
 import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
 import com.microsoft.applicationinsights.extensibility.context.UserContext;
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.instrumentation.api.util.VirtualField;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
-import io.opentelemetry.semconv.SemanticAttributes;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 
 public class UserContextInstrumentation implements TypeInstrumentation {
+
+  public static final AttributeKey<String> ENDUSER_ID = stringKey("enduser.id");
+
   @Override
   public ElementMatcher<TypeDescription> typeMatcher() {
     return named("com.microsoft.applicationinsights.extensibility.context.UserContext");
@@ -43,7 +47,7 @@ public class UserContextInstrumentation implements TypeInstrumentation {
         @Advice.This UserContext userContext, @Advice.Argument(0) String name) {
       Span span = VirtualField.find(UserContext.class, Span.class).get(userContext);
       if (span != null) {
-        span.setAttribute(SemanticAttributes.ENDUSER_ID, name);
+        span.setAttribute(ENDUSER_ID, name);
       }
     }
   }
