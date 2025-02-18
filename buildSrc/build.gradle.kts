@@ -31,7 +31,7 @@ dependencies {
   implementation("com.github.spotbugs.snom:spotbugs-gradle-plugin:6.1.3")
   implementation("com.gradleup.shadow:shadow-gradle-plugin:8.3.6")
 
-  implementation("org.owasp:dependency-check-gradle:12.0.2")
+  implementation("org.owasp:dependency-check-gradle:12.1.0")
 
   implementation("io.opentelemetry.instrumentation:gradle-plugins:2.12.0-alpha")
 
