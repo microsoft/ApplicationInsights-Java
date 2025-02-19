@@ -4,13 +4,14 @@
 package com.microsoft.applicationinsights.agent.internal.exporter;
 
 import static com.azure.monitor.opentelemetry.autoconfigure.implementation.utils.AzureMonitorMsgId.EXPORTER_MAPPING_ERROR;
-import static com.microsoft.applicationinsights.agent.internal.exporter.ExporterUtils.shouldSample;
 
+import com.azure.monitor.opentelemetry.autoconfigure.implementation.AiSemanticAttributes;
 import com.azure.monitor.opentelemetry.autoconfigure.implementation.LogDataMapper;
 import com.azure.monitor.opentelemetry.autoconfigure.implementation.logging.OperationLogger;
 import com.azure.monitor.opentelemetry.autoconfigure.implementation.models.TelemetryItem;
 import com.azure.monitor.opentelemetry.autoconfigure.implementation.quickpulse.QuickPulse;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.SamplingOverride;
+import com.microsoft.applicationinsights.agent.internal.sampling.AiSamplerForOverride;
 import com.microsoft.applicationinsights.agent.internal.sampling.SamplingOverrides;
 import com.microsoft.applicationinsights.agent.internal.telemetry.BatchItemProcessor;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
@@ -21,6 +22,8 @@ import io.opentelemetry.javaagent.bootstrap.CallDepth;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
+import io.opentelemetry.sdk.trace.samplers.SamplingDecision;
+import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 import io.opentelemetry.semconv.SemanticAttributes;
 import java.util.Collection;
 import java.util.List;
@@ -108,24 +111,34 @@ public class AgentLogExporter implements LogRecordExporter {
             stack != null ? exceptionSamplingOverrides : logSamplingOverrides;
 
         SpanContext spanContext = log.getSpanContext();
+        Double parentSpanSampleRate = log.getAttributes().get(AiSemanticAttributes.SAMPLE_RATE);
 
-        Double samplingPercentage = samplingOverrides.getOverridePercentage(log.getAttributes());
+        AiSamplerForOverride sampler = samplingOverrides.getOverride(log.getAttributes());
 
-        if (samplingPercentage != null && !shouldSample(spanContext, samplingPercentage)) {
-          continue;
-        }
-
-        if (samplingPercentage == null
-            && spanContext.isValid()
-            && !spanContext.getTraceFlags().isSampled()) {
+        if (sampler == null && spanContext.isValid() && !spanContext.getTraceFlags().isSampled()) {
           // if there is no sampling override, and the log is part of an unsampled trace, then don't
           // capture it
           continue;
         }
 
+        Double sampleRate = null;
+        if (sampler != null) {
+          SamplingResult samplingResult =
+              sampler.shouldSampleLog(spanContext, parentSpanSampleRate);
+          if (samplingResult.getDecision() != SamplingDecision.RECORD_AND_SAMPLE) {
+            continue;
+          }
+          sampleRate = samplingResult.getAttributes().get(AiSemanticAttributes.SAMPLE_RATE);
+        }
+
+        if (sampleRate == null) {
+          sampleRate = parentSpanSampleRate;
+        }
+
         logger.debug("exporting log: {}", log);
 
-        TelemetryItem telemetryItem = mapper.map(log, stack, samplingPercentage);
+        // TODO (trask) no longer need to check AiSemanticAttributes.SAMPLE_RATE in map() method
+        TelemetryItem telemetryItem = mapper.map(log, stack, sampleRate);
         telemetryItemConsumer.accept(telemetryItem);
 
         exportingLogLogger.recordSuccess();
