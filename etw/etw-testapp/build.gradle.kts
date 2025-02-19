@@ -5,13 +5,13 @@ plugins {
 }
 
 dependencies {
-  compileOnly("javax.servlet:javax.servlet-api:3.0.1")
+  compileOnly("javax.servlet:javax.servlet-api:4.0.1")
   // TODO (trask) ETW: is this project really needed? if so, need to restore devtest configuration
   // compileOnly(project(path:":agent:agent", configuration:"devtest"))
   compileOnly(project(path: ":agent:agent"))
 
-  implementation("org.springframework.boot:spring-boot-starter-web:2.5.12") {
+  implementation("org.springframework.boot:spring-boot-starter-web:3.4.2") {
     exclude("org.springframework.boot", "spring-boot-starter-tomcat")
   }
-  implementation("org.apache.commons:commons-lang3:3.12.0")
+  implementation("org.apache.commons:commons-lang3:3.17.0")
 }

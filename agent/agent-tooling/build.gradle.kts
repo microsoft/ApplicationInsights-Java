@@ -21,7 +21,7 @@ dependencies {
   implementation(project(":agent:agent-profiler:agent-diagnostics"))
   implementation(project(":etw:java"))
 
-  implementation("com.azure:azure-monitor-opentelemetry-autoconfigure:1.0.0-beta.1")
+  implementation("com.azure:azure-monitor-opentelemetry-autoconfigure:1.0.0-beta.2")
   compileOnly("io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap")
   compileOnly("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling")
   compileOnly("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-common-bootstrap")
@@ -46,7 +46,7 @@ dependencies {
   compileOnly("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure")
   compileOnly("io.opentelemetry:opentelemetry-extension-trace-propagators")
 
-  implementation("com.github.oshi:oshi-core:6.6.5") {
+  implementation("com.github.oshi:oshi-core:6.6.6") {
     exclude("org.slf4j", "slf4j-api")
   }
 
@@ -85,11 +85,6 @@ dependencies {
   testImplementation("io.github.hakky54:logcaptor")
 
   testCompileOnly("com.google.code.findbugs:jsr305")
-}
-
-configurations.all {
-  // temporarily overriding version until latest azure-json is part of azure-core
-  resolutionStrategy.force("com.azure:azure-json:1.3.0")
 }
 
 configurations {

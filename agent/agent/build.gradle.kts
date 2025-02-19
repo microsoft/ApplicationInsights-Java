@@ -207,6 +207,9 @@ fun CopySpec.isolateClasses(jars: Iterable<File>) {
       rename("^(.*)\\.class\$", "\$1.classdata")
       // Rename LICENSE file since it clashes with license dir on non-case sensitive FSs (i.e. Mac)
       rename("""^LICENSE$""", "LICENSE.renamed")
+      // excluding pom.xml files that are embedded in several dependencies
+      // in order to avoid false positives from security scanners
+      exclude("META-INF/maven/**")
     }
   }
   from("${rootProject.projectDir}/LICENSE") {
@@ -219,7 +222,5 @@ configurations {
     // excluding unused dependencies for size (~1.8mb)
     exclude("com.fasterxml.jackson.dataformat", "jackson-dataformat-xml")
     exclude("com.fasterxml.woodstox", "woodstox-core")
-    // temporarily overriding version until latest azure-json is part of azure-core
-    resolutionStrategy.force("com.azure:azure-json:1.3.0")
   }
 }

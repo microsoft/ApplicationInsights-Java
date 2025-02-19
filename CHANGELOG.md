@@ -1,5 +1,24 @@
 # CHANGELOG
 
+## Version 3.7.0 GA (01/22/2025)
+
+### Enhancements
+
+* Support for Live Metrics Filtering ([#43040](https://github.com/Azure/azure-sdk-for-java/pull/43040), [#43184](https://github.com/Azure/azure-sdk-for-java/pull/43184), [#43289](https://github.com/Azure/azure-sdk-for-java/pull/43289), [#43323](https://github.com/Azure/azure-sdk-for-java/pull/43323), [#43506](https://github.com/Azure/azure-sdk-for-java/pull/43506), [#43744](https://github.com/Azure/azure-sdk-for-java/pull/43744))
+* Update to OpenTelemetry Java Instrumentation 2.12.0 ([#4034](https://github.com/microsoft/ApplicationInsights-Java/pull/4034))
+* Remove user sensitive data from self-diagnostics ([#3976](https://github.com/microsoft/ApplicationInsights-Java/pull/3976))
+* Exclude `META-INF/maven/**` from agent jar to avoid CVE false positives ([#4040](https://github.com/microsoft/ApplicationInsights-Java/pull/4040))
+* Don't log Log Records (when debug logging enabled) if they are sampled out
+  ([#3936](https://github.com/microsoft/ApplicationInsights-Java/pull/3936))
+* Include NICE, IRQ, SOFTIRQ, and STEAL in `\\Processor(_Total)\\% Processor Time` metric
+  ([#3987](https://github.com/microsoft/ApplicationInsights-Java/pull/3987))
+* Add note to applicationinsights.log to make sure that private information is removed from the log
+  ([#4011](https://github.com/microsoft/ApplicationInsights-Java/pull/4011))
+* Support finding applicationinsights.json in current dir when using runtime attach
+  ([#3990](https://github.com/microsoft/ApplicationInsights-Java/pull/3990))
+* Add a warning message if the applicationinsights-agent jar is in the classpath in Java 11+  ([#4039](https://github.com/microsoft/ApplicationInsights-Java/pull/4039))
+
+
 ## Version 3.6.2 GA (10/23/2024)
 
 ### Enhancements
