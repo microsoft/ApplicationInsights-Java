@@ -105,6 +105,7 @@ public class SmokeTestExtension
   private final File agentExtensionFile;
   private final Map<String, String> httpHeaders;
   private final Map<String, String> envVars;
+  private final List<String> jvmArgs;
   private final boolean useDefaultHttpPort;
   private final boolean useOtlpEndpoint;
 
@@ -130,6 +131,7 @@ public class SmokeTestExtension
       ProfilerState profilerState,
       Map<String, String> httpHeaders,
       Map<String, String> envVars,
+      List<String> jvmArgs,
       boolean useDefaultHttpPort,
       boolean useOtlpEndpoint) {
     this.skipHealthCheck = skipHealthCheck;
@@ -158,6 +160,7 @@ public class SmokeTestExtension
 
     this.httpHeaders = httpHeaders;
     this.envVars = envVars;
+    this.jvmArgs = jvmArgs;
     this.useDefaultHttpPort = useDefaultHttpPort;
     this.useOtlpEndpoint = useOtlpEndpoint;
   }
@@ -486,7 +489,12 @@ public class SmokeTestExtension
     }
 
     if (appFile.getName().endsWith(".jar")) {
-      container = container.withCommand("java -jar " + appFile.getName());
+      List<String> parts = new ArrayList<>();
+      parts.add("java");
+      parts.addAll(jvmArgs);
+      parts.add("-jar");
+      parts.add(appFile.getName());
+      container = container.withCommand(parts.toArray(new String[0]));
     }
 
     if (readOnly) {

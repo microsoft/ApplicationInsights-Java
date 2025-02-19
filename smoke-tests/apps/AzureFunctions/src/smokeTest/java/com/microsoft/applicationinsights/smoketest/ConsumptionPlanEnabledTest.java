@@ -24,9 +24,12 @@ abstract class ConsumptionPlanEnabledTest {
   static final SmokeTestExtension testing =
       SmokeTestExtension.builder()
           .doNotSetConnectionString()
+          .setSkipHealthCheck(true) // to be consistent with the disabled test
           .setEnvVar("FUNCTIONS_WORKER_RUNTIME", "java")
           .setEnvVar("APPLICATIONINSIGHTS_ENABLE_AGENT", "true")
-          .setSkipHealthCheck(true) // to be consistent with the disabled test
+          // need to --add-opens for Java 17+ in order to set env var at runtime in SpringBootApp
+          .addJvmArg("-XX:+IgnoreUnrecognizedVMOptions")
+          .addJvmArg("--add-opens=java.base/java.util=ALL-UNNAMED")
           .build();
 
   @Test
