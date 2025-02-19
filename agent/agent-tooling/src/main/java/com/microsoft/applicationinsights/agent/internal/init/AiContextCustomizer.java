@@ -10,7 +10,8 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.instrumentation.api.instrumenter.ContextCustomizer;
-import io.opentelemetry.semconv.SemanticAttributes;
+import io.opentelemetry.semconv.UrlAttributes;
+import io.opentelemetry.semconv.incubating.HttpIncubatingAttributes;
 import java.util.List;
 import javax.annotation.Nullable;
 
@@ -42,7 +43,7 @@ public class AiContextCustomizer<R> implements ContextCustomizer<R> {
 
     String path =
         getStableAttribute(
-            startAttributes, SemanticAttributes.URL_PATH, SemanticAttributes.HTTP_TARGET);
+            startAttributes, UrlAttributes.URL_PATH, HttpIncubatingAttributes.HTTP_TARGET);
 
     String connectionStringOverride = getConnectionStringOverride(path);
     if (connectionStringOverride != null) {

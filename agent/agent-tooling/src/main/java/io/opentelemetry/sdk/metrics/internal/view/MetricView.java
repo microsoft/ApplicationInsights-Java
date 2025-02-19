@@ -4,7 +4,9 @@
 package io.opentelemetry.sdk.metrics.internal.view;
 
 import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.semconv.SemanticAttributes;
+import io.opentelemetry.semconv.HttpAttributes;
+import io.opentelemetry.semconv.ServerAttributes;
+import io.opentelemetry.semconv.incubating.RpcIncubatingAttributes;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -41,29 +43,29 @@ enum MetricView {
 
   private static Set<AttributeKey<?>> httpClientDurationAttributeKeys() {
     Set<AttributeKey<?>> view = new HashSet<>(3);
-    view.add(SemanticAttributes.HTTP_RESPONSE_STATUS_CODE);
-    view.add(SemanticAttributes.SERVER_ADDRESS);
-    view.add(SemanticAttributes.SERVER_PORT);
+    view.add(HttpAttributes.HTTP_RESPONSE_STATUS_CODE);
+    view.add(ServerAttributes.SERVER_ADDRESS);
+    view.add(ServerAttributes.SERVER_PORT);
     return view;
   }
 
   private static Set<AttributeKey<?>> httpServerDurationAttributeKeys() {
     Set<AttributeKey<?>> view = new HashSet<>(1);
-    view.add(SemanticAttributes.HTTP_RESPONSE_STATUS_CODE);
+    view.add(HttpAttributes.HTTP_RESPONSE_STATUS_CODE);
     return view;
   }
 
   private static Set<AttributeKey<?>> rpcClientDurationAttributeKeys() {
     Set<AttributeKey<?>> view = new HashSet<>(3);
-    view.add(SemanticAttributes.RPC_SYSTEM);
-    view.add(SemanticAttributes.SERVER_ADDRESS);
-    view.add(SemanticAttributes.SERVER_PORT);
+    view.add(RpcIncubatingAttributes.RPC_SYSTEM);
+    view.add(ServerAttributes.SERVER_ADDRESS);
+    view.add(ServerAttributes.SERVER_PORT);
     return view;
   }
 
   private static Set<AttributeKey<?>> rpcServerDurationAttributeKeys() {
     Set<AttributeKey<?>> view = new HashSet<>(1);
-    view.add(SemanticAttributes.RPC_SYSTEM);
+    view.add(RpcIncubatingAttributes.RPC_SYSTEM);
     return view;
   }
 }

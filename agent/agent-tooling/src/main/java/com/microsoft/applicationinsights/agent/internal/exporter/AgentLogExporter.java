@@ -21,7 +21,7 @@ import io.opentelemetry.javaagent.bootstrap.CallDepth;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
-import io.opentelemetry.semconv.SemanticAttributes;
+import io.opentelemetry.semconv.ExceptionAttributes;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
@@ -102,7 +102,7 @@ public class AgentLogExporter implements LogRecordExporter {
           continue;
         }
 
-        String stack = log.getAttributes().get(SemanticAttributes.EXCEPTION_STACKTRACE);
+        String stack = log.getAttributes().get(ExceptionAttributes.EXCEPTION_STACKTRACE);
 
         SamplingOverrides samplingOverrides =
             stack != null ? exceptionSamplingOverrides : logSamplingOverrides;

@@ -5,7 +5,9 @@ package com.microsoft.applicationinsights.smoketest;
 
 import com.microsoft.applicationinsights.smoketest.fakeingestion.ProfilerState;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.testcontainers.containers.GenericContainer;
 
@@ -23,6 +25,8 @@ public class SmokeTestExtensionBuilder {
   private File agentExtensionFile;
   private ProfilerState profilerEndpointPath = ProfilerState.unconfigured;
   private final Map<String, String> httpHeaders = new HashMap<>();
+  private final Map<String, String> envVars = new HashMap<>();
+  private final List<String> jvmArgs = new ArrayList<>();
   private boolean useDefaultHttpPort;
   private boolean useOtlpEndpoint;
 
@@ -84,6 +88,16 @@ public class SmokeTestExtensionBuilder {
     return this;
   }
 
+  public SmokeTestExtensionBuilder setEnvVar(String name, String value) {
+    envVars.put(name, value);
+    return this;
+  }
+
+  public SmokeTestExtensionBuilder addJvmArg(String jvmArg) {
+    jvmArgs.add(jvmArg);
+    return this;
+  }
+
   public SmokeTestExtensionBuilder setUseDefaultHttpPort() {
     this.useDefaultHttpPort = true;
     return this;
@@ -108,6 +122,8 @@ public class SmokeTestExtensionBuilder {
         agentExtensionFile,
         profilerEndpointPath,
         httpHeaders,
+        envVars,
+        jvmArgs,
         useDefaultHttpPort,
         useOtlpEndpoint);
   }

@@ -21,7 +21,7 @@ import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
-import io.opentelemetry.semconv.SemanticAttributes;
+import io.opentelemetry.semconv.UrlAttributes;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -46,7 +46,7 @@ class TelemetryProcessorMaskingTest {
             .processActions(new RequestSpanData(httpUrl));
 
     Attributes newAttributes = newSpanData.getAttributes();
-    String newHttpUrlAttributeValue = newAttributes.get(SemanticAttributes.URL_FULL);
+    String newHttpUrlAttributeValue = newAttributes.get(UrlAttributes.URL_FULL);
     assertThat(newHttpUrlAttributeValue)
         .isEqualTo("http://localhost:8080/TelemetryProcessors/user/" + mask);
   }
@@ -72,7 +72,7 @@ class TelemetryProcessorMaskingTest {
             .processActions(new RequestSpanData(httpUrl));
 
     Attributes newAttributes = newSpanData.getAttributes();
-    String newHttpUrlAttributeValue = newAttributes.get(SemanticAttributes.URL_FULL);
+    String newHttpUrlAttributeValue = newAttributes.get(UrlAttributes.URL_FULL);
     assertThat(newHttpUrlAttributeValue).isEqualTo("https://user/" + mask);
   }
 

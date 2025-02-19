@@ -39,7 +39,9 @@ import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.view.AiViewRegistry;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
-import io.opentelemetry.semconv.SemanticAttributes;
+import io.opentelemetry.semconv.HttpAttributes;
+import io.opentelemetry.semconv.ServerAttributes;
+import io.opentelemetry.semconv.incubating.RpcIncubatingAttributes;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -122,10 +124,9 @@ public class PreAggregatedMetricsTest {
                                     point
                                         .hasSum(0.15 /* seconds */)
                                         .hasAttributesSatisfying(
-                                            equalTo(SemanticAttributes.SERVER_ADDRESS, "localhost"),
-                                            equalTo(SemanticAttributes.SERVER_PORT, 1234),
-                                            equalTo(
-                                                SemanticAttributes.HTTP_RESPONSE_STATUS_CODE, 200))
+                                            equalTo(ServerAttributes.SERVER_ADDRESS, "localhost"),
+                                            equalTo(ServerAttributes.SERVER_PORT, 1234),
+                                            equalTo(HttpAttributes.HTTP_RESPONSE_STATUS_CODE, 200))
                                         .hasExemplarsSatisfying(
                                             exemplar ->
                                                 exemplar
@@ -151,15 +152,15 @@ public class PreAggregatedMetricsTest {
 
     Attributes requestAttributes =
         Attributes.builder()
-            .put(SemanticAttributes.RPC_SYSTEM, "grpc")
-            .put(SemanticAttributes.RPC_SERVICE, "myservice.EchoService")
-            .put(SemanticAttributes.RPC_METHOD, "exampleMethod")
+            .put(RpcIncubatingAttributes.RPC_SYSTEM, "grpc")
+            .put(RpcIncubatingAttributes.RPC_SERVICE, "myservice.EchoService")
+            .put(RpcIncubatingAttributes.RPC_METHOD, "exampleMethod")
             .build();
 
     Attributes responseAttributes1 =
         Attributes.builder()
-            .put(SemanticAttributes.SERVER_ADDRESS, "example.com")
-            .put(SemanticAttributes.SERVER_PORT, 8080)
+            .put(ServerAttributes.SERVER_ADDRESS, "example.com")
+            .put(ServerAttributes.SERVER_PORT, 8080)
             .build();
 
     Context parent =
@@ -198,10 +199,9 @@ public class PreAggregatedMetricsTest {
                                     point
                                         .hasSum(150 /* millis */)
                                         .hasAttributesSatisfying(
-                                            equalTo(SemanticAttributes.RPC_SYSTEM, "grpc"),
-                                            equalTo(
-                                                SemanticAttributes.SERVER_ADDRESS, "example.com"),
-                                            equalTo(SemanticAttributes.SERVER_PORT, 8080))
+                                            equalTo(RpcIncubatingAttributes.RPC_SYSTEM, "grpc"),
+                                            equalTo(ServerAttributes.SERVER_ADDRESS, "example.com"),
+                                            equalTo(ServerAttributes.SERVER_PORT, 8080))
                                         .hasExemplarsSatisfying(
                                             exemplar ->
                                                 exemplar
@@ -276,8 +276,7 @@ public class PreAggregatedMetricsTest {
                                     point
                                         .hasSum(0.15 /* seconds */)
                                         .hasAttributesSatisfying(
-                                            equalTo(
-                                                SemanticAttributes.HTTP_RESPONSE_STATUS_CODE, 200),
+                                            equalTo(HttpAttributes.HTTP_RESPONSE_STATUS_CODE, 200),
                                             equalTo(
                                                 AttributeKey.booleanKey(
                                                     "applicationinsights.internal.is_synthetic"),
