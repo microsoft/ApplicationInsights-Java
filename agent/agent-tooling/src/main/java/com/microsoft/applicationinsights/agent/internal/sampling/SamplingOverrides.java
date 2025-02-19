@@ -296,8 +296,7 @@ public class SamplingOverrides {
     private String get() {
       if (!initialized) {
         String urlQuery = attributes.get(UrlAttributes.URL_QUERY);
-        value =
-            attributes.get(UrlAttributes.URL_PATH) + (urlQuery != null ? "?" + urlQuery : "");
+        value = attributes.get(UrlAttributes.URL_PATH) + (urlQuery != null ? "?" + urlQuery : "");
         initialized = true;
       }
       return value;

@@ -126,8 +126,7 @@ public class PreAggregatedMetricsTest {
                                         .hasAttributesSatisfying(
                                             equalTo(ServerAttributes.SERVER_ADDRESS, "localhost"),
                                             equalTo(ServerAttributes.SERVER_PORT, 1234),
-                                            equalTo(
-                                                HttpAttributes.HTTP_RESPONSE_STATUS_CODE, 200))
+                                            equalTo(HttpAttributes.HTTP_RESPONSE_STATUS_CODE, 200))
                                         .hasExemplarsSatisfying(
                                             exemplar ->
                                                 exemplar
@@ -201,8 +200,7 @@ public class PreAggregatedMetricsTest {
                                         .hasSum(150 /* millis */)
                                         .hasAttributesSatisfying(
                                             equalTo(RpcIncubatingAttributes.RPC_SYSTEM, "grpc"),
-                                            equalTo(
-                                                    ServerAttributes.SERVER_ADDRESS, "example.com"),
+                                            equalTo(ServerAttributes.SERVER_ADDRESS, "example.com"),
                                             equalTo(ServerAttributes.SERVER_PORT, 8080))
                                         .hasExemplarsSatisfying(
                                             exemplar ->
@@ -278,8 +276,7 @@ public class PreAggregatedMetricsTest {
                                     point
                                         .hasSum(0.15 /* seconds */)
                                         .hasAttributesSatisfying(
-                                            equalTo(
-                                                HttpAttributes.HTTP_RESPONSE_STATUS_CODE, 200),
+                                            equalTo(HttpAttributes.HTTP_RESPONSE_STATUS_CODE, 200),
                                             equalTo(
                                                 AttributeKey.booleanKey(
                                                     "applicationinsights.internal.is_synthetic"),
