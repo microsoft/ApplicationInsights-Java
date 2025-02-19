@@ -5,8 +5,11 @@ package com.microsoft.applicationinsights.agent.internal.init;
 
 import com.azure.monitor.opentelemetry.autoconfigure.implementation.utils.Strings;
 import com.microsoft.applicationinsights.agent.internal.diagnostics.DiagnosticsHelper;
-import io.opentelemetry.javaagent.bootstrap.ClassFileTransformerHolder;
 import io.opentelemetry.javaagent.bootstrap.InstrumentationHolder;
+import io.opentelemetry.javaagent.bootstrap.LambdaTransformer;
+import io.opentelemetry.javaagent.bootstrap.LambdaTransformerHolder;
+import io.opentelemetry.javaagent.tooling.Java8LambdaTransformer;
+import io.opentelemetry.javaagent.tooling.Java9LambdaTransformer;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.Instrumentation;
 import javax.annotation.Nullable;
@@ -49,13 +52,36 @@ public class AzureFunctionsInitializer implements Runnable {
 
   private static void disableBytecodeInstrumentation() {
     Instrumentation instrumentation = InstrumentationHolder.getInstrumentation();
-    ClassFileTransformer transformer = ClassFileTransformerHolder.getClassFileTransformer();
-    if (instrumentation == null || transformer == null) {
+    LambdaTransformer transformer = LambdaTransformerHolder.getLambdaTransformer();
+    ClassFileTransformer classFileTransformer = getDelegate(transformer);
+    if (instrumentation == null || classFileTransformer == null) {
       return;
     }
-    if (instrumentation.removeTransformer(transformer)) {
-      ClassFileTransformerHolder.setClassFileTransformer(null);
+    if (instrumentation.removeTransformer(classFileTransformer)) {
+      LambdaTransformerHolder.setLambdaTransformer(null);
     }
+  }
+
+  @Nullable
+  private static ClassFileTransformer getDelegate(LambdaTransformer transformer) {
+    if (transformer instanceof Java8LambdaTransformer) {
+      try {
+        return (ClassFileTransformer)
+            Java8LambdaTransformer.class.getDeclaredField("delegate").get(transformer);
+      } catch (ReflectiveOperationException e) {
+        throw new IllegalStateException(e);
+      }
+    }
+    if (transformer instanceof Java9LambdaTransformer) {
+      try {
+        return (ClassFileTransformer)
+            Java9LambdaTransformer.class.getDeclaredField("delegate").get(transformer);
+      } catch (ReflectiveOperationException e) {
+        throw new IllegalStateException(e);
+      }
+    }
+    throw new IllegalStateException(
+        "Unexpected LambdaTransformer implementation: " + transformer.getClass());
   }
 
   private void initialize() {

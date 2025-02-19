@@ -31,7 +31,7 @@ public class TestController {
         .setSeverity(Severity.INFO)
         .setAttribute(ExceptionAttributes.EXCEPTION_TYPE, "my exception type")
         .setAttribute(
-                ExceptionAttributes.EXCEPTION_MESSAGE,
+            ExceptionAttributes.EXCEPTION_MESSAGE,
             "This is an custom exception with custom exception type")
         .setAttribute(ExceptionAttributes.EXCEPTION_STACKTRACE, sw.toString())
         .emit();

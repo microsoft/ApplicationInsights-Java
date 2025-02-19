@@ -104,6 +104,7 @@ public class SmokeTestExtension
   private final File javaagentFile;
   private final File agentExtensionFile;
   private final Map<String, String> httpHeaders;
+  private final Map<String, String> envVars;
   private final boolean useDefaultHttpPort;
   private final boolean useOtlpEndpoint;
 
@@ -128,6 +129,7 @@ public class SmokeTestExtension
       File agentExtensionFile,
       ProfilerState profilerState,
       Map<String, String> httpHeaders,
+      Map<String, String> envVars,
       boolean useDefaultHttpPort,
       boolean useOtlpEndpoint) {
     this.skipHealthCheck = skipHealthCheck;
@@ -155,6 +157,7 @@ public class SmokeTestExtension
     javaagentFile = new File(System.getProperty(javaagentPathSystemProperty));
 
     this.httpHeaders = httpHeaders;
+    this.envVars = envVars;
     this.useDefaultHttpPort = useDefaultHttpPort;
     this.useOtlpEndpoint = useOtlpEndpoint;
   }
@@ -421,6 +424,7 @@ public class SmokeTestExtension
             .withEnv("APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_LEVEL", selfDiagnosticsLevel)
             .withEnv("OTEL_RESOURCE_ATTRIBUTES", otelResourceAttributesEnvVar)
             .withEnv("APPLICATIONINSIGHTS_METRIC_INTERVAL_SECONDS", "1")
+            .withEnv(envVars)
             .withNetwork(network)
             .withFileSystemBind(
                 appFile.getAbsolutePath(),
