@@ -38,8 +38,8 @@ import org.slf4j.MDC;
 public class PerformanceCounterInitializer {
 
   private static final Logger logger = LoggerFactory.getLogger(PerformanceCounterInitializer.class);
-  private static final String METRIC_NAME_REGEXP = "[a-zA-z0-9_.-/]+";
-  private static final String INVALID_CHARACTER_REGEXP = "[^a-zA-z0-9_.-/]";
+  private static final String METRIC_NAME_REGEXP = "[a-zA-Z0-9_.-/]+";
+  private static final String INVALID_CHARACTER_REGEXP = "[^a-zA-Z0-9_.-/]";
 
   public static void initialize(Configuration configuration) {
 
