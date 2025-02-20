@@ -24,6 +24,7 @@ dependencies {
   implementation("com.azure:azure-monitor-opentelemetry-autoconfigure:1.0.0-beta.2")
   compileOnly("io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap")
   compileOnly("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling")
+  compileOnly("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling-java9")
   compileOnly("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-common-bootstrap")
   testImplementation("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling")
 

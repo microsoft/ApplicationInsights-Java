@@ -4,12 +4,12 @@
 package io.opentelemetry.sdk.metrics.internal.view;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.semconv.SemanticAttributes;
+import io.opentelemetry.semconv.UserAgentAttributes;
 
 final class UserAgents {
 
   static boolean isBot(Attributes attributes) {
-    String userAgent = attributes.get(SemanticAttributes.USER_AGENT_ORIGINAL);
+    String userAgent = attributes.get(UserAgentAttributes.USER_AGENT_ORIGINAL);
     return userAgent != null && userAgent.contains("AlwaysOn");
   }
 

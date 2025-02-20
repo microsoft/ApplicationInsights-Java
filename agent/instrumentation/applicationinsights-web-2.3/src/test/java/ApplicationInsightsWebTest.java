@@ -5,9 +5,6 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.api.trace.SpanKind.INTERNAL;
 import static io.opentelemetry.api.trace.SpanKind.SERVER;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo;
-import static io.opentelemetry.semconv.SemanticAttributes.CODE_FUNCTION;
-import static io.opentelemetry.semconv.SemanticAttributes.CODE_NAMESPACE;
-import static io.opentelemetry.semconv.SemanticAttributes.ENDUSER_ID;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.microsoft.applicationinsights.web.internal.correlation.TraceContextCorrelation;
@@ -22,6 +19,8 @@ import io.opentelemetry.context.Scope;
 import io.opentelemetry.instrumentation.testing.junit.AgentInstrumentationExtension;
 import io.opentelemetry.instrumentation.testing.junit.InstrumentationExtension;
 import io.opentelemetry.sdk.trace.data.StatusData;
+import io.opentelemetry.semconv.incubating.CodeIncubatingAttributes;
+import io.opentelemetry.semconv.incubating.EnduserIncubatingAttributes;
 import javax.annotation.Nullable;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -45,8 +44,8 @@ class ApplicationInsightsWebTest {
                         .hasKind(SERVER)
                         .hasNoParent()
                         .hasAttributesSatisfyingExactly(
-                            equalTo(CODE_NAMESPACE, "Code"),
-                            equalTo(CODE_FUNCTION, "setProperty"),
+                            equalTo(CodeIncubatingAttributes.CODE_NAMESPACE, "Code"),
+                            equalTo(CodeIncubatingAttributes.CODE_FUNCTION, "setProperty"),
                             equalTo(stringKey("akey"), "avalue")),
                 span ->
                     span.hasName("Code.internalSetProperty")
@@ -68,9 +67,9 @@ class ApplicationInsightsWebTest {
                         .hasKind(SERVER)
                         .hasNoParent()
                         .hasAttributesSatisfyingExactly(
-                            equalTo(CODE_NAMESPACE, "Code"),
-                            equalTo(CODE_FUNCTION, "setUser"),
-                            equalTo(ENDUSER_ID, "myuser")),
+                            equalTo(CodeIncubatingAttributes.CODE_NAMESPACE, "Code"),
+                            equalTo(CodeIncubatingAttributes.CODE_FUNCTION, "setUser"),
+                            equalTo(EnduserIncubatingAttributes.ENDUSER_ID, "myuser")),
                 span ->
                     span.hasName("Code.internalSetUser")
                         .hasKind(INTERNAL)
@@ -91,7 +90,8 @@ class ApplicationInsightsWebTest {
                         .hasKind(SERVER)
                         .hasNoParent()
                         .hasAttributesSatisfyingExactly(
-                            equalTo(CODE_NAMESPACE, "Code"), equalTo(CODE_FUNCTION, "setName")),
+                            equalTo(CodeIncubatingAttributes.CODE_NAMESPACE, "Code"),
+                            equalTo(CodeIncubatingAttributes.CODE_FUNCTION, "setName")),
                 span ->
                     span.hasName("Code.internalSetName")
                         .hasKind(INTERNAL)
@@ -113,7 +113,8 @@ class ApplicationInsightsWebTest {
                         .hasNoParent()
                         .hasStatus(StatusData.error())
                         .hasAttributesSatisfyingExactly(
-                            equalTo(CODE_NAMESPACE, "Code"), equalTo(CODE_FUNCTION, "setSuccess")),
+                            equalTo(CodeIncubatingAttributes.CODE_NAMESPACE, "Code"),
+                            equalTo(CodeIncubatingAttributes.CODE_FUNCTION, "setSuccess")),
                 span ->
                     span.hasName("Code.internalSetSuccess")
                         .hasKind(INTERNAL)
@@ -134,8 +135,8 @@ class ApplicationInsightsWebTest {
                         .hasKind(SERVER)
                         .hasNoParent()
                         .hasAttributesSatisfyingExactly(
-                            equalTo(CODE_NAMESPACE, "Code"),
-                            equalTo(CODE_FUNCTION, "setSource"),
+                            equalTo(CodeIncubatingAttributes.CODE_NAMESPACE, "Code"),
+                            equalTo(CodeIncubatingAttributes.CODE_FUNCTION, "setSource"),
                             equalTo(
                                 stringKey("applicationinsights.internal.source"), "the source")),
                 span ->
@@ -158,7 +159,8 @@ class ApplicationInsightsWebTest {
                       .hasKind(SERVER)
                       .hasNoParent()
                       .hasAttributesSatisfyingExactly(
-                          equalTo(CODE_NAMESPACE, "Code"), equalTo(CODE_FUNCTION, "getId")),
+                          equalTo(CodeIncubatingAttributes.CODE_NAMESPACE, "Code"),
+                          equalTo(CodeIncubatingAttributes.CODE_FUNCTION, "getId")),
               span ->
                   span.hasName("Code.internalGetId").hasKind(INTERNAL).hasParent(trace.getSpan(0)));
           assertThat(trace.getSpan(0).getSpanId()).isEqualTo(spanId);
@@ -179,8 +181,8 @@ class ApplicationInsightsWebTest {
                       .hasKind(SERVER)
                       .hasNoParent()
                       .hasAttributesSatisfyingExactly(
-                          equalTo(CODE_NAMESPACE, "Code"),
-                          equalTo(CODE_FUNCTION, "getOperationId")),
+                          equalTo(CodeIncubatingAttributes.CODE_NAMESPACE, "Code"),
+                          equalTo(CodeIncubatingAttributes.CODE_FUNCTION, "getOperationId")),
               span ->
                   span.hasName("Code.internalGetOperationId")
                       .hasKind(INTERNAL)
@@ -203,8 +205,8 @@ class ApplicationInsightsWebTest {
                         .hasKind(SERVER)
                         .hasNoParent()
                         .hasAttributesSatisfyingExactly(
-                            equalTo(CODE_NAMESPACE, "Code"),
-                            equalTo(CODE_FUNCTION, "setSessionId"),
+                            equalTo(CodeIncubatingAttributes.CODE_NAMESPACE, "Code"),
+                            equalTo(CodeIncubatingAttributes.CODE_FUNCTION, "setSessionId"),
                             equalTo(
                                 stringKey("applicationinsights.internal.session_id"),
                                 "the session id")),
@@ -228,8 +230,8 @@ class ApplicationInsightsWebTest {
                         .hasKind(SERVER)
                         .hasNoParent()
                         .hasAttributesSatisfyingExactly(
-                            equalTo(CODE_NAMESPACE, "Code"),
-                            equalTo(CODE_FUNCTION, "setOperatingSystem"),
+                            equalTo(CodeIncubatingAttributes.CODE_NAMESPACE, "Code"),
+                            equalTo(CodeIncubatingAttributes.CODE_FUNCTION, "setOperatingSystem"),
                             equalTo(
                                 stringKey("applicationinsights.internal.operating_system"),
                                 "the operating system")),
@@ -253,8 +255,10 @@ class ApplicationInsightsWebTest {
                         .hasKind(SERVER)
                         .hasNoParent()
                         .hasAttributesSatisfyingExactly(
-                            equalTo(CODE_NAMESPACE, "Code"),
-                            equalTo(CODE_FUNCTION, "setOperatingSystemVersion"),
+                            equalTo(CodeIncubatingAttributes.CODE_NAMESPACE, "Code"),
+                            equalTo(
+                                CodeIncubatingAttributes.CODE_FUNCTION,
+                                "setOperatingSystemVersion"),
                             equalTo(
                                 stringKey("applicationinsights.internal.operating_system_version"),
                                 "the operating system version")),

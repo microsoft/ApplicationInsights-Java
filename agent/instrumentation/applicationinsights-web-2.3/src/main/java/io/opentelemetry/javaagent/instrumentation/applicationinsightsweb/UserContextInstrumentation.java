@@ -15,12 +15,12 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.instrumentation.api.util.VirtualField;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
-import io.opentelemetry.semconv.SemanticAttributes;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 
 public class UserContextInstrumentation implements TypeInstrumentation {
+
   @Override
   public ElementMatcher<TypeDescription> typeMatcher() {
     return named("com.microsoft.applicationinsights.extensibility.context.UserContext");
@@ -43,7 +43,7 @@ public class UserContextInstrumentation implements TypeInstrumentation {
         @Advice.This UserContext userContext, @Advice.Argument(0) String name) {
       Span span = VirtualField.find(UserContext.class, Span.class).get(userContext);
       if (span != null) {
-        span.setAttribute(SemanticAttributes.ENDUSER_ID, name);
+        span.setAttribute("enduser.id", name);
       }
     }
   }
