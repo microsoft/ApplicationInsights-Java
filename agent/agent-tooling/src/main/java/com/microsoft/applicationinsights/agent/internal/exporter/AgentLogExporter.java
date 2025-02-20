@@ -122,14 +122,18 @@ public class AgentLogExporter implements LogRecordExporter {
 
       AiSamplerForOverride sampler = samplingOverrides.getOverride(log.getAttributes());
 
-      if (sampler == null && spanContext.isValid() && !spanContext.getTraceFlags().isSampled()) {
+      boolean hasSamplingOverride = sampler != null;
+
+      if (!hasSamplingOverride
+          && spanContext.isValid()
+          && !spanContext.getTraceFlags().isSampled()) {
         // if there is no sampling override, and the log is part of an unsampled trace,
         // then don't capture it
         return;
       }
 
       Double sampleRate = null;
-      if (sampler != null) {
+      if (hasSamplingOverride) {
         SamplingResult samplingResult = sampler.shouldSampleLog(spanContext, parentSpanSampleRate);
         if (samplingResult.getDecision() != SamplingDecision.RECORD_AND_SAMPLE) {
           return;
