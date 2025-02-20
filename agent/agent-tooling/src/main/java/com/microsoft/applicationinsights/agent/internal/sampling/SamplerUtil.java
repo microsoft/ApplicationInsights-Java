@@ -36,7 +36,7 @@ public class SamplerUtil {
 
     samplingResult = recordAndSampleWithSampleRateMap.get(sp);
     if (samplingResult == null) {
-      samplingResult = new RecordAndSampleWithItemCount(sp);
+      samplingResult = createSamplingResultWithSampleRateAndItemCount(sp);
       recordAndSampleWithSampleRateMap.put(sp, samplingResult);
     }
     return samplingResult;
@@ -54,7 +54,11 @@ public class SamplerUtil {
     return SamplingScoreGeneratorV2.getSamplingScore(traceId) < percentage;
   }
 
-  static class RecordAndSampleWithItemCount implements SamplingResult {
+  static SamplingResult createSamplingResultWithSampleRateAndItemCount(double sampleRate) {
+    return new RecordAndSampleWithItemCount(sampleRate);
+  }
+
+  private static class RecordAndSampleWithItemCount implements SamplingResult {
 
     private final Attributes attributes;
 

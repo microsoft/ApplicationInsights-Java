@@ -99,7 +99,7 @@ public class AiSamplerForOverride implements Sampler {
       return null;
     }
     // don't sample more dependencies than parent in this case
-    return new SamplerUtil.RecordAndSampleWithItemCount(parentSpanSampleRate);
+    return SamplerUtil.createSamplingResultWithSampleRateAndItemCount(parentSpanSampleRate);
   }
 
   @Override

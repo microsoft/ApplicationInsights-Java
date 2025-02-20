@@ -107,7 +107,7 @@ public class AiSampler implements Sampler {
     if (parentSpanSampleRate == null) {
       return null;
     }
-    return new SamplerUtil.RecordAndSampleWithItemCount(parentSpanSampleRate);
+    return SamplerUtil.createSamplingResultWithSampleRateAndItemCount(parentSpanSampleRate);
   }
 
   @Override
