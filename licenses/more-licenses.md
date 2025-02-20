@@ -249,12 +249,12 @@ _2025-02-18 20:33:04 PST_
 > - **POM License**: GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 - [https://www.gnu.org/licenses/lgpl-2.1](https://www.gnu.org/licenses/lgpl-2.1)
 > - **Embedded license files**: [jna-platform-5.16.0.jar/META-INF/LICENSE](jna-platform-5.16.0.jar/META-INF/LICENSE)
 
-**50** **Group:** `net.minidev` **Name:** `accessors-smart` **Version:** `2.5.1` 
+**50** **Group:** `net.minidev` **Name:** `accessors-smart` **Version:** `2.5.2` 
 > - **Project URL**: [https://urielch.github.io/](https://urielch.github.io/)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
-**51** **Group:** `net.minidev` **Name:** `json-smart` **Version:** `2.5.1` 
+**51** **Group:** `net.minidev` **Name:** `json-smart` **Version:** `2.5.2` 
 > - **Project URL**: [https://urielch.github.io/](https://urielch.github.io/)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
@@ -350,7 +350,7 @@ _2025-02-18 20:33:04 PST_
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**67** **Group:** `com.azure` **Name:** `azure-identity` **Version:** `1.15.0` 
+**67** **Group:** `com.azure` **Name:** `azure-identity` **Version:** `1.15.2` 
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
@@ -382,7 +382,7 @@ _2025-02-18 20:33:04 PST_
 > - **Manifest License**: "SPDX-License-Identifier: MIT";link="https://opensource.org/licenses/MIT" (Not Packaged)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**75** **Group:** `com.microsoft.azure` **Name:** `msal4j` **Version:** `1.17.2` 
+**75** **Group:** `com.microsoft.azure` **Name:** `msal4j` **Version:** `1.19.0` 
 > - **Project URL**: [https://github.com/AzureAD/microsoft-authentication-library-for-java](https://github.com/AzureAD/microsoft-authentication-library-for-java)
 > - **Manifest License**: "MIT License" (Not Packaged)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
