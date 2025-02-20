@@ -222,5 +222,9 @@ configurations {
     // excluding unused dependencies for size (~1.8mb)
     exclude("com.fasterxml.jackson.dataformat", "jackson-dataformat-xml")
     exclude("com.fasterxml.woodstox", "woodstox-core")
+    // waiting for azure-identity to be bumped in the Azure SDK BOM
+    resolutionStrategy.force("com.azure:azure-identity:1.15.2")
+    // waiting for json-smart:2.5.2 to be available as a transitive dependency of azure:azure-identity
+    resolutionStrategy.force("net.minidev:json-smart:2.5.2")
   }
 }
