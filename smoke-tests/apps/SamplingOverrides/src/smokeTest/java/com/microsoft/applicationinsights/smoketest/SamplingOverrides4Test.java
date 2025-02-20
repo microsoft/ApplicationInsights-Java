@@ -53,24 +53,15 @@ abstract class SamplingOverrides4Test {
     testing
         .mockedIngestion
         .getItemsEnvelopeDataType("RequestData")
-        .forEach(
-            item -> {
-              assertThat(item.getSampleRate()).isEqualTo(50);
-            });
+        .forEach(item -> assertThat(item.getSampleRate()).isEqualTo(50));
     testing
         .mockedIngestion
         .getItemsEnvelopeDataType("RemoteDependencyData")
-        .forEach(
-            item -> {
-              assertThat(item.getSampleRate()).isEqualTo(10);
-            });
+        .forEach(item -> assertThat(item.getSampleRate()).isEqualTo(10));
     testing
         .mockedIngestion
         .getItemsEnvelopeDataType("MessageData")
-        .forEach(
-            item -> {
-              assertThat(item.getSampleRate()).isEqualTo(10);
-            });
+        .forEach(item -> assertThat(item.getSampleRate()).isEqualTo(10));
   }
 
   @Environment(TOMCAT_8_JAVA_8)

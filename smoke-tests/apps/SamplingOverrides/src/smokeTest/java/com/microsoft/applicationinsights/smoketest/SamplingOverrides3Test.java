@@ -51,24 +51,19 @@ abstract class SamplingOverrides3Test {
     testing
         .mockedIngestion
         .getItemsEnvelopeDataType("RequestData")
-        .forEach(
-            item -> {
-              assertThat(item.getSampleRate()).isEqualTo(10);
-            });
+        .forEach(item -> assertThat(item.getSampleRate()).isEqualTo(10));
     testing
         .mockedIngestion
         .getItemsEnvelopeDataType("RemoteDependencyData")
-        .forEach(
-            item -> {
-              assertThat(item.getSampleRate()).isEqualTo(10);
-            });
+        // even though the configured dependency sampling is 50%
+        // since that is less than 100%, it should not exceed its parent request sampling percentage
+        .forEach(item -> assertThat(item.getSampleRate()).isEqualTo(10));
     testing
         .mockedIngestion
         .getItemsEnvelopeDataType("MessageData")
-        .forEach(
-            item -> {
-              assertThat(item.getSampleRate()).isEqualTo(10);
-            });
+        // even though the configured log message sampling is 50%
+        // since that is less than 100%, it should not exceed its parent request sampling percentage
+        .forEach(item -> assertThat(item.getSampleRate()).isEqualTo(10));
   }
 
   @Environment(TOMCAT_8_JAVA_8)
