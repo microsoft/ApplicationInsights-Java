@@ -24,7 +24,7 @@ import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import io.opentelemetry.sdk.trace.samplers.SamplingDecision;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
-import io.opentelemetry.semconv.SemanticAttributes;
+import io.opentelemetry.semconv.ExceptionAttributes;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
@@ -99,55 +99,58 @@ public class AgentLogExporter implements LogRecordExporter {
       return CompletableResultCode.ofFailure();
     }
     for (LogRecordData log : logs) {
-      try {
-        int severityNumber = log.getSeverity().getSeverityNumber();
-        if (severityNumber < severityThreshold) {
-          continue;
-        }
-
-        String stack = log.getAttributes().get(SemanticAttributes.EXCEPTION_STACKTRACE);
-
-        SamplingOverrides samplingOverrides =
-            stack != null ? exceptionSamplingOverrides : logSamplingOverrides;
-
-        SpanContext spanContext = log.getSpanContext();
-        Double parentSpanSampleRate = log.getAttributes().get(AiSemanticAttributes.SAMPLE_RATE);
-
-        AiSamplerForOverride sampler = samplingOverrides.getOverride(log.getAttributes());
-
-        if (sampler == null && spanContext.isValid() && !spanContext.getTraceFlags().isSampled()) {
-          // if there is no sampling override, and the log is part of an unsampled trace, then don't
-          // capture it
-          continue;
-        }
-
-        Double sampleRate = null;
-        if (sampler != null) {
-          SamplingResult samplingResult =
-              sampler.shouldSampleLog(spanContext, parentSpanSampleRate);
-          if (samplingResult.getDecision() != SamplingDecision.RECORD_AND_SAMPLE) {
-            continue;
-          }
-          sampleRate = samplingResult.getAttributes().get(AiSemanticAttributes.SAMPLE_RATE);
-        }
-
-        if (sampleRate == null) {
-          sampleRate = parentSpanSampleRate;
-        }
-
-        logger.debug("exporting log: {}", log);
-
-        // TODO (trask) no longer need to check AiSemanticAttributes.SAMPLE_RATE in map() method
-        TelemetryItem telemetryItem = mapper.map(log, stack, sampleRate);
-        telemetryItemConsumer.accept(telemetryItem);
-
-        exportingLogLogger.recordSuccess();
-      } catch (Throwable t) {
-        exportingLogLogger.recordFailure(t.getMessage(), t, EXPORTER_MAPPING_ERROR);
-      }
+      internalExport(log);
     }
     // always returning success, because all error handling is performed internally
     return CompletableResultCode.ofSuccess();
+  }
+
+  private void internalExport(LogRecordData log) {
+    try {
+      int severityNumber = log.getSeverity().getSeverityNumber();
+      if (severityNumber < severityThreshold) {
+        return;
+      }
+
+      String stack = log.getAttributes().get(ExceptionAttributes.EXCEPTION_STACKTRACE);
+
+      SamplingOverrides samplingOverrides =
+          stack != null ? exceptionSamplingOverrides : logSamplingOverrides;
+
+      SpanContext spanContext = log.getSpanContext();
+      Double parentSpanSampleRate = log.getAttributes().get(AiSemanticAttributes.SAMPLE_RATE);
+
+      AiSamplerForOverride sampler = samplingOverrides.getOverride(log.getAttributes());
+
+      if (sampler == null && spanContext.isValid() && !spanContext.getTraceFlags().isSampled()) {
+        // if there is no sampling override, and the log is part of an unsampled trace,
+        // then don't capture it
+        return;
+      }
+
+      Double sampleRate = null;
+      if (sampler != null) {
+        SamplingResult samplingResult = sampler.shouldSampleLog(spanContext, parentSpanSampleRate);
+        if (samplingResult.getDecision() != SamplingDecision.RECORD_AND_SAMPLE) {
+          return;
+        }
+        sampleRate = samplingResult.getAttributes().get(AiSemanticAttributes.SAMPLE_RATE);
+      }
+
+      if (sampleRate == null) {
+        sampleRate = parentSpanSampleRate;
+      }
+
+      logger.debug("exporting log: {}", log);
+
+      // TODO (trask) no longer need to check AiSemanticAttributes.SAMPLE_RATE in map() method
+      TelemetryItem telemetryItem = mapper.map(log, stack, sampleRate);
+      telemetryItemConsumer.accept(telemetryItem);
+
+      exportingLogLogger.recordSuccess();
+    } catch (Throwable t) {
+      exportingLogLogger.recordFailure(t.getMessage(), t, EXPORTER_MAPPING_ERROR);
+    }
   }
 
   @Override
