@@ -16,16 +16,16 @@ import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 import java.util.List;
 import javax.annotation.Nullable;
 
-public class AiSamplerForOverride implements Sampler {
+public class AiFixedPercentageSampler implements Sampler {
 
-  private final SamplingPercentage samplingPercentage;
+  private final double percentage;
 
-  public static AiSamplerForOverride create(SamplingPercentage samplingPercentage) {
-    return new AiSamplerForOverride(samplingPercentage);
+  public static AiFixedPercentageSampler create(double percentage) {
+    return new AiFixedPercentageSampler(percentage);
   }
 
-  private AiSamplerForOverride(SamplingPercentage samplingPercentage) {
-    this.samplingPercentage = samplingPercentage;
+  private AiFixedPercentageSampler(double percentage) {
+    this.percentage = percentage;
   }
 
   @Override
@@ -61,9 +61,7 @@ public class AiSamplerForOverride implements Sampler {
       return samplingResult;
     }
 
-    double sp = samplingPercentage.get();
-
-    return SamplerUtil.shouldSample(traceId, sp);
+    return SamplerUtil.shouldSample(traceId, percentage);
   }
 
   @Nullable
@@ -78,14 +76,12 @@ public class AiSamplerForOverride implements Sampler {
       return null;
     }
 
-    double sp = samplingPercentage.get();
-
     if (!parentSpanContext.isSampled()) {
-      if (sp < 100) {
+      if (percentage < 100) {
         // only 100% sampling override will override an unsampled parent!!
         return SamplingResult.drop();
       } else {
-        // falls back in this case to sp
+        // falls back in this case to percentage
         return null;
       }
     }
@@ -94,8 +90,8 @@ public class AiSamplerForOverride implements Sampler {
       return null;
     }
 
-    if (sp < parentSpanSampleRate || sp == 100) {
-      // falls back in this case to sp
+    if (percentage < parentSpanSampleRate || percentage == 100) {
+      // falls back in this case to percentage
       return null;
     }
     // don't sample more dependencies than parent in this case
@@ -104,6 +100,6 @@ public class AiSamplerForOverride implements Sampler {
 
   @Override
   public String getDescription() {
-    return "AiSampler";
+    return "FixedPercentageSampler";
   }
 }

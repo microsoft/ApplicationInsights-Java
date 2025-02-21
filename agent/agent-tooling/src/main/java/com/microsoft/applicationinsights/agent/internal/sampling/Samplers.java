@@ -43,7 +43,8 @@ public class Samplers {
 
     if (!requestSamplingOverrides.isEmpty() || !dependencySamplingOverrides.isEmpty()) {
       sampler =
-          new AiOverrideSampler(requestSamplingOverrides, dependencySamplingOverrides, sampler);
+          new SamplingOverridesSampler(
+              requestSamplingOverrides, dependencySamplingOverrides, sampler);
     }
 
     if (!samplingPreview.parentBased) {

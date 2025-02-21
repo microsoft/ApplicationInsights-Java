@@ -11,7 +11,7 @@ import com.azure.monitor.opentelemetry.autoconfigure.implementation.logging.Oper
 import com.azure.monitor.opentelemetry.autoconfigure.implementation.models.TelemetryItem;
 import com.azure.monitor.opentelemetry.autoconfigure.implementation.quickpulse.QuickPulse;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.SamplingOverride;
-import com.microsoft.applicationinsights.agent.internal.sampling.AiSamplerForOverride;
+import com.microsoft.applicationinsights.agent.internal.sampling.AiFixedPercentageSampler;
 import com.microsoft.applicationinsights.agent.internal.sampling.SamplingOverrides;
 import com.microsoft.applicationinsights.agent.internal.telemetry.BatchItemProcessor;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
@@ -120,7 +120,7 @@ public class AgentLogExporter implements LogRecordExporter {
       SpanContext spanContext = log.getSpanContext();
       Double parentSpanSampleRate = log.getAttributes().get(AiSemanticAttributes.SAMPLE_RATE);
 
-      AiSamplerForOverride sampler = samplingOverrides.getOverride(log.getAttributes());
+      AiFixedPercentageSampler sampler = samplingOverrides.getOverride(log.getAttributes());
 
       boolean hasSamplingOverride = sampler != null;
 

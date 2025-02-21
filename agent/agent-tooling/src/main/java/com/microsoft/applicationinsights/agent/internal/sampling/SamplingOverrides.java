@@ -33,7 +33,7 @@ public class SamplingOverrides {
   }
 
   @Nullable
-  public AiSamplerForOverride getOverride(Attributes attributes) {
+  public AiFixedPercentageSampler getOverride(Attributes attributes) {
     LazyHttpUrl lazyHttpUrl = new LazyHttpUrl(attributes);
     LazyHttpTarget lazyHttpTarget = new LazyHttpTarget(attributes);
     for (MatcherGroup matcherGroups : matcherGroups) {
@@ -46,7 +46,7 @@ public class SamplingOverrides {
 
   private static class MatcherGroup {
     private final List<TempPredicate> predicates;
-    private final AiSamplerForOverride sampler;
+    private final AiFixedPercentageSampler sampler;
 
     private MatcherGroup(SamplingOverride override) {
       predicates = new ArrayList<>();
@@ -56,11 +56,10 @@ public class SamplingOverrides {
           predicates.add(predicate);
         }
       }
-      SamplingPercentage samplingPercentage = SamplingPercentage.fixed(override.percentage);
-      sampler = AiSamplerForOverride.create(samplingPercentage);
+      sampler = AiFixedPercentageSampler.create(override.percentage);
     }
 
-    AiSamplerForOverride getSampler() {
+    AiFixedPercentageSampler getSampler() {
       return sampler;
     }
 
