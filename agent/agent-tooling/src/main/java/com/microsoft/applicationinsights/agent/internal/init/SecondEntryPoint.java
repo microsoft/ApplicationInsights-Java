@@ -6,6 +6,7 @@ package com.microsoft.applicationinsights.agent.internal.init;
 import static java.util.concurrent.TimeUnit.MINUTES;
 
 import com.azure.core.util.logging.ClientLogger;
+import com.azure.monitor.opentelemetry.autoconfigure.implementation.AiSemanticAttributes;
 import com.azure.monitor.opentelemetry.autoconfigure.implementation.AzureMonitorExporterProviderKeys;
 import com.azure.monitor.opentelemetry.autoconfigure.implementation.AzureMonitorLogRecordExporterProvider;
 import com.azure.monitor.opentelemetry.autoconfigure.implementation.AzureMonitorMetricExporterProvider;
@@ -37,7 +38,6 @@ import com.microsoft.applicationinsights.agent.internal.configuration.SnippetCon
 import com.microsoft.applicationinsights.agent.internal.exporter.AgentLogExporter;
 import com.microsoft.applicationinsights.agent.internal.exporter.AgentMetricExporter;
 import com.microsoft.applicationinsights.agent.internal.exporter.AgentSpanExporter;
-import com.microsoft.applicationinsights.agent.internal.exporter.ExporterUtils;
 import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
 import com.microsoft.applicationinsights.agent.internal.legacyheaders.AiLegacyHeaderSpanProcessor;
 import com.microsoft.applicationinsights.agent.internal.processors.ExporterWithLogProcessor;
@@ -45,6 +45,7 @@ import com.microsoft.applicationinsights.agent.internal.processors.ExporterWithS
 import com.microsoft.applicationinsights.agent.internal.processors.LogExporterWithAttributeProcessor;
 import com.microsoft.applicationinsights.agent.internal.processors.SpanExporterWithAttributeProcessor;
 import com.microsoft.applicationinsights.agent.internal.profiler.triggers.AlertTriggerSpanProcessor;
+import com.microsoft.applicationinsights.agent.internal.sampling.AiFixedPercentageSampler;
 import com.microsoft.applicationinsights.agent.internal.sampling.SamplingOverrides;
 import com.microsoft.applicationinsights.agent.internal.telemetry.BatchItemProcessor;
 import com.microsoft.applicationinsights.agent.internal.telemetry.MetricFilter;
@@ -66,6 +67,7 @@ import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.metrics.internal.view.AiViewRegistry;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
+import io.opentelemetry.sdk.trace.samplers.SamplingDecision;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -579,10 +581,15 @@ public class SecondEntryPoint
               return false;
             },
             (span, event) -> {
-              Double samplingPercentage =
-                  exceptionSamplingOverrides.getOverridePercentage(event.getAttributes());
-              return samplingPercentage != null
-                  && !ExporterUtils.shouldSample(span.getSpanContext(), samplingPercentage);
+              AiFixedPercentageSampler sampler =
+                  exceptionSamplingOverrides.getOverride(event.getAttributes());
+              return sampler != null
+                  && sampler
+                          .shouldSampleLog(
+                              span.getSpanContext(),
+                              span.getAttributes().get(AiSemanticAttributes.SAMPLE_RATE))
+                          .getDecision()
+                      == SamplingDecision.DROP;
             });
 
     BatchItemProcessor batchItemProcessor = telemetryClient.getGeneralBatchItemProcessor();

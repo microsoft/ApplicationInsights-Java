@@ -15,13 +15,13 @@ import io.opentelemetry.sdk.trace.samplers.Sampler;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 import java.util.List;
 
-class AiOverrideSampler implements Sampler {
+class SamplingOverridesSampler implements Sampler {
 
   private final SamplingOverrides requestSamplingOverrides;
   private final SamplingOverrides dependencySamplingOverrides;
   private final Sampler delegate;
 
-  AiOverrideSampler(
+  SamplingOverridesSampler(
       List<SamplingOverride> requestSamplingOverrides,
       List<SamplingOverride> dependencySamplingOverrides,
       Sampler delegate) {
@@ -53,6 +53,6 @@ class AiOverrideSampler implements Sampler {
 
   @Override
   public String getDescription() {
-    return "AiOverrideSampler";
+    return "SamplingOverridesSampler";
   }
 }
