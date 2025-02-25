@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## Version 3.7.1 GA (02/26/2025)
+
+* Improve sampling override with dropped parent spans ([#4014](https://github.com/microsoft/ApplicationInsights-Java/pull/4014))
+* Fix QuickPulse "Unsupported text Content-Type" warning message ([#4079](https://github.com/microsoft/ApplicationInsights-Java/pull/4079))
+* Fix CVE-2024-57699 ([#4078](https://github.com/microsoft/ApplicationInsights-Java/pull/4078)) 
+* Fix CVE-2024-12798 and CVE-2025-24970 ([#4077](https://github.com/microsoft/ApplicationInsights-Java/pull/4077))
+
 ## Version 3.7.0 GA (01/22/2025)
 
 ### Enhancements
