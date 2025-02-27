@@ -460,6 +460,10 @@ public class SmokeTestExtension
           "-Dapplicationinsights.testing.statsbeat.ikey=00000000-0000-0000-0000-0FEEDDADBEEG");
       javaToolOptions.add(
           "-Dapplicationinsights.testing.statsbeat.endpoint=http://host.testcontainers.internal:6060/");
+      if (!currentImageName.startsWith("ibm-semeru-runtimes:")
+          && !currentImageName.contains("-openj9-")) {
+        javaToolOptions.add("-Dotel.javaagent.experimental.indy=true");
+      }
     }
     container.withEnv("JAVA_TOOL_OPTIONS", String.join(" ", javaToolOptions));
 
