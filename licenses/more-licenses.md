@@ -1,7 +1,7 @@
 
 # agent
 ## Dependency License Report
-_2025-02-27 03:41:32 UTC_
+_2025-02-27 10:00:54 UTC_
 ## Apache License, Version 2.0
 
 **1** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-annotations` **Version:** `2.18.2` 
@@ -273,12 +273,12 @@ _2025-02-27 03:41:32 UTC_
 > - **Embedded license files**: [commons-text-1.13.0.jar/META-INF/LICENSE.txt](commons-text-1.13.0.jar/META-INF/LICENSE.txt) 
     - [commons-text-1.13.0.jar/META-INF/NOTICE.txt](commons-text-1.13.0.jar/META-INF/NOTICE.txt)
 
-**54** **Group:** `org.slf4j` **Name:** `jcl-over-slf4j` **Version:** `2.0.16` 
+**54** **Group:** `org.slf4j` **Name:** `jcl-over-slf4j` **Version:** `2.0.17` 
 > - **Project URL**: [http://www.slf4j.org](http://www.slf4j.org)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
-> - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
+> - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
-> - **Embedded license files**: [jcl-over-slf4j-2.0.16.jar/META-INF/LICENSE.txt](jcl-over-slf4j-2.0.16.jar/META-INF/LICENSE.txt)
+> - **Embedded license files**: [jcl-over-slf4j-2.0.17.jar/META-INF/LICENSE.txt](jcl-over-slf4j-2.0.17.jar/META-INF/LICENSE.txt)
 
 ## Eclipse Public License - v 1.0
 
@@ -391,17 +391,17 @@ _2025-02-27 03:41:32 UTC_
 > - **POM Project URL**: [https://github.com/AzureAD/microsoft-authentication-library-for-java](https://github.com/AzureAD/microsoft-authentication-library-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**77** **Group:** `org.slf4j` **Name:** `jcl-over-slf4j` **Version:** `2.0.16` 
+**77** **Group:** `org.slf4j` **Name:** `jcl-over-slf4j` **Version:** `2.0.17` 
 > - **Project URL**: [http://www.slf4j.org](http://www.slf4j.org)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
-> - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
+> - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
-> - **Embedded license files**: [jcl-over-slf4j-2.0.16.jar/META-INF/LICENSE.txt](jcl-over-slf4j-2.0.16.jar/META-INF/LICENSE.txt)
+> - **Embedded license files**: [jcl-over-slf4j-2.0.17.jar/META-INF/LICENSE.txt](jcl-over-slf4j-2.0.17.jar/META-INF/LICENSE.txt)
 
-**78** **Group:** `org.slf4j` **Name:** `slf4j-api` **Version:** `2.0.16` 
+**78** **Group:** `org.slf4j` **Name:** `slf4j-api` **Version:** `2.0.17` 
 > - **Project URL**: [http://www.slf4j.org](http://www.slf4j.org)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
-> - **Embedded license files**: [slf4j-api-2.0.16.jar/META-INF/LICENSE.txt](slf4j-api-2.0.16.jar/META-INF/LICENSE.txt)
+> - **Embedded license files**: [slf4j-api-2.0.17.jar/META-INF/LICENSE.txt](slf4j-api-2.0.17.jar/META-INF/LICENSE.txt)
 
 ## MIT-0
 
