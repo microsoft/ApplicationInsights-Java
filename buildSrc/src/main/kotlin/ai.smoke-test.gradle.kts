@@ -66,6 +66,8 @@ dependencies {
 
   smokeTestImplementation("org.junit.jupiter:junit-jupiter-api")
   smokeTestImplementation("org.junit.jupiter:junit-jupiter-params")
+  smokeTestImplementation("org.junit.jupiter:junit-jupiter-engine")
+  smokeTestImplementation("org.junit.platform:junit-platform-launcher")
 
   smokeTestImplementation("org.assertj:assertj-core")
 
