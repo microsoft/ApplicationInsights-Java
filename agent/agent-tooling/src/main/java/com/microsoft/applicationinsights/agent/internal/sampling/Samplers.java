@@ -3,6 +3,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.sampling;
 
+import com.azure.monitor.opentelemetry.autoconfigure.implementation.quickpulse.QuickPulse;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.SamplingOverride;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
@@ -12,7 +13,7 @@ import java.util.stream.Collectors;
 public class Samplers {
 
   public static Sampler getSampler(
-      Configuration.Sampling sampling, Configuration.SamplingPreview samplingPreview) {
+      Configuration.Sampling sampling, Configuration.SamplingPreview samplingPreview, QuickPulse quickPulse) {
     Sampler sampler;
     if (sampling.requestsPerSecond != null) {
       SamplingPercentage requestSamplingPercentage =
@@ -22,12 +23,13 @@ public class Samplers {
           AiSampler.create(
               requestSamplingPercentage,
               parentlessDependencySamplingPercentage,
-              samplingPreview.ingestionSamplingEnabled);
+              samplingPreview.ingestionSamplingEnabled,
+              quickPulse);
     } else if (sampling.percentage != null) {
       SamplingPercentage samplingPercentage = SamplingPercentage.fixed(sampling.percentage);
       sampler =
           AiSampler.create(
-              samplingPercentage, samplingPercentage, samplingPreview.ingestionSamplingEnabled);
+              samplingPercentage, samplingPercentage, samplingPreview.ingestionSamplingEnabled, quickPulse);
     } else {
       throw new AssertionError("ConfigurationBuilder should have set the default sampling");
     }
@@ -44,7 +46,7 @@ public class Samplers {
     if (!requestSamplingOverrides.isEmpty() || !dependencySamplingOverrides.isEmpty()) {
       sampler =
           new SamplingOverridesSampler(
-              requestSamplingOverrides, dependencySamplingOverrides, sampler);
+              requestSamplingOverrides, dependencySamplingOverrides, sampler, quickPulse);
     }
 
     if (!samplingPreview.parentBased) {

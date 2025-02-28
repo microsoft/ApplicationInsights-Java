@@ -11,6 +11,7 @@ import com.azure.monitor.opentelemetry.autoconfigure.implementation.AzureMonitor
 import com.azure.monitor.opentelemetry.autoconfigure.implementation.AzureMonitorLogRecordExporterProvider;
 import com.azure.monitor.opentelemetry.autoconfigure.implementation.AzureMonitorMetricExporterProvider;
 import com.azure.monitor.opentelemetry.autoconfigure.implementation.AzureMonitorSpanExporterProvider;
+import com.azure.monitor.opentelemetry.autoconfigure.implementation.LiveMetricsSpanProcessor;
 import com.azure.monitor.opentelemetry.autoconfigure.implementation.LogDataMapper;
 import com.azure.monitor.opentelemetry.autoconfigure.implementation.MetricDataMapper;
 import com.azure.monitor.opentelemetry.autoconfigure.implementation.SpanDataMapper;
@@ -240,6 +241,13 @@ public class SecondEntryPoint
 
     AtomicBoolean firstLogRecordProcessor = new AtomicBoolean(true);
 
+
+    List<Configuration.SamplingOverride> exceptionSamplingOverrides =
+        configuration.preview.sampling.overrides.stream()
+            .filter(override -> override.telemetryType == SamplingTelemetryType.EXCEPTION)
+            .collect(Collectors.toList());
+    SpanDataMapper mapper = createSpanDataMapper(telemetryClient, configuration.preview.captureHttpServer4xxAsError, new SamplingOverrides(exceptionSamplingOverrides));
+
     autoConfiguration
         .addPropertiesSupplier(
             () -> {
@@ -279,7 +287,7 @@ public class SecondEntryPoint
         .addSpanExporterCustomizer(
             (spanExporter, configProperties) -> {
               if (spanExporter instanceof AzureMonitorSpanExporterProvider.MarkerSpanExporter) {
-                return buildTraceExporter(configuration, telemetryClient, quickPulse);
+                return buildTraceExporter(configuration, telemetryClient, mapper);
               }
               return wrapSpanExporter(spanExporter, configuration);
             })
@@ -302,7 +310,7 @@ public class SecondEntryPoint
               }
             })
         .addTracerProviderCustomizer(
-            (builder, otelConfig) -> configureTracing(builder, configuration))
+            (builder, otelConfig) -> configureTracing(builder, configuration, quickPulse, mapper))
         .addMeterProviderCustomizer(
             (builder, otelConfig) -> configureMetrics(builder, configuration));
 
@@ -320,17 +328,12 @@ public class SecondEntryPoint
   }
 
   private static SpanExporter buildTraceExporter(
-      Configuration configuration, TelemetryClient telemetryClient, QuickPulse quickPulse) {
-    List<Configuration.SamplingOverride> exceptionSamplingOverrides =
-        configuration.preview.sampling.overrides.stream()
-            .filter(override -> override.telemetryType == SamplingTelemetryType.EXCEPTION)
-            .collect(Collectors.toList());
+      Configuration configuration, TelemetryClient telemetryClient, SpanDataMapper mapper) {
+    startupLogger.info("calling createSpanExporter");
     SpanExporter spanExporter =
         createSpanExporter(
             telemetryClient,
-            quickPulse,
-            configuration.preview.captureHttpServer4xxAsError,
-            new SamplingOverrides(exceptionSamplingOverrides));
+            mapper);
 
     return wrapSpanExporter(spanExporter, configuration);
   }
@@ -519,7 +522,7 @@ public class SecondEntryPoint
   }
 
   private static SdkTracerProviderBuilder configureTracing(
-      SdkTracerProviderBuilder tracerProvider, Configuration configuration) {
+      SdkTracerProviderBuilder tracerProvider, Configuration configuration, QuickPulse quickPulse, SpanDataMapper mapper) {
 
     boolean enabled = !Strings.isNullOrEmpty(configuration.connectionString);
     RuntimeConfigurator.updatePropagation(
@@ -527,7 +530,7 @@ public class SecondEntryPoint
         configuration.preview.additionalPropagators,
         configuration.preview.legacyRequestIdPropagation.enabled);
     RuntimeConfigurator.updateSampling(
-        enabled, configuration.sampling, configuration.preview.sampling);
+        enabled, configuration.sampling, configuration.preview.sampling, quickPulse);
 
     tracerProvider.addSpanProcessor(new AzureMonitorSpanProcessor());
     if (!configuration.preview.inheritedAttributes.isEmpty()) {
@@ -551,51 +554,60 @@ public class SecondEntryPoint
       tracerProvider.addSpanProcessor(new AiLegacyHeaderSpanProcessor());
     }
 
+    if (quickPulse != null) {
+      tracerProvider.addSpanProcessor(new LiveMetricsSpanProcessor(quickPulse, mapper));
+    }
+
     return tracerProvider;
   }
 
-  private static SpanExporter createSpanExporter(
+  private static SpanDataMapper createSpanDataMapper(
       TelemetryClient telemetryClient,
-      @Nullable QuickPulse quickPulse,
       boolean captureHttpServer4xxAsError,
       SamplingOverrides exceptionSamplingOverrides) {
+    return new SpanDataMapper(
+        captureHttpServer4xxAsError,
+        telemetryClient::populateDefaults,
+        (event, instrumentationName) -> {
+          boolean lettuce51 = instrumentationName.equals("io.opentelemetry.lettuce-5.1");
+          if (lettuce51 && event.getName().startsWith("redis.encode.")) {
+            // special case as these are noisy and come from the underlying library itself
+            return true;
+          }
+          boolean grpc16 = instrumentationName.equals("io.opentelemetry.grpc-1.6");
+          if (grpc16 && event.getName().equals("message")) {
+            // OpenTelemetry semantic conventions define semi-noisy grpc events
+            // https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/trace/semantic_conventions/rpc.md#events
+            //
+            // we want to suppress these (at least by default)
+            return true;
+          }
+          return false;
+        },
+        (span, event) -> {
+          AiFixedPercentageSampler sampler =
+              exceptionSamplingOverrides.getOverride(event.getAttributes());
+          startupLogger.info("Calling span sampling function with span id {}, event name {}, is sampler null {}, sampler decision {}",
+              span.getSpanContext().getSpanId(), event.getName(), sampler != null);
+          return sampler != null
+              && sampler
+              .shouldSampleLog(
+                  span.getSpanContext(),
+                  span.getAttributes().get(AiSemanticAttributes.SAMPLE_RATE))
+              .getDecision()
+              == SamplingDecision.DROP;
+        });
+  }
 
-    SpanDataMapper mapper =
-        new SpanDataMapper(
-            captureHttpServer4xxAsError,
-            telemetryClient::populateDefaults,
-            (event, instrumentationName) -> {
-              boolean lettuce51 = instrumentationName.equals("io.opentelemetry.lettuce-5.1");
-              if (lettuce51 && event.getName().startsWith("redis.encode.")) {
-                // special case as these are noisy and come from the underlying library itself
-                return true;
-              }
-              boolean grpc16 = instrumentationName.equals("io.opentelemetry.grpc-1.6");
-              if (grpc16 && event.getName().equals("message")) {
-                // OpenTelemetry semantic conventions define semi-noisy grpc events
-                // https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/trace/semantic_conventions/rpc.md#events
-                //
-                // we want to suppress these (at least by default)
-                return true;
-              }
-              return false;
-            },
-            (span, event) -> {
-              AiFixedPercentageSampler sampler =
-                  exceptionSamplingOverrides.getOverride(event.getAttributes());
-              return sampler != null
-                  && sampler
-                          .shouldSampleLog(
-                              span.getSpanContext(),
-                              span.getAttributes().get(AiSemanticAttributes.SAMPLE_RATE))
-                          .getDecision()
-                      == SamplingDecision.DROP;
-            });
+
+  private static SpanExporter createSpanExporter(
+      TelemetryClient telemetryClient,
+      SpanDataMapper mapper) {
 
     BatchItemProcessor batchItemProcessor = telemetryClient.getGeneralBatchItemProcessor();
-
+    startupLogger.info("Create agentSpanExporter for statsbeat");
     return new StatsbeatSpanExporter(
-        new AgentSpanExporter(mapper, quickPulse, batchItemProcessor),
+        new AgentSpanExporter(mapper, batchItemProcessor),
         telemetryClient.getStatsbeatModule());
   }
 
@@ -611,9 +623,11 @@ public class SecondEntryPoint
       for (ProcessorConfig processorConfig : processorConfigs) {
         switch (processorConfig.type) {
           case ATTRIBUTE:
+            startupLogger.info("Adding attribute processor to span exporter");
             spanExporter = new SpanExporterWithAttributeProcessor(processorConfig, spanExporter);
             break;
           case SPAN:
+            startupLogger.info("Adding span processor to span exporter");
             spanExporter = new ExporterWithSpanProcessor(processorConfig, spanExporter);
             break;
           default:

@@ -34,14 +34,10 @@ public final class AgentSpanExporter implements SpanExporter {
 
   public AgentSpanExporter(
       SpanDataMapper mapper,
-      @Nullable QuickPulse quickPulse,
       BatchItemProcessor batchItemProcessor) {
     this.mapper = mapper;
     telemetryItemConsumer =
         telemetryItem -> {
-          if (quickPulse != null) {
-            quickPulse.add(telemetryItem);
-          }
           TelemetryObservers.INSTANCE
               .getObservers()
               .forEach(consumer -> consumer.accept(telemetryItem));

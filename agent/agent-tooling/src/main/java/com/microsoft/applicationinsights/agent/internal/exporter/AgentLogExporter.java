@@ -61,6 +61,12 @@ public class AgentLogExporter implements LogRecordExporter {
     telemetryItemConsumer =
         telemetryItem -> {
           if (quickPulse != null) {
+            try {
+              logger.info("quickpulse.add from Log telemetryItemConsumer for {}", telemetryItem.getData().toJsonString());
+            } catch (Exception e) {
+              logger.error("failed to log telemetry item ", e);
+            }
+
             quickPulse.add(telemetryItem);
           }
           TelemetryObservers.INSTANCE
@@ -136,6 +142,7 @@ public class AgentLogExporter implements LogRecordExporter {
       if (hasSamplingOverride) {
         SamplingResult samplingResult = sampler.shouldSampleLog(spanContext, parentSpanSampleRate);
         if (samplingResult.getDecision() != SamplingDecision.RECORD_AND_SAMPLE) {
+          logger.info("Sampling out log: {}", log.getBodyValue().asString());
           return;
         }
         sampleRate = samplingResult.getAttributes().get(AiSemanticAttributes.SAMPLE_RATE);
