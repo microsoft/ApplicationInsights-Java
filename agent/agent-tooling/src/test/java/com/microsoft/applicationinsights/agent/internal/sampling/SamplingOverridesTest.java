@@ -24,7 +24,7 @@ class SamplingOverridesTest {
   void shouldSampleByDefault() {
     // given
     List<SamplingOverride> overrides = new ArrayList<>();
-    SamplingOverrides samplingOverrides = new SamplingOverrides(overrides);
+    SamplingOverrides samplingOverrides = new SamplingOverrides(overrides, null);
     Attributes attributes = Attributes.empty();
 
     // when
@@ -38,7 +38,7 @@ class SamplingOverridesTest {
   void shouldFilterInRequest() {
     // given
     List<SamplingOverride> overrides = singletonList(newOverride(25));
-    SamplingOverrides samplingOverrides = new SamplingOverrides(overrides);
+    SamplingOverrides samplingOverrides = new SamplingOverrides(overrides, null);
     Attributes attributes = Attributes.empty();
 
     // when
@@ -54,7 +54,7 @@ class SamplingOverridesTest {
     // given
     List<SamplingOverride> overrides =
         singletonList(newOverride(25, newStrictAttribute("one", "1")));
-    SamplingOverrides samplingOverrides = new SamplingOverrides(overrides);
+    SamplingOverrides samplingOverrides = new SamplingOverrides(overrides, null);
     Attributes attributes = Attributes.of(AttributeKey.stringKey("one"), "1");
 
     // when
@@ -70,7 +70,7 @@ class SamplingOverridesTest {
     // given
     List<SamplingOverride> overrides =
         singletonList(newOverride(25, newStrictAttribute("one", "1")));
-    SamplingOverrides samplingOverrides = new SamplingOverrides(overrides);
+    SamplingOverrides samplingOverrides = new SamplingOverrides(overrides, null);
     Attributes attributes = Attributes.of(AttributeKey.stringKey("one"), "2");
 
     // when
@@ -85,7 +85,7 @@ class SamplingOverridesTest {
     // given
     List<SamplingOverride> overrides =
         singletonList(newOverride(25, newStrictAttribute("one", "1")));
-    SamplingOverrides samplingOverrides = new SamplingOverrides(overrides);
+    SamplingOverrides samplingOverrides = new SamplingOverrides(overrides, null);
     Attributes attributes = Attributes.of(AttributeKey.stringKey("two"), "1");
 
     // when
@@ -100,7 +100,7 @@ class SamplingOverridesTest {
     // given
     List<SamplingOverride> overrides =
         singletonList(newOverride(25, newRegexpAttribute("one", "1.*")));
-    SamplingOverrides samplingOverrides = new SamplingOverrides(overrides);
+    SamplingOverrides samplingOverrides = new SamplingOverrides(overrides, null);
     Attributes attributes = Attributes.of(AttributeKey.stringKey("one"), "11");
 
     // when
@@ -116,7 +116,7 @@ class SamplingOverridesTest {
     // given
     List<SamplingOverride> overrides =
         singletonList(newOverride(25, newRegexpAttribute("one", "1.*")));
-    SamplingOverrides samplingOverrides = new SamplingOverrides(overrides);
+    SamplingOverrides samplingOverrides = new SamplingOverrides(overrides, null);
     Attributes attributes = Attributes.of(AttributeKey.stringKey("one"), "22");
 
     // when
@@ -131,7 +131,7 @@ class SamplingOverridesTest {
     // given
     List<SamplingOverride> overrides =
         singletonList(newOverride(25, newRegexpAttribute("one", "1.*")));
-    SamplingOverrides samplingOverrides = new SamplingOverrides(overrides);
+    SamplingOverrides samplingOverrides = new SamplingOverrides(overrides, null);
     Attributes attributes = Attributes.of(AttributeKey.stringKey("two"), "11");
 
     // when
@@ -145,7 +145,7 @@ class SamplingOverridesTest {
   void shouldFilterKeyOnlyMatch() {
     // given
     List<SamplingOverride> overrides = singletonList(newOverride(25, newKeyOnlyAttribute("one")));
-    SamplingOverrides samplingOverrides = new SamplingOverrides(overrides);
+    SamplingOverrides samplingOverrides = new SamplingOverrides(overrides, null);
     Attributes attributes = Attributes.of(AttributeKey.stringKey("one"), "11");
 
     // when
@@ -160,7 +160,7 @@ class SamplingOverridesTest {
   void shouldNotFilterKeyOnlyMatch() {
     // given
     List<SamplingOverride> overrides = singletonList(newOverride(25, newKeyOnlyAttribute("one")));
-    SamplingOverrides samplingOverrides = new SamplingOverrides(overrides);
+    SamplingOverrides samplingOverrides = new SamplingOverrides(overrides, null);
     Attributes attributes = Attributes.of(AttributeKey.stringKey("two"), "22");
 
     // when
@@ -176,7 +176,7 @@ class SamplingOverridesTest {
     List<SamplingOverride> overrides =
         singletonList(
             newOverride(25, newStrictAttribute("one", "1"), newRegexpAttribute("two", "2.*")));
-    SamplingOverrides samplerOverride = new SamplingOverrides(overrides);
+    SamplingOverrides samplerOverride = new SamplingOverrides(overrides, null);
     Attributes attributes =
         Attributes.of(AttributeKey.stringKey("one"), "1", AttributeKey.stringKey("two"), "22");
 
@@ -194,7 +194,7 @@ class SamplingOverridesTest {
     List<SamplingOverride> overrides =
         singletonList(
             newOverride(25, newStrictAttribute("one", "1"), newRegexpAttribute("two", "2.*")));
-    SamplingOverrides samplingOverrides = new SamplingOverrides(overrides);
+    SamplingOverrides samplingOverrides = new SamplingOverrides(overrides, null);
     Attributes attributes =
         Attributes.of(AttributeKey.stringKey("one"), "2", AttributeKey.stringKey("two"), "22");
 
@@ -212,7 +212,7 @@ class SamplingOverridesTest {
         Arrays.asList(
             newOverride(25, newStrictAttribute("one", "1")),
             newOverride(0, newRegexpAttribute("two", "2.*")));
-    SamplingOverrides samplingOverrides = new SamplingOverrides(overrides);
+    SamplingOverrides samplingOverrides = new SamplingOverrides(overrides, null);
     Attributes attributes =
         Attributes.of(AttributeKey.stringKey("one"), "1", AttributeKey.stringKey("two"), "22");
 
@@ -231,7 +231,7 @@ class SamplingOverridesTest {
         Arrays.asList(
             newOverride(50, newStrictAttribute("one", "1")),
             newOverride(25, newRegexpAttribute("two", "2.*")));
-    SamplingOverrides samplingOverrides = new SamplingOverrides(overrides);
+    SamplingOverrides samplingOverrides = new SamplingOverrides(overrides, null);
     Attributes attributes =
         Attributes.of(AttributeKey.stringKey("one"), "2", AttributeKey.stringKey("two"), "22");
 
@@ -250,7 +250,7 @@ class SamplingOverridesTest {
         Arrays.asList(
             newOverride(50, newStrictAttribute("one", "1")),
             newOverride(25, newRegexpAttribute("two", "2.*")));
-    SamplingOverrides samplingOverrides = new SamplingOverrides(overrides);
+    SamplingOverrides samplingOverrides = new SamplingOverrides(overrides, null);
     Attributes attributes =
         Attributes.of(AttributeKey.stringKey("one"), "2", AttributeKey.stringKey("two"), "33");
 

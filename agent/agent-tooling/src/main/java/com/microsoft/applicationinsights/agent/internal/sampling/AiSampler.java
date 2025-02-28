@@ -101,7 +101,7 @@ public class AiSampler implements Sampler {
       return SamplingResult.recordAndSample();
     }
 
-    samplingResult = SamplerUtil.shouldSample(traceId, sp);
+    samplingResult = SamplerUtil.shouldSample(traceId, sp, quickPulse);
     logger.info("sampling result: {}", samplingResult.getDecision().toString());
     return samplingResult; //SamplerUtil.shouldSample(traceId, sp);
   }

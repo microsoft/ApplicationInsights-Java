@@ -76,7 +76,7 @@ public class AiFixedPercentageSampler implements Sampler {
       logger.info("sampling result: {}", samplingResult.getDecision().toString());
       return samplingResult;
     }
-    samplingResult = SamplerUtil.shouldSample(traceId, percentage);
+    samplingResult = SamplerUtil.shouldSample(traceId, percentage, quickPulse);
     logger.info("sampling result: {}", samplingResult.getDecision().toString());
     return samplingResult;//SamplerUtil.shouldSample(traceId, percentage);
   }

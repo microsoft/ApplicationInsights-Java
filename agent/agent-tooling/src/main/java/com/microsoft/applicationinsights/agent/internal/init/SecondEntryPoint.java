@@ -246,7 +246,7 @@ public class SecondEntryPoint
         configuration.preview.sampling.overrides.stream()
             .filter(override -> override.telemetryType == SamplingTelemetryType.EXCEPTION)
             .collect(Collectors.toList());
-    SpanDataMapper mapper = createSpanDataMapper(telemetryClient, configuration.preview.captureHttpServer4xxAsError, new SamplingOverrides(exceptionSamplingOverrides));
+    SpanDataMapper mapper = createSpanDataMapper(telemetryClient, configuration.preview.captureHttpServer4xxAsError, new SamplingOverrides(exceptionSamplingOverrides, quickPulse));
 
     autoConfiguration
         .addPropertiesSupplier(

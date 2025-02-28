@@ -29,8 +29,8 @@ class SamplingOverridesSampler implements Sampler {
       List<SamplingOverride> dependencySamplingOverrides,
       Sampler delegate,
       QuickPulse quickPulse) {
-    this.requestSamplingOverrides = new SamplingOverrides(requestSamplingOverrides);
-    this.dependencySamplingOverrides = new SamplingOverrides(dependencySamplingOverrides);
+    this.requestSamplingOverrides = new SamplingOverrides(requestSamplingOverrides, quickPulse);
+    this.dependencySamplingOverrides = new SamplingOverrides(dependencySamplingOverrides, quickPulse);
     this.delegate = delegate;
   }
 

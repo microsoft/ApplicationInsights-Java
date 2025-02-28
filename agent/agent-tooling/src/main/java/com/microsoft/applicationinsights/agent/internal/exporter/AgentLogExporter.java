@@ -46,6 +46,7 @@ public class AgentLogExporter implements LogRecordExporter {
   private final SamplingOverrides exceptionSamplingOverrides;
   private final LogDataMapper mapper;
   private final Consumer<TelemetryItem> telemetryItemConsumer;
+  private final QuickPulse quickPulse;
 
   public AgentLogExporter(
       int severityThreshold,
@@ -55,20 +56,12 @@ public class AgentLogExporter implements LogRecordExporter {
       @Nullable QuickPulse quickPulse,
       BatchItemProcessor batchItemProcessor) {
     this.severityThreshold = severityThreshold;
-    this.logSamplingOverrides = new SamplingOverrides(logSamplingOverrides);
-    this.exceptionSamplingOverrides = new SamplingOverrides(exceptionSamplingOverrides);
+    this.logSamplingOverrides = new SamplingOverrides(logSamplingOverrides, quickPulse);
+    this.exceptionSamplingOverrides = new SamplingOverrides(exceptionSamplingOverrides, quickPulse);
+    this.quickPulse = quickPulse;
     this.mapper = mapper;
     telemetryItemConsumer =
         telemetryItem -> {
-          if (quickPulse != null) {
-            try {
-              logger.info("quickpulse.add from Log telemetryItemConsumer for {}", telemetryItem.getData().toJsonString());
-            } catch (Exception e) {
-              logger.error("failed to log telemetry item ", e);
-            }
-
-            quickPulse.add(telemetryItem);
-          }
           TelemetryObservers.INSTANCE
               .getObservers()
               .forEach(consumer -> consumer.accept(telemetryItem));
@@ -126,6 +119,13 @@ public class AgentLogExporter implements LogRecordExporter {
       SpanContext spanContext = log.getSpanContext();
       Double parentSpanSampleRate = log.getAttributes().get(AiSemanticAttributes.SAMPLE_RATE);
 
+      TelemetryItem telemetryItem = null;
+      if (quickPulse != null && quickPulse.isEnabled()) {
+        telemetryItem = mapper.map(log, stack, parentSpanSampleRate);
+        logger.debug("adding log to quick pulse: {}", telemetryItem.toJsonString());
+        quickPulse.add(telemetryItem);
+      }
+
       AiFixedPercentageSampler sampler = samplingOverrides.getOverride(log.getAttributes());
 
       boolean hasSamplingOverride = sampler != null;
@@ -142,7 +142,7 @@ public class AgentLogExporter implements LogRecordExporter {
       if (hasSamplingOverride) {
         SamplingResult samplingResult = sampler.shouldSampleLog(spanContext, parentSpanSampleRate);
         if (samplingResult.getDecision() != SamplingDecision.RECORD_AND_SAMPLE) {
-          logger.info("Sampling out log: {}", log.getBodyValue().asString());
+          logger.info("Sampling out log for Breeze: {}", log.getBodyValue().asString());
           return;
         }
         sampleRate = samplingResult.getAttributes().get(AiSemanticAttributes.SAMPLE_RATE);
@@ -155,7 +155,9 @@ public class AgentLogExporter implements LogRecordExporter {
       logger.debug("exporting log: {}", log);
 
       // TODO (trask) no longer need to check AiSemanticAttributes.SAMPLE_RATE in map() method
-      TelemetryItem telemetryItem = mapper.map(log, stack, sampleRate);
+      if (telemetryItem == null) {
+        telemetryItem = mapper.map(log, stack, sampleRate);
+      }
       telemetryItemConsumer.accept(telemetryItem);
 
       exportingLogLogger.recordSuccess();
