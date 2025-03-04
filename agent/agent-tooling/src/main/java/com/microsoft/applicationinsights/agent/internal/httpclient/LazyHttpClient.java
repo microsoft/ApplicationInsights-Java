@@ -37,9 +37,6 @@ import reactor.netty.resources.LoopResources;
 
 public class LazyHttpClient implements HttpClient {
 
-  private static final String APPLICATIONINSIGHTS_AUTHENTICATION_SCOPE =
-      "https://monitor.azure.com//.default";
-
   private static final HttpClient INSTANCE = new LazyHttpClient();
 
   public static final CountDownLatch safeToInitLatch = new CountDownLatch(1);
@@ -113,16 +110,18 @@ public class LazyHttpClient implements HttpClient {
   }
 
   public static HttpPipeline newHttpPipeLineWithDefaultRedirect(
-      @Nullable Configuration.AadAuthentication aadConfiguration) {
-    return newHttpPipeLine(aadConfiguration, new RedirectPolicy(new DefaultRedirectStrategy()));
+      @Nullable Configuration.AadAuthentication aadConfiguration,
+      String aadAudienceWithScope) {
+    return newHttpPipeLine(aadConfiguration, aadAudienceWithScope, new RedirectPolicy(new DefaultRedirectStrategy()));
   }
 
   public static HttpPipeline newHttpPipeLine(
       @Nullable Configuration.AadAuthentication aadConfiguration,
+      String aadAudienceWithScope,
       HttpPipelinePolicy... additionalPolicies) {
     List<HttpPipelinePolicy> policies = new ArrayList<>();
     if (aadConfiguration != null && aadConfiguration.enabled) {
-      policies.add(getAuthenticationPolicy(aadConfiguration));
+      policies.add(getAuthenticationPolicy(aadConfiguration, aadAudienceWithScope));
     }
     policies.addAll(asList(additionalPolicies));
     // Add Logging Policy. Can be enabled using AZURE_LOG_LEVEL.
@@ -144,31 +143,34 @@ public class LazyHttpClient implements HttpClient {
   }
 
   private static HttpPipelinePolicy getAuthenticationPolicy(
-      Configuration.AadAuthentication configuration) {
+      Configuration.AadAuthentication configuration,
+      String aadAudienceWithScope) {
     switch (configuration.type) {
       case UAMI:
-        return getAuthenticationPolicyWithUami(configuration);
+        return getAuthenticationPolicyWithUami(configuration, aadAudienceWithScope);
       case SAMI:
-        return getAuthenticationPolicyWithSami();
+        return getAuthenticationPolicyWithSami(aadAudienceWithScope);
       case VSCODE:
-        return getAuthenticationPolicyWithVsCode();
+        return getAuthenticationPolicyWithVsCode(aadAudienceWithScope);
       case CLIENTSECRET:
-        return getAuthenticationPolicyWithClientSecret(configuration);
+        return getAuthenticationPolicyWithClientSecret(configuration, aadAudienceWithScope);
     }
     throw new IllegalStateException(
         "Invalid Authentication Type used in AAD Authentication: " + configuration.type);
   }
 
   private static HttpPipelinePolicy getAuthenticationPolicyWithUami(
-      Configuration.AadAuthentication configuration) {
+      Configuration.AadAuthentication configuration,
+      String aadAudienceWithScope) {
     ManagedIdentityCredentialBuilder managedIdentityCredential =
         new ManagedIdentityCredentialBuilder().clientId(configuration.clientId);
     return new BearerTokenAuthenticationPolicy(
-        managedIdentityCredential.build(), APPLICATIONINSIGHTS_AUTHENTICATION_SCOPE);
+        managedIdentityCredential.build(), aadAudienceWithScope);
   }
 
   private static HttpPipelinePolicy getAuthenticationPolicyWithClientSecret(
-      Configuration.AadAuthentication configuration) {
+      Configuration.AadAuthentication configuration,
+      String aadAudienceWithScope) {
     ClientSecretCredentialBuilder credential =
         new ClientSecretCredentialBuilder()
             .tenantId(configuration.tenantId)
@@ -178,20 +180,22 @@ public class LazyHttpClient implements HttpClient {
       credential.authorityHost(configuration.authorityHost);
     }
     return new BearerTokenAuthenticationPolicy(
-        credential.build(), APPLICATIONINSIGHTS_AUTHENTICATION_SCOPE);
+        credential.build(), aadAudienceWithScope);
   }
 
-  private static HttpPipelinePolicy getAuthenticationPolicyWithVsCode() {
+  private static HttpPipelinePolicy getAuthenticationPolicyWithVsCode(
+      String aadAudienceWithScope) {
     VisualStudioCodeCredential visualStudioCodeCredential =
         new VisualStudioCodeCredentialBuilder().build();
     return new BearerTokenAuthenticationPolicy(
-        visualStudioCodeCredential, APPLICATIONINSIGHTS_AUTHENTICATION_SCOPE);
+        visualStudioCodeCredential, aadAudienceWithScope);
   }
 
-  private static HttpPipelinePolicy getAuthenticationPolicyWithSami() {
+  private static HttpPipelinePolicy getAuthenticationPolicyWithSami(
+      String aadAudienceWithScope) {
     ManagedIdentityCredential managedIdentityCredential =
         new ManagedIdentityCredentialBuilder().build();
     return new BearerTokenAuthenticationPolicy(
-        managedIdentityCredential, APPLICATIONINSIGHTS_AUTHENTICATION_SCOPE);
+        managedIdentityCredential, aadAudienceWithScope);
   }
 }
