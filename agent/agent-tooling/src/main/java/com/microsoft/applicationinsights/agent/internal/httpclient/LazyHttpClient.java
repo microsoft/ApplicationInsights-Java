@@ -110,9 +110,9 @@ public class LazyHttpClient implements HttpClient {
   }
 
   public static HttpPipeline newHttpPipeLineWithDefaultRedirect(
-      @Nullable Configuration.AadAuthentication aadConfiguration,
-      String aadAudienceWithScope) {
-    return newHttpPipeLine(aadConfiguration, aadAudienceWithScope, new RedirectPolicy(new DefaultRedirectStrategy()));
+      @Nullable Configuration.AadAuthentication aadConfiguration, String aadAudienceWithScope) {
+    return newHttpPipeLine(
+        aadConfiguration, aadAudienceWithScope, new RedirectPolicy(new DefaultRedirectStrategy()));
   }
 
   public static HttpPipeline newHttpPipeLine(
@@ -143,8 +143,7 @@ public class LazyHttpClient implements HttpClient {
   }
 
   private static HttpPipelinePolicy getAuthenticationPolicy(
-      Configuration.AadAuthentication configuration,
-      String aadAudienceWithScope) {
+      Configuration.AadAuthentication configuration, String aadAudienceWithScope) {
     switch (configuration.type) {
       case UAMI:
         return getAuthenticationPolicyWithUami(configuration, aadAudienceWithScope);
@@ -160,8 +159,7 @@ public class LazyHttpClient implements HttpClient {
   }
 
   private static HttpPipelinePolicy getAuthenticationPolicyWithUami(
-      Configuration.AadAuthentication configuration,
-      String aadAudienceWithScope) {
+      Configuration.AadAuthentication configuration, String aadAudienceWithScope) {
     ManagedIdentityCredentialBuilder managedIdentityCredential =
         new ManagedIdentityCredentialBuilder().clientId(configuration.clientId);
     return new BearerTokenAuthenticationPolicy(
@@ -169,8 +167,7 @@ public class LazyHttpClient implements HttpClient {
   }
 
   private static HttpPipelinePolicy getAuthenticationPolicyWithClientSecret(
-      Configuration.AadAuthentication configuration,
-      String aadAudienceWithScope) {
+      Configuration.AadAuthentication configuration, String aadAudienceWithScope) {
     ClientSecretCredentialBuilder credential =
         new ClientSecretCredentialBuilder()
             .tenantId(configuration.tenantId)
@@ -179,23 +176,18 @@ public class LazyHttpClient implements HttpClient {
     if (configuration.authorityHost != null) {
       credential.authorityHost(configuration.authorityHost);
     }
-    return new BearerTokenAuthenticationPolicy(
-        credential.build(), aadAudienceWithScope);
+    return new BearerTokenAuthenticationPolicy(credential.build(), aadAudienceWithScope);
   }
 
-  private static HttpPipelinePolicy getAuthenticationPolicyWithVsCode(
-      String aadAudienceWithScope) {
+  private static HttpPipelinePolicy getAuthenticationPolicyWithVsCode(String aadAudienceWithScope) {
     VisualStudioCodeCredential visualStudioCodeCredential =
         new VisualStudioCodeCredentialBuilder().build();
-    return new BearerTokenAuthenticationPolicy(
-        visualStudioCodeCredential, aadAudienceWithScope);
+    return new BearerTokenAuthenticationPolicy(visualStudioCodeCredential, aadAudienceWithScope);
   }
 
-  private static HttpPipelinePolicy getAuthenticationPolicyWithSami(
-      String aadAudienceWithScope) {
+  private static HttpPipelinePolicy getAuthenticationPolicyWithSami(String aadAudienceWithScope) {
     ManagedIdentityCredential managedIdentityCredential =
         new ManagedIdentityCredentialBuilder().build();
-    return new BearerTokenAuthenticationPolicy(
-        managedIdentityCredential, aadAudienceWithScope);
+    return new BearerTokenAuthenticationPolicy(managedIdentityCredential, aadAudienceWithScope);
   }
 }
