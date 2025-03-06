@@ -57,7 +57,8 @@ public class AlertingConfig {
               reader.nextToken();
               String fieldName = reader.getFieldName();
               if ("type".equals(fieldName)) {
-                deserializedRequestFilter.setType(RequestFilterType.valueOf(reader.getString().toUpperCase(Locale.ROOT)));
+                deserializedRequestFilter.setType(
+                    RequestFilterType.valueOf(reader.getString().toUpperCase(Locale.ROOT)));
               } else if ("value".equals(fieldName)) {
                 deserializedRequestFilter.setValue(reader.getString());
               } else {
@@ -255,7 +256,8 @@ public class AlertingConfig {
               String fieldName = reader.getFieldName();
               if ("type".equals(fieldName)) {
                 deserializedRequestTriggerThreshold.setType(
-                    RequestTriggerThresholdType.valueOf(reader.getString().toUpperCase(Locale.ROOT)));
+                    RequestTriggerThresholdType.valueOf(
+                        reader.getString().toUpperCase(Locale.ROOT)));
               } else if ("value".equals(fieldName)) {
                 deserializedRequestTriggerThreshold.setValue(reader.getFloat());
               } else {
@@ -315,7 +317,8 @@ public class AlertingConfig {
               String fieldName = reader.getFieldName();
               if ("type".equals(fieldName)) {
                 deserializedRequestTriggerThrottling.setType(
-                    RequestTriggerThrottlingType.valueOf(reader.getString().toUpperCase(Locale.ROOT)));
+                    RequestTriggerThrottlingType.valueOf(
+                        reader.getString().toUpperCase(Locale.ROOT)));
               } else if ("value".equals(fieldName)) {
                 deserializedRequestTriggerThrottling.setValue(reader.getLong());
               } else {
@@ -427,7 +430,8 @@ public class AlertingConfig {
               if ("name".equals(fieldName)) {
                 deserializedRequestTrigger.setName(reader.getString());
               } else if ("type".equals(fieldName)) {
-                deserializedRequestTrigger.setType(RequestTriggerType.valueOf(reader.getString().toUpperCase(Locale.ROOT)));
+                deserializedRequestTrigger.setType(
+                    RequestTriggerType.valueOf(reader.getString().toUpperCase(Locale.ROOT)));
               } else if ("filter".equals(fieldName)) {
                 deserializedRequestTrigger.setFilter(RequestFilter.fromJson(reader));
               } else if ("aggregation".equals(fieldName)) {
