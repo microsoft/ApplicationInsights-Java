@@ -121,6 +121,7 @@ public class ProfilingInitializer {
     httpPipeline =
         LazyHttpClient.newHttpPipeLine(
             telemetryClient.getAadAuthentication(),
+            telemetryClient.getConnectionString().getAadAudienceWithScope(),
             new RedirectPolicy(
                 new DefaultRedirectStrategy(
                     3,

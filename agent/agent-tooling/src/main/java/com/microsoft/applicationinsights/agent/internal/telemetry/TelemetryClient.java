@@ -227,6 +227,7 @@ public class TelemetryClient {
     HttpPipeline httpPipeline =
         LazyHttpClient.newHttpPipeLine(
             aadAuthentication,
+            connectionString.getAadAudienceWithScope(),
             new NetworkStatsbeatHttpPipelinePolicy(statsbeatModule.getNetworkStatsbeat()));
     // TODO (heya) refactor the following by using AzureMonitorHelper.createTelemetryItemExporter by
     // passing in getNonessentialStatsbeat

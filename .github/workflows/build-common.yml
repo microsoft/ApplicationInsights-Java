@@ -8,7 +8,7 @@ on:
         required: false
 
 env:
-  EXPORTER_VERSION: 1.0.0-beta.1 # to be updated with the latest version
+  EXPORTER_VERSION: 1.0.0-beta.4 # to be updated with the latest version
 
 jobs:
   spotless:
