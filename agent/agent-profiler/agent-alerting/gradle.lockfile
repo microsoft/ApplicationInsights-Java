@@ -3,7 +3,7 @@
 # This file is expected to be part of source control.
 com.azure:azure-json:1.4.0=runtimeClasspath
 com.azure:azure-sdk-bom:1.2.32=runtimeClasspath
-com.fasterxml.jackson:jackson-bom:2.18.2=runtimeClasspath
+com.fasterxml.jackson:jackson-bom:2.18.3=runtimeClasspath
 io.netty:netty-bom:4.1.119.Final=runtimeClasspath
 io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:2.13.1-alpha=runtimeClasspath
 io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:2.13.1=runtimeClasspath
