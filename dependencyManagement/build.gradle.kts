@@ -28,7 +28,7 @@ val DEPENDENCY_BOMS = listOf(
   "com.azure:azure-sdk-bom:1.2.32",
   "io.netty:netty-bom:4.1.119.Final",
   "org.junit:junit-bom:5.12.0",
-  "org.testcontainers:testcontainers-bom:1.20.5",
+  "org.testcontainers:testcontainers-bom:1.20.6",
 )
 
 val autoServiceVersion = "1.1.1"
@@ -75,7 +75,7 @@ val DEPENDENCIES = listOf(
   "io.opentelemetry.contrib:opentelemetry-jfr-connection:${otelContribVersion}-alpha",
   "io.opentelemetry.contrib:opentelemetry-runtime-attach-core:${otelContribVersion}-alpha",
   "com.google.code.findbugs:jsr305:3.0.2",
-  "com.github.spotbugs:spotbugs-annotations:4.9.1"
+  "com.github.spotbugs:spotbugs-annotations:4.9.2"
 )
 
 javaPlatform {
