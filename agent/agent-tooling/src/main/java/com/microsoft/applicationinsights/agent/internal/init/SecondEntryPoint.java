@@ -58,6 +58,7 @@ import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizerProvide
 import io.opentelemetry.sdk.autoconfigure.spi.internal.AutoConfigureListener;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.LogRecordProcessor;
+import io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.InstrumentSelector;
@@ -77,7 +78,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
@@ -90,7 +90,7 @@ public class SecondEntryPoint
       new ClientLogger("com.microsoft.applicationinsights.agent");
   private static File tempDir;
 
-  @Nullable private static AgentLogExporter agentLogExporter;
+  @Nullable private static AzureMonitorLogFilteringProcessor logFilteringProcessor;
 
   static File getTempDir() {
     return tempDir;
@@ -170,7 +170,7 @@ public class SecondEntryPoint
     RuntimeConfigurator runtimeConfigurator =
         new RuntimeConfigurator(
             telemetryClient,
-            () -> agentLogExporter,
+            () -> logFilteringProcessor,
             configuration,
             heartbeatTelemetryItemConsumer,
             tempDir);
@@ -238,8 +238,6 @@ public class SecondEntryPoint
     }
     telemetryClient.setQuickPulse(quickPulse);
 
-    AtomicBoolean firstLogRecordProcessor = new AtomicBoolean(true);
-
     autoConfiguration
         .addPropertiesSupplier(
             () -> {
@@ -264,13 +262,27 @@ public class SecondEntryPoint
         .addPropertiesCustomizer(new AiConfigCustomizer())
         .addLogRecordProcessorCustomizer(
             (logRecordProcessor, configProperties) -> {
-              if (firstLogRecordProcessor.getAndSet(false)) {
-                // hack to run our log record processors first, before any other log processors
-                // (in particular before the batch log processor which performs the export)
-                // see https://github.com/open-telemetry/opentelemetry-java/issues/6599
+              if (logRecordProcessor instanceof BatchLogRecordProcessor) {
                 List<LogRecordProcessor> logRecordProcessors =
                     getLogRecordProcessors(configuration);
-                logRecordProcessors.add(logRecordProcessor);
+                List<Configuration.SamplingOverride> logSamplingOverrides =
+                    configuration.sampling.overrides.stream()
+                        .filter(override -> override.telemetryType == SamplingTelemetryType.TRACE)
+                        .collect(Collectors.toList());
+                List<Configuration.SamplingOverride> exceptionSamplingOverrides =
+                    configuration.sampling.overrides.stream()
+                        .filter(
+                            override -> override.telemetryType == SamplingTelemetryType.EXCEPTION)
+                        .collect(Collectors.toList());
+
+                logFilteringProcessor =
+                    new AzureMonitorLogFilteringProcessor(
+                        logSamplingOverrides,
+                        exceptionSamplingOverrides,
+                        (BatchLogRecordProcessor) logRecordProcessor,
+                        configuration.instrumentation.logging.getSeverityThreshold());
+
+                logRecordProcessors.add(logFilteringProcessor);
                 return LogRecordProcessor.composite(
                     logRecordProcessors.toArray(new LogRecordProcessor[0]));
               }
@@ -673,25 +685,7 @@ public class SecondEntryPoint
             ConfigurationBuilder.inAzureFunctionsWorker(System::getenv),
             telemetryClient::populateDefaults);
 
-    List<Configuration.SamplingOverride> logSamplingOverrides =
-        configuration.sampling.overrides.stream()
-            .filter(override -> override.telemetryType == SamplingTelemetryType.TRACE)
-            .collect(Collectors.toList());
-    List<Configuration.SamplingOverride> exceptionSamplingOverrides =
-        configuration.sampling.overrides.stream()
-            .filter(override -> override.telemetryType == SamplingTelemetryType.EXCEPTION)
-            .collect(Collectors.toList());
-
-    agentLogExporter =
-        new AgentLogExporter(
-            configuration.instrumentation.logging.getSeverityThreshold(),
-            logSamplingOverrides,
-            exceptionSamplingOverrides,
-            mapper,
-            quickPulse,
-            telemetryClient.getGeneralBatchItemProcessor());
-
-    return agentLogExporter;
+    return new AgentLogExporter(mapper, quickPulse, telemetryClient.getGeneralBatchItemProcessor());
   }
 
   private static LogRecordExporter wrapLogExporter(
