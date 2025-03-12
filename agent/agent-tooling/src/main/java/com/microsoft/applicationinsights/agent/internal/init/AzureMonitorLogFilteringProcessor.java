@@ -12,6 +12,7 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.instrumentation.api.instrumenter.LocalRootSpan;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.AttributesMap;
 import io.opentelemetry.sdk.logs.LogRecordProcessor;
 import io.opentelemetry.sdk.logs.ReadWriteLogRecord;
@@ -115,6 +116,18 @@ public class AzureMonitorLogFilteringProcessor implements LogRecordProcessor {
     setAttributeExceptionLogged(LocalRootSpan.fromContext(context), logRecord);
 
     batchLogRecordProcessor.onEmit(context, logRecord);
+  }
+
+  public CompletableResultCode shutdown() {
+    return batchLogRecordProcessor.shutdown();
+  }
+
+  public CompletableResultCode forceFlush() {
+    return batchLogRecordProcessor.forceFlush();
+  }
+
+  public void close() {
+    batchLogRecordProcessor.close();
   }
 
   @Nullable
