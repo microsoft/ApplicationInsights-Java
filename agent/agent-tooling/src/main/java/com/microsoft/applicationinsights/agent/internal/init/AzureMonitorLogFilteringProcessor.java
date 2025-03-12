@@ -118,14 +118,17 @@ public class AzureMonitorLogFilteringProcessor implements LogRecordProcessor {
     batchLogRecordProcessor.onEmit(context, logRecord);
   }
 
+  @Override
   public CompletableResultCode shutdown() {
     return batchLogRecordProcessor.shutdown();
   }
 
+  @Override
   public CompletableResultCode forceFlush() {
     return batchLogRecordProcessor.forceFlush();
   }
 
+  @Override
   public void close() {
     batchLogRecordProcessor.close();
   }
