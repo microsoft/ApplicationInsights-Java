@@ -138,7 +138,7 @@ public class RuntimeConfigurator {
         || !Objects.equals(runtimeConfig.sampling.percentage, currentConfig.sampling.percentage)
         || !Objects.equals(
             runtimeConfig.sampling.requestsPerSecond, currentConfig.sampling.requestsPerSecond)) {
-      updateSampling(enabled, runtimeConfig.sampling, runtimeConfig.samplingPreview);
+      updateSampling(enabled, runtimeConfig.sampling, runtimeConfig.samplingPreview, null);
     }
 
     // initialize Profiler
