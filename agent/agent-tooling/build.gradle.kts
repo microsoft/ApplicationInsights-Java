@@ -91,8 +91,6 @@ dependencies {
 configurations.all {
   // waiting for azure-identity to be bumped in the Azure SDK BOM
   resolutionStrategy.force("com.azure:azure-identity:1.15.4")
-  // waiting for json-smart:2.5.2 to be available as a transitive dependency of azure:azure-identity
-  resolutionStrategy.force("net.minidev:json-smart:2.5.2")
 }
 
 configurations {
