@@ -30,7 +30,7 @@ public class AiSampler implements Sampler {
   private final SamplingPercentage parentlessDependencySamplingPercentage;
   private final boolean ingestionSamplingEnabled;
   private static final ClientLogger logger = new ClientLogger(AiSampler.class);
-  private static QuickPulse quickPulse;
+  private final QuickPulse quickPulse;
 
   public static AiSampler create(
       SamplingPercentage requestSamplingPercentage,
@@ -52,7 +52,7 @@ public class AiSampler implements Sampler {
     this.requestSamplingPercentage = requestSamplingPercentage;
     this.parentlessDependencySamplingPercentage = parentlessDependencySamplingPercentage;
     this.ingestionSamplingEnabled = ingestionSamplingEnabled;
-    AiSampler.quickPulse = quickPulse;
+    this.quickPulse = quickPulse;
   }
 
   @Override
@@ -107,7 +107,7 @@ public class AiSampler implements Sampler {
   }
 
   @Nullable
-  private static SamplingResult useLocalParentDecisionIfPossible(
+  private SamplingResult useLocalParentDecisionIfPossible(
       SpanContext parentSpanContext, @Nullable Double parentSpanSampleRate) {
 
     // remote parent-based sampling messes up item counts since item count is not propagated in

@@ -8,7 +8,6 @@ import static com.azure.monitor.opentelemetry.autoconfigure.implementation.utils
 import com.azure.monitor.opentelemetry.autoconfigure.implementation.SpanDataMapper;
 import com.azure.monitor.opentelemetry.autoconfigure.implementation.logging.OperationLogger;
 import com.azure.monitor.opentelemetry.autoconfigure.implementation.models.TelemetryItem;
-import com.azure.monitor.opentelemetry.autoconfigure.implementation.quickpulse.QuickPulse;
 import com.azure.monitor.opentelemetry.autoconfigure.implementation.utils.Strings;
 import com.microsoft.applicationinsights.agent.internal.telemetry.BatchItemProcessor;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
@@ -18,7 +17,6 @@ import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.Collection;
 import java.util.function.Consumer;
-import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

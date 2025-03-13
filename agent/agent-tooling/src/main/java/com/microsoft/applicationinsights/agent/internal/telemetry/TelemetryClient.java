@@ -424,6 +424,10 @@ public class TelemetryClient {
     this.quickPulse = quickPulse;
   }
 
+  public QuickPulse getQuickPulse() {
+    return quickPulse;
+  }
+
   public void setOtelResource(Resource resource) {
     otelResource = resource;
   }

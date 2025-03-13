@@ -167,6 +167,28 @@ public class SecondEntryPoint
 
     TelemetryClient.setActive(telemetryClient);
 
+    QuickPulse quickPulse;
+    if (configuration.preview.liveMetrics.enabled) {
+      quickPulse =
+          QuickPulse.create(
+              LazyHttpClient.newHttpPipeLineWithDefaultRedirect(configuration.authentication),
+              () -> {
+                ConnectionString connectionString = telemetryClient.getConnectionString();
+                return connectionString == null ? null : connectionString.getLiveEndpoint();
+              },
+              telemetryClient::getInstrumentationKey,
+              telemetryClient.getRoleName(),
+              telemetryClient.getRoleInstance(),
+              FirstEntryPoint.getAgentVersion());
+    } else {
+      quickPulse = null;
+    }
+    // quickPulse needs to be set before the runtimeConfigurator is created, so that when
+    // the telemetry client is passed to the runtime configurator, the runtime configurator can
+    // use it to pass quickPulse to the RuntimeConfigurator.updateSampling method. Sampling may
+    // use quickPulse.isEnabled to determine if telemetry should be dropped or record only.
+    telemetryClient.setQuickPulse(quickPulse);
+
     // TODO (heya) remove duplicate code in both RuntimeConfigurator and SecondEntryPoint
     RuntimeConfigurator runtimeConfigurator =
         new RuntimeConfigurator(
@@ -220,24 +242,6 @@ public class SecondEntryPoint
 
     // TODO (trask) add this method to AutoConfigurationCustomizer upstream?
     ((AutoConfiguredOpenTelemetrySdkBuilder) autoConfiguration).disableShutdownHook();
-
-    QuickPulse quickPulse;
-    if (configuration.preview.liveMetrics.enabled) {
-      quickPulse =
-          QuickPulse.create(
-              LazyHttpClient.newHttpPipeLineWithDefaultRedirect(configuration.authentication),
-              () -> {
-                ConnectionString connectionString = telemetryClient.getConnectionString();
-                return connectionString == null ? null : connectionString.getLiveEndpoint();
-              },
-              telemetryClient::getInstrumentationKey,
-              telemetryClient.getRoleName(),
-              telemetryClient.getRoleInstance(),
-              FirstEntryPoint.getAgentVersion());
-    } else {
-      quickPulse = null;
-    }
-    telemetryClient.setQuickPulse(quickPulse);
 
     AtomicBoolean firstLogRecordProcessor = new AtomicBoolean(true);
 
