@@ -334,7 +334,7 @@ public class SecondEntryPoint
   private static SpanExporter buildTraceExporter(
       Configuration configuration, TelemetryClient telemetryClient, QuickPulse quickPulse) {
     List<Configuration.SamplingOverride> exceptionSamplingOverrides =
-        configuration.preview.sampling.overrides.stream()
+        configuration.sampling.overrides.stream()
             .filter(override -> override.telemetryType == SamplingTelemetryType.EXCEPTION)
             .collect(Collectors.toList());
     SpanExporter spanExporter =
@@ -437,7 +437,7 @@ public class SecondEntryPoint
     if (config.preview.browserSdkLoader.enabled) {
       featureList.add(Feature.BROWSER_SDK_LOADER);
     }
-    if (!config.preview.sampling.overrides.isEmpty()) {
+    if (!config.sampling.overrides.isEmpty()) {
       featureList.add(Feature.SAMPLING);
     }
     if (config.preview.captureControllerSpans) {
