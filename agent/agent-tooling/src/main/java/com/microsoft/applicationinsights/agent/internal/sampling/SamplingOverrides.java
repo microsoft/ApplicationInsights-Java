@@ -4,6 +4,7 @@
 package com.microsoft.applicationinsights.agent.internal.sampling;
 
 import com.azure.monitor.opentelemetry.autoconfigure.implementation.SpanDataMapper;
+import com.azure.monitor.opentelemetry.autoconfigure.implementation.quickpulse.QuickPulse;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.MatchType;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.SamplingOverride;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.SamplingOverrideAttribute;
@@ -25,10 +26,10 @@ public class SamplingOverrides {
   private static final Logger logger = LoggerFactory.getLogger(SamplingOverrides.class);
   private final List<MatcherGroup> matcherGroups;
 
-  public SamplingOverrides(List<SamplingOverride> overrides) {
+  public SamplingOverrides(List<SamplingOverride> overrides, QuickPulse quickPulse) {
     matcherGroups = new ArrayList<>();
     for (SamplingOverride override : overrides) {
-      matcherGroups.add(new MatcherGroup(override));
+      matcherGroups.add(new MatcherGroup(override, quickPulse));
     }
   }
 
@@ -48,7 +49,7 @@ public class SamplingOverrides {
     private final List<TempPredicate> predicates;
     private final AiFixedPercentageSampler sampler;
 
-    private MatcherGroup(SamplingOverride override) {
+    private MatcherGroup(SamplingOverride override, QuickPulse quickPulse) {
       predicates = new ArrayList<>();
       for (SamplingOverrideAttribute attribute : override.attributes) {
         TempPredicate predicate = toPredicate(attribute);
@@ -56,7 +57,7 @@ public class SamplingOverrides {
           predicates.add(predicate);
         }
       }
-      sampler = AiFixedPercentageSampler.create(override.percentage);
+      sampler = AiFixedPercentageSampler.create(override.percentage, quickPulse);
     }
 
     AiFixedPercentageSampler getSampler() {
