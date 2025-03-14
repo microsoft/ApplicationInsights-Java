@@ -47,7 +47,7 @@ dependencies {
   compileOnly("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure")
   compileOnly("io.opentelemetry:opentelemetry-extension-trace-propagators")
 
-  implementation("com.github.oshi:oshi-core:6.7.0") {
+  implementation("com.github.oshi:oshi-core:6.7.1") {
     exclude("org.slf4j", "slf4j-api")
   }
 
