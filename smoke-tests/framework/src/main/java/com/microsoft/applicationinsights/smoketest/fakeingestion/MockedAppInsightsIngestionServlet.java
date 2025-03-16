@@ -68,6 +68,14 @@ class MockedAppInsightsIngestionServlet extends HttpServlet {
     }
   }
 
+  List<Envelope> getAllItems() {
+    synchronized (multimapLock) {
+      // need to make a copy to avoid ConcurrentModificationException
+      // if the caller iterates over it at the same time as another telemetry item arrives
+      return new ArrayList<>(type2envelope.values());
+    }
+  }
+
   void awaitAnyItems(long timeout, TimeUnit timeUnit)
       throws InterruptedException, ExecutionException, TimeoutException {
     waitForItems(x -> true, 1, timeout, timeUnit);

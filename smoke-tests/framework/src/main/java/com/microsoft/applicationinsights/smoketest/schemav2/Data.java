@@ -20,4 +20,9 @@ public class Data<T extends Domain> extends Base {
   public void setBaseData(T value) {
     this.baseData = value;
   }
+
+  @Override
+  public String toString() {
+    return "Data{" + "baseData=" + baseData + '}';
+  }
 }

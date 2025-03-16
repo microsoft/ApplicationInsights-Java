@@ -4,7 +4,7 @@
 package com.microsoft.applicationinsights.smoketest.schemav2;
 
 /** Data contract class Base. */
-public class Base {
+public abstract class Base {
   /** Backing field for property BaseType. */
   private String baseType;
 
