@@ -136,4 +136,36 @@ public class RemoteDependencyData extends Domain {
     }
     return this.measurements;
   }
+
+  @Override
+  public String toString() {
+    return "RemoteDependencyData{"
+        + "name='"
+        + name
+        + '\''
+        + ", id='"
+        + id
+        + '\''
+        + ", resultCode='"
+        + resultCode
+        + '\''
+        + ", duration="
+        + duration
+        + ", success="
+        + success
+        + ", data='"
+        + data
+        + '\''
+        + ", type='"
+        + type
+        + '\''
+        + ", target='"
+        + target
+        + '\''
+        + ", properties="
+        + properties
+        + ", measurements="
+        + measurements
+        + '}';
+  }
 }

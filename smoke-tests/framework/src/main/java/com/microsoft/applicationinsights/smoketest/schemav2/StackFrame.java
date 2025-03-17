@@ -48,4 +48,23 @@ public class StackFrame {
   public void setLine(int value) {
     this.line = value;
   }
+
+  @Override
+  public String toString() {
+    return "StackFrame{"
+        + "level="
+        + level
+        + ", method='"
+        + method
+        + '\''
+        + ", assembly='"
+        + assembly
+        + '\''
+        + ", fileName='"
+        + fileName
+        + '\''
+        + ", line="
+        + line
+        + '}';
+  }
 }

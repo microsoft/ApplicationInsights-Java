@@ -98,4 +98,26 @@ public class DataPoint {
   public void setStdDev(Double value) {
     this.stdDev = value;
   }
+
+  @Override
+  public String toString() {
+    return "DataPoint{"
+        + "name='"
+        + name
+        + '\''
+        + ", ns='"
+        + ns
+        + '\''
+        + ", value="
+        + value
+        + ", count="
+        + count
+        + ", min="
+        + min
+        + ", max="
+        + max
+        + ", stdDev="
+        + stdDev
+        + '}';
+  }
 }

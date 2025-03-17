@@ -94,4 +94,27 @@ public class ExceptionDetails {
   public String getStack() {
     return stack;
   }
+
+  @Override
+  public String toString() {
+    return "ExceptionDetails{"
+        + "id="
+        + id
+        + ", outerId="
+        + outerId
+        + ", typeName='"
+        + typeName
+        + '\''
+        + ", message='"
+        + message
+        + '\''
+        + ", hasFullStack="
+        + hasFullStack
+        + ", stack='"
+        + stack
+        + '\''
+        + ", parsedStack="
+        + parsedStack
+        + '}';
+  }
 }
