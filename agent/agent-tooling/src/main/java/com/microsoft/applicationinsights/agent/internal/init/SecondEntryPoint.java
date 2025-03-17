@@ -262,29 +262,16 @@ public class SecondEntryPoint
         .addPropertiesCustomizer(new AiConfigCustomizer())
         .addLogRecordProcessorCustomizer(
             (logRecordProcessor, configProperties) -> {
-              // filtering log record processors need to be chained on front of the batch log record
-              // processor, hopefully log filtering will be better supported by OpenTelemetry SDK in
-              // the future
-              // (e.g. https://github.com/open-telemetry/opentelemetry-specification/pull/4439)
               if (logRecordProcessor instanceof BatchLogRecordProcessor) {
                 List<LogRecordProcessor> logRecordProcessors =
                     getLogRecordProcessors(configuration);
-                List<Configuration.SamplingOverride> logSamplingOverrides =
-                    configuration.sampling.overrides.stream()
-                        .filter(override -> override.telemetryType == SamplingTelemetryType.TRACE)
-                        .collect(Collectors.toList());
-                List<Configuration.SamplingOverride> exceptionSamplingOverrides =
-                    configuration.sampling.overrides.stream()
-                        .filter(
-                            override -> override.telemetryType == SamplingTelemetryType.EXCEPTION)
-                        .collect(Collectors.toList());
 
+                // the filtering log record processor needs to be chained on front of the batch log
+                // record processor, hopefully log filtering will be better supported by
+                // OpenTelemetry SDK in the future, see
+                // https://github.com/open-telemetry/opentelemetry-specification/pull/4439
                 logFilteringProcessor =
-                    new AzureMonitorLogFilteringProcessor(
-                        logSamplingOverrides,
-                        exceptionSamplingOverrides,
-                        (BatchLogRecordProcessor) logRecordProcessor,
-                        configuration.instrumentation.logging.getSeverityThreshold());
+                    createLogFilteringProcessor(logRecordProcessor, configuration);
 
                 logRecordProcessors.add(logFilteringProcessor);
                 return LogRecordProcessor.composite(
@@ -333,6 +320,25 @@ public class SecondEntryPoint
           telemetryClient.setOtelResource(resource);
           return resource;
         });
+  }
+
+  private static AzureMonitorLogFilteringProcessor createLogFilteringProcessor(
+      LogRecordProcessor logRecordProcessor, Configuration configuration) {
+
+    List<Configuration.SamplingOverride> logSamplingOverrides =
+        configuration.sampling.overrides.stream()
+            .filter(override -> override.telemetryType == SamplingTelemetryType.TRACE)
+            .collect(Collectors.toList());
+    List<Configuration.SamplingOverride> exceptionSamplingOverrides =
+        configuration.sampling.overrides.stream()
+            .filter(override -> override.telemetryType == SamplingTelemetryType.EXCEPTION)
+            .collect(Collectors.toList());
+
+    return new AzureMonitorLogFilteringProcessor(
+        logSamplingOverrides,
+        exceptionSamplingOverrides,
+        logRecordProcessor,
+        configuration.instrumentation.logging.getSeverityThreshold());
   }
 
   private static SpanExporter buildTraceExporter(

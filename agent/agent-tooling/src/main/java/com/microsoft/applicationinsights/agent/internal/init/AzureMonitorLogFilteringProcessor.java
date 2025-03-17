@@ -16,7 +16,6 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.AttributesMap;
 import io.opentelemetry.sdk.logs.LogRecordProcessor;
 import io.opentelemetry.sdk.logs.ReadWriteLogRecord;
-import io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.samplers.SamplingDecision;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
@@ -39,14 +38,14 @@ public class AzureMonitorLogFilteringProcessor implements LogRecordProcessor {
 
   private final SamplingOverrides logSamplingOverrides;
   private final SamplingOverrides exceptionSamplingOverrides;
-  private final BatchLogRecordProcessor batchLogRecordProcessor;
+  private final LogRecordProcessor batchLogRecordProcessor;
 
   private volatile int severityThreshold;
 
   public AzureMonitorLogFilteringProcessor(
       List<Configuration.SamplingOverride> logSamplingOverrides,
       List<Configuration.SamplingOverride> exceptionSamplingOverrides,
-      BatchLogRecordProcessor batchLogRecordProcessor,
+      LogRecordProcessor batchLogRecordProcessor,
       int severityThreshold) {
 
     this.severityThreshold = severityThreshold;
