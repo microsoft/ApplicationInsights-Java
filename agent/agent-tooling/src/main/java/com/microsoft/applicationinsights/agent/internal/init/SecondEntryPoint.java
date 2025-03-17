@@ -262,6 +262,10 @@ public class SecondEntryPoint
         .addPropertiesCustomizer(new AiConfigCustomizer())
         .addLogRecordProcessorCustomizer(
             (logRecordProcessor, configProperties) -> {
+              // filtering log record processors need to be chained on front of the batch log record
+              // processor, hopefully log filtering will be better supported by OpenTelemetry SDK in
+              // the future
+              // (e.g. https://github.com/open-telemetry/opentelemetry-specification/pull/4439)
               if (logRecordProcessor instanceof BatchLogRecordProcessor) {
                 List<LogRecordProcessor> logRecordProcessors =
                     getLogRecordProcessors(configuration);
