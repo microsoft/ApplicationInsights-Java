@@ -47,7 +47,7 @@ dependencies {
   compileOnly("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure")
   compileOnly("io.opentelemetry:opentelemetry-extension-trace-propagators")
 
-  implementation("com.github.oshi:oshi-core:6.7.0") {
+  implementation("com.github.oshi:oshi-core:6.7.1") {
     exclude("org.slf4j", "slf4j-api")
   }
 
@@ -90,9 +90,7 @@ dependencies {
 
 configurations.all {
   // waiting for azure-identity to be bumped in the Azure SDK BOM
-  resolutionStrategy.force("com.azure:azure-identity:1.15.3")
-  // waiting for json-smart:2.5.2 to be available as a transitive dependency of azure:azure-identity
-  resolutionStrategy.force("net.minidev:json-smart:2.5.2")
+  resolutionStrategy.force("com.azure:azure-identity:1.15.4")
 }
 
 configurations {

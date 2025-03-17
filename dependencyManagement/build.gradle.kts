@@ -11,9 +11,9 @@ data class DependencySet(val group: String, val version: String, val modules: Li
 val dependencyVersions = hashMapOf<String, String>()
 rootProject.extra["versions"] = dependencyVersions
 
-val otelSdkVersion = "1.47.0"
-val otelInstrumentationAlphaVersion = "2.13.3-alpha"
-val otelInstrumentationVersion = "2.13.3"
+val otelSdkVersion = "1.48.0"
+val otelInstrumentationAlphaVersion = "2.14.0-alpha"
+val otelInstrumentationVersion = "2.14.0"
 val otelContribVersion = "1.43.0"
 
 rootProject.extra["otelInstrumentationVersion"] = otelInstrumentationVersion
@@ -27,7 +27,7 @@ val DEPENDENCY_BOMS = listOf(
   "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${otelInstrumentationAlphaVersion}",
   "com.azure:azure-sdk-bom:1.2.32",
   "io.netty:netty-bom:4.1.119.Final",
-  "org.junit:junit-bom:5.12.0",
+  "org.junit:junit-bom:5.12.1",
   "org.testcontainers:testcontainers-bom:1.20.6",
 )
 
@@ -75,7 +75,7 @@ val DEPENDENCIES = listOf(
   "io.opentelemetry.contrib:opentelemetry-jfr-connection:${otelContribVersion}-alpha",
   "io.opentelemetry.contrib:opentelemetry-runtime-attach-core:${otelContribVersion}-alpha",
   "com.google.code.findbugs:jsr305:3.0.2",
-  "com.github.spotbugs:spotbugs-annotations:4.9.2"
+  "com.github.spotbugs:spotbugs-annotations:4.9.3"
 )
 
 javaPlatform {
