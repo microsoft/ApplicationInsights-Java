@@ -4,7 +4,7 @@
 package com.microsoft.applicationinsights.smoketest.schemav2;
 
 /** Data contract class Domain. */
-public class Domain {
+public abstract class Domain {
   /** Initializes a new instance of the Domain class. */
   public Domain() {}
 }

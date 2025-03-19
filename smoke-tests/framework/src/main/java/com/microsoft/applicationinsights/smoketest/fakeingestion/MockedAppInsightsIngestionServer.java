@@ -83,6 +83,10 @@ public class MockedAppInsightsIngestionServer {
     return this.servlet.getItemsByType(type);
   }
 
+  public List<Envelope> getAllItems() {
+    return this.servlet.getAllItems();
+  }
+
   public <T extends Domain> List<T> getTelemetryDataByType(String type) {
     return getTelemetryDataByType(type, false);
   }

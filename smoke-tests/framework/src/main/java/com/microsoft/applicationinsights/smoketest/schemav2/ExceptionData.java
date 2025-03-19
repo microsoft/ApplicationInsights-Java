@@ -63,4 +63,18 @@ public class ExceptionData extends Domain {
     }
     return this.measurements;
   }
+
+  @Override
+  public String toString() {
+    return "ExceptionData{"
+        + "exceptions="
+        + exceptions
+        + ", severityLevel="
+        + severityLevel
+        + ", properties="
+        + properties
+        + ", measurements="
+        + measurements
+        + '}';
+  }
 }

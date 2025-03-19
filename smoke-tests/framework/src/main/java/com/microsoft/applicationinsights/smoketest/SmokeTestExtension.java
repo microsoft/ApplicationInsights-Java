@@ -4,6 +4,7 @@
 package com.microsoft.applicationinsights.smoketest;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 import static org.junit.Assert.assertEquals;
 
 import com.google.common.base.Stopwatch;
@@ -24,6 +25,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -33,7 +35,9 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.AfterEachCallback;
@@ -712,5 +716,44 @@ public class SmokeTestExtension
       MetricData md = getBaseData(input);
       return metricId.equals(md.getProperties().get("_MS.MetricId"));
     };
+  }
+
+  public void waitAndAssertTrace(Consumer<TraceAssert> assertions) {
+    await()
+        .untilAsserted(
+            () -> {
+              List<Envelope> envelopes = mockedIngestion.getAllItems();
+
+              Collection<List<Envelope>> traces =
+                  envelopes.stream()
+                      .filter(envelope -> envelope.getTags().get("ai.operation.id") != null)
+                      .collect(
+                          Collectors.groupingBy(
+                              envelope -> envelope.getTags().get("ai.operation.id")))
+                      .values();
+
+              assertThat(traces).anySatisfy(trace -> assertions.accept(new TraceAssert(trace)));
+            });
+  }
+
+  // passing name into this, instead of asserting the name afterwards via hasName()
+  // because otherwise the failure messages are huge (showing why every single metric captured
+  // didn't match)
+  public void waitAndAssertMetric(String name, Consumer<MetricAssert> assertions) {
+    // TODO assert that metrics are never sent with sample rate
+    //  assertThat(mdEnvelope.getSampleRate()).isNull();
+
+    // TODO
+    //  assertThat(metrics.size()).isEqualTo(1);
+    await()
+        .untilAsserted(
+            () -> {
+              List<Envelope> envelopes =
+                  mockedIngestion.getItemsEnvelopeDataType("MetricData").stream()
+                      .filter(getMetricPredicate(name))
+                      .collect(Collectors.toList());
+              assertThat(envelopes)
+                  .anySatisfy(envelope -> assertions.accept(new MetricAssert(envelope)));
+            });
   }
 }

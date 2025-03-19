@@ -45,4 +45,17 @@ public class EventData extends Domain {
     }
     return this.measurements;
   }
+
+  @Override
+  public String toString() {
+    return "EventData{"
+        + "name='"
+        + name
+        + '\''
+        + ", properties="
+        + properties
+        + ", measurements="
+        + measurements
+        + '}';
+  }
 }

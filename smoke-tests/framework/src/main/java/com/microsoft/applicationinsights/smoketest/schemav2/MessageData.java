@@ -47,4 +47,17 @@ public class MessageData extends Domain {
     }
     return this.properties;
   }
+
+  @Override
+  public String toString() {
+    return "MessageData{"
+        + "message='"
+        + message
+        + '\''
+        + ", severityLevel="
+        + severityLevel
+        + ", properties="
+        + properties
+        + '}';
+  }
 }
