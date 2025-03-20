@@ -15,8 +15,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 @Environment(TOMCAT_8_JAVA_8)
-@UseAgent("disabled_applicationinsights.json")
-class LogbackDisabledTest {
+@UseAgent("level_off_applicationinsights.json")
+class LogbackLevelOffTest {
 
   @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.create();
 

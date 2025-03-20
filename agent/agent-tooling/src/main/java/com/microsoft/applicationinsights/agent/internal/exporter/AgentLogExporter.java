@@ -10,23 +10,16 @@ import com.azure.monitor.opentelemetry.autoconfigure.implementation.LogDataMappe
 import com.azure.monitor.opentelemetry.autoconfigure.implementation.logging.OperationLogger;
 import com.azure.monitor.opentelemetry.autoconfigure.implementation.models.TelemetryItem;
 import com.azure.monitor.opentelemetry.autoconfigure.implementation.quickpulse.QuickPulse;
-import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.SamplingOverride;
-import com.microsoft.applicationinsights.agent.internal.sampling.AiFixedPercentageSampler;
-import com.microsoft.applicationinsights.agent.internal.sampling.SamplingOverrides;
 import com.microsoft.applicationinsights.agent.internal.telemetry.BatchItemProcessor;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryObservers;
 import io.opentelemetry.api.logs.LoggerProvider;
-import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.javaagent.bootstrap.CallDepth;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
-import io.opentelemetry.sdk.trace.samplers.SamplingDecision;
-import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 import io.opentelemetry.semconv.ExceptionAttributes;
 import java.util.Collection;
-import java.util.List;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import org.slf4j.Logger;
@@ -39,24 +32,13 @@ public class AgentLogExporter implements LogRecordExporter {
   private static final OperationLogger exportingLogLogger =
       new OperationLogger(AgentLogExporter.class, "Exporting log");
 
-  // TODO (trask) could implement this in a filtering LogExporter instead
-  private volatile int severityThreshold;
-
-  private final SamplingOverrides logSamplingOverrides;
-  private final SamplingOverrides exceptionSamplingOverrides;
   private final LogDataMapper mapper;
   private final Consumer<TelemetryItem> telemetryItemConsumer;
 
   public AgentLogExporter(
-      int severityThreshold,
-      List<SamplingOverride> logSamplingOverrides,
-      List<SamplingOverride> exceptionSamplingOverrides,
       LogDataMapper mapper,
       @Nullable QuickPulse quickPulse,
       BatchItemProcessor batchItemProcessor) {
-    this.severityThreshold = severityThreshold;
-    this.logSamplingOverrides = new SamplingOverrides(logSamplingOverrides);
-    this.exceptionSamplingOverrides = new SamplingOverrides(exceptionSamplingOverrides);
     this.mapper = mapper;
     telemetryItemConsumer =
         telemetryItem -> {
@@ -68,10 +50,6 @@ public class AgentLogExporter implements LogRecordExporter {
               .forEach(consumer -> consumer.accept(telemetryItem));
           batchItemProcessor.trackAsync(telemetryItem);
         };
-  }
-
-  public void setSeverityThreshold(int severityThreshold) {
-    this.severityThreshold = severityThreshold;
   }
 
   @Override
@@ -107,47 +85,12 @@ public class AgentLogExporter implements LogRecordExporter {
 
   private void internalExport(LogRecordData log) {
     try {
-      int severityNumber = log.getSeverity().getSeverityNumber();
-      if (severityNumber < severityThreshold) {
-        return;
-      }
-
-      String stack = log.getAttributes().get(ExceptionAttributes.EXCEPTION_STACKTRACE);
-
-      SamplingOverrides samplingOverrides =
-          stack != null ? exceptionSamplingOverrides : logSamplingOverrides;
-
-      SpanContext spanContext = log.getSpanContext();
-      Double parentSpanSampleRate = log.getAttributes().get(AiSemanticAttributes.SAMPLE_RATE);
-
-      AiFixedPercentageSampler sampler = samplingOverrides.getOverride(log.getAttributes());
-
-      boolean hasSamplingOverride = sampler != null;
-
-      if (!hasSamplingOverride
-          && spanContext.isValid()
-          && !spanContext.getTraceFlags().isSampled()) {
-        // if there is no sampling override, and the log is part of an unsampled trace,
-        // then don't capture it
-        return;
-      }
-
-      Double sampleRate = null;
-      if (hasSamplingOverride) {
-        SamplingResult samplingResult = sampler.shouldSampleLog(spanContext, parentSpanSampleRate);
-        if (samplingResult.getDecision() != SamplingDecision.RECORD_AND_SAMPLE) {
-          return;
-        }
-        sampleRate = samplingResult.getAttributes().get(AiSemanticAttributes.SAMPLE_RATE);
-      }
-
-      if (sampleRate == null) {
-        sampleRate = parentSpanSampleRate;
-      }
-
       logger.debug("exporting log: {}", log);
 
-      // TODO (trask) no longer need to check AiSemanticAttributes.SAMPLE_RATE in map() method
+      String stack = log.getAttributes().get(ExceptionAttributes.EXCEPTION_STACKTRACE);
+      Double sampleRate = log.getAttributes().get(AiSemanticAttributes.SAMPLE_RATE);
+
+      // TODO (trask) get stack and sampleRate inside map() method instead of passing into
       TelemetryItem telemetryItem = mapper.map(log, stack, sampleRate);
       telemetryItemConsumer.accept(telemetryItem);
 
