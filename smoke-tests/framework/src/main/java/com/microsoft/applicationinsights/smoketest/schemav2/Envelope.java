@@ -89,4 +89,25 @@ public class Envelope {
   public void setData(Base value) {
     this.data = value;
   }
+
+  @Override
+  public String toString() {
+    return "Envelope{"
+        + "name='"
+        + name
+        + '\''
+        + ", time='"
+        + time
+        + '\''
+        + ", sampleRate="
+        + sampleRate
+        + ", iKey='"
+        + iKey
+        + '\''
+        + ", tags="
+        + tags
+        + ", data="
+        + data
+        + '}';
+  }
 }

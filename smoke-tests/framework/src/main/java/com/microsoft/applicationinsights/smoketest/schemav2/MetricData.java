@@ -34,4 +34,9 @@ public class MetricData extends Domain {
     }
     return this.properties;
   }
+
+  @Override
+  public String toString() {
+    return "MetricData{" + "metrics=" + metrics + ", properties=" + properties + '}';
+  }
 }

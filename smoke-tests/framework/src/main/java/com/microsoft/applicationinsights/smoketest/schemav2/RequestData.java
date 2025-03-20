@@ -123,4 +123,33 @@ public class RequestData extends Domain {
     }
     return this.measurements;
   }
+
+  @Override
+  public String toString() {
+    return "RequestData{"
+        + "id='"
+        + id
+        + '\''
+        + ", duration="
+        + duration
+        + ", responseCode='"
+        + responseCode
+        + '\''
+        + ", success="
+        + success
+        + ", source='"
+        + source
+        + '\''
+        + ", name='"
+        + name
+        + '\''
+        + ", url='"
+        + url
+        + '\''
+        + ", properties="
+        + properties
+        + ", measurements="
+        + measurements
+        + '}';
+  }
 }

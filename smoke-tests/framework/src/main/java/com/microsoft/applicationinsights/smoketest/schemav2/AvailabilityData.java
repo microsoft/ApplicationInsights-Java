@@ -83,4 +83,30 @@ public class AvailabilityData extends Domain {
     }
     return this.measurements;
   }
+
+  @Override
+  public String toString() {
+    return "AvailabilityData{"
+        + "id='"
+        + id
+        + '\''
+        + ", name='"
+        + name
+        + '\''
+        + ", duration="
+        + duration
+        + ", success="
+        + success
+        + ", runLocation='"
+        + runLocation
+        + '\''
+        + ", message='"
+        + message
+        + '\''
+        + ", properties="
+        + properties
+        + ", measurements="
+        + measurements
+        + '}';
+  }
 }

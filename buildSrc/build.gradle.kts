@@ -28,12 +28,12 @@ dependencies {
 
   // When updating, update above in plugins too
   implementation("com.diffplug.spotless:spotless-plugin-gradle:7.0.2")
-  implementation("com.github.spotbugs.snom:spotbugs-gradle-plugin:6.1.6")
+  implementation("com.github.spotbugs.snom:spotbugs-gradle-plugin:6.1.7")
   implementation("com.gradleup.shadow:shadow-gradle-plugin:8.3.6")
 
   implementation("org.owasp:dependency-check-gradle:12.1.0")
 
-  implementation("io.opentelemetry.instrumentation:gradle-plugins:2.13.2-alpha")
+  implementation("io.opentelemetry.instrumentation:gradle-plugins:2.14.0-alpha")
 
   implementation("net.ltgt.gradle:gradle-errorprone-plugin:4.1.0")
   implementation("net.ltgt.gradle:gradle-nullaway-plugin:2.2.0")

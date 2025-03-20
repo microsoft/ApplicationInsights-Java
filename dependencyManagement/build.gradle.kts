@@ -11,24 +11,24 @@ data class DependencySet(val group: String, val version: String, val modules: Li
 val dependencyVersions = hashMapOf<String, String>()
 rootProject.extra["versions"] = dependencyVersions
 
-val otelSdkVersion = "1.47.0"
-val otelInstrumentationAlphaVersion = "2.13.1-alpha"
-val otelInstrumentationVersion = "2.13.1"
+val otelSdkVersion = "1.48.0"
+val otelInstrumentationAlphaVersion = "2.14.0-alpha"
+val otelInstrumentationVersion = "2.14.0"
 val otelContribVersion = "1.43.0"
 
 rootProject.extra["otelInstrumentationVersion"] = otelInstrumentationVersion
 rootProject.extra["otelInstrumentationAlphaVersion"] = otelInstrumentationAlphaVersion
 
 val DEPENDENCY_BOMS = listOf(
-  "com.fasterxml.jackson:jackson-bom:2.18.2",
+  "com.fasterxml.jackson:jackson-bom:2.18.3",
   "io.opentelemetry:opentelemetry-bom:${otelSdkVersion}",
   "io.opentelemetry:opentelemetry-bom-alpha:${otelSdkVersion}-alpha",
   "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:${otelInstrumentationVersion}",
   "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${otelInstrumentationAlphaVersion}",
-  "com.azure:azure-sdk-bom:1.2.31",
+  "com.azure:azure-sdk-bom:1.2.32",
   "io.netty:netty-bom:4.1.119.Final",
-  "org.junit:junit-bom:5.12.0",
-  "org.testcontainers:testcontainers-bom:1.20.5",
+  "org.junit:junit-bom:5.12.1",
+  "org.testcontainers:testcontainers-bom:1.20.6",
 )
 
 val autoServiceVersion = "1.1.1"
@@ -75,7 +75,7 @@ val DEPENDENCIES = listOf(
   "io.opentelemetry.contrib:opentelemetry-jfr-connection:${otelContribVersion}-alpha",
   "io.opentelemetry.contrib:opentelemetry-runtime-attach-core:${otelContribVersion}-alpha",
   "com.google.code.findbugs:jsr305:3.0.2",
-  "com.github.spotbugs:spotbugs-annotations:4.9.1"
+  "com.github.spotbugs:spotbugs-annotations:4.9.3"
 )
 
 javaPlatform {

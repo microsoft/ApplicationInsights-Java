@@ -33,4 +33,9 @@ public class PageViewData extends EventData {
   public void setDuration(Duration value) {
     this.duration = value;
   }
+
+  @Override
+  public String toString() {
+    return "PageViewData{" + "url='" + url + '\'' + ", duration=" + duration + '}';
+  }
 }
