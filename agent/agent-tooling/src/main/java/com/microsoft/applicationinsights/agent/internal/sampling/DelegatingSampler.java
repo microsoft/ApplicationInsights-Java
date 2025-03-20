@@ -3,6 +3,7 @@
 
 package com.microsoft.applicationinsights.agent.internal.sampling;
 
+import com.azure.core.util.logging.ClientLogger;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.context.Context;
@@ -17,6 +18,8 @@ public class DelegatingSampler implements Sampler {
 
   // in Azure Functions consumption pool, we don't know at startup whether to enable or not
   private volatile Sampler delegate = Sampler.alwaysOff();
+
+  private static final ClientLogger logger = new ClientLogger(DelegatingSampler.class);
 
   public static DelegatingSampler getInstance() {
     return instance;
@@ -47,6 +50,15 @@ public class DelegatingSampler implements Sampler {
       SpanKind spanKind,
       Attributes attributes,
       List<LinkData> parentLinks) {
+
+    String spanId = "";
+    if (!parentLinks.isEmpty()) {
+      spanId = parentLinks.get(0).getSpanContext().getSpanId();
+    }
+    logger.info("calling shouldsample from delegating sampler with traceId {}, name {}, spanid {}",
+        traceId, name, spanId);
+    Exception ex = new Exception();
+    ex.printStackTrace();
     return delegate.shouldSample(parentContext, traceId, name, spanKind, attributes, parentLinks);
   }
 
