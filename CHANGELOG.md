@@ -1,4 +1,6 @@
 # CHANGELOG
+## Version 3.7.2 GA (Unreleased)
+* Support for using the AAD Audience from the connection string ([#4121](https://github.com/microsoft/ApplicationInsights-Java/pull/4121))
 
 ## Version 3.7.1 GA (02/26/2025)
 
