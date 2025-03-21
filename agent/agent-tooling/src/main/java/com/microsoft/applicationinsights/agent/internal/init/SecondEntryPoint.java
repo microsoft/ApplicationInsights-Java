@@ -201,8 +201,7 @@ public class SecondEntryPoint
     if (telemetryClient.getConnectionString() != null) {
       statsbeatModule.start(
           AzureMonitorHelper.createStatsbeatTelemetryItemExporter(
-              LazyHttpClient.newHttpPipeLine(
-                  null, telemetryClient.getAadAudienceWithScope()),
+              LazyHttpClient.newHttpPipeLine(null, telemetryClient.getAadAudienceWithScope()),
               statsbeatModule,
               tempDir),
           telemetryClient::getStatsbeatConnectionString,
@@ -228,9 +227,8 @@ public class SecondEntryPoint
       quickPulse =
           QuickPulse.create(
               LazyHttpClient.newHttpPipeLineWithDefaultRedirect(
-                  configuration.authentication,
-                  telemetryClient.getAadAudienceWithScope()),
-                  () -> {
+                  configuration.authentication, telemetryClient.getAadAudienceWithScope()),
+              () -> {
                 ConnectionString connectionString = telemetryClient.getConnectionString();
                 return connectionString == null ? null : connectionString.getLiveEndpoint();
               },

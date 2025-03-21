@@ -226,8 +226,9 @@ public class TelemetryClient {
 
   private BatchItemProcessor initBatchItemProcessor(
       int exportQueueCapacity, int maxExportBatchSize, String queueName) {
-    //logger.info("Connection string telemetryclient: {}", connectionString.getOriginalString());
-    //logger.info("Statsbeat connection string telemetryclient: {}", statsbeatConnectionString.getInstrumentationKey());
+    // logger.info("Connection string telemetryclient: {}", connectionString.getOriginalString());
+    // logger.info("Statsbeat connection string telemetryclient: {}",
+    // statsbeatConnectionString.getInstrumentationKey());
     HttpPipeline httpPipeline =
         LazyHttpClient.newHttpPipeLine(
             aadAuthentication,
