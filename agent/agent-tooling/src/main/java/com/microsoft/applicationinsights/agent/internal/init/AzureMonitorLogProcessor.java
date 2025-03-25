@@ -11,6 +11,7 @@ import io.opentelemetry.sdk.logs.LogRecordProcessor;
 import io.opentelemetry.sdk.logs.ReadWriteLogRecord;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 
+// See also AzureMonitorLogFilteringProcessor
 public class AzureMonitorLogProcessor implements LogRecordProcessor {
 
   @Override
