@@ -260,25 +260,6 @@ public class SecondEntryPoint
               return props;
             })
         .addPropertiesCustomizer(new AiConfigCustomizer())
-        .addLogRecordProcessorCustomizer(
-            (logRecordProcessor, configProperties) -> {
-              if (logRecordProcessor instanceof BatchLogRecordProcessor) {
-                List<LogRecordProcessor> logRecordProcessors =
-                    getLogRecordProcessors(configuration);
-
-                // the filtering log record processor needs to be chained on front of the batch log
-                // record processor, hopefully log filtering will be better supported by
-                // OpenTelemetry SDK in the future, see
-                // https://github.com/open-telemetry/opentelemetry-specification/pull/4439
-                logFilteringProcessor =
-                    createLogFilteringProcessor(logRecordProcessor, configuration);
-
-                logRecordProcessors.add(logFilteringProcessor);
-                return LogRecordProcessor.composite(
-                    logRecordProcessors.toArray(new LogRecordProcessor[0]));
-              }
-              return logRecordProcessor;
-            })
         .addSpanExporterCustomizer(
             (spanExporter, configProperties) -> {
               if (spanExporter instanceof AzureMonitorSpanExporterProvider.MarkerSpanExporter) {
@@ -294,6 +275,13 @@ public class SecondEntryPoint
               } else {
                 return metricExporter;
               }
+            })
+        .addLogRecordProcessorCustomizer(
+            (logRecordProcessor, configProperties) -> {
+              if (logRecordProcessor instanceof BatchLogRecordProcessor) {
+                return wrapBatchLogRecordProcessor(logRecordProcessor, configuration);
+              }
+              return logRecordProcessor;
             })
         .addLogRecordExporterCustomizer(
             (logRecordExporter, configProperties) -> {
@@ -320,6 +308,20 @@ public class SecondEntryPoint
           telemetryClient.setOtelResource(resource);
           return resource;
         });
+  }
+
+  private static LogRecordProcessor wrapBatchLogRecordProcessor(
+      LogRecordProcessor logRecordProcessor, Configuration configuration) {
+    List<LogRecordProcessor> logRecordProcessors = getLogRecordProcessors(configuration);
+
+    // the filtering log record processor needs to be chained on front of the batch log
+    // record processor, hopefully log filtering will be better supported by
+    // OpenTelemetry SDK in the future, see
+    // https://github.com/open-telemetry/opentelemetry-specification/pull/4439
+    logFilteringProcessor = createLogFilteringProcessor(logRecordProcessor, configuration);
+
+    logRecordProcessors.add(logFilteringProcessor);
+    return LogRecordProcessor.composite(logRecordProcessors.toArray(new LogRecordProcessor[0]));
   }
 
   private static AzureMonitorLogFilteringProcessor createLogFilteringProcessor(
