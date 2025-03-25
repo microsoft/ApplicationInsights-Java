@@ -229,7 +229,7 @@ public class TelemetryClient {
     HttpPipeline httpPipeline =
         LazyHttpClient.newHttpPipeLine(
             aadAuthentication,
-            getAadAudienceWithScope(),
+            this::getAadAudienceWithScope,
             new NetworkStatsbeatHttpPipelinePolicy(statsbeatModule.getNetworkStatsbeat()));
     // TODO (heya) refactor the following by using AzureMonitorHelper.createTelemetryItemExporter by
     // passing in getNonessentialStatsbeat
@@ -356,10 +356,8 @@ public class TelemetryClient {
     return connectionString;
   }
 
+  @Nullable
   public String getAadAudienceWithScope() {
-    if (connectionString == null) {
-      return APPLICATIONINSIGHTS_AUTHENTICATION_SCOPE;
-    }
     return connectionString.getAadAudienceWithScope();
   }
 

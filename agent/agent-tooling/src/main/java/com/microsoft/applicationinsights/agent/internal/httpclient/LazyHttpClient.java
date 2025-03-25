@@ -8,6 +8,10 @@ import static java.util.Arrays.asList;
 import com.azure.core.http.HttpClient;
 import com.azure.core.http.HttpPipeline;
 import com.azure.core.http.HttpPipelineBuilder;
+import com.azure.core.http.HttpPipelineCallContext;
+import com.azure.core.http.HttpPipelineNextPolicy;
+import com.azure.core.http.HttpPipelineNextSyncPolicy;
+import com.azure.core.http.HttpPipelinePosition;
 import com.azure.core.http.HttpRequest;
 import com.azure.core.http.HttpResponse;
 import com.azure.core.http.ProxyOptions;
@@ -31,6 +35,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import reactor.core.publisher.Mono;
 import reactor.netty.resources.LoopResources;
@@ -110,18 +115,21 @@ public class LazyHttpClient implements HttpClient {
   }
 
   public static HttpPipeline newHttpPipeLineWithDefaultRedirect(
-      @Nullable Configuration.AadAuthentication aadConfiguration, String aadAudienceWithScope) {
+      @Nullable Configuration.AadAuthentication aadConfiguration,
+      Supplier<String> aadAudienceWithScope) {
     return newHttpPipeLine(
         aadConfiguration, aadAudienceWithScope, new RedirectPolicy(new DefaultRedirectStrategy()));
   }
 
   public static HttpPipeline newHttpPipeLine(
       @Nullable Configuration.AadAuthentication aadConfiguration,
-      String aadAudienceWithScope,
+      Supplier<String> aadAudienceWithScope,
       HttpPipelinePolicy... additionalPolicies) {
     List<HttpPipelinePolicy> policies = new ArrayList<>();
     if (aadConfiguration != null && aadConfiguration.enabled) {
-      policies.add(getAuthenticationPolicy(aadConfiguration, aadAudienceWithScope));
+      policies.add(
+          new LazyHttpPipelinePolicy(
+              () -> getAuthenticationPolicy(aadConfiguration, aadAudienceWithScope.get())));
     }
     policies.addAll(asList(additionalPolicies));
     // Add Logging Policy. Can be enabled using AZURE_LOG_LEVEL.
@@ -189,5 +197,41 @@ public class LazyHttpClient implements HttpClient {
     ManagedIdentityCredential managedIdentityCredential =
         new ManagedIdentityCredentialBuilder().build();
     return new BearerTokenAuthenticationPolicy(managedIdentityCredential, aadAudienceWithScope);
+  }
+
+  private static class LazyHttpPipelinePolicy implements HttpPipelinePolicy {
+
+    private final Supplier<HttpPipelinePolicy> supplier;
+    private volatile HttpPipelinePolicy delegate;
+
+    LazyHttpPipelinePolicy(Supplier<HttpPipelinePolicy> supplier) {
+      this.supplier = supplier;
+    }
+
+    @Override
+    public Mono<HttpResponse> process(
+        HttpPipelineCallContext context, HttpPipelineNextPolicy next) {
+      createDelegateFirstTime();
+      return delegate.process(context, next);
+    }
+
+    @Override
+    public HttpResponse processSync(
+        HttpPipelineCallContext context, HttpPipelineNextSyncPolicy next) {
+      createDelegateFirstTime();
+      return delegate.processSync(context, next);
+    }
+
+    @Override
+    public HttpPipelinePosition getPipelinePosition() {
+      createDelegateFirstTime();
+      return delegate.getPipelinePosition();
+    }
+
+    private void createDelegateFirstTime() {
+      if (delegate == null) {
+        delegate = supplier.get();
+      }
+    }
   }
 }
