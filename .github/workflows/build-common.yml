@@ -216,3 +216,15 @@ jobs:
 
       - name: Test
         run: ./gradlew ${{ matrix.module }}:smokeTest
+
+      - name: Create unique artifact name
+        if: failure()
+        run: |
+          echo "UPLOAD_ARTIFACT_NAME=${{ matrix.module }}" | sed 's/:/-/g' >> $GITHUB_ENV
+
+      - name: Upload smoke test reports
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: ${{ env.UPLOAD_ARTIFACT_NAME }}
+          path: '**/build/reports/tests/smokeTest/**/*'
