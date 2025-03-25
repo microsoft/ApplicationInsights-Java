@@ -5,6 +5,7 @@ package com.microsoft.applicationinsights.agent.internal.sampling;
 
 import com.azure.monitor.opentelemetry.autoconfigure.implementation.AiSemanticAttributes;
 import com.azure.monitor.opentelemetry.autoconfigure.implementation.SamplingScoreGeneratorV2;
+import com.azure.monitor.opentelemetry.autoconfigure.implementation.quickpulse.QuickPulse;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.instrumentation.api.internal.cache.Cache;
 import io.opentelemetry.sdk.trace.samplers.SamplingDecision;
@@ -17,13 +18,19 @@ public class SamplerUtil {
   private static final Cache<Double, SamplingResult> recordAndSampleWithSampleRateMap =
       Cache.bounded(100);
 
-  static SamplingResult shouldSample(String traceId, double sp) {
+  static SamplingResult shouldSample(String traceId, double sp, QuickPulse quickPulse) {
     SamplingResult samplingResult;
     if (sp == 0) {
+      if (quickPulse != null && quickPulse.isEnabled()) {
+        return SamplingResult.recordOnly();
+      }
       return SamplingResult.drop();
     }
 
     if (sp != 100 && !shouldRecordAndSample(traceId, sp)) {
+      if (quickPulse != null && quickPulse.isEnabled()) {
+        return SamplingResult.recordOnly();
+      }
       return SamplingResult.drop();
     }
 
