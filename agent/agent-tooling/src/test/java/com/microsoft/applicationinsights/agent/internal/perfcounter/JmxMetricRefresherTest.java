@@ -50,7 +50,7 @@ class JmxMetricRefresherTest {
   }
 
   @Test
-  void shouldFindConfigurationFromAvailableJMxMetric() {
+  void shouldFindConfigurationFromAvailableJmxMetric() {
     // given
     List<Configuration.JmxMetric> jmxMetricsConfig = new ArrayList<>();
     Configuration.JmxMetric metric1 = new Configuration.JmxMetric();
