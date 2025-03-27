@@ -51,7 +51,7 @@ class JmxMetricRefresherTest {
 
   @Test
   void shouldFindConfigurationFromAvailableJMxMetric() {
-
+    // given
     List<Configuration.JmxMetric> jmxMetricsConfig = new ArrayList<>();
     Configuration.JmxMetric metric1 = new Configuration.JmxMetric();
     metric1.objectName = "objectName1";
@@ -73,8 +73,10 @@ class JmxMetricRefresherTest {
         new AbstractMap.SimpleEntry<>(
             "objectName1", new HashSet<>(Collections.singletonList("attribute1")));
 
+    // when
     List<Configuration.JmxMetric> result = jmxMetricRefresher.findConfigurations(newly);
 
+    // then
     assertThat(result).hasSize(1);
     Configuration.JmxMetric jmxConfigurationFound = result.get(0);
     assertThat(jmxConfigurationFound.objectName).isEqualTo("objectName1");
