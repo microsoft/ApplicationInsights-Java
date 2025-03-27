@@ -4,6 +4,7 @@
 package com.microsoft.applicationinsights.agent.internal.perfcounter;
 
 import com.azure.monitor.opentelemetry.autoconfigure.implementation.utils.ThreadPoolUtils;
+import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import java.util.List;
 import java.util.Locale;
@@ -45,7 +46,7 @@ public enum PerformanceCounterContainer {
 
   private final List<PerformanceCounter> performanceCounters = new CopyOnWriteArrayList<>();
 
-  @Nullable private volatile AvailableJmxMetricLogger availableJmxMetricLogger;
+  @Nullable private volatile JmxMetricRefresher jmxMetricRefresher;
 
   private volatile boolean initialized = false;
 
@@ -90,8 +91,8 @@ public enum PerformanceCounterContainer {
     this.collectionFrequencyInMillis = collectionFrequencyInSec * 1000;
   }
 
-  public void setLogAvailableJmxMetrics() {
-    availableJmxMetricLogger = new AvailableJmxMetricLogger();
+  public void setLogAvailableJmxMetrics(List<Configuration.JmxMetric> jmxMetrics) {
+    jmxMetricRefresher = new JmxMetricRefresher(jmxMetrics);
   }
 
   /**
@@ -119,8 +120,8 @@ public enum PerformanceCounterContainer {
         new Runnable() {
           @Override
           public void run() {
-            if (availableJmxMetricLogger != null) {
-              availableJmxMetricLogger.logAvailableJmxMetrics();
+            if (jmxMetricRefresher != null) {
+              jmxMetricRefresher.refresh();
             }
 
             TelemetryClient telemetryClient = TelemetryClient.getActive();

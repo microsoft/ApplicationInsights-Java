@@ -6,13 +6,17 @@ package com.microsoft.applicationinsights.agent.internal.perfcounter;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
 
+import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
+import com.microsoft.applicationinsights.agent.internal.init.JmxPerformanceCounterLoader;
 import io.opentelemetry.instrumentation.api.internal.GuardedBy;
 import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
@@ -28,32 +32,71 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 // TODO (trask) add tests
-class AvailableJmxMetricLogger {
+class JmxMetricRefresher {
 
-  private static final Logger logger = LoggerFactory.getLogger(AvailableJmxMetricLogger.class);
+  private static final Logger logger = LoggerFactory.getLogger(JmxMetricRefresher.class);
 
   private static final String NEWLINE = System.getProperty("line.separator");
+
+  private final List<Configuration.JmxMetric> jmxMetricsConfig;
 
   @GuardedBy("lock")
   private Map<String, Set<String>> priorAttributeMap = new HashMap<>();
 
   private final Object lock = new Object();
 
-  void logAvailableJmxMetrics() {
+  public JmxMetricRefresher(List<Configuration.JmxMetric> jmxMetricsConfig) {
+    this.jmxMetricsConfig = jmxMetricsConfig;
+  }
+
+  void refresh() {
     synchronized (lock) {
       Map<String, Set<String>> attributeMap = getAttributeMap();
-      logDifference(priorAttributeMap, attributeMap);
+      Map<String, Set<String>> newlyAvailableJmxMetrics =
+          logDifferenceAndReturnNewlyAvailable(priorAttributeMap, attributeMap);
+      if (!newlyAvailableJmxMetrics.isEmpty()) {
+        List<Configuration.JmxMetric> configsWithNewlyAvailableMetrics =
+            newlyAvailableJmxMetrics.entrySet().stream()
+                .flatMap(newly -> findConfigurations(newly).stream())
+                .collect(Collectors.toList());
+        JmxPerformanceCounterLoader.loadCustomJmxPerfCounters(configsWithNewlyAvailableMetrics);
+      }
       priorAttributeMap = attributeMap;
     }
   }
 
-  private static void logDifference(
+  List<Configuration.JmxMetric> findConfigurations(Map.Entry<String, Set<String>> newly) {
+    List<Configuration.JmxMetric> newlyAvailableJmxMetrics = new ArrayList<>();
+    for (Configuration.JmxMetric jmxMetric : jmxMetricsConfig) {
+      if (jmxMetric.objectName.equals(newly.getKey())) {
+        Optional<Configuration.JmxMetric> potentialJmxMetric =
+            findPotentialConfig(newly, jmxMetric);
+        if (potentialJmxMetric.isPresent()) {
+          newlyAvailableJmxMetrics.add(potentialJmxMetric.get());
+        }
+      }
+    }
+    return newlyAvailableJmxMetrics;
+  }
+
+  private static Optional<Configuration.JmxMetric> findPotentialConfig(
+      Map.Entry<String, Set<String>> newly, Configuration.JmxMetric jmxMetric) {
+    Set<String> attributes = newly.getValue();
+    for (String attribute : attributes) {
+      if (jmxMetric.attribute.equals(attribute)) {
+        return Optional.of(jmxMetric);
+      }
+    }
+    return Optional.empty();
+  }
+
+  private static Map<String, Set<String>> logDifferenceAndReturnNewlyAvailable(
       Map<String, Set<String>> priorAvailableJmxAttributes,
       Map<String, Set<String>> currentAvailableJmxAttributes) {
     if (priorAvailableJmxAttributes.isEmpty()) {
       // first time
       logger.info("available jmx metrics:{}{}", NEWLINE, toString(currentAvailableJmxAttributes));
-      return;
+      return Collections.emptyMap();
     }
     Map<String, Set<String>> newlyAvailable =
         difference(currentAvailableJmxAttributes, priorAvailableJmxAttributes);
@@ -64,11 +107,13 @@ class AvailableJmxMetricLogger {
     Map<String, Set<String>> noLongerAvailable =
         difference(priorAvailableJmxAttributes, currentAvailableJmxAttributes);
     if (!noLongerAvailable.isEmpty()) {
+      // TODO Don't recreate the JMX metric if it is no longer available
       logger.info(
           "no longer available jmx metrics since last output:{}{}",
           NEWLINE,
           toString(noLongerAvailable));
     }
+    return newlyAvailable;
   }
 
   private static String toString(Map<String, Set<String>> jmxAttributes) {
