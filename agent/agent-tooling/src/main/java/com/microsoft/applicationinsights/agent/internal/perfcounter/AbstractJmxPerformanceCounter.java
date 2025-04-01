@@ -35,6 +35,8 @@ public abstract class AbstractJmxPerformanceCounter implements PerformanceCounte
     try {
       Map<String, Collection<Object>> result = JmxDataFetcher.fetch(objectName, attributes);
 
+      logger.info("Fetched JMX metrics: ", result);
+
       for (Map.Entry<String, Collection<Object>> displayAndValues : result.entrySet()) {
         boolean ok = true;
         double value = 0.0;
@@ -46,6 +48,7 @@ public abstract class AbstractJmxPerformanceCounter implements PerformanceCounte
               value += Double.parseDouble(String.valueOf(obj));
             }
           } catch (RuntimeException e) {
+            logger.warn("Unexpected value from JMX: " + displayAndValues, e);
             ok = false;
             break;
           }
