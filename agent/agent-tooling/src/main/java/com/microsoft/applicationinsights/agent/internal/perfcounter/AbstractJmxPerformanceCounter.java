@@ -35,7 +35,9 @@ public abstract class AbstractJmxPerformanceCounter implements PerformanceCounte
     try {
       Map<String, Collection<Object>> result = JmxDataFetcher.fetch(objectName, attributes);
 
-      logger.info("Fetched JMX metrics: ", result);
+      if (!result.isEmpty()) {
+        logger.info("Fetched JMX metrics: ", result);
+      }
 
       for (Map.Entry<String, Collection<Object>> displayAndValues : result.entrySet()) {
         boolean ok = true;
