@@ -193,6 +193,10 @@ public class PerformanceCounterInitializer {
           JmxDataFetcher.fetch(
               objectName, jmxAttributeData.attribute); // should return the [val, ...] here
 
+      if (!result.isEmpty()) {
+        logger.info("Fetched JMX metrics: ", result);
+      }
+
       logger.trace(
           "Size of the JmxDataFetcher.fetch result: {}, for objectName:{} and metricName:{}",
           result.size(),
@@ -209,6 +213,7 @@ public class PerformanceCounterInitializer {
             value += Double.parseDouble(String.valueOf(obj));
           }
         } catch (RuntimeException e) {
+          logger.warn("Unexpected value from JMX: " + result, e);
           ok = false;
           break;
         }
