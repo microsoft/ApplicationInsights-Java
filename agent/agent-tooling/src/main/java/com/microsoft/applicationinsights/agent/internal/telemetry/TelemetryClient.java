@@ -4,6 +4,7 @@
 package com.microsoft.applicationinsights.agent.internal.telemetry;
 
 import com.azure.core.http.HttpPipeline;
+import com.azure.core.util.logging.ClientLogger;
 import com.azure.monitor.opentelemetry.autoconfigure.implementation.builders.AbstractTelemetryBuilder;
 import com.azure.monitor.opentelemetry.autoconfigure.implementation.builders.AvailabilityTelemetryBuilder;
 import com.azure.monitor.opentelemetry.autoconfigure.implementation.builders.EventTelemetryBuilder;
@@ -84,6 +85,8 @@ public class TelemetryClient {
   @Nullable private volatile BatchItemProcessor generalBatchItemProcessor;
   @Nullable private volatile BatchItemProcessor metricsBatchItemProcessor;
   @Nullable private volatile BatchItemProcessor statsbeatBatchItemProcessor;
+
+  private static final ClientLogger logger = new ClientLogger(TelemetryClient.class);
 
   public static TelemetryClient.Builder builder() {
     return new TelemetryClient.Builder();
@@ -166,6 +169,12 @@ public class TelemetryClient {
     }
 
     if (quickPulse != null) {
+      try {
+        logger.info("Calling quickpulse.add from telemetry client for {} {}", data.getClass(), data.toJsonString());
+      }
+      catch (Exception e) {
+        logger.warning("Failed to log telemetry item", e);
+      }
       quickPulse.add(telemetryItem);
     }
 
@@ -413,6 +422,10 @@ public class TelemetryClient {
 
   public void setQuickPulse(@Nullable QuickPulse quickPulse) {
     this.quickPulse = quickPulse;
+  }
+
+  public QuickPulse getQuickPulse() {
+    return quickPulse;
   }
 
   public void setOtelResource(Resource resource) {

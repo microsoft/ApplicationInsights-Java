@@ -8,6 +8,7 @@ import static java.util.concurrent.TimeUnit.MINUTES;
 import ch.qos.logback.classic.LoggerContext;
 import com.azure.monitor.opentelemetry.autoconfigure.implementation.heartbeat.HeartbeatExporter;
 import com.azure.monitor.opentelemetry.autoconfigure.implementation.models.TelemetryItem;
+import com.azure.monitor.opentelemetry.autoconfigure.implementation.quickpulse.QuickPulse;
 import com.azure.monitor.opentelemetry.autoconfigure.implementation.utils.Strings;
 import com.microsoft.applicationinsights.agent.internal.classicsdk.BytecodeUtilImpl;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
@@ -137,7 +138,7 @@ public class RuntimeConfigurator {
         || !Objects.equals(runtimeConfig.sampling.percentage, currentConfig.sampling.percentage)
         || !Objects.equals(
             runtimeConfig.sampling.requestsPerSecond, currentConfig.sampling.requestsPerSecond)) {
-      updateSampling(enabled, runtimeConfig.sampling, runtimeConfig.samplingPreview);
+      updateSampling(enabled, runtimeConfig.sampling, runtimeConfig.samplingPreview, telemetryClient.getQuickPulse());
     }
 
     // initialize Profiler
@@ -198,7 +199,8 @@ public class RuntimeConfigurator {
   static void updateSampling(
       boolean enabled,
       Configuration.Sampling sampling,
-      Configuration.SamplingPreview samplingPreview) {
+      Configuration.SamplingPreview samplingPreview,
+      QuickPulse quickPulse) {
 
     if (!enabled) {
       DelegatingSampler.getInstance().reset();
@@ -206,7 +208,8 @@ public class RuntimeConfigurator {
       return;
     }
 
-    DelegatingSampler.getInstance().setDelegate(Samplers.getSampler(sampling, samplingPreview));
+    DelegatingSampler.getInstance().setDelegate(Samplers.getSampler(sampling, samplingPreview, quickPulse));
+    // call setQuickPulse method here in delegate
     if (sampling.percentage != null) {
       BytecodeUtilImpl.samplingPercentage = sampling.percentage.floatValue();
     } else {

@@ -3,7 +3,9 @@
 
 package com.microsoft.applicationinsights.agent.internal.sampling;
 
+import com.azure.core.util.logging.ClientLogger;
 import com.azure.monitor.opentelemetry.autoconfigure.implementation.AiSemanticAttributes;
+import com.azure.monitor.opentelemetry.autoconfigure.implementation.quickpulse.QuickPulse;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
@@ -20,12 +22,17 @@ public class AiFixedPercentageSampler implements Sampler {
 
   private final double percentage;
 
-  public static AiFixedPercentageSampler create(double percentage) {
-    return new AiFixedPercentageSampler(percentage);
+  private static final ClientLogger logger = new ClientLogger(AiFixedPercentageSampler.class);
+
+  private final QuickPulse quickPulse;
+
+  public static AiFixedPercentageSampler create(double percentage, QuickPulse quickPulse) {
+    return new AiFixedPercentageSampler(percentage, quickPulse);
   }
 
-  private AiFixedPercentageSampler(double percentage) {
+  private AiFixedPercentageSampler(double percentage, QuickPulse quickPulse) {
     this.percentage = percentage;
+    this.quickPulse = quickPulse;
   }
 
   @Override
@@ -37,6 +44,12 @@ public class AiFixedPercentageSampler implements Sampler {
       Attributes attributes,
       List<LinkData> parentLinks) {
 
+    String spanId = "";
+    if (!parentLinks.isEmpty()) {
+      spanId = parentLinks.get(0).getSpanContext().getSpanId();
+    }
+    logger.info("shouldSample called with traceId {}, name {}, a span id {}",
+        traceId, name, spanId);
     Span parentSpan = Span.fromContext(parentContext);
     SpanContext parentSpanContext = parentSpan.getSpanContext();
     Double parentSpanSampleRate = null;
@@ -44,11 +57,13 @@ public class AiFixedPercentageSampler implements Sampler {
       parentSpanSampleRate =
           ((ReadableSpan) parentSpan).getAttribute(AiSemanticAttributes.SAMPLE_RATE);
     }
-
+    logger.info("caliing internalShouldSample from shouldSample with traceId {}, name {}, spanid {}",
+        traceId, name, spanId);
     return internalShouldSample(parentSpanContext, parentSpanSampleRate, traceId);
   }
 
   public SamplingResult shouldSampleLog(SpanContext spanContext, @Nullable Double spanSampleRate) {
+    logger.info("Calling internalShouldSample from shouldSampleLog with traceId {} and spanId {}", spanContext.getTraceId(), spanContext.getSpanId());
     return internalShouldSample(spanContext, spanSampleRate, spanContext.getTraceId());
   }
 
@@ -58,10 +73,12 @@ public class AiFixedPercentageSampler implements Sampler {
     SamplingResult samplingResult =
         useLocalParentDecisionIfPossible(parentSpanContext, parentSpanSampleRate);
     if (samplingResult != null) {
+      logger.info("sampling result: {}", samplingResult.getDecision().toString());
       return samplingResult;
     }
-
-    return SamplerUtil.shouldSample(traceId, percentage);
+    samplingResult = SamplerUtil.shouldSample(traceId, percentage, quickPulse);
+    logger.info("sampling result: {}", samplingResult.getDecision().toString());
+    return samplingResult;//SamplerUtil.shouldSample(traceId, percentage);
   }
 
   @Nullable
@@ -78,6 +95,9 @@ public class AiFixedPercentageSampler implements Sampler {
 
     if (!parentSpanContext.isSampled()) {
       if (percentage < 100) {
+        if (quickPulse != null && quickPulse.isEnabled()) {
+          return SamplingResult.recordOnly();
+        }
         // only 100% sampling override will override an unsampled parent!!
         return SamplingResult.drop();
       } else {

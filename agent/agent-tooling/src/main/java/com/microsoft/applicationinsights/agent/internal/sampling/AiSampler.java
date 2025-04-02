@@ -3,8 +3,10 @@
 
 package com.microsoft.applicationinsights.agent.internal.sampling;
 
+import com.azure.core.util.logging.ClientLogger;
 import com.azure.monitor.opentelemetry.autoconfigure.implementation.AiSemanticAttributes;
 import com.azure.monitor.opentelemetry.autoconfigure.implementation.RequestChecker;
+import com.azure.monitor.opentelemetry.autoconfigure.implementation.quickpulse.QuickPulse;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
@@ -27,24 +29,30 @@ public class AiSampler implements Sampler {
   private final SamplingPercentage requestSamplingPercentage;
   private final SamplingPercentage parentlessDependencySamplingPercentage;
   private final boolean ingestionSamplingEnabled;
+  private static final ClientLogger logger = new ClientLogger(AiSampler.class);
+  private final QuickPulse quickPulse;
 
   public static AiSampler create(
       SamplingPercentage requestSamplingPercentage,
       SamplingPercentage parentlessDependencySamplingPercentage,
-      boolean ingestionSamplingEnabled) {
+      boolean ingestionSamplingEnabled,
+      QuickPulse quickPulse) {
     return new AiSampler(
         requestSamplingPercentage,
         parentlessDependencySamplingPercentage,
-        ingestionSamplingEnabled);
+        ingestionSamplingEnabled,
+        quickPulse);
   }
 
   private AiSampler(
       SamplingPercentage requestSamplingPercentage,
       SamplingPercentage parentlessDependencySamplingPercentage,
-      boolean ingestionSamplingEnabled) {
+      boolean ingestionSamplingEnabled,
+      QuickPulse quickPulse) {
     this.requestSamplingPercentage = requestSamplingPercentage;
     this.parentlessDependencySamplingPercentage = parentlessDependencySamplingPercentage;
     this.ingestionSamplingEnabled = ingestionSamplingEnabled;
+    this.quickPulse = quickPulse;
   }
 
   @Override
@@ -55,7 +63,12 @@ public class AiSampler implements Sampler {
       SpanKind spanKind,
       Attributes attributes,
       List<LinkData> parentLinks) {
-
+    String spanId = "";
+    if (!parentLinks.isEmpty()) {
+      spanId = parentLinks.get(0).getSpanContext().getSpanId();
+    }
+    logger.info("calling shouldsample from AISampler with traceId {}, name {}, spanId {}",
+        traceId, name, spanId);
     Span parentSpan = Span.fromContext(parentContext);
     SpanContext parentSpanContext = parentSpan.getSpanContext();
     Double parentSpanSampleRate = null;
@@ -67,6 +80,7 @@ public class AiSampler implements Sampler {
     SamplingResult samplingResult =
         useLocalParentDecisionIfPossible(parentSpanContext, parentSpanSampleRate);
     if (samplingResult != null) {
+      logger.info("sampling result: {}", samplingResult.getDecision().toString());
       return samplingResult;
     }
 
@@ -83,14 +97,17 @@ public class AiSampler implements Sampler {
     }
 
     if (sp == 100 && ingestionSamplingEnabled) {
+      logger.info("sampling result: record and sample");
       return SamplingResult.recordAndSample();
     }
 
-    return SamplerUtil.shouldSample(traceId, sp);
+    samplingResult = SamplerUtil.shouldSample(traceId, sp, quickPulse);
+    logger.info("sampling result: {}", samplingResult.getDecision().toString());
+    return samplingResult; //SamplerUtil.shouldSample(traceId, sp);
   }
 
   @Nullable
-  private static SamplingResult useLocalParentDecisionIfPossible(
+  private SamplingResult useLocalParentDecisionIfPossible(
       SpanContext parentSpanContext, @Nullable Double parentSpanSampleRate) {
 
     // remote parent-based sampling messes up item counts since item count is not propagated in
@@ -102,6 +119,9 @@ public class AiSampler implements Sampler {
     }
 
     if (!parentSpanContext.isSampled()) {
+      if (quickPulse != null && quickPulse.isEnabled()) {
+        return SamplingResult.recordOnly();
+      }
       return SamplingResult.drop();
     }
     if (parentSpanSampleRate == null) {
