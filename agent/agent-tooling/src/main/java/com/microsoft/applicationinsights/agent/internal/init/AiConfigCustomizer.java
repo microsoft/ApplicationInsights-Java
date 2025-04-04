@@ -203,7 +203,11 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
     properties.put("otel.instrumentation.servlet.enabled", "true");
     properties.put("otel.instrumentation.spring-core.enabled", "true");
     properties.put("otel.instrumentation.spring-web.enabled", "true");
-    properties.put("otel.instrumentation.spring-webmvc.enabled", "true");
+    if (otelConfig.getBoolean("otel.instrumentation.spring-webmvc.enabled", true)) {
+      // as a workaround for
+      // https://github.com/open-telemetry/opentelemetry-java-instrumentation/issues/13249
+      properties.put("otel.instrumentation.spring-webmvc.enabled", "true");
+    }
     properties.put("otel.instrumentation.spring-webflux.enabled", "true");
     properties.put("otel.instrumentation.tomcat.enabled", "true");
     properties.put("otel.instrumentation.undertow.enabled", "true");
