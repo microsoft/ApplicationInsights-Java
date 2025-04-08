@@ -31,6 +31,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -40,6 +42,8 @@ public class PerformanceCounterInitializer {
   private static final Logger logger = LoggerFactory.getLogger(PerformanceCounterInitializer.class);
   private static final String METRIC_NAME_REGEXP = "[a-zA-Z0-9_.-/]+";
   private static final String INVALID_CHARACTER_REGEXP = "[^a-zA-Z0-9_.-/]";
+
+  private static final Set<String> invalidJmxMetrics = ConcurrentHashMap.newKeySet();
 
   public static void initialize(Configuration configuration) {
 
@@ -209,6 +213,13 @@ public class PerformanceCounterInitializer {
             value += Double.parseDouble(String.valueOf(obj));
           }
         } catch (RuntimeException e) {
+          if (invalidJmxMetrics.add(jmxAttributeData.metricName)) {
+            try (MDC.MDCCloseable ignored = CUSTOM_JMX_METRIC_ERROR.makeActive()) {
+              logger.warn(
+                  "{} JMX metric is invalid because only numeric and boolean JMX metric values are supported.",
+                  jmxAttributeData.metricName);
+            }
+          }
           ok = false;
           break;
         }

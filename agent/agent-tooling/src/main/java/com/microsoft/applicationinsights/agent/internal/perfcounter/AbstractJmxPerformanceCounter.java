@@ -7,9 +7,7 @@ import static com.microsoft.applicationinsights.agent.internal.diagnostics.MsgId
 
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -26,8 +24,6 @@ public abstract class AbstractJmxPerformanceCounter implements PerformanceCounte
   private final Collection<JmxAttributeData> attributes;
   private boolean alreadyLogged = false;
 
-  private final Set<String> invalidJmxMetrics = new HashSet<>();
-
   /**
    * The main method. The method will fetch the data and send it. The method will not do anything if
    * there was a major problem accessing the needed counter.
@@ -42,7 +38,6 @@ public abstract class AbstractJmxPerformanceCounter implements PerformanceCounte
       for (Map.Entry<String, Collection<Object>> displayAndValues : result.entrySet()) {
         boolean ok = true;
         double value = 0.0;
-        String metricName = displayAndValues.getKey();
         for (Object obj : displayAndValues.getValue()) {
           try {
             if (obj instanceof Boolean) {
@@ -51,14 +46,6 @@ public abstract class AbstractJmxPerformanceCounter implements PerformanceCounte
               value += Double.parseDouble(String.valueOf(obj));
             }
           } catch (RuntimeException e) {
-            if (!invalidJmxMetrics.contains(metricName)) {
-              invalidJmxMetrics.add(metricName);
-              try (MDC.MDCCloseable ignored = CUSTOM_JMX_METRIC_ERROR.makeActive()) {
-                logger.warn(
-                    "{} JMX metric is invalid because only numeric and boolean JMX metric values are supported.",
-                    metricName);
-              }
-            }
             ok = false;
             break;
           }
@@ -66,7 +53,7 @@ public abstract class AbstractJmxPerformanceCounter implements PerformanceCounte
 
         if (ok) {
           try {
-            send(telemetryClient, metricName, value);
+            send(telemetryClient, displayAndValues.getKey(), value);
           } catch (RuntimeException e) {
             try (MDC.MDCCloseable ignored = CUSTOM_JMX_METRIC_ERROR.makeActive()) {
               logger.error("Error while sending JMX data: '{}'", e.toString());
