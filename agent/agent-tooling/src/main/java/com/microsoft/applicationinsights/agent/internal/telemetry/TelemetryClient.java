@@ -85,9 +85,6 @@ public class TelemetryClient {
   @Nullable private volatile BatchItemProcessor metricsBatchItemProcessor;
   @Nullable private volatile BatchItemProcessor statsbeatBatchItemProcessor;
 
-  private static final String APPLICATIONINSIGHTS_AUTHENTICATION_SCOPE =
-      "https://monitor.azure.com//.default";
-
   public static TelemetryClient.Builder builder() {
     return new TelemetryClient.Builder();
   }
@@ -229,7 +226,7 @@ public class TelemetryClient {
     HttpPipeline httpPipeline =
         LazyHttpClient.newHttpPipeLine(
             aadAuthentication,
-            getAadAudienceWithScope(),
+            this::getAadAudienceWithScope,
             new NetworkStatsbeatHttpPipelinePolicy(statsbeatModule.getNetworkStatsbeat()));
     // TODO (heya) refactor the following by using AzureMonitorHelper.createTelemetryItemExporter by
     // passing in getNonessentialStatsbeat
@@ -357,9 +354,6 @@ public class TelemetryClient {
   }
 
   public String getAadAudienceWithScope() {
-    if (connectionString == null) {
-      return APPLICATIONINSIGHTS_AUTHENTICATION_SCOPE;
-    }
     return connectionString.getAadAudienceWithScope();
   }
 
