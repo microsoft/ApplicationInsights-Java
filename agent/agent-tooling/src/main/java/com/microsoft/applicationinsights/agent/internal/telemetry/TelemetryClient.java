@@ -353,6 +353,7 @@ public class TelemetryClient {
     return connectionString;
   }
 
+  @Nullable
   public String getAadAudienceWithScope() {
     return connectionString.getAadAudienceWithScope();
   }

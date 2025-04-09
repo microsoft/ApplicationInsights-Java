@@ -115,7 +115,8 @@ public class LazyHttpClient implements HttpClient {
   }
 
   public static HttpPipeline newHttpPipeLineWithDefaultRedirect(
-      @Nullable Configuration.AadAuthentication aadConfiguration, Supplier<String> aadAudienceWithScope) {
+      @Nullable Configuration.AadAuthentication aadConfiguration,
+      Supplier<String> aadAudienceWithScope) {
     return newHttpPipeLine(
         aadConfiguration, aadAudienceWithScope, new RedirectPolicy(new DefaultRedirectStrategy()));
   }
@@ -233,5 +234,4 @@ public class LazyHttpClient implements HttpClient {
       }
     }
   }
-
 }
