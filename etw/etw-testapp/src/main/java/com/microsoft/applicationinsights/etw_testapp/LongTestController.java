@@ -1,5 +1,6 @@
 package com.microsoft.applicationinsights.etw_testapp;
 
+import com.microsoft.applicationinsights.agent.internal.diagnostics.etw.DiagnosticsLoggerProxy;
 import java.math.BigInteger;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
@@ -11,9 +12,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BinaryOperator;
-
-import com.microsoft.applicationinsights.agent.internal.diagnostics.etw.DiagnosticsLoggerProxy;
-
 import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -246,14 +244,7 @@ public class LongTestController {
         period = Duration.parse("PT" + periodStr);
       }
     } catch (NumberFormatException | DateTimeParseException e) {
-      return ResponseEntity.badRequest()
-          .body(
-              "<p>Period parameter 'T' could not parse \""
-                  + periodStr
-                  + "\"</p>"
-                  + "<p><pre>"
-                  + ExceptionUtils.getStackTrace(e)
-                  + "</p>");
+      return ResponseEntity.badRequest().body("Period parameter could not be parsed");
     }
 
     final long startTime;
