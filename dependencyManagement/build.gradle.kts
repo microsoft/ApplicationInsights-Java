@@ -25,8 +25,8 @@ val DEPENDENCY_BOMS = listOf(
   "io.opentelemetry:opentelemetry-bom-alpha:${otelSdkVersion}-alpha",
   "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:${otelInstrumentationVersion}",
   "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${otelInstrumentationAlphaVersion}",
-  "com.azure:azure-sdk-bom:1.2.32",
-  "io.netty:netty-bom:4.1.119.Final",
+  "com.azure:azure-sdk-bom:1.2.33",
+  "io.netty:netty-bom:4.2.0.Final",
   "org.junit:junit-bom:5.12.1",
   "org.testcontainers:testcontainers-bom:1.20.6",
 )
@@ -64,14 +64,14 @@ val CORE_DEPENDENCIES = listOf(
 val DEPENDENCIES = listOf(
   "ch.qos.logback:logback-classic:1.3.15", // logback 1.4+ requires Java 11+
   "ch.qos.logback.contrib:logback-json-classic:0.1.5",
-  "com.uber.nullaway:nullaway:0.12.4",
+  "com.uber.nullaway:nullaway:0.12.6",
   "commons-codec:commons-codec:1.18.0",
   "org.apache.commons:commons-text:1.13.0",
   "com.google.code.gson:gson:2.12.1",
   "com.azure:azure-core-test:1.26.2", // this is not included in azure-sdk-bom
   "org.assertj:assertj-core:3.27.3",
   "org.awaitility:awaitility:4.3.0",
-  "io.github.hakky54:logcaptor:2.10.1",
+  "io.github.hakky54:logcaptor:2.10.2",
   "io.opentelemetry.contrib:opentelemetry-jfr-connection:${otelContribVersion}-alpha",
   "io.opentelemetry.contrib:opentelemetry-runtime-attach-core:${otelContribVersion}-alpha",
   "com.google.code.findbugs:jsr305:3.0.2",

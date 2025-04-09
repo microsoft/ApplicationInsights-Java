@@ -12,7 +12,6 @@ import com.azure.monitor.opentelemetry.autoconfigure.implementation.utils.String
 import com.microsoft.applicationinsights.agent.internal.classicsdk.BytecodeUtilImpl;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.configuration.SnippetConfiguration;
-import com.microsoft.applicationinsights.agent.internal.exporter.AgentLogExporter;
 import com.microsoft.applicationinsights.agent.internal.legacyheaders.DelegatingPropagator;
 import com.microsoft.applicationinsights.agent.internal.profiler.ProfilingInitializer;
 import com.microsoft.applicationinsights.agent.internal.sampling.DelegatingSampler;
@@ -34,7 +33,7 @@ public class RuntimeConfigurator {
   private static final Logger logger = LoggerFactory.getLogger(RuntimeConfigurator.class);
 
   private final TelemetryClient telemetryClient;
-  private final Supplier<AgentLogExporter> agentLogExporter;
+  private final Supplier<AzureMonitorLogFilteringProcessor> logFilteringProcessor;
   private final Configuration initialConfig;
   private volatile RuntimeConfiguration currentConfig;
   private final Consumer<List<TelemetryItem>> heartbeatTelemetryItemsConsumer;
@@ -45,12 +44,12 @@ public class RuntimeConfigurator {
 
   RuntimeConfigurator(
       TelemetryClient telemetryClient,
-      Supplier<AgentLogExporter> agentLogExporter,
+      Supplier<AzureMonitorLogFilteringProcessor> logFilteringProcessor,
       Configuration initialConfig,
       Consumer<List<TelemetryItem>> heartbeatTelemetryItemConsumer,
       File tempDir) {
     this.telemetryClient = telemetryClient;
-    this.agentLogExporter = agentLogExporter;
+    this.logFilteringProcessor = logFilteringProcessor;
     this.initialConfig = initialConfig;
     currentConfig = captureInitialConfig(initialConfig);
     this.heartbeatTelemetryItemsConsumer = heartbeatTelemetryItemConsumer;
@@ -232,9 +231,9 @@ public class RuntimeConfigurator {
 
   private void updateInstrumentationLoggingLevel(String instrumentationLoggingLevel) {
     if (instrumentationLoggingLevel != null) {
-      AgentLogExporter exporter = agentLogExporter.get();
-      if (exporter != null) {
-        exporter.setSeverityThreshold(
+      AzureMonitorLogFilteringProcessor filteringProcessor = logFilteringProcessor.get();
+      if (filteringProcessor != null) {
+        filteringProcessor.setSeverityThreshold(
             Configuration.LoggingInstrumentation.getSeverityThreshold(instrumentationLoggingLevel));
       }
     }
