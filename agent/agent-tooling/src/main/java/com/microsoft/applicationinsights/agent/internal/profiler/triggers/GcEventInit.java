@@ -101,7 +101,7 @@ class GcEventInit {
         long currentLevel = tenuredUsage.getUsed();
         long max = tenuredUsage.getMax();
         if (max > 0) {
-          double percentage = 100.0 * (double) currentLevel / (double) max;
+          double percentage = 100.0 * currentLevel / max;
           alertingSubsystem.track(AlertMetricType.MEMORY, percentage);
         }
       }
