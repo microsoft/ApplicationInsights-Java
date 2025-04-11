@@ -223,10 +223,10 @@ public class TelemetryClient {
 
   private BatchItemProcessor initBatchItemProcessor(
       int exportQueueCapacity, int maxExportBatchSize, String queueName) {
-
     HttpPipeline httpPipeline =
         LazyHttpClient.newHttpPipeLine(
             aadAuthentication,
+            this::getAadAudienceWithScope,
             new NetworkStatsbeatHttpPipelinePolicy(statsbeatModule.getNetworkStatsbeat()));
     // TODO (heya) refactor the following by using AzureMonitorHelper.createTelemetryItemExporter by
     // passing in getNonessentialStatsbeat
@@ -351,6 +351,11 @@ public class TelemetryClient {
   @Nullable
   public ConnectionString getConnectionString() {
     return connectionString;
+  }
+
+  @Nullable
+  public String getAadAudienceWithScope() {
+    return connectionString.getAadAudienceWithScope();
   }
 
   @Nullable
