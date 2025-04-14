@@ -67,7 +67,7 @@ val DEPENDENCIES = listOf(
   "com.uber.nullaway:nullaway:0.12.6",
   "commons-codec:commons-codec:1.18.0",
   "org.apache.commons:commons-text:1.13.1",
-  "com.google.code.gson:gson:2.12.1",
+  "com.google.code.gson:gson:2.13.0",
   "com.azure:azure-core-test:1.26.2", // this is not included in azure-sdk-bom
   "org.assertj:assertj-core:3.27.3",
   "org.awaitility:awaitility:4.3.0",
