@@ -9,7 +9,8 @@
   ([#4109](https://github.com/microsoft/ApplicationInsights-Java/pull/4109))
 * Log a warning for invalid JMX metrics
   ([#4161](https://github.com/microsoft/ApplicationInsights-Java/pull/4161))
-* Support for using the AAD Audience from the connection string ([#4121](https://github.com/microsoft/ApplicationInsights-Java/pull/4121))
+* Support for using the AAD Audience from the connection string
+  ([#4121](https://github.com/microsoft/ApplicationInsights-Java/pull/4121))
 
 ### Bug fixes
 
