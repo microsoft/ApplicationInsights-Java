@@ -5,10 +5,10 @@
 
 * Update OpenTelemetry Instrumentation to 2.14.0
   ([#4138](https://github.com/microsoft/ApplicationInsights-Java/pull/4138))
-* Log as warn invalid JMX metrics
-  ([#4161](https://github.com/microsoft/ApplicationInsights-Java/pull/4161))
 * Allow disabling spring-webmvc instrumentation
   ([#4109](https://github.com/microsoft/ApplicationInsights-Java/pull/4109))
+* Log as warn invalid JMX metrics
+  ([#4161](https://github.com/microsoft/ApplicationInsights-Java/pull/4161))
 * Support for using the AAD Audience from the connection string ([#4121](https://github.com/microsoft/ApplicationInsights-Java/pull/4121))
 
 ### Bug fixes
