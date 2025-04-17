@@ -1,6 +1,29 @@
 # CHANGELOG
-## Version 3.7.2 GA (Unreleased)
+## Version 3.7.2 GA (04/17/2025)
+
+### Enhancements
+
 * Support for using the AAD Audience from the connection string ([#4121](https://github.com/microsoft/ApplicationInsights-Java/pull/4121))
+
+### Bug fixes
+
+* Fix deserialization of enums in Alerting
+  ([#4125](https://github.com/microsoft/ApplicationInsights-Java/pull/4125))
+* Update otel to 2.13.3
+  ([#4128](https://github.com/microsoft/ApplicationInsights-Java/pull/4128))
+* Update OpenTelemetry Instrumentation to 2.14.0
+  ([#4138](https://github.com/microsoft/ApplicationInsights-Java/pull/4138))
+* Nicer smoke test assertions
+  ([#4141](https://github.com/microsoft/ApplicationInsights-Java/pull/4141))
+* Allow disabling spring-webmvc instrumentation
+  ([#4109](https://github.com/microsoft/ApplicationInsights-Java/pull/4109))
+* Fix request exception not captured when INSTRUMENTATION_LOGGING_LEVEL=OFF
+  ([#4130](https://github.com/microsoft/ApplicationInsights-Java/pull/4130))
+* Log as warn invalid JMX metrics
+  ([#4161](https://github.com/microsoft/ApplicationInsights-Java/pull/4161))
+* Support for AAD Audience in connection string (for sovereign cloud)
+  ([#4121](https://github.com/microsoft/ApplicationInsights-Java/pull/4121))
+* [SFI] Update codeql-daily.yml - add C++ to analysis
 
 ## Version 3.7.1 GA (02/26/2025)
 
