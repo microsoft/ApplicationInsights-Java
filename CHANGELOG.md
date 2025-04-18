@@ -1,6 +1,23 @@
 # CHANGELOG
-## Version 3.7.2 GA (Unreleased)
-* Support for using the AAD Audience from the connection string ([#4121](https://github.com/microsoft/ApplicationInsights-Java/pull/4121))
+## Version 3.7.2 GA (04/17/2025)
+
+### Enhancements
+
+* Update OpenTelemetry Instrumentation to 2.14.0
+  ([#4138](https://github.com/microsoft/ApplicationInsights-Java/pull/4138))
+* Allow disabling spring-webmvc instrumentation
+  ([#4109](https://github.com/microsoft/ApplicationInsights-Java/pull/4109))
+* Log a warning for invalid JMX metrics
+  ([#4161](https://github.com/microsoft/ApplicationInsights-Java/pull/4161))
+* Support for using the AAD Audience from the connection string
+  ([#4121](https://github.com/microsoft/ApplicationInsights-Java/pull/4121))
+
+### Bug fixes
+
+* Fix deserialization of enums in Alerting
+  ([#4125](https://github.com/microsoft/ApplicationInsights-Java/pull/4125))
+* Fix request exception not captured when INSTRUMENTATION_LOGGING_LEVEL=OFF
+  ([#4130](https://github.com/microsoft/ApplicationInsights-Java/pull/4130))
 
 ## Version 3.7.1 GA (02/26/2025)
 
