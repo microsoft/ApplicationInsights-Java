@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
+import com.microsoft.applicationinsights.smoketest.schemav2.EventData;
 import com.microsoft.applicationinsights.smoketest.schemav2.ExceptionData;
 import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
 import java.util.List;
@@ -59,6 +60,36 @@ abstract class OpenTelemetryApiLogBridgeTest {
     assertThat(ed.getExceptions().get(0).getMessage())
         .isEqualTo("This is an custom exception with custom exception type");
   }
+
+  @Test
+  @TargetUri("/test-custom-event")
+  void testCustomEvent() throws Exception {
+    List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
+    Envelope rdEnvelope = rdList.get(0);
+
+    RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
+    assertThat(rd.getUrl())
+        .matches(
+            "http://localhost:[0-9]+/OpenTelemetryApiLogBridge/test-custom-event");
+    assertThat(rd.getResponseCode()).isEqualTo("200");
+    assertThat(rd.getSuccess()).isTrue();
+    assertThat(rd.getSource()).isNull();
+    assertThat(rd.getProperties()).hasSize(1);
+    assertThat(rd.getProperties()).containsEntry("_MS.ProcessedByMetricExtractors", "True");
+
+    assertThat(rdEnvelope.getIKey()).isEqualTo("00000000-0000-0000-0000-0FEEDDADBEEF");
+    assertThat(rdEnvelope.getTags())
+        .hasEntrySatisfying("ai.internal.sdkVersion", v -> assertThat(v).startsWith("java:3."));
+
+    String operationId = rdEnvelope.getTags().get("ai.operation.id");
+    List<Envelope> edList =
+        testing.mockedIngestion.waitForItemsInOperation("EventData", 1, operationId);
+    assertThat(edList.size()).isNotZero();
+    EventData ed = (EventData) ((Data<?>) edList.get(0).getData()).getBaseData();
+    assertThat(ed.getName()).isEqualTo("my_custom_event");
+  }
+
+
 
   @Environment(TOMCAT_8_JAVA_8)
   static class Tomcat8Java8Test extends OpenTelemetryApiLogBridgeTest {}
