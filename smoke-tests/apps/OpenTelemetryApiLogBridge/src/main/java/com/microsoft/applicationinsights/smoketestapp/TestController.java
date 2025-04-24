@@ -4,6 +4,7 @@
 package com.microsoft.applicationinsights.smoketestapp;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.semconv.ExceptionAttributes;
 import java.io.PrintWriter;
@@ -34,6 +35,18 @@ public class TestController {
             ExceptionAttributes.EXCEPTION_MESSAGE,
             "This is an custom exception with custom exception type")
         .setAttribute(ExceptionAttributes.EXCEPTION_STACKTRACE, sw.toString())
+        .emit();
+    return "OK!";
+  }
+
+  @GetMapping("/test-custom-event")
+  public String testCustomEvent() {
+    GlobalOpenTelemetry.get()
+        .getLogsBridge()
+        .get("my logger")
+        .logRecordBuilder()
+        .setAttribute(AttributeKey.stringKey("microsoft.custom_event.name"), "my_custom_event")
+        .setSeverity(Severity.INFO)
         .emit();
     return "OK!";
   }
