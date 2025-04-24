@@ -69,8 +69,7 @@ abstract class OpenTelemetryApiLogBridgeTest {
 
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
     assertThat(rd.getUrl())
-        .matches(
-            "http://localhost:[0-9]+/OpenTelemetryApiLogBridge/test-custom-event");
+        .matches("http://localhost:[0-9]+/OpenTelemetryApiLogBridge/test-custom-event");
     assertThat(rd.getResponseCode()).isEqualTo("200");
     assertThat(rd.getSuccess()).isTrue();
     assertThat(rd.getSource()).isNull();
@@ -88,8 +87,6 @@ abstract class OpenTelemetryApiLogBridgeTest {
     EventData ed = (EventData) ((Data<?>) edList.get(0).getData()).getBaseData();
     assertThat(ed.getName()).isEqualTo("my_custom_event");
   }
-
-
 
   @Environment(TOMCAT_8_JAVA_8)
   static class Tomcat8Java8Test extends OpenTelemetryApiLogBridgeTest {}

@@ -50,5 +50,4 @@ public class TestController {
         .emit();
     return "OK!";
   }
-
 }
