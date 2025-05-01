@@ -28,16 +28,17 @@ jobs:
         uses: github/codeql-action/init@v3
         with:
           languages: java, c-cpp
+          debug: true
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
+      - name: Build native C++ code
+        run: ./gradlew :etw:build
+
       - name: Assemble
         # skipping build cache is needed so that all modules will be analyzed
         run: ./gradlew assemble --no-build-cache
-
-      - name: Build native C++ code
-        run: ./gradlew :etw:build
 
       - name: Perform CodeQL analysis
         uses: github/codeql-action/analyze@v3
