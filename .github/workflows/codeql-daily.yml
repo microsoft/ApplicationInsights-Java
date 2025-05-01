@@ -23,8 +23,6 @@ jobs:
 
       - name: Set up Windows SDK
         uses: ilammy/msvc-dev-cmd@v1
-        with:
-          sdk: 10.0.18362.0
 
       - name: Set up Java 17
         uses: actions/setup-java@v4
@@ -44,9 +42,18 @@ jobs:
       - name: Build native C++ code (Windows-specific)
         shell: powershell
         run: |
+          # Find the Windows SDK path and use it
+          $winSdkPath = (Get-ChildItem "C:\Program Files (x86)\Windows Kits\10\include" | Select-Object -Last 1).FullName
+          Write-Host "Using Windows SDK from path: $winSdkPath"
+          
           # Set environment variables for Windows SDK and Visual Studio
-          $env:APPINSIGHTS_WIN10_SDK_PATH = "$env:WindowsSdkDir"
-          $env:APPINSIGHTS_VS_PATH = "${env:VCInstallDir}\..\\.."
+          $env:APPINSIGHTS_WIN10_SDK_PATH = "C:\Program Files (x86)\Windows Kits\10"
+          $env:APPINSIGHTS_VS_PATH = $env:VsInstallRoot
+          
+          # Log environment for debugging
+          Write-Host "APPINSIGHTS_WIN10_SDK_PATH: $env:APPINSIGHTS_WIN10_SDK_PATH"
+          Write-Host "APPINSIGHTS_VS_PATH: $env:APPINSIGHTS_VS_PATH"
+          
           ./gradlew "-Dai.etw.native.build=release" :etw:native:build --info
 
       - name: Assemble
