@@ -34,7 +34,8 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
 
       - name: Build native C++ code (Windows-specific)
-        run: ./gradlew -Dai.etw.native.build=release :etw:native:build
+        shell: powershell
+        run: ./gradlew "-Dai.etw.native.build=release" :etw:native:build
 
       - name: Assemble
         # skipping build cache is needed so that all modules will be analyzed
