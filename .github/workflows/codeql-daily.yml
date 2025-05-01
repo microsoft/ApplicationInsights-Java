@@ -13,7 +13,7 @@ jobs:
     permissions:
       actions: read  # for github/codeql-action/init to get workflow details
       security-events: write  # for github/codeql-action/analyze to upload SARIF results
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     steps:
       - uses: actions/checkout@v4
@@ -33,8 +33,8 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Build native C++ code
-        run: ./gradlew :etw:build
+      - name: Build native C++ code (Windows-specific)
+        run: ./gradlew -Dai.etw.native.build=release :etw:native:build
 
       - name: Assemble
         # skipping build cache is needed so that all modules will be analyzed
