@@ -4,6 +4,9 @@ on:
   schedule:
     - cron: '30 1 * * *'
   workflow_dispatch:
+  push:
+    branches:
+      - '**'
 
 jobs:
   analyze:
@@ -32,6 +35,11 @@ jobs:
       - name: Assemble
         # skipping build cache is needed so that all modules will be analyzed
         run: ./gradlew assemble --no-build-cache
+
+      - name: Build native C++ code
+        run: |
+          cd etw/native
+          ./gradlew build
 
       - name: Perform CodeQL analysis
         uses: github/codeql-action/analyze@v3
