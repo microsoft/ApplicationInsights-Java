@@ -37,7 +37,7 @@ jobs:
         run: ./gradlew assemble --no-build-cache
 
       - name: Build native C++ code
-        run: ./gradlew :etw:native:build
+        run: ./gradlew :etw:build
 
       - name: Perform CodeQL analysis
         uses: github/codeql-action/analyze@v3
