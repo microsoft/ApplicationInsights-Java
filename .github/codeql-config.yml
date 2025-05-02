@@ -1,9 +1,0 @@
-paths:
-  - etw/native/src
-paths-ignore:
-  - '**/node_modules/**'
-  - '**/build/**'
-  - '**/dist/**'
-  - '**/vendor/**'
-  - '**/test/**'
-  - '**/tests/**'
