@@ -110,6 +110,7 @@ jobs:
           $simpleCode = @"
           // Simple file to ensure compiler is run
           #include <windows.h>
+          #include <jni.h>
           #include "etw_provider.h"
           int main() { return 0; }
           "@
@@ -129,7 +130,20 @@ jobs:
               
               # Try a minimal compile to help CodeQL recognize the files
               Write-Host "Running minimal compile..."
-              & cl.exe /c codeql_trigger.cpp /I"$headerDir" /I"$sourceDir" /EHsc
+              # Print the Java home path to verify it
+              Write-Host "Using JAVA_HOME: $env:JAVA_HOME"
+              # Check if the JNI include directory exists
+              $jniIncludePath = "$env:JAVA_HOME/include"
+              $jniIncludeWinPath = "$env:JAVA_HOME/include/win32"
+              
+              if (Test-Path $jniIncludePath) {
+                  Write-Host "JNI include path exists: $jniIncludePath"
+              } else {
+                  Write-Host "WARNING: JNI include path doesn't exist: $jniIncludePath"
+              }
+              
+              # Compile with explicit include paths
+              & cl.exe /c codeql_trigger.cpp /I"$headerDir" /I"$sourceDir" /I"$jniIncludePath" /I"$jniIncludeWinPath" /EHsc
               
               Write-Host "C++ preparation completed successfully"
               echo "CPP_BUILD_SUCCEEDED=true" | Out-File -FilePath $env:GITHUB_ENV -Append
