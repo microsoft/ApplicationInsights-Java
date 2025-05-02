@@ -74,7 +74,6 @@ jobs:
         with:
           languages: cpp
           debug: true
-          config-file: .github/codeql-config.yml
 
       - name: Build C++ code
         shell: powershell
