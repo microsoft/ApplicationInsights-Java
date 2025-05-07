@@ -9,6 +9,7 @@ import com.azure.json.implementation.DefaultJsonReader;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.microsoft.applicationinsights.alerting.aiconfig.AlertingConfig;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
@@ -67,8 +68,13 @@ public class ProfilerConfigurationTest {
 
       JsonReader reader = DefaultJsonReader.fromReader(json, new JsonOptions());
       ProfilerConfiguration profilerConfiguration = ProfilerConfiguration.fromJson(reader);
-
       Assertions.assertTrue(profilerConfiguration != null);
+      AlertingConfig.RequestTrigger requestTrigger =
+          profilerConfiguration.getRequestTriggerConfiguration().get(0);
+      Assertions.assertEquals(requestTrigger.getType(), AlertingConfig.RequestTriggerType.LATENCY);
+      Assertions.assertEquals(
+          requestTrigger.getFilter().getType(), AlertingConfig.RequestFilterType.NAME_REGEX);
+      Assertions.assertEquals(requestTrigger.getFilter().getValue(), ".*");
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
