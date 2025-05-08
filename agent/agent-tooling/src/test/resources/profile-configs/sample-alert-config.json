@@ -1,0 +1,38 @@
+{
+  "agentConcurrency": 0,
+  "collectionPlan": "--single --mode immediate --immediate-profiling-duration 120  --expiration 5249691022697135638 --settings-moniker Portal_REDACTED",
+  "cpuTriggerConfiguration": "--cpu-threshold 80 --cpu-trigger-profilingDuration 120 --cpu-trigger-cooldown 14400 --cpu-trigger-enabled false",
+  "defaultConfiguration": null,
+  "enabled": true,
+  "enabledLastModified": "0001-01-01T00:00:00+00:00",
+  "id": "an-id",
+  "lastModified": "0001-01-01T00:00:00+00:00",
+  "memoryTriggerConfiguration": "--memory-threshold 80 --memory-trigger-profilingDuration 120 --memory-trigger-cooldown 14400 --memory-trigger-enabled false",
+  "requestTriggerConfiguration": [
+    {
+      "aggregation": {
+        "configuration": {
+          "minimumSamples": 30,
+          "thresholdMillis": 500
+        },
+        "type": "breach-ratio",
+        "windowSizeMillis": 10000
+      },
+      "filter": {
+        "type": "name-regex",
+        "value": ".*"
+      },
+      "name": "trigger",
+      "profileDuration": 30,
+      "threshold": {
+        "type": "greater-than",
+        "value": 0.9
+      },
+      "throttling": {
+        "type": "fixed-duration-cooldown",
+        "value": 120000
+      },
+      "type": "latency"
+    }
+  ]
+}

@@ -3,9 +3,16 @@
 
 package com.microsoft.applicationinsights.agent.internal.profiler.config;
 
+import com.azure.json.JsonOptions;
+import com.azure.json.JsonReader;
+import com.azure.json.implementation.DefaultJsonReader;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.microsoft.applicationinsights.alerting.aiconfig.AlertingConfig;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -48,5 +55,28 @@ public class ProfilerConfigurationTest {
 
     ProfilerConfiguration config = mapper.readValue(configStr, ProfilerConfiguration.class);
     return config;
+  }
+
+  @Test
+  public void testAlertDeserialization() {
+    try (InputStreamReader json =
+        new InputStreamReader(
+            ProfilerConfigurationTest.class
+                .getClassLoader()
+                .getResourceAsStream("profile-configs/sample-alert-config.json"),
+            Charset.forName("UTF-8"))) {
+
+      JsonReader reader = DefaultJsonReader.fromReader(json, new JsonOptions());
+      ProfilerConfiguration profilerConfiguration = ProfilerConfiguration.fromJson(reader);
+      Assertions.assertTrue(profilerConfiguration != null);
+      AlertingConfig.RequestTrigger requestTrigger =
+          profilerConfiguration.getRequestTriggerConfiguration().get(0);
+      Assertions.assertEquals(requestTrigger.getType(), AlertingConfig.RequestTriggerType.LATENCY);
+      Assertions.assertEquals(
+          requestTrigger.getFilter().getType(), AlertingConfig.RequestFilterType.NAME_REGEX);
+      Assertions.assertEquals(requestTrigger.getFilter().getValue(), ".*");
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 }

@@ -9,6 +9,7 @@ import com.azure.json.JsonToken;
 import com.azure.json.JsonWriter;
 import java.io.IOException;
 import java.util.Locale;
+import javax.annotation.Nullable;
 
 public class AlertingConfig {
 
@@ -58,7 +59,7 @@ public class AlertingConfig {
               String fieldName = reader.getFieldName();
               if ("type".equals(fieldName)) {
                 deserializedRequestFilter.setType(
-                    RequestFilterType.valueOf(reader.getString().toUpperCase(Locale.ROOT)));
+                    RequestFilterType.valueOf(toEnumFormat(reader.getString())));
               } else if ("value".equals(fieldName)) {
                 deserializedRequestFilter.setValue(reader.getString());
               } else {
@@ -68,6 +69,14 @@ public class AlertingConfig {
             return deserializedRequestFilter;
           });
     }
+  }
+
+  @Nullable
+  private static String toEnumFormat(String enumStr) {
+    if (enumStr == null) {
+      return null;
+    }
+    return enumStr.toUpperCase(Locale.ROOT).replaceAll("-", "_");
   }
 
   public static class RequestAggregationConfig
@@ -186,7 +195,7 @@ public class AlertingConfig {
               String fieldName = reader.getFieldName();
               if ("type".equals(fieldName)) {
                 deserializedRequestAggregation.setType(
-                    RequestAggregationType.valueOf(reader.getString().toUpperCase(Locale.ROOT)));
+                    RequestAggregationType.valueOf(toEnumFormat(reader.getString())));
               } else if ("windowSizeMillis".equals(fieldName)) {
                 deserializedRequestAggregation.setWindowSizeMillis(jsonReader.getLong());
               } else if ("configuration".equals(fieldName)) {
@@ -256,8 +265,7 @@ public class AlertingConfig {
               String fieldName = reader.getFieldName();
               if ("type".equals(fieldName)) {
                 deserializedRequestTriggerThreshold.setType(
-                    RequestTriggerThresholdType.valueOf(
-                        reader.getString().toUpperCase(Locale.ROOT)));
+                    RequestTriggerThresholdType.valueOf(toEnumFormat(reader.getString())));
               } else if ("value".equals(fieldName)) {
                 deserializedRequestTriggerThreshold.setValue(reader.getFloat());
               } else {
@@ -317,8 +325,7 @@ public class AlertingConfig {
               String fieldName = reader.getFieldName();
               if ("type".equals(fieldName)) {
                 deserializedRequestTriggerThrottling.setType(
-                    RequestTriggerThrottlingType.valueOf(
-                        reader.getString().toUpperCase(Locale.ROOT)));
+                    RequestTriggerThrottlingType.valueOf(toEnumFormat(reader.getString())));
               } else if ("value".equals(fieldName)) {
                 deserializedRequestTriggerThrottling.setValue(reader.getLong());
               } else {
@@ -431,7 +438,7 @@ public class AlertingConfig {
                 deserializedRequestTrigger.setName(reader.getString());
               } else if ("type".equals(fieldName)) {
                 deserializedRequestTrigger.setType(
-                    RequestTriggerType.valueOf(reader.getString().toUpperCase(Locale.ROOT)));
+                    RequestTriggerType.valueOf(toEnumFormat(reader.getString())));
               } else if ("filter".equals(fieldName)) {
                 deserializedRequestTrigger.setFilter(RequestFilter.fromJson(reader));
               } else if ("aggregation".equals(fieldName)) {
