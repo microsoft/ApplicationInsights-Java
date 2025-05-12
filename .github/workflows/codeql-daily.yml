@@ -79,89 +79,86 @@ jobs:
           languages: cpp
           debug: true
 
-      - name: Set up MSVC environment
-        shell: cmd
-        run: |
-          "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build\vcvars64.bat" && powershell -File build-cpp.ps1
-
       - name: Build C++ code
-        shell: powershell
+        shell: pwsh
         id: build-cpp
         run: |
+          # Use vswhere to find the path to the latest installed Visual Studio Build Tools
+          $vsPath = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
+          if (-not $vsPath) {
+            Write-Host "Could not find Visual Studio Build Tools installation."
+            exit 1
+          }
+          $vcvarsPath = Join-Path $vsPath 'VC\Auxiliary\Build\vcvars64.bat'
+          if (-not (Test-Path $vcvarsPath)) {
+            Write-Host "Could not find vcvars64.bat at $vcvarsPath"
+            exit 1
+          }
+
+          # Prepare the build script as a string
+          $buildScript = @'
           # Set required environment variables
-          $env:APPINSIGHTS_WIN10_SDK_PATH = "C:\Program Files (x86)\Windows Kits\10"
-          $env:APPINSIGHTS_VS_PATH = $env:VsInstallRoot
-          $env:JAVA_HOME = $env:JAVA_HOME_17_X64
-          
-          # Explicitly define which C++ file we're interested in
-          $sourceDir = "etw/native/src/main/cpp"
-          $headerDir = "etw/native/src/main/headers"
-          $cppFile = "$sourceDir/etw_provider.cpp"
-          
-          Write-Host "Analyzing C++ file: $cppFile"
-          
-          # Create compile_commands.json for CodeQL to use
-          $compileCommandsJson = @"
-          [
-            {
-              "directory": "${PWD}/$sourceDir",
-              "command": "cl.exe /W4 /EHsc /sdl /std:c++14 /I\"${env:APPINSIGHTS_WIN10_SDK_PATH}/include/10.0.22621.0/um\" /I\"${env:JAVA_HOME}/include\" /I\"${env:JAVA_HOME}/include/win32\" /I\"${PWD}/$headerDir\" /c $cppFile",
-              "file": "$cppFile"
-            }
-          ]
-          "@
-          
-          $compileCommandsFile = "compile_commands.json"
-          Write-Host "Creating $compileCommandsFile..."
-          Set-Content -Path $compileCommandsFile -Value $compileCommandsJson
-          
-          # Create a simple C++ file in the same directory to ensure the compiler is called
-          $simpleCode = @"
-          // Simple file to ensure compiler is run
-          #include <windows.h>
-          #include <jni.h>
-          #include "etw_provider.h"
-          int main() { return 0; }
-          "@
-          
-          Set-Content -Path "codeql_trigger.cpp" -Value $simpleCode
-          
-          # Use a try/catch block to handle errors without failing the job
-          try {
-              # List files for debugging
-              Write-Host "C++ files that will be analyzed:"
-              Get-ChildItem -Path $sourceDir -Recurse -Include "*.cpp" | ForEach-Object {
-                  Write-Host "  $($_.FullName)"
-              }
-              Get-ChildItem -Path $headerDir -Recurse -Include "*.h" | ForEach-Object {
-                  Write-Host "  $($_.FullName)"
-              }
-              
-              # Try a minimal compile to help CodeQL recognize the files
-              Write-Host "Running minimal compile..."
-              # Print the Java home path to verify it
-              Write-Host "Using JAVA_HOME: $env:JAVA_HOME"
-              # Check if the JNI include directory exists
-              $jniIncludePath = "$env:JAVA_HOME/include"
-              $jniIncludeWinPath = "$env:JAVA_HOME/include/win32"
-              
-              if (Test-Path $jniIncludePath) {
-                  Write-Host "JNI include path exists: $jniIncludePath"
-              } else {
-                  Write-Host "WARNING: JNI include path doesn't exist: $jniIncludePath"
-              }
-              
-              # Compile with explicit include paths
-              & cl.exe /c codeql_trigger.cpp /I"$headerDir" /I"$sourceDir" /I"$jniIncludePath" /I"$jniIncludeWinPath" /EHsc
-              
-              Write-Host "C++ preparation completed successfully"
-              echo "CPP_BUILD_SUCCEEDED=true" | Out-File -FilePath $env:GITHUB_ENV -Append
-          }
-          catch {
-              Write-Host "Warning: C++ build step encountered an error: $_"
-              Write-Host "Proceeding with CodeQL analysis anyway"
-              echo "CPP_BUILD_SUCCEEDED=false" | Out-File -FilePath $env:GITHUB_ENV -Append
-          }
+          set APPINSIGHTS_WIN10_SDK_PATH="C:\Program Files (x86)\Windows Kits\10"
+          set APPINSIGHTS_VS_PATH=%VsInstallRoot%
+          set JAVA_HOME=%JAVA_HOME_17_X64%
+
+          set sourceDir=etw/native/src/main/cpp
+          set headerDir=etw/native/src/main/headers
+          set cppFile=%sourceDir%/etw_provider.cpp
+
+          echo Analyzing C++ file: %cppFile%
+
+          REM Create compile_commands.json for CodeQL to use
+          echo [ > compile_commands.json
+          echo   { >> compile_commands.json
+          echo     "directory": "%CD%/%sourceDir%", >> compile_commands.json
+          echo     "command": "cl.exe /W4 /EHsc /sdl /std:c++14 /I\"%APPINSIGHTS_WIN10_SDK_PATH%/include/10.0.22621.0/um\" /I\"%JAVA_HOME%/include\" /I\"%JAVA_HOME%/include/win32\" /I\"%CD%/%headerDir%\" /c %cppFile%", >> compile_commands.json
+          echo     "file": "%cppFile%" >> compile_commands.json
+          echo   } >> compile_commands.json
+          echo ] >> compile_commands.json
+
+          REM Create a simple C++ file in the same directory to ensure the compiler is called
+          echo // Simple file to ensure compiler is run > codeql_trigger.cpp
+          echo #include <windows.h> >> codeql_trigger.cpp
+          echo #include <jni.h> >> codeql_trigger.cpp
+          echo #include "etw_provider.h" >> codeql_trigger.cpp
+          echo int main() { return 0; } >> codeql_trigger.cpp
+
+          REM Use a try/catch block to handle errors without failing the job
+          REM (not available in batch, so use errorlevel)
+          REM List files for debugging
+          echo C++ files that will be analyzed:
+          dir %sourceDir% /s /b *.cpp
+          dir %headerDir% /s /b *.h
+
+          REM Try a minimal compile to help CodeQL recognize the files
+          echo Running minimal compile...
+          echo Using JAVA_HOME: %JAVA_HOME%
+          if exist %JAVA_HOME%/include (
+            echo JNI include path exists: %JAVA_HOME%/include
+          ) else (
+            echo WARNING: JNI include path doesn't exist: %JAVA_HOME%/include
+          )
+
+          REM Compile with explicit include paths
+          cl.exe /c codeql_trigger.cpp /I"%headerDir%" /I"%sourceDir%" /I"%JAVA_HOME%/include" /I"%JAVA_HOME%/include/win32" /EHsc
+
+          if %errorlevel%==0 (
+            echo C++ preparation completed successfully
+            echo CPP_BUILD_SUCCEEDED=true>>%GITHUB_ENV%
+          ) else (
+            echo Warning: C++ build step encountered an error
+            echo Proceeding with CodeQL analysis anyway
+            echo CPP_BUILD_SUCCEEDED=false>>%GITHUB_ENV%
+          )
+          '@
+
+          # Write the batch script to a file
+          $batchFile = 'run-cpp-build.bat'
+          Set-Content -Path $batchFile -Value $buildScript -NoNewline
+
+          # Call vcvars64.bat and then the batch file
+          & cmd /c "\"$vcvarsPath\" && $batchFile"
 
       - name: Perform CodeQL analysis
         uses: github/codeql-action/analyze@v3
