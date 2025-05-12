@@ -4,6 +4,9 @@ on:
   schedule:
     - cron: '30 1 * * *' # run daily at 1:30 AM UTC
   workflow_dispatch:
+  push:
+    branches:
+      - '**'
 
 jobs:
   # ===== Java Analysis Job =====
