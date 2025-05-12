@@ -1,4 +1,4 @@
-name: CodeQL (daily)
+﻿name: CodeQL (daily)
 
 on:
   schedule:
