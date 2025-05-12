@@ -95,9 +95,9 @@ jobs:
             exit 1
           }
 
-          # Prepare the build script as a string
+          REM Prepare the build script as a string
           $buildScript = @'
-          # Set required environment variables
+          REM Set required environment variables
           set APPINSIGHTS_WIN10_SDK_PATH="C:\Program Files (x86)\Windows Kits\10"
           set APPINSIGHTS_VS_PATH=%VsInstallRoot%
           set JAVA_HOME=%JAVA_HOME_17_X64%
@@ -153,11 +153,11 @@ jobs:
           )
           '@
 
-          # Write the batch script to a file
+          REM Write the batch script to a file
           $batchFile = 'run-cpp-build.bat'
           Set-Content -Path $batchFile -Value $buildScript -NoNewline
 
-          # Call vcvars64.bat and then the batch file (fix quoting for spaces)
+          REM Call vcvars64.bat and then the batch file (fix quoting for spaces)
           & cmd /c "`"$vcvarsPath`" && $batchFile"
 
       - name: Perform CodeQL analysis

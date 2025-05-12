@@ -5,3 +5,6 @@ build/
 
 # Intellij
 /.idea/
+
+# Visual Studio
+.vs
