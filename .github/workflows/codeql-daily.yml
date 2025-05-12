@@ -79,6 +79,11 @@ jobs:
           languages: cpp
           debug: true
 
+      - name: Set up MSVC environment
+        shell: cmd
+        run: |
+          "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build\vcvars64.bat" && powershell -File build-cpp.ps1
+
       - name: Build C++ code
         shell: powershell
         id: build-cpp
