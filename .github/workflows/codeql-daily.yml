@@ -13,10 +13,10 @@ jobs:
   analyze-java:
     name: "Analyze Java Code"
     permissions:
-      actions: read
-      security-events: write
+      actions: read  # for github/codeql-action/init to get workflow details
+      security-events: write  # for github/codeql-action/analyze to upload SARIF results
     runs-on: ubuntu-latest
-    
+
     steps:
       - uses: actions/checkout@v4
 
@@ -35,8 +35,8 @@ jobs:
           languages: java
 
       - name: Build Java code
+        # skipping build cache is needed so that all modules will be analyzed
         run: ./gradlew assemble --no-build-cache
-        # Skip build cache for full code analysis
 
       - name: Perform CodeQL analysis
         uses: github/codeql-action/analyze@v3
