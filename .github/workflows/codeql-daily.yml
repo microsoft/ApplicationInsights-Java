@@ -157,8 +157,8 @@ jobs:
           $batchFile = 'run-cpp-build.bat'
           Set-Content -Path $batchFile -Value $buildScript -NoNewline
 
-          # Call vcvars64.bat and then the batch file (fix quoting)
-          & cmd /c "$vcvarsPath && $batchFile"
+          # Call vcvars64.bat and then the batch file (fix quoting for spaces)
+          & cmd /c "`"$vcvarsPath`" && $batchFile"
 
       - name: Perform CodeQL analysis
         uses: github/codeql-action/analyze@v3
