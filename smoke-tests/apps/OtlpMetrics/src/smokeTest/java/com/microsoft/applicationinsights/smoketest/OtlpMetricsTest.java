@@ -8,7 +8,6 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.mockserver.model.HttpRequest.request;
-import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
@@ -19,13 +18,9 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.mockserver.model.HttpRequest;
-import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest(
-    classes = {OtlpApplication.class},
-    webEnvironment = RANDOM_PORT)
 @UseAgent
-abstract class OtlpTest {
+abstract class OtlpMetricsTest {
 
   @RegisterExtension
   static final SmokeTestExtension testing = SmokeTestExtension.builder().useOtlpEndpoint().build();
@@ -41,14 +36,14 @@ abstract class OtlpTest {
 
     // verify custom histogram metric sent to Application Insights endpoint
     List<Envelope> metricList =
-        testing.mockedIngestion.waitForItems("MetricData", OtlpTest::isHistogramMetric, 1);
+        testing.mockedIngestion.waitForItems("MetricData", OtlpMetricsTest::isHistogramMetric, 1);
     Envelope metricEnvelope = metricList.get(0);
     MetricData metricData = (MetricData) ((Data<?>) metricEnvelope.getData()).getBaseData();
     assertThat(metricData.getMetrics().get(0).getName()).isEqualTo("histogram-test-otlp-exporter");
 
     // verify stable otel metric sent to Application Insights endpoint
     List<Envelope> stableOtelMetrics =
-        testing.mockedIngestion.waitForItems("MetricData", OtlpTest::isStableOtelMetric, 1);
+        testing.mockedIngestion.waitForItems("MetricData", OtlpMetricsTest::isStableOtelMetric, 1);
     Envelope stableOtelMetricEnvelope = stableOtelMetrics.get(0);
     assertThat(
             ((MetricData) ((Data<?>) stableOtelMetricEnvelope.getData()).getBaseData())
@@ -117,7 +112,7 @@ abstract class OtlpTest {
 
   private void verifyStatsbeatSentToBreezeEndpoint() throws Exception {
     List<Envelope> statsbeatMetricList =
-        testing.mockedIngestion.waitForItems("MetricData", OtlpTest::isAttachStatsbeat, 1);
+        testing.mockedIngestion.waitForItems("MetricData", OtlpMetricsTest::isAttachStatsbeat, 1);
     Envelope statsbeatEnvelope = statsbeatMetricList.get(0);
     MetricData statsbeatMetricData =
         (MetricData) ((Data<?>) statsbeatEnvelope.getData()).getBaseData();
@@ -126,21 +121,22 @@ abstract class OtlpTest {
     assertThat(statsbeatMetricData.getProperties().get("attach")).isEqualTo("StandaloneAuto");
 
     List<Envelope> features =
-        testing.mockedIngestion.waitForItems("MetricData", OtlpTest::isFeatureStatsbeat, 2);
+        testing.mockedIngestion.waitForItems("MetricData", OtlpMetricsTest::isFeatureStatsbeat, 2);
     Envelope featureEnvelope = features.get(0);
     MetricData featureMetricData = (MetricData) ((Data<?>) featureEnvelope.getData()).getBaseData();
     assertThat(featureMetricData.getMetrics().get(0).getName()).isEqualTo("Feature");
     assertThat(featureMetricData.getProperties().get("type")).isNotEmpty();
 
     List<Envelope> requestSuccessCounts =
-        testing.mockedIngestion.waitForItems("MetricData", OtlpTest::isRequestSuccessCount, 1);
+        testing.mockedIngestion.waitForItems(
+            "MetricData", OtlpMetricsTest::isRequestSuccessCount, 1);
     Envelope rscEnvelope = requestSuccessCounts.get(0);
     MetricData rscMetricData = (MetricData) ((Data<?>) rscEnvelope.getData()).getBaseData();
     assertThat(rscMetricData.getMetrics().get(0).getName()).isEqualTo("Request_Success_Count");
     assertThat(rscMetricData.getProperties().get("endpoint")).isEqualTo("breeze");
 
     List<Envelope> requestDurations =
-        testing.mockedIngestion.waitForItems("MetricData", OtlpTest::isRequestDuration, 1);
+        testing.mockedIngestion.waitForItems("MetricData", OtlpMetricsTest::isRequestDuration, 1);
     Envelope rdEnvelope = requestDurations.get(0);
     MetricData rdMetricData = (MetricData) ((Data<?>) rdEnvelope.getData()).getBaseData();
     assertThat(rdMetricData.getMetrics().get(0).getName()).isEqualTo("Request_Duration");
@@ -180,5 +176,5 @@ abstract class OtlpTest {
   }
 
   @Environment(TOMCAT_8_JAVA_8)
-  static class Tomcat8Java8Test extends OtlpTest {}
+  static class Tomcat8Java8Test extends OtlpMetricsTest {}
 }
