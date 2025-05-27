@@ -240,12 +240,11 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
       properties.put("otel.instrumentation.spring-jms.enabled", "true");
     }
     if (config.instrumentation.kafka.enabled) {
-      properties.put("otel.instrumentation.kafka.enabled", "true");
+      properties.put("otel.instrumentation.kafka-clients.enabled", "true");
+      properties.put("otel.instrumentation.kafka-clients-metrics.enabled", "false");
       properties.put("otel.instrumentation.spring-kafka.enabled", "true");
       // this is needed to capture kafka.record.queue_time_ms
       properties.put("otel.instrumentation.kafka.experimental-span-attributes", "true");
-      // kafka metrics are enabled by default
-      properties.put("otel.instrumentation.kafka.metric-reporter.enabled", "false");
     }
     if (config.instrumentation.mongo.enabled) {
       properties.put("otel.instrumentation.mongo.enabled", "true");
