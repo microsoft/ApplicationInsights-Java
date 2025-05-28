@@ -3,7 +3,7 @@
 
 ### Enhancements
 
-* Add fix for hyphens in enum values
+* Fix reading of profiling configuration enum value
   ([#4202](https://github.com/microsoft/ApplicationInsights-Java/pull/4202))
 * Update OpenTelemetry dependencies
   ([#4177](https://github.com/microsoft/ApplicationInsights-Java/pull/4177))
