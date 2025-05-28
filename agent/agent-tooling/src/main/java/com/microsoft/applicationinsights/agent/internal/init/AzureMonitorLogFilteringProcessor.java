@@ -3,7 +3,6 @@
 
 package com.microsoft.applicationinsights.agent.internal.init;
 
-import com.azure.core.util.logging.ClientLogger;
 import com.azure.monitor.opentelemetry.autoconfigure.implementation.AiSemanticAttributes;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.sampling.AiFixedPercentageSampler;
@@ -13,28 +12,15 @@ import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.instrumentation.api.instrumenter.LocalRootSpan;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.internal.AttributesMap;
 import io.opentelemetry.sdk.logs.LogRecordProcessor;
 import io.opentelemetry.sdk.logs.ReadWriteLogRecord;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.samplers.SamplingDecision;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 import io.opentelemetry.semconv.ExceptionAttributes;
-import java.lang.reflect.Field;
 import java.util.List;
-import javax.annotation.Nullable;
 
 public class AzureMonitorLogFilteringProcessor implements LogRecordProcessor {
-
-  private static final ClientLogger logger = new ClientLogger(AzureMonitorLogProcessor.class);
-  private static final Field lockField;
-  private static final Field attributesMapField;
-
-  static {
-    Class<?> sdkReadWriteLogRecordClass = getSdkReadWriteLogRecordClass();
-    lockField = getLockField(sdkReadWriteLogRecordClass);
-    attributesMapField = getAttributesMapField(sdkReadWriteLogRecordClass);
-  }
 
   private final SamplingOverrides logSamplingOverrides;
   private final SamplingOverrides exceptionSamplingOverrides;
@@ -132,58 +118,8 @@ public class AzureMonitorLogFilteringProcessor implements LogRecordProcessor {
     batchLogRecordProcessor.close();
   }
 
-  @Nullable
-  private static Class<?> getSdkReadWriteLogRecordClass() {
-    try {
-      return Class.forName("io.opentelemetry.sdk.logs.SdkReadWriteLogRecord");
-    } catch (ClassNotFoundException e) {
-      return null;
-    }
-  }
-
-  @Nullable
-  private static Field getLockField(Class<?> sdkReadWriteLogRecordClass) {
-    if (sdkReadWriteLogRecordClass == null) {
-      return null;
-    }
-    try {
-      Field lockField = sdkReadWriteLogRecordClass.getDeclaredField("lock");
-      lockField.setAccessible(true);
-      return lockField;
-    } catch (NoSuchFieldException e) {
-      return null;
-    }
-  }
-
-  @Nullable
-  private static Field getAttributesMapField(Class<?> sdkReadWriteLogRecordClass) {
-    if (sdkReadWriteLogRecordClass == null) {
-      return null;
-    }
-    try {
-      Field attributesMapField = sdkReadWriteLogRecordClass.getDeclaredField("attributes");
-      attributesMapField.setAccessible(true);
-      return attributesMapField;
-    } catch (NoSuchFieldException e) {
-      return null;
-    }
-  }
-
   private static void setAttributeExceptionLogged(Span span, ReadWriteLogRecord logRecord) {
-    if (lockField == null || attributesMapField == null) {
-      return;
-    }
-    String stacktrace = null;
-    try {
-      synchronized (lockField) {
-        // TODO add `getAttribute()` to `ReadWriteLogRecord` upstream
-        stacktrace =
-            ((AttributesMap) attributesMapField.get(logRecord))
-                .get(ExceptionAttributes.EXCEPTION_STACKTRACE);
-      }
-    } catch (Exception e) {
-      logger.error(e.getMessage(), e);
-    }
+    String stacktrace = logRecord.getAttribute(ExceptionAttributes.EXCEPTION_STACKTRACE);
     if (stacktrace != null) {
       span.setAttribute(AiSemanticAttributes.LOGGED_EXCEPTION, stacktrace);
     }
