@@ -3,17 +3,10 @@
 
 ### Enhancements
 
-* Smoke test for custom events with OTel API
-  ([#4190](https://github.com/microsoft/ApplicationInsights-Java/pull/4190))
 * Add fix for hyphens in enum values
   ([#4202](https://github.com/microsoft/ApplicationInsights-Java/pull/4202))
 * Update OpenTelemetry dependencies
   ([#4177](https://github.com/microsoft/ApplicationInsights-Java/pull/4177))
-
-### Bug fixes
-
-* testing fixes for CodeQL
-  ([#4198](https://github.com/microsoft/ApplicationInsights-Java/pull/4198))
 
 ## Version 3.7.2 GA (04/17/2025)
 
