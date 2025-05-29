@@ -1,4 +1,13 @@
 # CHANGELOG
+## Version 3.7.3 GA (05/28/2025)
+
+### Enhancements
+
+* Fix reading of profiling configuration enum value
+  ([#4202](https://github.com/microsoft/ApplicationInsights-Java/pull/4202))
+* Update OpenTelemetry dependencies
+  ([#4177](https://github.com/microsoft/ApplicationInsights-Java/pull/4177))
+
 ## Version 3.7.2 GA (04/17/2025)
 
 ### Enhancements
