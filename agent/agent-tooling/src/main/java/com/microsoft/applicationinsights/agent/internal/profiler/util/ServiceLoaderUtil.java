@@ -17,7 +17,7 @@ public class ServiceLoaderUtil {
 
   public static <T> T findServiceLoader(Class<T> clazz, boolean includeExtensionClassPath) {
     List<T> services = findAllServiceLoaders(clazz, includeExtensionClassPath);
-    if (services.size() > 0) {
+    if (!services.isEmpty()) {
       return services.get(0);
     }
     return null;
