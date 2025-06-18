@@ -15,7 +15,7 @@ repositories {
 }
 
 ext.webjarsFontawesomeVersion = "4.7.0"
-ext.webjarsBootstrapVersion = "5.3.5"
+ext.webjarsBootstrapVersion = "5.3.7"
 
 dependencies {
   implementation 'org.springframework.boot:spring-boot-starter-cache'
