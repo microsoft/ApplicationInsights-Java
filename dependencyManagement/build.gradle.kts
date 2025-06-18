@@ -28,7 +28,7 @@ val DEPENDENCY_BOMS = listOf(
   "com.azure:azure-sdk-bom:1.2.33",
   "io.netty:netty-bom:4.2.2.Final",
   "org.junit:junit-bom:5.12.1",
-  "org.testcontainers:testcontainers-bom:1.20.6",
+  "org.testcontainers:testcontainers-bom:1.21.1",
 )
 
 val autoServiceVersion = "1.1.1"
