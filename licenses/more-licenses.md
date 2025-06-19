@@ -1,7 +1,7 @@
 
 # agent
 ## Dependency License Report
-_2025-06-18 14:40:46 CEST_
+_2025-06-19 03:56:53 UTC_
 ## Apache License, Version 2.0
 
 **1** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-annotations` **Version:** `2.18.3` 
@@ -366,7 +366,7 @@ _2025-06-18 14:40:46 CEST_
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**70** **Group:** `com.azure` **Name:** `azure-identity` **Version:** `1.15.4` 
+**70** **Group:** `com.azure` **Name:** `azure-identity` **Version:** `1.16.2` 
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
@@ -398,7 +398,7 @@ _2025-06-18 14:40:46 CEST_
 > - **Manifest License**: "SPDX-License-Identifier: MIT";link="https://opensource.org/licenses/MIT" (Not Packaged)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**78** **Group:** `com.microsoft.azure` **Name:** `msal4j` **Version:** `1.19.1` 
+**78** **Group:** `com.microsoft.azure` **Name:** `msal4j` **Version:** `1.21.0` 
 > - **Project URL**: [https://github.com/AzureAD/microsoft-authentication-library-for-java](https://github.com/AzureAD/microsoft-authentication-library-for-java)
 > - **Manifest License**: "MIT License" (Not Packaged)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
