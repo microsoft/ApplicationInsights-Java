@@ -61,7 +61,7 @@ jobs:
           java-version: 17
 
       - name: Setup Visual Studio Build Tools
-        uses: microsoft/setup-msbuild@v1
+        uses: microsoft/setup-msbuild@v2
       
       # This step uses Microsoft's vswhere tool to verify that the official Windows 10 SDK (version 19041) is installed.
       # vswhere is a Microsoft-provided command-line utility that locates Visual Studio installations and their components.
