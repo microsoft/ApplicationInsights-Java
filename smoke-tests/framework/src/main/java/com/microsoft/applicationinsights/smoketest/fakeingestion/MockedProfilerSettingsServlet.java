@@ -17,15 +17,13 @@ import javax.servlet.http.HttpServletResponse;
 
 public class MockedProfilerSettingsServlet extends HttpServlet {
 
-  private static final Map<ProfilerState, String> CONFIGS;
-
-  static {
+  private static Map<ProfilerState, String> getConfigs() {
     String now =
         DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(OffsetDateTime.now(ZoneOffset.ofHours(0)));
 
-    CONFIGS = new HashMap<>();
+    Map<ProfilerState, String> configs = new HashMap<>();
 
-    CONFIGS.put(
+    configs.put(
         ProfilerState.unconfigured,
         "{\n"
             + "   \"agentConcurrency\" : 0,\n"
@@ -39,7 +37,7 @@ public class MockedProfilerSettingsServlet extends HttpServlet {
             + "   \"memoryTriggerConfiguration\" : \"--memory-threshold 80 --memory-trigger-profilingDuration 120 --memory-trigger-cooldown 14400 --memory-trigger-enabled true\"\n"
             + "}\n");
 
-    CONFIGS.put(
+    configs.put(
         ProfilerState.configuredEnabled,
         "{\n"
             + "   \"agentConcurrency\" : 0,\n"
@@ -57,7 +55,7 @@ public class MockedProfilerSettingsServlet extends HttpServlet {
             + "   \"memoryTriggerConfiguration\" : \"--memory-threshold 80 --memory-trigger-profilingDuration 120 --memory-trigger-cooldown 14400 --memory-trigger-enabled true\"\n"
             + "}\n");
 
-    CONFIGS.put(
+    configs.put(
         ProfilerState.configuredDisabled,
         "{\n"
             + "   \"agentConcurrency\" : 0,\n"
@@ -77,7 +75,7 @@ public class MockedProfilerSettingsServlet extends HttpServlet {
 
     long expire = toSeconds(Instant.now().plusSeconds(100));
 
-    CONFIGS.put(
+    configs.put(
         ProfilerState.manualprofile,
         "{\n"
             + "   \"agentConcurrency\" : 0,\n"
@@ -96,6 +94,8 @@ public class MockedProfilerSettingsServlet extends HttpServlet {
             + "\",\n"
             + "   \"memoryTriggerConfiguration\" : \"--memory-threshold 80 --memory-trigger-profilingDuration 120 --memory-trigger-cooldown 14400 --memory-trigger-enabled true\"\n"
             + "}\n");
+
+    return configs;
   }
 
   private static long toSeconds(Instant time) {
@@ -105,8 +105,9 @@ public class MockedProfilerSettingsServlet extends HttpServlet {
 
   @Override
   protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+    Map<ProfilerState, String> configs = getConfigs();
     Optional<Map.Entry<ProfilerState, String>> entry =
-        CONFIGS.entrySet().stream()
+        configs.entrySet().stream()
             .filter(
                 it ->
                     ("/" + it.getKey().name() + "/api/profileragent/v4/settings")

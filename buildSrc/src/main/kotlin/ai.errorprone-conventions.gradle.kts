@@ -70,7 +70,7 @@ tasks {
         disable("YodaCondition")
 
         // New checks in ErrorProne 2.37.0 that we want to disable
-        disable("TimeInStaticInitializer")
+        // TimeInStaticInitializer check fixed - no longer disabled
 
         // New checks in ErrorProne 2.38.0 that we want to disable
         disable("AddNullMarkedToPackageInfo")
