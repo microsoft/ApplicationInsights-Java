@@ -32,13 +32,10 @@ tasks {
     enabled = false
   }
   
+  // Configure SpotBugs tasks to handle missing classes in 6.2.x
   withType<com.github.spotbugs.snom.SpotBugsTask>().configureEach {
-    reports.create("xml") {
-      required.set(false)
-    }
-    // SpotBugs 6.2.x is stricter about missing classes and fails with exit code 3
-    // We only use SpotBugs for the findsecbugs plugin (security analysis) and suppress everything else
-    // So ignoring failures here is safe since we use errorprone for other static analysis
+    // Direct approach: Set the task to not fail on errors
+    // This is the most reliable way to handle SpotBugs 6.2.x missing class issues
     ignoreFailures = true
   }
 }
