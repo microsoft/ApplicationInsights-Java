@@ -6,7 +6,6 @@ spotbugs {
   excludeFilter.set(
     file("${rootProject.rootDir}/gradle/spotbugs-exclude.xml")
   )
-  effort.set(com.github.spotbugs.snom.Effort.MIN)
   omitVisitors.addAll(
     // we only use spotbugs for the findsecbugs plugin, and suppress anything else that gets flagged
     // since we use errorprone instead for this kind of static analysis
@@ -31,13 +30,6 @@ spotbugs {
 tasks {
   named("spotbugsTest") {
     enabled = false
-  }
-  
-  withType<com.github.spotbugs.snom.SpotBugsTask>().configureEach {
-    // SpotBugs 6.2.x fails with exit code 3 when classes needed for analysis are missing
-    // The missing classes are typically lambda method references that don't affect security analysis
-    // Since we only use SpotBugs for findsecbugs security plugin, this is safe to ignore
-    ignoreFailures = true
   }
 }
 
