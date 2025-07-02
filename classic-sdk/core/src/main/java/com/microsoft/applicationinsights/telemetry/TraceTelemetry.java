@@ -51,19 +51,52 @@ public final class TraceTelemetry extends BaseTelemetry {
     data.setSeverityLevel(
         severityLevel == null
             ? null
-            : com.microsoft.applicationinsights.internal.schemav2.SeverityLevel.values()[
-                severityLevel.getValue()]);
+            : mapToInternalSeverityLevel(severityLevel));
   }
 
   @Nullable
   public SeverityLevel getSeverityLevel() {
     return data.getSeverityLevel() == null
         ? null
-        : SeverityLevel.values()[data.getSeverityLevel().getValue()];
+        : mapFromInternalSeverityLevel(data.getSeverityLevel());
   }
 
   @Override
   protected MessageData getData() {
     return data;
+  }
+
+  private static com.microsoft.applicationinsights.internal.schemav2.SeverityLevel mapToInternalSeverityLevel(SeverityLevel severityLevel) {
+    switch (severityLevel) {
+      case Verbose:
+        return com.microsoft.applicationinsights.internal.schemav2.SeverityLevel.Verbose;
+      case Information:
+        return com.microsoft.applicationinsights.internal.schemav2.SeverityLevel.Information;
+      case Warning:
+        return com.microsoft.applicationinsights.internal.schemav2.SeverityLevel.Warning;
+      case Error:
+        return com.microsoft.applicationinsights.internal.schemav2.SeverityLevel.Error;
+      case Critical:
+        return com.microsoft.applicationinsights.internal.schemav2.SeverityLevel.Critical;
+      default:
+        throw new IllegalArgumentException("Unknown SeverityLevel: " + severityLevel);
+    }
+  }
+
+  private static SeverityLevel mapFromInternalSeverityLevel(com.microsoft.applicationinsights.internal.schemav2.SeverityLevel internalSeverityLevel) {
+    switch (internalSeverityLevel) {
+      case Verbose:
+        return SeverityLevel.Verbose;
+      case Information:
+        return SeverityLevel.Information;
+      case Warning:
+        return SeverityLevel.Warning;
+      case Error:
+        return SeverityLevel.Error;
+      case Critical:
+        return SeverityLevel.Critical;
+      default:
+        throw new IllegalArgumentException("Unknown internal SeverityLevel: " + internalSeverityLevel);
+    }
   }
 }

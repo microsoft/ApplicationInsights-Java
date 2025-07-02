@@ -73,10 +73,10 @@ tasks {
         // TimeInStaticInitializer check fixed - no longer disabled
 
         // New checks in ErrorProne 2.38.0 that we want to disable
-        disable("AddNullMarkedToPackageInfo")
+        disable("AddNullMarkedToPackageInfo") // requires JSpecify dependency not compatible with Java 8
 
         // Other new checks that cause warnings in our codebase
-        disable("EnumOrdinal")
+        // EnumOrdinal check fixed - no longer disabled
 
         if (name.contains("Jmh")) {
           disable("MemberName")
