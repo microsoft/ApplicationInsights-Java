@@ -43,7 +43,7 @@ class AlertConfigParserTest {
             AlertConfiguration.builder()
                 .setType(AlertMetricType.CPU)
                 .setEnabled(true)
-                .setThreshold((float) 80)
+                .setThreshold(80.0f)
                 .setProfileDurationSeconds(30)
                 .setCooldownSeconds(14400)
                 .build());
@@ -53,7 +53,7 @@ class AlertConfigParserTest {
             AlertConfiguration.builder()
                 .setType(AlertMetricType.MEMORY)
                 .setEnabled(true)
-                .setThreshold((float) 20)
+                .setThreshold(20.0f)
                 .setProfileDurationSeconds(120)
                 .setCooldownSeconds(14400)
                 .build());

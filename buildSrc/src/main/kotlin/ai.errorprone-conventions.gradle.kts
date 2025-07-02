@@ -74,7 +74,6 @@ tasks {
 
         // New checks in ErrorProne 2.38.0 that we want to disable
         disable("AddNullMarkedToPackageInfo")
-        disable("IntLiteralCast")
 
         // Other new checks that cause warnings in our codebase
         disable("EnumOrdinal")
