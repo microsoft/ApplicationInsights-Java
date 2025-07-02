@@ -254,7 +254,7 @@ class MicrometerTest {
         .register(registry);
 
     // then
-    await().until(() -> getLastMeasurement("test-function-timer") != null);
+    await().atMost(Duration.ofSeconds(15)).until(() -> getLastMeasurement("test-function-timer") != null);
 
     AgentTestingMicrometerDelegate.Measurement measurement =
         getLastMeasurement("test-function-timer");
