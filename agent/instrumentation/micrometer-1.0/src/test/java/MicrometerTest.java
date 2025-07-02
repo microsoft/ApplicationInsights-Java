@@ -254,7 +254,13 @@ class MicrometerTest {
         .register(registry);
 
     // then
-    await().atMost(Duration.ofSeconds(15)).until(() -> getLastMeasurement("test-function-timer") != null);
+    // Use a more robust waiting strategy that accounts for step-based metric publication
+    // Poll more frequently and give enough time for at least 2 step cycles to ensure reliability
+    await()
+        .pollDelay(Duration.ofMillis(100))       // Start checking after small delay
+        .pollInterval(Duration.ofMillis(100))     // Check every 100ms
+        .atMost(Duration.ofSeconds(3))           // Allow time for 2-3 step cycles (1s each)
+        .until(() -> getLastMeasurement("test-function-timer") != null);
 
     AgentTestingMicrometerDelegate.Measurement measurement =
         getLastMeasurement("test-function-timer");
