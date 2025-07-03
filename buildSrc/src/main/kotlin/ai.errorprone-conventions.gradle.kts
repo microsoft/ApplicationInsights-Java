@@ -54,7 +54,6 @@ tasks {
 
         // Don't support Android without desugar
         disable("AndroidJdkLibsChecker")
-        disable("Java7ApiChecker")
         disable("StaticOrDefaultInterfaceMethod")
 
         // needed temporarily while hosting azure-monitor-opentelemetry-exporter in this repo
@@ -69,6 +68,15 @@ tasks {
         // YodaConditions may improve safety in some cases. The argument of increased
         // cognitive load is dubious.
         disable("YodaCondition")
+
+        // New checks in ErrorProne 2.37.0 that we want to disable
+        // TimeInStaticInitializer check fixed - no longer disabled
+
+        // New checks in ErrorProne 2.38.0 that we want to disable
+        disable("AddNullMarkedToPackageInfo") // requires JSpecify dependency not compatible with Java 8
+
+        // Other new checks that cause warnings in our codebase
+        // EnumOrdinal check fixed - no longer disabled
 
         if (name.contains("Jmh")) {
           disable("MemberName")
