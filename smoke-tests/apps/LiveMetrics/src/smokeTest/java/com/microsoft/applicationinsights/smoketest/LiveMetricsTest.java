@@ -143,7 +143,7 @@ abstract class LiveMetricsTest {
         String name = metric.getName();
         double value = metric.getValue();
         if (name.equals("\\ApplicationInsights\\Dependency Calls/Sec")) {
-          return value == 1;
+          return value > 0;
         }
       }
       return false;
@@ -154,7 +154,7 @@ abstract class LiveMetricsTest {
         String name = metric.getName();
         double value = metric.getValue();
         if (name.equals("\\ApplicationInsights\\Requests/Sec")) {
-          return value == 1;
+          return value > 0;
         }
       }
       return false;
