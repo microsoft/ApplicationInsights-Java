@@ -50,6 +50,18 @@ abstract class LiveMetricsTest {
 
     assertThat(testing.mockedIngestion.isPingReceived()).isTrue();
 
+    // Wait for dependency metric to be available in LiveMetrics post bodies
+    Awaitility.await()
+        .atMost(Duration.ofSeconds(30))
+        .until(() -> {
+          List<String> postBodies = testing.mockedIngestion.getPostBodies();
+          PostBodyVerifier tempVerifier = new PostBodyVerifier();
+          for (String postBody : postBodies) {
+            tempVerifier.searchPostBody(postBody);
+          }
+          return tempVerifier.hasDependency();
+        });
+
     List<String> postBodies = testing.mockedIngestion.getPostBodies();
     assertThat(postBodies).hasSizeGreaterThan(0); // should post at least once
 
@@ -143,7 +155,7 @@ abstract class LiveMetricsTest {
         String name = metric.getName();
         double value = metric.getValue();
         if (name.equals("\\ApplicationInsights\\Dependency Calls/Sec")) {
-          return value > 0;
+          return value == 1;
         }
       }
       return false;
