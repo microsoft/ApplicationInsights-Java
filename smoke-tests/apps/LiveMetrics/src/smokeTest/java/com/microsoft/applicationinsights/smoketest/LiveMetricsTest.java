@@ -51,6 +51,7 @@ abstract class LiveMetricsTest {
     assertThat(testing.mockedIngestion.isPingReceived()).isTrue();
 
     // Wait for all telemetry to be available in LiveMetrics post bodies
+    // Need to wait because some but not all the telemetry may be available in the first post body
     Awaitility.await()
         .atMost(Duration.ofSeconds(30))
         .until(() -> {
