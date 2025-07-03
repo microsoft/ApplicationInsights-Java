@@ -13,7 +13,29 @@ if (System.env.APPINSIGHTS_WIN10_SDK_PATH) {
   winSdkDir = System.env.APPINSIGHTS_WIN10_SDK_PATH
   logger.info "Windows SDK path set with environment variable, APPINSIGHTS_WIN10_SDK_PATH"
 }
-def vsToolsDir = "$programFilesX86/Microsoft Visual Studio/2022/BuildTools"
+// Find Visual Studio installation 
+def vsToolsDir = "$programFilesX86/Microsoft Visual Studio/2022/Enterprise"
+
+// Check for alternative locations on GitHub Actions
+if (!new File(vsToolsDir).exists()) {
+  def alternativePaths = [
+    "C:/Program Files/Microsoft Visual Studio/2022/Enterprise",
+    "$programFilesX86/Microsoft Visual Studio/2022/Professional", 
+    "C:/Program Files/Microsoft Visual Studio/2022/Professional",
+    "$programFilesX86/Microsoft Visual Studio/2022/Community",
+    "C:/Program Files/Microsoft Visual Studio/2022/Community",
+    "$programFilesX86/Microsoft Visual Studio/2022/BuildTools",
+    "C:/Program Files/Microsoft Visual Studio/2022/BuildTools"
+  ]
+  
+  for (def path : alternativePaths) {
+    if (new File(path).exists()) {
+      vsToolsDir = path
+      break
+    }
+  }
+}
+
 if (System.env.APPINSIGHTS_VS_PATH) {
   vsToolsDir = System.env.APPINSIGHTS_VS_PATH
   logger.info "Visual Studio Build Tools path set with environment variable, APPINSIGHTS_VS_PATH"
