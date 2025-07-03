@@ -13,7 +13,7 @@ if (System.env.APPINSIGHTS_WIN10_SDK_PATH) {
   winSdkDir = System.env.APPINSIGHTS_WIN10_SDK_PATH
   logger.info "Windows SDK path set with environment variable, APPINSIGHTS_WIN10_SDK_PATH"
 }
-def vsToolsDir = "$programFilesX86/Microsoft Visual Studio 14.0"
+def vsToolsDir = "$programFilesX86/Microsoft Visual Studio/2022/BuildTools"
 if (System.env.APPINSIGHTS_VS_PATH) {
   vsToolsDir = System.env.APPINSIGHTS_VS_PATH
   logger.info "Visual Studio Build Tools path set with environment variable, APPINSIGHTS_VS_PATH"
