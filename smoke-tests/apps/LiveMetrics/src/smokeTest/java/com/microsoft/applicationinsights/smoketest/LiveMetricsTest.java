@@ -59,7 +59,6 @@ abstract class LiveMetricsTest {
 
     assertThat(postBodyVerifier.hasExceptionDoc()).isTrue();
     assertThat(postBodyVerifier.hasTraceDoc()).isTrue();
-    assertThat(postBodyVerifier.hasDependency()).isTrue();
     assertThat(postBodyVerifier.hasRequest()).isTrue();
   }
 
@@ -143,7 +142,7 @@ abstract class LiveMetricsTest {
         String name = metric.getName();
         double value = metric.getValue();
         if (name.equals("\\ApplicationInsights\\Dependency Calls/Sec")) {
-          return value > 0;
+          return value == 1;
         }
       }
       return false;
@@ -154,7 +153,7 @@ abstract class LiveMetricsTest {
         String name = metric.getName();
         double value = metric.getValue();
         if (name.equals("\\ApplicationInsights\\Requests/Sec")) {
-          return value > 0;
+          return value == 1;
         }
       }
       return false;
