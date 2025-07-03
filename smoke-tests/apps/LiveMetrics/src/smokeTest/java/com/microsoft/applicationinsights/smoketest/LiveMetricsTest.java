@@ -50,16 +50,24 @@ abstract class LiveMetricsTest {
 
     assertThat(testing.mockedIngestion.isPingReceived()).isTrue();
 
-    // Wait for dependency metric to be available in LiveMetrics post bodies
+    // Wait for all telemetry to be available in LiveMetrics post bodies
     Awaitility.await()
         .atMost(Duration.ofSeconds(30))
         .until(() -> {
           List<String> postBodies = testing.mockedIngestion.getPostBodies();
+          if (postBodies.isEmpty()) {
+            return false;
+          }
+          
           PostBodyVerifier tempVerifier = new PostBodyVerifier();
           for (String postBody : postBodies) {
             tempVerifier.searchPostBody(postBody);
           }
-          return tempVerifier.hasDependency();
+          
+          return tempVerifier.hasExceptionDoc() 
+              && tempVerifier.hasTraceDoc() 
+              && tempVerifier.hasDependency() 
+              && tempVerifier.hasRequest();
         });
 
     List<String> postBodies = testing.mockedIngestion.getPostBodies();
