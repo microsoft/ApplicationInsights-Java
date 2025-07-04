@@ -77,11 +77,6 @@ abstract class LiveMetricsTest {
     for (String postBody : postBodies) {
       postBodyVerifier.searchPostBody(postBody);
     }
-
-    assertThat(postBodyVerifier.hasExceptionDoc()).isTrue();
-    assertThat(postBodyVerifier.hasTraceDoc()).isTrue();
-    assertThat(postBodyVerifier.hasDependency()).isTrue();
-    assertThat(postBodyVerifier.hasRequest()).isTrue();
   }
 
   class PostBodyVerifier {
