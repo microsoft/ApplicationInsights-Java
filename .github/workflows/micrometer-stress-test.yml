@@ -1,0 +1,44 @@
+name: Micrometer FunctionTimer Stress Test
+
+on:
+  pull_request:
+    paths:
+      - 'agent/instrumentation/micrometer-1.0/**'
+      - '.github/workflows/micrometer-stress-test.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  stress-test-function-timer:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        run: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40]
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK for running Gradle
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Run shouldCaptureFunctionTimer test (Run ${{ matrix.run }})
+        run: >
+          ./gradlew :agent:instrumentation:micrometer-1.0:test
+          --tests "MicrometerTest.shouldCaptureFunctionTimer"
+          --info
+
+      - name: Upload test reports on failure
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: test-reports-run-${{ matrix.run }}
+          path: '**/build/reports/tests/test/**/*'
