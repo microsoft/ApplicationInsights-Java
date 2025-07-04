@@ -3,6 +3,10 @@
 /buildSrc/.gradle/
 build/
 
+# Kotlin compiler session files
+*.salive
+/.kotlin/
+
 # Intellij
 /.idea/
 

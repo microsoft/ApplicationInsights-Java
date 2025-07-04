@@ -50,17 +50,26 @@ abstract class LiveMetricsTest {
 
     assertThat(testing.mockedIngestion.isPingReceived()).isTrue();
 
-    List<String> postBodies = testing.mockedIngestion.getPostBodies();
-    assertThat(postBodies).hasSizeGreaterThan(0); // should post at least once
-
-    for (String postBody : postBodies) {
-      postBodyVerifier.searchPostBody(postBody);
-    }
-
-    assertThat(postBodyVerifier.hasExceptionDoc()).isTrue();
-    assertThat(postBodyVerifier.hasTraceDoc()).isTrue();
-    assertThat(postBodyVerifier.hasDependency()).isTrue();
-    assertThat(postBodyVerifier.hasRequest()).isTrue();
+    // Wait for all telemetry to be available in LiveMetrics post bodies
+    // Need to wait because some but not all the telemetry may be available in the first post body
+    Awaitility.await()
+        .atMost(Duration.ofSeconds(30))
+        .until(() -> {
+          List<String> postBodies = testing.mockedIngestion.getPostBodies();
+          if (postBodies.isEmpty()) {
+            return false;
+          }
+          
+          PostBodyVerifier tempVerifier = new PostBodyVerifier();
+          for (String postBody : postBodies) {
+            tempVerifier.searchPostBody(postBody);
+          }
+          
+          return tempVerifier.hasExceptionDoc() 
+              && tempVerifier.hasTraceDoc() 
+              && tempVerifier.hasDependency() 
+              && tempVerifier.hasRequest();
+        });
   }
 
   class PostBodyVerifier {
