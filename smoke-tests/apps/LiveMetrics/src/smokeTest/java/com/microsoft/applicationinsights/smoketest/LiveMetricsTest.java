@@ -70,13 +70,6 @@ abstract class LiveMetricsTest {
               && tempVerifier.hasDependency() 
               && tempVerifier.hasRequest();
         });
-
-    List<String> postBodies = testing.mockedIngestion.getPostBodies();
-    assertThat(postBodies).hasSizeGreaterThan(0); // should post at least once
-
-    for (String postBody : postBodies) {
-      postBodyVerifier.searchPostBody(postBody);
-    }
   }
 
   class PostBodyVerifier {
