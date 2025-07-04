@@ -254,14 +254,7 @@ class MicrometerTest {
         .register(registry);
 
     // then
-    // Use a robust polling strategy for step-based metric publication:
-    // - Poll every 100ms to catch measurements quickly
-    // - Allow up to 15 seconds to account for potential CI load delays  
-    // - This provides sufficient time for 2-3 step publication cycles even under load
-    await()
-        .pollInterval(Duration.ofMillis(100))
-        .atMost(Duration.ofSeconds(15))
-        .until(() -> getLastMeasurement("test-function-timer") != null);
+    await().until(() -> getLastMeasurement("test-function-timer") != null);
 
     AgentTestingMicrometerDelegate.Measurement measurement =
         getLastMeasurement("test-function-timer");
