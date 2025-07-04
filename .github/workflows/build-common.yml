@@ -80,7 +80,7 @@ jobs:
 
   assemble:
     # running (and uploading artifact) from windows since only that build includes etw
-    runs-on: windows-2019
+    runs-on: windows-2022
     steps:
       - name: Support long paths
         run: git config --system core.longpaths true
@@ -102,6 +102,17 @@ jobs:
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
+
+      - name: Add MSBuild to PATH
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Setup Visual Studio and Windows SDK environment
+        shell: cmd
+        run: |
+          "%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath > vs.txt
+          set /p VSPATH=<vs.txt
+          echo APPINSIGHTS_VS_PATH=%VSPATH%>>%GITHUB_ENV%
+          echo APPINSIGHTS_WIN10_SDK_PATH=C:\Program Files (x86)\Windows Kits\10>>%GITHUB_ENV%
 
       - name: Assemble
         # javadoc task fails sporadically fetching https://docs.oracle.com/javase/8/docs/api/
@@ -131,13 +142,13 @@ jobs:
           # TODO (trask) enable once profiler supports OpenJ9
           # - openj9
         os:
-          - windows-2019
+          - windows-2022
           - ubuntu-latest
       fail-fast: false
     steps:
       - name: Support long paths
         run: git config --system core.longpaths true
-        if: matrix.os == 'windows-2019'
+        if: matrix.os == 'windows-2022'
 
       - uses: actions/checkout@v4
 
