@@ -111,7 +111,9 @@ public class StatusFile {
 
   // visible for testing
   static String initLogDir() {
-    // TODO document here which app svcs platforms / containers provide site.log system property?
+    // The site.logdir system property is provided by Azure App Service on Windows platforms
+    // to specify the directory where application logs should be written (typically D:\home\LogFiles).
+    // This property is automatically set by the Azure App Service runtime environment.
     if (DiagnosticsHelper.isOsWindows()) {
       String siteLogDir = System.getProperty(SITE_LOGDIR_PROPERTY);
       if (siteLogDir != null && !siteLogDir.isEmpty()) {
