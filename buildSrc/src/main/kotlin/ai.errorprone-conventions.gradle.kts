@@ -71,6 +71,7 @@ tasks {
 
         // New checks in ErrorProne 2.38.0 that we want to disable
         disable("AddNullMarkedToPackageInfo") // requires JSpecify dependency not compatible with Java 8
+        disable("TimeInStaticInitializer") // from 2.37.0
 
         if (name.contains("Jmh")) {
           disable("MemberName")
