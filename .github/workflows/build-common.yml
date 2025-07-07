@@ -197,26 +197,22 @@ jobs:
       - id: set-matrix
         run: |
           json_array=$(
-            for module_dir in smoke-tests/apps/*/; do
-              # Convert directory path to module name (e.g., "smoke-tests/apps/MyApp/" -> "smoke-tests:apps:MyApp")
-              module=$(echo "$module_dir" | sed 's|/$||' | sed 's|/|:|g')
+            for dir in smoke-tests/apps/*; do
+              # Convert directory path to module name (e.g., "smoke-tests/apps/MyApp" -> "smoke-tests:apps:MyApp")
+              module=$(echo "$dir" | sed 's|/|:|g')
               # Extract just the app name from the module path (e.g., "smoke-tests:apps:MyApp" -> "MyApp")
-              module_name=$(echo "$module" | sed 's|.*:||')
+              module_short=$(echo "$module" | sed 's|.*:||')
               
-              find "${module_dir}src/smokeTest/java" -name "*Test.java" | \
+              find "${dir}/src/smokeTest/java" -name "*Test.java" | \
                 # Remove the base path to get relative path from smokeTest/java
-                sed "s|${module_dir}src/smokeTest/java/||" | \
+                sed "s|${dir}/src/smokeTest/java/||" | \
                 # Convert file name to class name (e.g., "com/example/MyTest.java" -> "com.example.MyTest")
                 sed 's|/|.|g' | sed 's|\.java$||' | \
                 # Process each fully qualified test class name
                 while read -r class_name; do
                   # Extract just the simple class name (e.g., "com.example.MyTest" -> "MyTest")
-                  short_name=$(echo "$class_name" | sed 's/.*\.//')
-                  # Create JSON object for each test with:
-                  # - display: human-readable name (AppName:TestClassName)
-                  # - module: gradle module path for running the test
-                  # - test_class: full qualified class name for --tests parameter
-                  echo "{\"display\":\"${module_name}:${short_name}\"," \
+                  class_short=$(echo "$class_name" | sed 's/.*\.//')
+                  echo "{\"display\":\"${module_short}:${class_short}\"," \
                         "\"module\":\"${module}\"," \
                         "\"test_class\":\"${class_name}\"}"
                 done
