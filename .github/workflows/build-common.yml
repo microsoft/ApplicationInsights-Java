@@ -196,28 +196,36 @@ jobs:
 
       - id: set-matrix
         run: |
-          # Find all smoke test files and create matrix entries
           json_array=$(
             for module_dir in smoke-tests/apps/*/; do
+              # Convert directory path to module name (e.g., "smoke-tests/apps/MyApp/" -> "smoke-tests:apps:MyApp")
               module=$(echo "$module_dir" | sed 's|/$||' | sed 's|/|:|g')
+              # Extract just the app name from the module path (e.g., "smoke-tests:apps:MyApp" -> "MyApp")
               module_name=$(echo "$module" | sed 's|.*:||')
-              find "${module_dir}src/smokeTest/java" -name "*Test.java" -type f | \
+              
+              find "${module_dir}src/smokeTest/java" -name "*Test.java" | \
+                # Remove the base path to get relative path from smokeTest/java
                 sed "s|${module_dir}src/smokeTest/java/||" | \
-                sed 's|/|.|g' | \
-                sed 's|\.java$||' | \
-                while read -r full_class; do
-                  echo "{\"display\":\"${module_name}:${full_class##*.}\",\"module\":\"${module}\",\"test_class\":\"${full_class}\"}"
+                # Convert file name to class name (e.g., "com/example/MyTest.java" -> "com.example.MyTest")
+                sed 's|/|.|g' | sed 's|\.java$||' | \
+                # Process each fully qualified test class name
+                while read -r class_name; do
+                  # Extract just the simple class name (e.g., "com.example.MyTest" -> "MyTest")
+                  short_name=$(echo "$class_name" | sed 's/.*\.//')
+                  # Create JSON object for each test with:
+                  # - display: human-readable name (AppName:TestClassName)
+                  # - module: gradle module path for running the test
+                  # - test_class: full qualified class name for --tests parameter
+                  echo "{\"display\":\"${module_name}:${short_name}\"," \
+                        "\"module\":\"${module}\"," \
+                        "\"test_class\":\"${class_name}\"}"
                 done
+            # Join all JSON objects with commas and remove trailing comma
             done | tr '\n' ',' | sed 's/,$//'
           )
           
-          if [ -n "$json_array" ]; then
-            echo "matrix={\"include\":[$json_array]}" >> $GITHUB_OUTPUT
-            echo "Generated matrix with $(echo "$json_array" | tr ',' '\n' | wc -l) test entries"
-          else
-            echo "matrix={\"include\":[]}" >> $GITHUB_OUTPUT
-            echo "No test entries found"
-          fi
+          # Output the matrix in GitHub Actions format
+          echo "matrix={\"include\":[$json_array]}" >> $GITHUB_OUTPUT
 
   smoke-test:
     name: ${{ matrix.display }}
