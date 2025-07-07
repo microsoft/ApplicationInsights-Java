@@ -17,6 +17,7 @@ import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCA
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.WILDFLY_13_JAVA_8;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.WILDFLY_13_JAVA_8_OPENJ9;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.azure.json.JsonProviders;
@@ -30,7 +31,6 @@ import com.azure.monitor.opentelemetry.autoconfigure.implementation.quickpulse.s
 import java.io.IOException;
 import java.time.Duration;
 import java.util.List;
-import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -42,22 +42,16 @@ abstract class LiveMetricsTest {
   @Test
   @TargetUri("/test")
   void testTelemetryDataFlow() {
-    Awaitility.await()
+    await()
         .atMost(Duration.ofSeconds(60))
         .until(() -> testing.mockedIngestion.getCountForType("RequestData") == 1);
 
     assertThat(testing.mockedIngestion.isPingReceived()).isTrue();
 
-    // Wait for all telemetry to be available in LiveMetrics post bodies
-    // Need to wait because some but not all the telemetry may be available in the first post body
-    Awaitility.await()
-        .atMost(Duration.ofSeconds(30))
+    await()
         .untilAsserted(() -> {
-          List<String> postBodies = testing.mockedIngestion.getPostBodies();
-          assertThat(postBodies).isNotEmpty();
-
           PostBodyVerifier verifier = new PostBodyVerifier();
-          for (String postBody : postBodies) {
+          for (String postBody : testing.mockedIngestion.getPostBodies()) {
             verifier.searchPostBody(postBody);
           }
 
@@ -145,7 +139,10 @@ abstract class LiveMetricsTest {
         String name = metric.getName();
         double value = metric.getValue();
         if (name.equals("\\ApplicationInsights\\Dependency Calls/Sec")) {
-          return value == 1;
+          // TODO wait for the live metrics from health check to be emitted
+          //  before calling MockedQuickPulseServlet.resetData()
+          //  then we can assert that the value is exactly == 1
+          return value >= 1;
         }
       }
       return false;
@@ -156,7 +153,10 @@ abstract class LiveMetricsTest {
         String name = metric.getName();
         double value = metric.getValue();
         if (name.equals("\\ApplicationInsights\\Requests/Sec")) {
-          return value == 1;
+          // TODO wait for the live metrics from health check to be emitted
+          //  before calling MockedQuickPulseServlet.resetData()
+          //  then we can assert that the value is exactly == 1
+          return value >= 1;
         }
       }
       return false;
