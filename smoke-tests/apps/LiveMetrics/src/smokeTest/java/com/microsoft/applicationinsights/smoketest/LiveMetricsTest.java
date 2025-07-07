@@ -140,10 +140,7 @@ abstract class LiveMetricsTest {
         String name = metric.getName();
         double value = metric.getValue();
         if (name.equals("\\ApplicationInsights\\Dependency Calls/Sec")) {
-          // TODO wait for the live metrics from health check to be emitted
-          //  before calling MockedQuickPulseServlet.resetData()
-          //  then we can assert that the value is exactly == 1
-          return value >= 1;
+          return value == 1;
         }
       }
       return false;
@@ -154,10 +151,7 @@ abstract class LiveMetricsTest {
         String name = metric.getName();
         double value = metric.getValue();
         if (name.equals("\\ApplicationInsights\\Requests/Sec")) {
-          // TODO wait for the live metrics from health check to be emitted
-          //  before calling MockedQuickPulseServlet.resetData()
-          //  then we can assert that the value is exactly == 1
-          return value >= 1;
+          return value == 1;
         }
       }
       return false;
