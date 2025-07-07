@@ -17,6 +17,8 @@ import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCA
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.WILDFLY_13_JAVA_8;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.WILDFLY_13_JAVA_8_OPENJ9;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.azure.json.JsonProviders;
 import com.azure.json.JsonReader;
@@ -28,9 +30,7 @@ import com.azure.monitor.opentelemetry.autoconfigure.implementation.quickpulse.s
 import com.azure.monitor.opentelemetry.autoconfigure.implementation.quickpulse.swagger.models.Trace;
 import java.io.IOException;
 import java.time.Duration;
-import java.util.ArrayList;
 import java.util.List;
-import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -41,42 +41,39 @@ abstract class LiveMetricsTest {
 
   @Test
   @TargetUri("/test")
-  void testTelemetryDataFlow() throws java.lang.Exception {
-    Awaitility.await()
+  void testTelemetryDataFlow() {
+    await()
         .atMost(Duration.ofSeconds(60))
         .until(() -> testing.mockedIngestion.getCountForType("RequestData") == 1);
 
-    PostBodyVerifier postBodyVerifier = new PostBodyVerifier();
-
     assertThat(testing.mockedIngestion.isPingReceived()).isTrue();
 
-    List<String> postBodies = testing.mockedIngestion.getPostBodies();
-    assertThat(postBodies).hasSizeGreaterThan(0); // should post at least once
+    await()
+        .untilAsserted(
+            () -> {
+              PostBodyVerifier verifier = new PostBodyVerifier();
+              for (String postBody : testing.mockedIngestion.getPostBodies()) {
+                verifier.searchPostBody(postBody);
+              }
 
-    for (String postBody : postBodies) {
-      postBodyVerifier.searchPostBody(postBody);
-    }
-
-    assertThat(postBodyVerifier.hasExceptionDoc()).isTrue();
-    assertThat(postBodyVerifier.hasTraceDoc()).isTrue();
-    assertThat(postBodyVerifier.hasDependency()).isTrue();
-    assertThat(postBodyVerifier.hasRequest()).isTrue();
+              assertTrue(verifier.hasExceptionDoc());
+              assertTrue(verifier.hasTraceDoc());
+              assertTrue(verifier.hasDependency());
+              assertTrue(verifier.hasRequest());
+            });
   }
 
-  class PostBodyVerifier {
-    boolean foundExceptionDoc = false;
-    boolean foundTraceDoc = false;
-    boolean foundDependency = false;
-    boolean foundRequest = false;
+  static class PostBodyVerifier {
+    boolean foundExceptionDoc;
+    boolean foundTraceDoc;
+    boolean foundDependency;
+    boolean foundRequest;
 
-    public void searchPostBody(String postBody) {
+    public void searchPostBody(String postBody) throws IOException {
       // Each post body is a list with a singular MonitoringDataPoint
-      List<MonitoringDataPoint> dataPoints = new ArrayList<>();
-      try {
-        JsonReader reader = JsonProviders.createReader(postBody);
+      List<MonitoringDataPoint> dataPoints;
+      try (JsonReader reader = JsonProviders.createReader(postBody)) {
         dataPoints = reader.readArray(MonitoringDataPoint::fromJson);
-      } catch (IOException e) {
-        throw new IllegalStateException("Failed to parse post request body", e);
       }
 
       // Because the mock ping/posts should succeed, we should only have one MonitoringDataPoint per
@@ -143,7 +140,10 @@ abstract class LiveMetricsTest {
         String name = metric.getName();
         double value = metric.getValue();
         if (name.equals("\\ApplicationInsights\\Dependency Calls/Sec")) {
-          return value == 1;
+          // TODO wait for the live metrics from health check to be emitted
+          //  before calling MockedQuickPulseServlet.resetData()
+          //  then we can assert that the value is exactly == 1
+          return value >= 1;
         }
       }
       return false;
@@ -154,7 +154,10 @@ abstract class LiveMetricsTest {
         String name = metric.getName();
         double value = metric.getValue();
         if (name.equals("\\ApplicationInsights\\Requests/Sec")) {
-          return value == 1;
+          // TODO wait for the live metrics from health check to be emitted
+          //  before calling MockedQuickPulseServlet.resetData()
+          //  then we can assert that the value is exactly == 1
+          return value >= 1;
         }
       }
       return false;

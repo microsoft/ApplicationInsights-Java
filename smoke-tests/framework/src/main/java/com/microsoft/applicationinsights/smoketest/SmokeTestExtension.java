@@ -284,6 +284,9 @@ public class SmokeTestExtension
       String contextRootUrl = getBaseUrl() + "/";
       HttpHelper.getResponseCodeEnsuringSampled(contextRootUrl);
       waitForHealthCheckTelemetry(contextRootUrl);
+      // wait for live metrics to start sending data (needed for LiveMetricsTest)
+      await().untilAsserted(() -> assertThat(mockedIngestion.getPostBodies()).isNotEmpty());
+
       System.out.println("Clearing any RequestData from health check.");
       mockedIngestion.resetData();
     }
