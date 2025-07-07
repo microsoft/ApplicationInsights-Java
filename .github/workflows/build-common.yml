@@ -206,7 +206,7 @@ jobs:
                 sed 's|/|.|g' | \
                 sed 's|\.java$||' | \
                 while read -r full_class; do
-                  echo "{\"test\":\"${module}:${full_class}\",\"display\":\"${module_name}:${full_class##*.}\"}"
+                  echo "{\"test\":\"${module}:${full_class}\",\"display\":\"${module_name}:${full_class##*.}\",\"module\":\"${module}\",\"test_class\":\"${full_class}\"}"
                 done
             done | tr '\n' ',' | sed 's/,$//'
           )
@@ -245,26 +245,14 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Extract module and test class
-        run: |
-          # Split the test entry into module and test class
-          # Format is ":smoke-tests:apps:ModuleName:com.package.TestClass"
-          test_entry="${{ matrix.test }}"
-          # Extract everything before the last colon as the module
-          module="${test_entry%:*}"
-          # Extract everything after the last colon as the test class
-          test_class="${test_entry##*:}"
-          echo "MODULE=${module}" >> $GITHUB_ENV
-          echo "TEST_CLASS=${test_class}" >> $GITHUB_ENV
-
       - name: Test
-        run: ./gradlew ${{ env.MODULE }}:smokeTest --tests "${{ env.TEST_CLASS }}*"
+        run: ./gradlew ${{ matrix.module }}:smokeTest --tests "${{ matrix.test_class }}*"
 
       - name: Create unique artifact name
         if: failure()
         run: |
           # Create a unique name based on module and test class
-          artifact_name="${{ env.MODULE }}:${{ env.TEST_CLASS }}"
+          artifact_name="${{ matrix.module }}:${{ matrix.test_class }}"
           # Replace colons and dots with hyphens for valid artifact names
           artifact_name=$(echo "$artifact_name" | sed 's/[:.]/\-/g')
           echo "UPLOAD_ARTIFACT_NAME=$artifact_name" >> $GITHUB_ENV
