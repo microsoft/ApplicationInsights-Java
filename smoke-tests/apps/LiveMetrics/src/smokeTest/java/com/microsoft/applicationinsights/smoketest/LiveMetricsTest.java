@@ -54,22 +54,23 @@ abstract class LiveMetricsTest {
     // Need to wait because some but not all the telemetry may be available in the first post body
     Awaitility.await()
         .atMost(Duration.ofSeconds(30))
-        .until(() -> {
-          List<String> postBodies = testing.mockedIngestion.getPostBodies();
-          if (postBodies.isEmpty()) {
-            return false;
-          }
-          
-          PostBodyVerifier tempVerifier = new PostBodyVerifier();
-          for (String postBody : postBodies) {
-            tempVerifier.searchPostBody(postBody);
-          }
-          
-          return tempVerifier.hasExceptionDoc() 
-              && tempVerifier.hasTraceDoc() 
-              && tempVerifier.hasDependency() 
-              && tempVerifier.hasRequest();
-        });
+        .until(
+            () -> {
+              List<String> postBodies = testing.mockedIngestion.getPostBodies();
+              if (postBodies.isEmpty()) {
+                return false;
+              }
+
+              PostBodyVerifier tempVerifier = new PostBodyVerifier();
+              for (String postBody : postBodies) {
+                tempVerifier.searchPostBody(postBody);
+              }
+
+              return tempVerifier.hasExceptionDoc()
+                  && tempVerifier.hasTraceDoc()
+                  && tempVerifier.hasDependency()
+                  && tempVerifier.hasRequest();
+            });
   }
 
   class PostBodyVerifier {
