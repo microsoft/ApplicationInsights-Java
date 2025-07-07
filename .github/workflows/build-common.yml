@@ -196,9 +196,27 @@ jobs:
 
       - id: set-matrix
         run: |
-          modules=$(ls -d smoke-tests/apps/* | sed 's/\/$//' | sed 's/\//:/g' | sed 's/^/:/')
-          inner_json=$(echo $modules | xargs echo | sed 's/ /","/g')
-          echo "matrix={\"module\":[\"$inner_json\"]}" >> $GITHUB_OUTPUT
+          # Find all smoke test files and create matrix entries
+          tests=$(
+            for module_dir in smoke-tests/apps/*/; do
+              module=$(echo "$module_dir" | sed 's|/$||' | sed 's|/|:|g')
+              find "${module_dir}src/smokeTest/java" -name "*Test.java" -type f | \
+                sed "s|${module_dir}src/smokeTest/java/||" | \
+                sed 's|/|.|g' | \
+                sed 's|\.java$||' | \
+                sed "s|^|${module}:|"
+            done
+          )
+          
+          if [ -n "$tests" ]; then
+            # Convert to JSON array
+            json_array=$(echo "$tests" | sed 's/.*/"&"/' | tr '\n' ',' | sed 's/,$//')
+            echo "matrix={\"test\":[$json_array]}" >> $GITHUB_OUTPUT
+            echo "Generated matrix with $(echo "$tests" | wc -l) test entries"
+          else
+            echo "matrix={\"test\":[]}" >> $GITHUB_OUTPUT
+            echo "No test entries found"
+          fi
 
   smoke-test:
     needs: setup-smoke-test-matrix
@@ -225,13 +243,29 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
+      - name: Extract module and test class
+        run: |
+          # Split the test entry into module and test class
+          # Format is ":smoke-tests:apps:ModuleName:com.package.TestClass"
+          test_entry="${{ matrix.test }}"
+          # Extract everything before the last colon as the module
+          module="${test_entry%:*}"
+          # Extract everything after the last colon as the test class
+          test_class="${test_entry##*:}"
+          echo "MODULE=${module}" >> $GITHUB_ENV
+          echo "TEST_CLASS=${test_class}" >> $GITHUB_ENV
+
       - name: Test
-        run: ./gradlew ${{ matrix.module }}:smokeTest
+        run: ./gradlew ${{ env.MODULE }}:smokeTest --tests "${{ env.TEST_CLASS }}"
 
       - name: Create unique artifact name
         if: failure()
         run: |
-          echo "UPLOAD_ARTIFACT_NAME=${{ matrix.module }}" | sed 's/:/-/g' >> $GITHUB_ENV
+          # Create a unique name based on module and test class
+          artifact_name="${{ env.MODULE }}:${{ env.TEST_CLASS }}"
+          # Replace colons and dots with hyphens for valid artifact names
+          artifact_name=$(echo "$artifact_name" | sed 's/[:.]/\-/g')
+          echo "UPLOAD_ARTIFACT_NAME=$artifact_name" >> $GITHUB_ENV
 
       - name: Upload smoke test reports
         uses: actions/upload-artifact@v4
