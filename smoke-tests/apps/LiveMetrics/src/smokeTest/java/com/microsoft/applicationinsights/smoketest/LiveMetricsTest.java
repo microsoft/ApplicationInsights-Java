@@ -17,6 +17,7 @@ import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCA
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.WILDFLY_13_JAVA_8;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.WILDFLY_13_JAVA_8_OPENJ9;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.azure.json.JsonProviders;
 import com.azure.json.JsonReader;
@@ -28,7 +29,6 @@ import com.azure.monitor.opentelemetry.autoconfigure.implementation.quickpulse.s
 import com.azure.monitor.opentelemetry.autoconfigure.implementation.quickpulse.swagger.models.Trace;
 import java.io.IOException;
 import java.time.Duration;
-import java.util.ArrayList;
 import java.util.List;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Test;
@@ -52,26 +52,26 @@ abstract class LiveMetricsTest {
     // Need to wait because some but not all the telemetry may be available in the first post body
     Awaitility.await()
         .atMost(Duration.ofSeconds(30))
-        .until(
-            () -> {
-              List<String> postBodies = testing.mockedIngestion.getPostBodies();
-              if (postBodies.isEmpty()) {
-                return false;
-              }
+        .until(() -> {
+          List<String> postBodies = testing.mockedIngestion.getPostBodies();
+          if (postBodies.isEmpty()) {
+            return false;
+          }
 
-              PostBodyVerifier tempVerifier = new PostBodyVerifier();
-              for (String postBody : postBodies) {
-                tempVerifier.searchPostBody(postBody);
-              }
+          PostBodyVerifier tempVerifier = new PostBodyVerifier();
+          for (String postBody : postBodies) {
+            tempVerifier.searchPostBody(postBody);
+          }
 
-              return tempVerifier.hasExceptionDoc()
-                  && tempVerifier.hasTraceDoc()
-                  && tempVerifier.hasDependency()
-                  && tempVerifier.hasRequest();
-            });
+          assertTrue(tempVerifier.hasExceptionDoc());
+          assertTrue(tempVerifier.hasTraceDoc());
+          assertTrue(tempVerifier.hasDependency());
+          assertTrue(tempVerifier.hasRequest());
+          return true;
+        });
   }
 
-  class PostBodyVerifier {
+  static class PostBodyVerifier {
     boolean foundExceptionDoc = false;
     boolean foundTraceDoc = false;
     boolean foundDependency = false;
@@ -79,9 +79,8 @@ abstract class LiveMetricsTest {
 
     public void searchPostBody(String postBody) {
       // Each post body is a list with a singular MonitoringDataPoint
-      List<MonitoringDataPoint> dataPoints = new ArrayList<>();
-      try {
-        JsonReader reader = JsonProviders.createReader(postBody);
+      List<MonitoringDataPoint> dataPoints;
+      try (JsonReader reader = JsonProviders.createReader(postBody)) {
         dataPoints = reader.readArray(MonitoringDataPoint::fromJson);
       } catch (IOException e) {
         throw new IllegalStateException("Failed to parse post request body", e);
