@@ -69,14 +69,8 @@ tasks {
         // cognitive load is dubious.
         disable("YodaCondition")
 
-        // New checks in ErrorProne 2.37.0 that we want to disable
-        // TimeInStaticInitializer now uses @SuppressWarnings locally
-
         // New checks in ErrorProne 2.38.0 that we want to disable
         disable("AddNullMarkedToPackageInfo") // requires JSpecify dependency not compatible with Java 8
-
-        // Other new checks that cause warnings in our codebase
-        // EnumOrdinal now uses @SuppressWarnings locally
 
         if (name.contains("Jmh")) {
           disable("MemberName")
