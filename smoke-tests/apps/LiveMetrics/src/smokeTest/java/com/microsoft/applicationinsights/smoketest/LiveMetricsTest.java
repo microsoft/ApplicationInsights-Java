@@ -41,12 +41,10 @@ abstract class LiveMetricsTest {
 
   @Test
   @TargetUri("/test")
-  void testTelemetryDataFlow() throws java.lang.Exception {
+  void testTelemetryDataFlow() {
     Awaitility.await()
         .atMost(Duration.ofSeconds(60))
         .until(() -> testing.mockedIngestion.getCountForType("RequestData") == 1);
-
-    PostBodyVerifier postBodyVerifier = new PostBodyVerifier();
 
     assertThat(testing.mockedIngestion.isPingReceived()).isTrue();
 

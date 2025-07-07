@@ -55,7 +55,8 @@ public class MockedAppInsightsIngestionServer {
   }
 
   public void resetData() {
-    this.servlet.resetData();
+    servlet.resetData();
+    quickPulseServlet.resetData();
   }
 
   public boolean hasData() {

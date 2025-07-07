@@ -78,4 +78,10 @@ public class MockedQuickPulseServlet extends HttpServlet {
   public void setRequestLoggingEnabled(boolean enabled) {
     loggingEnabled = enabled;
   }
+
+  public void resetData() {
+    synchronized (lock) {
+      postBodies.clear();
+    }
+  }
 }
