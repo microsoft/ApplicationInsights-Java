@@ -281,11 +281,15 @@ public class SmokeTestExtension
 
   private void clearOutAnyInitLogs() throws Exception {
     if (!skipHealthCheck) {
+      await().until(mockedIngestion::isReceivingLiveMetrics);
       String contextRootUrl = getBaseUrl() + "/";
       HttpHelper.getResponseCodeEnsuringSampled(contextRootUrl);
       waitForHealthCheckTelemetry(contextRootUrl);
-      // wait for live metrics to start sending data (needed for LiveMetricsTest)
-      await().untilAsserted(() -> assertThat(mockedIngestion.getPostBodies()).isNotEmpty());
+      await()
+          .untilAsserted(
+              () ->
+                  assertThat(mockedIngestion.getLiveMetrics().getSuccessfulRequestCount())
+                      .isEqualTo(1));
 
       System.out.println("Clearing any RequestData from health check.");
       mockedIngestion.resetData();

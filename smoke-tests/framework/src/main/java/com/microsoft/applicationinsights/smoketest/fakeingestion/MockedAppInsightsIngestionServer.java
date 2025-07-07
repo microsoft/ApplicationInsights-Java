@@ -284,12 +284,12 @@ public class MockedAppInsightsIngestionServer {
     return items;
   }
 
-  public boolean isPingReceived() {
-    return quickPulseServlet.isPingReceived();
+  public boolean isReceivingLiveMetrics() {
+    return quickPulseServlet.isReceivingLiveMetrics();
   }
 
-  public List<String> getPostBodies() {
-    return quickPulseServlet.getPostBodies();
+  public LiveMetricsVerifier getLiveMetrics() {
+    return quickPulseServlet.getVerifier();
   }
 
   @SuppressWarnings("SystemOut")
