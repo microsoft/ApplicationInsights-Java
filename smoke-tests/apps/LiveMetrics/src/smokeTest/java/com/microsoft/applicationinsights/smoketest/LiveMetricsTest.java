@@ -52,38 +52,37 @@ abstract class LiveMetricsTest {
     // Need to wait because some but not all the telemetry may be available in the first post body
     Awaitility.await()
         .atMost(Duration.ofSeconds(30))
-        .until(() -> {
-          List<String> postBodies = testing.mockedIngestion.getPostBodies();
-          if (postBodies.isEmpty()) {
-            return false;
-          }
+        .until(
+            () -> {
+              List<String> postBodies = testing.mockedIngestion.getPostBodies();
+              if (postBodies.isEmpty()) {
+                return false;
+              }
 
-          PostBodyVerifier tempVerifier = new PostBodyVerifier();
-          for (String postBody : postBodies) {
-            tempVerifier.searchPostBody(postBody);
-          }
+              PostBodyVerifier verifier = new PostBodyVerifier();
+              for (String postBody : postBodies) {
+                verifier.searchPostBody(postBody);
+              }
 
-          assertTrue(tempVerifier.hasExceptionDoc());
-          assertTrue(tempVerifier.hasTraceDoc());
-          assertTrue(tempVerifier.hasDependency());
-          assertTrue(tempVerifier.hasRequest());
-          return true;
-        });
+              assertTrue(verifier.hasExceptionDoc());
+              assertTrue(verifier.hasTraceDoc());
+              assertTrue(verifier.hasDependency());
+              assertTrue(verifier.hasRequest());
+              return true;
+            });
   }
 
   static class PostBodyVerifier {
-    boolean foundExceptionDoc = false;
-    boolean foundTraceDoc = false;
-    boolean foundDependency = false;
-    boolean foundRequest = false;
+    boolean foundExceptionDoc;
+    boolean foundTraceDoc;
+    boolean foundDependency;
+    boolean foundRequest;
 
-    public void searchPostBody(String postBody) {
+    public void searchPostBody(String postBody) throws IOException {
       // Each post body is a list with a singular MonitoringDataPoint
       List<MonitoringDataPoint> dataPoints;
       try (JsonReader reader = JsonProviders.createReader(postBody)) {
         dataPoints = reader.readArray(MonitoringDataPoint::fromJson);
-      } catch (IOException e) {
-        throw new IllegalStateException("Failed to parse post request body", e);
       }
 
       // Because the mock ping/posts should succeed, we should only have one MonitoringDataPoint per
