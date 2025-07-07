@@ -62,7 +62,28 @@ public class DependencyAssert extends AbstractAssert<DependencyAssert, Envelope>
   @CanIgnoreReturnValue
   public DependencyAssert hasParent(String parentId) {
     isNotNull();
-    assertThat(getDependencyData().getProperties().get("ai.operation.parentId")).isNull();
+    assertThat(getDependencyData().getProperties().get("ai.operation.parentId")).isEqualTo(parentId);
+    return this;
+  }
+
+  @CanIgnoreReturnValue
+  public DependencyAssert hasData(String data) {
+    isNotNull();
+    assertThat(getDependencyData().getData()).isEqualTo(data);
+    return this;
+  }
+
+  @CanIgnoreReturnValue
+  public DependencyAssert hasType(String type) {
+    isNotNull();
+    assertThat(getDependencyData().getType()).isEqualTo(type);
+    return this;
+  }
+
+  @CanIgnoreReturnValue
+  public DependencyAssert hasResultCode(String resultCode) {
+    isNotNull();
+    assertThat(getDependencyData().getResultCode()).isEqualTo(resultCode);
     return this;
   }
 

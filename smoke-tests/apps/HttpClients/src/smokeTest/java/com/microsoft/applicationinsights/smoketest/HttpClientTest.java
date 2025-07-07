@@ -15,8 +15,6 @@ import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCA
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_8_OPENJ9;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.WILDFLY_13_JAVA_8;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.WILDFLY_13_JAVA_8_OPENJ9;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.data.MapEntry.entry;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -80,52 +78,48 @@ abstract class HttpClientTest {
   }
 
   private static void verify(String successUrlWithQueryString) throws Exception {
-    Telemetry telemetry = testing.getTelemetry(3);
-
-    assertThat(telemetry.rd.getProperties())
-        .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
-    assertThat(telemetry.rd.getSuccess()).isTrue();
-    // TODO (trask) add this check in all smoke tests?
-    assertThat(telemetry.rdEnvelope.getSampleRate()).isNull();
-
-    assertThat(telemetry.rdd1.getName()).isEqualTo("GET /mock/200");
-    assertThat(telemetry.rdd1.getData()).isEqualTo(successUrlWithQueryString);
-    assertThat(telemetry.rdd1.getType()).isEqualTo("Http");
-    assertThat(telemetry.rdd1.getTarget()).isEqualTo("host.testcontainers.internal:6060");
-    assertThat(telemetry.rdd1.getResultCode()).isEqualTo("200");
-    assertThat(telemetry.rdd1.getProperties())
-        .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
-    assertThat(telemetry.rdd1.getSuccess()).isTrue();
-    assertThat(telemetry.rddEnvelope1.getSampleRate()).isNull();
-
-    assertThat(telemetry.rdd2.getName()).isEqualTo("GET /mock/404");
-    assertThat(telemetry.rdd2.getData())
-        .isEqualTo("http://host.testcontainers.internal:6060/mock/404");
-    assertThat(telemetry.rdd2.getType()).isEqualTo("Http");
-    assertThat(telemetry.rdd2.getTarget()).isEqualTo("host.testcontainers.internal:6060");
-    assertThat(telemetry.rdd2.getResultCode()).isEqualTo("404");
-    assertThat(telemetry.rdd2.getProperties())
-        .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
-    assertThat(telemetry.rdd2.getSuccess()).isFalse();
-    assertThat(telemetry.rddEnvelope2.getSampleRate()).isNull();
-
-    assertThat(telemetry.rdd3.getName()).isEqualTo("GET /mock/500");
-    assertThat(telemetry.rdd3.getData())
-        .isEqualTo("http://host.testcontainers.internal:6060/mock/500");
-    assertThat(telemetry.rdd3.getType()).isEqualTo("Http");
-    assertThat(telemetry.rdd3.getTarget()).isEqualTo("host.testcontainers.internal:6060");
-    assertThat(telemetry.rdd3.getResultCode()).isEqualTo("500");
-    assertThat(telemetry.rdd3.getProperties())
-        .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
-    assertThat(telemetry.rdd3.getSuccess()).isFalse();
-    assertThat(telemetry.rddEnvelope3.getSampleRate()).isNull();
-
-    SmokeTestExtension.assertParentChild(
-        telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /HttpClients/*");
-    SmokeTestExtension.assertParentChild(
-        telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope2, "GET /HttpClients/*");
-    SmokeTestExtension.assertParentChild(
-        telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope3, "GET /HttpClients/*");
+    testing.waitAndAssertTrace(
+        trace ->
+            trace
+                .hasRequestSatisying(
+                    request ->
+                        request
+                            .hasSuccess(true)
+                            .hasProperty("_MS.ProcessedByMetricExtractors", "True")
+                            .hasNoParent())
+                .hasDependencySatisying(
+                    dependency ->
+                        dependency
+                            .hasName("GET /mock/200")
+                            .hasData(successUrlWithQueryString)
+                            .hasType("Http")
+                            .hasTarget("host.testcontainers.internal:6060")
+                            .hasResultCode("200")
+                            .hasSuccess(true)
+                            .hasProperty("_MS.ProcessedByMetricExtractors", "True")
+                            .hasParent(trace.getRequestId(0)))
+                .hasDependencySatisying(
+                    dependency ->
+                        dependency
+                            .hasName("GET /mock/404")
+                            .hasData("http://host.testcontainers.internal:6060/mock/404")
+                            .hasType("Http")
+                            .hasTarget("host.testcontainers.internal:6060")
+                            .hasResultCode("404")
+                            .hasSuccess(false)
+                            .hasProperty("_MS.ProcessedByMetricExtractors", "True")
+                            .hasParent(trace.getRequestId(0)))
+                .hasDependencySatisying(
+                    dependency ->
+                        dependency
+                            .hasName("GET /mock/500")
+                            .hasData("http://host.testcontainers.internal:6060/mock/500")
+                            .hasType("Http")
+                            .hasTarget("host.testcontainers.internal:6060")
+                            .hasResultCode("500")
+                            .hasSuccess(false)
+                            .hasProperty("_MS.ProcessedByMetricExtractors", "True")
+                            .hasParent(trace.getRequestId(0))));
   }
 
   @Environment(TOMCAT_8_JAVA_8)

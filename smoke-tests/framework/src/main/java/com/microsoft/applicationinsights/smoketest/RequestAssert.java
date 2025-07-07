@@ -54,7 +54,7 @@ public class RequestAssert extends AbstractAssert<RequestAssert, Envelope> {
   @CanIgnoreReturnValue
   public RequestAssert hasParent(String parentId) {
     isNotNull();
-    assertThat(getRequestData().getProperties().get("ai.operation.parentId")).isNull();
+    assertThat(getRequestData().getProperties().get("ai.operation.parentId")).isEqualTo(parentId);
     return this;
   }
 
