@@ -256,7 +256,7 @@ jobs:
           echo "TEST_CLASS=${test_class}" >> $GITHUB_ENV
 
       - name: Test
-        run: ./gradlew ${{ env.MODULE }}:smokeTest --tests "${{ env.TEST_CLASS }}"
+        run: ./gradlew ${{ env.MODULE }}:smokeTest --tests "${{ env.TEST_CLASS }}*"
 
       - name: Create unique artifact name
         if: failure()
