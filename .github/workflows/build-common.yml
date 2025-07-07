@@ -197,28 +197,30 @@ jobs:
       - id: set-matrix
         run: |
           # Find all smoke test files and create matrix entries
-          tests=$(
+          json_array=$(
             for module_dir in smoke-tests/apps/*/; do
               module=$(echo "$module_dir" | sed 's|/$||' | sed 's|/|:|g')
+              module_name=$(echo "$module" | sed 's|.*:||')
               find "${module_dir}src/smokeTest/java" -name "*Test.java" -type f | \
                 sed "s|${module_dir}src/smokeTest/java/||" | \
                 sed 's|/|.|g' | \
                 sed 's|\.java$||' | \
-                sed "s|^|${module}:|"
-            done
+                while read -r full_class; do
+                  echo "{\"test\":\"${module}:${full_class}\",\"display\":\"${module_name}:${full_class##*.}\"}"
+                done
+            done | tr '\n' ',' | sed 's/,$//'
           )
           
-          if [ -n "$tests" ]; then
-            # Convert to JSON array
-            json_array=$(echo "$tests" | sed 's/.*/"&"/' | tr '\n' ',' | sed 's/,$//')
-            echo "matrix={\"test\":[$json_array]}" >> $GITHUB_OUTPUT
-            echo "Generated matrix with $(echo "$tests" | wc -l) test entries"
+          if [ -n "$json_array" ]; then
+            echo "matrix={\"include\":[$json_array]}" >> $GITHUB_OUTPUT
+            echo "Generated matrix with $(echo "$json_array" | tr ',' '\n' | wc -l) test entries"
           else
-            echo "matrix={\"test\":[]}" >> $GITHUB_OUTPUT
+            echo "matrix={\"include\":[]}" >> $GITHUB_OUTPUT
             echo "No test entries found"
           fi
 
   smoke-test:
+    name: ${{ matrix.display }}
     needs: setup-smoke-test-matrix
     runs-on: ubuntu-latest
     strategy:
