@@ -6,6 +6,7 @@ package com.microsoft.applicationinsights.smoketest;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.base.Stopwatch;
 import com.microsoft.applicationinsights.smoketest.fakeingestion.MockedAppInsightsIngestionServer;
@@ -55,10 +56,10 @@ import org.testcontainers.utility.DockerImageName;
 @SuppressWarnings({"SystemOut", "InterruptedExceptionSwallowed"})
 public class SmokeTestExtension
     implements BeforeAllCallback,
-        BeforeEachCallback,
-        AfterAllCallback,
-        AfterEachCallback,
-        TestWatcher {
+    BeforeEachCallback,
+    AfterAllCallback,
+    AfterEachCallback,
+    TestWatcher {
 
   // add -PsmokeTestRemoteDebug=true to the gradle args to enable (see ai.smoke-test.gradle.kts)
   private static final boolean REMOTE_DEBUG = Boolean.getBoolean("ai.smoke-test.remote-debug");
@@ -280,6 +281,10 @@ public class SmokeTestExtension
   }
 
   private void clearOutAnyInitLogs() throws Exception {
+    // ensure live metrics is ready
+    await().untilAsserted(() -> assertTrue(mockedIngestion.isPingReceived()));
+    await().untilAsserted(() -> assertThat(mockedIngestion.getPostBodies()).isNotEmpty());
+
     if (!skipHealthCheck) {
       String contextRootUrl = getBaseUrl() + "/";
       HttpHelper.getResponseCodeEnsuringSampled(contextRootUrl);
