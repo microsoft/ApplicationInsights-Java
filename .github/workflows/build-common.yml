@@ -206,7 +206,7 @@ jobs:
                 sed 's|/|.|g' | \
                 sed 's|\.java$||' | \
                 while read -r full_class; do
-                  echo "{\"test\":\"${module}:${full_class}\",\"display\":\"${module_name}:${full_class##*.}\",\"module\":\"${module}\",\"test_class\":\"${full_class}\"}"
+                  echo "{\"display\":\"${module_name}:${full_class##*.}\",\"module\":\"${module}\",\"test_class\":\"${full_class}\"}"
                 done
             done | tr '\n' ',' | sed 's/,$//'
           )
