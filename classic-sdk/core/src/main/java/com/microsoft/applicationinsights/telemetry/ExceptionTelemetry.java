@@ -56,18 +56,21 @@ public final class ExceptionTelemetry extends BaseTelemetry {
     this.throwable = throwable;
   }
 
+  @SuppressWarnings("EnumOrdinal")
   public void setSeverityLevel(SeverityLevel severityLevel) {
     data.setSeverityLevel(
         severityLevel == null
             ? null
-            : mapToInternalSeverityLevel(severityLevel));
+            : com.microsoft.applicationinsights.internal.schemav2.SeverityLevel.values()[
+                severityLevel.getValue()]);
   }
 
   @Nullable
+  @SuppressWarnings("EnumOrdinal")
   public SeverityLevel getSeverityLevel() {
     return data.getSeverityLevel() == null
         ? null
-        : mapFromInternalSeverityLevel(data.getSeverityLevel());
+        : SeverityLevel.values()[data.getSeverityLevel().getValue()];
   }
 
   /** Gets a dictionary of custom defined metrics. */
@@ -78,39 +81,5 @@ public final class ExceptionTelemetry extends BaseTelemetry {
   @Override
   protected ExceptionData getData() {
     return data;
-  }
-
-  private static com.microsoft.applicationinsights.internal.schemav2.SeverityLevel mapToInternalSeverityLevel(SeverityLevel severityLevel) {
-    switch (severityLevel) {
-      case Verbose:
-        return com.microsoft.applicationinsights.internal.schemav2.SeverityLevel.Verbose;
-      case Information:
-        return com.microsoft.applicationinsights.internal.schemav2.SeverityLevel.Information;
-      case Warning:
-        return com.microsoft.applicationinsights.internal.schemav2.SeverityLevel.Warning;
-      case Error:
-        return com.microsoft.applicationinsights.internal.schemav2.SeverityLevel.Error;
-      case Critical:
-        return com.microsoft.applicationinsights.internal.schemav2.SeverityLevel.Critical;
-      default:
-        throw new IllegalArgumentException("Unknown SeverityLevel: " + severityLevel);
-    }
-  }
-
-  private static SeverityLevel mapFromInternalSeverityLevel(com.microsoft.applicationinsights.internal.schemav2.SeverityLevel internalSeverityLevel) {
-    switch (internalSeverityLevel) {
-      case Verbose:
-        return SeverityLevel.Verbose;
-      case Information:
-        return SeverityLevel.Information;
-      case Warning:
-        return SeverityLevel.Warning;
-      case Error:
-        return SeverityLevel.Error;
-      case Critical:
-        return SeverityLevel.Critical;
-      default:
-        throw new IllegalArgumentException("Unknown internal SeverityLevel: " + internalSeverityLevel);
-    }
   }
 }
