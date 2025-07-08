@@ -13,8 +13,8 @@ import javax.servlet.http.HttpServletResponse;
 
 public class MockedQuickPulseServlet extends HttpServlet {
 
-  private final AtomicBoolean pingReceived = new AtomicBoolean(false);
-  private final AtomicBoolean postReceived = new AtomicBoolean(false);
+  private final AtomicBoolean pingReceived = new AtomicBoolean();
+  private final AtomicBoolean postReceived = new AtomicBoolean();
   private volatile LiveMetricsVerifier verifier = new LiveMetricsVerifier();
   private final Object lock = new Object();
 
