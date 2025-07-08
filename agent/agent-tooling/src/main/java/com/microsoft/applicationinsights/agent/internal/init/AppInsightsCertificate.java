@@ -3,7 +3,6 @@
 
 package com.microsoft.applicationinsights.agent.internal.init;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -75,9 +74,6 @@ class AppInsightsCertificate {
     return loadedCertificates.contains(APP_INSIGHT_ROOT_CERTIFICATE);
   }
 
-  @SuppressFBWarnings(
-      value = "SECCI", // Command Injection
-      justification = "No user data is used to construct the command below")
   private String loadCertificates() {
     String keyStoreLocation = System.getProperty("java.home") + "/lib/security/cacerts";
     return executeWithoutException(
