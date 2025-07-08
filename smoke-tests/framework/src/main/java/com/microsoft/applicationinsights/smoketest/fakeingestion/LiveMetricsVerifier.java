@@ -48,7 +48,7 @@ public class LiveMetricsVerifier {
       for (DocumentIngress doc : docs) {
         if (doc.getDocumentType().equals(DocumentType.REQUEST)) {
           Request request = (Request) doc;
-          if (request.getUrl().equals(url)) {
+          if (url.equals(request.getUrl())) {
             count++;
           }
         }
