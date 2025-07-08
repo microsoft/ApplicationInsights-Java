@@ -12,6 +12,7 @@ import com.azure.monitor.opentelemetry.autoconfigure.implementation.quickpulse.s
 import com.azure.monitor.opentelemetry.autoconfigure.implementation.quickpulse.swagger.models.Exception;
 import com.azure.monitor.opentelemetry.autoconfigure.implementation.quickpulse.swagger.models.MetricPoint;
 import com.azure.monitor.opentelemetry.autoconfigure.implementation.quickpulse.swagger.models.MonitoringDataPoint;
+import com.azure.monitor.opentelemetry.autoconfigure.implementation.quickpulse.swagger.models.Request;
 import com.azure.monitor.opentelemetry.autoconfigure.implementation.quickpulse.swagger.models.Trace;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -32,16 +33,28 @@ public class LiveMetricsVerifier {
     points.add(dataPoints.get(0));
   }
 
-  public int getRequestCount() {
+  public int getRequestCountFromMetric() {
     return getMetricCount("\\ApplicationInsights\\Requests/Sec");
   }
 
-  public int getSuccessfulRequestCount() {
-    return getMetricCount("\\ApplicationInsights\\Requests Succeeded/Sec");
+  public int getDependencyCountFromMetric() {
+    return getMetricCount("\\ApplicationInsights\\Dependency Calls/Sec");
   }
 
-  public int getDependencyCount() {
-    return getMetricCount("\\ApplicationInsights\\Dependency Calls/Sec");
+  public int getRequestCount(String url) {
+    int count = 0;
+    for (MonitoringDataPoint point : points) {
+      List<DocumentIngress> docs = point.getDocuments();
+      for (DocumentIngress doc : docs) {
+        if (doc.getDocumentType().equals(DocumentType.REQUEST)) {
+          Request request = (Request) doc;
+          if (request.getUrl().equals(url)) {
+            count++;
+          }
+        }
+      }
+    }
+    return count;
   }
 
   public int getExceptionCount(String exceptionMessage) {

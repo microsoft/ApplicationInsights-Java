@@ -47,8 +47,8 @@ abstract class LiveMetricsTest {
               assertThat(verifier.getExceptionCount("Fake Exception")).isEqualTo(1);
               assertThat(verifier.getTraceCount("This message should generate a trace"))
                   .isEqualTo(1);
-              assertThat(verifier.getDependencyCount()).isEqualTo(1);
-              assertThat(verifier.getRequestCount()).isEqualTo(1);
+              assertThat(verifier.getDependencyCountFromMetric()).isEqualTo(1);
+              assertThat(verifier.getRequestCountFromMetric()).isEqualTo(1);
             });
   }
 

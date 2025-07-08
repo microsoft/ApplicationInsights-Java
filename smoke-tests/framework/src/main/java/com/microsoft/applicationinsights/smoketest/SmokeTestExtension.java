@@ -288,7 +288,7 @@ public class SmokeTestExtension
       await()
           .untilAsserted(
               () ->
-                  assertThat(mockedIngestion.getLiveMetrics().getSuccessfulRequestCount())
+                  assertThat(mockedIngestion.getLiveMetrics().getRequestCount(contextRootUrl))
                       .isEqualTo(1));
 
       System.out.println("Clearing any RequestData from health check.");
