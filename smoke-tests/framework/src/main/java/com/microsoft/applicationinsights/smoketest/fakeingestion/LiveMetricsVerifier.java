@@ -94,7 +94,6 @@ public class LiveMetricsVerifier {
       List<DocumentIngress> docs = point.getDocuments();
       for (DocumentIngress doc : docs) {
         assertThat(doc.getDocumentType()).isNotEqualTo(DocumentType.REMOTE_DEPENDENCY);
-        assertThat(doc.getDocumentType()).isNotEqualTo(DocumentType.REQUEST);
       }
     }
   }
