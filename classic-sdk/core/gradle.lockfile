@@ -1,13 +1,13 @@
 # This is a Gradle generated file for dependency locking.
 # Manual edits can break the build and are not advised.
 # This file is expected to be part of source control.
-com.azure:azure-sdk-bom:1.2.35=runtimeClasspath
+com.azure:azure-sdk-bom:1.2.36=runtimeClasspath
 com.fasterxml.jackson:jackson-bom:2.18.3=runtimeClasspath
 io.netty:netty-bom:4.2.2.Final=runtimeClasspath
-io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:2.16.0-alpha=runtimeClasspath
-io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:2.16.0=runtimeClasspath
-io.opentelemetry:opentelemetry-bom-alpha:1.50.0-alpha=runtimeClasspath
-io.opentelemetry:opentelemetry-bom:1.50.0=runtimeClasspath
+io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:2.17.0-alpha=runtimeClasspath
+io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:2.17.0=runtimeClasspath
+io.opentelemetry:opentelemetry-bom-alpha:1.51.0-alpha=runtimeClasspath
+io.opentelemetry:opentelemetry-bom:1.51.0=runtimeClasspath
 org.junit:junit-bom:5.13.3=runtimeClasspath
 org.testcontainers:testcontainers-bom:1.21.3=runtimeClasspath
 empty=
