@@ -79,6 +79,8 @@ public class MockedQuickPulseServlet extends HttpServlet {
 
   public void resetData() {
     synchronized (lock) {
+      pingReceived.set(false);
+      postReceived.set(false);
       verifier = new LiveMetricsVerifier();
     }
   }

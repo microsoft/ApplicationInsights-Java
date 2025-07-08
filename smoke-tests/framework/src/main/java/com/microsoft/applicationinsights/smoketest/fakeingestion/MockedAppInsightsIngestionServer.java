@@ -52,6 +52,7 @@ public class MockedAppInsightsIngestionServer {
     System.out.println("Stopping fake Breeze ingestion...");
     server.stop();
     server.join();
+    quickPulseServlet.resetData();
   }
 
   public void resetData() {
