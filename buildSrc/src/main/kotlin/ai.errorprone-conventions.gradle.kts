@@ -69,10 +69,8 @@ tasks {
         // cognitive load is dubious.
         disable("YodaCondition")
 
-        // New checks in ErrorProne 2.38.0 that we want to disable
         // Requires adding compile dependency to JSpecify
         disable("AddNullMarkedToPackageInfo")
-        disable("TimeInStaticInitializer") // from 2.37.0
 
         if (name.contains("Jmh")) {
           disable("MemberName")
