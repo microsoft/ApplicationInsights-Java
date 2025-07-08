@@ -27,14 +27,14 @@ public class MockedAppInsightsIngestionServer {
   private final MockedQuickPulseServlet quickPulseServlet;
   private final Server server;
 
-  public MockedAppInsightsIngestionServer() {
+  public MockedAppInsightsIngestionServer(boolean usingOld3xAgent) {
     server = new Server(DEFAULT_PORT);
     ServletHandler handler = new ServletHandler();
     server.setHandler(handler);
 
     servlet = new MockedAppInsightsIngestionServlet();
     profilerSettingsServlet = new MockedProfilerSettingsServlet();
-    quickPulseServlet = new MockedQuickPulseServlet();
+    quickPulseServlet = new MockedQuickPulseServlet(usingOld3xAgent);
 
     handler.addServletWithMapping(new ServletHolder(profilerSettingsServlet), "/profiler/*");
     handler.addServletWithMapping(new ServletHolder(quickPulseServlet), "/QuickPulseService.svc/*");
@@ -295,7 +295,7 @@ public class MockedAppInsightsIngestionServer {
 
   @SuppressWarnings("SystemOut")
   public static void main(String[] args) throws Exception {
-    MockedAppInsightsIngestionServer i = new MockedAppInsightsIngestionServer();
+    MockedAppInsightsIngestionServer i = new MockedAppInsightsIngestionServer(false);
     System.out.println("Starting mocked ingestion on port " + DEFAULT_PORT);
     Runtime.getRuntime()
         .addShutdownHook(

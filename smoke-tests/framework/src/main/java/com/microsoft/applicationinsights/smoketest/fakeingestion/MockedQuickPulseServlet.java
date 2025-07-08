@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServletResponse;
 
 public class MockedQuickPulseServlet extends HttpServlet {
 
+  private final boolean usingOld3xAgent;
   private final AtomicBoolean pingReceived = new AtomicBoolean();
   private final AtomicBoolean postReceived = new AtomicBoolean();
   private volatile LiveMetricsVerifier verifier = new LiveMetricsVerifier();
@@ -23,7 +24,9 @@ public class MockedQuickPulseServlet extends HttpServlet {
 
   private volatile boolean loggingEnabled;
 
-  public MockedQuickPulseServlet() {}
+  public MockedQuickPulseServlet(boolean usingOld3xAgent) {
+    this.usingOld3xAgent = usingOld3xAgent;
+  }
 
   @SuppressWarnings("SystemOut")
   private void logit(String message) {
@@ -34,6 +37,10 @@ public class MockedQuickPulseServlet extends HttpServlet {
 
   @Override
   protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+    if (usingOld3xAgent) {
+      // the old 3.x agent doesn't conform to the expectations of this mock server
+      return;
+    }
     Readable reader = req.getReader();
     StringWriter sw = new StringWriter();
     CharStreams.copy(reader, sw);

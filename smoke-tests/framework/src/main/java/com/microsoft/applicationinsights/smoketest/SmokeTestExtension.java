@@ -75,8 +75,7 @@ public class SmokeTestExtension
   private static final File appFile = new File(System.getProperty("ai.smoke-test.test-app-file"));
 
   // TODO (trask) make private and expose methods on AiSmokeTest(?)
-  protected final MockedAppInsightsIngestionServer mockedIngestion =
-      new MockedAppInsightsIngestionServer();
+  protected final MockedAppInsightsIngestionServer mockedIngestion;
 
   protected final MockedOtlpIngestionServer mockedOtlpIngestion = new MockedOtlpIngestionServer();
 
@@ -167,6 +166,8 @@ public class SmokeTestExtension
     this.jvmArgs = jvmArgs;
     this.useDefaultHttpPort = useDefaultHttpPort;
     this.useOtlpEndpoint = useOtlpEndpoint;
+
+    mockedIngestion = new MockedAppInsightsIngestionServer(useOld3xAgent);
   }
 
   private static String getProfilerEndpoint(ProfilerState profilerState) {
@@ -281,16 +282,19 @@ public class SmokeTestExtension
 
   private void clearOutAnyInitLogs() throws Exception {
     if (!skipHealthCheck) {
-      await().until(mockedIngestion::isReceivingLiveMetrics);
+      if (!useOld3xAgent) {
+        await().until(mockedIngestion::isReceivingLiveMetrics);
+      }
       String contextRootUrl = getBaseUrl() + "/";
       HttpHelper.getResponseCodeEnsuringSampled(contextRootUrl);
       waitForHealthCheckTelemetry(contextRootUrl);
-      await()
-          .untilAsserted(
-              () ->
-                  assertThat(mockedIngestion.getLiveMetrics().getRequestCount(contextRootUrl))
-                      .isEqualTo(1));
-
+      if (!useOld3xAgent) {
+        await()
+            .untilAsserted(
+                () ->
+                    assertThat(mockedIngestion.getLiveMetrics().getRequestCount(contextRootUrl))
+                        .isEqualTo(1));
+      }
       System.out.println("Clearing any RequestData from health check.");
       mockedIngestion.resetData();
     }
