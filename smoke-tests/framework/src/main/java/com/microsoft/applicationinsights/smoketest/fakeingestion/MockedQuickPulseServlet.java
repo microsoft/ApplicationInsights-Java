@@ -19,7 +19,7 @@ public class MockedQuickPulseServlet extends HttpServlet {
   private final Object lock = new Object();
 
   private static final String BODY =
-      "{\"ETag\":\"fake::etag\",\"Metrics\":[],\"QuotaInfo\":null,\"DocumentStreams\":[{\"Id\":\"all-types-default\",\"DocumentFilterGroups\":[{\"TelemetryType\":\"Request\",\"Filters\":{\"Filters\":[{\"FieldName\":\"Success\",\"Predicate\":\"Equal\",\"Comparand\":\"false\"}]}},{\"TelemetryType\":\"Dependency\",\"Filters\":{\"Filters\":[{\"FieldName\":\"Success\",\"Predicate\":\"Equal\",\"Comparand\":\"false\"}]}},{\"TelemetryType\":\"Exception\",\"Filters\":{\"Filters\":[]}},{\"TelemetryType\":\"Event\",\"Filters\":{\"Filters\":[]}},{\"TelemetryType\":\"Trace\",\"Filters\":{\"Filters\":[]}}]}]}";
+      "{\"ETag\":\"fake::etag\",\"Metrics\":[],\"QuotaInfo\":null,\"DocumentStreams\":[{\"Id\":\"all-types-default\",\"DocumentFilterGroups\":[{\"TelemetryType\":\"Request\",\"Filters\":{\"Filters\":[{\"FieldName\":\"Success\",\"Predicate\":\"Equal\",\"Comparand\":\"true\"}]}},{\"TelemetryType\":\"Dependency\",\"Filters\":{\"Filters\":[{\"FieldName\":\"Success\",\"Predicate\":\"Equal\",\"Comparand\":\"false\"}]}},{\"TelemetryType\":\"Exception\",\"Filters\":{\"Filters\":[]}},{\"TelemetryType\":\"Event\",\"Filters\":{\"Filters\":[]}},{\"TelemetryType\":\"Trace\",\"Filters\":{\"Filters\":[]}}]}]}";
 
   private volatile boolean loggingEnabled;
 
