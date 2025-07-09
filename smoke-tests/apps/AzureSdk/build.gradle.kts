@@ -7,6 +7,5 @@ dependencies {
     exclude("org.springframework.boot", "spring-boot-starter-tomcat")
   }
   // want to test with one of the earliest version supported, and not managed version used in agent
-  implementation(enforcedPlatform("com.azure:azure-sdk-bom:1.2.13"))
-  implementation("com.azure:azure-core")
+  implementation("com.azure:azure-core:1.39.0")
 }

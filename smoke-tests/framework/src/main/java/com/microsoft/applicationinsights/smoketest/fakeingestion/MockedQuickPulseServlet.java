@@ -6,8 +6,6 @@ package com.microsoft.applicationinsights.smoketest.fakeingestion;
 import com.google.common.io.CharStreams;
 import java.io.IOException;
 import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -15,16 +13,20 @@ import javax.servlet.http.HttpServletResponse;
 
 public class MockedQuickPulseServlet extends HttpServlet {
 
-  private final AtomicBoolean pingReceived = new AtomicBoolean(false);
-  private final List<String> postBodies = new ArrayList<>();
+  private final boolean usingOld3xAgent;
+  private final AtomicBoolean pingReceived = new AtomicBoolean();
+  private final AtomicBoolean postReceived = new AtomicBoolean();
+  private volatile LiveMetricsVerifier verifier = new LiveMetricsVerifier();
   private final Object lock = new Object();
 
   private static final String BODY =
-      "{\"ETag\":\"fake::etag\",\"Metrics\":[],\"QuotaInfo\":null,\"DocumentStreams\":[{\"Id\":\"all-types-default\",\"DocumentFilterGroups\":[{\"TelemetryType\":\"Request\",\"Filters\":{\"Filters\":[{\"FieldName\":\"Success\",\"Predicate\":\"Equal\",\"Comparand\":\"false\"}]}},{\"TelemetryType\":\"Dependency\",\"Filters\":{\"Filters\":[{\"FieldName\":\"Success\",\"Predicate\":\"Equal\",\"Comparand\":\"false\"}]}},{\"TelemetryType\":\"Exception\",\"Filters\":{\"Filters\":[]}},{\"TelemetryType\":\"Event\",\"Filters\":{\"Filters\":[]}},{\"TelemetryType\":\"Trace\",\"Filters\":{\"Filters\":[]}}]}]}";
+      "{\"ETag\":\"fake::etag\",\"Metrics\":[],\"QuotaInfo\":null,\"DocumentStreams\":[{\"Id\":\"all-types-default\",\"DocumentFilterGroups\":[{\"TelemetryType\":\"Request\",\"Filters\":{\"Filters\":[{\"FieldName\":\"Success\",\"Predicate\":\"Equal\",\"Comparand\":\"true\"}]}},{\"TelemetryType\":\"Dependency\",\"Filters\":{\"Filters\":[{\"FieldName\":\"Success\",\"Predicate\":\"Equal\",\"Comparand\":\"false\"}]}},{\"TelemetryType\":\"Exception\",\"Filters\":{\"Filters\":[]}},{\"TelemetryType\":\"Event\",\"Filters\":{\"Filters\":[]}},{\"TelemetryType\":\"Trace\",\"Filters\":{\"Filters\":[]}}]}]}";
 
   private volatile boolean loggingEnabled;
 
-  public MockedQuickPulseServlet() {}
+  public MockedQuickPulseServlet(boolean usingOld3xAgent) {
+    this.usingOld3xAgent = usingOld3xAgent;
+  }
 
   @SuppressWarnings("SystemOut")
   private void logit(String message) {
@@ -35,6 +37,10 @@ public class MockedQuickPulseServlet extends HttpServlet {
 
   @Override
   protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+    if (usingOld3xAgent) {
+      // the old 3.x agent doesn't conform to the expectations of this mock server
+      return;
+    }
     Readable reader = req.getReader();
     StringWriter sw = new StringWriter();
     CharStreams.copy(reader, sw);
@@ -52,8 +58,9 @@ public class MockedQuickPulseServlet extends HttpServlet {
       resp.getWriter().write(BODY);
 
     } else if (path.equals("/post")) {
+      postReceived.set(true);
       synchronized (lock) {
-        postBodies.add(body);
+        verifier.apply(body);
       }
       logit("post body: " + body);
       // continue to post
@@ -65,17 +72,23 @@ public class MockedQuickPulseServlet extends HttpServlet {
     }
   }
 
-  public boolean isPingReceived() {
-    return pingReceived.get();
+  public boolean isReceivingLiveMetrics() {
+    return pingReceived.get() && postReceived.get();
   }
 
-  public List<String> getPostBodies() {
-    synchronized (lock) {
-      return new ArrayList<>(postBodies);
-    }
+  public LiveMetricsVerifier getVerifier() {
+    return verifier;
   }
 
   public void setRequestLoggingEnabled(boolean enabled) {
     loggingEnabled = enabled;
+  }
+
+  public void resetData() {
+    synchronized (lock) {
+      pingReceived.set(false);
+      postReceived.set(false);
+      verifier = new LiveMetricsVerifier();
+    }
   }
 }

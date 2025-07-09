@@ -47,6 +47,7 @@ public final class TraceTelemetry extends BaseTelemetry {
     data.setMessage(message);
   }
 
+  @SuppressWarnings("EnumOrdinal")
   public void setSeverityLevel(SeverityLevel severityLevel) {
     data.setSeverityLevel(
         severityLevel == null
@@ -56,6 +57,7 @@ public final class TraceTelemetry extends BaseTelemetry {
   }
 
   @Nullable
+  @SuppressWarnings("EnumOrdinal")
   public SeverityLevel getSeverityLevel() {
     return data.getSeverityLevel() == null
         ? null
