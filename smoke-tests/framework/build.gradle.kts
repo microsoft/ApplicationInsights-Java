@@ -29,4 +29,7 @@ dependencies {
   implementation("ch.qos.logback:logback-classic")
 
   implementation("org.assertj:assertj-core")
+
+  implementation("com.azure:azure-json:1.0.0")
+  implementation("com.azure:azure-monitor-opentelemetry-autoconfigure:1.1.0")
 }

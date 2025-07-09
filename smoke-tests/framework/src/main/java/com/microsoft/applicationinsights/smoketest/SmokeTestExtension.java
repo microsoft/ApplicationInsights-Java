@@ -39,6 +39,7 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
+import org.awaitility.core.ConditionTimeoutException;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
@@ -75,8 +76,7 @@ public class SmokeTestExtension
   private static final File appFile = new File(System.getProperty("ai.smoke-test.test-app-file"));
 
   // TODO (trask) make private and expose methods on AiSmokeTest(?)
-  protected final MockedAppInsightsIngestionServer mockedIngestion =
-      new MockedAppInsightsIngestionServer();
+  protected final MockedAppInsightsIngestionServer mockedIngestion;
 
   protected final MockedOtlpIngestionServer mockedOtlpIngestion = new MockedOtlpIngestionServer();
 
@@ -167,6 +167,8 @@ public class SmokeTestExtension
     this.jvmArgs = jvmArgs;
     this.useDefaultHttpPort = useDefaultHttpPort;
     this.useOtlpEndpoint = useOtlpEndpoint;
+
+    mockedIngestion = new MockedAppInsightsIngestionServer(useOld3xAgent);
   }
 
   private static String getProfilerEndpoint(ProfilerState profilerState) {
@@ -281,9 +283,24 @@ public class SmokeTestExtension
 
   private void clearOutAnyInitLogs() throws Exception {
     if (!skipHealthCheck) {
+      if (!useOld3xAgent) {
+        await().until(mockedIngestion::isReceivingLiveMetrics);
+      }
       String contextRootUrl = getBaseUrl() + "/";
       HttpHelper.getResponseCodeEnsuringSampled(contextRootUrl);
       waitForHealthCheckTelemetry(contextRootUrl);
+      if (!useOld3xAgent) {
+        try {
+          await()
+              .untilAsserted(
+                  () ->
+                      assertThat(mockedIngestion.getLiveMetrics().getRequestCount(contextRootUrl))
+                          .isEqualTo(1));
+        } catch (ConditionTimeoutException e) {
+          // TODO (trask) need to fix race condition in live metrics
+          //  where sometimes it loses telemetry
+        }
+      }
       System.out.println("Clearing any RequestData from health check.");
       mockedIngestion.resetData();
     }
