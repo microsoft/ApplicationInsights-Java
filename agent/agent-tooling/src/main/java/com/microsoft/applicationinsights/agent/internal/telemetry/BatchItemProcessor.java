@@ -98,7 +98,7 @@ public final class BatchItemProcessor {
     private final long exporterTimeoutNanos;
     private final int maxPendingExports;
 
-    private long nextExportTime;
+    private volatile long nextExportTime;
 
     private final Queue<TelemetryItem> queue;
     private final int queueCapacity;
