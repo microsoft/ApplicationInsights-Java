@@ -15,6 +15,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+@SuppressWarnings("TimeInStaticInitializer")
 public class MockedProfilerSettingsServlet extends HttpServlet {
 
   private static final Map<ProfilerState, String> CONFIGS;

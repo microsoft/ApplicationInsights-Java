@@ -54,7 +54,6 @@ tasks {
 
         // Don't support Android without desugar
         disable("AndroidJdkLibsChecker")
-        disable("Java7ApiChecker")
         disable("StaticOrDefaultInterfaceMethod")
 
         // needed temporarily while hosting azure-monitor-opentelemetry-exporter in this repo
@@ -69,6 +68,9 @@ tasks {
         // YodaConditions may improve safety in some cases. The argument of increased
         // cognitive load is dubious.
         disable("YodaCondition")
+
+        // Requires adding compile dependency to JSpecify
+        disable("AddNullMarkedToPackageInfo")
 
         if (name.contains("Jmh")) {
           disable("MemberName")
