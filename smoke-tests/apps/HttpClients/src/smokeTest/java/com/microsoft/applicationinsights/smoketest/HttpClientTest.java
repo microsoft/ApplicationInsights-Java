@@ -87,7 +87,8 @@ abstract class HttpClientTest {
                             .hasSuccess(true)
                             .hasProperty("_MS.ProcessedByMetricExtractors", "True")
                             .hasNoParent()
-                            .hasNoSampleRate())
+                            .hasNoSampleRate()
+                            .hasTag("ai.operation.name", "GET /HttpClients/*"))
                 .hasDependencySatisying(
                     dependency ->
                         dependency
@@ -99,7 +100,8 @@ abstract class HttpClientTest {
                             .hasSuccess(true)
                             .hasProperty("_MS.ProcessedByMetricExtractors", "True")
                             .hasParent(trace.getRequestId(0))
-                            .hasNoSampleRate())
+                            .hasNoSampleRate()
+                            .hasTag("ai.operation.name", "GET /HttpClients/*"))
                 .hasDependencySatisying(
                     dependency ->
                         dependency
@@ -111,7 +113,8 @@ abstract class HttpClientTest {
                             .hasSuccess(false)
                             .hasProperty("_MS.ProcessedByMetricExtractors", "True")
                             .hasParent(trace.getRequestId(0))
-                            .hasNoSampleRate())
+                            .hasNoSampleRate()
+                            .hasTag("ai.operation.name", "GET /HttpClients/*"))
                 .hasDependencySatisying(
                     dependency ->
                         dependency
@@ -123,7 +126,8 @@ abstract class HttpClientTest {
                             .hasSuccess(false)
                             .hasProperty("_MS.ProcessedByMetricExtractors", "True")
                             .hasParent(trace.getRequestId(0))
-                            .hasNoSampleRate()));
+                            .hasNoSampleRate()
+                            .hasTag("ai.operation.name", "GET /HttpClients/*")));
   }
 
   @Environment(TOMCAT_8_JAVA_8)
