@@ -87,6 +87,20 @@ public class DependencyAssert extends AbstractAssert<DependencyAssert, Envelope>
     return this;
   }
 
+  @CanIgnoreReturnValue
+  public DependencyAssert hasSampleRate(Float expectedSampleRate) {
+    isNotNull();
+    assertThat(actual.getSampleRate()).isEqualTo(expectedSampleRate);
+    return this;
+  }
+
+  @CanIgnoreReturnValue
+  public DependencyAssert hasNoSampleRate() {
+    isNotNull();
+    assertThat(actual.getSampleRate()).isNull();
+    return this;
+  }
+
   private RemoteDependencyData getDependencyData() {
     Data<?> data = (Data<?>) actual.getData();
     return (RemoteDependencyData) data.getBaseData();

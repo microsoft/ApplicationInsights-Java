@@ -86,7 +86,8 @@ abstract class HttpClientTest {
                         request
                             .hasSuccess(true)
                             .hasProperty("_MS.ProcessedByMetricExtractors", "True")
-                            .hasNoParent())
+                            .hasNoParent()
+                            .hasNoSampleRate())
                 .hasDependencySatisying(
                     dependency ->
                         dependency
@@ -97,7 +98,8 @@ abstract class HttpClientTest {
                             .hasResultCode("200")
                             .hasSuccess(true)
                             .hasProperty("_MS.ProcessedByMetricExtractors", "True")
-                            .hasParent(trace.getRequestId(0)))
+                            .hasParent(trace.getRequestId(0))
+                            .hasNoSampleRate())
                 .hasDependencySatisying(
                     dependency ->
                         dependency
@@ -108,7 +110,8 @@ abstract class HttpClientTest {
                             .hasResultCode("404")
                             .hasSuccess(false)
                             .hasProperty("_MS.ProcessedByMetricExtractors", "True")
-                            .hasParent(trace.getRequestId(0)))
+                            .hasParent(trace.getRequestId(0))
+                            .hasNoSampleRate())
                 .hasDependencySatisying(
                     dependency ->
                         dependency
@@ -119,7 +122,8 @@ abstract class HttpClientTest {
                             .hasResultCode("500")
                             .hasSuccess(false)
                             .hasProperty("_MS.ProcessedByMetricExtractors", "True")
-                            .hasParent(trace.getRequestId(0))));
+                            .hasParent(trace.getRequestId(0))
+                            .hasNoSampleRate()));
   }
 
   @Environment(TOMCAT_8_JAVA_8)

@@ -58,6 +58,20 @@ public class RequestAssert extends AbstractAssert<RequestAssert, Envelope> {
     return this;
   }
 
+  @CanIgnoreReturnValue
+  public RequestAssert hasSampleRate(Float expectedSampleRate) {
+    isNotNull();
+    assertThat(actual.getSampleRate()).isEqualTo(expectedSampleRate);
+    return this;
+  }
+
+  @CanIgnoreReturnValue
+  public RequestAssert hasNoSampleRate() {
+    isNotNull();
+    assertThat(actual.getSampleRate()).isNull();
+    return this;
+  }
+
   private RequestData getRequestData() {
     Data<?> data = (Data<?>) actual.getData();
     return (RequestData) data.getBaseData();
