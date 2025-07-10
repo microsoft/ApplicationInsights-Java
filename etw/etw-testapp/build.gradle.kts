@@ -13,5 +13,5 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-web:3.5.3") {
     exclude("org.springframework.boot", "spring-boot-starter-tomcat")
   }
-  implementation("org.apache.commons:commons-lang3:3.17.0")
+  implementation("org.apache.commons:commons-lang3:3.18.0")
 }
