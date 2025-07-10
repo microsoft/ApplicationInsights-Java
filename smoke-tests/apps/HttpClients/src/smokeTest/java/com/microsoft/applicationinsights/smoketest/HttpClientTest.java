@@ -87,6 +87,7 @@ abstract class HttpClientTest {
                             .hasSuccess(true)
                             .hasProperty("_MS.ProcessedByMetricExtractors", "True")
                             .hasNoParent()
+                            // TODO (trask) add this check in all smoke tests?
                             .hasNoSampleRate()
                             .hasTag("ai.operation.name", "GET /HttpClients/*"))
                 .hasDependencySatisying(
