@@ -132,6 +132,42 @@ abstract class Log4j1Test {
         rd, rdEnvelope, edEnvelope, "GET /Log4j1/testWithException");
   }
 
+  @Test
+  @TargetUri("/testWithNullException")
+  void testWithNullException() throws Exception {
+    List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
+
+    Envelope rdEnvelope = rdList.get(0);
+    String operationId = rdEnvelope.getTags().get("ai.operation.id");
+    List<Envelope> edList =
+        testing.mockedIngestion.waitForItemsInOperation("ExceptionData", 1, operationId);
+    assertThat(testing.mockedIngestion.getCountForType("EventData")).isZero();
+
+    Envelope edEnvelope = edList.get(0);
+
+    assertThat(rdEnvelope.getSampleRate()).isNull();
+    assertThat(edEnvelope.getSampleRate()).isNull();
+
+    RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
+    ExceptionData ed = (ExceptionData) ((Data<?>) edEnvelope.getData()).getBaseData();
+
+    List<ExceptionDetails> details = ed.getExceptions();
+    ExceptionDetails ex = details.get(0);
+
+    assertThat(ex.getTypeName()).isEqualTo("java.lang.Exception");
+    assertThat(ex.getMessage()).isNullOrEmpty();
+    assertThat(ed.getSeverityLevel()).isEqualTo(SeverityLevel.ERROR);
+    assertThat(ed.getProperties()).containsEntry("Logger Message", "This is an exception with null message!");
+    assertThat(ed.getProperties()).containsEntry("SourceType", "Logger");
+    assertThat(ed.getProperties()).containsEntry("LoggerName", "smoketestapp");
+    assertThat(ed.getProperties()).containsKey("ThreadName");
+    assertThat(ed.getProperties()).containsEntry("MDC key", "MDC value");
+    assertThat(ed.getProperties()).hasSize(5);
+
+    SmokeTestExtension.assertParentChild(
+        rd, rdEnvelope, edEnvelope, "GET /Log4j1/testWithNullException");
+  }
+
   @Environment(TOMCAT_8_JAVA_8)
   static class Tomcat8Java8Test extends Log4j1Test {}
 
