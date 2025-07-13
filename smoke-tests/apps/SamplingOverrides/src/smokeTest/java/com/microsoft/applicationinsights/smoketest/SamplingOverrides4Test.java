@@ -15,8 +15,6 @@ import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCA
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_8_OPENJ9;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.WILDFLY_13_JAVA_8;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.WILDFLY_13_JAVA_8_OPENJ9;
-import static java.util.concurrent.TimeUnit.NANOSECONDS;
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
@@ -31,18 +29,20 @@ abstract class SamplingOverrides4Test {
   @Test
   @TargetUri(value = "/health-check", callCount = 100)
   void testSampling() throws Exception {
-    await().untilAsserted(() -> {
-      int requestCount = testing.mockedIngestion.getCountForType("RequestData");
-      int dependencyCount = testing.mockedIngestion.getCountForType("RemoteDependencyData");
-      int logCount = testing.mockedIngestion.getCountForType("MessageData");
-      
-      assertThat(requestCount).isGreaterThanOrEqualTo(25);
-      assertThat(requestCount).isLessThanOrEqualTo(75);
-      assertThat(dependencyCount).isGreaterThanOrEqualTo(2);
-      assertThat(dependencyCount).isLessThanOrEqualTo(20);
-      assertThat(logCount).isGreaterThanOrEqualTo(2);
-      assertThat(logCount).isLessThanOrEqualTo(20);
-    });
+    await()
+        .untilAsserted(
+            () -> {
+              int requestCount = testing.mockedIngestion.getCountForType("RequestData");
+              int dependencyCount = testing.mockedIngestion.getCountForType("RemoteDependencyData");
+              int logCount = testing.mockedIngestion.getCountForType("MessageData");
+
+              assertThat(requestCount).isGreaterThanOrEqualTo(25);
+              assertThat(requestCount).isLessThanOrEqualTo(75);
+              assertThat(dependencyCount).isGreaterThanOrEqualTo(2);
+              assertThat(dependencyCount).isLessThanOrEqualTo(20);
+              assertThat(logCount).isGreaterThanOrEqualTo(2);
+              assertThat(logCount).isLessThanOrEqualTo(20);
+            });
 
     testing
         .mockedIngestion
