@@ -57,15 +57,10 @@ public class TelemetryUtilTest {
       String testMessage = testMessages[i];
       String expectedResult = expectedResults[i];
       
-      // Simulate TelemetryUtil logic with defensive check
+      // Simulate TelemetryUtil logic
       String exceptionMessage = testMessage;
       if (Strings.isNullOrEmpty(exceptionMessage)) {
         exceptionMessage = "java.lang.NullPointerException";
-      }
-      
-      // Defensive check to ensure the message is never null or empty
-      if (Strings.isNullOrEmpty(exceptionMessage)) {
-        exceptionMessage = "Unknown Exception";
       }
       
       assertThat(exceptionMessage).isEqualTo(expectedResult);

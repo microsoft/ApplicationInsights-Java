@@ -61,12 +61,6 @@ class TelemetryUtil {
     if (Strings.isNullOrEmpty(exceptionMessage)) {
       exceptionMessage = exception.getClass().getName();
     }
-    
-    // Defensive check to ensure the message is never null or empty
-    if (Strings.isNullOrEmpty(exceptionMessage)) {
-      exceptionMessage = "Unknown Exception";
-    }
-    
     exceptionDetails.setMessage(exceptionMessage);
 
     if (parentExceptionDetails != null) {
