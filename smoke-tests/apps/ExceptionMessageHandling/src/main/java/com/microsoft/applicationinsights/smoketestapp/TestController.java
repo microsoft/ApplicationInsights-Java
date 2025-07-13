@@ -40,4 +40,23 @@ public class TestController {
     logger.error("Exception with whitespace message test", new IllegalArgumentException("   "));
     return "Exception logged";
   }
+
+  @GetMapping("/throwExceptionWithoutMessage")
+  public String throwExceptionWithoutMessage() throws Exception {
+    // This reproduces the original issue by throwing exceptions without messages
+    // that would cause 206 errors from Application Insights service
+    throw new NullPointerException();
+  }
+
+  @GetMapping("/throwExceptionWithEmptyMessage")
+  public String throwExceptionWithEmptyMessage() throws Exception {
+    // Test throwing exception with empty message
+    throw new RuntimeException("");
+  }
+
+  @GetMapping("/throwExceptionWithWhitespaceMessage")
+  public String throwExceptionWithWhitespaceMessage() throws Exception {
+    // Test throwing exception with whitespace-only message
+    throw new IllegalArgumentException("   ");
+  }
 }
