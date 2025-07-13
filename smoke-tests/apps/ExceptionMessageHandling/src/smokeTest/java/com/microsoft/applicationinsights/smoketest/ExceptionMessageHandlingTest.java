@@ -86,6 +86,70 @@ abstract class ExceptionMessageHandlingTest {
     assertThat(ed.getSeverityLevel()).isEqualTo(SeverityLevel.ERROR);
   }
 
+  @Test
+  @TargetUri("/throwExceptionWithoutMessage")
+  void testThrowExceptionWithoutMessage() throws Exception {
+    List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
+
+    Envelope rdEnvelope = rdList.get(0);
+    String operationId = rdEnvelope.getTags().get("ai.operation.id");
+    List<Envelope> edList =
+        testing.mockedIngestion.waitForItemsInOperation("ExceptionData", 1, operationId);
+
+    Envelope edEnvelope = edList.get(0);
+    ExceptionData ed = (ExceptionData) ((Data<?>) edEnvelope.getData()).getBaseData();
+
+    // Verify that thrown exceptions without messages have their class name as the message
+    // This prevents the 206 error: "Field 'message' on type 'ExceptionDetails' is required but
+    // missing or empty"
+    assertThat(ed.getExceptions().get(0).getTypeName()).isEqualTo("java.lang.NullPointerException");
+    assertThat(ed.getExceptions().get(0).getMessage()).isEqualTo("java.lang.NullPointerException");
+    assertThat(ed.getExceptions().get(0).getMessage()).isNotEmpty();
+    assertThat(ed.getSeverityLevel()).isEqualTo(SeverityLevel.ERROR);
+  }
+
+  @Test
+  @TargetUri("/throwExceptionWithEmptyMessage")
+  void testThrowExceptionWithEmptyMessage() throws Exception {
+    List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
+
+    Envelope rdEnvelope = rdList.get(0);
+    String operationId = rdEnvelope.getTags().get("ai.operation.id");
+    List<Envelope> edList =
+        testing.mockedIngestion.waitForItemsInOperation("ExceptionData", 1, operationId);
+
+    Envelope edEnvelope = edList.get(0);
+    ExceptionData ed = (ExceptionData) ((Data<?>) edEnvelope.getData()).getBaseData();
+
+    // Verify that thrown exceptions with empty messages have their class name as the message
+    assertThat(ed.getExceptions().get(0).getTypeName()).isEqualTo("java.lang.RuntimeException");
+    assertThat(ed.getExceptions().get(0).getMessage()).isEqualTo("java.lang.RuntimeException");
+    assertThat(ed.getExceptions().get(0).getMessage()).isNotEmpty();
+    assertThat(ed.getSeverityLevel()).isEqualTo(SeverityLevel.ERROR);
+  }
+
+  @Test
+  @TargetUri("/throwExceptionWithWhitespaceMessage")
+  void testThrowExceptionWithWhitespaceMessage() throws Exception {
+    List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
+
+    Envelope rdEnvelope = rdList.get(0);
+    String operationId = rdEnvelope.getTags().get("ai.operation.id");
+    List<Envelope> edList =
+        testing.mockedIngestion.waitForItemsInOperation("ExceptionData", 1, operationId);
+
+    Envelope edEnvelope = edList.get(0);
+    ExceptionData ed = (ExceptionData) ((Data<?>) edEnvelope.getData()).getBaseData();
+
+    // Verify that thrown exceptions with whitespace-only messages have their class name as the message
+    assertThat(ed.getExceptions().get(0).getTypeName())
+        .isEqualTo("java.lang.IllegalArgumentException");
+    assertThat(ed.getExceptions().get(0).getMessage())
+        .isEqualTo("java.lang.IllegalArgumentException");
+    assertThat(ed.getExceptions().get(0).getMessage()).isNotEmpty();
+    assertThat(ed.getSeverityLevel()).isEqualTo(SeverityLevel.ERROR);
+  }
+
   @Environment(TOMCAT_8_JAVA_8)
   static class Tomcat8Java8Test extends ExceptionMessageHandlingTest {}
 
