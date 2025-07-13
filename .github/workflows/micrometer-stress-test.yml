@@ -30,10 +30,9 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Run shouldCaptureFunctionTimer test (Run ${{ matrix.run }})
+      - name: Run all micrometer-1.0 tests (Run ${{ matrix.run }})
         run: >
           ./gradlew :agent:instrumentation:micrometer-1.0:test
-          --tests "MicrometerTest.shouldCaptureFunctionTimer"
           --info
 
       - name: Upload test reports on failure
