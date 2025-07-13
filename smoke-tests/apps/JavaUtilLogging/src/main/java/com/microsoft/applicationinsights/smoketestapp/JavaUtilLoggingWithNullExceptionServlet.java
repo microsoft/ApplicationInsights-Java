@@ -16,6 +16,7 @@ public class JavaUtilLoggingWithNullExceptionServlet extends HttpServlet {
   private static final Logger logger = Logger.getLogger("smoketestapp");
 
   protected void doGet(HttpServletRequest request, HttpServletResponse response) {
-    logger.log(Level.SEVERE, "This is an exception with null message!", new Exception((String) null));
+    logger.log(
+        Level.SEVERE, "This is an exception with null message!", new Exception((String) null));
   }
 }

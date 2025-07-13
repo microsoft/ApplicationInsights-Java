@@ -133,7 +133,8 @@ abstract class JavaUtilLoggingTest {
     assertThat(ed.getExceptions().get(0).getTypeName()).isEqualTo("java.lang.Exception");
     assertThat(ed.getExceptions().get(0).getMessage()).isNullOrEmpty();
     assertThat(ed.getSeverityLevel()).isEqualTo(SeverityLevel.ERROR);
-    assertThat(ed.getProperties()).containsEntry("Logger Message", "This is an exception with null message!");
+    assertThat(ed.getProperties())
+        .containsEntry("Logger Message", "This is an exception with null message!");
     assertThat(ed.getProperties()).containsEntry("SourceType", "Logger");
     assertThat(ed.getProperties()).containsEntry("LoggerName", "smoketestapp");
     assertThat(ed.getProperties()).containsKey("ThreadName");

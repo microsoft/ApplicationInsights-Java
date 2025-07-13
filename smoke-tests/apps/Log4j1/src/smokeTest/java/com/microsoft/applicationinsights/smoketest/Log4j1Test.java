@@ -157,7 +157,8 @@ abstract class Log4j1Test {
     assertThat(ex.getTypeName()).isEqualTo("java.lang.Exception");
     assertThat(ex.getMessage()).isNullOrEmpty();
     assertThat(ed.getSeverityLevel()).isEqualTo(SeverityLevel.ERROR);
-    assertThat(ed.getProperties()).containsEntry("Logger Message", "This is an exception with null message!");
+    assertThat(ed.getProperties())
+        .containsEntry("Logger Message", "This is an exception with null message!");
     assertThat(ed.getProperties()).containsEntry("SourceType", "Logger");
     assertThat(ed.getProperties()).containsEntry("LoggerName", "smoketestapp");
     assertThat(ed.getProperties()).containsKey("ThreadName");
