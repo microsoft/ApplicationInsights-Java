@@ -34,8 +34,16 @@ abstract class SamplingOverrides4Test {
     long start = System.nanoTime();
     while (testing.mockedIngestion.getCountForType("RequestData") < 25
         && NANOSECONDS.toSeconds(System.nanoTime() - start) < 10) {}
-    // wait ten more seconds to before checking that we didn't receive too many
-    Thread.sleep(SECONDS.toMillis(10));
+    // wait for dependencies and logs with lower sampling rates (10%)
+    // give more time for low-percentage sampling to stabilize
+    start = System.nanoTime();
+    while (testing.mockedIngestion.getCountForType("RemoteDependencyData") < 2
+        && NANOSECONDS.toSeconds(System.nanoTime() - start) < 15) {}
+    start = System.nanoTime();
+    while (testing.mockedIngestion.getCountForType("MessageData") < 2
+        && NANOSECONDS.toSeconds(System.nanoTime() - start) < 15) {}
+    // wait a bit more to ensure we have stable counts
+    Thread.sleep(SECONDS.toMillis(5));
     int requestCount = testing.mockedIngestion.getCountForType("RequestData");
     int dependencyCount = testing.mockedIngestion.getCountForType("RemoteDependencyData");
     int logCount = testing.mockedIngestion.getCountForType("MessageData");
