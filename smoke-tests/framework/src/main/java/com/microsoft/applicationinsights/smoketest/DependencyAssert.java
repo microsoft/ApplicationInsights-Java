@@ -55,14 +55,49 @@ public class DependencyAssert extends AbstractAssert<DependencyAssert, Envelope>
   @CanIgnoreReturnValue
   public DependencyAssert hasNoParent() {
     isNotNull();
-    assertThat(getDependencyData().getProperties().get("ai.operation.parentId")).isNull();
+    assertThat(actual.getTags()).doesNotContainKey("ai.operation.parentId");
     return this;
   }
 
   @CanIgnoreReturnValue
   public DependencyAssert hasParent(String parentId) {
     isNotNull();
-    assertThat(getDependencyData().getProperties().get("ai.operation.parentId")).isNull();
+    assertThat(actual.getTags()).containsEntry("ai.operation.parentId", parentId);
+    return this;
+  }
+
+  @CanIgnoreReturnValue
+  public DependencyAssert hasData(String data) {
+    isNotNull();
+    assertThat(getDependencyData().getData()).isEqualTo(data);
+    return this;
+  }
+
+  @CanIgnoreReturnValue
+  public DependencyAssert hasType(String type) {
+    isNotNull();
+    assertThat(getDependencyData().getType()).isEqualTo(type);
+    return this;
+  }
+
+  @CanIgnoreReturnValue
+  public DependencyAssert hasResultCode(String resultCode) {
+    isNotNull();
+    assertThat(getDependencyData().getResultCode()).isEqualTo(resultCode);
+    return this;
+  }
+
+  @CanIgnoreReturnValue
+  public DependencyAssert hasSampleRate(Float expectedSampleRate) {
+    isNotNull();
+    assertThat(actual.getSampleRate()).isEqualTo(expectedSampleRate);
+    return this;
+  }
+
+  @CanIgnoreReturnValue
+  public DependencyAssert hasNoSampleRate() {
+    isNotNull();
+    assertThat(actual.getSampleRate()).isNull();
     return this;
   }
 
