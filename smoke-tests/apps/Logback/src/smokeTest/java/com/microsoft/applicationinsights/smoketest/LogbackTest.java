@@ -17,14 +17,7 @@ import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.WILDF
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.WILDFLY_13_JAVA_8_OPENJ9;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.microsoft.applicationinsights.smoketest.schemav2.Data;
-import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
-import com.microsoft.applicationinsights.smoketest.schemav2.ExceptionData;
-import com.microsoft.applicationinsights.smoketest.schemav2.MessageData;
-import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
 import com.microsoft.applicationinsights.smoketest.schemav2.SeverityLevel;
-import java.util.Comparator;
-import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -43,119 +36,116 @@ abstract class LogbackTest {
   @Test
   @TargetUri("/test")
   void test() throws Exception {
-    List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
-
-    Envelope rdEnvelope = rdList.get(0);
-    String operationId = rdEnvelope.getTags().get("ai.operation.id");
-    List<Envelope> mdList = testing.mockedIngestion.waitForMessageItemsInRequest(3, operationId);
-
-    Envelope mdEnvelope1 = mdList.get(0);
-    Envelope mdEnvelope2 = mdList.get(1);
-
-    assertThat(rdEnvelope.getSampleRate()).isNull();
-    assertThat(mdEnvelope1.getSampleRate()).isNull();
-    assertThat(mdEnvelope2.getSampleRate()).isNull();
-
-    RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
-
-    List<MessageData> logs = testing.mockedIngestion.getMessageDataInRequest(3);
-    logs.sort(Comparator.comparing(MessageData::getSeverityLevel));
-
-    MessageData md1 = logs.get(0);
-    MessageData md2 = logs.get(1);
-    MessageData md3 = logs.get(2);
-
-    assertThat(md1.getMessage()).isEqualTo("This is logback warn.");
-    assertThat(md1.getSeverityLevel()).isEqualTo(SeverityLevel.WARNING);
-    assertThat(md1.getProperties())
-        .containsEntry("SourceType", "Logger")
-        .containsEntry("LoggerName", "smoketestapp")
-        .containsKey("ThreadName")
-        .containsEntry("MDC key", "MDC value");
-
-    if (!isWildflyServer()) {
-      assertThat(md1.getProperties())
-          .containsEntry("FileName", "LogbackServlet.java")
-          .containsEntry(
-              "ClassName", "com.microsoft.applicationinsights.smoketestapp.LogbackServlet")
-          .containsEntry("MethodName", "doGet")
-          .containsEntry("LineNumber", "26")
-          .hasSize(8);
-    } else {
-      assertThat(md1.getProperties()).hasSize(4);
-    }
-
-    assertThat(md2.getMessage()).isEqualTo("This is logback error.");
-    assertThat(md2.getSeverityLevel()).isEqualTo(SeverityLevel.ERROR);
-    assertThat(md2.getProperties())
-        .containsEntry("SourceType", "Logger")
-        .containsEntry("LoggerName", "smoketestapp")
-        .containsKey("ThreadName");
+    testing.waitAndAssertTrace(
+        trace ->
+            trace
+                .hasRequestSatisying(
+                    request ->
+                        request
+                            .hasName("GET /Logback/test")
+                            .hasNoSampleRate()
+                            .hasTag("ai.operation.name", "GET /Logback/test")
+                            .hasNoParent())
+                .hasMessageCount(3)
+                .hasMessageSatisying(
+                    message ->
+                        message
+                            .hasMessage("This is logback warn.")
+                            .hasSeverityLevel(SeverityLevel.WARNING)
+                            .hasProperty("SourceType", "Logger")
+                            .hasProperty("LoggerName", "smoketestapp")
+                            .containsProperty("ThreadName")
+                            .hasProperty("MDC key", "MDC value")
+                            .hasParent(trace.getRequestId(0))
+                            .hasNoSampleRate()
+                            .hasTag("ai.operation.name", "GET /Logback/test")
+                            .hasPropertiesSize(isWildflyServer() ? 4 : 8))
+                .hasMessageSatisying(
+                    message ->
+                        message
+                            .hasMessage("This is logback error.")
+                            .hasSeverityLevel(SeverityLevel.ERROR)
+                            .hasProperty("SourceType", "Logger")
+                            .hasProperty("LoggerName", "smoketestapp")
+                            .containsProperty("ThreadName")
+                            .hasParent(trace.getRequestId(0))
+                            .hasNoSampleRate()
+                            .hasTag("ai.operation.name", "GET /Logback/test")
+                            .hasPropertiesSize(isWildflyServer() ? 3 : 7)));
 
     if (!isWildflyServer()) {
-      assertThat(md2.getProperties())
-          .containsEntry("FileName", "LogbackServlet.java")
-          .containsEntry(
-              "ClassName", "com.microsoft.applicationinsights.smoketestapp.LogbackServlet")
-          .containsEntry("MethodName", "doGet")
-          .containsEntry("LineNumber", "28")
-          .hasSize(7);
-    } else {
-      assertThat(md2.getProperties()).hasSize(3);
+      testing.waitAndAssertTrace(
+          trace ->
+              trace
+                  .hasMessageSatisying(
+                      message ->
+                          message
+                              .hasMessage("This is logback warn.")
+                              .hasProperty("FileName", "LogbackServlet.java")
+                              .hasProperty(
+                                  "ClassName",
+                                  "com.microsoft.applicationinsights.smoketestapp.LogbackServlet")
+                              .hasProperty("MethodName", "doGet")
+                              .hasProperty("LineNumber", "26"))
+                  .hasMessageSatisying(
+                      message ->
+                          message
+                              .hasMessage("This is logback error.")
+                              .hasProperty("FileName", "LogbackServlet.java")
+                              .hasProperty(
+                                  "ClassName",
+                                  "com.microsoft.applicationinsights.smoketestapp.LogbackServlet")
+                              .hasProperty("MethodName", "doGet")
+                              .hasProperty("LineNumber", "28"))
+                  .hasMessageSatisying(message -> message.hasProperty("Marker", "aMarker")));
     }
-
-    if (!isWildflyServer()) {
-      assertThat(md3.getProperties()).containsEntry("Marker", "aMarker");
-    }
-
-    SmokeTestExtension.assertParentChild(rd, rdEnvelope, mdEnvelope1, "GET /Logback/test");
-    SmokeTestExtension.assertParentChild(rd, rdEnvelope, mdEnvelope2, "GET /Logback/test");
   }
 
   @Test
   @TargetUri("/testWithException")
   void testWithException() throws Exception {
-    List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
+    testing.waitAndAssertTrace(
+        trace ->
+            trace
+                .hasRequestSatisying(
+                    request ->
+                        request
+                            .hasName("GET /Logback/testWithException")
+                            .hasNoSampleRate()
+                            .hasTag("ai.operation.name", "GET /Logback/testWithException")
+                            .hasNoParent())
+                .hasExceptionCount(1)
+                .hasExceptionSatisying(
+                    exception ->
+                        exception
+                            .hasExceptionTypeName("java.lang.Exception")
+                            .hasExceptionMessage("Fake Exception")
+                            .hasSeverityLevel(SeverityLevel.ERROR)
+                            .hasProperty("Logger Message", "This is an exception!")
+                            .hasProperty("SourceType", "Logger")
+                            .hasProperty("LoggerName", "smoketestapp")
+                            .containsProperty("ThreadName")
+                            .hasProperty("MDC key", "MDC value")
+                            .hasParent(trace.getRequestId(0))
+                            .hasNoSampleRate()
+                            .hasTag("ai.operation.name", "GET /Logback/testWithException")
+                            .hasPropertiesSize(isWildflyServer() ? 5 : 9)));
 
-    Envelope rdEnvelope = rdList.get(0);
-    String operationId = rdEnvelope.getTags().get("ai.operation.id");
-    List<Envelope> edList =
-        testing.mockedIngestion.waitForItemsInOperation("ExceptionData", 1, operationId);
     assertThat(testing.mockedIngestion.getCountForType("EventData")).isZero();
 
-    Envelope edEnvelope = edList.get(0);
-
-    assertThat(rdEnvelope.getSampleRate()).isNull();
-    assertThat(edEnvelope.getSampleRate()).isNull();
-
-    RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
-    ExceptionData ed = (ExceptionData) ((Data<?>) edEnvelope.getData()).getBaseData();
-
-    assertThat(ed.getExceptions().get(0).getTypeName()).isEqualTo("java.lang.Exception");
-    assertThat(ed.getExceptions().get(0).getMessage()).isEqualTo("Fake Exception");
-    assertThat(ed.getSeverityLevel()).isEqualTo(SeverityLevel.ERROR);
-    assertThat(ed.getProperties())
-        .containsEntry("Logger Message", "This is an exception!")
-        .containsEntry("SourceType", "Logger")
-        .containsEntry("LoggerName", "smoketestapp")
-        .containsKey("ThreadName")
-        .containsEntry("MDC key", "MDC value");
-
     if (!isWildflyServer()) {
-      assertThat(ed.getProperties())
-          .containsEntry("FileName", "LogbackWithExceptionServlet.java")
-          .containsEntry(
-              "ClassName",
-              "com.microsoft.applicationinsights.smoketestapp.LogbackWithExceptionServlet")
-          .containsEntry("MethodName", "doGet")
-          .containsEntry("LineNumber", "21")
-          .hasSize(9);
-    } else {
-      assertThat(ed.getProperties()).hasSize(5);
+      testing.waitAndAssertTrace(
+          trace ->
+              trace.hasExceptionSatisying(
+                  exception ->
+                      exception
+                          .hasProperty("FileName", "LogbackWithExceptionServlet.java")
+                          .hasProperty(
+                              "ClassName",
+                              "com.microsoft.applicationinsights.smoketestapp.LogbackWithExceptionServlet")
+                          .hasProperty("MethodName", "doGet")
+                          .hasProperty("LineNumber", "21")));
     }
-
-    SmokeTestExtension.assertParentChild(
-        rd, rdEnvelope, edEnvelope, "GET /Logback/testWithException");
   }
 
   @Environment(TOMCAT_8_JAVA_8)
