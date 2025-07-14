@@ -98,22 +98,15 @@ abstract class LogbackTest {
                               .hasProperty("MethodName", "doGet")
                               .hasProperty("LineNumber", "28")
                               .hasPropertyCount(7))
-                  .hasMessageSatisying(
-                      message -> message.hasProperty("Marker", "aMarker")));
+                  .hasMessageSatisying(message -> message.hasProperty("Marker", "aMarker")));
     } else {
       testing.waitAndAssertTrace(
           trace ->
               trace
                   .hasMessageSatisying(
-                      message ->
-                          message
-                              .hasMessage("This is logback warn.")
-                              .hasPropertyCount(4))
+                      message -> message.hasMessage("This is logback warn.").hasPropertyCount(4))
                   .hasMessageSatisying(
-                      message ->
-                          message
-                              .hasMessage("This is logback error.")
-                              .hasPropertyCount(3)));
+                      message -> message.hasMessage("This is logback error.").hasPropertyCount(3)));
     }
   }
 
@@ -162,9 +155,7 @@ abstract class LogbackTest {
                           .hasPropertyCount(9)));
     } else {
       testing.waitAndAssertTrace(
-          trace ->
-              trace.hasExceptionSatisying(
-                  exception -> exception.hasPropertyCount(5)));
+          trace -> trace.hasExceptionSatisying(exception -> exception.hasPropertyCount(5)));
     }
 
     // Verify that no EventData items are present
