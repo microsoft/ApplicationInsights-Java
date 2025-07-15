@@ -84,7 +84,9 @@ javaPlatform {
 
 dependencies {
   for (bom in DEPENDENCY_BOMS) {
-    api(enforcedPlatform(bom))
+    // using enforcedPlatform prevents us from using a newer version
+    // of azure-monitor-opentelemetry-autoconfigure than is present in the azure SDK BOM
+    api(platform(bom))
     val split = bom.split(':')
     dependencyVersions[split[0]] = split[2]
   }
