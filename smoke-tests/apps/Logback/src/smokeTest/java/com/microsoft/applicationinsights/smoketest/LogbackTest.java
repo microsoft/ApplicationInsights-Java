@@ -97,14 +97,13 @@ abstract class LogbackTest {
                                   "com.microsoft.applicationinsights.smoketestapp.LogbackServlet")
                               .hasProperty("MethodName", "doGet")
                               .hasProperty("LineNumber", "28"))
-                  .hasMessageSatisying(
-                      message -> message.hasProperty("Marker", "aMarker")));
+                  .hasMessageSatisying(message -> message.hasProperty("Marker", "aMarker")));
     }
   }
 
   @Test
   @TargetUri("/testWithException")
-  void testWithException() {
+  void testWithException() throws Exception {
     testing.waitAndAssertTrace(
         trace ->
             trace

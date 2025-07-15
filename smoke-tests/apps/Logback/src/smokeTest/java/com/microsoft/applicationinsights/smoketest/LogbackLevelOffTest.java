@@ -33,7 +33,7 @@ class LogbackLevelOffTest {
 
   @Test
   @TargetUri("/testWithSpanException")
-  void testWithSpanException() {
+  void testWithSpanException() throws Exception {
     testing.waitAndAssertTrace(
         trace ->
             trace

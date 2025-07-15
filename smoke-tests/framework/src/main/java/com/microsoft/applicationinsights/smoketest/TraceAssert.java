@@ -10,7 +10,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
-import com.microsoft.applicationinsights.smoketest.schemav2.MessageData;
 import com.microsoft.applicationinsights.smoketest.schemav2.RemoteDependencyData;
 import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
 import java.time.Instant;
