@@ -139,7 +139,7 @@ public enum PerformanceCounterContainer {
             }
           }
         },
-        collectionFrequencyInMillis,
+        0,
         collectionFrequencyInMillis,
         TimeUnit.MILLISECONDS);
   }
