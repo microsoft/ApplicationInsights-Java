@@ -8,7 +8,9 @@ on:
         required: false
 
 env:
-  EXPORTER_VERSION: 1.1.0 # to be updated with the latest version
+  # set this to <repo>:<branch/sha> to build and test with an unreleased
+  # version of the azure-monitor-opentelemetry-autoconfigure dependency
+  AZURE_MONITOR_OPENTELEMETRY_AUTOCONFIGURE:
 
 jobs:
   spotless:
@@ -46,12 +48,9 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      - name: Using a local standalone exporter dependency?
-        if: ${{ hashFiles('azure-monitor-opentelemetry-autoconfigure-1.0.0-beta.*.jar') != '' }}
-        run: |
-          echo "exporter_version: ${{ env.EXPORTER_VERSION }}"
-          mvn -version
-          mvn install:install-file -Dfile="azure-monitor-opentelemetry-autoconfigure-${{ env.EXPORTER_VERSION }}.jar" -DpomFile="azure-monitor-opentelemetry-autoconfigure-${{ env.EXPORTER_VERSION }}.pom" -DgroupId="com.azure" -DartifactId="azure-monitor-opentelemetry-autoconfigure" -Dversion="${{ env.EXPORTER_VERSION }}"
+      - name: Build and install local azure-monitor-opentelemetry-autoconfigure dependency
+        if: env.AZURE_MONITOR_OPENTELEMETRY_AUTOCONFIGURE != ''
+        run: ./.github/scripts/build-azure-monitor-dependency.sh
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
@@ -93,12 +92,10 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      - name: Using a local standalone exporter dependency?
-        if: ${{ hashFiles('azure-monitor-opentelemetry-autoconfigure-1.0.0-beta.*.jar') != '' }}
-        run: |
-          echo "exporter_version: ${{ env.EXPORTER_VERSION }}"
-          mvn -version
-          mvn install:install-file -Dfile="azure-monitor-opentelemetry-autoconfigure-${{ env.EXPORTER_VERSION }}.jar" -DpomFile="azure-monitor-opentelemetry-autoconfigure-${{ env.EXPORTER_VERSION }}.pom" -DgroupId="com.azure" -DartifactId="azure-monitor-opentelemetry-autoconfigure" -Dversion="${{ env.EXPORTER_VERSION }}"
+      - name: Build and install local azure-monitor-opentelemetry-autoconfigure dependency
+        if: env.AZURE_MONITOR_OPENTELEMETRY_AUTOCONFIGURE != ''
+        shell: bash
+        run: ./.github/scripts/build-azure-monitor-dependency.sh
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
@@ -165,12 +162,10 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      - name: Using a local standalone exporter dependency?
-        if: ${{ hashFiles('azure-monitor-opentelemetry-autoconfigure-1.0.0-beta.*.jar') != '' }}
-        run: |
-          echo "exporter_version: ${{ env.EXPORTER_VERSION }}"
-          mvn -version
-          mvn install:install-file -Dfile="azure-monitor-opentelemetry-autoconfigure-${{ env.EXPORTER_VERSION }}.jar" -DpomFile="azure-monitor-opentelemetry-autoconfigure-${{ env.EXPORTER_VERSION }}.pom" -DgroupId="com.azure" -DartifactId="azure-monitor-opentelemetry-autoconfigure" -Dversion="${{ env.EXPORTER_VERSION }}"
+      - name: Build and install local azure-monitor-opentelemetry-autoconfigure dependency
+        if: env.AZURE_MONITOR_OPENTELEMETRY_AUTOCONFIGURE != ''
+        shell: bash
+        run: ./.github/scripts/build-azure-monitor-dependency.sh
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
@@ -239,12 +234,9 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      - name: Using a local standalone exporter dependency?
-        if: ${{ hashFiles('azure-monitor-opentelemetry-autoconfigure-1.0.0-beta.*.jar') != '' }}
-        run: |
-          echo "exporter_version: ${{ env.EXPORTER_VERSION }}"
-          mvn -version
-          mvn install:install-file -Dfile="azure-monitor-opentelemetry-autoconfigure-${{ env.EXPORTER_VERSION }}.jar" -DpomFile="azure-monitor-opentelemetry-autoconfigure-${{ env.EXPORTER_VERSION }}.pom" -DgroupId="com.azure" -DartifactId="azure-monitor-opentelemetry-autoconfigure" -Dversion="${{ env.EXPORTER_VERSION }}"
+      - name: Build and install local azure-monitor-opentelemetry-autoconfigure dependency
+        if: env.AZURE_MONITOR_OPENTELEMETRY_AUTOCONFIGURE != ''
+        run: ./.github/scripts/build-azure-monitor-dependency.sh
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
