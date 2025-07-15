@@ -33,12 +33,13 @@ class LogbackLevelOffTest {
                 .hasRequestSatisying(
                     request -> request.hasName("GET /Logback/testWithSpanException"))
                 .hasMessageCount(0)
+                // check that span exception is still captured
                 .hasExceptionCount(1)
                 .hasExceptionSatisfying(
                     exception ->
                         exception
                             .hasExceptionType("java.lang.RuntimeException")
                             .hasExceptionMessage("Test Exception")
-                            .hasEmptyProperties()));
+                            .hasEmptyProperties())); // this is not a logger-based exception
   }
 }
