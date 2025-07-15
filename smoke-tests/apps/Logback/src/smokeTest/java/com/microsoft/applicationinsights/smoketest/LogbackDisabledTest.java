@@ -33,7 +33,7 @@ class LogbackDisabledTest {
             trace
                 .hasRequestSatisying(
                     request ->
-                        request.hasName("GET /Logback/testWithSpanException").hasSuccess(true))
+                        request.hasName("GET /Logback/testWithSpanException").hasSuccess(false))
                 .hasMessageCount(0)
                 .hasExceptionCount(1)
                 .hasExceptionSatisying(
