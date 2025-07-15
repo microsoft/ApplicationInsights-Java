@@ -134,7 +134,8 @@ abstract class LogbackTest {
                                 ed -> {
                                   if (!isWildflyServer()) {
                                     assertThat(ed.getProperties())
-                                        .containsEntry("FileName", "LogbackWithExceptionServlet.java")
+                                        .containsEntry(
+                                            "FileName", "LogbackWithExceptionServlet.java")
                                         .containsEntry(
                                             "ClassName",
                                             "com.microsoft.applicationinsights.smoketestapp.LogbackWithExceptionServlet")
