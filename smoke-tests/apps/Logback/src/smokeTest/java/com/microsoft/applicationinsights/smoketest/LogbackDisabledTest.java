@@ -22,28 +22,29 @@ class LogbackDisabledTest {
 
   @Test
   @TargetUri("/test")
-  void testDisabled() throws Exception {
-    List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
-
-    Envelope rdEnvelope = rdList.get(0);
-    RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
-    assertThat(rd.getName()).isEqualTo("GET /Logback/test");
-
-    assertThat(testing.mockedIngestion.getCountForType("MessageData")).isZero();
+  void testDisabled() {
+    testing.waitAndAssertTrace(
+        trace ->
+            trace
+                .hasRequestSatisying(
+                    request -> request.hasName("GET /Logback/test").hasSuccess(true))
+                .hasMessageCount(0));
   }
 
   @Test
   @TargetUri("/testWithSpanException")
-  void testWithSpanException() throws Exception {
+  void testWithSpanException() {
+    testing.waitAndAssertTrace(
+        trace ->
+            trace
+                .hasRequestSatisying(
+                    request ->
+                        request.hasName("GET /Logback/testWithSpanException").hasSuccess(true))
+                .hasMessageCount(0));
+
+    // Check that span exception is still captured
     List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
-
     Envelope rdEnvelope = rdList.get(0);
-    RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
-    assertThat(rd.getName()).isEqualTo("GET /Logback/testWithSpanException");
-
-    assertThat(testing.mockedIngestion.getCountForType("MessageData")).isZero();
-
-    // check that span exception is still captured
     String operationId = rdEnvelope.getTags().get("ai.operation.id");
     List<Envelope> edList =
         testing.mockedIngestion.waitForItemsInOperation("ExceptionData", 1, operationId);
@@ -55,6 +56,7 @@ class LogbackDisabledTest {
     assertThat(ed.getExceptions().get(0).getMessage()).isEqualTo("Test Exception");
     assertThat(ed.getProperties()).isEmpty(); // this is not a logger-based exception
 
+    RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
     SmokeTestExtension.assertParentChild(
         rd, rdEnvelope, edEnvelope, "GET /Logback/testWithSpanException");
   }

@@ -10,6 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
+import com.microsoft.applicationinsights.smoketest.schemav2.MessageData;
 import com.microsoft.applicationinsights.smoketest.schemav2.RemoteDependencyData;
 import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
 import java.time.Instant;
@@ -63,6 +64,12 @@ public class TraceAssert {
     return this;
   }
 
+  @CanIgnoreReturnValue
+  public TraceAssert hasMessageSatisying(Consumer<MessageAssert> assertion) {
+    assertThat(messages).anySatisfy(envelope -> assertion.accept(new MessageAssert(envelope)));
+    return this;
+  }
+
   public String getRequestId(int index) {
     Data<?> data = (Data<?>) requests.get(index).getData();
     return ((RequestData) data.getBaseData()).getId();
@@ -71,5 +78,9 @@ public class TraceAssert {
   public String getDependencyId(int index) {
     Data<?> data = (Data<?>) dependencies.get(index).getData();
     return ((RemoteDependencyData) data.getBaseData()).getId();
+  }
+
+  public MessageAssert getMessageAt(int index) {
+    return new MessageAssert(messages.get(index));
   }
 }
