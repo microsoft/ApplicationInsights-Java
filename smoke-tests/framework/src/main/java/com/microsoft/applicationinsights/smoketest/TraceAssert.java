@@ -80,6 +80,14 @@ public class TraceAssert {
     return this;
   }
 
+  public List<Envelope> getMessages() {
+    return messages;
+  }
+
+  public List<Envelope> getExceptions() {
+    return exceptions;
+  }
+
   public String getRequestId(int index) {
     Data<?> data = (Data<?>) requests.get(index).getData();
     return ((RequestData) data.getBaseData()).getId();
