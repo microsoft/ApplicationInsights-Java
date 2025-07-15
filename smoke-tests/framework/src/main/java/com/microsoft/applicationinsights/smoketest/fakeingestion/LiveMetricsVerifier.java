@@ -15,12 +15,12 @@ import com.azure.monitor.opentelemetry.autoconfigure.implementation.quickpulse.s
 import com.azure.monitor.opentelemetry.autoconfigure.implementation.quickpulse.swagger.models.Request;
 import com.azure.monitor.opentelemetry.autoconfigure.implementation.quickpulse.swagger.models.Trace;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class LiveMetricsVerifier {
 
-  private final List<MonitoringDataPoint> points = new ArrayList<>();
+  private final List<MonitoringDataPoint> points = new CopyOnWriteArrayList<>();
 
   public void apply(String postBody) throws IOException {
     List<MonitoringDataPoint> dataPoints;
