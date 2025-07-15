@@ -21,6 +21,7 @@ public class TraceAssert {
   private final List<Envelope> requests;
   private final List<Envelope> dependencies;
   private final List<Envelope> messages;
+  private final List<Envelope> exceptions;
 
   public TraceAssert(List<Envelope> trace) {
 
@@ -41,6 +42,10 @@ public class TraceAssert {
     messages =
         sorted.stream()
             .filter(envelope -> envelope.getData().getBaseType().equals("MessageData"))
+            .collect(toList());
+    exceptions =
+        sorted.stream()
+            .filter(envelope -> envelope.getData().getBaseType().equals("ExceptionData"))
             .collect(toList());
   }
 
@@ -66,6 +71,18 @@ public class TraceAssert {
   @CanIgnoreReturnValue
   public TraceAssert hasMessageSatisying(Consumer<MessageAssert> assertion) {
     assertThat(messages).anySatisfy(envelope -> assertion.accept(new MessageAssert(envelope)));
+    return this;
+  }
+
+  @CanIgnoreReturnValue
+  public TraceAssert hasExceptionCount(int count) {
+    assertThat(exceptions).hasSize(count);
+    return this;
+  }
+
+  @CanIgnoreReturnValue
+  public TraceAssert hasExceptionSatisying(Consumer<ExceptionAssert> assertion) {
+    assertThat(exceptions).anySatisfy(envelope -> assertion.accept(new ExceptionAssert(envelope)));
     return this;
   }
 

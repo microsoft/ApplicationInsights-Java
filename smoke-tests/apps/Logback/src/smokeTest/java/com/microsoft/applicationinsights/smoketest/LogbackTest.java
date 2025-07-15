@@ -15,14 +15,8 @@ import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCA
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_8_OPENJ9;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.WILDFLY_13_JAVA_8;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.WILDFLY_13_JAVA_8_OPENJ9;
-import static org.assertj.core.api.Assertions.assertThat;
 
-import com.microsoft.applicationinsights.smoketest.schemav2.Data;
-import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
-import com.microsoft.applicationinsights.smoketest.schemav2.ExceptionData;
-import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
 import com.microsoft.applicationinsights.smoketest.schemav2.SeverityLevel;
-import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -103,7 +97,7 @@ abstract class LogbackTest {
 
   @Test
   @TargetUri("/testWithException")
-  void testWithException() throws Exception {
+  void testWithException() {
     testing.waitAndAssertTrace(
         trace ->
             trace
@@ -114,48 +108,35 @@ abstract class LogbackTest {
                             .hasSuccess(true)
                             .hasProperty("_MS.ProcessedByMetricExtractors", "True")
                             .hasNoParent())
-                .hasMessageCount(0)); // No MessageData, only ExceptionData
+                .hasMessageCount(0) // No MessageData, only ExceptionData
+                .hasExceptionCount(1)
+                .hasExceptionSatisying(
+                    exception ->
+                        exception
+                            .hasExceptionType("java.lang.Exception")
+                            .hasExceptionMessage("Fake Exception")
+                            .hasSeverityLevel(SeverityLevel.ERROR)
+                            .hasProperty("Logger Message", "This is an exception!")
+                            .hasProperty("SourceType", "Logger")
+                            .hasProperty("LoggerName", "smoketestapp")
+                            .hasPropertyKey("ThreadName")
+                            .hasProperty("MDC key", "MDC value")
+                            .hasPropertiesSize(isWildflyServer() ? 5 : 9)));
 
-    // Check for exception data separately as it's not part of the trace assertion framework yet
-    List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
-    Envelope rdEnvelope = rdList.get(0);
-    String operationId = rdEnvelope.getTags().get("ai.operation.id");
-    List<Envelope> edList =
-        testing.mockedIngestion.waitForItemsInOperation("ExceptionData", 1, operationId);
-    assertThat(testing.mockedIngestion.getCountForType("EventData")).isZero();
-
-    Envelope edEnvelope = edList.get(0);
-    assertThat(rdEnvelope.getSampleRate()).isNull();
-    assertThat(edEnvelope.getSampleRate()).isNull();
-
-    RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
-    ExceptionData ed = (ExceptionData) ((Data<?>) edEnvelope.getData()).getBaseData();
-
-    assertThat(ed.getExceptions().get(0).getTypeName()).isEqualTo("java.lang.Exception");
-    assertThat(ed.getExceptions().get(0).getMessage()).isEqualTo("Fake Exception");
-    assertThat(ed.getSeverityLevel()).isEqualTo(SeverityLevel.ERROR);
-    assertThat(ed.getProperties())
-        .containsEntry("Logger Message", "This is an exception!")
-        .containsEntry("SourceType", "Logger")
-        .containsEntry("LoggerName", "smoketestapp")
-        .containsKey("ThreadName")
-        .containsEntry("MDC key", "MDC value");
-
+    // Additional assertions for non-Wildfly servers
     if (!isWildflyServer()) {
-      assertThat(ed.getProperties())
-          .containsEntry("FileName", "LogbackWithExceptionServlet.java")
-          .containsEntry(
-              "ClassName",
-              "com.microsoft.applicationinsights.smoketestapp.LogbackWithExceptionServlet")
-          .containsEntry("MethodName", "doGet")
-          .containsEntry("LineNumber", "21")
-          .hasSize(9);
-    } else {
-      assertThat(ed.getProperties()).hasSize(5);
+      testing.waitAndAssertTrace(
+          trace ->
+              trace.hasExceptionSatisying(
+                  exception ->
+                      exception
+                          .hasProperty("FileName", "LogbackWithExceptionServlet.java")
+                          .hasProperty(
+                              "ClassName",
+                              "com.microsoft.applicationinsights.smoketestapp.LogbackWithExceptionServlet")
+                          .hasProperty("MethodName", "doGet")
+                          .hasProperty("LineNumber", "21")));
     }
-
-    SmokeTestExtension.assertParentChild(
-        rd, rdEnvelope, edEnvelope, "GET /Logback/testWithException");
   }
 
   @Environment(TOMCAT_8_JAVA_8)
