@@ -5,7 +5,7 @@ This devcontainer configuration is designed to optimize the development environm
 ## What's Included
 
 - **Java 17 (Temurin)**: Pre-installed Java Development Kit
-- **Gradle 8.11.1**: Pre-installed build tool matching project requirements
+- **Gradle Wrapper**: Uses project's gradle wrapper for build consistency
 - **Docker in Docker**: For containerized smoke tests
 - **VS Code Extensions**: Java development extensions
 
@@ -24,4 +24,4 @@ This devcontainer is automatically used by GitHub Copilot agents when working on
 
 ## Validation
 
-Run `.github/scripts/validate-devcontainer.sh` to verify the setup is working correctly.
+Run `.devcontainer/validate-devcontainer.sh` to verify the setup is working correctly.
