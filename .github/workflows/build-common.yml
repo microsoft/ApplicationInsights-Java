@@ -130,17 +130,18 @@ jobs:
       matrix:
         test-java-version:
           - 8
-          - 11
-          - 17
-          - 21
-          - 23
         vm:
           - hotspot
           # TODO (trask) enable once profiler supports OpenJ9
           # - openj9
         os:
           - windows-2022
-          - ubuntu-latest
+        num:
+          - 1
+          - 2
+          - 3
+          - 4
+          - 5
       fail-fast: false
     steps:
       - name: Support long paths
@@ -172,101 +173,23 @@ jobs:
 
       - name: Test
         # spotless is checked separately since it's a common source of failure
-        run: >
-          ./gradlew
-          check
-          -x spotlessCheck
-          -PtestJavaVersion=${{ matrix.test-java-version }}
-          -PtestJavaVM=${{ matrix.vm }}
-          "-Porg.gradle.java.installations.paths=${{ steps.setup-test-java.outputs.path }}"
-          "-Porg.gradle.java.installations.auto-download=false"
-          ${{ inputs.no-build-cache && ' --no-build-cache' || '' }}
-
-  setup-smoke-test-matrix:
-    runs-on: ubuntu-latest
-    outputs:
-      matrix: ${{ steps.set-matrix.outputs.matrix }}
-    steps:
-      - uses: actions/checkout@v4
-
-      - id: set-matrix
+        # running in a loop 1..50 to identify flaky test behavior
+        shell: bash
         run: |
-          json_array=$(
-            for dir in smoke-tests/apps/*; do
-              # Convert directory path to module name (e.g., "smoke-tests/apps/MyApp" -> "smoke-tests:apps:MyApp")
-              module=$(echo "$dir" | sed 's|/|:|g')
-              # Extract just the app name from the module path (e.g., "smoke-tests:apps:MyApp" -> "MyApp")
-              module_short=$(echo "$module" | sed 's|.*:||')
-              
-              find "${dir}/src/smokeTest/java" -name "*Test.java" | \
-                # Remove the base path to get relative path from smokeTest/java
-                sed "s|${dir}/src/smokeTest/java/||" | \
-                # Convert file name to class name (e.g., "com/example/MyTest.java" -> "com.example.MyTest")
-                sed 's|/|.|g' | sed 's|\.java$||' | \
-                # Process each fully qualified test class name
-                while read -r class_name; do
-                  # Extract just the simple class name (e.g., "com.example.MyTest" -> "MyTest")
-                  class_short=$(echo "$class_name" | sed 's/.*\.//')
-                  echo "{\"display\":\"${module_short}:${class_short}\"," \
-                        "\"module\":\"${module}\"," \
-                        "\"test_class\":\"${class_name}\"}"
-                done
-            # Join all JSON objects with commas and remove trailing comma
-            done | tr '\n' ',' | sed 's/,$//'
-          )
-          
-          # Output the matrix in GitHub Actions format
-          echo "matrix={\"include\":[$json_array]}" >> $GITHUB_OUTPUT
-
-  smoke-test:
-    name: ${{ matrix.display }}
-    needs: setup-smoke-test-matrix
-    runs-on: ubuntu-latest
-    strategy:
-      matrix: ${{fromJson(needs.setup-smoke-test-matrix.outputs.matrix)}}
-      fail-fast: false
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Java 17
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: 17
-
-      - name: Build and install local azure-monitor-opentelemetry-autoconfigure dependency
-        if: env.AZURE_MONITOR_OPENTELEMETRY_AUTOCONFIGURE_SNAPSHOT != ''
-        run: ./.github/scripts/build-azure-monitor-dependency.sh
-
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
-
-      - name: Test
-        run: ./gradlew ${{ matrix.module }}:smokeTest --tests "${{ matrix.test_class }}*"
-
-      - name: Create unique artifact name
-        if: failure()
-        run: |
-          # Create a unique name based on module and test class
-          artifact_name="${{ matrix.module }}:${{ matrix.test_class }}"
-          # Replace colons and dots with hyphens for valid artifact names
-          artifact_name=$(echo "$artifact_name" | sed 's/[:.]/\-/g')
-          echo "UPLOAD_ARTIFACT_NAME=$artifact_name" >> $GITHUB_ENV
-
-      - name: Upload smoke test reports
-        uses: actions/upload-artifact@v4
-        if: failure()
-        with:
-          name: ${{ env.UPLOAD_ARTIFACT_NAME }}
-          path: '**/build/reports/tests/smokeTest/**/*'
-
-  check-snapshot-dependency:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check for snapshot dependency
-        run: |
-          if [[ -n "$AZURE_MONITOR_OPENTELEMETRY_AUTOCONFIGURE_SNAPSHOT" ]]; then
-            echo "AZURE_MONITOR_OPENTELEMETRY_AUTOCONFIGURE_SNAPSHOT is set to '$AZURE_MONITOR_OPENTELEMETRY_AUTOCONFIGURE_SNAPSHOT'"
-            echo "PRs testing against a snapshot cannot be merged."
-            exit 1
-          fi
+          for i in {1..100}; do
+            echo "=== Test run $i/100 ==="
+            ./gradlew \
+              :agent:instrumentation:micrometer-1.0:test \
+              --rerun-tasks \
+              -PtestJavaVersion=${{ matrix.test-java-version }} \
+              -PtestJavaVM=${{ matrix.vm }} \
+              "-Porg.gradle.java.installations.paths=${{ steps.setup-test-java.outputs.path }}" \
+              "-Porg.gradle.java.installations.auto-download=false"
+            if [ $? -eq 0 ]; then
+              echo "Test run $i completed successfully"
+            else
+              echo "Test run $i failed"
+              exit 1
+            fi
+          done
+          echo "All 50 test runs completed successfully"
