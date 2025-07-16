@@ -1,0 +1,31 @@
+{
+  "name": "Application Insights Java Development Environment",
+  "image": "mcr.microsoft.com/vscode/devcontainers/java:17-bullseye",
+  "features": {
+    "ghcr.io/devcontainers/features/gradle:1": {
+      "version": "8.11.1"
+    },
+    "ghcr.io/devcontainers/features/java:1": {
+      "version": "17",
+      "jdkDistro": "tem"
+    },
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {
+      "version": "latest"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "vscjava.vscode-java-pack",
+        "vscjava.vscode-gradle",
+        "ms-vscode.vscode-json"
+      ]
+    }
+  },
+  "containerEnv": {
+    "GRADLE_OPTS": "-Dorg.gradle.daemon=true -Dorg.gradle.parallel=true -Dorg.gradle.caching=true -XX:MaxMetaspaceSize=512m"
+  },
+  "postCreateCommand": "bash .github/scripts/setup-devcontainer.sh",
+  "remoteUser": "vscode",
+  "// comment": "This devcontainer pre-installs Java 17, Gradle 8.11.1, and runs a setup script to pre-download dependencies and compile buildSrc, reducing initial build time for Copilot agents from 5+ minutes to under 1 minute"
+}
