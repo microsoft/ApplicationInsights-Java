@@ -84,6 +84,16 @@ public class MetricAssert extends AbstractAssert<MetricAssert, Envelope> {
     return this;
   }
 
+  @CanIgnoreReturnValue
+  public final MetricAssert hasNoInternalAttributes() {
+    isNotNull();
+    MetricData metricData = getMetricData();
+    for (String key : metricData.getProperties().keySet()) {
+      assertThat(key).doesNotStartWith("applicationinsights.internal.");
+    }
+    return this;
+  }
+
   private DataPoint getDataPoint() {
     return getMetricData().getMetrics().get(0);
   }

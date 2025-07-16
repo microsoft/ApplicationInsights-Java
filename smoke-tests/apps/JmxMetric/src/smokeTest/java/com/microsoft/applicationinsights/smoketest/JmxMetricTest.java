@@ -148,10 +148,16 @@ abstract class JmxMetricTest {
       String metricName = points.get(0).getName();
       metricNames.add(metricName);
 
+      // Create MetricAssert for this envelope and use it for validation
+      MetricAssert metricAssert = new MetricAssert(envelope);
+
+      // Common validation - all metrics should have no internal attributes
+      metricAssert.hasNoInternalAttributes();
+
       // verifying values of some metrics
       double value = points.get(0).getValue();
       if (metricName.equals("NameWithDot")) {
-        assertThat(value).isEqualTo(5);
+        metricAssert.hasValue(5);
       }
       if (metricName.equals("GCOld") || metricName.equals("PSScavenge")) {
         gcFirstMatch += value;
@@ -163,10 +169,8 @@ abstract class JmxMetricTest {
         wildcardValueSum += value;
       }
       if (metricName.equals("BooleanJmxMetric")) {
-        assertThat(value).isEqualTo(1.0);
+        metricAssert.hasValue(1.0);
       }
-
-      assertThat(verifyNoInternalAttributes(envelope)).isTrue();
     }
 
     // This will indirectly check the occurrences of the optional gc metrics
@@ -181,16 +185,6 @@ abstract class JmxMetricTest {
     }
 
     assertThat(metricNames).containsAll(jmxMetricsAllJavaVersionsBreeze);
-  }
-
-  private static boolean verifyNoInternalAttributes(Envelope envelope) {
-    MetricData metricData = (MetricData) ((Data<?>) envelope.getData()).getBaseData();
-    for (String key : metricData.getProperties().keySet()) {
-      if (key.startsWith("applicationinsights.internal.")) {
-        return false;
-      }
-    }
-    return true;
   }
 
   private static boolean isJmxMetric(Envelope envelope) {
