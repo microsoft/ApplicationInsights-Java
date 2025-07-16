@@ -10,7 +10,7 @@ on:
 env:
   # set this to <repo>:<branch/sha> to build and test with an unreleased
   # version of the azure-monitor-opentelemetry-autoconfigure dependency
-  AZURE_MONITOR_OPENTELEMETRY_AUTOCONFIGURE:
+  AZURE_MONITOR_OPENTELEMETRY_AUTOCONFIGURE_SNAPSHOT:
 
 jobs:
   spotless:
@@ -49,7 +49,7 @@ jobs:
           java-version: 17
 
       - name: Build and install local azure-monitor-opentelemetry-autoconfigure dependency
-        if: env.AZURE_MONITOR_OPENTELEMETRY_AUTOCONFIGURE != ''
+        if: env.AZURE_MONITOR_OPENTELEMETRY_AUTOCONFIGURE_SNAPSHOT != ''
         run: ./.github/scripts/build-azure-monitor-dependency.sh
 
       - name: Setup Gradle
@@ -93,7 +93,7 @@ jobs:
           java-version: 17
 
       - name: Build and install local azure-monitor-opentelemetry-autoconfigure dependency
-        if: env.AZURE_MONITOR_OPENTELEMETRY_AUTOCONFIGURE != ''
+        if: env.AZURE_MONITOR_OPENTELEMETRY_AUTOCONFIGURE_SNAPSHOT != ''
         shell: bash
         run: ./.github/scripts/build-azure-monitor-dependency.sh
 
@@ -163,7 +163,7 @@ jobs:
           java-version: 17
 
       - name: Build and install local azure-monitor-opentelemetry-autoconfigure dependency
-        if: env.AZURE_MONITOR_OPENTELEMETRY_AUTOCONFIGURE != ''
+        if: env.AZURE_MONITOR_OPENTELEMETRY_AUTOCONFIGURE_SNAPSHOT != ''
         shell: bash
         run: ./.github/scripts/build-azure-monitor-dependency.sh
 
@@ -235,7 +235,7 @@ jobs:
           java-version: 17
 
       - name: Build and install local azure-monitor-opentelemetry-autoconfigure dependency
-        if: env.AZURE_MONITOR_OPENTELEMETRY_AUTOCONFIGURE != ''
+        if: env.AZURE_MONITOR_OPENTELEMETRY_AUTOCONFIGURE_SNAPSHOT != ''
         run: ./.github/scripts/build-azure-monitor-dependency.sh
 
       - name: Setup Gradle
@@ -259,3 +259,14 @@ jobs:
         with:
           name: ${{ env.UPLOAD_ARTIFACT_NAME }}
           path: '**/build/reports/tests/smokeTest/**/*'
+
+  check-snapshot-dependency:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check for snapshot dependency
+        run: |
+          if [[ -n "$AZURE_MONITOR_OPENTELEMETRY_AUTOCONFIGURE_SNAPSHOT" ]]; then
+            echo "AZURE_MONITOR_OPENTELEMETRY_AUTOCONFIGURE_SNAPSHOT is set to '$AZURE_MONITOR_OPENTELEMETRY_AUTOCONFIGURE_SNAPSHOT'"
+            echo "PRs testing against a snapshot cannot be merged."
+            exit 1
+          fi
