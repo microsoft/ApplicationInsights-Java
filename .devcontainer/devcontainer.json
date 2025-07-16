@@ -22,7 +22,7 @@
   "containerEnv": {
     "GRADLE_OPTS": "-Dorg.gradle.daemon=true -Dorg.gradle.parallel=true -Dorg.gradle.caching=true -XX:MaxMetaspaceSize=512m"
   },
-  "postCreateCommand": "bash .github/scripts/setup-devcontainer.sh",
+  "postCreateCommand": "bash .devcontainer/setup-devcontainer.sh",
   "remoteUser": "vscode",
   "// comment": "This devcontainer pre-installs Java 17 and Docker-in-Docker. The remoteUser sets the default user for the container. The setup script builds the project to pre-download dependencies and populate the build cache, reducing initial build time for Copilot agents from 5+ minutes to under 1 minute"
 }
