@@ -132,6 +132,23 @@ abstract class JmxMetricTest {
   }
 
   private void verifyJmxMetricsSentToBreeze() throws Exception {
+    // Test each JMX metric individually using the new assertion framework
+    testing.waitAndAssertMetric(
+        "NameWithDot", metric -> metric.hasValue(5).hasNoInternalAttributes());
+
+    testing.waitAndAssertMetric(
+        "DefaultJmxMetricNameOverride", metric -> metric.hasNoInternalAttributes());
+
+    testing.waitAndAssertMetric(
+        "BooleanJmxMetric", metric -> metric.hasValue(1.0).hasNoInternalAttributes());
+
+    testing.waitAndAssertMetric(
+        "DotInAttributeNameAsPathSeparator", metric -> metric.hasNoInternalAttributes());
+
+    testing.waitAndAssertMetric("Loaded Class Count", metric -> metric.hasNoInternalAttributes());
+
+    // Handle the GC metrics and wildcard metric validation
+    // We need to collect the values to verify the wildcard sum
     List<Envelope> metricItems =
         testing.mockedIngestion.waitForItems(JmxMetricTest::isJmxMetric, 7, 10, TimeUnit.SECONDS);
 
@@ -150,9 +167,6 @@ abstract class JmxMetricTest {
 
       // verifying values of some metrics
       double value = points.get(0).getValue();
-      if (metricName.equals("NameWithDot")) {
-        assertThat(value).isEqualTo(5);
-      }
       if (metricName.equals("GCOld") || metricName.equals("PSScavenge")) {
         gcFirstMatch += value;
       }
@@ -162,12 +176,10 @@ abstract class JmxMetricTest {
       if (metricName.equals("WildcardJmxMetric")) {
         wildcardValueSum += value;
       }
-      if (metricName.equals("BooleanJmxMetric")) {
-        assertThat(value).isEqualTo(1.0);
-      }
-
-      assertThat(verifyNoInternalAttributes(envelope)).isTrue();
     }
+
+    // Test the wildcard metric specifically
+    testing.waitAndAssertMetric("WildcardJmxMetric", metric -> metric.hasNoInternalAttributes());
 
     // This will indirectly check the occurrences of the optional gc metrics
     // and confirm that the wildcard metric has the expected value
@@ -181,16 +193,6 @@ abstract class JmxMetricTest {
     }
 
     assertThat(metricNames).containsAll(jmxMetricsAllJavaVersionsBreeze);
-  }
-
-  private static boolean verifyNoInternalAttributes(Envelope envelope) {
-    MetricData metricData = (MetricData) ((Data<?>) envelope.getData()).getBaseData();
-    for (String key : metricData.getProperties().keySet()) {
-      if (key.startsWith("applicationinsights.internal.")) {
-        return false;
-      }
-    }
-    return true;
   }
 
   private static boolean isJmxMetric(Envelope envelope) {
