@@ -20,7 +20,7 @@ The `setup-devcontainer.sh` script performs the following optimizations:
 
 ## Usage
 
-This devcontainer is automatically used by GitHub Copilot agents when working on this repository. The configuration is located at `.github/devcontainer.json` as per GitHub's requirements.
+This devcontainer is automatically used by GitHub Copilot agents when working on this repository. The configuration is located at `.devcontainer/devcontainer.json` following VS Code devcontainer standards.
 
 ## Validation
 
