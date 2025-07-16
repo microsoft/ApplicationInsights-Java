@@ -21,6 +21,7 @@ public class TraceAssert {
   private final List<Envelope> requests;
   private final List<Envelope> dependencies;
   private final List<Envelope> messages;
+  private final List<Envelope> exceptions;
 
   public TraceAssert(List<Envelope> trace) {
 
@@ -41,6 +42,10 @@ public class TraceAssert {
     messages =
         sorted.stream()
             .filter(envelope -> envelope.getData().getBaseType().equals("MessageData"))
+            .collect(toList());
+    exceptions =
+        sorted.stream()
+            .filter(envelope -> envelope.getData().getBaseType().equals("ExceptionData"))
             .collect(toList());
   }
 
@@ -63,6 +68,24 @@ public class TraceAssert {
     return this;
   }
 
+  @CanIgnoreReturnValue
+  public TraceAssert hasMessageSatisfying(Consumer<MessageAssert> assertion) {
+    assertThat(messages).anySatisfy(envelope -> assertion.accept(new MessageAssert(envelope)));
+    return this;
+  }
+
+  @CanIgnoreReturnValue
+  public TraceAssert hasExceptionCount(int count) {
+    assertThat(exceptions).hasSize(count);
+    return this;
+  }
+
+  @CanIgnoreReturnValue
+  public TraceAssert hasExceptionSatisfying(Consumer<ExceptionAssert> assertion) {
+    assertThat(exceptions).anySatisfy(envelope -> assertion.accept(new ExceptionAssert(envelope)));
+    return this;
+  }
+
   public String getRequestId(int index) {
     Data<?> data = (Data<?>) requests.get(index).getData();
     return ((RequestData) data.getBaseData()).getId();
@@ -71,5 +94,13 @@ public class TraceAssert {
   public String getDependencyId(int index) {
     Data<?> data = (Data<?>) dependencies.get(index).getData();
     return ((RemoteDependencyData) data.getBaseData()).getId();
+  }
+
+  public List<Envelope> getMessages() {
+    return messages;
+  }
+
+  public List<Envelope> getExceptions() {
+    return exceptions;
   }
 }
