@@ -3,8 +3,7 @@ set -e
 
 echo "Setting up ApplicationInsights-Java development environment..."
 
-# Set up Gradle with proper JVM options
-export GRADLE_OPTS="-Dorg.gradle.daemon=true -Dorg.gradle.parallel=true -Dorg.gradle.caching=true -XX:MaxMetaspaceSize=512m"
+# GRADLE_OPTS is already set via containerEnv in devcontainer.json
 
 # Pre-download Gradle wrapper and dependencies
 echo "Pre-downloading Gradle wrapper and dependencies..."
