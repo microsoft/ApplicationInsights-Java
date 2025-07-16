@@ -5,10 +5,10 @@
 
 set -e
 
-echo "Building azure-monitor-opentelemetry-autoconfigure from $AZURE_MONITOR_OPENTELEMETRY_AUTOCONFIGURE"
+echo "Building azure-monitor-opentelemetry-autoconfigure from $AZURE_MONITOR_OPENTELEMETRY_AUTOCONFIGURE_SNAPSHOT"
 
 # Parse repo and branch from format "owner/repo:branch"
-REPO_BRANCH="$AZURE_MONITOR_OPENTELEMETRY_AUTOCONFIGURE"
+REPO_BRANCH="$AZURE_MONITOR_OPENTELEMETRY_AUTOCONFIGURE_SNAPSHOT"
 REPO=$(echo "$REPO_BRANCH" | cut -d':' -f1)
 BRANCH=$(echo "$REPO_BRANCH" | cut -d':' -f2)
 
@@ -17,9 +17,8 @@ echo "Branch: $BRANCH"
 
 # Clone the repository
 echo "Cloning repository..."
-git clone https://github.com/$REPO.git azure-sdk-temp
+git clone --depth 1 --branch $BRANCH https://github.com/$REPO.git azure-sdk-temp
 cd azure-sdk-temp
-git checkout $BRANCH
 
 # Build and install the azure-monitor-opentelemetry-autoconfigure module
 echo "Building and installing azure-monitor-opentelemetry-autoconfigure..."
