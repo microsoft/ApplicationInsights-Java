@@ -10,18 +10,8 @@ export GRADLE_OPTS="-Dorg.gradle.daemon=true -Dorg.gradle.parallel=true -Dorg.gr
 echo "Pre-downloading Gradle wrapper and dependencies..."
 ./gradlew --version
 
-# Pre-compile buildSrc to avoid recompilation during regular builds
-echo "Pre-compiling buildSrc..."
-./gradlew :buildSrc:build --quiet || true
-
-# Download and cache dependencies for faster builds
-echo "Downloading and caching build dependencies..."
-./gradlew dependencies --quiet || true
-
-# Pre-download main build dependencies for common modules
-echo "Pre-downloading dependencies for key modules..."
-./gradlew :agent:agent:dependencies --quiet || true
-./gradlew :agent:agent-tooling:dependencies --quiet || true
-./gradlew :agent:agent-bootstrap:dependencies --quiet || true
+# Build project to download dependencies and populate build cache
+echo "Building project to download dependencies and populate build cache..."
+./gradlew build --quiet || true
 
 echo "Development environment setup complete!"

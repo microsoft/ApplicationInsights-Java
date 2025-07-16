@@ -2,9 +2,6 @@
   "name": "Application Insights Java Development Environment",
   "image": "mcr.microsoft.com/vscode/devcontainers/java:17-bullseye",
   "features": {
-    "ghcr.io/devcontainers/features/gradle:1": {
-      "version": "8.11.1"
-    },
     "ghcr.io/devcontainers/features/java:1": {
       "version": "17",
       "jdkDistro": "tem"
@@ -27,5 +24,5 @@
   },
   "postCreateCommand": "bash .github/scripts/setup-devcontainer.sh",
   "remoteUser": "vscode",
-  "// comment": "This devcontainer pre-installs Java 17, Gradle 8.11.1, and runs a setup script to pre-download dependencies and compile buildSrc, reducing initial build time for Copilot agents from 5+ minutes to under 1 minute"
+  "// comment": "This devcontainer pre-installs Java 17 and Docker-in-Docker. The remoteUser sets the default user for the container. The setup script builds the project to pre-download dependencies and populate the build cache, reducing initial build time for Copilot agents from 5+ minutes to under 1 minute"
 }
