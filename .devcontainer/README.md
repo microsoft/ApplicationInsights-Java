@@ -5,7 +5,7 @@ This devcontainer configuration is designed to optimize the development environm
 ## What's Included
 
 - **Java 17 (Temurin)**: Pre-installed Java Development Kit
-- **Gradle Wrapper**: Uses project's gradle wrapper for build consistency
+- **Gradle Wrapper**: Uses the project's gradle wrapper (gradlew) for build consistency
 - **Docker in Docker**: For containerized smoke tests
 - **VS Code Extensions**: Java development extensions
 

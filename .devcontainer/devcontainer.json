@@ -19,9 +19,7 @@
       ]
     }
   },
-  "containerEnv": {
-    "GRADLE_OPTS": "-Dorg.gradle.daemon=true"
-  },
+
   "mounts": [
     "source=gradle-cache,target=/home/vscode/.gradle,type=volume"
   ],
