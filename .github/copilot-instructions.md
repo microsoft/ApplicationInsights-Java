@@ -47,6 +47,15 @@ Instead, focus on running a single test.
 ./gradlew :smoke-tests:apps:HttpClients:smokeTest --tests "*HttpClientTest\$Tomcat8Java8Test"
 ```
 
+### Code Formatting
+
+The project uses Spotless for consistent code formatting. Apply formatting to all code:
+
+```bash
+# Apply formatting to all files
+./gradlew spotlessApply
+```
+
 ## Project-Specific Conventions
 
 ### Build Conventions (buildSrc/)
