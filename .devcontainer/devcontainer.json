@@ -2,7 +2,6 @@
   "name": "Application Insights Java Development Environment",
   "image": "mcr.microsoft.com/vscode/devcontainers/base:bullseye",
   "features": {
-    
     "ghcr.io/devcontainers/features/java:1": {
       "version": "17"
     },
