@@ -21,5 +21,6 @@
   "mounts": [
     "source=gradle-cache,target=/home/vscode/.gradle,type=volume"
   ],
-  "remoteUser": "vscode"
+  "remoteUser": "vscode",
+  "postCreateCommand": "sudo chown -R vscode:vscode /home/vscode/.gradle"
 }
