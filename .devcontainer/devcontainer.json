@@ -21,6 +21,5 @@
   "mounts": [
     "source=gradle-cache,target=/home/vscode/.gradle,type=volume"
   ],
-  "postCreateCommand": ".devcontainer/setup-devcontainer.sh",
   "remoteUser": "vscode"
 }
