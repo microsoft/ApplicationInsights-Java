@@ -1,10 +1,9 @@
 {
   "name": "Application Insights Java Development Environment",
-  "image": "mcr.microsoft.com/vscode/devcontainers/java:17-bullseye",
+  "image": "mcr.microsoft.com/vscode/devcontainers/base:bullseye",
   "features": {
     "ghcr.io/devcontainers/features/java:1": {
-      "version": "17",
-      "jdkDistro": "tem"
+      "version": "17"
     },
     "ghcr.io/devcontainers/features/docker-in-docker:2": {
       "version": "latest"
@@ -19,11 +18,9 @@
       ]
     }
   },
-
   "mounts": [
     "source=gradle-cache,target=/home/vscode/.gradle,type=volume"
   ],
-  "postCreateCommand": "bash .devcontainer/setup-devcontainer.sh",
-  "remoteUser": "vscode",
-  "// comment": "This devcontainer pre-installs Java 17 and Docker-in-Docker. The remoteUser sets the default user for the container. The setup script builds the project to pre-download dependencies and populate the build cache, reducing initial build time for Copilot agents from 5+ minutes to under 1 minute"
+  "postCreateCommand": ".devcontainer/setup-devcontainer.sh",
+  "remoteUser": "vscode"
 }
