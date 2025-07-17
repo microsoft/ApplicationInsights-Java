@@ -179,7 +179,7 @@ jobs:
           for i in {1..100}; do
             echo "=== Test run $i/100 ==="
             ./gradlew \
-              :agent:instrumentation:micrometer-1.0:test \
+              test \
               --rerun-tasks \
               -PtestJavaVersion=${{ matrix.test-java-version }} \
               -PtestJavaVM=${{ matrix.vm }} \
