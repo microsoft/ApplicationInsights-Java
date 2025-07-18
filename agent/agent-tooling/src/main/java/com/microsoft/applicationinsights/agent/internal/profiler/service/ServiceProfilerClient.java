@@ -15,6 +15,7 @@ import com.microsoft.applicationinsights.agent.internal.profiler.util.TimestampC
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.time.Duration;
 import java.util.Date;
 import java.util.UUID;
 import javax.annotation.Nullable;
@@ -40,21 +41,25 @@ public class ServiceProfilerClient {
   private final URL hostUrl;
   private final String instrumentationKey;
   private final HttpPipeline httpPipeline;
+  private final int httpTimeoutSeconds;
   @Nullable private final String userAgent;
 
   public ServiceProfilerClient(
       URL hostUrl,
       String instrumentationKey,
       HttpPipeline httpPipeline,
-      @Nullable String userAgent) {
+      @Nullable String userAgent,
+      int httpTimeoutSeconds) {
     this.hostUrl = hostUrl;
     this.instrumentationKey = instrumentationKey;
     this.httpPipeline = httpPipeline;
     this.userAgent = userAgent;
+    this.httpTimeoutSeconds = httpTimeoutSeconds;
   }
 
-  public ServiceProfilerClient(URL hostUrl, String instrumentationKey, HttpPipeline httpPipeline) {
-    this(hostUrl, instrumentationKey, httpPipeline, null);
+  public ServiceProfilerClient(
+      URL hostUrl, String instrumentationKey, HttpPipeline httpPipeline, int httpTimeoutSeconds) {
+    this(hostUrl, instrumentationKey, httpPipeline, null, httpTimeoutSeconds);
   }
 
   /** Obtain permission to upload a profile to service profiler. */
@@ -144,7 +149,18 @@ public class ServiceProfilerClient {
 
     HttpRequest request = new HttpRequest(HttpMethod.GET, requestUrl);
 
-    return httpPipeline.send(request).flatMap(response -> handle(response, requestUrl));
+    return httpPipeline
+        .send(request)
+        .timeout(
+            Duration.ofSeconds(httpTimeoutSeconds),
+            Mono.error(
+                new HttpResponseException(
+                    "Timed out after "
+                        + httpTimeoutSeconds
+                        + " seconds while waiting for response from "
+                        + requestUrl,
+                    null)))
+        .flatMap(response -> handle(response, requestUrl));
   }
 
   private static Mono<ProfilerConfiguration> handle(HttpResponse response, URL requestUrl) {

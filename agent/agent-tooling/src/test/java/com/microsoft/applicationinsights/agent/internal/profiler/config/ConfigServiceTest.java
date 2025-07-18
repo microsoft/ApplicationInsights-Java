@@ -27,7 +27,8 @@ class ConfigServiceTest extends TestBase {
         new ServiceProfilerClient(
             new URL("https://agent.azureserviceprofiler.net/"),
             "00000000-0000-0000-0000-000000000000",
-            getHttpPipeline());
+            getHttpPipeline(),
+            30);
 
     ConfigService configService = new ConfigService(serviceProfilerClient);
 
@@ -56,7 +57,8 @@ class ConfigServiceTest extends TestBase {
         new ServiceProfilerClient(
             new URL("https://agent.azureserviceprofiler.net/"),
             "00000000-0000-0000-0000-000000000000",
-            getHttpPipeline());
+            getHttpPipeline(),
+            30);
 
     ConfigService configService = new ConfigService(serviceProfilerClient);
     Mono<ProfilerConfiguration> result = configService.pullSettings();
