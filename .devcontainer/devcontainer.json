@@ -1,26 +1,12 @@
 {
   "name": "Application Insights Java Development Environment",
-  "image": "mcr.microsoft.com/vscode/devcontainers/base:bullseye",
-  "features": {
-    "ghcr.io/devcontainers/features/java:1": {
-      "version": "17"
-    },
-    "ghcr.io/devcontainers/features/docker-in-docker:2": {
-      "version": "latest"
-    }
-  },
+  "image": "ghcr.io/microsoft/applicationinsights-java/devcontainer:latest",
   "customizations": {
     "vscode": {
       "extensions": [
-        "vscjava.vscode-java-pack",
-        "vscjava.vscode-gradle",
+        "redhat.java",
         "ms-vscode.vscode-json"
       ]
     }
-  },
-  "mounts": [
-    "source=gradle-cache,target=/home/vscode/.gradle,type=volume"
-  ],
-  "remoteUser": "vscode",
-  "postCreateCommand": "sudo chown -R vscode:vscode /home/vscode/.gradle"
+  }
 }
