@@ -35,8 +35,7 @@ COPY --chown=vscode:vscode . ./
 
 # Pre-populate Gradle dependency and build caches by compiling all classes
 # Use --no-daemon to avoid leaving daemon processes running
-# Set JAVA_HOME dynamically based on the actual installation
-RUN export JAVA_HOME=$(find /usr/lib/jvm -name "msopenjdk-17-*" -type d | head -1) && \
+RUN export JAVA_HOME=/usr/lib/jvm/msopenjdk-17-amd64 && \
     export PATH="$JAVA_HOME/bin:$PATH" && \
     ./gradlew classes --no-daemon
 
