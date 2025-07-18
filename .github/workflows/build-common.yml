@@ -141,11 +141,13 @@ jobs:
         os:
           - windows-2022
           - ubuntu-latest
+          - ubuntu-latest-arm64
+          - windows-latest-arm64
       fail-fast: false
     steps:
       - name: Support long paths
         run: git config --system core.longpaths true
-        if: matrix.os == 'windows-2022'
+        if: startsWith(matrix.os, 'windows')
 
       - uses: actions/checkout@v4
 
