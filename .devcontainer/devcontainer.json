@@ -10,7 +10,6 @@
     "vscode": {
       "extensions": [
         "vscjava.vscode-java-pack",
-        "vscjava.vscode-gradle",
         "ms-vscode.vscode-json"
       ]
     }
