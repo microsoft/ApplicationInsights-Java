@@ -4,7 +4,7 @@
   "customizations": {
     "vscode": {
       "extensions": [
-        "vscjava.vscode-java-pack",
+        "redhat.java",
         "ms-vscode.vscode-json"
       ]
     }
