@@ -7,5 +7,5 @@ plugins {
 
 val aiSmokeTest = extensions.getByType(AiSmokeTestExtension::class)
 
-aiSmokeTest.testAppArtifactDir.set(tasks.getByName<Jar>("bootJar").destinationDirectory.get())
-aiSmokeTest.testAppArtifactFilename.set(tasks.getByName<Jar>("bootJar").archiveFileName.get())
+aiSmokeTest.testAppArtifactDir.set(tasks.named<Jar>("bootJar").flatMap { it.destinationDirectory })
+aiSmokeTest.testAppArtifactFilename.set(tasks.named<Jar>("bootJar").flatMap { it.archiveFileName })
