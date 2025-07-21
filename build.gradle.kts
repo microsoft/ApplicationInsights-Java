@@ -1,7 +1,6 @@
 plugins {
   id("idea")
 
-  id("com.github.ben-manes.versions")
   id("ai.spotless-conventions")
 }
 
