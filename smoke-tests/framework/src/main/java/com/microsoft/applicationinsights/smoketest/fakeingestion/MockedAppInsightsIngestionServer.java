@@ -99,6 +99,7 @@ public class MockedAppInsightsIngestionServer {
     List<T> dataItems = new ArrayList<>();
     for (Envelope e : items) {
       if (!inRequestOnly || e.getTags().containsKey("ai.operation.id")) {
+        @SuppressWarnings("unchecked")
         Data<T> dt = (Data<T>) e.getData();
         dataItems.add(dt.getBaseData());
       }
@@ -116,6 +117,7 @@ public class MockedAppInsightsIngestionServer {
         waitForItems("MessageData", e -> e.getTags().containsKey("ai.operation.id"), numItems);
     List<T> dataItems = new ArrayList<>();
     for (Envelope e : items) {
+      @SuppressWarnings("unchecked")
       Data<T> dt = (Data<T>) e.getData();
       dataItems.add(dt.getBaseData());
     }
@@ -124,6 +126,7 @@ public class MockedAppInsightsIngestionServer {
 
   @SuppressWarnings("TypeParameterUnusedInFormals")
   public <T extends Domain> T getBaseDataForType(int index, String type) {
+    @SuppressWarnings("unchecked")
     Data<T> data = (Data<T>) getItemsEnvelopeDataType(type).get(index).getData();
     return data.getBaseData();
   }
