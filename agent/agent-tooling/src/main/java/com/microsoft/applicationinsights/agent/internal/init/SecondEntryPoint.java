@@ -166,7 +166,6 @@ public class SecondEntryPoint
 
     TelemetryClient.setActive(telemetryClient);
 
-    // TODO (heya) remove duplicate code in both RuntimeConfigurator and SecondEntryPoint
     RuntimeConfigurator runtimeConfigurator =
         new RuntimeConfigurator(
             telemetryClient,
@@ -174,12 +173,6 @@ public class SecondEntryPoint
             configuration,
             heartbeatTelemetryItemConsumer,
             tempDir);
-
-    if (configuration.sampling.percentage != null) {
-      BytecodeUtilImpl.samplingPercentage = configuration.sampling.percentage.floatValue();
-    } else {
-      BytecodeUtilImpl.samplingPercentage = 100;
-    }
     BytecodeUtilImpl.featureStatsbeat = statsbeatModule.getFeatureStatsbeat();
     BytecodeUtilImpl.runtimeConfigurator = runtimeConfigurator;
     BytecodeUtilImpl.connectionStringConfiguredAtRuntime =
