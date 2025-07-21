@@ -1,12 +1,25 @@
 {
   "name": "Application Insights Java Development Environment",
-  "image": "ghcr.io/microsoft/applicationinsights-java/devcontainer:latest",
+  "image": "mcr.microsoft.com/devcontainers/base:bullseye",
+  "features": {
+    "ghcr.io/devcontainers/features/java:1": {
+      "version": "17",
+      "jdkDistro": "ms"
+    },
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+  },
+  "updateContentCommand": "./gradlew classes --no-daemon",
   "customizations": {
     "vscode": {
       "extensions": [
-        "redhat.java",
-        "ms-vscode.vscode-json"
+        "vscjava.vscode-java-pack",
+        "ms-vscode.vscode-json",
+        "GitHub.copilot",
+        "GitHub.copilot-chat"
       ]
+    },
+    "settings": {
+      "java.server.launchMode": "LightWeight"
     }
   }
 }
