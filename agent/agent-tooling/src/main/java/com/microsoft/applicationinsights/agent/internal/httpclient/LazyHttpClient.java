@@ -23,11 +23,11 @@ import com.azure.core.http.policy.HttpLoggingPolicy;
 import com.azure.core.http.policy.HttpPipelinePolicy;
 import com.azure.core.http.policy.RedirectPolicy;
 import com.azure.core.util.Context;
+import com.azure.identity.AzureDeveloperCliCredential;
+import com.azure.identity.AzureDeveloperCliCredentialBuilder;
 import com.azure.identity.ClientSecretCredentialBuilder;
 import com.azure.identity.ManagedIdentityCredential;
 import com.azure.identity.ManagedIdentityCredentialBuilder;
-import com.azure.identity.VisualStudioCodeCredential;
-import com.azure.identity.VisualStudioCodeCredentialBuilder;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import io.opentelemetry.instrumentation.api.internal.GuardedBy;
 import java.net.InetSocketAddress;
@@ -188,9 +188,9 @@ public class LazyHttpClient implements HttpClient {
   }
 
   private static HttpPipelinePolicy getAuthenticationPolicyWithVsCode(String aadAudienceWithScope) {
-    VisualStudioCodeCredential visualStudioCodeCredential =
-        new VisualStudioCodeCredentialBuilder().build();
-    return new BearerTokenAuthenticationPolicy(visualStudioCodeCredential, aadAudienceWithScope);
+    AzureDeveloperCliCredential azureDeveloperCliCredential =
+        new AzureDeveloperCliCredentialBuilder().build();
+    return new BearerTokenAuthenticationPolicy(azureDeveloperCliCredential, aadAudienceWithScope);
   }
 
   private static HttpPipelinePolicy getAuthenticationPolicyWithSami(String aadAudienceWithScope) {
