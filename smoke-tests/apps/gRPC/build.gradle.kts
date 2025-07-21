@@ -5,13 +5,13 @@ plugins {
   id("com.google.protobuf") version "0.8.19"
 }
 
-val grpcVersion = "1.16.1"
-val nettyVersion = "4.1.30.Final"
+val grpcVersion = "1.26.0" // first version with support for arm64
+val nettyVersion = "4.1.42.Final"
 
 protobuf {
   protoc {
     // Download compiler rather than using locally installed version:
-    artifact = "com.google.protobuf:protoc:3.3.0"
+    artifact = "com.google.protobuf:protoc:3.5.0" // first version with support for arm64
   }
   plugins {
     id("grpc") {

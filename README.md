@@ -1,8 +1,6 @@
-[![Build Status](https://github-private.visualstudio.com/microsoft/_apis/build/status/CDPX/applicationinsights-java/applicationinsights-java-Windows-Buddy-master?branchName=refs%2Fpull%2F1583%2Fmerge)](https://github-private.visualstudio.com/microsoft/_build/latest?definitionId=224&branchName=refs%2Fpull%2F1583%2Fmerge)
-
 # Application Insights for Java
 
-See documentation at https://docs.microsoft.com/en-us/azure/azure-monitor/app/java-in-process-agent.
+See the [official documentation](https://learn.microsoft.com/en-us/azure/azure-monitor/app/opentelemetry-enable?tabs=java).
 
 ## If you need to build locally or want to contribute
 
