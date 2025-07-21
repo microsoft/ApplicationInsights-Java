@@ -95,7 +95,7 @@ tasks {
     dependsOn(relocateJavaagentLibs)
     isolateClasses(relocateJavaagentLibs.get().outputs.files)
 
-    into("$buildDir/isolated/javaagentLibs")
+    into(layout.buildDirectory.dir("isolated/javaagentLibs"))
   }
 
   // 3. the relocated and isolated javaagent libs are merged together with the bootstrap libs (which undergo relocation

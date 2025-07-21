@@ -87,7 +87,7 @@ configurations.all {
 }
 
 tasks {
-  task<Test>("smokeTest") {
+  register<Test>("smokeTest") {
     useJUnitPlatform()
 
     // this is just to force building the agent first
