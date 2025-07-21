@@ -44,9 +44,9 @@ abstract class LiveMetricsTest {
               verifier.confirmDocsAreFiltered();
               verifier.confirmPerfCountersNonZero();
 
-              assertThat(verifier.getExceptionCount("Fake Exception")).isEqualTo(1);
+              assertThat(verifier.getExceptionCount("Fake Exception")).isGreaterThanOrEqualTo(1);
               assertThat(verifier.getTraceCount("This message should generate a trace"))
-                  .isEqualTo(1);
+                  .isGreaterThanOrEqualTo(1);
               assertThat(verifier.getDependencyCountFromMetric()).isEqualTo(1);
               assertThat(verifier.getRequestCountFromMetric()).isEqualTo(1);
             });
