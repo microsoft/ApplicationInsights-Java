@@ -22,20 +22,16 @@ tasks {
         disableWarningsInGeneratedCode.set(true)
         allDisabledChecksAsWarnings.set(true)
 
+        // Ignore warnings for generated classes
         excludedPaths.set(".*/build/generated/.*")
 
-        if (System.getenv("CI") == null) {
-          disable("SystemOut")
-        }
+        // it's very convenient to debug stuff in the javaagent using System.out.println
+        // and we don't want to conditionally only check this in CI
+        // because then the remote gradle cache won't work for local builds
+        // so we check this via checkstyle instead
+        disable("SystemOut")
 
-        // Still Java 8
-        disable("Varifier")
-
-        // Intellij does a nice job of displaying parameter names
         disable("BooleanParameter")
-
-        // Needed for legacy 2.x bridge
-        disable("JavaUtilDate")
 
         // Doesn't work well with Java 8
         disable("FutureReturnValueIgnored")
@@ -43,38 +39,49 @@ tasks {
         // Needs Java 9+
         disable("JavaDurationGetSecondsToToSeconds")
 
-        // Require Guava
+        // Still Java 8
+        disable("Varifier")
+
+        // Doesn't currently use Var annotations.
+        disable("Var") // "-Xep:Var:OFF"
+
+        // ImmutableRefactoring suggests using com.google.errorprone.annotations.Immutable,
+        // but currently uses javax.annotation.concurrent.Immutable
+        disable("ImmutableRefactoring")
+
+        // AutoValueImmutableFields suggests returning Guava types from API methods
         disable("AutoValueImmutableFields")
-        disable("StringSplitter")
+        // Suggests using Guava types for fields but we don't use Guava
         disable("ImmutableMemberCollection")
 
-        // Don't currently use this (to indicate a local variable that's mutated) but could
-        // consider for future.
-        disable("Var")
-
-        // Don't support Android without desugar
+        // TODO (trask) use animal sniffer
         disable("AndroidJdkLibsChecker")
+
+        // apparently disabling android doesn't disable this
         disable("StaticOrDefaultInterfaceMethod")
 
-        // needed temporarily while hosting azure-monitor-opentelemetry-exporter in this repo
-        disable("MissingSummary")
-        disable("UnnecessaryDefaultInEnumSwitch")
+        // TODO (trask) Fix the underlying smoke test methods
         disable("InconsistentOverloads")
 
-        disable("CanIgnoreReturnValueSuggester")
+        // We don't depend on Guava so use normal splitting
+        disable("StringSplitter")
 
-        disable("NonFinalStaticField")
+        // allow UPPERCASE type parameter names
+        disable("TypeParameterNaming")
+
+        // We end up using obsolete types if a library we're instrumenting uses them.
+        disable("JavaUtilDate")
+
+        disable("CanIgnoreReturnValueSuggester")
 
         // YodaConditions may improve safety in some cases. The argument of increased
         // cognitive load is dubious.
         disable("YodaCondition")
 
+        disable("NonFinalStaticField")
+
         // Requires adding compile dependency to JSpecify
         disable("AddNullMarkedToPackageInfo")
-
-        if (name.contains("Jmh")) {
-          disable("MemberName")
-        }
       }
     }
   }
