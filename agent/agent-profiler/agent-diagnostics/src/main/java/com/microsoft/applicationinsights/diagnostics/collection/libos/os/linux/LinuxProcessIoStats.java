@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory;
 
 /** Obtains per-process IO statistics. */
 public class LinuxProcessIoStats extends TwoStepProcReader implements ProcessIoStats {
-  private static final Logger LOGGER = LoggerFactory.getLogger(LinuxProcessIoStats.class);
+  private static final Logger logger = LoggerFactory.getLogger(LinuxProcessIoStats.class);
 
   private static final Pattern IO_READ_PATTERN =
       Pattern.compile("^rchar: (\\d+)$", Pattern.MULTILINE);
@@ -54,7 +54,7 @@ public class LinuxProcessIoStats extends TwoStepProcReader implements ProcessIoS
       try {
         counter.newValue(new BigInteger(matcher.group(1)));
       } catch (NumberFormatException e) {
-        LOGGER.trace("Failed to parse {}", matcher.group(1));
+        logger.trace("Failed to parse {}", matcher.group(1));
       }
       return true;
     }

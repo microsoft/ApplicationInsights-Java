@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory;
 /** Contains a pipeline that receives telemetry, feeds it into the analysis pipeline. */
 public class SingleAlertPipeline implements AlertPipeline, AlertPipelineMXBean {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(SingleAlertPipeline.class);
+  private static final Logger logger = LoggerFactory.getLogger(SingleAlertPipeline.class);
   private static final String JMX_KEY = "com.microsoft:type=AI-alert,name=";
 
   private final Aggregation aggregation;
@@ -71,7 +71,7 @@ public class SingleAlertPipeline implements AlertPipeline, AlertPipelineMXBean {
       ManagementFactory.getPlatformMBeanServer().registerMBean(this, objectName);
 
     } catch (Exception e) {
-      LOGGER.error("Failed to register MBEAN", e);
+      logger.error("Failed to register MBEAN", e);
     }
   }
 

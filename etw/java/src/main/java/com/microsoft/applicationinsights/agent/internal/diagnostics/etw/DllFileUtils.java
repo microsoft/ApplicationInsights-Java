@@ -18,7 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 class DllFileUtils {
-  private static final Logger LOGGER = LoggerFactory.getLogger(DllFileUtils.class);
+  private static final Logger logger = LoggerFactory.getLogger(DllFileUtils.class);
 
   private DllFileUtils() {}
 
@@ -52,7 +52,7 @@ class DllFileUtils {
     if (!dllPath.exists() || !dllPath.canRead() || !dllPath.canWrite()) {
       throw new IllegalStateException("Failed to create a read/write folder for the native dll.");
     }
-    LOGGER.trace("{} folder exists", dllPath);
+    logger.trace("{} folder exists", dllPath);
 
     return dllPath;
   }
@@ -87,7 +87,7 @@ class DllFileUtils {
         }
       }
     }
-    LOGGER.debug("Successfully extracted '{}' to local folder", libraryToLoad);
+    logger.debug("Successfully extracted '{}' to local folder", libraryToLoad);
   }
 
   private static final List<String> CANDIDATE_USERNAME_ENVIRONMENT_VARIABLES =

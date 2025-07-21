@@ -32,7 +32,7 @@ import org.slf4j.LoggerFactory;
  */
 public class AlertingSubsystem {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(AlertingSubsystem.class);
+  private static final Logger logger = LoggerFactory.getLogger(AlertingSubsystem.class);
 
   // Downstream observer of alerts produced by the alerting system
   private final Consumer<AlertBreach> alertHandler;
@@ -100,7 +100,7 @@ public class AlertingSubsystem {
     if (telemetryDataPoint == null) {
       return;
     }
-    LOGGER.trace(
+    logger.trace(
         "Tracking " + telemetryDataPoint.getType().name() + " " + telemetryDataPoint.getValue());
     alertPipelines.process(telemetryDataPoint);
   }

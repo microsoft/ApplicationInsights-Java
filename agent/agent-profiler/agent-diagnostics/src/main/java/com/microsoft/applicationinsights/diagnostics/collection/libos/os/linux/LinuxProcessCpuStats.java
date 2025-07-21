@@ -20,7 +20,7 @@ public class LinuxProcessCpuStats extends TwoStepProcReader implements ProcessCp
   private static final int VM_SIZE_OFFSET_FROM_NAME = 21;
   private static final int RSS_OFFSET_FROM_NAME = 22;
   private static final int N_SWAPPED_OFFSET_FROM_NAME = 34;
-  private static final Logger LOGGER = LoggerFactory.getLogger(LinuxProcessCpuStats.class);
+  private static final Logger logger = LoggerFactory.getLogger(LinuxProcessCpuStats.class);
 
   private final BigIncrementalCounter userTime;
   private final BigIncrementalCounter systemTime;
@@ -72,7 +72,7 @@ public class LinuxProcessCpuStats extends TwoStepProcReader implements ProcessCp
     try {
       userTime.newValue(new BigInteger(userTime1));
     } catch (NumberFormatException e) {
-      LOGGER.trace("Failed to parse {}", userTime1);
+      logger.trace("Failed to parse {}", userTime1);
     }
   }
 
