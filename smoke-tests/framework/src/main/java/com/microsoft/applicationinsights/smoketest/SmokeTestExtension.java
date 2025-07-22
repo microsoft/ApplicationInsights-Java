@@ -468,7 +468,7 @@ public class SmokeTestExtension
     if (useOtlpEndpoint) {
       // TODO (trask) don't use azure_monitor exporter for smoke test health check
       javaToolOptions.add("-Dotel.metrics.exporter=otlp,azure_monitor");
-      javaToolOptions.add("-Dotel.exporter.otlp.metrics.endpoint=" + FAKE_OTLP_INGESTION_ENDPOINT);
+      javaToolOptions.add("-Dotel.exporter.otlp.metrics.endpoint=" + FAKE_OTLP_INGESTION_ENDPOINT + "/v1/metrics");
       javaToolOptions.add("-Dotel.exporter.otlp.protocol=http/protobuf");
     }
     if (REMOTE_DEBUG) {
