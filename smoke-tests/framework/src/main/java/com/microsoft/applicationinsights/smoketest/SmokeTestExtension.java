@@ -578,7 +578,9 @@ public class SmokeTestExtension
 
   @SuppressWarnings("TypeParameterUnusedInFormals")
   protected static <T extends Domain> T getBaseData(Envelope envelope) {
-    return ((Data<T>) envelope.getData()).getBaseData();
+    @SuppressWarnings("unchecked")
+    Data<T> data = (Data<T>) envelope.getData();
+    return data.getBaseData();
   }
 
   @SuppressWarnings("TypeParameterUnusedInFormals")
