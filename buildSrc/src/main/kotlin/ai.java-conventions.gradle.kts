@@ -85,6 +85,20 @@ tasks {
     duplicatesStrategy = DuplicatesStrategy.FAIL
   }
 
+  named<Javadoc>("javadoc") {
+    with(options as StandardJavadocDocletOptions) {
+      source = "8"
+      encoding = "UTF-8"
+      docEncoding = "UTF-8"
+      charSet = "UTF-8"
+      breakIterator(true)
+
+      addStringOption("Xdoclint:none", "-quiet")
+      // non-standard option to fail on warnings, see https://bugs.openjdk.java.net/browse/JDK-8200363
+      addStringOption("Xwerror", "-quiet")
+    }
+  }
+
   withType<AbstractArchiveTask>().configureEach {
     isPreserveFileTimestamps = false
     isReproducibleFileOrder = true
