@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory;
 
 public abstract class TwoStepProcReader implements TwoStepUpdatable, Closeable {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(TwoStepProcReader.class);
+  private static final Logger logger = LoggerFactory.getLogger(TwoStepProcReader.class);
 
   protected RandomAccessFile file;
   protected String contents;
@@ -33,7 +33,7 @@ public abstract class TwoStepProcReader implements TwoStepUpdatable, Closeable {
       file = new RandomAccessFile(candidate, "r");
     } catch (FileNotFoundException e) {
       if (!supressError) {
-        LOGGER.error("Failed to open proc net file", e);
+        logger.error("Failed to open proc net file", e);
       }
     }
   }
@@ -54,7 +54,7 @@ public abstract class TwoStepProcReader implements TwoStepUpdatable, Closeable {
         contents = Proc.read(file);
       }
     } catch (IOException e) {
-      LOGGER.error("Failed to read stats for file", e);
+      logger.error("Failed to read stats for file", e);
     }
   }
 

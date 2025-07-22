@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
 // preview Configuration
 public class SnippetConfiguration {
   private static final String snippet = readSnippet();
-  private static final Logger LOGGER = LoggerFactory.getLogger(SnippetConfiguration.class);
+  private static final Logger logger = LoggerFactory.getLogger(SnippetConfiguration.class);
 
   // visible for testing
   static String readSnippet() {
@@ -24,14 +24,14 @@ public class SnippetConfiguration {
     String resourceName = "browser-sdk-loader-snippet.txt";
     InputStream inputStream = classLoader.getResourceAsStream(resourceName);
     if (inputStream == null) {
-      LOGGER.error("Resource not found: " + resourceName);
+      logger.error("Resource not found: " + resourceName);
       return "";
     }
     try {
       return toString(inputStream);
     } catch (IOException e) {
       // Handle any IO exceptions that occur
-      LOGGER.error("Failed to read javascript-snippet file", e);
+      logger.error("Failed to read javascript-snippet file", e);
     }
     return "";
   }

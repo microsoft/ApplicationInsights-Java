@@ -20,7 +20,7 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings("Java8ApiChecker")
 public class CodeOptimizerDiagnosticsJfrInit {
 
-  private static final Logger LOGGER =
+  private static final Logger logger =
       LoggerFactory.getLogger(CodeOptimizerDiagnosticsJfrInit.class);
   private static final AtomicBoolean running = new AtomicBoolean(false);
   private static final AtomicInteger exceptionLogCount = new AtomicInteger(0);
@@ -56,9 +56,9 @@ public class CodeOptimizerDiagnosticsJfrInit {
   private static void logFailure(String logLine, @Nullable Exception e, AtomicInteger count) {
     if ((count.get() % 100) == 0) {
       if (e != null) {
-        LOGGER.warn(logLine, e);
+        logger.warn(logLine, e);
       } else {
-        LOGGER.warn(logLine);
+        logger.warn(logLine);
       }
 
       count.set(0);
@@ -76,7 +76,7 @@ public class CodeOptimizerDiagnosticsJfrInit {
         cgroupData.commit();
       }
     } catch (RuntimeException e) {
-      LOGGER.warn("Reading Cgroup Data Failed", e);
+      logger.warn("Reading Cgroup Data Failed", e);
     }
   }
 
@@ -107,7 +107,7 @@ public class CodeOptimizerDiagnosticsJfrInit {
         try {
           statsReader.close();
         } catch (IOException e) {
-          LOGGER.error("Failed to init stats reader", e);
+          logger.error("Failed to init stats reader", e);
         }
       }
       FlightRecorder.addPeriodicEvent(CGroupData.class, readCGroupData);

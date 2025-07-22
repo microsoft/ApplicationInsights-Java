@@ -11,7 +11,7 @@ val nettyVersion = "4.1.42.Final"
 protobuf {
   protoc {
     // Download compiler rather than using locally installed version:
-    artifact = "com.google.protobuf:protoc:3.5.0" // first version with support for arm64
+    artifact = "com.google.protobuf:protoc:3.11.0" // needs to be aligned with the grpc version above
   }
   plugins {
     id("grpc") {

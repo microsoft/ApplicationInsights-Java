@@ -90,7 +90,7 @@ The agent JAR is built in **3 critical steps** (see `agent/agent/build.gradle.kt
   abstract class HttpClientTest {
     @Environment(TOMCAT_8_JAVA_8)
     static class Tomcat8Java8Test extends HttpClientTest {}
-    
+
     @Environment(TOMCAT_8_JAVA_11)
     static class Tomcat8Java11Test extends HttpClientTest {}
   }

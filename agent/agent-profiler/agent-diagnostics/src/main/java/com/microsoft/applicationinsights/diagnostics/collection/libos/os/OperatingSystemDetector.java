@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 /** Util to identify the host operating system */
 public class OperatingSystemDetector {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(OperatingSystemDetector.class);
+  private static final Logger logger = LoggerFactory.getLogger(OperatingSystemDetector.class);
 
   private static final String OS_NAME_PROPERTY = "os.name";
   private static final String MAC = "mac";
@@ -25,7 +25,7 @@ public class OperatingSystemDetector {
     OperatingSystem detectedOs = OperatingSystem.UNKNOWN;
     try {
       String operatingSystemString = System.getProperty(OS_NAME_PROPERTY).toLowerCase(Locale.ROOT);
-      LOGGER.debug("Detected OS " + operatingSystemString);
+      logger.debug("Detected OS " + operatingSystemString);
       if (operatingSystemString.contains(MAC)) {
         detectedOs = OperatingSystem.MAC_OS;
       } else if (operatingSystemString.contains(LINUX)) {
@@ -38,7 +38,7 @@ public class OperatingSystemDetector {
         detectedOs = OperatingSystem.UNKNOWN;
       }
     } catch (RuntimeException e) {
-      LOGGER.warn("Failed to detect operating system", e);
+      logger.warn("Failed to detect operating system", e);
     }
     operatingSystem = detectedOs;
   }
