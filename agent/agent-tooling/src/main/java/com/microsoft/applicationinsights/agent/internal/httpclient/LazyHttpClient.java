@@ -150,8 +150,7 @@ public class LazyHttpClient implements HttpClient {
     return getDelegate().send(request, context);
   }
 
-  @SuppressWarnings(
-      "deprecation") // support deprecated configuration options for backwards compatibility
+  @SuppressWarnings("deprecation") // support deprecated configuration for backwards compatibility
   private static HttpPipelinePolicy getAuthenticationPolicy(
       Configuration.AadAuthentication configuration, String aadAudienceWithScope) {
     switch (configuration.type) {

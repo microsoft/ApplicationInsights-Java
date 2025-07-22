@@ -104,7 +104,7 @@ public class ConfigurationBuilder {
   private static final String APPLICATIONINSIGHTS_PREVIEW_PROFILER_ENABLEDIAGNOSTICS =
       "APPLICATIONINSIGHTS_PREVIEW_PROFILER_ENABLEDIAGNOSTICS";
 
-  // supported for backwards compatibility
+  // this env var is deprecated but supported for backwards compatibility
   private static final String APPLICATIONINSIGHTS_PREVIEW_METRIC_INTERVAL_SECONDS =
       "APPLICATIONINSIGHTS_PREVIEW_METRIC_INTERVAL_SECONDS";
 
@@ -141,8 +141,7 @@ public class ConfigurationBuilder {
     return config;
   }
 
-  @SuppressWarnings(
-      "deprecation") // logging warnings for usages of deprecated configuration options
+  @SuppressWarnings("deprecation") // log usages of deprecated configuration options
   private static void logConfigurationWarnings(Configuration config) {
     if (config.instrumentation.micrometer.reportingIntervalSeconds != 60) {
       configurationLogger.warn(
@@ -356,8 +355,7 @@ public class ConfigurationBuilder {
     }
   }
 
-  @SuppressWarnings(
-      "deprecation") // support deprecated semconv attributes for backwards compatibility
+  @SuppressWarnings("deprecation") // support deprecated semconv for backwards compatibility
   private static String mapAttributeKey(String oldAttributeKey) {
     String result = null;
     // Common attributes across HTTP client and server spans
@@ -483,8 +481,7 @@ public class ConfigurationBuilder {
     return jvmName != null && jvmName.contains("OpenJ9");
   }
 
-  @SuppressWarnings(
-      "deprecation") // support deprecated configuration options for backwards compatibility
+  @SuppressWarnings("deprecation") // support deprecated configuration for backwards compatibility
   private static void overlayAadEnvVars(
       Configuration config, Function<String, String> envVarsFunction) {
     String aadAuthString = getEnvVar(APPLICATIONINSIGHTS_AUTHENTICATION_STRING, envVarsFunction);
