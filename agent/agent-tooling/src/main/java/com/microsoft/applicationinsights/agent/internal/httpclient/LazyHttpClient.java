@@ -150,6 +150,7 @@ public class LazyHttpClient implements HttpClient {
     return getDelegate().send(request, context);
   }
 
+  @SuppressWarnings("deprecation") // support deprecated configuration for backwards compatibility
   private static HttpPipelinePolicy getAuthenticationPolicy(
       Configuration.AadAuthentication configuration, String aadAudienceWithScope) {
     switch (configuration.type) {
@@ -174,6 +175,7 @@ public class LazyHttpClient implements HttpClient {
         managedIdentityCredential.build(), aadAudienceWithScope);
   }
 
+  @Deprecated
   private static HttpPipelinePolicy getAuthenticationPolicyWithClientSecret(
       Configuration.AadAuthentication configuration, String aadAudienceWithScope) {
     ClientSecretCredentialBuilder credential =
