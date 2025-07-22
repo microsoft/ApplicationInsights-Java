@@ -13,7 +13,7 @@ tasks.war {
 
 val aiSmokeTest = extensions.getByType(AiSmokeTestExtension::class)
 
-aiSmokeTest.testAppArtifactDir.set(tasks.named<War>("war").flatMap { it.destinationDirectory })
+aiSmokeTest.testAppArtifactDir.set(tasks.war.flatMap { it.destinationDirectory })
 aiSmokeTest.testAppArtifactFilename.set(project.name + ".war")
 
 dependencies {
