@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory;
 
 /** Implementation of a single GCCollectionEvent formed from data from an MxBean. */
 class GcCollectionSample implements GcCollectionEvent {
-  private static final Logger LOGGER = LoggerFactory.getLogger(GcCollectionSample.class);
+  private static final Logger logger = LoggerFactory.getLogger(GcCollectionSample.class);
 
   private static final String ID = "id";
 
@@ -77,7 +77,7 @@ class GcCollectionSample implements GcCollectionEvent {
         }
       }
     } catch (RuntimeException e) {
-      LOGGER.error("Failed to group pool data", e);
+      logger.error("Failed to group pool data", e);
     }
     return Collections.unmodifiableMap(byIdentifier);
   }

@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
 
 /** Contains analysis pipelines for all metric types. */
 public class AlertPipelines {
-  private static final Logger LOGGER = LoggerFactory.getLogger(AlertPipelines.class);
+  private static final Logger logger = LoggerFactory.getLogger(AlertPipelines.class);
 
   // List of alert analysis pipelines for each metric type, entrypoint
   // for the pipeline is a rolling average
@@ -59,7 +59,7 @@ public class AlertPipelines {
       pipeline.updateConfig(newAlertConfig);
     }
 
-    LOGGER.debug(
+    logger.debug(
         "Set alert configuration for {}: {}", newAlertConfig.getType(), newAlertConfig.toString());
   }
 
@@ -86,7 +86,7 @@ public class AlertPipelines {
 
     alertPipelines.put(AlertMetricType.REQUEST, new AlertPipelineMultiplexer(requestPipelines));
 
-    LOGGER.debug(
+    logger.debug(
         "Set alert configuration for {}: {} pipelines updated",
         AlertMetricType.REQUEST,
         newAlertConfig.size());

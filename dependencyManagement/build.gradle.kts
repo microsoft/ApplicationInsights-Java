@@ -1,9 +1,5 @@
-import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
-
 plugins {
   `java-platform`
-
-  id("com.github.ben-manes.versions")
 }
 
 data class DependencySet(val group: String, val version: String, val modules: List<String>)
@@ -11,9 +7,9 @@ data class DependencySet(val group: String, val version: String, val modules: Li
 val dependencyVersions = hashMapOf<String, String>()
 rootProject.extra["versions"] = dependencyVersions
 
-val otelSdkVersion = "1.51.0"
-val otelInstrumentationAlphaVersion = "2.17.1-alpha"
-val otelInstrumentationVersion = "2.17.1"
+val otelSdkVersion = "1.52.0"
+val otelInstrumentationAlphaVersion = "2.18.1-alpha"
+val otelInstrumentationVersion = "2.18.1"
 val otelContribVersion = "1.47.0"
 
 rootProject.extra["otelInstrumentationVersion"] = otelInstrumentationVersion
@@ -64,14 +60,12 @@ val CORE_DEPENDENCIES = listOf(
 val DEPENDENCIES = listOf(
   "ch.qos.logback:logback-classic:1.3.15", // logback 1.4+ requires Java 11+
   "ch.qos.logback.contrib:logback-json-classic:0.1.5",
-  "com.uber.nullaway:nullaway:0.12.7",
   "commons-codec:commons-codec:1.18.0",
   "org.apache.commons:commons-text:1.13.1",
   "com.google.code.gson:gson:2.13.1",
   "com.azure:azure-core-test:1.26.2", // this is not included in azure-sdk-bom
   "org.assertj:assertj-core:3.27.3",
   "org.awaitility:awaitility:4.3.0",
-  "io.github.hakky54:logcaptor:2.11.0",
   "io.opentelemetry.contrib:opentelemetry-jfr-connection:${otelContribVersion}-alpha",
   "io.opentelemetry.contrib:opentelemetry-runtime-attach-core:${otelContribVersion}-alpha",
   "com.google.code.findbugs:jsr305:3.0.2",
@@ -100,25 +94,6 @@ dependencies {
       api(dependency)
       val split = dependency.split(':')
       dependencyVersions[split[0]] = split[2]
-    }
-  }
-}
-
-fun isNonStable(version: String): Boolean {
-  val stableKeyword = listOf("RELEASE", "FINAL", "GA").any { version.uppercase().contains(it) }
-  val regex = "^[0-9,.v-]+(-r)?$".toRegex()
-  val isGuava = version.endsWith("-jre")
-  val isStable = stableKeyword || regex.matches(version) || isGuava
-  return isStable.not()
-}
-
-tasks {
-  named<DependencyUpdatesTask>("dependencyUpdates") {
-    revision = "release"
-    checkConstraints = true
-
-    rejectVersionIf {
-      isNonStable(candidate.version)
     }
   }
 }

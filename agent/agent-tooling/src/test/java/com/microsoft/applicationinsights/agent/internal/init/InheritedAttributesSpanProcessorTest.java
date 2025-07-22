@@ -4,6 +4,7 @@
 package com.microsoft.applicationinsights.agent.internal.init;
 
 import static io.opentelemetry.api.trace.SpanKind.INTERNAL;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static io.opentelemetry.sdk.testing.assertj.TracesAssert.assertThat;
 import static org.assertj.core.api.Assertions.entry;
 import static org.awaitility.Awaitility.await;
@@ -14,7 +15,6 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions;
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
@@ -61,7 +61,7 @@ public class InheritedAttributesSpanProcessorTest {
                             .hasKind(INTERNAL)
                             .hasAttributesSatisfying(
                                 attributes ->
-                                    OpenTelemetryAssertions.assertThat(attributes)
+                                    assertThat(attributes)
                                         .containsOnly(entry(oneStringKey, "1")))));
   }
 
@@ -93,15 +93,14 @@ public class InheritedAttributesSpanProcessorTest {
                             .hasKind(INTERNAL)
                             .hasAttributesSatisfying(
                                 attributes ->
-                                    OpenTelemetryAssertions.assertThat(attributes)
-                                        .containsOnly(entry(oneStringKey, "1"))),
+                                    assertThat(attributes).containsOnly(entry(oneStringKey, "1"))),
                     parentSpan ->
                         parentSpan
                             .hasName("parent")
                             .hasKind(INTERNAL)
                             .hasAttributesSatisfying(
                                 attributes ->
-                                    OpenTelemetryAssertions.assertThat(attributes)
+                                    assertThat(attributes)
                                         .containsOnly(entry(oneStringKey, "1")))));
   }
 
@@ -134,8 +133,7 @@ public class InheritedAttributesSpanProcessorTest {
                             .hasKind(INTERNAL)
                             .hasAttributesSatisfying(
                                 attributes ->
-                                    OpenTelemetryAssertions.assertThat(attributes)
-                                        .containsOnly(entry(oneLongKey, 1L)))));
+                                    assertThat(attributes).containsOnly(entry(oneLongKey, 1L)))));
   }
 
   private Tracer newTracer(List<Configuration.InheritedAttribute> inheritedAttributes) {

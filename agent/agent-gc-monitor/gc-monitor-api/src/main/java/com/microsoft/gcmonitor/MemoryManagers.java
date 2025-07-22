@@ -41,6 +41,7 @@ public enum MemoryManagers {
         "Unable to find garbage collector group for the memory manager");
   }
 
+  @SafeVarargs
   MemoryManagers(Class<? extends GarbageCollector>... allCollectors) {
     this.managers = allCollectors;
   }

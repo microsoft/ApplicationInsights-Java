@@ -95,7 +95,7 @@ tasks {
     dependsOn(relocateJavaagentLibs)
     isolateClasses(relocateJavaagentLibs.get().outputs.files)
 
-    into("$buildDir/isolated/javaagentLibs")
+    into(layout.buildDirectory.dir("isolated/javaagentLibs"))
   }
 
   // 3. the relocated and isolated javaagent libs are merged together with the bootstrap libs (which undergo relocation
@@ -162,8 +162,18 @@ tasks {
     delete(rootProject.file("licenses"))
   }
 
+  val generateLicenseReportEnabled =
+    gradle.startParameter.taskNames.any { it.equals("generateLicenseReport") }
   named("generateLicenseReport").configure {
     dependsOn(cleanLicenses)
+    finalizedBy(":spotlessApply")
+    // disable licence report generation unless this task is explicitly run
+    // the files produced by this task are used by other tasks without declaring them as dependency
+    // which gradle considers an error
+    enabled = enabled && generateLicenseReportEnabled
+  }
+  if (generateLicenseReportEnabled) {
+    project.parent?.parent?.tasks?.getByName("spotlessMisc")?.dependsOn(named("generateLicenseReport"))
   }
 }
 

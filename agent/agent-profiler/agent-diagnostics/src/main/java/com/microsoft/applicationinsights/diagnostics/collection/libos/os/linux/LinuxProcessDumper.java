@@ -19,7 +19,7 @@ import org.slf4j.LoggerFactory;
 
 /** Detects running processes on the host. */
 public class LinuxProcessDumper implements ProcessDumper, Closeable {
-  private static final Logger LOGGER = LoggerFactory.getLogger(LinuxProcessDumper.class);
+  private static final Logger logger = LoggerFactory.getLogger(LinuxProcessDumper.class);
 
   private final boolean isDaemon;
   private Map<Integer, LinuxProcess> usage = new HashMap<>();
@@ -76,7 +76,7 @@ public class LinuxProcessDumper implements ProcessDumper, Closeable {
           try {
             removed.close();
           } catch (IOException e) {
-            LOGGER.error("Failed to close process", e);
+            logger.error("Failed to close process", e);
           }
         });
   }

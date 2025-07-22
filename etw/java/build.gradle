@@ -22,7 +22,9 @@ sourceSets {
   }
 }
 
-archivesBaseName = "applicationinsights-java-etw-provider"
+base {
+  archivesName = "applicationinsights-java-etw-provider"
+}
 
 logger.info "project ${project.path} prop: ai.etw.native.build=${System.properties['ai.etw.native.build']}"
 

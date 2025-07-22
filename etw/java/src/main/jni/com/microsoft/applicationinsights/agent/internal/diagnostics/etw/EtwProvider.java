@@ -14,7 +14,7 @@ public class EtwProvider {
   private static final String LIB_FILENAME_64_BIT =
       "applicationinsights-java-etw-provider-x86-64.dll";
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(EtwProvider.class);
+  private static final Logger logger = LoggerFactory.getLogger(EtwProvider.class);
 
   public EtwProvider(String sdkVersion) {
     String osname = System.getProperty("os.name");
@@ -22,10 +22,10 @@ public class EtwProvider {
       File dllPath = null;
       try {
         dllPath = loadLibrary(sdkVersion);
-        LOGGER.debug("EtwProvider initialized. Lib path={}", dllPath.getAbsolutePath());
+        logger.debug("EtwProvider initialized. Lib path={}", dllPath.getAbsolutePath());
       } catch (Throwable t) {
         try {
-          LOGGER.debug("Error initializing EtwProvider", t);
+          logger.debug("Error initializing EtwProvider", t);
           if (dllPath != null) {
             dllPath.deleteOnExit();
           }

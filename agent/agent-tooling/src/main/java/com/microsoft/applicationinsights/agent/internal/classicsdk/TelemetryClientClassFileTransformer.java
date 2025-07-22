@@ -1722,7 +1722,7 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
     content = content.replace("\r\n", "\n");
     content = content.replaceAll("(?m)^[^\n]*visitLineNumber[^\n]*\n", "");
     content = content.replaceAll("(?m)^[^\n]*visitLocalVariable[^\n]*\n", "");
-    System.out.println(content);
+    System.out.println(content); // CHECKSTYLE:OFF
   }
 
   @SuppressWarnings("UnnecessarilyFullyQualified")

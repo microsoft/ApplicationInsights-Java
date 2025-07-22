@@ -43,6 +43,7 @@ class JsonHelper {
 
     public BaseDataContractDeserializer() {
       classMap = new HashMap<>();
+      @SuppressWarnings("unchecked")
       Class<? extends Domain>[] classes =
           new Class[] {
             RequestData.class,
