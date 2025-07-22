@@ -34,6 +34,8 @@ public class AiContextCustomizer<R> implements ContextCustomizer<R> {
   }
 
   @Override
+  @SuppressWarnings(
+      "deprecation") // support deprecated semconv attributes for backwards compatibility
   public Context onStart(Context context, R request, Attributes startAttributes) {
 
     // TODO (trask) ideally would also check parentSpanContext !isValid || isRemote

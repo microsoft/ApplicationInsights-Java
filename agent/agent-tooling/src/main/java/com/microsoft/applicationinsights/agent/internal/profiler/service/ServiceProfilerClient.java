@@ -4,6 +4,7 @@
 package com.microsoft.applicationinsights.agent.internal.profiler.service;
 
 import com.azure.core.exception.HttpResponseException;
+import com.azure.core.http.HttpHeaderName;
 import com.azure.core.http.HttpMethod;
 import com.azure.core.http.HttpPipeline;
 import com.azure.core.http.HttpRequest;
@@ -69,7 +70,7 @@ public class ServiceProfilerClient {
       if (response.getStatusCode() >= 300) {
         throw new HttpResponseException(response);
       }
-      String location = response.getHeaderValue("Location");
+      String location = response.getHeaderValue(HttpHeaderName.LOCATION);
       if (location == null || location.isEmpty()) {
         throw new AssertionError("response did not have a location");
       }
@@ -86,7 +87,7 @@ public class ServiceProfilerClient {
 
     HttpRequest request = new HttpRequest(HttpMethod.POST, requestUrl);
     if (userAgent != null) {
-      request.setHeader("User-Agent", userAgent);
+      request.setHeader(HttpHeaderName.USER_AGENT, userAgent);
     }
     return httpPipeline.send(request);
   }
