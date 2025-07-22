@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
 
 public class CalibratorDefault implements Calibrator {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(ContextSwitchingRunner.class);
+  private static final Logger logger = LoggerFactory.getLogger(ContextSwitchingRunner.class);
 
   private final ContextSwitchingRunner contextSwitching;
   private final KernelMonitorDeviceDriver kernel;
@@ -69,7 +69,7 @@ public class CalibratorDefault implements Calibrator {
       double contextSwitchingRate = safeDiv(maxContextSwitches, timeDiagnosticsHadAvailable);
       return new Calibration(contextSwitchingRate);
     } catch (Throwable e) {
-      LOGGER.debug("Completing exceptionally", e);
+      logger.debug("Completing exceptionally", e);
     }
     return new Calibration(Calibration.UNKNOWN);
   }

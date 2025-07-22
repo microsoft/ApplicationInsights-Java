@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory;
  * thread.
  */
 public class NotificationObserver implements NotificationListener {
-  private static final Logger LOGGER = LoggerFactory.getLogger(NotificationObserver.class);
+  private static final Logger logger = LoggerFactory.getLogger(NotificationObserver.class);
   private static final int MAX_QUEUE_SIZE = 1000;
   private final LinkedBlockingQueue<NotificationJob> workQueue =
       new LinkedBlockingQueue<>(MAX_QUEUE_SIZE);
@@ -46,7 +46,7 @@ public class NotificationObserver implements NotificationListener {
         workQueue.offer(new NotificationJob((JmxGarbageCollectorStats) handback, notification));
       }
     } catch (RuntimeException e) {
-      LOGGER.error("Failed to process gc notification", e);
+      logger.error("Failed to process gc notification", e);
     }
   }
 
@@ -63,7 +63,7 @@ public class NotificationObserver implements NotificationListener {
                   sample.collector.update(sample.notification);
                 }
               } catch (RuntimeException e) {
-                LOGGER.error("Error while reading GC notification data", e);
+                logger.error("Error while reading GC notification data", e);
               }
             }
           } catch (InterruptedException e) {

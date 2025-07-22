@@ -45,7 +45,7 @@ import org.slf4j.LoggerFactory;
  */
 @SuppressWarnings("Java8ApiChecker")
 public class SystemStatsProvider {
-  private static final Logger LOGGER = LoggerFactory.getLogger(SystemStatsProvider.class);
+  private static final Logger logger = LoggerFactory.getLogger(SystemStatsProvider.class);
 
   private static final AtomicBoolean initialised = new AtomicBoolean(false);
 
@@ -67,7 +67,7 @@ public class SystemStatsProvider {
           // Close until needed
           close();
         } catch (RuntimeException e) {
-          LOGGER.error("Failed to initialise Code Optimizer", e);
+          logger.error("Failed to initialise Code Optimizer", e);
         }
       }
     }
@@ -95,7 +95,7 @@ public class SystemStatsProvider {
           try {
             ((Closeable) instance).close();
           } catch (IOException e) {
-            LOGGER.error("Failed to close", e);
+            logger.error("Failed to close", e);
           }
         }
       }
@@ -120,7 +120,7 @@ public class SystemStatsProvider {
                 .setCpuPeriod(reader.getCpuPeriod());
 
           } catch (RuntimeException | OperatingSystemInteractionException e) {
-            LOGGER.warn("No CGroup data present");
+            logger.warn("No CGroup data present");
             return null;
           }
         });
@@ -227,7 +227,7 @@ public class SystemStatsProvider {
       ssr.readTelemetry();
       ssr.readTelemetry();
     } catch (OperatingSystemInteractionException | SystemStatsReader.ReaderClosedException e) {
-      LOGGER.warn("Failed to read telemetry", e);
+      logger.warn("Failed to read telemetry", e);
     }
     return ssr;
   }
@@ -262,7 +262,7 @@ public class SystemStatsProvider {
             try {
               ((Closeable) instance).close();
             } catch (IOException e) {
-              LOGGER.error("Failed to close reader", e);
+              logger.error("Failed to close reader", e);
             }
 
             singletons.get(clazz).set(null);

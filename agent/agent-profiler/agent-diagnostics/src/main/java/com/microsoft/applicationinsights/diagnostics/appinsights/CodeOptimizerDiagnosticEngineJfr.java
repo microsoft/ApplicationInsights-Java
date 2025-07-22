@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory;
  * coordinate emitting diagnostics on a breach.
  */
 public class CodeOptimizerDiagnosticEngineJfr implements DiagnosticEngine {
-  private static final Logger LOGGER =
+  private static final Logger logger =
       LoggerFactory.getLogger(CodeOptimizerDiagnosticEngineJfr.class);
   public static final int SEMAPHORE_TIMEOUT_IN_SEC = 10;
   public static final long TIME_BEFORE_END_OF_PROFILE_TO_EMIT_EVENT = 10L;
@@ -42,25 +42,25 @@ public class CodeOptimizerDiagnosticEngineJfr implements DiagnosticEngine {
   @Override
   public void init(int thisPid) {
     if (!CodeOptimizerDiagnosticsJfrInit.isOsSupported()) {
-      LOGGER.warn("Code Optimizer diagnostics is not supported on this operating system");
+      logger.warn("Code Optimizer diagnostics is not supported on this operating system");
       return;
     }
 
     this.thisPid = thisPid;
 
-    LOGGER.debug("Initialising Code Optimizer Diagnostic Engine");
+    logger.debug("Initialising Code Optimizer Diagnostic Engine");
     CodeOptimizerDiagnosticsJfrInit.initFeature(thisPid);
-    LOGGER.debug("Code Optimizer Diagnostic Engine Initialised");
+    logger.debug("Code Optimizer Diagnostic Engine Initialised");
   }
 
   private static void startDiagnosticCycle(int thisPid) {
-    LOGGER.debug("Starting Code Optimizer Diagnostic Cycle");
+    logger.debug("Starting Code Optimizer Diagnostic Cycle");
     CodeOptimizerDiagnosticsJfrInit.initFeature(thisPid);
     CodeOptimizerDiagnosticsJfrInit.start(thisPid);
   }
 
   private static void endDiagnosticCycle() {
-    LOGGER.debug("Ending Code Optimizer Diagnostic Cycle");
+    logger.debug("Ending Code Optimizer Diagnostic Cycle");
     CodeOptimizerDiagnosticsJfrInit.stop();
   }
 
@@ -106,10 +106,10 @@ public class CodeOptimizerDiagnosticEngineJfr implements DiagnosticEngine {
             // We do not return a result atm
             diagnosisResultCompletableFuture.complete(null);
 
-            LOGGER.debug("Shutting down diagnostic cycle");
+            logger.debug("Shutting down diagnostic cycle");
             endDiagnosticCycle();
           } catch (RuntimeException e) {
-            LOGGER.error("Failed to shutdown cleanly", e);
+            logger.error("Failed to shutdown cleanly", e);
           } finally {
             semaphore.release();
           }
@@ -125,7 +125,7 @@ public class CodeOptimizerDiagnosticEngineJfr implements DiagnosticEngine {
           try {
             emitInfo(alert);
           } catch (RuntimeException e) {
-            LOGGER.error("Failed to emit breach", e);
+            logger.error("Failed to emit breach", e);
           }
         },
         end / 2,
@@ -133,7 +133,7 @@ public class CodeOptimizerDiagnosticEngineJfr implements DiagnosticEngine {
   }
 
   private static void emitInfo(AlertBreach alert) {
-    LOGGER.debug("Emitting Code Optimizer Diagnostic Event");
+    logger.debug("Emitting Code Optimizer Diagnostic Event");
     emitAlertBreachJfrEvent(alert);
     CodeOptimizerDiagnosticsJfrInit.emitCGroupData();
     emitMachineStats();
@@ -150,9 +150,9 @@ public class CodeOptimizerDiagnosticEngineJfr implements DiagnosticEngine {
       alert.toJson(writer).flush();
       AlertBreachJfrEvent event = new AlertBreachJfrEvent().setAlertBreach(stringWriter.toString());
       event.commit();
-      LOGGER.debug("Emitted Code Optimizer Diagnostic Event");
+      logger.debug("Emitted Code Optimizer Diagnostic Event");
     } catch (IOException e) {
-      LOGGER.error("Failed to create breach JFR event", e);
+      logger.error("Failed to create breach JFR event", e);
     }
   }
 }

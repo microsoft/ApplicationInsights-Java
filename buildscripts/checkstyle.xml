@@ -50,6 +50,18 @@
   -->
 
   <module name="TreeWalker">
+    <module name="RegexpSinglelineJava">
+      <property name="format"
+                value="(?&lt;!import static io.opentelemetry.sdk.testing.assertj.)OpenTelemetryAssertions\."/>
+      <property name="message"
+                value="Please statically import methods from OpenTelemetryAssertions"/>
+    </module>
+    <module name="RegexpSinglelineJava">
+      <property name="format"
+                value="(?&lt;!import static org.assertj.core.api.|OpenTelemetry)Assertions.assertThat"/>
+      <property name="message"
+                value="Please statically import methods from Assertions (OpenTelemetryAssertions extends Assertions)"/>
+    </module>
     <module name="OuterTypeFilename"/>
     <module name="IllegalTokenText">
       <property name="tokens" value="STRING_LITERAL, CHAR_LITERAL"/>
@@ -77,30 +89,8 @@
       <property name="tokens"
         value="LITERAL_DO, LITERAL_ELSE, LITERAL_FOR, LITERAL_IF, LITERAL_WHILE"/>
     </module>
-    <module name="LeftCurly">
-      <property name="tokens"
-        value="ANNOTATION_DEF, CLASS_DEF, CTOR_DEF, ENUM_CONSTANT_DEF, ENUM_DEF,
-                    INTERFACE_DEF, LAMBDA, LITERAL_CASE, LITERAL_CATCH, LITERAL_DEFAULT,
-                    LITERAL_DO, LITERAL_ELSE, LITERAL_FINALLY, LITERAL_FOR, LITERAL_IF,
-                    LITERAL_SWITCH, LITERAL_SYNCHRONIZED, LITERAL_TRY, LITERAL_WHILE, METHOD_DEF,
-                    OBJBLOCK, STATIC_INIT, RECORD_DEF, COMPACT_CTOR_DEF"/>
-    </module>
-    <module name="RightCurly">
-      <property name="id" value="RightCurlySame"/>
-      <property name="tokens"
-        value="LITERAL_TRY, LITERAL_CATCH, LITERAL_FINALLY, LITERAL_IF, LITERAL_ELSE,
-                    LITERAL_DO"/>
-    </module>
-    <module name="RightCurly">
-      <property name="id" value="RightCurlyAlone"/>
-      <property name="option" value="alone"/>
-      <property name="tokens"
-        value="CLASS_DEF, METHOD_DEF, CTOR_DEF, LITERAL_FOR, LITERAL_WHILE, STATIC_INIT,
-                    INSTANCE_INIT, ANNOTATION_DEF, ENUM_DEF, INTERFACE_DEF, RECORD_DEF,
-                    COMPACT_CTOR_DEF"/>
-    </module>
     <module name="SuppressionXpathSingleFilter">
-      <!-- suppresion is required till https://github.com/checkstyle/checkstyle/issues/7541 -->
+      <!-- suppression is required till https://github.com/checkstyle/checkstyle/issues/7541 -->
       <property name="id" value="RightCurlyAlone"/>
       <property name="query" value="//RCURLY[parent::SLIST[count(./*)=1]
                                      or preceding-sibling::*[last()][self::LCURLY]]"/>
@@ -190,6 +180,11 @@
       <message key="name.invalidPattern"
         value="Member name ''{0}'' must match pattern ''{1}''."/>
     </module>
+    <module name="ConstantName">
+      <property name="format" value="^(?!log$)(?!LOG$)(?!LOGGER$)"/>
+      <message key="name.invalidPattern"
+        value="Logger fields must be named ''logger''."/>
+    </module>
     <module name="ParameterName">
       <property name="format" value="^[a-z]([a-z0-9][a-zA-Z0-9]*)?$"/>
       <message key="name.invalidPattern"
@@ -222,7 +217,7 @@
         value="Class type name ''{0}'' must match pattern ''{1}''."/>
     </module>
     <module name="RecordTypeParameterName">
-      <property name="format" value="(^[A-Z][0-9]?)$|([A-Z][a-zA-Z0-9]*[T]$)"/>
+      <property name="format" value="^[A-Z]+[0-9]?$"/>
       <message key="name.invalidPattern"
         value="Record type name ''{0}'' must match pattern ''{1}''."/>
     </module>
@@ -259,6 +254,7 @@
       <property name="arrayInitIndent" value="2"/>
     </module>
     -->
+    <!-- handled by error prone
     <module name="AbbreviationAsWordInName">
       <property name="ignoreFinal" value="false"/>
       <property name="allowedAbbreviationLength" value="0"/>
@@ -267,6 +263,7 @@
                     PARAMETER_DEF, VARIABLE_DEF, METHOD_DEF, PATTERN_VARIABLE_DEF, RECORD_DEF,
                     RECORD_COMPONENT_DEF"/>
     </module>
+    -->
     <module name="OverloadMethodsDeclarationOrder"/>
     <!-- there are only a few violations of this, and they all appear to be for good reasons
     <module name="VariableDeclarationUsageDistance"/>
@@ -322,8 +319,7 @@
         value="^@return the *|^This method returns |^A [{]@code [a-zA-Z0-9]+[}]( is a )"/>
     </module-->
     <module name="JavadocParagraph"/>
-    <!-- needed temporarily while hosting azure-monitor-opentelemetry-exporter in this repo -->
-    <!--module name="RequireEmptyLineBeforeBlockTagGroup"/-->
+    <module name="RequireEmptyLineBeforeBlockTagGroup"/>
     <module name="AtclauseOrder">
       <property name="tagOrder" value="@param, @return, @throws, @deprecated"/>
       <property name="target"
@@ -359,9 +355,10 @@
       <!-- modified from "expected" to "ignored" to match Intellij -->
       <property name="exceptionVariableName" value="ignored"/>
     </module>
-    <module name="CommentsIndentation">
+    <!-- using Google Java Format which sometimes conflicts with this indentation rule -->
+    <!-- module name="CommentsIndentation">
       <property name="tokens" value="SINGLE_LINE_COMMENT, BLOCK_COMMENT_BEGIN"/>
-    </module>
+    </module -->
     <!-- https://checkstyle.org/config_filters.html#SuppressionXpathFilter -->
     <module name="SuppressionXpathFilter">
       <property name="file" value="${org.checkstyle.google.suppressionxpathfilter.config}"
@@ -370,6 +367,17 @@
     </module>
     <!-- this enables @SuppressWarnings("checkstyle:...") annotations -->
     <module name="SuppressWarningsHolder"/>
+    <!-- this enables CHECKSTYLE:OFF and CHECKSTYLE:ON comments -->
+    <module name="SuppressionCommentFilter"/>
+    <module name="Regexp">
+      <!-- see comment in otel.errorprone-conventions.gradle.kts for why we disable the SystemOut
+           rule there and rely on this check -->
+      <property name="id" value="SystemOut"/>
+      <!-- . matches any character, so we need to escape it and use \. to match dots. -->
+      <property name="format"
+        value="(System\.out\.print|System\.err\.print|\.printStackTrace\(\)|Thread\.dumpStack)"/>
+      <property name="illegalPattern" value="true"/>
+    </module>
   </module>
   <!-- this enables @SuppressWarnings("checkstyle:...") annotations -->
   <module name="SuppressWarningsFilter"/>
