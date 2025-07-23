@@ -233,6 +233,6 @@ configurations {
     exclude("com.fasterxml.jackson.dataformat", "jackson-dataformat-xml")
     exclude("com.fasterxml.woodstox", "woodstox-core")
     // waiting for azure-identity to be bumped in the Azure SDK BOM
-    resolutionStrategy.force("com.azure:azure-identity:1.16.2")
+    resolutionStrategy.force("com.azure:azure-identity:1.16.3")
   }
 }
