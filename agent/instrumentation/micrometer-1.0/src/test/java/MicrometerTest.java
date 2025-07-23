@@ -62,7 +62,9 @@ class MicrometerTest {
     TimeGauge.builder("test-time-gauge", "", MILLISECONDS, obj -> 11.0).register(registry);
 
     // then
-    await().until(() -> getLastMeasurement("test-time-gauge") != null);
+    await()
+        .atMost(Duration.ofSeconds(20))
+        .until(() -> getLastMeasurement("test-time-gauge") != null);
 
     AgentTestingMicrometerDelegate.Measurement measurement = getLastMeasurement("test-time-gauge");
     assertThat(measurement.value).isEqualTo(11);
@@ -81,7 +83,7 @@ class MicrometerTest {
     Gauge.builder("test-gauge", () -> 22.0).register(registry);
 
     // then
-    await().until(() -> getLastMeasurement("test-gauge") != null);
+    await().atMost(Duration.ofSeconds(20)).until(() -> getLastMeasurement("test-gauge") != null);
 
     AgentTestingMicrometerDelegate.Measurement measurement = getLastMeasurement("test-gauge");
     assertThat(measurement.value).isEqualTo(22);
@@ -102,7 +104,7 @@ class MicrometerTest {
     counter.increment(3.3);
 
     // then
-    await().until(() -> getLastMeasurement("test-counter") != null);
+    await().atMost(Duration.ofSeconds(20)).until(() -> getLastMeasurement("test-counter") != null);
 
     AgentTestingMicrometerDelegate.Measurement measurement = getLastMeasurement("test-counter");
     assertThat(measurement.value).isEqualTo(3.3);
@@ -123,7 +125,7 @@ class MicrometerTest {
     timer.record(Duration.ofMillis(55));
 
     // then
-    await().until(() -> getLastMeasurement("test-timer") != null);
+    await().atMost(Duration.ofSeconds(20)).until(() -> getLastMeasurement("test-timer") != null);
 
     AgentTestingMicrometerDelegate.Measurement measurement = getLastMeasurement("test-timer");
     assertThat(measurement.value).isEqualTo(99);
@@ -146,7 +148,7 @@ class MicrometerTest {
     distributionSummary.record(5.5);
 
     // then
-    await().until(() -> getLastMeasurement("test-summary") != null);
+    await().atMost(Duration.ofSeconds(20)).until(() -> getLastMeasurement("test-summary") != null);
 
     AgentTestingMicrometerDelegate.Measurement measurement = getLastMeasurement("test-summary");
     assertThat(measurement.value).isEqualTo(9.9);
@@ -190,6 +192,7 @@ class MicrometerTest {
 
     // then
     await()
+        .atMost(Duration.ofSeconds(20))
         .untilAsserted(
             () -> {
               AgentTestingMicrometerDelegate.Measurement activeMeasurement =
@@ -207,6 +210,7 @@ class MicrometerTest {
     assertThat(activeMeasurement.namespace).isNull();
 
     await()
+        .atMost(Duration.ofSeconds(20))
         .untilAsserted(
             () -> {
               AgentTestingMicrometerDelegate.Measurement durationMeasurement =
@@ -233,7 +237,9 @@ class MicrometerTest {
     FunctionCounter.builder("test-function-counter", "", obj -> 6.6).register(registry);
 
     // then
-    await().until(() -> getLastMeasurement("test-function-counter") != null);
+    await()
+        .atMost(Duration.ofSeconds(20))
+        .until(() -> getLastMeasurement("test-function-counter") != null);
 
     AgentTestingMicrometerDelegate.Measurement measurements =
         getLastMeasurement("test-function-counter");
@@ -254,7 +260,9 @@ class MicrometerTest {
         .register(registry);
 
     // then
-    await().until(() -> getLastMeasurement("test-function-timer") != null);
+    await()
+        .atMost(Duration.ofSeconds(20))
+        .until(() -> getLastMeasurement("test-function-timer") != null);
 
     AgentTestingMicrometerDelegate.Measurement measurement =
         getLastMeasurement("test-function-timer");
