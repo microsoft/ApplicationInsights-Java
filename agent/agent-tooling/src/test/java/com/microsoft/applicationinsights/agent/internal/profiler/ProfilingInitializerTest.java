@@ -29,27 +29,27 @@ import org.mockito.Mockito;
 
 public class ProfilingInitializerTest {
   private static class ProfilingInitializerTestCaseBuilder {
-    public final String name;
-    public final List<ProfilerConfiguration> configurations = new ArrayList<>();
+    final String name;
+    final List<ProfilerConfiguration> configurations = new ArrayList<>();
 
     private ProfilingInitializerTestCaseBuilder(String name) {
       this.name = name;
     }
 
-    public ProfilingInitializerTestCaseBuilder then(ProfilerConfiguration configuration) {
+    ProfilingInitializerTestCaseBuilder then(ProfilerConfiguration configuration) {
       configurations.add(configuration);
       return this;
     }
 
-    public ProfilingInitializerTestCase assertThat(Consumer<ProfilingInitializer> assertion) {
+    ProfilingInitializerTestCase assertThat(Consumer<ProfilingInitializer> assertion) {
       return new ProfilingInitializerTestCase(name, configurations, assertion);
     }
   }
 
   private static class ProfilingInitializerTestCase {
-    public final String name;
-    public final List<ProfilerConfiguration> configurations;
-    public final Consumer<ProfilingInitializer> assertion;
+    final String name;
+    final List<ProfilerConfiguration> configurations;
+    final Consumer<ProfilingInitializer> assertion;
 
     private ProfilingInitializerTestCase(
         String name,
