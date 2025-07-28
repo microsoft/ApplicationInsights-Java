@@ -64,12 +64,12 @@ _2025-07-25 03:50:10 UTC_
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
 
-**11** **Group:** `commons-codec` **Name:** `commons-codec` **Version:** `1.18.0`
+**11** **Group:** `commons-codec` **Name:** `commons-codec` **Version:** `1.19.0`
 > - **Project URL**: [https://commons.apache.org/proper/commons-codec/](https://commons.apache.org/proper/commons-codec/)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
-> - **Embedded license files**: [commons-codec-1.18.0.jar/META-INF/LICENSE.txt](commons-codec-1.18.0.jar/META-INF/LICENSE.txt)
-    - [commons-codec-1.18.0.jar/META-INF/NOTICE.txt](commons-codec-1.18.0.jar/META-INF/NOTICE.txt)
+> - **Embedded license files**: [commons-codec-1.19.0.jar/META-INF/LICENSE.txt](commons-codec-1.19.0.jar/META-INF/LICENSE.txt)
+    - [commons-codec-1.19.0.jar/META-INF/NOTICE.txt](commons-codec-1.19.0.jar/META-INF/NOTICE.txt)
 
 **12** **Group:** `io.netty` **Name:** `netty-buffer` **Version:** `4.2.3.Final`
 > - **Manifest Project URL**: [https://netty.io/](https://netty.io/)

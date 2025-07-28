@@ -23,7 +23,7 @@ val DEPENDENCY_BOMS = listOf(
   "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${otelInstrumentationAlphaVersion}",
   "com.azure:azure-sdk-bom:1.2.36",
   "io.netty:netty-bom:4.2.3.Final",
-  "org.junit:junit-bom:5.13.3",
+  "org.junit:junit-bom:5.13.4",
   "org.testcontainers:testcontainers-bom:1.21.3",
 )
 
@@ -60,7 +60,7 @@ val CORE_DEPENDENCIES = listOf(
 val DEPENDENCIES = listOf(
   "ch.qos.logback:logback-classic:1.3.15", // logback 1.4+ requires Java 11+
   "ch.qos.logback.contrib:logback-json-classic:0.1.5",
-  "commons-codec:commons-codec:1.18.0",
+  "commons-codec:commons-codec:1.19.0",
   "org.apache.commons:commons-text:1.13.1",
   "com.google.code.gson:gson:2.13.1",
   "com.azure:azure-core-test:1.26.2", // this is not included in azure-sdk-bom
