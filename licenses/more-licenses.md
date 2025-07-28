@@ -1,7 +1,7 @@
 
 # agent
 ## Dependency License Report
-_2025-07-25 03:50:10 UTC_
+_2025-07-28 20:28:50 UTC_
 ## Apache License, Version 2.0
 
 **1** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-annotations` **Version:** `2.19.2`
@@ -53,13 +53,13 @@ _2025-07-25 03:50:10 UTC_
 > - **POM Project URL**: [https://bitbucket.org/connect2id/nimbus-language-tags](https://bitbucket.org/connect2id/nimbus-language-tags)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
-**9** **Group:** `com.nimbusds` **Name:** `nimbus-jose-jwt` **Version:** `10.0.1`
+**9** **Group:** `com.nimbusds` **Name:** `nimbus-jose-jwt` **Version:** `10.0.2`
 > - **Manifest Project URL**: [https://connect2id.com](https://connect2id.com)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM Project URL**: [https://bitbucket.org/connect2id/nimbus-jose-jwt](https://bitbucket.org/connect2id/nimbus-jose-jwt)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
-**10** **Group:** `com.nimbusds` **Name:** `oauth2-oidc-sdk` **Version:** `11.23`
+**10** **Group:** `com.nimbusds` **Name:** `oauth2-oidc-sdk` **Version:** `11.23.1`
 > - **Project URL**: [https://bitbucket.org/connect2id/oauth-2.0-sdk-with-openid-connect-extensions](https://bitbucket.org/connect2id/oauth-2.0-sdk-with-openid-connect-extensions)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
@@ -279,19 +279,19 @@ _2025-07-25 03:50:10 UTC_
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
-**56** **Group:** `org.apache.commons` **Name:** `commons-lang3` **Version:** `3.17.0`
+**56** **Group:** `org.apache.commons` **Name:** `commons-lang3` **Version:** `3.18.0`
 > - **Project URL**: [https://commons.apache.org/proper/commons-lang/](https://commons.apache.org/proper/commons-lang/)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
-> - **Embedded license files**: [commons-lang3-3.17.0.jar/META-INF/LICENSE.txt](commons-lang3-3.17.0.jar/META-INF/LICENSE.txt)
-    - [commons-lang3-3.17.0.jar/META-INF/NOTICE.txt](commons-lang3-3.17.0.jar/META-INF/NOTICE.txt)
+> - **Embedded license files**: [commons-lang3-3.18.0.jar/META-INF/LICENSE.txt](commons-lang3-3.18.0.jar/META-INF/LICENSE.txt)
+    - [commons-lang3-3.18.0.jar/META-INF/NOTICE.txt](commons-lang3-3.18.0.jar/META-INF/NOTICE.txt)
 
-**57** **Group:** `org.apache.commons` **Name:** `commons-text` **Version:** `1.13.1`
+**57** **Group:** `org.apache.commons` **Name:** `commons-text` **Version:** `1.14.0`
 > - **Project URL**: [https://commons.apache.org/proper/commons-text](https://commons.apache.org/proper/commons-text)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
-> - **Embedded license files**: [commons-text-1.13.1.jar/META-INF/LICENSE.txt](commons-text-1.13.1.jar/META-INF/LICENSE.txt)
-    - [commons-text-1.13.1.jar/META-INF/NOTICE.txt](commons-text-1.13.1.jar/META-INF/NOTICE.txt)
+> - **Embedded license files**: [commons-text-1.14.0.jar/META-INF/LICENSE.txt](commons-text-1.14.0.jar/META-INF/LICENSE.txt)
+    - [commons-text-1.14.0.jar/META-INF/NOTICE.txt](commons-text-1.14.0.jar/META-INF/NOTICE.txt)
 
 **58** **Group:** `org.slf4j` **Name:** `jcl-over-slf4j` **Version:** `2.0.17`
 > - **Project URL**: [http://www.slf4j.org](http://www.slf4j.org)
@@ -370,7 +370,7 @@ _2025-07-25 03:50:10 UTC_
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**71** **Group:** `com.azure` **Name:** `azure-identity` **Version:** `1.16.2`
+**71** **Group:** `com.azure` **Name:** `azure-identity` **Version:** `1.16.3`
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
@@ -402,7 +402,7 @@ _2025-07-25 03:50:10 UTC_
 > - **Manifest License**: "SPDX-License-Identifier: MIT";link="https://opensource.org/licenses/MIT" (Not Packaged)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**79** **Group:** `com.microsoft.azure` **Name:** `msal4j` **Version:** `1.21.0`
+**79** **Group:** `com.microsoft.azure` **Name:** `msal4j` **Version:** `1.22.0`
 > - **Project URL**: [https://github.com/AzureAD/microsoft-authentication-library-for-java](https://github.com/AzureAD/microsoft-authentication-library-for-java)
 > - **Manifest License**: "MIT License" (Not Packaged)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
