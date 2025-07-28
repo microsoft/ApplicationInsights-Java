@@ -41,7 +41,7 @@ class JsonHelper {
 
     private final Map<String, Class<? extends Domain>> classMap;
 
-    public BaseDataContractDeserializer() {
+    BaseDataContractDeserializer() {
       classMap = new HashMap<>();
       @SuppressWarnings("unchecked")
       Class<? extends Domain>[] classes =
