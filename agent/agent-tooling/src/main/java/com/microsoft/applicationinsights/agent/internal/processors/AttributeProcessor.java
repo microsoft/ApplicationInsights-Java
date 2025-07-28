@@ -254,10 +254,10 @@ public class AttributeProcessor extends AgentProcessor {
   }
 
   private static class HttpUrlKeyValuePair {
-    public final String key;
-    public final String value;
+    final String key;
+    final String value;
 
-    public HttpUrlKeyValuePair(String key, String value) {
+    HttpUrlKeyValuePair(String key, String value) {
       this.key = key;
       this.value = value;
     }
