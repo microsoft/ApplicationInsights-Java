@@ -2,7 +2,7 @@ plugins {
   `java-library`
 }
 
-val sdkVersionDir = "${buildDir}/generated/resources/sdk-version"
+val sdkVersionDir = layout.buildDirectory.dir("generated/resources/sdk-version")
 
 tasks {
   register("generateVersionResource") {
