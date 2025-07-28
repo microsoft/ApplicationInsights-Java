@@ -67,6 +67,6 @@ class ConfigurationLogger {
       }
     };
 
-    public abstract void log(Logger logger, String message, Object... args);
+    abstract void log(Logger logger, String message, Object... args);
   }
 }

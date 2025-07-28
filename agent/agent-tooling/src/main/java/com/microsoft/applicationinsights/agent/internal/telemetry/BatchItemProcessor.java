@@ -187,7 +187,7 @@ public final class BatchItemProcessor {
       }
     }
 
-    public void internalRun() {
+    void internalRun() {
       updateNextExportTime();
 
       while (continueWork) {
