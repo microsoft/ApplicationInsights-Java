@@ -12,8 +12,10 @@ muzzle {
 val otelInstrumentationAlphaVersion: String by project
 
 dependencies {
+  compileOnly(project(":agent:agent-bootstrap"))
   compileOnly(project(":agent:instrumentation:azure-functions-worker-stub"))
 
+  testImplementation(project(":agent:agent-bootstrap"))
   testImplementation(project(":agent:instrumentation:azure-functions-worker-stub"))
 
   // TODO remove when start using io.opentelemetry.instrumentation.javaagent-instrumentation plugin

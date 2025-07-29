@@ -23,10 +23,12 @@ muzzle {
 val otelInstrumentationAlphaVersion: String by project
 
 dependencies {
+  compileOnly(project(":agent:agent-bootstrap"))
   compileOnly("io.micrometer:micrometer-core:1.0.0")
   compileOnly("org.springframework.boot:spring-boot-actuator-autoconfigure:2.2.0.RELEASE")
   compileOnly("io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap:$otelInstrumentationAlphaVersion")
 
+  testImplementation(project(":agent:agent-bootstrap"))
   testImplementation("com.microsoft.azure:azure-spring-boot-metrics-starter:2.2.3") {
     exclude("io.micrometer", "micrometer-core")
   }

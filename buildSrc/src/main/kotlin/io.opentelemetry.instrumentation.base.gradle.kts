@@ -1,3 +1,5 @@
+// mostly copied from upstream
+
 /** Common setup for manual instrumentation of libraries and javaagent instrumentation. */
 
 plugins {
