@@ -4,7 +4,7 @@
 
 ### Bug fixes
 
-* Update CODEOWNERS - remove TimothyMothra 
+* Update CODEOWNERS - remove TimothyMothra
   ([#4225](https://github.com/microsoft/ApplicationInsights-Java/pull/4225))
 * Remove Develocity Gradle plugin
   ([#4230](https://github.com/microsoft/ApplicationInsights-Java/pull/4230))
