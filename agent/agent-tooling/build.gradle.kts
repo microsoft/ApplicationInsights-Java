@@ -61,7 +61,6 @@ dependencies {
   testImplementation("io.opentelemetry:opentelemetry-sdk-metrics")
   testImplementation("io.opentelemetry:opentelemetry-sdk-logs")
   testImplementation("io.opentelemetry:opentelemetry-sdk-testing")
-  testImplementation("org.jetbrains:annotations:13.0")
 
   compileOnly(project(":agent:agent-bootstrap"))
   compileOnly("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api")
