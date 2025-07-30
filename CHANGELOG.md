@@ -1,5 +1,96 @@
 # CHANGELOG
 
+## Version 3.7.4 GA (07/29/2025)
+
+### Bug fixes
+
+* Update CODEOWNERS - remove TimothyMothra 
+  ([#4225](https://github.com/microsoft/ApplicationInsights-Java/pull/4225))
+* Remove Develocity Gradle plugin
+  ([#4230](https://github.com/microsoft/ApplicationInsights-Java/pull/4230))
+* Bump Netty
+  ([#4231](https://github.com/microsoft/ApplicationInsights-Java/pull/4231))
+* Update CI from retired Windows 2019 image to Windows 2022
+  ([#4262](https://github.com/microsoft/ApplicationInsights-Java/pull/4262))
+* Faster smoke tests
+  ([#4272](https://github.com/microsoft/ApplicationInsights-Java/pull/4272))
+* Fix flaky live metrics smoke test
+  ([#4275](https://github.com/microsoft/ApplicationInsights-Java/pull/4275))
+* Fix ErrorProne 2.38.0 build failures by updating checker configuration
+  ([#4257](https://github.com/microsoft/ApplicationInsights-Java/pull/4257))
+* Fix SpotBugs 6.2.1 compatibility by configuring tasks to ignore missing class failures
+  ([#4252](https://github.com/microsoft/ApplicationInsights-Java/pull/4252))
+* Only run CodeQL on pushes to main
+  ([#4316](https://github.com/microsoft/ApplicationInsights-Java/pull/4316))
+* Hopefully resolve sporadic test failure
+  ([#4309](https://github.com/microsoft/ApplicationInsights-Java/pull/4309))
+* Update HttpClients smoke test to use new assertion framework
+  ([#4269](https://github.com/microsoft/ApplicationInsights-Java/pull/4269))
+* Fix ConcurrentModificationException in LiveMetricsVerifier by using CopyOnWriteArrayList
+  ([#4328](https://github.com/microsoft/ApplicationInsights-Java/pull/4328))
+* Add xiang17 to CODEOWNERS
+  ([#4332](https://github.com/microsoft/ApplicationInsights-Java/pull/4332))
+* Update Logback smoke tests to use new assertion framework
+  ([#4326](https://github.com/microsoft/ApplicationInsights-Java/pull/4326))
+* Add copilot-instructions.md
+  ([#4321](https://github.com/microsoft/ApplicationInsights-Java/pull/4321))
+* Update gitignore
+  ([#4333](https://github.com/microsoft/ApplicationInsights-Java/pull/4333))
+* Change enforcedPlatform to platform
+  ([#4334](https://github.com/microsoft/ApplicationInsights-Java/pull/4334))
+* Remove unused dependencies
+  ([#4335](https://github.com/microsoft/ApplicationInsights-Java/pull/4335))
+* Simplify running against azure-monitor-opentelemetry-autoconfigure snapshots
+  ([#4336](https://github.com/microsoft/ApplicationInsights-Java/pull/4336))
+* Improve snapshot testing
+  ([#4339](https://github.com/microsoft/ApplicationInsights-Java/pull/4339))
+* Add spotlessApply to copilot instructions
+  ([#4341](https://github.com/microsoft/ApplicationInsights-Java/pull/4341))
+* Add devcontainer configuration to reduce Copilot agent build time from 5+ minutes to under 1 minute
+  ([#4342](https://github.com/microsoft/ApplicationInsights-Java/pull/4342))
+* Fix devcontainer
+  ([#4344](https://github.com/microsoft/ApplicationInsights-Java/pull/4344))
+* Better devcontainer
+  ([#4349](https://github.com/microsoft/ApplicationInsights-Java/pull/4349))
+* update gitignore
+  ([#4361](https://github.com/microsoft/ApplicationInsights-Java/pull/4361))
+* Clean up README.md
+  ([#4360](https://github.com/microsoft/ApplicationInsights-Java/pull/4360))
+* Simplify and use codespaces built-in prebuild feature
+  ([#4358](https://github.com/microsoft/ApplicationInsights-Java/pull/4358))
+* Remove unused code
+  ([#4357](https://github.com/microsoft/ApplicationInsights-Java/pull/4357))
+* Sync ErrorProne configuration with OpenTelemetry Java instrumentation
+  ([#4364](https://github.com/microsoft/ApplicationInsights-Java/pull/4364))
+* Sync checkstyle configuration with OpenTelemetry Java Instrumentation
+  ([#4365](https://github.com/microsoft/ApplicationInsights-Java/pull/4365))
+* Sync spotless configuration with OpenTelemetry Java Instrumentation
+  ([#4366](https://github.com/microsoft/ApplicationInsights-Java/pull/4366))
+* Fix warning about toolchains
+  ([#4373](https://github.com/microsoft/ApplicationInsights-Java/pull/4373))
+* Fix grpc smoke test deprecated class usage warnings
+  ([#4372](https://github.com/microsoft/ApplicationInsights-Java/pull/4372))
+* Fix a few gradle warnings
+  ([#4375](https://github.com/microsoft/ApplicationInsights-Java/pull/4375))
+* Suppress warnings for some safe operations
+  ([#4371](https://github.com/microsoft/ApplicationInsights-Java/pull/4371))
+* Update Gradle to latest version 8.14.3
+  ([#4345](https://github.com/microsoft/ApplicationInsights-Java/pull/4345))
+* Update to OpenTelemetry Java Instrumentation 2.18.1
+  ([#4378](https://github.com/microsoft/ApplicationInsights-Java/pull/4378))
+* Fix a couple more gradle deprecations
+  ([#4367](https://github.com/microsoft/ApplicationInsights-Java/pull/4367))
+* Fix deprecated EnvironmentResourceProvider reference
+  ([#4377](https://github.com/microsoft/ApplicationInsights-Java/pull/4377))
+* Fix missing javadoc warnings
+  ([#4374](https://github.com/microsoft/ApplicationInsights-Java/pull/4374))
+* Fix more Java warnings
+  ([#4376](https://github.com/microsoft/ApplicationInsights-Java/pull/4376))
+* Bump version
+  ([#4380](https://github.com/microsoft/ApplicationInsights-Java/pull/4380))
+* Port two suggestions from 3305
+  ([#4381](https://github.com/microsoft/ApplicationInsights-Java/pull/4381))
+
 ## Version 3.7.3 GA (05/28/2025)
 
 ### Enhancements
