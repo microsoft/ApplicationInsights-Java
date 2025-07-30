@@ -26,7 +26,6 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 
 class TelemetryProcessorMaskingTest {
@@ -76,7 +75,6 @@ class TelemetryProcessorMaskingTest {
     assertThat(newHttpUrlAttributeValue).isEqualTo("https://user/" + mask);
   }
 
-  @NotNull
   private static AttributeProcessor maskingAttributeProcessor(
       String httpAttributeKey, String regEx, String replacementPattern) {
     Configuration.ProcessorAction maskingAction =
