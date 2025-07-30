@@ -21,7 +21,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
@@ -164,7 +163,6 @@ public class ProfilingInitializerTest {
         .collect(Collectors.toList());
   }
 
-  @NotNull
   private static ProfilerConfiguration unconfiguredState() {
     return new ProfilerConfiguration()
         .setLastModified(ProfilerConfiguration.DEFAULT_DATE)
@@ -176,7 +174,6 @@ public class ProfilingInitializerTest {
             "--memory-threshold 80 --memory-trigger-profilingDuration 120 --memory-trigger-cooldown 14400 --memory-trigger-enabled true");
   }
 
-  @NotNull
   private static ProfilerConfiguration userConfiguredTriggersState(boolean triggersEnabled) {
     return new ProfilerConfiguration()
         .setLastModified(new Date(Instant.now().toEpochMilli()))
@@ -190,7 +187,6 @@ public class ProfilingInitializerTest {
                 + triggersEnabled);
   }
 
-  @NotNull
   private static ProfilerConfiguration profileNowState(
       boolean expiredPast, boolean triggersEnabled) {
     Instant expiration;

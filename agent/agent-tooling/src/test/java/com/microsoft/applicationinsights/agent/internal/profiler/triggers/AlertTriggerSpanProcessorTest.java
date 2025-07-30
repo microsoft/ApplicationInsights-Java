@@ -20,7 +20,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
-import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -82,7 +81,6 @@ public class AlertTriggerSpanProcessorTest {
         });
   }
 
-  @NotNull
   private static ReadableSpan buildSampleSpan(String fooBar, int durationMillis) {
     Instant end = Instant.now();
     Instant start = end.minusMillis(durationMillis);
