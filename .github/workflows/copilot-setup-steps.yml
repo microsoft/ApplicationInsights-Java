@@ -38,5 +38,3 @@ jobs:
 
       - name: Populate Gradle caches
         run: ./gradlew classes testClasses assemble spotlessApply
-        # workflow failure prevents Copilot coding agent from starting
-        continue-on-error: true
