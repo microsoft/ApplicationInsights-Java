@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## Version 3.7.4 GA (07/29/2025)
+
+### Bug fixes
+
+* Fix deprecated EnvironmentResourceProvider reference
+  ([#4377](https://github.com/microsoft/ApplicationInsights-Java/pull/4377))
+* Add smoke tests for null messages. This was initiated here but fixed in
+  the other repository's azure-monitor-opentelemetry-autoconfigure package.
+  ([#4314](https://github.com/microsoft/ApplicationInsights-Java/pull/4314))
+
 ## Version 3.7.3 GA (05/28/2025)
 
 ### Enhancements
