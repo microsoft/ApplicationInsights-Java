@@ -1,7 +1,7 @@
 
 # agent
 ## Dependency License Report
-_2025-08-04 04:44:18 UTC_
+_2025-08-04 18:36:28 UTC_
 ## Apache License, Version 2.0
 
 **1** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-annotations` **Version:** `2.19.2`
@@ -381,15 +381,15 @@ _2025-08-04 04:44:18 UTC_
 **73** **Group:** `com.azure` **Name:** `azure-monitor-opentelemetry-autoconfigure` **Version:** `1.3.0`
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**74** **Group:** `com.azure` **Name:** `azure-storage-blob` **Version:** `12.30.1`
+**74** **Group:** `com.azure` **Name:** `azure-storage-blob` **Version:** `12.31.1`
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**75** **Group:** `com.azure` **Name:** `azure-storage-common` **Version:** `12.29.1`
+**75** **Group:** `com.azure` **Name:** `azure-storage-common` **Version:** `12.30.1`
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**76** **Group:** `com.azure` **Name:** `azure-storage-internal-avro` **Version:** `12.15.1`
+**76** **Group:** `com.azure` **Name:** `azure-storage-internal-avro` **Version:** `12.16.1`
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
