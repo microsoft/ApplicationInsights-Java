@@ -1,7 +1,7 @@
 
 # agent
 ## Dependency License Report
-_2025-07-28 20:28:50 UTC_
+_2025-08-04 04:44:18 UTC_
 ## Apache License, Version 2.0
 
 **1** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-annotations` **Version:** `2.19.2`
@@ -362,11 +362,11 @@ _2025-07-28 20:28:50 UTC_
 
 ## MIT License
 
-**69** **Group:** `com.azure` **Name:** `azure-core` **Version:** `1.55.4`
+**69** **Group:** `com.azure` **Name:** `azure-core` **Version:** `1.55.5`
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**70** **Group:** `com.azure` **Name:** `azure-core-http-netty` **Version:** `1.15.12`
+**70** **Group:** `com.azure` **Name:** `azure-core-http-netty` **Version:** `1.15.13`
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
@@ -378,7 +378,7 @@ _2025-07-28 20:28:50 UTC_
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**73** **Group:** `com.azure` **Name:** `azure-monitor-opentelemetry-autoconfigure` **Version:** `1.2.0`
+**73** **Group:** `com.azure` **Name:** `azure-monitor-opentelemetry-autoconfigure` **Version:** `1.3.0`
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
 **74** **Group:** `com.azure` **Name:** `azure-storage-blob` **Version:** `12.30.1`
