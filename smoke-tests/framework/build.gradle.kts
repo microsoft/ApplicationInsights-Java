@@ -31,5 +31,5 @@ dependencies {
   implementation("org.assertj:assertj-core")
 
   implementation("com.azure:azure-json:1.5.0")
-  implementation("com.azure:azure-monitor-opentelemetry-autoconfigure:1.2.0")
+  implementation("com.azure:azure-monitor-opentelemetry-autoconfigure:1.3.0")
 }
