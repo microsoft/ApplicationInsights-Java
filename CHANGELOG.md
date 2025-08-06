@@ -7,7 +7,7 @@
 * Fix deprecated EnvironmentResourceProvider reference
   ([#4377](https://github.com/microsoft/ApplicationInsights-Java/pull/4377))
 * Fix null exception message error
-  ([https://github.com/Azure/azure-sdk-for-java/pull/46001](https://github.com/Azure/azure-sdk-for-java/pull/46001)
+  ([https://github.com/Azure/azure-sdk-for-java/pull/46001](https://github.com/Azure/azure-sdk-for-java/pull/46001))
 * Update to OpenTelemetry Java Instrumentation 2.18.1
   ([#4378](https://github.com/microsoft/ApplicationInsights-Java/pull/4378))
 
