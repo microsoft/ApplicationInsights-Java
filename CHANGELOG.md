@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## Version 3.7.4 GA (07/29/2025)
+## Version 3.7.4 GA (08/05/2025)
 
 ### Bug fixes
 
