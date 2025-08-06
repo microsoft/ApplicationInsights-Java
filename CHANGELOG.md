@@ -6,9 +6,8 @@
 
 * Fix deprecated EnvironmentResourceProvider reference
   ([#4377](https://github.com/microsoft/ApplicationInsights-Java/pull/4377))
-* Add smoke tests for null messages. This was initiated here but fixed in
-  the other repository's azure-monitor-opentelemetry-autoconfigure package.
-  ([#4314](https://github.com/microsoft/ApplicationInsights-Java/pull/4314))
+* Fix null exception message error
+  ([https://github.com/Azure/azure-sdk-for-java/pull/46001](https://github.com/Azure/azure-sdk-for-java/pull/46001)
 
 ## Version 3.7.3 GA (05/28/2025)
 
