@@ -21,7 +21,7 @@ dependencies {
   implementation(project(":agent:agent-profiler:agent-diagnostics"))
   implementation(project(":etw:java"))
 
-  implementation("com.azure:azure-monitor-opentelemetry-autoconfigure:1.2.0")
+  implementation("com.azure:azure-monitor-opentelemetry-autoconfigure:1.3.0")
   compileOnly("io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap")
   compileOnly("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling")
   compileOnly("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling-java9")
@@ -61,9 +61,6 @@ dependencies {
   testImplementation("io.opentelemetry:opentelemetry-sdk-metrics")
   testImplementation("io.opentelemetry:opentelemetry-sdk-logs")
   testImplementation("io.opentelemetry:opentelemetry-sdk-testing")
-
-  // TODO(trask): update tests, no need to use this anymore
-  testImplementation("com.squareup.okio:okio:3.15.0")
 
   compileOnly(project(":agent:agent-bootstrap"))
   compileOnly("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api")
