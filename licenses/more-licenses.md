@@ -1,7 +1,7 @@
 
 # agent
 ## Dependency License Report
-_2025-08-04 18:36:28 UTC_
+_2025-08-18 04:58:07 UTC_
 ## Apache License, Version 2.0
 
 **1** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-annotations` **Version:** `2.19.2`
@@ -397,9 +397,9 @@ _2025-08-04 18:36:28 UTC_
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**78** **Group:** `com.github.oshi` **Name:** `oshi-core` **Version:** `6.8.2`
+**78** **Group:** `com.github.oshi` **Name:** `oshi-core` **Version:** `6.8.3`
 > - **Manifest Project URL**: [https://github.com/oshi/oshi/oshi-core](https://github.com/oshi/oshi/oshi-core)
-> - **Manifest License**: "SPDX-License-Identifier: MIT";link="https://opensource.org/licenses/MIT" (Not Packaged)
+> - **Manifest License**: MIT;link="https://opensource.org/licenses/MIT" (Not Packaged)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
 **79** **Group:** `com.microsoft.azure` **Name:** `msal4j` **Version:** `1.22.0`
