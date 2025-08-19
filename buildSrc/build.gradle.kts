@@ -39,7 +39,7 @@ dependencies {
   implementation("io.opentelemetry.instrumentation:gradle-plugins:2.18.1-alpha")
 
   implementation("net.ltgt.gradle:gradle-errorprone-plugin:4.3.0")
-  implementation("net.ltgt.gradle:gradle-nullaway-plugin:2.2.0")
+  implementation("net.ltgt.gradle:gradle-nullaway-plugin:2.3.0")
 
   implementation("gradle.plugin.io.morethan.jmhreport:gradle-jmh-report:0.9.6")
   implementation("me.champeau.jmh:jmh-gradle-plugin:0.7.3")
