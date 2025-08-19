@@ -84,11 +84,6 @@ dependencies {
   testCompileOnly("com.google.code.findbugs:jsr305")
 }
 
-configurations.all {
-  // waiting for azure-identity to be bumped in the Azure SDK BOM
-  resolutionStrategy.force("com.azure:azure-identity:1.16.3")
-}
-
 configurations {
   "implementation" {
     exclude(group = "net.bytebuddy", module = "byte-buddy") // we use byte-buddy-dep
