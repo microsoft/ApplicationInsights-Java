@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## Version 3.7.5 GA (TBD)
+
+### Enhancements
+
+* Update to OpenTelemetry SDK 1.53.0
+* Update to OpenTelemetry Java Instrumentation 2.19.0
+* Update to OpenTelemetry Contrib 1.48.0
+
 ## Version 3.7.4 GA (08/05/2025)
 
 ### Bug fixes
