@@ -111,11 +111,6 @@ tasks {
 
     exclude("inst/io/prometheus/**")
 
-    // this excludes the upstream classes, but not the distro classes since the exclusion step
-    // takes place before the transformation step
-    exclude("io/opentelemetry/javaagent/shaded/instrumentation/api/instrumenter/http/TemporaryMetricsView.class")
-    exclude("io/opentelemetry/javaagent/shaded/instrumentation/api/instrumenter/InstrumenterBuilder.class")
-
     dependsOn(isolateJavaagentLibs)
     from(isolateJavaagentLibs.get().outputs)
 
