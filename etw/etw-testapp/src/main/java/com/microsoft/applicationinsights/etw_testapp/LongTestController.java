@@ -232,29 +232,12 @@ public class LongTestController {
   }
 
   @GetMapping("/start")
-  public ResponseEntity<String> startTest(
-      @RequestParam(name = "T", required = false, defaultValue = "1s") String periodStr) {
+  public ResponseEntity<String> startTest() {
     if (future.get() != null) {
       return ResponseEntity.status(HttpStatus.CONFLICT).body("Test already in progress.");
     }
 
-    final Duration period;
-    try {
-      if (periodStr.toLowerCase().endsWith("ms")) {
-        period = Duration.ofMillis(Long.parseLong(periodStr.substring(0, periodStr.length() - 2)));
-      } else {
-        period = Duration.parse("PT" + periodStr);
-      }
-    } catch (NumberFormatException | DateTimeParseException e) {
-      return ResponseEntity.badRequest()
-          .body(
-              "<p>Period parameter 'T' could not parse \""
-                  + periodStr
-                  + "\"</p>"
-                  + "<p><pre>"
-                  + ExceptionUtils.getStackTrace(e)
-                  + "</p>");
-    }
+    final Duration period = Duration.parse("PT1s");
 
     final long startTime;
     final ScheduledFuture<?> scheduledTask;

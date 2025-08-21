@@ -2,8 +2,6 @@ package com.microsoft.applicationinsights.etw_testapp;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -14,25 +12,26 @@ import com.microsoft.applicationinsights.agent.internal.diagnostics.etw.Diagnost
 public class EtwTestController {
   private static final DiagnosticsLoggerProxy DIAGNOSTICS_LOGGER = new DiagnosticsLoggerProxy();
 
+  private static final String LEVEL = "info";
+  private static final boolean HAS_EXCEPTION = false;
+
   private final AtomicInteger errorCount = new AtomicInteger();
   private final AtomicInteger warnCount = new AtomicInteger();
   private final AtomicInteger infoCount = new AtomicInteger();
 
-  @GetMapping("/{level}")
-  public ResponseEntity<String> logPage(
-      @PathVariable String level,
-      @RequestParam(name = "e", required = false, defaultValue = "false") boolean hasException) {
-    String msg = "Hit /" + level + " ";
+  @GetMapping("/log")
+  public ResponseEntity<String> logPage() {
+    String msg = "Hit /" + LEVEL + " ";
     int n;
     Throwable t = null;
-    switch (level.toLowerCase()) {
+    switch (LEVEL.toLowerCase()) {
       case "info":
         n = infoCount.incrementAndGet();
         DIAGNOSTICS_LOGGER.info(msg + n);
         break;
       case "error":
         n = errorCount.incrementAndGet();
-        if (hasException) {
+        if (HAS_EXCEPTION) {
           t = new Exception("the error " + n);
           DIAGNOSTICS_LOGGER.error(msg + n, t);
         } else {
@@ -41,7 +40,7 @@ public class EtwTestController {
         break;
       case "warn":
         n = warnCount.incrementAndGet();
-        if (hasException) {
+        if (HAS_EXCEPTION) {
           t = new Exception("the warn " + n);
           DIAGNOSTICS_LOGGER.warn(msg + n, t);
         } else {
@@ -52,6 +51,6 @@ public class EtwTestController {
         return ResponseEntity.notFound().build();
     }
     return ResponseEntity.ok(
-        level.toUpperCase() + " " + n + (t == null ? "" : "<br/>\n" + t.toString()));
+        LEVEL.toUpperCase() + " " + n + (t == null ? "" : "<br/>\n" + t.toString()));
   }
 }
