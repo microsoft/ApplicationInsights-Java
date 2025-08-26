@@ -10,7 +10,7 @@ on:
 env:
   # set this to <repo>:<branch/sha> to build and test with an unreleased
   # version of the azure-monitor-opentelemetry-autoconfigure dependency
-  AZURE_MONITOR_OPENTELEMETRY_AUTOCONFIGURE_SNAPSHOT:
+  AZURE_MONITOR_OPENTELEMETRY_AUTOCONFIGURE_SNAPSHOT: trask/azure-sdk-for-java:user-and-session-id
 
 jobs:
   spotless:
