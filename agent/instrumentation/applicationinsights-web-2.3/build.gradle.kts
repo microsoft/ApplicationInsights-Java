@@ -18,6 +18,7 @@ dependencies {
   compileOnly("com.microsoft.azure:applicationinsights-web:2.3.0")
 
   testImplementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:$otelInstrumentationVersion")
+  testImplementation("io.opentelemetry.semconv:opentelemetry-semconv-incubating")
 
   testImplementation("com.microsoft.azure:applicationinsights-web:2.3.0")
   testImplementation("javax.servlet:javax.servlet-api:3.0.1")
