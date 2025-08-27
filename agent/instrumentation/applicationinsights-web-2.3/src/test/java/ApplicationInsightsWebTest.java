@@ -69,7 +69,7 @@ class ApplicationInsightsWebTest {
                         .hasAttributesSatisfyingExactly(
                             equalTo(CodeIncubatingAttributes.CODE_NAMESPACE, "Code"),
                             equalTo(CodeIncubatingAttributes.CODE_FUNCTION, "setUser"),
-                            equalTo(EnduserIncubatingAttributes.ENDUSER_ID, "myuser")),
+                            equalTo(EnduserIncubatingAttributes.ENDUSER_PSEUDO_ID, "myuser")),
                 span ->
                     span.hasName("Code.internalSetUser")
                         .hasKind(INTERNAL)
