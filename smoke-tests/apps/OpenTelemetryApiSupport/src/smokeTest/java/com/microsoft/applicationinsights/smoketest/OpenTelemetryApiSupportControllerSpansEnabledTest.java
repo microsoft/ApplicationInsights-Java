@@ -56,6 +56,7 @@ class OpenTelemetryApiSupportControllerSpansEnabledTest {
         .hasEntrySatisfying("ai.internal.sdkVersion", v -> assertThat(v).startsWith("java:3."));
     assertThat(telemetry.rddEnvelope1.getTags()).containsEntry("ai.user.authUserId", "myuser");
     assertThat(telemetry.rddEnvelope1.getTags()).containsEntry("ai.user.id", "mypseudo");
+    assertThat(telemetry.rddEnvelope1.getTags()).containsEntry("ai.session.id", "mysession");
 
     SmokeTestExtension.assertParentChild(
         telemetry.rd,
