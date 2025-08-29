@@ -50,7 +50,8 @@ abstract class OpenTelemetryApiSupportTest {
 
     assertThat(telemetry.rdEnvelope.getTags())
         .hasEntrySatisfying("ai.internal.sdkVersion", v -> assertThat(v).startsWith("java:3."));
-    assertThat(telemetry.rdEnvelope.getTags()).containsEntry("ai.user.id", "myuser");
+    assertThat(telemetry.rdEnvelope.getTags()).containsEntry("ai.user.authUserId", "myuser");
+    assertThat(telemetry.rdEnvelope.getTags()).containsEntry("ai.user.id", "mypseudo");
   }
 
   @Test
