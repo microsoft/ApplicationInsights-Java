@@ -3,7 +3,6 @@
 
 package com.microsoft.applicationinsights.agent.internal.configuration;
 
-import com.azure.monitor.opentelemetry.autoconfigure.implementation.SemanticAttributes;
 import com.azure.monitor.opentelemetry.autoconfigure.implementation.statsbeat.RpAttachType;
 import com.azure.monitor.opentelemetry.autoconfigure.implementation.utils.HostName;
 import com.azure.monitor.opentelemetry.autoconfigure.implementation.utils.Strings;
@@ -22,6 +21,13 @@ import com.microsoft.applicationinsights.agent.internal.configuration.Configurat
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.SamplingOverride;
 import com.microsoft.applicationinsights.agent.internal.diagnostics.DiagnosticsHelper;
 import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.semconv.ClientAttributes;
+import io.opentelemetry.semconv.HttpAttributes;
+import io.opentelemetry.semconv.NetworkAttributes;
+import io.opentelemetry.semconv.ServerAttributes;
+import io.opentelemetry.semconv.UrlAttributes;
+import io.opentelemetry.semconv.incubating.HttpIncubatingAttributes;
+import io.opentelemetry.semconv.incubating.NetIncubatingAttributes;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLDecoder;
@@ -359,44 +365,44 @@ public class ConfigurationBuilder {
   private static String mapAttributeKey(String oldAttributeKey) {
     String result = null;
     // Common attributes across HTTP client and server spans
-    if (oldAttributeKey.equals(SemanticAttributes.HTTP_METHOD.getKey())) {
-      result = SemanticAttributes.HTTP_REQUEST_METHOD.getKey();
-    } else if (oldAttributeKey.equals(SemanticAttributes.HTTP_STATUS_CODE.getKey())) {
-      result = SemanticAttributes.HTTP_RESPONSE_STATUS_CODE.getKey();
+    if (oldAttributeKey.equals(HttpIncubatingAttributes.HTTP_METHOD.getKey())) {
+      result = HttpAttributes.HTTP_REQUEST_METHOD.getKey();
+    } else if (oldAttributeKey.equals(HttpIncubatingAttributes.HTTP_STATUS_CODE.getKey())) {
+      result = HttpAttributes.HTTP_RESPONSE_STATUS_CODE.getKey();
     } else if (oldAttributeKey.startsWith("http.request.header.")
         || oldAttributeKey.startsWith("http.response.header.")) {
       result = oldAttributeKey.replace('_', '-');
-    } else if (oldAttributeKey.equals(SemanticAttributes.NET_PROTOCOL_NAME.getKey())) {
-      result = SemanticAttributes.NETWORK_PROTOCOL_NAME.getKey();
-    } else if (oldAttributeKey.equals(SemanticAttributes.NET_PROTOCOL_VERSION.getKey())) {
-      result = SemanticAttributes.NETWORK_PROTOCOL_VERSION.getKey();
-    } else if (oldAttributeKey.equals(SemanticAttributes.NET_SOCK_PEER_ADDR.getKey())) {
-      result = SemanticAttributes.NETWORK_PEER_ADDRESS.getKey();
-    } else if (oldAttributeKey.equals(SemanticAttributes.NET_SOCK_PEER_PORT.getKey())) {
-      result = SemanticAttributes.NETWORK_PEER_PORT.getKey();
+    } else if (oldAttributeKey.equals(NetIncubatingAttributes.NET_PROTOCOL_NAME.getKey())) {
+      result = NetworkAttributes.NETWORK_PROTOCOL_NAME.getKey();
+    } else if (oldAttributeKey.equals(NetIncubatingAttributes.NET_PROTOCOL_VERSION.getKey())) {
+      result = NetworkAttributes.NETWORK_PROTOCOL_VERSION.getKey();
+    } else if (oldAttributeKey.equals(NetIncubatingAttributes.NET_SOCK_PEER_ADDR.getKey())) {
+      result = NetworkAttributes.NETWORK_PEER_ADDRESS.getKey();
+    } else if (oldAttributeKey.equals(NetIncubatingAttributes.NET_SOCK_PEER_PORT.getKey())) {
+      result = NetworkAttributes.NETWORK_PEER_PORT.getKey();
     }
 
     // HTTP client span attributes
     // http.url is handled via LazyHttpUrl
-    if (oldAttributeKey.equals(SemanticAttributes.HTTP_RESEND_COUNT.getKey())) {
-      result = SemanticAttributes.HTTP_REQUEST_RESEND_COUNT.getKey();
+    if (oldAttributeKey.equals("http.resend_count")) {
+      result = HttpAttributes.HTTP_REQUEST_RESEND_COUNT.getKey();
       // becomes available.
-    } else if (oldAttributeKey.equals(SemanticAttributes.NET_PEER_NAME.getKey())) {
-      result = SemanticAttributes.SERVER_ADDRESS.getKey();
-    } else if (oldAttributeKey.equals(SemanticAttributes.NET_PEER_PORT.getKey())) {
-      result = SemanticAttributes.SERVER_PORT.getKey();
+    } else if (oldAttributeKey.equals(NetIncubatingAttributes.NET_PEER_NAME.getKey())) {
+      result = ServerAttributes.SERVER_ADDRESS.getKey();
+    } else if (oldAttributeKey.equals(NetIncubatingAttributes.NET_PEER_PORT.getKey())) {
+      result = ServerAttributes.SERVER_PORT.getKey();
     }
 
     // HTTP server span attributes
     // http.target is handled via LazyHttpTarget
-    if (oldAttributeKey.equals(SemanticAttributes.HTTP_SCHEME.getKey())) {
-      result = SemanticAttributes.URL_SCHEME.getKey();
-    } else if (oldAttributeKey.equals(SemanticAttributes.HTTP_CLIENT_IP.getKey())) {
-      result = SemanticAttributes.CLIENT_ADDRESS.getKey();
-    } else if (oldAttributeKey.equals(SemanticAttributes.NET_HOST_NAME.getKey())) {
-      result = SemanticAttributes.SERVER_ADDRESS.getKey();
-    } else if (oldAttributeKey.equals(SemanticAttributes.NET_HOST_PORT.getKey())) {
-      result = SemanticAttributes.SERVER_PORT.getKey();
+    if (oldAttributeKey.equals(HttpIncubatingAttributes.HTTP_SCHEME.getKey())) {
+      result = UrlAttributes.URL_SCHEME.getKey();
+    } else if (oldAttributeKey.equals(HttpIncubatingAttributes.HTTP_CLIENT_IP.getKey())) {
+      result = ClientAttributes.CLIENT_ADDRESS.getKey();
+    } else if (oldAttributeKey.equals(NetIncubatingAttributes.NET_HOST_NAME.getKey())) {
+      result = ServerAttributes.SERVER_ADDRESS.getKey();
+    } else if (oldAttributeKey.equals(NetIncubatingAttributes.NET_HOST_PORT.getKey())) {
+      result = ServerAttributes.SERVER_PORT.getKey();
     }
 
     if (result == null) {
