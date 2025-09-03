@@ -8,9 +8,7 @@ pluginManagement {
   }
 }
 
-plugins {
-  id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
-}
+// Don't use plugins {} to avoid network isolation issues in the release build
 
 dependencyResolutionManagement {
   repositories {
