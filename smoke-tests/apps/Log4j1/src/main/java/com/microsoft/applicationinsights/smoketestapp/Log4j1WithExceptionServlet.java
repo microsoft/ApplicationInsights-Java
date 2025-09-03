@@ -35,7 +35,13 @@ public class Log4j1WithExceptionServlet extends HttpServlet {
   @Override
   protected void doGet(HttpServletRequest request, HttpServletResponse response) {
     MDC.put("MDC key", "MDC value");
-    logger.error("This is an exception!", new Exception("Fake Exception"));
+    Exception e = testNullMessage(request) ? new Exception() : new Exception("Fake Exception");
+    logger.error("This is an exception!", e);
     MDC.remove("MDC key");
+  }
+
+  private static boolean testNullMessage(HttpServletRequest request) {
+    String testNullMessage = request.getParameter("test-null-message");
+    return "true".equalsIgnoreCase(testNullMessage);
   }
 }
