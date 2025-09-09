@@ -4,7 +4,6 @@ pluginManagement {
   plugins {
     id("com.github.jk1.dependency-license-report") version "2.9"
     id("me.champeau.jmh") version "0.7.3"
-    id("com.gradle.plugin-publish") version "1.3.1"
   }
 }
 
