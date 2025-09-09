@@ -1,7 +1,7 @@
 
 # agent
 ## Dependency License Report
-_2025-09-05 03:07:20 UTC_
+_2025-09-09 12:28:37 PDT_
 ## Apache License, Version 2.0
 
 **1** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-annotations` **Version:** `2.19.2`
@@ -370,7 +370,7 @@ _2025-09-05 03:07:20 UTC_
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**71** **Group:** `com.azure` **Name:** `azure-identity` **Version:** `1.16.3`
+**71** **Group:** `com.azure` **Name:** `azure-identity` **Version:** `1.17.0`
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
