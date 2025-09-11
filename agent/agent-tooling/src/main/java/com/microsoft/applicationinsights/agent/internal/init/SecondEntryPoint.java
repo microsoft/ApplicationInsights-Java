@@ -40,6 +40,7 @@ import com.microsoft.applicationinsights.agent.internal.exporter.AgentMetricExpo
 import com.microsoft.applicationinsights.agent.internal.exporter.AgentSpanExporter;
 import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
 import com.microsoft.applicationinsights.agent.internal.legacyheaders.AiLegacyHeaderSpanProcessor;
+import com.microsoft.applicationinsights.agent.internal.legacyheaders.DelegatingPropagatorProvider;
 import com.microsoft.applicationinsights.agent.internal.processors.ExporterWithLogProcessor;
 import com.microsoft.applicationinsights.agent.internal.processors.ExporterWithSpanProcessor;
 import com.microsoft.applicationinsights.agent.internal.processors.LogExporterWithAttributeProcessor;
@@ -245,6 +246,8 @@ public class SecondEntryPoint
         .addPropertiesSupplier(
             () -> {
               Map<String, String> props = new HashMap<>();
+              props.put("otel.propagators", DelegatingPropagatorProvider.NAME);
+              props.put("otel.traces.sampler", DelegatingSamplerProvider.NAME);
               props.put("otel.traces.exporter", AzureMonitorExporterProviderKeys.EXPORTER_NAME);
               props.put("otel.metrics.exporter", AzureMonitorExporterProviderKeys.EXPORTER_NAME);
               props.put("otel.logs.exporter", AzureMonitorExporterProviderKeys.EXPORTER_NAME);
