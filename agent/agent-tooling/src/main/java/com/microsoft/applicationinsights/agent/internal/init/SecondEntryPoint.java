@@ -69,6 +69,7 @@ import io.opentelemetry.sdk.metrics.internal.view.AiViewRegistry;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.SamplingDecision;
+import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -89,6 +90,9 @@ public class SecondEntryPoint
   private static final ClientLogger startupLogger =
       new ClientLogger("com.microsoft.applicationinsights.agent");
   private static File tempDir;
+
+  private static final String METRICS_TO_LOG_ANALYTICS_ENABLED =
+      "APPLICATIONINSIGHTS_METRICS_TO_LOGANALYTICS_ENABLED";
 
   @Nullable private static AzureMonitorLogFilteringProcessor logFilteringProcessor;
 
@@ -274,7 +278,7 @@ public class SecondEntryPoint
             (metricExporter, configProperties) -> {
               if (metricExporter
                   instanceof AzureMonitorMetricExporterProvider.MarkerMetricExporter) {
-                return buildMetricExporter(configuration, telemetryClient, metricFilters);
+                return buildMetricExporter(configuration, telemetryClient, metricFilters, configProperties);
               } else {
                 return metricExporter;
               }
@@ -365,10 +369,19 @@ public class SecondEntryPoint
   private static MetricExporter buildMetricExporter(
       Configuration configuration,
       TelemetryClient telemetryClient,
-      List<MetricFilter> metricFilters) {
+      List<MetricFilter> metricFilters, ConfigProperties configProperties) {
+    
+    String otelMetricsEndpoint = configProperties.getString("otel.metrics.exporter.otlp.endpoint");
+    String otelMetricsExporter = configProperties.getString("otel.metrics.exporter");
+    boolean otlpEnabled = (otelMetricsExporter != null && !otelMetricsExporter.isEmpty()) &&
+                         (otelMetricsEndpoint != null && !otelMetricsEndpoint.isEmpty()); 
+
+    String metricsToLAEnvVar = System.getenv(METRICS_TO_LOG_ANALYTICS_ENABLED);
+    boolean metricsToLAEnabled = metricsToLAEnvVar == null || "true".equalsIgnoreCase(metricsToLAEnvVar);
+    
     MetricDataMapper mapper =
         new MetricDataMapper(
-            telemetryClient::populateDefaults, configuration.preview.captureHttpServer4xxAsError);
+            telemetryClient::populateDefaults, configuration.preview.captureHttpServer4xxAsError, otlpEnabled, metricsToLAEnabled);
     return new AgentMetricExporter(
         metricFilters, mapper, telemetryClient.getMetricsBatchItemProcessor());
   }
