@@ -112,6 +112,7 @@ public class SmokeTestExtension
   private final List<String> jvmArgs;
   private final boolean useDefaultHttpPort;
   private final boolean useOtlpEndpoint;
+  private final boolean useOtlpViaEnvVars;
 
   public static SmokeTestExtension create() {
     return builder().build();
@@ -137,7 +138,8 @@ public class SmokeTestExtension
       Map<String, String> envVars,
       List<String> jvmArgs,
       boolean useDefaultHttpPort,
-      boolean useOtlpEndpoint) {
+      boolean useOtlpEndpoint,
+      boolean useOtlpViaEnvVars) {
     this.skipHealthCheck = skipHealthCheck;
     this.readOnly = readOnly;
     this.dependencyContainer = dependencyContainer;
@@ -167,6 +169,7 @@ public class SmokeTestExtension
     this.jvmArgs = jvmArgs;
     this.useDefaultHttpPort = useDefaultHttpPort;
     this.useOtlpEndpoint = useOtlpEndpoint;
+    this.useOtlpViaEnvVars = useOtlpViaEnvVars;
 
     mockedIngestion = new MockedAppInsightsIngestionServer(useOld3xAgent);
   }
@@ -218,7 +221,7 @@ public class SmokeTestExtension
     mockedIngestion.startServer();
     mockedIngestion.setRequestLoggingEnabled(true);
     mockedIngestion.setQuickPulseRequestLoggingEnabled(true);
-    if (useOtlpEndpoint) {
+    if (useOtlpEndpoint || useOtlpViaEnvVars) {
       mockedOtlpIngestion.startServer();
     }
     network = Network.newNetwork();
@@ -422,6 +425,12 @@ public class SmokeTestExtension
     Testcontainers.exposeHostPorts(6060);
     Testcontainers.exposeHostPorts(4318);
 
+    if (useOtlpViaEnvVars) {
+      envVars.put("OTEL_METRICS_EXPORTER", "otlp,azure_monitor");
+      envVars.put("OTEL_EXPORTER_OTLP_METRICS_ENDPOINT", FAKE_OTLP_INGESTION_ENDPOINT);
+      envVars.put("OTEL_EXPORTER_OTLP_PROTOCOL", "http/protobuf");
+    }
+
     GenericContainer<?> container;
     if (REMOTE_DEBUG || useDefaultHttpPort) {
       FixedHostPortGenericContainer fixedPortContainer =
@@ -571,7 +580,7 @@ public class SmokeTestExtension
     mockedIngestion.stopServer();
     mockedIngestion.setRequestLoggingEnabled(false);
     mockedIngestion.setQuickPulseRequestLoggingEnabled(false);
-    if (useOtlpEndpoint) {
+    if (useOtlpEndpoint || useOtlpViaEnvVars) {
       mockedOtlpIngestion.stopServer();
     }
   }

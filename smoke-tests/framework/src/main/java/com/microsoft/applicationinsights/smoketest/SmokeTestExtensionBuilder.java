@@ -29,6 +29,7 @@ public class SmokeTestExtensionBuilder {
   private final List<String> jvmArgs = new ArrayList<>();
   private boolean useDefaultHttpPort;
   private boolean useOtlpEndpoint;
+  private boolean useOtlpViaEnvVars;
 
   public SmokeTestExtensionBuilder setDependencyContainer(
       String envVarName, GenericContainer<?> container) {
@@ -108,6 +109,11 @@ public class SmokeTestExtensionBuilder {
     return this;
   }
 
+  public SmokeTestExtensionBuilder useOtlpViaEnvVars() {
+    this.useOtlpViaEnvVars = true;
+    return this;
+  }
+
   public SmokeTestExtension build() {
     return new SmokeTestExtension(
         dependencyContainer,
@@ -125,6 +131,7 @@ public class SmokeTestExtensionBuilder {
         envVars,
         jvmArgs,
         useDefaultHttpPort,
-        useOtlpEndpoint);
+        useOtlpEndpoint,
+        useOtlpViaEnvVars);
   }
 }
