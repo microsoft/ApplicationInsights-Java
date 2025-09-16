@@ -90,9 +90,7 @@ public class SecondEntryPoint
   private static final ClientLogger startupLogger =
       new ClientLogger("com.microsoft.applicationinsights.agent");
   private static File tempDir;
-
-  private static final String METRICS_TO_LOG_ANALYTICS_ENABLED =
-      "APPLICATIONINSIGHTS_METRICS_TO_LOGANALYTICS_ENABLED";
+  private static final String SENT_TO_AMW = "SENT_TO_AMW";
 
   @Nullable private static AzureMonitorLogFilteringProcessor logFilteringProcessor;
 
@@ -376,12 +374,12 @@ public class SecondEntryPoint
     boolean otlpEnabled = (otelMetricsExporter != null && !otelMetricsExporter.isEmpty()) &&
                          (otelMetricsEndpoint != null && !otelMetricsEndpoint.isEmpty()); 
 
-    String metricsToLAEnvVar = System.getenv(METRICS_TO_LOG_ANALYTICS_ENABLED);
-    boolean metricsToLAEnabled = metricsToLAEnvVar == null || "true".equalsIgnoreCase(metricsToLAEnvVar);
-    
+    // Set system property that MetricDataMapper can read
+    System.setProperty(SENT_TO_AMW, Boolean.toString(otlpEnabled));
+
     MetricDataMapper mapper =
         new MetricDataMapper(
-            telemetryClient::populateDefaults, configuration.preview.captureHttpServer4xxAsError, otlpEnabled, metricsToLAEnabled);
+            telemetryClient::populateDefaults, configuration.preview.captureHttpServer4xxAsError);
     return new AgentMetricExporter(
         metricFilters, mapper, telemetryClient.getMetricsBatchItemProcessor());
   }
