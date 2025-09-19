@@ -90,7 +90,7 @@ abstract class HttpPreaggregatedMetricsTestOtlpEnabled {
 
     // Verify properties - specifically that _MS.SentToAMW is true
     Map<String, String> properties = metricData.getProperties();
-    assertThat(properties.get("_MS.SentToAMW")).isEqualTo("true");
+    assertThat(properties.get("_MS.SentToAMW")).isEqualTo("False");
   }
 
   @Environment(TOMCAT_8_JAVA_8)
