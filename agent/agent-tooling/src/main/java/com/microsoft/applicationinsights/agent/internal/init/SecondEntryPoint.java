@@ -370,8 +370,8 @@ public class SecondEntryPoint
     
     String otelMetricsEndpoint = configProperties.getString("otel.metrics.exporter.otlp.endpoint");
     String otelMetricsExporter = configProperties.getString("otel.metrics.exporter");
-    boolean otlpEnabled = (otelMetricsExporter != null && !otelMetricsExporter.isEmpty()) &&
-                         (otelMetricsEndpoint != null && !otelMetricsEndpoint.isEmpty()); 
+    Boolean otlpEnabled = (otelMetricsExporter != null && !otelMetricsExporter.isEmpty()) &&
+                         (otelMetricsEndpoint != null && !otelMetricsEndpoint.isEmpty());
 
     MetricDataMapper mapper =
         new MetricDataMapper(

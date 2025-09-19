@@ -29,7 +29,6 @@ import io.opentelemetry.proto.metrics.v1.Metric;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.mockserver.model.HttpRequest;
@@ -37,10 +36,9 @@ import org.mockserver.model.HttpRequest;
 @UseAgent
 abstract class OpenTelemetryMetricTestToAmw {
 
-  @RegisterExtension 
-  static final SmokeTestExtension testing = SmokeTestExtension.builder()
-      .useOtlpViaEnvVars()
-      .build();
+  @RegisterExtension
+  static final SmokeTestExtension testing =
+      SmokeTestExtension.builder().useOtlpViaEnvVars().build();
 
   @Test
   @TargetUri("/trackDoubleCounterMetric")
@@ -144,7 +142,6 @@ abstract class OpenTelemetryMetricTestToAmw {
     assertThat(properties3).containsEntry("name", "lemon");
     assertThat(properties3).containsEntry("color", "yellow");
     assertThat(properties3).containsEntry("_MS.SentToAMW", "true");
-
   }
 
   private void validateOtlpMetricsReceived(String name) throws Exception {
@@ -152,9 +149,12 @@ abstract class OpenTelemetryMetricTestToAmw {
         .atMost(10, SECONDS)
         .untilAsserted(
             () -> {
-              HttpRequest[] otlpRequests = testing.mockedOtlpIngestion.getCollectorServer()
-                  .retrieveRecordedRequests(request());
-              
+              HttpRequest[] otlpRequests =
+                  testing
+                      .mockedOtlpIngestion
+                      .getCollectorServer()
+                      .retrieveRecordedRequests(request());
+
               assertThat(otlpRequests).isNotEmpty();
 
               List<Metric> otlpMetrics =
