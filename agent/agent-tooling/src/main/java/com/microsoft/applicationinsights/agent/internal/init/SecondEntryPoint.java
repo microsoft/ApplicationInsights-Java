@@ -55,6 +55,7 @@ import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdkBuilder;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizer;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizerProvider;
+import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.internal.AutoConfigureListener;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.LogRecordProcessor;
@@ -69,7 +70,6 @@ import io.opentelemetry.sdk.metrics.internal.view.AiViewRegistry;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.SamplingDecision;
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -275,7 +275,8 @@ public class SecondEntryPoint
             (metricExporter, configProperties) -> {
               if (metricExporter
                   instanceof AzureMonitorMetricExporterProvider.MarkerMetricExporter) {
-                return buildMetricExporter(configuration, telemetryClient, metricFilters, configProperties);
+                return buildMetricExporter(
+                    configuration, telemetryClient, metricFilters, configProperties);
               } else {
                 return metricExporter;
               }
@@ -366,16 +367,20 @@ public class SecondEntryPoint
   private static MetricExporter buildMetricExporter(
       Configuration configuration,
       TelemetryClient telemetryClient,
-      List<MetricFilter> metricFilters, ConfigProperties configProperties) {
-    
+      List<MetricFilter> metricFilters,
+      ConfigProperties configProperties) {
+
     String otelMetricsEndpoint = configProperties.getString("otel.metrics.exporter.otlp.endpoint");
     String otelMetricsExporter = configProperties.getString("otel.metrics.exporter");
-    Boolean otlpEnabled = (otelMetricsExporter != null && !otelMetricsExporter.isEmpty()) &&
-                         (otelMetricsEndpoint != null && !otelMetricsEndpoint.isEmpty());
+    Boolean otlpEnabled =
+        (otelMetricsExporter != null && !otelMetricsExporter.isEmpty())
+            && (otelMetricsEndpoint != null && !otelMetricsEndpoint.isEmpty());
 
     MetricDataMapper mapper =
         new MetricDataMapper(
-            telemetryClient::populateDefaults, configuration.preview.captureHttpServer4xxAsError, otlpEnabled);
+            telemetryClient::populateDefaults,
+            configuration.preview.captureHttpServer4xxAsError,
+            otlpEnabled);
     return new AgentMetricExporter(
         metricFilters, mapper, telemetryClient.getMetricsBatchItemProcessor());
   }
