@@ -90,7 +90,6 @@ public class SecondEntryPoint
   private static final ClientLogger startupLogger =
       new ClientLogger("com.microsoft.applicationinsights.agent");
   private static File tempDir;
-  private static final String SENT_TO_AMW = "sent.to.amw";
 
   @Nullable private static AzureMonitorLogFilteringProcessor logFilteringProcessor;
 

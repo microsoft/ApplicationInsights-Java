@@ -16,7 +16,6 @@ import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCA
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.WILDFLY_13_JAVA_8;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.WILDFLY_13_JAVA_8_OPENJ9;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.data.MapEntry.entry;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.DataPoint;
@@ -31,10 +30,9 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 @UseAgent
 abstract class HttpPreaggregatedMetricsTestOtlpEnabled {
 
-  @RegisterExtension 
-  static final SmokeTestExtension testing = SmokeTestExtension.builder()
-      .useOtlpViaEnvVars()
-      .build();
+  @RegisterExtension
+  static final SmokeTestExtension testing =
+      SmokeTestExtension.builder().useOtlpViaEnvVars().build();
 
   @Test
   @TargetUri("/httpUrlConnection")
@@ -89,7 +87,7 @@ abstract class HttpPreaggregatedMetricsTestOtlpEnabled {
   private static void validateMetricData(MetricData metricData) {
     List<DataPoint> dataPoints = metricData.getMetrics();
     assertThat(dataPoints).hasSize(1);
-    
+
     // Verify properties - specifically that _MS.SentToAMW is true
     Map<String, String> properties = metricData.getProperties();
     assertThat(properties.get("_MS.SentToAMW")).isEqualTo("true");
