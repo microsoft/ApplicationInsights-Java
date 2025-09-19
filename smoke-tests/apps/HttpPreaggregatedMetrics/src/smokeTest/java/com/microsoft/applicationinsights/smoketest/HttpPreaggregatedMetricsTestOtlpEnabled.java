@@ -88,7 +88,7 @@ abstract class HttpPreaggregatedMetricsTestOtlpEnabled {
     List<DataPoint> dataPoints = metricData.getMetrics();
     assertThat(dataPoints).hasSize(1);
 
-    // Verify properties - specifically that _MS.SentToAMW is true
+    // Verify properties - specifically that _MS.SentToAMW is True
     Map<String, String> properties = metricData.getProperties();
     assertThat(properties.get("_MS.SentToAMW")).isEqualTo("True");
   }

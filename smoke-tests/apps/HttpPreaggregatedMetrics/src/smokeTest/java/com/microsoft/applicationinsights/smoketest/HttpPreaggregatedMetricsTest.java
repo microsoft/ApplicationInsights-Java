@@ -193,7 +193,7 @@ abstract class HttpPreaggregatedMetricsTest {
     assertThat(properties.get("cloud/roleInstance")).isEqualTo("testroleinstance");
     assertThat(properties.get("cloud/roleName")).isEqualTo("testrolename");
     assertThat(properties.get("_MS.IsAutocollected")).isEqualTo("True");
-    assertThat(properties.get("_MS.SentToAMW")).isEqualTo("false");
+    assertThat(properties.get("_MS.SentToAMW")).isEqualTo("False");
   }
 
   @Environment(TOMCAT_8_JAVA_8)

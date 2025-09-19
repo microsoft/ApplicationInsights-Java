@@ -95,7 +95,7 @@ abstract class OpenTelemetryMetricTestToAmw {
     assertThat(properties1).containsEntry("tag2", "def");
     assertThat(properties1).containsEntry("name", "apple");
     assertThat(properties1).containsEntry("color", "green");
-    assertThat(properties1).containsEntry("_MS.SentToAMW", "true");
+    assertThat(properties1).containsEntry("_MS.SentToAMW", "True");
 
     // validate tags
     Map<String, String> tags2 = envelope2.getTags();
@@ -118,7 +118,7 @@ abstract class OpenTelemetryMetricTestToAmw {
     assertThat(properties2).containsEntry("tag2", "def");
     assertThat(properties2).containsEntry("name", "apple");
     assertThat(properties2).containsEntry("color", "red");
-    assertThat(properties2).containsEntry("_MS.SentToAMW", "true");
+    assertThat(properties2).containsEntry("_MS.SentToAMW", "True");
 
     // validate tags
     Map<String, String> tags3 = envelope3.getTags();
@@ -141,7 +141,7 @@ abstract class OpenTelemetryMetricTestToAmw {
     assertThat(properties3).containsEntry("tag2", "def");
     assertThat(properties3).containsEntry("name", "lemon");
     assertThat(properties3).containsEntry("color", "yellow");
-    assertThat(properties3).containsEntry("_MS.SentToAMW", "true");
+    assertThat(properties3).containsEntry("_MS.SentToAMW", "True");
   }
 
   private void validateOtlpMetricsReceived(String name) throws Exception {
