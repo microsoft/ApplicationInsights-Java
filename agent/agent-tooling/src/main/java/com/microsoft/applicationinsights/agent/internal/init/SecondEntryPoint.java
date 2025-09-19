@@ -374,12 +374,9 @@ public class SecondEntryPoint
     boolean otlpEnabled = (otelMetricsExporter != null && !otelMetricsExporter.isEmpty()) &&
                          (otelMetricsEndpoint != null && !otelMetricsEndpoint.isEmpty()); 
 
-    // Set system property that MetricDataMapper can read
-    System.setProperty(SENT_TO_AMW, Boolean.toString(otlpEnabled));
-
     MetricDataMapper mapper =
         new MetricDataMapper(
-            telemetryClient::populateDefaults, configuration.preview.captureHttpServer4xxAsError);
+            telemetryClient::populateDefaults, configuration.preview.captureHttpServer4xxAsError, otlpEnabled);
     return new AgentMetricExporter(
         metricFilters, mapper, telemetryClient.getMetricsBatchItemProcessor());
   }
