@@ -65,7 +65,7 @@ val DEPENDENCIES = listOf(
   "org.apache.commons:commons-text:1.14.0",
   "com.google.code.gson:gson:2.13.2",
   "com.azure:azure-core-test:1.26.2", // this is not included in azure-sdk-bom
-  "org.assertj:assertj-core:3.27.4",
+  "org.assertj:assertj-core:3.27.5",
   "org.awaitility:awaitility:4.3.0",
   "io.opentelemetry.contrib:opentelemetry-jfr-connection:${otelContribVersion}-alpha",
   "io.opentelemetry.contrib:opentelemetry-runtime-attach-core:${otelContribVersion}-alpha",
