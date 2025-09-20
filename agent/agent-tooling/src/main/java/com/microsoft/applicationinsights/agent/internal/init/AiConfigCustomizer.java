@@ -6,7 +6,6 @@ package com.microsoft.applicationinsights.agent.internal.init;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
-import com.microsoft.applicationinsights.agent.internal.legacyheaders.DelegatingPropagatorProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import java.util.HashMap;
 import java.util.List;
@@ -102,28 +101,6 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
         sb.append(']');
       }
       properties.put("applicationinsights.internal.methods.include", sb.toString());
-    }
-
-    properties.put("otel.propagators", DelegatingPropagatorProvider.NAME);
-
-    properties.put("otel.traces.sampler", DelegatingSamplerProvider.NAME);
-
-    String tracesExporter = otelConfig.getString("otel.traces.exporter");
-    if (tracesExporter == null) {
-      // this overrides the default "otlp" so the exporter can be configured later
-      properties.put("otel.traces.exporter", "none");
-    }
-
-    String metricsExporter = otelConfig.getString("otel.metrics.exporter");
-    if (metricsExporter == null) {
-      // this overrides the default "otlp" so the exporter can be configured later
-      properties.put("otel.metrics.exporter", "none");
-    }
-
-    String logsExporter = otelConfig.getString("otel.logs.exporter");
-    if (logsExporter == null) {
-      // this overrides the default "otlp" so the exporter can be configured later
-      properties.put("otel.logs.exporter", "none");
     }
 
     if (configuration.role.name != null) {
