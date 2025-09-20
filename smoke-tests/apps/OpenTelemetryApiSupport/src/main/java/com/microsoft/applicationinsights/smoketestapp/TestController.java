@@ -20,6 +20,8 @@ public class TestController {
     Span.current().setAttribute("myattr1", "myvalue1");
     Span.current().setAttribute("myattr2", "myvalue2");
     Span.current().setAttribute("enduser.id", "myuser");
+    Span.current().setAttribute("enduser.pseudo.id", "mypseudo");
+    Span.current().setAttribute("session.id", "mysession");
     Span.current().updateName("myspanname");
     return "OK!";
   }

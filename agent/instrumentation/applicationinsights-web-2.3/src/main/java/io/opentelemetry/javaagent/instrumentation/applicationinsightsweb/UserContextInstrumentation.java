@@ -43,7 +43,7 @@ public class UserContextInstrumentation implements TypeInstrumentation {
         @Advice.This UserContext userContext, @Advice.Argument(0) String name) {
       Span span = VirtualField.find(UserContext.class, Span.class).get(userContext);
       if (span != null) {
-        span.setAttribute("enduser.id", name);
+        span.setAttribute("enduser.pseudo.id", name);
       }
     }
   }

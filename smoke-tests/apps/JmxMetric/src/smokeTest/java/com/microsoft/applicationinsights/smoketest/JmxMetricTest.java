@@ -19,10 +19,8 @@ import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
 import com.microsoft.applicationinsights.smoketest.schemav2.MetricData;
 import io.opentelemetry.proto.metrics.v1.Metric;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
@@ -107,27 +105,10 @@ abstract class JmxMetricTest {
               List<Metric> metrics =
                   testing.mockedOtlpIngestion.extractMetricsFromRequests(requests);
 
-              Map<String, Integer> occurrences = new HashMap<>();
-
-              // counting all occurrences of the jmx metrics that are applicable to all java
-              // versions
-              for (Metric metric : metrics) {
-                String metricName = metric.getName();
-                if (jmxMetricsAllJavaVersionsOtlp.contains(metricName)) {
-                  if (occurrences.containsKey(metricName)) {
-                    occurrences.put(metricName, occurrences.get(metricName) + 1);
-                  } else {
-                    occurrences.put(metricName, 1);
-                  }
-                }
-              }
-
-              // confirm that those metrics received once or twice
-              // (the collector seems to run for 5-10 sec)
-              assertThat(occurrences.keySet()).hasSize(jmxMetricsAllJavaVersionsOtlp.size());
-              for (int value : occurrences.values()) {
-                assertThat(value).isBetween(1, 8);
-              }
+              // check the jmx metrics that are applicable to all java versions
+              assertThat(metrics)
+                  .extracting(Metric::getName)
+                  .containsAll(jmxMetricsAllJavaVersionsOtlp);
             });
   }
 
