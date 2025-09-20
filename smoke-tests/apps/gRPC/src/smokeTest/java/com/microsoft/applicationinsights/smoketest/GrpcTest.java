@@ -96,7 +96,8 @@ abstract class GrpcTest {
                     entry("operation/synthetic", "False"),
                     entry("cloud/roleInstance", "testroleinstance"),
                     entry("cloud/roleName", "testrolename"),
-                    entry("_MS.IsAutocollected", "True")));
+                    entry("_MS.IsAutocollected", "True"),
+                    entry("_MS.SentToAMW", "False")));
   }
 
   @Test

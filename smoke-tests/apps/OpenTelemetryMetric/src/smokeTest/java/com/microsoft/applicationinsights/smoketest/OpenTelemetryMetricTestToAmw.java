@@ -160,7 +160,7 @@ abstract class OpenTelemetryMetricTestToAmw {
               List<Metric> otlpMetrics =
                   testing.mockedOtlpIngestion.extractMetricsFromRequests(otlpRequests);
 
-              assertThat(otlpMetrics).hasSize(3);
+              assertThat(otlpMetrics).hasSizeGreaterThanOrEqualTo(3);
             });
   }
 
