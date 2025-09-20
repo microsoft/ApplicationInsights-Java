@@ -32,7 +32,9 @@ echo "Installed version: $INSTALLED_VERSION"
 # Clean up
 echo "Cleaning up..."
 cd ..
-rm -rf azure-sdk-temp
+if [ -n "$CI" ]; then
+  rm -rf azure-sdk-temp
+fi
 
 # Update dependency versions in the current project
 echo "Updating dependency versions in project files..."
@@ -52,10 +54,11 @@ fi
 ./gradlew resolveAndLockAll --write-locks
 ./gradlew generateLicenseReport --no-build-cache
 
- # this is needed to make license report pass
-git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-git config user.name "github-actions[bot]"
-git commit -a -m "update azure-monitor-opentelemetry-autoconfigure dependency to $INSTALLED_VERSION"
+if [ -n "$CI" ]; then
+  git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+  git config user.name "github-actions[bot]"
+  git commit -a -m "update azure-monitor-opentelemetry-autoconfigure dependency to $INSTALLED_VERSION"
+fi
 
 echo "azure-monitor-opentelemetry-autoconfigure dependency build completed successfully"
 echo "All project files updated to use version: $INSTALLED_VERSION"

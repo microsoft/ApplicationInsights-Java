@@ -141,18 +141,20 @@ abstract class ConnectionStringOverridesTest {
     Map<String, String> properties = metricData.getProperties();
     String expectedSuccess = "200".equals(resultCode) ? "True" : "False";
     if ("client".equals(type)) {
-      assertThat(properties).hasSize(9);
+      assertThat(properties).hasSize(10);
       assertThat(properties.get("_MS.MetricId")).isEqualTo("dependencies/duration");
       assertThat(properties.get("dependency/resultCode")).isEqualTo(resultCode);
       assertThat(properties.get("Dependency.Success")).isEqualTo(expectedSuccess);
       assertThat(properties.get("dependency/target"))
           .isEqualTo("host.testcontainers.internal:6060");
       assertThat(properties.get("Dependency.Type")).isEqualTo("Http");
+      assertThat(properties.get("_MS.SentToAMW")).isEqualTo("False");
     } else {
-      assertThat(properties).hasSize(7);
+      assertThat(properties).hasSize(8);
       assertThat(properties.get("_MS.MetricId")).isEqualTo("requests/duration");
       assertThat(properties.get("request/resultCode")).isEqualTo(resultCode);
       assertThat(properties.get("Request.Success")).isEqualTo(expectedSuccess);
+      assertThat(properties.get("_MS.SentToAMW")).isEqualTo("False");
     }
     assertThat(properties.get("operation/synthetic")).isEqualTo("False");
     assertThat(properties.get("cloud/roleInstance")).isEqualTo("testroleinstance");
