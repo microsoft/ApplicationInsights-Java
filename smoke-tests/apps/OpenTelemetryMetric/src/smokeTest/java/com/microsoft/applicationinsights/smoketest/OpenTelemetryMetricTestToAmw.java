@@ -44,7 +44,7 @@ abstract class OpenTelemetryMetricTestToAmw {
   @TargetUri("/trackDoubleCounterMetric")
   void trackDoubleCounterMetric() throws Exception {
     validateCounterMetric("trackDoubleCounterMetric");
-    validateOtlpMetricsReceived("trackDoubleCounterMetric");
+    validateOtlpMetricsReceived();
   }
 
   private void validateCounterMetric(String name) throws Exception {
@@ -144,7 +144,7 @@ abstract class OpenTelemetryMetricTestToAmw {
     assertThat(properties3).containsEntry("_MS.SentToAMW", "True");
   }
 
-  private void validateOtlpMetricsReceived(String name) throws Exception {
+  private void validateOtlpMetricsReceived() throws Exception {
     await()
         .atMost(10, SECONDS)
         .untilAsserted(
