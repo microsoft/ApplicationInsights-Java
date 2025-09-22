@@ -32,7 +32,7 @@ abstract class HttpPreaggregatedMetricsTestOtlpEnabled {
 
   @RegisterExtension
   static final SmokeTestExtension testing =
-      SmokeTestExtension.builder().useOtlpViaEnvVars().build();
+      SmokeTestExtension.builder().useOtlpEndpoint().build();
 
   @Test
   @TargetUri("/httpUrlConnection")

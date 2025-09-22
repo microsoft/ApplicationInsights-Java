@@ -38,7 +38,7 @@ abstract class OpenTelemetryMetricTestToAmw {
 
   @RegisterExtension
   static final SmokeTestExtension testing =
-      SmokeTestExtension.builder().useOtlpViaEnvVars().build();
+      SmokeTestExtension.builder().useOtlpEndpoint().build();
 
   @Test
   @TargetUri("/trackDoubleCounterMetric")
