@@ -31,8 +31,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 abstract class HttpPreaggregatedMetricsTestOtlpEnabled {
 
   @RegisterExtension
-  static final SmokeTestExtension testing =
-      SmokeTestExtension.builder().useOtlpEndpoint().build();
+  static final SmokeTestExtension testing = SmokeTestExtension.builder().useOtlpEndpoint().build();
 
   @Test
   @TargetUri("/httpUrlConnection")
