@@ -1,7 +1,7 @@
 
 # agent
 ## Dependency License Report
-_2025-09-19 15:48:02 PDT_
+_2025-09-22 13:09:37 PDT_
 ## Apache License, Version 2.0
 
 **1** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-annotations` **Version:** `2.20`
@@ -374,7 +374,7 @@ _2025-09-19 15:48:02 PDT_
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**72** **Group:** `com.azure` **Name:** `azure-monitor-opentelemetry-autoconfigure` **Version:** `1.4.0-beta.1`
+**72** **Group:** `com.azure` **Name:** `azure-monitor-opentelemetry-autoconfigure` **Version:** `1.4.0`
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
 **73** **Group:** `com.azure` **Name:** `azure-storage-blob` **Version:** `12.31.2`
