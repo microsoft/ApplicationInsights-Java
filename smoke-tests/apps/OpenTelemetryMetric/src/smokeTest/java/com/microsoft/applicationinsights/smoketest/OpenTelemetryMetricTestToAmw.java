@@ -37,8 +37,7 @@ import org.mockserver.model.HttpRequest;
 abstract class OpenTelemetryMetricTestToAmw {
 
   @RegisterExtension
-  static final SmokeTestExtension testing =
-      SmokeTestExtension.builder().useOtlpEndpoint().build();
+  static final SmokeTestExtension testing = SmokeTestExtension.builder().useOtlpEndpoint().build();
 
   @Test
   @TargetUri("/trackDoubleCounterMetric")
