@@ -453,6 +453,7 @@ public class SmokeTestExtension
             .withEnv("APPLICATIONINSIGHTS_CONNECTION_STRING", connectionString)
             .withEnv("APPLICATIONINSIGHTS_SELF_DIAGNOSTICS_LEVEL", selfDiagnosticsLevel)
             .withEnv("OTEL_RESOURCE_ATTRIBUTES", otelResourceAttributesEnvVar)
+            .withEnv("APPLICATIONINSIGHTS_METRICS_TO_LOGANALYTICS_ENABLED", "false")
             .withEnv("APPLICATIONINSIGHTS_METRIC_INTERVAL_SECONDS", "1")
             .withEnv(envVars)
             .withNetwork(network)
