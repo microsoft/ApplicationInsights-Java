@@ -4,7 +4,7 @@
 
 ### Enhancements
 
-* Update OpenTelemetry versions 
+* Update OpenTelemetry versions
   ([#4429](https://github.com/microsoft/ApplicationInsights-Java/pull/4429))
 * Read environment variables for AKS metrics otlp support
   ([#4458](https://github.com/microsoft/ApplicationInsights-Java/pull/4458))
