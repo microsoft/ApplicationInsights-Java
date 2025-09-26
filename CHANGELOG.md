@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## Version 3.7.5 GA (09/25/2025)
+
+### Enhancements
+
+* Update OpenTelemetry versions
+  ([#4429](https://github.com/microsoft/ApplicationInsights-Java/pull/4429))
+* Read environment variables for AKS metrics otlp support
+  ([#4458](https://github.com/microsoft/ApplicationInsights-Java/pull/4458))
+
 ## Version 3.7.4 GA (08/05/2025)
 
 ### Bug fixes
