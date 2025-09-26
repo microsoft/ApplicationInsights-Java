@@ -7,7 +7,7 @@ on:
         type: string
         required: true
     secrets:
-      AARON_MAXWELL_TOKEN:
+      PERSONAL_ACCESS_TOKEN:
         required: true
   # to help with partial release build failures
   workflow_dispatch:
@@ -27,16 +27,16 @@ jobs:
         env:
           VERSION: ${{ inputs.version }}
           # this is the personal access token used for "gh repo sync" below
-          GH_TOKEN: ${{ secrets.AARON_MAXWELL_TOKEN }}
+          GH_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
         run: |
-          gh repo sync AaronMaxwell/azure-monitor-docs-pr \
+          gh repo sync xiang17/azure-monitor-docs-pr \
               --source MicrosoftDocs/azure-monitor-docs-pr
 
       - uses: actions/checkout@v5
         with:
-          repository: AaronMaxwell/azure-monitor-docs-pr
+          repository: xiang17/azure-monitor-docs-pr
           # this is the personal access token used for "git push" below
-          token: ${{ secrets.AARON_MAXWELL_TOKEN }}
+          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
       - name: Update version in docs
         env:
@@ -54,12 +54,12 @@ jobs:
         env:
           VERSION: ${{ inputs.version }}
           # this is the personal access token used for "gh pr create" below
-          GH_TOKEN: ${{ secrets.AARON_MAXWELL_TOKEN }}
+          GH_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
         run: |
           message="Update the applicationinsights-java version to $VERSION"
           body="Update the applicationinsights-java version to \`$VERSION\`.
 
-          cc @AaronMaxwell @heyams @jeanbisutti @mattmccleary @trask
+          cc @harsimar @jeanbisutti @mattmccleary @rajkumar-rangaraj @trask @xiang17
           "
           branch="update-applicationinsights-java-to-${VERSION}"
 
@@ -76,7 +76,7 @@ jobs:
 
           echo ========================================
           echo To create PR, go to
-          echo https://github.com/MicrosoftDocs/azure-monitor-docs-pr/compare/main...AaronMaxwell:azure-docs-pr:${branch}?expand=1
+          echo https://github.com/MicrosoftDocs/azure-monitor-docs-pr/compare/main...xiang17:azure-docs-pr:${branch}?expand=1
           echo ========================================
 
           # TODO (trask) create PR automatically
