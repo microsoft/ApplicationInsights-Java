@@ -2,16 +2,10 @@
 
 ## Version 3.7.5 GA (09/25/2025)
 
-### Bug fixes
+### Enhancements
 
 * Update OpenTelemetry versions 
   ([#4429](https://github.com/microsoft/ApplicationInsights-Java/pull/4429))
-* Simplify 
-  ([#4430](https://github.com/microsoft/ApplicationInsights-Java/pull/4430))
-* Update semconv artifact version 
-  ([#4438](https://github.com/microsoft/ApplicationInsights-Java/pull/4438))
-* azure-identity pin not needed anymore 
-  ([#4455](https://github.com/microsoft/ApplicationInsights-Java/pull/4455))
 * Read environment variables for AKS metrics otlp support
   ([#4458](https://github.com/microsoft/ApplicationInsights-Java/pull/4458))
 
