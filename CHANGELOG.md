@@ -8,16 +8,10 @@
   ([#4429](https://github.com/microsoft/ApplicationInsights-Java/pull/4429))
 * Simplify 
   ([#4430](https://github.com/microsoft/ApplicationInsights-Java/pull/4430))
-* Fix CodeQL warnings 
-  ([#4431](https://github.com/microsoft/ApplicationInsights-Java/pull/4431))
 * Update semconv artifact version 
   ([#4438](https://github.com/microsoft/ApplicationInsights-Java/pull/4438))
-* Rollback #4373 
-  ([#4446](https://github.com/microsoft/ApplicationInsights-Java/pull/4446))
 * azure-identity pin not needed anymore 
   ([#4455](https://github.com/microsoft/ApplicationInsights-Java/pull/4455))
-* Remove unused plugin 
-  ([#4454](https://github.com/microsoft/ApplicationInsights-Java/pull/4454))
 * Read environment variables for AKS metrics otlp support
   ([#4458](https://github.com/microsoft/ApplicationInsights-Java/pull/4458))
 
