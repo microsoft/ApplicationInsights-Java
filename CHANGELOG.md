@@ -18,6 +18,8 @@
   ([#4455](https://github.com/microsoft/ApplicationInsights-Java/pull/4455))
 * Remove unused plugin 
   ([#4454](https://github.com/microsoft/ApplicationInsights-Java/pull/4454))
+* Read environment variables for AKS metrics otlp support
+  ([#4458](https://github.com/microsoft/ApplicationInsights-Java/pull/4458))
 
 ## Version 3.7.4 GA (08/05/2025)
 
