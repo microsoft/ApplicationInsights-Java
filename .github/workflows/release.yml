@@ -63,7 +63,7 @@ jobs:
     with:
       version: ${{ needs.release.outputs.version }}
     secrets:
-      AARON_MAXWELL_TOKEN: ${{ secrets.AARON_MAXWELL_TOKEN }}
+      PERSONAL_ACCESS_TOKEN: ${{ secrets.XIANG17_TOKEN }}
 
   create-version-bump-pull-request:
     permissions: write-all
