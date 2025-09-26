@@ -139,7 +139,7 @@ abstract class RoleNameOverridesTest {
     Map<String, String> properties = metricData.getProperties();
     String expectedSuccess = "200".equals(resultCode) ? "True" : "False";
     if ("client".equals(type)) {
-      assertThat(properties).hasSize(9);
+      assertThat(properties).hasSize(10);
       assertThat(properties.get("_MS.MetricId")).isEqualTo("dependencies/duration");
       assertThat(properties.get("dependency/resultCode")).isEqualTo(resultCode);
       assertThat(properties.get("Dependency.Success")).isEqualTo(expectedSuccess);
@@ -147,7 +147,7 @@ abstract class RoleNameOverridesTest {
           .isEqualTo("host.testcontainers.internal:6060");
       assertThat(properties.get("Dependency.Type")).isEqualTo("Http");
     } else {
-      assertThat(properties).hasSize(7);
+      assertThat(properties).hasSize(8);
       assertThat(properties.get("_MS.MetricId")).isEqualTo("requests/duration");
       assertThat(properties.get("request/resultCode")).isEqualTo(resultCode);
       assertThat(properties.get("Request.Success")).isEqualTo(expectedSuccess);
@@ -156,6 +156,7 @@ abstract class RoleNameOverridesTest {
     assertThat(properties.get("cloud/roleInstance")).isEqualTo("testroleinstance");
     assertThat(properties.get("cloud/roleName")).isEqualTo(roleName);
     assertThat(properties.get("_MS.IsAutocollected")).isEqualTo("True");
+    assertThat(properties.get("_MS.SentToAMW")).isEqualTo("False");
   }
 
   @Environment(TOMCAT_8_JAVA_8)

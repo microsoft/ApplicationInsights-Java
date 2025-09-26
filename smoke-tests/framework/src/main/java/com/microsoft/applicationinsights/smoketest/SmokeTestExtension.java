@@ -422,6 +422,12 @@ public class SmokeTestExtension
     Testcontainers.exposeHostPorts(6060);
     Testcontainers.exposeHostPorts(4318);
 
+    if (useOtlpEndpoint) {
+      envVars.put("OTEL_METRICS_EXPORTER", "otlp,azure_monitor");
+      envVars.put("OTEL_EXPORTER_OTLP_METRICS_ENDPOINT", FAKE_OTLP_INGESTION_ENDPOINT);
+      envVars.put("OTEL_EXPORTER_OTLP_PROTOCOL", "http/protobuf");
+    }
+
     GenericContainer<?> container;
     if (REMOTE_DEBUG || useDefaultHttpPort) {
       FixedHostPortGenericContainer fixedPortContainer =

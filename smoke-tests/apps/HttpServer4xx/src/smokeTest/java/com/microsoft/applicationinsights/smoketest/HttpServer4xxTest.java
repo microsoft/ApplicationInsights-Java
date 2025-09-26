@@ -55,13 +55,14 @@ abstract class HttpServer4xxTest {
     assertThat(dataPoint.getCount()).isEqualTo(1);
 
     Map<String, String> properties = metricData.getProperties();
-    assertThat(properties).hasSize(7);
+    assertThat(properties).hasSize(8);
     assertThat(properties.get("_MS.MetricId")).isEqualTo("requests/duration");
     assertThat(properties.get("request/resultCode")).isEqualTo("400");
     assertThat(properties.get("Request.Success")).isEqualTo("True");
     assertThat(properties.get("cloud/roleInstance")).isEqualTo("testroleinstance");
     assertThat(properties.get("cloud/roleName")).isEqualTo("testrolename");
     assertThat(properties.get("_MS.IsAutocollected")).isEqualTo("True");
+    assertThat(properties.get("_MS.SentToAMW")).isEqualTo("False");
   }
 
   @Environment(TOMCAT_8_JAVA_8)

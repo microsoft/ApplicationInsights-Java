@@ -75,7 +75,8 @@ abstract class GrpcTest {
                     entry("operation/synthetic", "False"),
                     entry("cloud/roleInstance", "testroleinstance"),
                     entry("cloud/roleName", "testrolename"),
-                    entry("_MS.IsAutocollected", "True")));
+                    entry("_MS.IsAutocollected", "True"),
+                    entry("_MS.SentToAMW", "False")));
 
     testing.waitAndAssertMetric(
         "rpc.server.duration",
@@ -95,7 +96,8 @@ abstract class GrpcTest {
                     entry("operation/synthetic", "False"),
                     entry("cloud/roleInstance", "testroleinstance"),
                     entry("cloud/roleName", "testrolename"),
-                    entry("_MS.IsAutocollected", "True")));
+                    entry("_MS.IsAutocollected", "True"),
+                    entry("_MS.SentToAMW", "False")));
   }
 
   @Test
@@ -152,7 +154,8 @@ abstract class GrpcTest {
                     entry("operation/synthetic", "False"),
                     entry("cloud/roleInstance", "testroleinstance"),
                     entry("cloud/roleName", "testrolename"),
-                    entry("_MS.IsAutocollected", "True")));
+                    entry("_MS.IsAutocollected", "True"),
+                    entry("_MS.SentToAMW", "False")));
 
     testing.waitAndAssertMetric(
         "rpc.server.duration",
@@ -172,7 +175,8 @@ abstract class GrpcTest {
                     entry("operation/synthetic", "False"),
                     entry("cloud/roleInstance", "testroleinstance"),
                     entry("cloud/roleName", "testrolename"),
-                    entry("_MS.IsAutocollected", "True")));
+                    entry("_MS.IsAutocollected", "True"),
+                    entry("_MS.SentToAMW", "False")));
   }
 
   @Environment(JAVA_8)
