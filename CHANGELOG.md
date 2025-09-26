@@ -1,5 +1,24 @@
 # CHANGELOG
 
+## Version 3.7.5 GA (09/25/2025)
+
+### Bug fixes
+
+* Update OpenTelemetry versions 
+  ([#4429](https://github.com/microsoft/ApplicationInsights-Java/pull/4429))
+* Simplify 
+  ([#4430](https://github.com/microsoft/ApplicationInsights-Java/pull/4430))
+* Fix CodeQL warnings 
+  ([#4431](https://github.com/microsoft/ApplicationInsights-Java/pull/4431))
+* Update semconv artifact version 
+  ([#4438](https://github.com/microsoft/ApplicationInsights-Java/pull/4438))
+* Rollback #4373 
+  ([#4446](https://github.com/microsoft/ApplicationInsights-Java/pull/4446))
+* azure-identity pin not needed anymore 
+  ([#4455](https://github.com/microsoft/ApplicationInsights-Java/pull/4455))
+* Remove unused plugin 
+  ([#4454](https://github.com/microsoft/ApplicationInsights-Java/pull/4454))
+
 ## Version 3.7.4 GA (08/05/2025)
 
 ### Bug fixes
