@@ -30,7 +30,7 @@ dependencies {
   implementation(gradleApi())
 
   // When updating, update above in plugins too
-  implementation("com.diffplug.spotless:spotless-plugin-gradle:7.2.1")
+  implementation("com.diffplug.spotless:spotless-plugin-gradle:8.0.0")
   implementation("com.github.spotbugs.snom:spotbugs-gradle-plugin:6.3.0")
   implementation("com.gradleup.shadow:shadow-gradle-plugin:8.3.9")
 
