@@ -9,8 +9,8 @@ import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_17_OPENJ9;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_21;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_21_OPENJ9;
-import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_23;
-import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_23_OPENJ9;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_25;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_25_OPENJ9;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_8;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_8_OPENJ9;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -151,9 +151,9 @@ abstract class KafkaTest {
   @Environment(JAVA_21_OPENJ9)
   static class Java21OpenJ9Test extends KafkaTest {}
 
-  @Environment(JAVA_23)
+  @Environment(JAVA_25)
   static class Java23Test extends KafkaTest {}
 
-  @Environment(JAVA_23_OPENJ9)
+  @Environment(JAVA_25_OPENJ9)
   static class Java23OpenJ9Test extends KafkaTest {}
 }

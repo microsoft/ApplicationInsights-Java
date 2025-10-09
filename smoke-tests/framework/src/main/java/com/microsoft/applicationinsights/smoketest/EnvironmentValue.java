@@ -7,44 +7,44 @@ import javax.annotation.Nullable;
 
 public enum EnvironmentValue {
   TOMCAT_8_JAVA_8(
-      "ghcr.io/open-telemetry/opentelemetry-java-instrumentation/smoke-test-servlet-tomcat:8.5.98-jdk8-20241014.11321808438",
+      "ghcr.io/open-telemetry/opentelemetry-java-instrumentation/smoke-test-servlet-tomcat:8.5.98-jdk8-20251006.18272043371",
       "/server/webapps"),
   TOMCAT_8_JAVA_8_OPENJ9(
-      "ghcr.io/open-telemetry/opentelemetry-java-instrumentation/smoke-test-servlet-tomcat:8.5.98-jdk8-openj9-20241014.11321808438",
+      "ghcr.io/open-telemetry/opentelemetry-java-instrumentation/smoke-test-servlet-tomcat:8.5.98-jdk8-openj9-20251006.18272043371",
       "/server/webapps"),
   TOMCAT_8_JAVA_11(
-      "ghcr.io/open-telemetry/opentelemetry-java-instrumentation/smoke-test-servlet-tomcat:8.5.98-jdk11-20241014.11321808438",
+      "ghcr.io/open-telemetry/opentelemetry-java-instrumentation/smoke-test-servlet-tomcat:8.5.98-jdk11-20251006.18272043371",
       "/server/webapps"),
   TOMCAT_8_JAVA_11_OPENJ9(
-      "ghcr.io/open-telemetry/opentelemetry-java-instrumentation/smoke-test-servlet-tomcat:8.5.98-jdk11-openj9-20241014.11321808438",
+      "ghcr.io/open-telemetry/opentelemetry-java-instrumentation/smoke-test-servlet-tomcat:8.5.98-jdk11-openj9-20251006.18272043371",
       "/server/webapps"),
   TOMCAT_8_JAVA_17(
-      "ghcr.io/open-telemetry/opentelemetry-java-instrumentation/smoke-test-servlet-tomcat:8.5.98-jdk17-20241014.11321808438",
+      "ghcr.io/open-telemetry/opentelemetry-java-instrumentation/smoke-test-servlet-tomcat:8.5.98-jdk17-20251006.18272043371",
       "/server/webapps"),
   TOMCAT_8_JAVA_17_OPENJ9(
-      "ghcr.io/open-telemetry/opentelemetry-java-instrumentation/smoke-test-servlet-tomcat:8.5.98-jdk17-openj9-20241014.11321808438",
+      "ghcr.io/open-telemetry/opentelemetry-java-instrumentation/smoke-test-servlet-tomcat:8.5.98-jdk17-openj9-20251006.18272043371",
       "/server/webapps"),
   TOMCAT_8_JAVA_21(
-      "ghcr.io/open-telemetry/opentelemetry-java-instrumentation/smoke-test-servlet-tomcat:8.5.98-jdk21-20241014.11321808438",
+      "ghcr.io/open-telemetry/opentelemetry-java-instrumentation/smoke-test-servlet-tomcat:8.5.98-jdk21-20251006.18272043371",
       "/server/webapps"),
   TOMCAT_8_JAVA_21_OPENJ9(
-      "ghcr.io/open-telemetry/opentelemetry-java-instrumentation/smoke-test-servlet-tomcat:8.5.98-jdk21-openj9-20241014.11321808438",
+      "ghcr.io/open-telemetry/opentelemetry-java-instrumentation/smoke-test-servlet-tomcat:8.5.98-jdk21-openj9-20251006.18272043371",
       "/server/webapps"),
-  TOMCAT_8_JAVA_23(
-      "ghcr.io/open-telemetry/opentelemetry-java-instrumentation/smoke-test-servlet-tomcat:8.5.98-jdk23-20241014.11321808438",
+  TOMCAT_8_JAVA_25(
+      "ghcr.io/open-telemetry/opentelemetry-java-instrumentation/smoke-test-servlet-tomcat:8.5.98-jdk25-20251006.18272043371",
       "/server/webapps"),
-  TOMCAT_8_JAVA_23_OPENJ9(
-      "ghcr.io/open-telemetry/opentelemetry-java-instrumentation/smoke-test-servlet-tomcat:8.5.98-jdk23-openj9-20241014.11321808438",
+  TOMCAT_8_JAVA_25_OPENJ9(
+      "ghcr.io/open-telemetry/opentelemetry-java-instrumentation/smoke-test-servlet-tomcat:8.5.98-jdk25-openj9-20251006.18272043371",
       "/server/webapps"),
   WILDFLY_13_JAVA_8(
-      "ghcr.io/open-telemetry/opentelemetry-java-instrumentation/smoke-test-servlet-wildfly:13.0.0.Final-jdk8-20241014.11321808438",
+      "ghcr.io/open-telemetry/opentelemetry-java-instrumentation/smoke-test-servlet-wildfly:13.0.0.Final-jdk8-20251006.18272043371",
       "/opt/jboss/wildfly/standalone/deployments"),
   WILDFLY_13_JAVA_8_OPENJ9(
-      "ghcr.io/open-telemetry/opentelemetry-java-instrumentation/smoke-test-servlet-wildfly:13.0.0.Final-jdk8-openj9-20241014.11321808438",
+      "ghcr.io/open-telemetry/opentelemetry-java-instrumentation/smoke-test-servlet-wildfly:13.0.0.Final-jdk8-openj9-20251006.18272043371",
       "/opt/jboss/wildfly/standalone/deployments"),
 
   LIBERTY_20_JAVA_8(
-      "ghcr.io/open-telemetry/opentelemetry-java-instrumentation/smoke-test-servlet-liberty:20.0.0.12-jdk8-20241014.11321808438",
+      "ghcr.io/open-telemetry/opentelemetry-java-instrumentation/smoke-test-servlet-liberty:20.0.0.12-jdk8-20251006.18272043371",
       "/config/apps",
       "app.war"),
 
@@ -56,8 +56,8 @@ public enum EnvironmentValue {
   JAVA_17_OPENJ9("ibm-semeru-runtimes:open-17-jdk", ""),
   JAVA_21("eclipse-temurin:21", ""),
   JAVA_21_OPENJ9("ibm-semeru-runtimes:open-21-jdk", ""),
-  JAVA_23("eclipse-temurin:23", ""),
-  JAVA_23_OPENJ9("ibm-semeru-runtimes:open-23-jdk", "");
+  JAVA_25("eclipse-temurin:25", ""),
+  JAVA_25_OPENJ9("ibm-semeru-runtimes:open-25-jdk", "");
 
   private final String imageName;
   private final String imageAppDir;

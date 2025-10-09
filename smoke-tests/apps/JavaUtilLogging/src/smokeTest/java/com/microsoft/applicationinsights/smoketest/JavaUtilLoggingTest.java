@@ -9,8 +9,8 @@ import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCA
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_17_OPENJ9;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_21;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_21_OPENJ9;
-import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_23;
-import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_23_OPENJ9;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_25;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_25_OPENJ9;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_8;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_8_OPENJ9;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.WILDFLY_13_JAVA_8;
@@ -133,10 +133,10 @@ abstract class JavaUtilLoggingTest {
   @Environment(TOMCAT_8_JAVA_21_OPENJ9)
   static class Tomcat8Java21OpenJ9Test extends JavaUtilLoggingTest {}
 
-  @Environment(TOMCAT_8_JAVA_23)
+  @Environment(TOMCAT_8_JAVA_25)
   static class Tomcat8Java23Test extends JavaUtilLoggingTest {}
 
-  @Environment(TOMCAT_8_JAVA_23_OPENJ9)
+  @Environment(TOMCAT_8_JAVA_25_OPENJ9)
   static class Tomcat8Java23OpenJ9Test extends JavaUtilLoggingTest {}
 
   @Environment(WILDFLY_13_JAVA_8)
