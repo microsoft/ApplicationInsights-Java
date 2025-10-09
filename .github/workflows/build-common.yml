@@ -25,7 +25,7 @@ jobs:
           java-version: 17
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v5
 
       - name: Spotless
         run: ./gradlew spotlessCheck ${{ inputs.no-build-cache && '--no-build-cache' || '' }}
@@ -35,7 +35,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - uses: gradle/actions/wrapper-validation@v4.4.0
+      - uses: gradle/actions/wrapper-validation@v5
 
   license-check:
     runs-on: ubuntu-latest
@@ -53,7 +53,7 @@ jobs:
         run: ./.github/scripts/build-azure-monitor-dependency.sh
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v5
 
       - name: Generate license report
         run: |
@@ -98,7 +98,7 @@ jobs:
         run: ./.github/scripts/build-azure-monitor-dependency.sh
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v5
 
       - name: Add MSBuild to PATH
         uses: microsoft/setup-msbuild@v2
@@ -168,7 +168,7 @@ jobs:
         run: ./.github/scripts/build-azure-monitor-dependency.sh
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v5
 
       - name: Test
         # spotless is checked separately since it's a common source of failure
@@ -239,7 +239,7 @@ jobs:
         run: ./.github/scripts/build-azure-monitor-dependency.sh
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v5
 
       - name: Test
         run: ./gradlew ${{ matrix.module }}:smokeTest --tests "${{ matrix.test_class }}*"
