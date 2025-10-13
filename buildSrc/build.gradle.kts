@@ -44,6 +44,5 @@ dependencies {
   implementation("gradle.plugin.io.morethan.jmhreport:gradle-jmh-report:0.9.6")
   implementation("me.champeau.jmh:jmh-gradle-plugin:0.7.3")
 
-  // 3.x versions aren't compatible with Java 8
-  implementation("org.springframework.boot:spring-boot-gradle-plugin:2.7.18")
+  implementation("org.springframework.boot:spring-boot-gradle-plugin:3.5.6")
 }
