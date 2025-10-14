@@ -30,7 +30,8 @@ class UploadServiceTest extends TestBase {
         new ServiceProfilerClient(
             new URL("https://agent.azureserviceprofiler.net/"),
             "00000000-0000-0000-0000-000000000000",
-            httpPipeline);
+            httpPipeline,
+            30);
 
     File tmpFile = createFakeJfrFile();
     UUID appId = UUID.randomUUID();
