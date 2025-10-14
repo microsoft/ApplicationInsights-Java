@@ -9,8 +9,8 @@ import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCA
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_17_OPENJ9;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_21;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_21_OPENJ9;
-import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_23;
-import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_23_OPENJ9;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_25;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_25_OPENJ9;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_8;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_8_OPENJ9;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -54,10 +54,10 @@ abstract class SamplingOverridesThreadNameTest {
   @Environment(TOMCAT_8_JAVA_21_OPENJ9)
   static class Tomcat8Java21OpenJ9Test extends SamplingOverridesThreadNameTest {}
 
-  @Environment(TOMCAT_8_JAVA_23)
+  @Environment(TOMCAT_8_JAVA_25)
   static class Tomcat8Java23Test extends SamplingOverridesThreadNameTest {}
 
-  @Environment(TOMCAT_8_JAVA_23_OPENJ9)
+  @Environment(TOMCAT_8_JAVA_25_OPENJ9)
   static class Tomcat8Java23OpenJ9Test extends SamplingOverridesThreadNameTest {}
 
   // intentionally not including wildfly, since this test is set up for Tomcat thread names
