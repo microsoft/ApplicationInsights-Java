@@ -9,6 +9,6 @@ dependencies {
   implementation("org.springframework.cloud:spring-cloud-starter-stream-kafka:2.2.1.RELEASE")
   implementation("org.springframework.kafka:spring-kafka:2.3.1.RELEASE")
   implementation("org.springframework:spring-tx:5.2.0.RELEASE")
-  implementation("org.springframework.cloud:spring-cloud-stream-binder-kafka:3.1.2")
+  implementation("org.springframework.cloud:spring-cloud-stream-binder-kafka:2.2.1.RELEASE")
   implementation("org.testcontainers:testcontainers-kafka")
 }
