@@ -26,6 +26,31 @@ and then you can find the java agent artifact at
 
 `agent/agent/build/libs/applicationinsights-agent-<version>.jar`.
 
+## Updating dependencies
+
+When updating dependencies in the project, you need to regenerate the dependency lock files
+and license reports.
+
+### Regenerate lock files
+
+After updating dependencies in any `build.gradle.kts` file, regenerate the lock files:
+
+```bash
+./gradlew resolveAndLockAll --write-locks
+```
+
+This will update all `gradle.lockfile` files throughout the project to reflect the new dependency versions.
+
+### Regenerate license files
+
+After updating dependencies, regenerate the license report to include licenses for new dependencies:
+
+```bash
+./gradlew generateLicenseReport --no-build-cache
+```
+
+This ensures all third-party licenses are properly documented.
+
 ## IntelliJ setup and troubleshooting
 
 See [IntelliJ setup and troubleshooting](https://github.com/open-telemetry/opentelemetry-java-instrumentation/blob/main/docs/contributing/intellij-setup-and-troubleshooting.md)
