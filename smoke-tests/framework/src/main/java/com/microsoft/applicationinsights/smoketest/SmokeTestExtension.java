@@ -5,7 +5,6 @@ package com.microsoft.applicationinsights.smoketest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
-import static org.junit.Assert.assertEquals;
 
 import com.google.common.base.Stopwatch;
 import com.microsoft.applicationinsights.smoketest.fakeingestion.MockedAppInsightsIngestionServer;
@@ -611,7 +610,7 @@ public class SmokeTestExtension
     telemetry.rdEnvelope = rdList.get(0);
     telemetry.rd = (RequestData) ((Data<?>) telemetry.rdEnvelope.getData()).getBaseData();
 
-    assertEquals(0, mockedIngestion.getCountForType("EventData"));
+    assertThat(mockedIngestion.getCountForType("EventData")).isEqualTo(0);
 
     if (rddCount == 0) {
       return telemetry;
@@ -677,7 +676,7 @@ public class SmokeTestExtension
       boolean topLevelParent) {
     String operationId = parentEnvelope.getTags().get("ai.operation.id");
     assertThat(operationId).isNotNull();
-    assertEquals(operationId, childEnvelope.getTags().get("ai.operation.id"));
+    assertThat(childEnvelope.getTags().get("ai.operation.id")).isEqualTo(operationId);
 
     String operationParentId = parentEnvelope.getTags().get("ai.operation.parentId");
     if (topLevelParent) {
@@ -686,10 +685,10 @@ public class SmokeTestExtension
       assertThat(operationParentId).isNotNull();
     }
 
-    assertEquals(parentId, childEnvelope.getTags().get("ai.operation.parentId"));
+    assertThat(childEnvelope.getTags().get("ai.operation.parentId")).isEqualTo(parentId);
 
-    assertEquals(parentOperationName, parentEnvelope.getTags().get("ai.operation.name"));
-    assertEquals(childOperationName, childEnvelope.getTags().get("ai.operation.name"));
+    assertThat(parentEnvelope.getTags().get("ai.operation.name")).isEqualTo(parentOperationName);
+    assertThat(childEnvelope.getTags().get("ai.operation.name")).isEqualTo(childOperationName);
   }
 
   public static Predicate<Envelope> getMetricPredicate(String name) {
