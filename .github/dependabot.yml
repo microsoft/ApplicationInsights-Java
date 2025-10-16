@@ -32,6 +32,9 @@ updates:
       - dependency-name: "org.mockito:*"
         # mockito 5 requires Java 11
         versions: [ "[5,)" ]
+      - dependency-name: "org.junit:junit-bom"
+        # junit 6 requires Java 17
+        versions: [ "[6,)" ]
     schedule:
       interval: "daily"
     open-pull-requests-limit: 10
