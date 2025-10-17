@@ -134,3 +134,24 @@ throw new FriendlyException(
 - Use `hideFromDependabot()` for test-only dependencies
 - Smoke tests validate end-to-end functionality in realistic environments
 - Check `gradle.lockfile` when dependency issues arise
+
+## How to bisect an upstream OpenTelemetry Agent regression
+
+To identify which upstream commit introduced a regression:
+
+1. Update `dependencyManagement/build.gradle.kts` to use SNAPSHOT version (e.g., `2.10.0-alpha-SNAPSHOT`)
+2. Clone and bisect the upstream repo:
+   ```bash
+   git clone https://github.com/open-telemetry/opentelemetry-java-instrumentation.git
+   cd opentelemetry-java-instrumentation
+   git bisect start v2.10.0 v2.9.0
+   ```
+3. For each bisect iteration:
+   ```bash
+   ./gradlew publishToMavenLocal
+   cd /path/to/ApplicationInsights-Java
+   ./gradlew :smoke-tests:apps:YourApp:smokeTest --tests "*YourFailingTest"
+   cd /path/to/opentelemetry-java-instrumentation
+   git bisect good  # or bad
+   ```
+4. When done: `git bisect reset` and restore `dependencyManagement/build.gradle.kts`
