@@ -38,6 +38,10 @@ updates:
     schedule:
       interval: "daily"
     open-pull-requests-limit: 10
+    groups:
+      testcontainers:
+        patterns:
+          - "org.testcontainers:*"
 
   - package-ecosystem: "gradle"
     directory: "/perf-tests"
