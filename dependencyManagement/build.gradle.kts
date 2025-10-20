@@ -70,7 +70,7 @@ val DEPENDENCIES = listOf(
   "io.opentelemetry.contrib:opentelemetry-jfr-connection:${otelContribVersion}-alpha",
   "io.opentelemetry.contrib:opentelemetry-runtime-attach-core:${otelContribVersion}-alpha",
   "com.google.code.findbugs:jsr305:3.0.2",
-  "com.github.spotbugs:spotbugs-annotations:4.9.7"
+  "com.github.spotbugs:spotbugs-annotations:4.9.8"
 )
 
 javaPlatform {
