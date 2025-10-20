@@ -9,8 +9,6 @@ plugins {
 
 val aiSmokeTest = extensions.getByType(AiSmokeTestExtension::class)
 
-aiSmokeTest.mainClass.convention("com.microsoft.applicationinsights.smoketestapp.SpringBootApp")
-
 val shadowJar = tasks.named<ShadowJar>("shadowJar") {
   archiveClassifier.set("")
   archiveVersion.set("")
@@ -23,7 +21,7 @@ val shadowJar = tasks.named<ShadowJar>("shadowJar") {
   mergeServiceFiles("META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports")
 
   manifest {
-    attributes["Main-Class"] = aiSmokeTest.mainClass.get()
+    attributes["Main-Class"] = "com.microsoft.applicationinsights.smoketestapp.SpringBootApp"
   }
 }
 

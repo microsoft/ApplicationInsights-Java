@@ -8,7 +8,7 @@ import java.util.logging.Logger;
 
 // Spring boot doesn't support read-only containers
 // (https://github.com/spring-projects/spring-boot/issues/8578)
-public class App {
+public class SpringBootApp {
 
   private static final Logger logger = Logger.getLogger("smoketestapp");
 

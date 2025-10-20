@@ -10,6 +10,4 @@ abstract class AiSmokeTestExtension {
   abstract val testAppArtifactFilename: Property<String>
 
   abstract val dependencyContainers: ListProperty<String>
-
-  abstract val mainClass: Property<String>
 }
