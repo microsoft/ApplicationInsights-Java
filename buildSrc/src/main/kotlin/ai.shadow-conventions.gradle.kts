@@ -1,13 +1,35 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import org.gradle.api.file.DuplicatesStrategy
 
 plugins {
   id("com.gradleup.shadow")
 }
 
 tasks.withType<ShadowJar>().configureEach {
+  duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+  mergeServiceFiles()
+  mergeServiceFiles("META-INF/services/**")
   mergeServiceFiles {
-    include("inst/META-INF/services/*")
+    include("inst/META-INF/services/**")
   }
+  filesMatching("META-INF/services/**") {
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+  }
+  filesMatching("inst/META-INF/services/**") {
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+  }
+  exclude("META-INF/*.SF", "META-INF/*.DSA", "META-INF/*.RSA")
+  exclude(
+    "META-INF/LICENSE",
+    "META-INF/NOTICE",
+    "META-INF/LICENSE.txt",
+    "META-INF/NOTICE.txt",
+    "META-INF/INDEX.LIST",
+    "META-INF/io.netty.versions.properties",
+    "META-INF/AL2.0",
+    "META-INF/LGPL2.1"
+  )
+  exclude("META-INF/maven/**")
 
   exclude("**/module-info.class")
 

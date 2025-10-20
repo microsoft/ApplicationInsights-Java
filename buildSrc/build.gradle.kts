@@ -20,6 +20,7 @@ repositories {
   mavenCentral()
   mavenLocal()
   gradlePluginPortal()
+  maven("https://central.sonatype.com/repository/maven-snapshots/")
 }
 
 tasks.withType<Test>().configureEach {
@@ -32,11 +33,11 @@ dependencies {
   // When updating, update above in plugins too
   implementation("com.diffplug.spotless:spotless-plugin-gradle:8.0.0")
   implementation("com.github.spotbugs.snom:spotbugs-gradle-plugin:6.3.0")
-  implementation("com.gradleup.shadow:shadow-gradle-plugin:8.3.9")
+  implementation("com.gradleup.shadow:shadow-gradle-plugin:9.2.2")
 
   implementation("org.owasp:dependency-check-gradle:12.1.8")
 
-  implementation("io.opentelemetry.instrumentation:gradle-plugins:2.19.0-alpha")
+  implementation("io.opentelemetry.instrumentation:gradle-plugins:2.22.0-alpha-SNAPSHOT")
 
   implementation("net.ltgt.gradle:gradle-errorprone-plugin:4.3.0")
   implementation("net.ltgt.gradle:gradle-nullaway-plugin:2.3.0")
@@ -44,6 +45,4 @@ dependencies {
   implementation("gradle.plugin.io.morethan.jmhreport:gradle-jmh-report:0.9.6")
   implementation("me.champeau.jmh:jmh-gradle-plugin:0.7.3")
 
-  // earlier versions aren't compatible with Gradle 8.1.1
-  implementation("org.springframework.boot:spring-boot-gradle-plugin:2.5.12")
 }
