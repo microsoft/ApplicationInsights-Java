@@ -20,7 +20,6 @@ repositories {
   mavenCentral()
   mavenLocal()
   gradlePluginPortal()
-  maven("https://central.sonatype.com/repository/maven-snapshots/")
 }
 
 tasks.withType<Test>().configureEach {
@@ -37,7 +36,7 @@ dependencies {
 
   implementation("org.owasp:dependency-check-gradle:12.1.8")
 
-  implementation("io.opentelemetry.instrumentation:gradle-plugins:2.22.0-alpha-SNAPSHOT")
+  implementation("io.opentelemetry.instrumentation:gradle-plugins:2.21.0-alpha")
 
   implementation("net.ltgt.gradle:gradle-errorprone-plugin:4.3.0")
   implementation("net.ltgt.gradle:gradle-nullaway-plugin:2.3.0")
