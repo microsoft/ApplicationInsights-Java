@@ -1,6 +1,6 @@
 plugins {
   id("ai.java-conventions")
-  id("org.springframework.boot" version "2.5.12")
+  id("org.springframework.boot" version "2.7.18")
   id("war")
 }
 
