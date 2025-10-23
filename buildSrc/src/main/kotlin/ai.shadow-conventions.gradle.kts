@@ -11,6 +11,7 @@ tasks.withType<ShadowJar>().configureEach {
   mergeServiceFiles("META-INF/services/**")
   mergeServiceFiles {
     include("inst/META-INF/services/**")
+    path = "inst/META-INF/services"
   }
   filesMatching("META-INF/services/**") {
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
@@ -18,6 +19,8 @@ tasks.withType<ShadowJar>().configureEach {
   filesMatching("inst/META-INF/services/**") {
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
   }
+  exclude("META-INF/services/javax.servlet.ServletContainerInitializer")
+  exclude("inst/META-INF/services/javax.servlet.ServletContainerInitializer")
   exclude("META-INF/*.SF", "META-INF/*.DSA", "META-INF/*.RSA")
   exclude(
     "META-INF/LICENSE",
