@@ -24,7 +24,7 @@ configurations["smokeTestRuntimeOnly"].extendsFrom(configurations.runtimeOnly.ge
 // FIXME (trask) copy-pasted from ai.java-conventions.gradle
 java {
   toolchain {
-    languageVersion.set(JavaLanguageVersion.of(17))
+    languageVersion.set(JavaLanguageVersion.of(21))
   }
 
   // See https://docs.gradle.org/current/userguide/upgrading_version_5.html, Automatic target JVM version
