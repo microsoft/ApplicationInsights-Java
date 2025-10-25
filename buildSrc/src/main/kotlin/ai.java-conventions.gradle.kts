@@ -19,7 +19,7 @@ repositories {
 
 java {
   toolchain {
-    languageVersion.set(JavaLanguageVersion.of(17))
+    languageVersion.set(JavaLanguageVersion.of(21))
   }
 
   // See https://docs.gradle.org/current/userguide/upgrading_version_5.html, Automatic target JVM version
@@ -32,6 +32,10 @@ tasks.withType<JavaCompile>().configureEach {
   with(options) {
     release.set(8)
     compilerArgs.add("-Werror")
+    // We need to support compiling to Java 8.
+    // Suppress obsolete source/target warning added in JDK 21 while retaining -Werror for everything else.
+    // This only disables the 'options' lint category (e.g., the obsolete source/target messages).
+    compilerArgs.add("-Xlint:-options")
   }
 }
 
