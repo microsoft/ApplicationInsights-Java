@@ -117,25 +117,21 @@ class SpringBootControllerSpansEnabledTest {
     Envelope rdEnvelope = rdList.get(0);
     String operationId = rdEnvelope.getTags().get("ai.operation.id");
     List<Envelope> rddList =
-        testing.mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 3, operationId);
+        testing.mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 2, operationId);
     assertThat(testing.mockedIngestion.getCountForType("EventData")).isZero();
 
     Envelope rddEnvelope1 = rddList.get(0);
     Envelope rddEnvelope2 = rddList.get(1);
-    Envelope rddEnvelope3 = rddList.get(2);
 
     assertThat(rdEnvelope.getSampleRate()).isNull();
     assertThat(rddEnvelope1.getSampleRate()).isNull();
     assertThat(rddEnvelope2.getSampleRate()).isNull();
-    assertThat(rddEnvelope3.getSampleRate()).isNull();
 
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
     RemoteDependencyData rdd1 =
         (RemoteDependencyData) ((Data<?>) rddEnvelope1.getData()).getBaseData();
     RemoteDependencyData rdd2 =
         (RemoteDependencyData) ((Data<?>) rddEnvelope2.getData()).getBaseData();
-    RemoteDependencyData rdd3 =
-        (RemoteDependencyData) ((Data<?>) rddEnvelope3.getData()).getBaseData();
 
     assertThat(rd.getName()).isEqualTo("GET /SpringBoot/asyncDependencyCall");
     assertThat(rd.getResponseCode()).isEqualTo("200");
@@ -157,22 +153,9 @@ class SpringBootControllerSpansEnabledTest {
         .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
     assertThat(rdd2.getSuccess()).isTrue();
 
-    // TODO (trask): why is spring-webmvc instrumentation capturing this twice?
-    assertThat(rdd3.getName()).isEqualTo("TestController.asyncDependencyCall");
-    assertThat(rdd3.getProperties()).isEmpty();
-    assertThat(rdd3.getSuccess()).isTrue();
-
     SmokeTestExtension.assertParentChild(
         rd, rdEnvelope, rddEnvelope1, "GET /SpringBoot/asyncDependencyCall");
     SmokeTestExtension.assertParentChild(
         rdd1, rddEnvelope1, rddEnvelope2, "GET /SpringBoot/asyncDependencyCall");
-    try {
-      SmokeTestExtension.assertParentChild(
-          rdd1, rddEnvelope1, rddEnvelope3, "GET /SpringBoot/asyncDependencyCall");
-    } catch (AssertionError e) {
-      // on wildfly the duplicate controller spans is nested under the request span for some reason
-      SmokeTestExtension.assertParentChild(
-          rd, rdEnvelope, rddEnvelope3, "GET /SpringBoot/asyncDependencyCall");
-    }
   }
 }
