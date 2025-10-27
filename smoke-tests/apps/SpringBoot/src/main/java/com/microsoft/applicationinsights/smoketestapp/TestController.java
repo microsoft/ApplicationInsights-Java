@@ -3,7 +3,6 @@
 
 package com.microsoft.applicationinsights.smoketestapp;
 
-import com.microsoft.applicationinsights.TelemetryClient;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -15,8 +14,6 @@ import org.springframework.web.context.request.async.DeferredResult;
 
 @RestController
 public class TestController {
-
-  private static final TelemetryClient client = new TelemetryClient();
 
   @Autowired private TestBean testBean;
 
@@ -40,9 +37,6 @@ public class TestController {
           }
         };
 
-    // Event
-    client.trackEvent("EventDataTest");
-    client.trackEvent("EventDataPropertyTest", properties, metrics);
     return "hello";
   }
 
