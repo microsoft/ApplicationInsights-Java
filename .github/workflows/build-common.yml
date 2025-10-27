@@ -120,7 +120,7 @@ jobs:
           ${{ inputs.no-build-cache && '--no-build-cache' || '' }}
 
       - name: Upload snapshot
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           path: agent/agent/build/libs/applicationinsights-agent-*-SNAPSHOT.jar
 
@@ -254,7 +254,7 @@ jobs:
           echo "UPLOAD_ARTIFACT_NAME=$artifact_name" >> $GITHUB_ENV
 
       - name: Upload smoke test reports
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         if: failure()
         with:
           name: ${{ env.UPLOAD_ARTIFACT_NAME }}
