@@ -54,9 +54,6 @@ tasks {
         // Suggests using Guava types for fields but we don't use Guava
         disable("ImmutableMemberCollection")
 
-        // TODO (trask) use animal sniffer
-        disable("AndroidJdkLibsChecker")
-
         // apparently disabling android doesn't disable this
         disable("StaticOrDefaultInterfaceMethod")
 
