@@ -5,8 +5,7 @@
 ### Enhancements
 
 * Run tests against Java 25
-  ([#4495](https://github.com/microsoft/ApplicationInsights-Java/pull/4495))
-  ([#4494](https://github.com/microsoft/ApplicationInsights-Java/pull/4494))
+  ([#4495](https://github.com/microsoft/ApplicationInsights-Java/pull/4495), [#4494](https://github.com/microsoft/ApplicationInsights-Java/pull/4494))
 * Update gradle toolchain to Java 21
   ([#4519](https://github.com/microsoft/ApplicationInsights-Java/pull/4519))
 
