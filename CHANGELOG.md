@@ -1,5 +1,21 @@
 # CHANGELOG
 
+## Version 3.7.6 GA (10/28/2025)
+
+### Enhancements
+
+* Run unit tests against Java 25
+  ([#4495](https://github.com/microsoft/ApplicationInsights-Java/pull/4495))
+* Run tests on Java 25
+  ([#4494](https://github.com/microsoft/ApplicationInsights-Java/pull/4494))
+* Update gradle toolchain to Java 21
+  ([#4519](https://github.com/microsoft/ApplicationInsights-Java/pull/4519))
+
+### Bug fixes
+
+* Fix Release Pipeline
+  ([#4484](https://github.com/microsoft/ApplicationInsights-Java/pull/4484))
+
 ## Version 3.7.5 GA (09/25/2025)
 
 ### Enhancements
