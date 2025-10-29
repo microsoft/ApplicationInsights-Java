@@ -1,0 +1,37 @@
+{
+  "role": {
+    "name": "testrolename",
+    "instance": "testroleinstance"
+  },
+  "sampling": {
+    "percentage": 100,
+    "overrides": [
+      {
+        "telemetryType": "trace",
+        "attributes": [
+          {
+            "key": "TODELETE",
+            "value": ".*",
+            "matchType": "regexp"
+          }
+        ],
+        "percentage": 0
+      }
+    ]
+  },
+  "preview": {
+    "processors": [
+      {
+        "type": "log",
+        "body": {
+          "toAttributes": {
+            "rules": [
+              "^Noisy log (?<TODELETE>.*)"
+            ]
+          }
+        },
+        "id": "/log/extractToDelete"
+      }
+    ]
+  }
+}
