@@ -59,7 +59,7 @@ val CORE_DEPENDENCIES = listOf(
 )
 
 val DEPENDENCIES = listOf(
-  "ch.qos.logback:logback-classic:1.3.15", // logback 1.4+ requires Java 11+
+  "ch.qos.logback:logback-classic:1.3.16", // logback 1.4+ requires Java 11+
   "ch.qos.logback.contrib:logback-json-classic:0.1.5",
   "commons-codec:commons-codec:1.19.0",
   "org.apache.commons:commons-text:1.14.0",
