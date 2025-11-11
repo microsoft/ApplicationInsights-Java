@@ -46,6 +46,12 @@ public class TestController {
     return "delete existing log attribute";
   }
 
+  @GetMapping("/log-filtered-by-attribute")
+  public String logFilteredByAttribute() {
+    logger.info("Noisy log that should not be sent to AppInsights");
+    return "log filtered by attribute";
+  }
+
   @GetMapping("/test-non-string-strict-span-attributes")
   public String testNonStringStrictSpanAttributes() {
     Span.current()
