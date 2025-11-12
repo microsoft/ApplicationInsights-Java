@@ -26,7 +26,7 @@ public final class InheritedAttributesLogProcessor implements LogRecordProcessor
   }
 
   @Override
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("unchecked") // safe unchecked cast - type verified by runtime context
   public void onEmit(Context context, ReadWriteLogRecord logRecord) {
     Span currentSpan = Span.fromContext(context);
     if (!(currentSpan instanceof ReadableSpan)) {

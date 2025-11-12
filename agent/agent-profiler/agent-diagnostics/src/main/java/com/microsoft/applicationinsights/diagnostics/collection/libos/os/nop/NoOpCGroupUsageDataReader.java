@@ -8,7 +8,8 @@ import java.io.IOException;
 import java.util.List;
 import javax.annotation.Nullable;
 
-@SuppressWarnings("checkstyle:AbbreviationAsWordInName")
+@SuppressWarnings(
+    "checkstyle:AbbreviationAsWordInName") // CGroup is the standard abbreviation for Control Group
 public class NoOpCGroupUsageDataReader implements CGroupUsageDataReader {
   @Override
   @Nullable

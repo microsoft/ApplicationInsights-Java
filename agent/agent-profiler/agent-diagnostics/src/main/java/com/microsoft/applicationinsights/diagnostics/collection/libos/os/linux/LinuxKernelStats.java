@@ -128,7 +128,7 @@ public class LinuxKernelStats implements KernelStatsReader, TwoStepUpdatable, Cl
     }
   }
 
-  @SuppressWarnings({"AvoidObjectArrays"})
+  @SuppressWarnings({"AvoidObjectArrays"}) // object array required by API or framework
   public static int lineIndexFor(String[] procStatContents, String lineContents) {
     int index = 0;
     while (index < procStatContents.length && !procStatContents[index].contains(lineContents)) {

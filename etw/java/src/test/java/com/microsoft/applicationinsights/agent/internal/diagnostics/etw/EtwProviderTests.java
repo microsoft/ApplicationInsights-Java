@@ -25,7 +25,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-@SuppressWarnings("SystemOut")
+@SuppressWarnings("SystemOut") // legitimate use of System.out for logging/output
 class EtwProviderTests {
   private static final String FOLDER_NAME = "EtwProviderTests";
   private static final File dllTempFolder = DllFileUtils.buildDllLocalPath(FOLDER_NAME);

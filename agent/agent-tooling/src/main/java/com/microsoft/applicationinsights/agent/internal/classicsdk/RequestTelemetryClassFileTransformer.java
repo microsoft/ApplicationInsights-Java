@@ -117,7 +117,7 @@ public class RequestTelemetryClassFileTransformer implements ClassFileTransforme
 
   // DO NOT REMOVE
   // this is used during development for generating above bytecode
-  @SuppressWarnings("unused")
+  @SuppressWarnings("unused") // value not used but required by API signature or framework
   public static class Rdt {
 
     public String getSource() {

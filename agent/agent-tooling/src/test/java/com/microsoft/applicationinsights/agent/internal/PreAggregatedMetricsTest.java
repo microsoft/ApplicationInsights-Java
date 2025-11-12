@@ -64,7 +64,7 @@ public class PreAggregatedMetricsTest {
     meterProvider = builder.registerMetricReader(metricReader).build();
   }
 
-  @SuppressWarnings("SystemOut")
+  @SuppressWarnings("SystemOut") // legitimate use of System.out for logging/output
   @Test
   void generateHttpClientMetrics() {
     OperationListener listener = HttpClientMetrics.get().create(meterProvider.get("test"));
@@ -145,7 +145,7 @@ public class PreAggregatedMetricsTest {
             generateExpectedDependencyCustomDimensions("http", "localhost:1234"));
   }
 
-  @SuppressWarnings("SystemOut")
+  @SuppressWarnings("SystemOut") // legitimate use of System.out for logging/output
   @Test
   void generateRpcClientMetrics() {
     OperationListener listener = RpcClientMetrics.get().create(meterProvider.get("test"));
@@ -220,7 +220,7 @@ public class PreAggregatedMetricsTest {
             generateExpectedDependencyCustomDimensions("grpc", "example.com:8080"));
   }
 
-  @SuppressWarnings("SystemOut")
+  @SuppressWarnings("SystemOut") // legitimate use of System.out for logging/output
   @Test
   void generateHttpServerMetrics() {
     OperationListener listener = HttpServerMetrics.get().create(meterProvider.get("test"));

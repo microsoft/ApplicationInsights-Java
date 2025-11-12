@@ -27,14 +27,15 @@ public class ContextSwitchingRunner implements Iterable<Void> {
     new ContextSwitchingRunner().runThreads(1000);
   }
 
-  @SuppressWarnings("ThreadJoinLoop")
+  @SuppressWarnings(
+      "ThreadJoinLoop") // thread join in loop is safe and necessary for proper synchronization
   private void runThreads(int threadCount) {
     Thread[] threads = new Thread[threadCount];
 
     for (int i = 0; i < threads.length; i++) {
       threads[i] =
           new Thread() {
-            @SuppressWarnings("unused")
+            @SuppressWarnings("unused") // value not used but required by API signature or framework
             private int value = 0;
 
             @Override

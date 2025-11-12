@@ -45,7 +45,11 @@ class InvocationInstrumentation implements TypeInstrumentation {
         InvocationInstrumentation.class.getName() + "$ExecuteAdvice");
   }
 
-  @SuppressWarnings({"unused", "PrivateConstructorForUtilityClass", "MustBeClosedChecker"})
+  @SuppressWarnings({
+    "unused",
+    "PrivateConstructorForUtilityClass",
+    "MustBeClosedChecker"
+  }) // value not used but required by API signature or framework
   public static class ExecuteAdvice {
     @Nullable
     @Advice.OnMethodEnter(suppress = Throwable.class)

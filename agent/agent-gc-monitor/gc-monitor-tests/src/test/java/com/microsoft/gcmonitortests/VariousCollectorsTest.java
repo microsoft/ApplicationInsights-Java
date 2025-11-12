@@ -100,7 +100,7 @@ class VariousCollectorsTest {
     return events.stream().anyMatch(predicate);
   }
 
-  @SuppressWarnings({"SystemOut", "unused"})
+  @SuppressWarnings({"SystemOut", "unused"}) // legitimate use of System.out for logging/output
   private static void print(List<GcCollectionEvent> events) {
     System.out.println("Obtained: " + events.size());
     events.forEach(

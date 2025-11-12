@@ -8,7 +8,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.microsoft.applicationinsights.smoketest.schemav2.Duration;
 import org.junit.jupiter.api.Test;
 
-@SuppressWarnings("SystemOut")
+@SuppressWarnings("SystemOut") // legitimate use of System.out for logging/output
 public class JsonHelperTests {
 
   @Test

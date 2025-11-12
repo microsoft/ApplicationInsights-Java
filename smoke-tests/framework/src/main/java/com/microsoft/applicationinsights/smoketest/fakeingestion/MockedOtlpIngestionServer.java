@@ -24,14 +24,14 @@ public class MockedOtlpIngestionServer {
   private static final int EXPORTER_ENDPOINT_PORT = 4318;
   private static ClientAndServer collectorServer;
 
-  @SuppressWarnings("SystemOut")
+  @SuppressWarnings("SystemOut") // legitimate use of System.out for logging/output
   public void startServer() throws Exception {
     System.out.println("Starting fake OTLP ingestion...");
     collectorServer = startClientAndServer(EXPORTER_ENDPOINT_PORT);
     collectorServer.when(request()).respond(response().withStatusCode(200));
   }
 
-  @SuppressWarnings("SystemOut")
+  @SuppressWarnings("SystemOut") // legitimate use of System.out for logging/output
   public void stopServer() throws Exception {
     System.out.println("Stopping fake OTLP ingestion...");
     stopQuietly(collectorServer);
@@ -47,7 +47,7 @@ public class MockedOtlpIngestionServer {
    * @param requests Request received by an http server telemetry collector
    * @return metrics extracted from the request body
    */
-  @SuppressWarnings("AvoidObjectArrays")
+  @SuppressWarnings("AvoidObjectArrays") // object array required by API or framework
   public List<Metric> extractMetricsFromRequests(HttpRequest[] requests) {
     return Arrays.stream(requests)
         .map(HttpRequest::getBody)
