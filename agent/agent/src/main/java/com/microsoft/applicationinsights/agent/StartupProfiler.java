@@ -20,7 +20,7 @@ final class StartupProfiler {
   private static final String APPLICATIONINSIGHTS_STARTUP_PROFILER_FILE_PATH =
       "APPLICATIONINSIGHTS_STARTUP_PROFILER_FILE_PATH";
 
-  @SuppressWarnings("SystemOut")
+  @SuppressWarnings("SystemOut") // legitimate use of System.out for logging/output
   public static void start() {
     String startupProfilerFilePath = System.getenv(APPLICATIONINSIGHTS_STARTUP_PROFILER_FILE_PATH);
     File folder;
@@ -70,7 +70,7 @@ final class StartupProfiler {
     }
 
     @Override
-    @SuppressWarnings("SystemOut")
+    @SuppressWarnings("SystemOut") // legitimate use of System.out for logging/output
     public void run() {
       long start = System.currentTimeMillis();
       while (System.currentTimeMillis() - start < MINUTES.toMillis(10)) {

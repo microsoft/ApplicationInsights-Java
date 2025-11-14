@@ -4,7 +4,7 @@
 package com.microsoft.applicationinsights.smoketest.schemav2;
 
 /** Data contract class StackFrame. */
-@SuppressWarnings("unused")
+@SuppressWarnings("unused") // value not used but required by API signature or framework
 public class StackFrame {
   /** Backing field for property Level. */
   private int level;

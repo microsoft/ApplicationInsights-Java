@@ -127,7 +127,7 @@ public class UploadService {
         triggerName, timestamp, profileId, file, cpuUsage, memoryUsage, "Profile", "jfr", "jfr");
   }
 
-  @SuppressWarnings("TooManyParameters")
+  @SuppressWarnings("TooManyParameters") // parameter count justified by method complexity
   public Mono<ServiceProfilerIndex> uploadFile(
       String triggerName,
       long timestamp,

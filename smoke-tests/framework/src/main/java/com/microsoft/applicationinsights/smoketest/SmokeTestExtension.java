@@ -52,7 +52,10 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.utility.DockerImageName;
 
-@SuppressWarnings({"SystemOut", "InterruptedExceptionSwallowed"})
+@SuppressWarnings({
+  "SystemOut",
+  "InterruptedExceptionSwallowed"
+}) // legitimate use of System.out for logging/output
 public class SmokeTestExtension
     implements BeforeAllCallback,
         BeforeEachCallback,
@@ -581,14 +584,16 @@ public class SmokeTestExtension
     }
   }
 
-  @SuppressWarnings("TypeParameterUnusedInFormals")
+  @SuppressWarnings(
+      "TypeParameterUnusedInFormals") // type parameter needed for type safety at call site
   protected static <T extends Domain> T getBaseData(Envelope envelope) {
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("unchecked") // safe unchecked cast - type verified by runtime context
     Data<T> data = (Data<T>) envelope.getData();
     return data.getBaseData();
   }
 
-  @SuppressWarnings("TypeParameterUnusedInFormals")
+  @SuppressWarnings(
+      "TypeParameterUnusedInFormals") // type parameter needed for type safety at call site
   protected <T extends Domain> T getTelemetryDataForType(int index, String type) {
     return mockedIngestion.getBaseDataForType(index, type);
   }

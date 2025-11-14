@@ -89,7 +89,9 @@ abstract class JmxMetricTest {
     verifyJmxMetricsSentToBreeze();
   }
 
-  @SuppressWarnings({"PreferJavaTimeOverload"})
+  @SuppressWarnings({
+    "PreferJavaTimeOverload"
+  }) // legacy time API required for backward compatibility
   private void verifyJmxMetricsSentToOtlpEndpoint() {
     await()
         .atMost(10, SECONDS)

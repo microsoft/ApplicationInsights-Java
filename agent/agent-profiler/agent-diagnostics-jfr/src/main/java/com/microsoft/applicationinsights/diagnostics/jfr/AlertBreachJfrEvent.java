@@ -15,7 +15,9 @@ import jdk.jfr.Label;
 import jdk.jfr.Name;
 import jdk.jfr.StackTrace;
 
-@SuppressWarnings({"Java8ApiChecker"})
+@SuppressWarnings({
+  "Java8ApiChecker"
+}) // JFR APIs require Java 11+, but agent targets Java 8 bytecode
 @Name("com.microsoft.applicationinsights.diagnostics.jfr.AlertBreach")
 @Label("AlertBreach")
 @Category("Diagnostic")

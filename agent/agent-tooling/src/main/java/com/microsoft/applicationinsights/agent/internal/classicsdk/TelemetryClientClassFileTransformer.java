@@ -1694,7 +1694,7 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
   //   implementation("org.ow2.asm:asm-util:9.3")
   //
   /*
-  @SuppressWarnings("UnnecessarilyFullyQualified")
+  @SuppressWarnings("UnnecessarilyFullyQualified") // fully qualified name required for clarity or to avoid conflicts
   public static void main(String[] args) throws Exception {
     java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
     java.io.PrintStream stdout = System.out;
@@ -1725,7 +1725,7 @@ public class TelemetryClientClassFileTransformer implements ClassFileTransformer
     System.out.println(content); // CHECKSTYLE:OFF
   }
 
-  @SuppressWarnings("UnnecessarilyFullyQualified")
+  @SuppressWarnings("UnnecessarilyFullyQualified") // fully qualified name required for clarity or to avoid conflicts
   public static class TC {
 
     public com.microsoft.applicationinsights.telemetry.TelemetryContext getContext() {

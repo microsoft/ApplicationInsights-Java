@@ -32,7 +32,10 @@ public final class CompositeMeterRegistryInstrumentation implements TypeInstrume
         CompositeMeterRegistryInstrumentation.class.getName() + "$AddAdvice");
   }
 
-  @SuppressWarnings({"unused", "PrivateConstructorForUtilityClass"})
+  @SuppressWarnings({
+    "unused",
+    "PrivateConstructorForUtilityClass"
+  }) // value not used but required by API signature or framework
   public static class AddAdvice {
 
     @Advice.OnMethodEnter(suppress = Throwable.class, skipOn = Advice.OnNonDefaultValue.class)

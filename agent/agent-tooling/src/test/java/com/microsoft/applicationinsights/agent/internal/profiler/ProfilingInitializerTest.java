@@ -211,7 +211,8 @@ public class ProfilingInitializerTest {
                 + triggersEnabled);
   }
 
-  @SuppressWarnings("DirectInvocationOnMock")
+  @SuppressWarnings(
+      "DirectInvocationOnMock") // direct mock invocation is intentional for test setup
   private static ProfilingInitializer createProfilingInitializer() {
     TelemetryClient client = Mockito.mock(TelemetryClient.class);
     MessageTelemetryBuilder messageTelemetryBuilder = MessageTelemetryBuilder.create();

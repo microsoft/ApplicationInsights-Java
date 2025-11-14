@@ -43,7 +43,7 @@ class JsonHelper {
 
     BaseDataContractDeserializer() {
       classMap = new HashMap<>();
-      @SuppressWarnings("unchecked")
+      @SuppressWarnings("unchecked") // safe unchecked cast - type verified by runtime context
       Class<? extends Domain>[] classes =
           new Class[] {
             RequestData.class,

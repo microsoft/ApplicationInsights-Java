@@ -27,7 +27,9 @@ public class SystemStatsReader implements Closeable {
 
   private final KernelMonitorDeviceDriver driver;
 
-  @SuppressWarnings("checkstyle:MemberName")
+  @SuppressWarnings(
+      "checkstyle:MemberName") // naming convention intentionally differs from checkstyle for
+  // consistency
   private final CGroupUsageDataReader cGroupUsageDataReader;
 
   private final ProcessCpuStats processCpuStats;
@@ -39,7 +41,10 @@ public class SystemStatsReader implements Closeable {
 
   public SystemStatsReader(
       KernelMonitorDeviceDriver driver,
-      @SuppressWarnings("checkstyle:ParameterName") CGroupUsageDataReader cGroupUsageDataReader,
+      @SuppressWarnings("checkstyle:ParameterName")
+          CGroupUsageDataReader
+              cGroupUsageDataReader, // parameter naming intentionally differs from checkstyle for
+      // consistency
       ProcessCpuStats processCpuStats,
       ProcessIoStats ioStats,
       MemoryInfoReader memoryInfoReader) {

@@ -27,7 +27,7 @@ public class DuplicateAgentClassFileTransformer implements ClassFileTransformer 
   // IMPORTANT FOR THIS NOT TO BE FINAL (or private)
   // OTHERWISE COMPILER COULD THEORETICALLY INLINE IT BELOW AND APPLY .substring(1)
   // and then it WOULD be shaded
-  @SuppressWarnings("ConstantField")
+  @SuppressWarnings("ConstantField") // field value intentionally mutable for specific use case
   static String[] UNSHADED_CLASS_NAMES =
       new String[] {
         "!io/opentelemetry/javaagent/OpenTelemetryAgent", // 3.0.0 through 3.0.2

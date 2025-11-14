@@ -4,7 +4,8 @@
 package com.microsoft.applicationinsights.telemetry;
 
 /** Enum SeverityLevel. */
-@SuppressWarnings("MemberName")
+@SuppressWarnings(
+    "MemberName") // naming convention intentionally differs from checkstyle for consistency
 public enum SeverityLevel {
   Verbose(0),
   Information(1),

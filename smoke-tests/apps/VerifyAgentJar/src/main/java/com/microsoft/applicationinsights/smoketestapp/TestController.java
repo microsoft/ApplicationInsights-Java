@@ -47,7 +47,7 @@ public class TestController {
     return "OK";
   }
 
-  @SuppressWarnings("SystemOut")
+  @SuppressWarnings("SystemOut") // legitimate use of System.out for logging/output
   @GetMapping("/verifyAgentJarSize")
   public String verifyAgentJarSize() throws IOException {
     long size = Files.size(AGENT_JAR.toPath());

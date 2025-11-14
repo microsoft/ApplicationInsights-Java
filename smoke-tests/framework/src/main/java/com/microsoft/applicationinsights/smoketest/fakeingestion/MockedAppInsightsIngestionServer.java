@@ -41,13 +41,13 @@ public class MockedAppInsightsIngestionServer {
     handler.addServletWithMapping(new ServletHolder(servlet), "/*");
   }
 
-  @SuppressWarnings("SystemOut")
+  @SuppressWarnings("SystemOut") // legitimate use of System.out for logging/output
   public void startServer() throws Exception {
     System.out.println("Starting fake Breeze ingestion...");
     server.start();
   }
 
-  @SuppressWarnings("SystemOut")
+  @SuppressWarnings("SystemOut") // legitimate use of System.out for logging/output
   public void stopServer() throws Exception {
     System.out.println("Stopping fake Breeze ingestion...");
     server.stop();
@@ -99,7 +99,7 @@ public class MockedAppInsightsIngestionServer {
     List<T> dataItems = new ArrayList<>();
     for (Envelope e : items) {
       if (!inRequestOnly || e.getTags().containsKey("ai.operation.id")) {
-        @SuppressWarnings("unchecked")
+        @SuppressWarnings("unchecked") // safe unchecked cast - type verified by runtime context
         Data<T> dt = (Data<T>) e.getData();
         dataItems.add(dt.getBaseData());
       }
@@ -117,16 +117,17 @@ public class MockedAppInsightsIngestionServer {
         waitForItems("MessageData", e -> e.getTags().containsKey("ai.operation.id"), numItems);
     List<T> dataItems = new ArrayList<>();
     for (Envelope e : items) {
-      @SuppressWarnings("unchecked")
+      @SuppressWarnings("unchecked") // safe unchecked cast - type verified by runtime context
       Data<T> dt = (Data<T>) e.getData();
       dataItems.add(dt.getBaseData());
     }
     return dataItems;
   }
 
-  @SuppressWarnings("TypeParameterUnusedInFormals")
+  @SuppressWarnings(
+      "TypeParameterUnusedInFormals") // type parameter needed for type safety at call site
   public <T extends Domain> T getBaseDataForType(int index, String type) {
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("unchecked") // safe unchecked cast - type verified by runtime context
     Data<T> data = (Data<T>) getItemsEnvelopeDataType(type).get(index).getData();
     return data.getBaseData();
   }
@@ -296,7 +297,7 @@ public class MockedAppInsightsIngestionServer {
     return quickPulseServlet.getVerifier();
   }
 
-  @SuppressWarnings("SystemOut")
+  @SuppressWarnings("SystemOut") // legitimate use of System.out for logging/output
   public static void main(String[] args) throws Exception {
     MockedAppInsightsIngestionServer i = new MockedAppInsightsIngestionServer(false);
     System.out.println("Starting mocked ingestion on port " + DEFAULT_PORT);

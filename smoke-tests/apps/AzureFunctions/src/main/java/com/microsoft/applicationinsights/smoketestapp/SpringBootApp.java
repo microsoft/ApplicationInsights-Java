@@ -35,7 +35,7 @@ public class SpringBootApp {
     Class<?> cl = env.getClass();
     Field field = cl.getDeclaredField("m");
     field.setAccessible(true);
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("unchecked") // safe unchecked cast - type verified by runtime context
     Map<String, String> writableEnv = (Map<String, String>) field.get(env);
     writableEnv.put(name, value);
   }

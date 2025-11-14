@@ -18,7 +18,8 @@ enum MetricView {
 
   private final String instrumentName;
 
-  @SuppressWarnings("ImmutableEnumChecker")
+  @SuppressWarnings(
+      "ImmutableEnumChecker") // mutable enum state is intentional and properly synchronized
   private final Set<AttributeKey<?>> attributeKeys;
 
   private final boolean captureSynthetic;

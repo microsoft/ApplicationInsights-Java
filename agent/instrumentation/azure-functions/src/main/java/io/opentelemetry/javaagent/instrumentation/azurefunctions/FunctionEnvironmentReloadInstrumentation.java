@@ -28,7 +28,10 @@ class FunctionEnvironmentReloadInstrumentation implements TypeInstrumentation {
         FunctionEnvironmentReloadInstrumentation.class.getName() + "$ExecuteAdvice");
   }
 
-  @SuppressWarnings({"unused", "PrivateConstructorForUtilityClass"})
+  @SuppressWarnings({
+    "unused",
+    "PrivateConstructorForUtilityClass"
+  }) // value not used but required by API signature or framework
   public static class ExecuteAdvice {
     @Advice.OnMethodExit(suppress = Throwable.class)
     public static void methodExit() {

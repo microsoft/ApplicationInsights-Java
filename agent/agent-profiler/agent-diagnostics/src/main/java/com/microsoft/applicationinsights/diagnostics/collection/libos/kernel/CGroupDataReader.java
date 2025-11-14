@@ -6,7 +6,8 @@ package com.microsoft.applicationinsights.diagnostics.collection.libos.kernel;
 import com.microsoft.applicationinsights.diagnostics.collection.libos.OperatingSystemInteractionException;
 
 /** Reads CGroup data from the host OS */
-@SuppressWarnings("checkstyle:AbbreviationAsWordInName")
+@SuppressWarnings(
+    "checkstyle:AbbreviationAsWordInName") // CGroup is the standard abbreviation for Control Group
 public interface CGroupDataReader {
 
   long getKmemLimit() throws OperatingSystemInteractionException;

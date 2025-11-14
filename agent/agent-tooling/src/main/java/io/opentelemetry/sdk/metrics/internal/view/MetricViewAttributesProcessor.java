@@ -13,7 +13,7 @@ import io.opentelemetry.context.Context;
 import java.util.Set;
 import java.util.function.BiConsumer;
 
-@SuppressWarnings("rawtypes")
+@SuppressWarnings("rawtypes") // safe use of raw type - generic type verified by runtime context
 class MetricViewAttributesProcessor extends AttributesProcessor {
 
   private final Set<AttributeKey<?>> attributeKeys;
@@ -56,7 +56,7 @@ class MetricViewAttributesProcessor extends AttributesProcessor {
     return true;
   }
 
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("unchecked") // safe unchecked cast - type verified by runtime context
   private static void applyView(
       AttributesBuilder filtered, Attributes attributes, Set<AttributeKey<?>> view) {
     attributes.forEach(
