@@ -29,7 +29,7 @@ class ActuatorTest {
     AutoConfigurationImportSelector selector = new AutoConfigurationImportSelector();
 
     // when
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("unchecked") // safe unchecked cast - type verified by runtime context
     List<String> list = (List<String>) method.invoke(selector, metadata, attributes);
 
     // then

@@ -137,7 +137,7 @@ class RpConfigurationPollingTest {
     return SamplingTestUtil.getCurrentSamplingPercentage(DelegatingSampler.getInstance());
   }
 
-  @SuppressWarnings("MethodCanBeStatic")
+  @SuppressWarnings("MethodCanBeStatic") // instance method required by test framework
   private String envVars(String key) {
     return envVars.get(key);
   }

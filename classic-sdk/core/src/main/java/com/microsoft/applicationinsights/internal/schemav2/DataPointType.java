@@ -3,7 +3,8 @@
 
 package com.microsoft.applicationinsights.internal.schemav2;
 
-@SuppressWarnings("MemberName")
+@SuppressWarnings(
+    "MemberName") // naming convention intentionally differs from checkstyle for consistency
 public enum DataPointType {
   Measurement(0),
   Aggregation(1);

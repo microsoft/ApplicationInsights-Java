@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /** Data contract class ExceptionDetails. */
-@SuppressWarnings("unused")
+@SuppressWarnings("unused") // value not used but required by API signature or framework
 public class ExceptionDetails {
   /** Backing field for property Id. */
   private int id;

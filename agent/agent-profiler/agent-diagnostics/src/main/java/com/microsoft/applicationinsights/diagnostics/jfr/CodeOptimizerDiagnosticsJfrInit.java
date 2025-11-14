@@ -17,7 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /** Provides a JFR specific implementation of a diagnostics engine */
-@SuppressWarnings("Java8ApiChecker")
+@SuppressWarnings("Java8ApiChecker") // JFR APIs require Java 11+, but agent targets Java 8 bytecode
 public class CodeOptimizerDiagnosticsJfrInit {
 
   private static final Logger logger =
@@ -67,7 +67,9 @@ public class CodeOptimizerDiagnosticsJfrInit {
     count.incrementAndGet();
   }
 
-  @SuppressWarnings("checkstyle:AbbreviationAsWordInName")
+  @SuppressWarnings(
+      "checkstyle:AbbreviationAsWordInName") // CGroup is the standard abbreviation for Control
+  // Group
   public static void emitCGroupData() {
     try {
       CGroupData cgroupData = SystemStatsProvider.getCGroupData();

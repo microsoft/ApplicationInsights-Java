@@ -99,7 +99,7 @@ public class LazyHttpClient implements HttpClient {
 
     NettyAsyncHttpClientBuilder builder = new NettyAsyncHttpClientBuilder();
     if (proxyHost != null && proxyPortNumber != null) {
-      @SuppressWarnings("AddressSelection")
+      @SuppressWarnings("AddressSelection") // address selection pattern is safe in this context
       ProxyOptions proxyOptions =
           new ProxyOptions(
               ProxyOptions.Type.HTTP, new InetSocketAddress(proxyHost, proxyPortNumber));

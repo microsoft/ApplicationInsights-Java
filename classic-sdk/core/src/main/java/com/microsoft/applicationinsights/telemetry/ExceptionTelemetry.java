@@ -56,7 +56,7 @@ public final class ExceptionTelemetry extends BaseTelemetry {
     this.throwable = throwable;
   }
 
-  @SuppressWarnings("EnumOrdinal")
+  @SuppressWarnings("EnumOrdinal") // enum ordinal usage is safe and intentional
   public void setSeverityLevel(SeverityLevel severityLevel) {
     data.setSeverityLevel(
         severityLevel == null
@@ -66,7 +66,7 @@ public final class ExceptionTelemetry extends BaseTelemetry {
   }
 
   @Nullable
-  @SuppressWarnings("EnumOrdinal")
+  @SuppressWarnings("EnumOrdinal") // enum ordinal usage is safe and intentional
   public SeverityLevel getSeverityLevel() {
     return data.getSeverityLevel() == null
         ? null

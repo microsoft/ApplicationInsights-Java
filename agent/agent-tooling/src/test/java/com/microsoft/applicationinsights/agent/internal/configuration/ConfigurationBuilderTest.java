@@ -154,12 +154,12 @@ class ConfigurationBuilderTest {
     assertThat(config.sampling.percentage).isEqualTo(testSamplingPercentage);
   }
 
-  @SuppressWarnings("MethodCanBeStatic")
+  @SuppressWarnings("MethodCanBeStatic") // instance method required by test framework
   private String envVars(String key) {
     return envVars.get(key);
   }
 
-  @SuppressWarnings("MethodCanBeStatic")
+  @SuppressWarnings("MethodCanBeStatic") // instance method required by test framework
   private String systemProperties(String key) {
     return systemProperties.get(key);
   }

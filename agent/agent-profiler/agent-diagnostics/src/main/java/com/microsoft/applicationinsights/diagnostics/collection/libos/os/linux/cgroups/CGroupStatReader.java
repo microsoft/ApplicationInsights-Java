@@ -7,7 +7,8 @@ import com.microsoft.applicationinsights.diagnostics.collection.libos.BigIncreme
 import com.microsoft.applicationinsights.diagnostics.collection.libos.os.linux.TwoStepProcReader;
 import java.io.File;
 
-@SuppressWarnings("checkstyle:AbbreviationAsWordInName")
+@SuppressWarnings(
+    "checkstyle:AbbreviationAsWordInName") // CGroup is the standard abbreviation for Control Group
 public class CGroupStatReader extends TwoStepProcReader {
   private final BigIncrementalCounter user = new BigIncrementalCounter();
   private final BigIncrementalCounter system = new BigIncrementalCounter();
