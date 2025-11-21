@@ -110,6 +110,7 @@ tasks {
     exclude("inst/META-INF/services/io.opentelemetry.javaagent.slf4j.spi.SLF4JServiceProvider")
 
     exclude("inst/io/prometheus/**")
+    exclude("inst/zipkin/**")
 
     dependsOn(isolateJavaagentLibs)
     from(isolateJavaagentLibs.get().outputs)
