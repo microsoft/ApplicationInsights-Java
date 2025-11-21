@@ -32,7 +32,7 @@ jobs:
           gh repo sync xiang17/azure-monitor-docs-pr \
               --source MicrosoftDocs/azure-monitor-docs-pr
 
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           repository: xiang17/azure-monitor-docs-pr
           # this is the personal access token used for "git push" below
