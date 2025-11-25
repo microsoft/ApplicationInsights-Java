@@ -345,7 +345,8 @@ public class SecondEntryPoint
         logSamplingOverrides,
         exceptionSamplingOverrides,
         logRecordProcessor,
-        configuration.instrumentation.logging.getSeverityThreshold());
+        configuration.instrumentation.logging.getSeverityThreshold(),
+        getLogProcessorConfigs(configuration));
   }
 
   private static SpanExporter buildTraceExporter(
