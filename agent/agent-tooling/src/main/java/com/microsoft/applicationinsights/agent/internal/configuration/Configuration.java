@@ -1530,6 +1530,7 @@ public class Configuration {
     public boolean enableDiagnostics = false;
     public boolean enableRequestTriggering = false;
     public List<RequestTrigger> requestTriggerEndpoints = new ArrayList<>();
+    public int serviceProfilerHttpTimeoutSeconds = 30;
   }
 
   public static class GcEventConfiguration {
