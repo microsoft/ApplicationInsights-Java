@@ -33,7 +33,8 @@ import org.slf4j.LoggerFactory;
  *
  * <p>The container will be stopped automatically when the application exists.
  */
-@SuppressWarnings("ImmutableEnumChecker")
+@SuppressWarnings(
+    "ImmutableEnumChecker") // mutable enum state is intentional and properly synchronized
 public enum PerformanceCounterContainer {
   INSTANCE;
 
@@ -99,7 +100,7 @@ public enum PerformanceCounterContainer {
    * counters data. The method will schedule a callback to be called, it will initialize a {@link
    * TelemetryClient} that the Performance Counters will use to report their data
    */
-  @SuppressWarnings("AlreadyChecked")
+  @SuppressWarnings("AlreadyChecked") // redundant check is intentional for defensive programming
   private void initialize() {
     if (!initialized) {
       synchronized (INSTANCE) {

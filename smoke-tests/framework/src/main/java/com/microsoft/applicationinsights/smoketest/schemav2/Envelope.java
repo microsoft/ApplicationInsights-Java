@@ -7,7 +7,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /** Data contract class Envelope. */
-@SuppressWarnings("unused")
+@SuppressWarnings("unused") // value not used but required by API signature or framework
 public class Envelope {
   /** Backing field for property Name. */
   private String name;
@@ -19,7 +19,9 @@ public class Envelope {
   private Float sampleRate;
 
   /** Backing field for property IKey. */
-  @SuppressWarnings("checkstyle:MemberName")
+  @SuppressWarnings(
+      "checkstyle:MemberName") // naming convention intentionally differs from checkstyle for
+  // consistency
   private String iKey;
 
   /** Backing field for property Tags. */
@@ -56,13 +58,19 @@ public class Envelope {
 
   /** Gets the IKey property. */
   // used by smoke tests
-  @SuppressWarnings({"checkstyle:AbbreviationAsWordInName", "MemberName"})
+  @SuppressWarnings({
+    "checkstyle:AbbreviationAsWordInName",
+    "MemberName"
+  }) // CGroup is the standard abbreviation for Control Group
   public String getIKey() {
     return this.iKey;
   }
 
   /** Sets the IKey property. */
-  @SuppressWarnings({"checkstyle:AbbreviationAsWordInName", "MemberName"})
+  @SuppressWarnings({
+    "checkstyle:AbbreviationAsWordInName",
+    "MemberName"
+  }) // CGroup is the standard abbreviation for Control Group
   public void setIKey(String value) {
     this.iKey = value;
   }

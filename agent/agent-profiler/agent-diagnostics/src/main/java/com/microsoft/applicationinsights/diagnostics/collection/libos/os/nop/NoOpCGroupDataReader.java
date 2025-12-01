@@ -5,7 +5,10 @@ package com.microsoft.applicationinsights.diagnostics.collection.libos.os.nop;
 
 import com.microsoft.applicationinsights.diagnostics.collection.libos.kernel.CGroupDataReader;
 
-@SuppressWarnings({"checkstyle:AbbreviationAsWordInName", "MemberName"})
+@SuppressWarnings({
+  "checkstyle:AbbreviationAsWordInName",
+  "MemberName"
+}) // CGroup is the standard abbreviation for Control Group
 public class NoOpCGroupDataReader implements CGroupDataReader {
 
   @Override

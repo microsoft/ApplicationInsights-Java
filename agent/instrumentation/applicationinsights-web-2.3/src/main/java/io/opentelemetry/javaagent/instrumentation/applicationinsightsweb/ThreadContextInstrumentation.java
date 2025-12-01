@@ -34,7 +34,10 @@ public class ThreadContextInstrumentation implements TypeInstrumentation {
         ThreadContextInstrumentation.class.getName() + "$GetRequestTelemetryContextAdvice");
   }
 
-  @SuppressWarnings({"unused", "PrivateConstructorForUtilityClass"})
+  @SuppressWarnings({
+    "unused",
+    "PrivateConstructorForUtilityClass"
+  }) // value not used but required by API signature or framework
   public static class GetRequestTelemetryContextAdvice {
     @Advice.OnMethodExit
     public static void methodExit(

@@ -26,7 +26,7 @@ public final class InheritedAttributesSpanProcessor implements SpanProcessor {
   }
 
   @Override
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("unchecked") // safe unchecked cast - type verified by runtime context
   public void onStart(Context parentContext, ReadWriteSpan span) {
     Span parentSpan = Span.fromContextOrNull(parentContext);
     if (!(parentSpan instanceof ReadableSpan)) {

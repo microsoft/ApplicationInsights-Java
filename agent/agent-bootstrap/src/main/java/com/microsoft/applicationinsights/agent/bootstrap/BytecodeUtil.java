@@ -18,7 +18,7 @@ import java.util.Map;
 import javax.annotation.Nullable;
 
 // supporting all properties of event, metric, remote dependency and page view telemetry
-@SuppressWarnings("TooManyParameters")
+@SuppressWarnings("TooManyParameters") // parameter count justified by method complexity
 public class BytecodeUtil {
 
   private static BytecodeUtilDelegate delegate;
@@ -324,7 +324,7 @@ public class BytecodeUtil {
     startNanosHolder.set(System.nanoTime());
   }
 
-  @SuppressWarnings("SystemOut")
+  @SuppressWarnings("SystemOut") // legitimate use of System.out for logging/output
   public static void onExit() {
     Long startNanos = startNanosHolder.get();
     if (startNanos == null) {

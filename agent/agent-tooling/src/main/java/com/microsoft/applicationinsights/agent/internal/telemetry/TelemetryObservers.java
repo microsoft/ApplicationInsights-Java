@@ -8,7 +8,8 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
 
-@SuppressWarnings("ImmutableEnumChecker")
+@SuppressWarnings(
+    "ImmutableEnumChecker") // mutable enum state is intentional and properly synchronized
 public enum TelemetryObservers {
   INSTANCE;
 

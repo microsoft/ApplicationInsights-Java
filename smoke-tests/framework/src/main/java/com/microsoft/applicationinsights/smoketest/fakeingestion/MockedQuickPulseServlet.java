@@ -28,7 +28,7 @@ public class MockedQuickPulseServlet extends HttpServlet {
     this.usingOld3xAgent = usingOld3xAgent;
   }
 
-  @SuppressWarnings("SystemOut")
+  @SuppressWarnings("SystemOut") // legitimate use of System.out for logging/output
   private void logit(String message) {
     if (loggingEnabled) {
       System.out.println("FAKE INGESTION: INFO - " + message);

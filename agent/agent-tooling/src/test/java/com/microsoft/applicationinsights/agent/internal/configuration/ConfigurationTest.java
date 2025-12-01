@@ -289,12 +289,12 @@ class ConfigurationTest {
         .isEqualTo("InstrumentationKey=11111111-1111-1111-1111-111111111111");
   }
 
-  @SuppressWarnings("MethodCanBeStatic")
+  @SuppressWarnings("MethodCanBeStatic") // instance method required by test framework
   private String envVars(String key) {
     return envVars.get(key);
   }
 
-  @SuppressWarnings("MethodCanBeStatic")
+  @SuppressWarnings("MethodCanBeStatic") // instance method required by test framework
   private String systemProperties(String key) {
     return systemProperties.get(key);
   }

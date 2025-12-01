@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## Version 3.7.6 GA (10/28/2025)
+
+### Enhancements
+
+* Run tests against Java 25
+  ([#4495](https://github.com/microsoft/ApplicationInsights-Java/pull/4495), [#4494](https://github.com/microsoft/ApplicationInsights-Java/pull/4494))
+
 ## Version 3.7.5 GA (09/25/2025)
 
 ### Enhancements

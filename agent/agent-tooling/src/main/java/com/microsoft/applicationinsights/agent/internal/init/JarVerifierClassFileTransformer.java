@@ -25,7 +25,7 @@ public class JarVerifierClassFileTransformer implements ClassFileTransformer {
 
   @Override
   @Nullable
-  @SuppressWarnings("SystemOut")
+  @SuppressWarnings("SystemOut") // legitimate use of System.out for logging/output
   public byte[] transform(
       ClassLoader loader,
       String className,

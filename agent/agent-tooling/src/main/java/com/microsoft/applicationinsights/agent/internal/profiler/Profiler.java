@@ -211,7 +211,8 @@ public class Profiler {
   }
 
   /** When a profile has been created, upload it to service profiler. */
-  @SuppressWarnings("CatchingUnchecked")
+  @SuppressWarnings(
+      "CatchingUnchecked") // catching unchecked exception is necessary for proper error handling
   private Consumer<Recording> uploadNewRecording(
       AlertBreach alertBreach, Instant recordingStart, UploadListener uploadListener) {
     return recording -> {

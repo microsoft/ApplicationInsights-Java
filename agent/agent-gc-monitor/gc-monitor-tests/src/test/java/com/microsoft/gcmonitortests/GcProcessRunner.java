@@ -25,7 +25,11 @@ import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 
 // TODO (trask) revisit Java8ApiChecker suppression
-@SuppressWarnings({"Java8ApiChecker", "SystemOut", "CatchAndPrintStackTrace"})
+@SuppressWarnings({
+  "Java8ApiChecker",
+  "SystemOut",
+  "CatchAndPrintStackTrace"
+}) // JFR APIs require Java 11+, but agent targets Java 8 bytecode
 public class GcProcessRunner {
   private InputStream errorStream;
   private InputStream stdOut;

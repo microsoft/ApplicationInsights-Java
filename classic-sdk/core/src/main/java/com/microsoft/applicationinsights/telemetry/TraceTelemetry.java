@@ -47,7 +47,7 @@ public final class TraceTelemetry extends BaseTelemetry {
     data.setMessage(message);
   }
 
-  @SuppressWarnings("EnumOrdinal")
+  @SuppressWarnings("EnumOrdinal") // enum ordinal usage is safe and intentional
   public void setSeverityLevel(SeverityLevel severityLevel) {
     data.setSeverityLevel(
         severityLevel == null
@@ -57,7 +57,7 @@ public final class TraceTelemetry extends BaseTelemetry {
   }
 
   @Nullable
-  @SuppressWarnings("EnumOrdinal")
+  @SuppressWarnings("EnumOrdinal") // enum ordinal usage is safe and intentional
   public SeverityLevel getSeverityLevel() {
     return data.getSeverityLevel() == null
         ? null

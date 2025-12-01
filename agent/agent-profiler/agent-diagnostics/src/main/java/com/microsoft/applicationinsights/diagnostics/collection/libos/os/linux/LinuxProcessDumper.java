@@ -32,7 +32,10 @@ public class LinuxProcessDumper implements ProcessDumper, Closeable {
   }
 
   @Override
-  @SuppressWarnings({"unchecked", "rawtypes"})
+  @SuppressWarnings({
+    "unchecked",
+    "rawtypes"
+  }) // safe unchecked cast - type verified by runtime context
   public Iterable<Process> all(boolean includeSelf) {
     if (includeSelf || !isDaemon) {
       return (Iterable) usage.values();

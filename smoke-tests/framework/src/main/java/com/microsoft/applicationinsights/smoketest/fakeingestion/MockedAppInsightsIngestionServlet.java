@@ -38,7 +38,7 @@ class MockedAppInsightsIngestionServlet extends HttpServlet {
     type2envelope = MultimapBuilder.treeKeys().arrayListValues().build();
   }
 
-  @SuppressWarnings("SystemOut")
+  @SuppressWarnings("SystemOut") // legitimate use of System.out for logging/output
   private void logit(String message) {
     if (loggingEnabled) {
       System.out.println("FAKE INGESTION: INFO - " + message);

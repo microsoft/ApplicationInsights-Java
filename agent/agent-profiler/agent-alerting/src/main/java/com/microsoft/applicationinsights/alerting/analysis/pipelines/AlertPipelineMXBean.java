@@ -4,7 +4,10 @@
 package com.microsoft.applicationinsights.alerting.analysis.pipelines;
 
 // This class name must end in MXBean (case sensitive)
-@SuppressWarnings({"checkstyle:AbbreviationAsWordInName", "IdentifierName"})
+@SuppressWarnings({
+  "checkstyle:AbbreviationAsWordInName",
+  "IdentifierName"
+}) // CGroup is the standard abbreviation for Control Group
 public interface AlertPipelineMXBean {
 
   // Attributes

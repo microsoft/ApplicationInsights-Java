@@ -263,7 +263,7 @@ public class AttributeProcessor extends AgentProcessor {
     }
   }
 
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("unchecked") // safe unchecked cast - type verified by runtime context
   private static void putIntoBuilder(AttributesBuilder builder, AttributeKey<?> key, Object value) {
     switch (key.getType()) {
       case STRING:

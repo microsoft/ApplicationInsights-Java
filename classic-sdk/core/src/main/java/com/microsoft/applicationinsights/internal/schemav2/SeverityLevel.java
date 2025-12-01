@@ -3,7 +3,8 @@
 
 package com.microsoft.applicationinsights.internal.schemav2;
 
-@SuppressWarnings("MemberName")
+@SuppressWarnings(
+    "MemberName") // naming convention intentionally differs from checkstyle for consistency
 public enum SeverityLevel {
   Verbose(0),
   Information(1),

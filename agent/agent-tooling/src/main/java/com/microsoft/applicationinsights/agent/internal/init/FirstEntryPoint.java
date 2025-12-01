@@ -284,7 +284,7 @@ public class FirstEntryPoint implements LoggingCustomizer {
     return getFriendlyException(cause);
   }
 
-  @SuppressWarnings("SystemOut")
+  @SuppressWarnings("SystemOut") // legitimate use of System.out for logging/output
   private static void logErrorMessage(
       @Nullable Logger startupLogger,
       String message,

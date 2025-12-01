@@ -27,7 +27,8 @@ public enum MemoryManagers {
 
   ZGC(GarbageCollectors.Zgc.class);
 
-  @SuppressWarnings("ImmutableEnumChecker")
+  @SuppressWarnings(
+      "ImmutableEnumChecker") // mutable enum state is intentional and properly synchronized
   private final Class<? extends GarbageCollector>[] managers;
 
   public static MemoryManagers of(MemoryManagement manager) {

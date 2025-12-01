@@ -10,8 +10,8 @@ dependencies {
   // compileOnly(project(path:":agent:agent", configuration:"devtest"))
   compileOnly(project(path: ":agent:agent"))
 
-  implementation("org.springframework.boot:spring-boot-starter-web:3.5.6") {
+  implementation("org.springframework.boot:spring-boot-starter-web:3.5.7") {
     exclude("org.springframework.boot", "spring-boot-starter-tomcat")
   }
-  implementation("org.apache.commons:commons-lang3:3.19.0")
+  implementation("org.apache.commons:commons-lang3:3.20.0")
 }

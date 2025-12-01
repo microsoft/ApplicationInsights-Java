@@ -25,7 +25,7 @@ public class GcEventGenerator {
     new GcEventGenerator().run();
   }
 
-  @SuppressWarnings("SystemOut")
+  @SuppressWarnings("SystemOut") // legitimate use of System.out for logging/output
   private void run() throws InterruptedException {
     System.out.println("Hit return to start");
 

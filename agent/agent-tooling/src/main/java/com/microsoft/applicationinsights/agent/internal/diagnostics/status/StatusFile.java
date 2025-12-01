@@ -159,7 +159,7 @@ public class StatusFile {
     write(false);
   }
 
-  @SuppressWarnings("SystemOut")
+  @SuppressWarnings("SystemOut") // legitimate use of System.out for logging/output
   private static void write(boolean loggingInitialized) {
     if (!writable()) {
       return;

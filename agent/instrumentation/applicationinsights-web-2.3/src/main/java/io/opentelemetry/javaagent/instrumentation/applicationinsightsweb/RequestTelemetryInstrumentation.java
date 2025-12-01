@@ -64,7 +64,10 @@ public class RequestTelemetryInstrumentation implements TypeInstrumentation {
         RequestTelemetryInstrumentation.class.getName() + "$OtherMethodsAdvice");
   }
 
-  @SuppressWarnings({"unused", "PrivateConstructorForUtilityClass"})
+  @SuppressWarnings({
+    "unused",
+    "PrivateConstructorForUtilityClass"
+  }) // value not used but required by API signature or framework
   public static class SetNameAdvice {
     @Advice.OnMethodEnter
     public static void methodEnter(
@@ -76,7 +79,10 @@ public class RequestTelemetryInstrumentation implements TypeInstrumentation {
     }
   }
 
-  @SuppressWarnings({"unused", "PrivateConstructorForUtilityClass"})
+  @SuppressWarnings({
+    "unused",
+    "PrivateConstructorForUtilityClass"
+  }) // value not used but required by API signature or framework
   public static class SetSuccessAdvice {
     @Advice.OnMethodEnter
     public static void methodEnter(
@@ -88,7 +94,10 @@ public class RequestTelemetryInstrumentation implements TypeInstrumentation {
     }
   }
 
-  @SuppressWarnings({"unused", "PrivateConstructorForUtilityClass"})
+  @SuppressWarnings({
+    "unused",
+    "PrivateConstructorForUtilityClass"
+  }) // value not used but required by API signature or framework
   public static class SetSourceAdvice {
     @Advice.OnMethodEnter
     public static void methodEnter(
@@ -100,7 +109,10 @@ public class RequestTelemetryInstrumentation implements TypeInstrumentation {
     }
   }
 
-  @SuppressWarnings({"unused", "PrivateConstructorForUtilityClass"})
+  @SuppressWarnings({
+    "unused",
+    "PrivateConstructorForUtilityClass"
+  }) // value not used but required by API signature or framework
   public static class GetIdAdvice {
     @Advice.OnMethodExit
     public static void methodExit(
@@ -113,7 +125,10 @@ public class RequestTelemetryInstrumentation implements TypeInstrumentation {
     }
   }
 
-  @SuppressWarnings({"unused", "PrivateConstructorForUtilityClass"})
+  @SuppressWarnings({
+    "unused",
+    "PrivateConstructorForUtilityClass"
+  }) // value not used but required by API signature or framework
   public static class OtherMethodsAdvice {
     @Advice.OnMethodEnter
     public static void methodEnter(

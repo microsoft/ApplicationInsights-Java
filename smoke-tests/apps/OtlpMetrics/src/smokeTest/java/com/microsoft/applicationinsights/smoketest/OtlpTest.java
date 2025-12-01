@@ -76,7 +76,7 @@ abstract class OtlpTest {
     verifyMetricsSentToOtlpEndpoint();
   }
 
-  @SuppressWarnings("PreferJavaTimeOverload")
+  @SuppressWarnings("PreferJavaTimeOverload") // legacy time API required for backward compatibility
   private void verifyMetricsSentToOtlpEndpoint() {
     await()
         .atMost(60, SECONDS)

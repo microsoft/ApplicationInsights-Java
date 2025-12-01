@@ -15,7 +15,9 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-@SuppressWarnings("TimeInStaticInitializer")
+@SuppressWarnings(
+    "TimeInStaticInitializer") // time measurement in static initializer is intentional for
+// performance tracking
 public class MockedProfilerSettingsServlet extends HttpServlet {
 
   private static final Map<ProfilerState, String> CONFIGS;

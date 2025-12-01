@@ -6,7 +6,9 @@ package com.microsoft.applicationinsights.diagnostics.collection.libos.process;
 import com.microsoft.applicationinsights.diagnostics.collection.jvm.ProcessData;
 import com.microsoft.applicationinsights.diagnostics.collection.libos.TwoStepUpdatable;
 
-@SuppressWarnings({"JavaLangClash"})
+@SuppressWarnings({
+  "JavaLangClash"
+}) // name clash with java.lang is intentional and properly qualified
 public abstract class Process extends ProcessData implements TwoStepUpdatable {
 
   protected boolean isJava;

@@ -35,7 +35,10 @@ public class SdkVersionFinder extends CachedDiagnosticsValueFinder {
   }
 
   // this is called early during startup before logging has been initialized
-  @SuppressWarnings({"CatchAndPrintStackTrace", "SystemOut"})
+  @SuppressWarnings({
+    "CatchAndPrintStackTrace",
+    "SystemOut"
+  }) // printing stack trace is appropriate for diagnostic output
   private static String readVersion(Path agentPath) {
     try {
       // reading from file instead of from classpath, in order to avoid triggering jar file

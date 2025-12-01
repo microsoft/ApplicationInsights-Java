@@ -18,7 +18,9 @@ import jdk.jfr.Name;
 import jdk.jfr.Period;
 import jdk.jfr.StackTrace;
 
-@SuppressWarnings({"Java8ApiChecker"})
+@SuppressWarnings({
+  "Java8ApiChecker"
+}) // JFR APIs require Java 11+, but agent targets Java 8 bytecode
 @Name("com.microsoft.applicationinsights.diagnostics.jfr.Telemetry")
 @Label("Telemetry")
 @Category("Diagnostic")
@@ -46,7 +48,7 @@ public class Telemetry extends Event implements JsonSerializable<Telemetry> {
     return telemetry;
   }
 
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("unchecked") // safe unchecked cast - type verified by runtime context
   public Telemetry setTelemetry(Object telemetry) {
     if (telemetry instanceof List) {
       StringJoiner joiner = new StringJoiner(",");

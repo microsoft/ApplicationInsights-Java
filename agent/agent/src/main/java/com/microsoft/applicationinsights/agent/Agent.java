@@ -44,7 +44,7 @@ public class Agent {
     premain(agentArgs, inst);
   }
 
-  @SuppressWarnings("SystemOut")
+  @SuppressWarnings("SystemOut") // legitimate use of System.out for logging/output
   public static void main(String... args) {
     System.err.println(
         "*************************\n"

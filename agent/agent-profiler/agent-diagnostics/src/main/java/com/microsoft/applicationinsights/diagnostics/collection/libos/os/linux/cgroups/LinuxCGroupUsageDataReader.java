@@ -9,7 +9,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-@SuppressWarnings("checkstyle:AbbreviationAsWordInName")
+@SuppressWarnings(
+    "checkstyle:AbbreviationAsWordInName") // CGroup is the standard abbreviation for Control Group
 public class LinuxCGroupUsageDataReader implements CGroupUsageDataReader {
 
   private final CGroupCpuUsageReader cgroupCpuUsageReader = new CGroupCpuUsageReader();

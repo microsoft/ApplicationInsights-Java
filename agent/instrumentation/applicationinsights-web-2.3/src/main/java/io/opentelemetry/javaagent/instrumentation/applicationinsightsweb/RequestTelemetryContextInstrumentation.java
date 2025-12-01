@@ -61,7 +61,10 @@ public class RequestTelemetryContextInstrumentation implements TypeInstrumentati
         RequestTelemetryContextInstrumentation.class.getName() + "$OtherMethodsAdvice");
   }
 
-  @SuppressWarnings({"unused", "PrivateConstructorForUtilityClass"})
+  @SuppressWarnings({
+    "unused",
+    "PrivateConstructorForUtilityClass"
+  }) // value not used but required by API signature or framework
   public static class GetRequestTelemetryAdvice {
     @Advice.OnMethodExit
     public static void methodExit(
@@ -75,7 +78,10 @@ public class RequestTelemetryContextInstrumentation implements TypeInstrumentati
     }
   }
 
-  @SuppressWarnings({"unused", "PrivateConstructorForUtilityClass"})
+  @SuppressWarnings({
+    "unused",
+    "PrivateConstructorForUtilityClass"
+  }) // value not used but required by API signature or framework
   public static class GetTracestateAdvice {
     @Advice.OnMethodExit
     public static void methodExit(
@@ -96,7 +102,10 @@ public class RequestTelemetryContextInstrumentation implements TypeInstrumentati
     }
   }
 
-  @SuppressWarnings({"unused", "PrivateConstructorForUtilityClass"})
+  @SuppressWarnings({
+    "unused",
+    "PrivateConstructorForUtilityClass"
+  }) // value not used but required by API signature or framework
   public static class GetTraceflagAdvice {
     @Advice.OnMethodExit
     public static void methodExit(
@@ -110,7 +119,10 @@ public class RequestTelemetryContextInstrumentation implements TypeInstrumentati
     }
   }
 
-  @SuppressWarnings({"unused", "PrivateConstructorForUtilityClass"})
+  @SuppressWarnings({
+    "unused",
+    "PrivateConstructorForUtilityClass"
+  }) // value not used but required by API signature or framework
   public static class OtherMethodsAdvice {
     @Advice.OnMethodEnter
     public static void methodEnter(

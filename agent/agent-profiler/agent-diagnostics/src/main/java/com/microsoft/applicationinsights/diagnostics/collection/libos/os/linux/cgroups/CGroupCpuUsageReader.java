@@ -3,7 +3,8 @@
 
 package com.microsoft.applicationinsights.diagnostics.collection.libos.os.linux.cgroups;
 
-@SuppressWarnings("checkstyle:AbbreviationAsWordInName")
+@SuppressWarnings(
+    "checkstyle:AbbreviationAsWordInName") // CGroup is the standard abbreviation for Control Group
 public class CGroupCpuUsageReader extends CGroupValueReader {
   // total CPU usage (in nanoseconds) consumed by all tasks in this cgroup
   public CGroupCpuUsageReader() {

@@ -16,7 +16,10 @@ import jdk.jfr.Name;
 import jdk.jfr.Period;
 import jdk.jfr.StackTrace;
 
-@SuppressWarnings({"Java8ApiChecker", "AbbreviationAsWordInName"})
+@SuppressWarnings({
+  "Java8ApiChecker",
+  "AbbreviationAsWordInName"
+}) // JFR APIs require Java 11+, but agent targets Java 8 bytecode
 @Name("com.microsoft.applicationinsights.diagnostics.jfr.CGroupData")
 @Label("CGroupData")
 @Category("Diagnostic")

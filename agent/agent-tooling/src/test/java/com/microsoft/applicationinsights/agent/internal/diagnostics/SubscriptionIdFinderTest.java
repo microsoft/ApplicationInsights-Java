@@ -47,7 +47,7 @@ class SubscriptionIdFinderTest {
     assertThat(subIdFinder.getValue(this::envVarsFunction)).isEqualTo("unknown");
   }
 
-  @SuppressWarnings("MethodCanBeStatic")
+  @SuppressWarnings("MethodCanBeStatic") // instance method required by test framework
   private String envVarsFunction(String key) {
     return envVars.get(key);
   }

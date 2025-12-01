@@ -300,7 +300,10 @@ public enum MemoryPools {
     }
   }
 
-  @SuppressWarnings({"checkstyle:AbbreviationAsWordInName", "MemberName"})
+  @SuppressWarnings({
+    "checkstyle:AbbreviationAsWordInName",
+    "MemberName"
+  }) // CGroup is the standard abbreviation for Control Group
   public static class ZHeap extends MemoryPool {
     public static final String POOL_NAME = "ZHeap";
 

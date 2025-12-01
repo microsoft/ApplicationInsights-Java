@@ -17,7 +17,11 @@ import org.junit.jupiter.api.Test;
 
 class JmxDataFetcherTest {
 
-  @SuppressWarnings({"unused", "checkstyle:AbbreviationAsWordInName", "IdentifierName"})
+  @SuppressWarnings({
+    "unused",
+    "checkstyle:AbbreviationAsWordInName",
+    "IdentifierName"
+  }) // value not used but required by API signature or framework
   // This class name must end in MXBean (case sensitive)
   public interface StubMXBean {
     int getIntSample();
@@ -27,7 +31,7 @@ class JmxDataFetcherTest {
     long getLongSample();
   }
 
-  @SuppressWarnings("unused")
+  @SuppressWarnings("unused") // value not used but required by API signature or framework
   public static class TestStub implements StubMXBean {
     public int intSample;
     public double doubleSample;

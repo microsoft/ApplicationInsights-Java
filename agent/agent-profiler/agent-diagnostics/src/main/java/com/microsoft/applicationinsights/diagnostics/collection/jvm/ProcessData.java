@@ -175,7 +175,8 @@ public class ProcessData implements ProcessInfo, JsonSerializable<ProcessData> {
   }
 
   @Override
-  @SuppressWarnings("EqualsGetClass")
+  @SuppressWarnings(
+      "EqualsGetClass") // using getClass() in equals is intentional for this type hierarchy
   public boolean equals(Object obj) {
     if (this == obj) {
       return true;

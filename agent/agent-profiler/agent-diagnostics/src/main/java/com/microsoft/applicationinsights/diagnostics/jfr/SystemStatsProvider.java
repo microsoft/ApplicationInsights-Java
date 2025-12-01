@@ -43,7 +43,7 @@ import org.slf4j.LoggerFactory;
  * Initializes components mostly as singletons, mostly required to aid the migration away from being
  * part of a DI framework which managed lifecycles.
  */
-@SuppressWarnings("Java8ApiChecker")
+@SuppressWarnings("Java8ApiChecker") // JFR APIs require Java 11+, but agent targets Java 8 bytecode
 public class SystemStatsProvider {
   private static final Logger logger = LoggerFactory.getLogger(SystemStatsProvider.class);
 
@@ -73,12 +73,12 @@ public class SystemStatsProvider {
     }
   }
 
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("unchecked") // safe unchecked cast - type verified by runtime context
   private static <T> T getSingleton(Class<T> clazz) {
     return (T) singletons.get(clazz).get();
   }
 
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("unchecked") // safe unchecked cast - type verified by runtime context
   private static <T> T getSingleton(Class<T> clazz, Supplier<T> supplier) {
     AtomicReference<T> current = (AtomicReference<T>) singletons.get(clazz);
 
@@ -104,7 +104,10 @@ public class SystemStatsProvider {
     return current.get();
   }
 
-  @SuppressWarnings({"checkstyle:AbbreviationAsWordInName", "MemberName"})
+  @SuppressWarnings({
+    "checkstyle:AbbreviationAsWordInName",
+    "MemberName"
+  }) // CGroup is the standard abbreviation for Control Group
   public static CGroupData getCGroupData() {
     return getSingleton(
         CGroupData.class,
@@ -163,7 +166,9 @@ public class SystemStatsProvider {
         });
   }
 
-  @SuppressWarnings("checkstyle:AbbreviationAsWordInName")
+  @SuppressWarnings(
+      "checkstyle:AbbreviationAsWordInName") // CGroup is the standard abbreviation for Control
+  // Group
   private static CGroupDataReader buildCGroupDataReader() {
     switch (OperatingSystemDetector.getOperatingSystem()) {
       case LINUX:
@@ -173,7 +178,9 @@ public class SystemStatsProvider {
     }
   }
 
-  @SuppressWarnings("checkstyle:AbbreviationAsWordInName")
+  @SuppressWarnings(
+      "checkstyle:AbbreviationAsWordInName") // CGroup is the standard abbreviation for Control
+  // Group
   private static ProcessDumper getProcessDumper() {
     ThisPidSupplier pidSupplier = getSingleton(ThisPidSupplier.class);
     switch (OperatingSystemDetector.getOperatingSystem()) {
@@ -184,7 +191,9 @@ public class SystemStatsProvider {
     }
   }
 
-  @SuppressWarnings("checkstyle:AbbreviationAsWordInName")
+  @SuppressWarnings(
+      "checkstyle:AbbreviationAsWordInName") // CGroup is the standard abbreviation for Control
+  // Group
   private static CGroupUsageDataReader buildCGroupUsageDataReader() {
     return getSingleton(
         CGroupUsageDataReader.class,

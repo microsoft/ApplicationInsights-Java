@@ -33,7 +33,11 @@ import java.util.Date;
 
 // copied from ch.qos.logback.core.rolling.FixedWindowRollingPolicy
 // in order to support weird file directories like
-@SuppressWarnings({"MethodCanBeStatic", "EmptyBlockTag", "ThrowsUncheckedException"})
+@SuppressWarnings({
+  "MethodCanBeStatic",
+  "EmptyBlockTag",
+  "ThrowsUncheckedException"
+}) // instance method required by test framework
 public class FixedWindowRollingPolicy extends RollingPolicyBase {
 
   FileNamePattern fileNamePattern;

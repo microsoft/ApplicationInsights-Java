@@ -63,7 +63,7 @@ class GcCollectionSample implements GcCollectionEvent {
 
   private static Map<MemoryPool, MemoryUsage> groupMemoryUsageByPoolName(
       Object map, MemoryManagement memoryManagement) {
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("unchecked") // safe unchecked cast - type verified by runtime context
     Map<List<String>, CompositeData> byName = (Map<List<String>, CompositeData>) map;
     Map<MemoryPool, MemoryUsage> byIdentifier = new HashMap<>();
     try {

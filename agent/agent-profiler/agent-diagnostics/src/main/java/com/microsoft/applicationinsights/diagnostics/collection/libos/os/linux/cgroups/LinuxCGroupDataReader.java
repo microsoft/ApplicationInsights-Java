@@ -10,7 +10,8 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.List;
 
-@SuppressWarnings("checkstyle:AbbreviationAsWordInName")
+@SuppressWarnings(
+    "checkstyle:AbbreviationAsWordInName") // CGroup is the standard abbreviation for Control Group
 public class LinuxCGroupDataReader implements CGroupDataReader {
 
   private static final String CGROUP_DIR = "/sys/fs/cgroup";

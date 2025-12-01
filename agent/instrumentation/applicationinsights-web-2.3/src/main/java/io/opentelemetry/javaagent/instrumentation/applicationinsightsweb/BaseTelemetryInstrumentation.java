@@ -53,7 +53,10 @@ public class BaseTelemetryInstrumentation implements TypeInstrumentation {
         BaseTelemetryInstrumentation.class.getName() + "$OtherMethodsAdvice");
   }
 
-  @SuppressWarnings({"unused", "PrivateConstructorForUtilityClass"})
+  @SuppressWarnings({
+    "unused",
+    "PrivateConstructorForUtilityClass"
+  }) // value not used but required by API signature or framework
   public static class GetPropertiesAdvice {
     @Advice.OnMethodExit
     public static void methodExit(
@@ -70,7 +73,10 @@ public class BaseTelemetryInstrumentation implements TypeInstrumentation {
     }
   }
 
-  @SuppressWarnings({"unused", "PrivateConstructorForUtilityClass"})
+  @SuppressWarnings({
+    "unused",
+    "PrivateConstructorForUtilityClass"
+  }) // value not used but required by API signature or framework
   public static class GetContextAdvice {
     @Advice.OnMethodExit
     public static void methodExit(
@@ -86,7 +92,10 @@ public class BaseTelemetryInstrumentation implements TypeInstrumentation {
     }
   }
 
-  @SuppressWarnings({"unused", "PrivateConstructorForUtilityClass"})
+  @SuppressWarnings({
+    "unused",
+    "PrivateConstructorForUtilityClass"
+  }) // value not used but required by API signature or framework
   public static class OtherMethodsAdvice {
     @Advice.OnMethodEnter
     public static void methodEnter(
