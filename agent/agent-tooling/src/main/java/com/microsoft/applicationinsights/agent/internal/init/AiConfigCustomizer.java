@@ -209,6 +209,7 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
       properties.put("otel.instrumentation.spring-webmvc.enabled", "true");
     }
     properties.put("otel.instrumentation.spring-webflux.enabled", "true");
+    properties.put("otel.instrumentation.spring-cloud-gateway.enabled", "true");
     properties.put("otel.instrumentation.tomcat.enabled", "true");
     properties.put("otel.instrumentation.undertow.enabled", "true");
 
