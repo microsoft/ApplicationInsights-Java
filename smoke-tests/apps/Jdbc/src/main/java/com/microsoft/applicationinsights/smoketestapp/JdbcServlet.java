@@ -172,8 +172,10 @@ public class JdbcServlet extends HttpServlet {
   }
 
   private static void executePreparedStatement(Connection connection) throws SQLException {
-    PreparedStatement ps = connection.prepareStatement("select * from abc where xyz = ?");
-    ps.setString(1, "y");
+    PreparedStatement ps =
+        connection.prepareStatement("select * from abc where uvw = ? and xyz = ?");
+    ps.setString(1, "v");
+    ps.setString(2, "y");
     ResultSet rs = ps.executeQuery();
     while (rs.next()) {}
     rs.close();
@@ -332,10 +334,10 @@ public class JdbcServlet extends HttpServlet {
 
   private static void setup(Connection connection) throws SQLException {
     try (Statement statement = connection.createStatement()) {
-      statement.execute("create table abc (xyz varchar(10))");
-      statement.execute("insert into abc (xyz) values ('x')");
-      statement.execute("insert into abc (xyz) values ('y')");
-      statement.execute("insert into abc (xyz) values ('z')");
+      statement.execute("create table abc (uvw varchar(10), xyz varchar(10))");
+      statement.execute("insert into abc (uvw, xyz) values ('u', 'x')");
+      statement.execute("insert into abc (uvw, xyz) values ('v', 'y')");
+      statement.execute("insert into abc (uvw, xyz) values ('w', 'z')");
     }
   }
 }
