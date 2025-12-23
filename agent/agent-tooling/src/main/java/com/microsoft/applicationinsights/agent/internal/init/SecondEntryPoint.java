@@ -488,6 +488,10 @@ public class SecondEntryPoint
     if (config.preview.captureLogbackMarker) {
       featureList.add(Feature.PREVIEW_CAPTURE_LOGBACK_MARKER);
     }
+    if (config.preview.captureLogbackKeyValues) {
+//    TODO: uncomment when the new feature is merged and released in azure-sdk-for-java
+//      featureList.add(Feature.PREVIEW_CAPTURE_LOGBACK_KEY_VALUES);
+    }
     if (config.preview.captureLog4jMarker) {
       featureList.add(Feature.PREVIEW_CAPTURE_LOG4J_MARKER);
     }
