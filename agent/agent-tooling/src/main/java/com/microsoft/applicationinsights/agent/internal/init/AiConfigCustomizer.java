@@ -5,6 +5,7 @@ package com.microsoft.applicationinsights.agent.internal.init;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 
+import com.azure.monitor.opentelemetry.autoconfigure.implementation.AzureMonitorExporterProviderKeys;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.legacyheaders.DelegatingPropagatorProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
@@ -115,9 +116,25 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
     }
 
     String metricsExporter = otelConfig.getString("otel.metrics.exporter");
-    if (metricsExporter == null) {
-      // this overrides the default "otlp" so the exporter can be configured later
-      properties.put("otel.metrics.exporter", "none");
+    String azureMonitorName = AzureMonitorExporterProviderKeys.EXPORTER_NAME;
+    boolean metricsToLogAnalyticsEnabled =
+        otelConfig.getBoolean("applicationinsights.metrics.to.loganalytics.enabled", false);
+
+    if (metricsToLogAnalyticsEnabled) {
+      if (metricsExporter == null
+          || metricsExporter.isEmpty()
+          || metricsExporter.equalsIgnoreCase("none")) {
+        // enable Azure Monitor metrics exporter by default when flag is enabled
+        properties.put("otel.metrics.exporter", azureMonitorName);
+      } else if (!metricsExporter.contains(azureMonitorName)) {
+        // ensure Azure Monitor exporter is included when flag is enabled
+        properties.put("otel.metrics.exporter", metricsExporter + "," + azureMonitorName);
+      }
+    } else {
+      if (metricsExporter == null) {
+        // preserve previous behavior: override default "otlp" so exporter can be configured later
+        properties.put("otel.metrics.exporter", "none");
+      }
     }
 
     String logsExporter = otelConfig.getString("otel.logs.exporter");
