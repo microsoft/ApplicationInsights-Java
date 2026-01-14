@@ -1,7 +1,7 @@
 
 # agent
 ## Dependency License Report
-_2025-11-14 22:48:36 UTC_
+_2026-01-14 22:45:41 UTC_
 ## Apache License, Version 2.0
 
 **1** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-annotations` **Version:** `2.20`
@@ -241,19 +241,19 @@ _2025-11-14 22:48:36 UTC_
 > - **POM License**: GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 - [https://www.gnu.org/licenses/lgpl-2.1](https://www.gnu.org/licenses/lgpl-2.1)
 > - **Embedded license files**: [jna-platform-5.18.1.jar/META-INF/LICENSE](jna-platform-5.18.1.jar/META-INF/LICENSE)
 
-**48** **Group:** `org.apache.commons` **Name:** `commons-lang3` **Version:** `3.18.0`
+**48** **Group:** `org.apache.commons` **Name:** `commons-lang3` **Version:** `3.20.0`
 > - **Project URL**: [https://commons.apache.org/proper/commons-lang/](https://commons.apache.org/proper/commons-lang/)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
-> - **Embedded license files**: [commons-lang3-3.18.0.jar/META-INF/LICENSE.txt](commons-lang3-3.18.0.jar/META-INF/LICENSE.txt)
-    - [commons-lang3-3.18.0.jar/META-INF/NOTICE.txt](commons-lang3-3.18.0.jar/META-INF/NOTICE.txt)
+> - **Embedded license files**: [commons-lang3-3.20.0.jar/META-INF/LICENSE.txt](commons-lang3-3.20.0.jar/META-INF/LICENSE.txt)
+    - [commons-lang3-3.20.0.jar/META-INF/NOTICE.txt](commons-lang3-3.20.0.jar/META-INF/NOTICE.txt)
 
-**49** **Group:** `org.apache.commons` **Name:** `commons-text` **Version:** `1.14.0`
+**49** **Group:** `org.apache.commons` **Name:** `commons-text` **Version:** `1.15.0`
 > - **Project URL**: [https://commons.apache.org/proper/commons-text](https://commons.apache.org/proper/commons-text)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
-> - **Embedded license files**: [commons-text-1.14.0.jar/META-INF/LICENSE.txt](commons-text-1.14.0.jar/META-INF/LICENSE.txt)
-    - [commons-text-1.14.0.jar/META-INF/NOTICE.txt](commons-text-1.14.0.jar/META-INF/NOTICE.txt)
+> - **Embedded license files**: [commons-text-1.15.0.jar/META-INF/LICENSE.txt](commons-text-1.15.0.jar/META-INF/LICENSE.txt)
+    - [commons-text-1.15.0.jar/META-INF/NOTICE.txt](commons-text-1.15.0.jar/META-INF/NOTICE.txt)
 
 **50** **Group:** `org.slf4j` **Name:** `jcl-over-slf4j` **Version:** `2.0.17`
 > - **Project URL**: [http://www.slf4j.org](http://www.slf4j.org)
