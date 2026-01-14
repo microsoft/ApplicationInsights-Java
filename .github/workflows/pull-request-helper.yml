@@ -4,6 +4,9 @@ on:
     branches:
       - 'dependabot/**/*'
 
+permissions:
+  contents: write
+
 jobs:
   pull-request-helper:
     runs-on: ubuntu-latest
