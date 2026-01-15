@@ -13,6 +13,10 @@ val disableErrorProne = properties["disableErrorProne"]?.toString()?.toBoolean()
 tasks {
   withType<JavaCompile>().configureEach {
     with(options) {
+      // Error Prone 2.45.0+ requires this flag when running on JDK 21
+      // See: https://github.com/google/error-prone/releases/tag/v2.45.0
+      compilerArgs.add("-XDaddTypeAnnotationsToSymbol=true")
+      
       errorprone {
         if (disableErrorProne) {
           logger.warn("Errorprone has been disabled. Build may not result in a valid PR build.")
