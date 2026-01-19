@@ -7,6 +7,7 @@ import com.microsoft.applicationinsights.diagnostics.collection.SystemStatsReade
 import com.microsoft.applicationinsights.diagnostics.collection.libos.OperatingSystemInteractionException;
 import com.microsoft.applicationinsights.diagnostics.collection.libos.os.OperatingSystemDetector;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -26,8 +27,9 @@ public class CodeOptimizerDiagnosticsJfrInit {
   private static final AtomicInteger exceptionLogCount = new AtomicInteger(0);
   private static final AtomicInteger telemetryFailureLogCount = new AtomicInteger(0);
 
-  private static final Runnable readCGroupData = CodeOptimizerDiagnosticsJfrInit::emitCGroupData;
   private static final AtomicReference<Runnable> telemetryEmitter = new AtomicReference<>(null);
+  private static final AtomicReference<Runnable> cgroupTelemetryEmitter =
+      new AtomicReference<>(null);
 
   private CodeOptimizerDiagnosticsJfrInit() {}
 
@@ -70,9 +72,9 @@ public class CodeOptimizerDiagnosticsJfrInit {
   @SuppressWarnings(
       "checkstyle:AbbreviationAsWordInName") // CGroup is the standard abbreviation for Control
   // Group
-  public static void emitCGroupData() {
+  public static void emitCGroupData(Path cgroupBasePath) {
     try {
-      CGroupData cgroupData = SystemStatsProvider.getCGroupData();
+      CGroupData cgroupData = SystemStatsProvider.getCGroupData(cgroupBasePath);
 
       if (cgroupData != null) {
         cgroupData.commit();
@@ -86,22 +88,23 @@ public class CodeOptimizerDiagnosticsJfrInit {
     return OperatingSystemDetector.getOperatingSystem().supportsDiagnostics();
   }
 
-  public static void initFeature(int thisPid) {
+  public static void initFeature(int thisPid, Path cgroupBasePath) {
     if (!isOsSupported()) {
       return;
     }
 
     // eagerly get stats to warm it up
-    SystemStatsProvider.init(thisPid);
+    SystemStatsProvider.init(thisPid, cgroupBasePath);
   }
 
-  public static void start(int thisPidSupplier) {
+  public static void start(int thisPidSupplier, Path cgroupBasePath) {
     if (!isOsSupported()) {
       return;
     }
 
     if (running.compareAndSet(false, true)) {
-      SystemStatsReader statsReader = SystemStatsProvider.getStatsReader(thisPidSupplier);
+      SystemStatsReader statsReader =
+          SystemStatsProvider.getStatsReader(thisPidSupplier, cgroupBasePath);
       Runnable emitter = emitTelemetry(statsReader);
       if (telemetryEmitter.compareAndSet(null, emitter)) {
         FlightRecorder.addPeriodicEvent(Telemetry.class, emitter);
@@ -112,9 +115,12 @@ public class CodeOptimizerDiagnosticsJfrInit {
           logger.error("Failed to init stats reader", e);
         }
       }
-      FlightRecorder.addPeriodicEvent(CGroupData.class, readCGroupData);
 
-      readCGroupData.run();
+      if (cgroupTelemetryEmitter.compareAndSet(null, () -> emitCGroupData(cgroupBasePath))) {
+        FlightRecorder.addPeriodicEvent(CGroupData.class, cgroupTelemetryEmitter.get());
+      }
+
+      cgroupTelemetryEmitter.get().run();
     }
   }
 
@@ -128,7 +134,11 @@ public class CodeOptimizerDiagnosticsJfrInit {
         FlightRecorder.removePeriodicEvent(telemetryEmitter.get());
         telemetryEmitter.set(null);
       }
-      FlightRecorder.removePeriodicEvent(readCGroupData);
+
+      if (cgroupTelemetryEmitter.get() != null) {
+        FlightRecorder.removePeriodicEvent(cgroupTelemetryEmitter.get());
+        cgroupTelemetryEmitter.set(null);
+      }
       SystemStatsProvider.close();
     }
   }

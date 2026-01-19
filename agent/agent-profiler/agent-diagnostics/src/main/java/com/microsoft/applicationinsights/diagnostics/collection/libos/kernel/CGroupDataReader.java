@@ -19,4 +19,6 @@ public interface CGroupDataReader {
   long getCpuLimit() throws OperatingSystemInteractionException;
 
   long getCpuPeriod() throws OperatingSystemInteractionException;
+
+  boolean isAvailable();
 }
