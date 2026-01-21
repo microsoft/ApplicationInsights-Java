@@ -6,6 +6,7 @@ package com.microsoft.applicationinsights.agent.internal.init;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 import com.azure.monitor.opentelemetry.autoconfigure.implementation.AzureMonitorExporterProviderKeys;
+import com.azure.monitor.opentelemetry.autoconfigure.implementation.utils.Strings;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.legacyheaders.DelegatingPropagatorProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
@@ -120,7 +121,15 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
     boolean metricsToLogAnalyticsEnabled =
         otelConfig.getBoolean("applicationinsights.metrics.to.loganalytics.enabled", false);
 
-    if (metricsToLogAnalyticsEnabled) {
+    boolean isAks = false;
+    try {
+      String aksNamespaceId = System.getenv("AKS_ARM_NAMESPACE_ID");
+      isAks = !Strings.isNullOrEmpty(aksNamespaceId);
+    } catch (SecurityException ignored) {
+      // if env is not accessible, assume not AKS
+    }
+
+    if (metricsToLogAnalyticsEnabled && isAks) {
       if (metricsExporter == null
           || metricsExporter.isEmpty()
           || metricsExporter.equalsIgnoreCase("none")) {

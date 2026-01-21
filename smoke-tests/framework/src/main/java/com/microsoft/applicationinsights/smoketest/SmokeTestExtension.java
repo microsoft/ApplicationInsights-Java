@@ -116,13 +116,7 @@ public class SmokeTestExtension
   private final boolean useOtlpEndpoint;
 
   public static SmokeTestExtension create() {
-    SmokeTestExtensionBuilder b = builder();
-    String metricsToLogAnalytics =
-        System.getenv("APPLICATIONINSIGHTS_METRICS_TO_LOGANALYTICS_ENABLED");
-    if (metricsToLogAnalytics != null && metricsToLogAnalytics.equalsIgnoreCase("true")) {
-      b.setEnvVar("APPLICATIONINSIGHTS_METRICS_TO_LOGANALYTICS_ENABLED", "true");
-    }
-    return b.build();
+    return builder().build();
   }
 
   public static SmokeTestExtensionBuilder builder() {
