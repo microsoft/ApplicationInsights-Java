@@ -334,13 +334,8 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
     String envVar = otelConfig.getString("applicationinsights.metrics.to.loganalytics.enabled");
     boolean metricsToLogAnalyticsEnabled = envVar == null || Boolean.parseBoolean(envVar);
 
-    boolean isAks = false;
-    try {
-      String aksNamespaceId = System.getenv("AKS_ARM_NAMESPACE_ID");
-      isAks = !Strings.isNullOrEmpty(aksNamespaceId);
-    } catch (SecurityException ignored) {
-      // if env is not accessible, assume not AKS
-    }
+    String aksNamespaceId = System.getenv("AKS_ARM_NAMESPACE_ID");
+    boolean isAks = !Strings.isNullOrEmpty(aksNamespaceId);
 
     return metricsToLogAnalyticsEnabled && isAks;
   }
