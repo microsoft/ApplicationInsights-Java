@@ -121,7 +121,8 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
     String metricsToLogAnalyticsEnabledEnvVar =
         otelConfig.getString("applicationinsights.metrics.to.loganalytics.enabled");
     boolean metricsToLogAnalyticsActivated =
-        metricsToLogAnalyticsEnabledEnvVar == null || Boolean.parseBoolean(metricsToLogAnalyticsEnabledEnvVar);
+        metricsToLogAnalyticsEnabledEnvVar == null
+            || Boolean.parseBoolean(metricsToLogAnalyticsEnabledEnvVar);
 
     boolean isAks = false;
     try {
