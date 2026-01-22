@@ -3,7 +3,16 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_11;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_11_OPENJ9;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_17;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_17_OPENJ9;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_21;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_21_OPENJ9;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_25;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_25_OPENJ9;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_8;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_8_OPENJ9;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
@@ -185,4 +194,31 @@ abstract class OtlpLogAnalyticsOnAksTest {
 
   @Environment(TOMCAT_8_JAVA_8)
   static class Tomcat8Java8Test extends OtlpLogAnalyticsOnAksTest {}
+
+  @Environment(TOMCAT_8_JAVA_8_OPENJ9)
+  static class Tomcat8Java8OpenJ9Test extends OtlpLogAnalyticsOnAksTest {}
+
+  @Environment(TOMCAT_8_JAVA_11)
+  static class Tomcat8Java11Test extends OtlpLogAnalyticsOnAksTest {}
+
+  @Environment(TOMCAT_8_JAVA_11_OPENJ9)
+  static class Tomcat8Java11OpenJ9Test extends OtlpLogAnalyticsOnAksTest {}
+
+  @Environment(TOMCAT_8_JAVA_17)
+  static class Tomcat8Java17Test extends OtlpLogAnalyticsOnAksTest {}
+
+  @Environment(TOMCAT_8_JAVA_17_OPENJ9)
+  static class Tomcat8Java17OpenJ9Test extends OtlpLogAnalyticsOnAksTest {}
+
+  @Environment(TOMCAT_8_JAVA_21)
+  static class Tomcat8Java21Test extends OtlpLogAnalyticsOnAksTest {}
+
+  @Environment(TOMCAT_8_JAVA_21_OPENJ9)
+  static class Tomcat8Java21OpenJ9Test extends OtlpLogAnalyticsOnAksTest {}
+
+  @Environment(TOMCAT_8_JAVA_25)
+  static class Tomcat8Java23Test extends OtlpLogAnalyticsOnAksTest {}
+
+  @Environment(TOMCAT_8_JAVA_25_OPENJ9)
+  static class Tomcat8Java23OpenJ9Test extends OtlpLogAnalyticsOnAksTest {}
 }
