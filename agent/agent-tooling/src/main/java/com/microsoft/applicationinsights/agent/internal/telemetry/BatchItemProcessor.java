@@ -10,7 +10,7 @@ import com.azure.monitor.opentelemetry.autoconfigure.implementation.logging.Oper
 import com.azure.monitor.opentelemetry.autoconfigure.implementation.models.TelemetryItem;
 import com.azure.monitor.opentelemetry.autoconfigure.implementation.pipeline.TelemetryItemExporter;
 import io.opentelemetry.api.logs.LoggerProvider;
-import io.opentelemetry.internal.shaded.jctools.queues.MpscArrayQueue;
+import io.opentelemetry.internal.shaded.jctools.queues.atomic.MpscAtomicArrayQueue;
 import io.opentelemetry.javaagent.bootstrap.CallDepth;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.DaemonThreadFactory;
@@ -56,7 +56,7 @@ public final class BatchItemProcessor {
       long exporterTimeoutNanos,
       int maxPendingExports,
       String queueName) {
-    MpscArrayQueue<TelemetryItem> queue = new MpscArrayQueue<>(maxQueueSize);
+    MpscAtomicArrayQueue<TelemetryItem> queue = new MpscAtomicArrayQueue<>(maxQueueSize);
     this.worker =
         new Worker(
             exporter,
