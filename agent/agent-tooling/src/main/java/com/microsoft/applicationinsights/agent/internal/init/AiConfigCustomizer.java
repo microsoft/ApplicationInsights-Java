@@ -117,7 +117,7 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
     }
 
     String metricsExporter = otelConfig.getString("otel.metrics.exporter");
-    if (isAksIntegratedAttach(otelConfig)) {
+    if (isAksAttach(otelConfig)) {
       properties.put("otel.metrics.exporter", addAzureMonitorIfNotPresent(metricsExporter));
     } else if (metricsExporter == null) {
       // this overrides the default "otlp" so the exporter can be configured later
@@ -330,7 +330,7 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
     }
   }
 
-  private static boolean isAksIntegratedAttach(ConfigProperties otelConfig) {
+  private static boolean isAksAttach(ConfigProperties otelConfig) {
     String envVar = otelConfig.getString("applicationinsights.metrics.to.loganalytics.enabled");
     boolean metricsToLogAnalyticsEnabled = envVar == null || Boolean.parseBoolean(envVar);
 
