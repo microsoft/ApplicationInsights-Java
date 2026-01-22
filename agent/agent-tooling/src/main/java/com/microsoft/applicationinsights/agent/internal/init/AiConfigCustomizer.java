@@ -117,36 +117,11 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
     }
 
     String metricsExporter = otelConfig.getString("otel.metrics.exporter");
-    String azureMonitorName = AzureMonitorExporterProviderKeys.EXPORTER_NAME;
-    String metricsToLogAnalyticsEnabledEnvVar =
-        otelConfig.getString("applicationinsights.metrics.to.loganalytics.enabled");
-    boolean metricsToLogAnalyticsActivated =
-        metricsToLogAnalyticsEnabledEnvVar == null
-            || Boolean.parseBoolean(metricsToLogAnalyticsEnabledEnvVar);
-
-    boolean isAks = false;
-    try {
-      String aksNamespaceId = System.getenv("AKS_ARM_NAMESPACE_ID");
-      isAks = !Strings.isNullOrEmpty(aksNamespaceId);
-    } catch (SecurityException ignored) {
-      // if env is not accessible, assume not AKS
-    }
-
-    if (metricsToLogAnalyticsActivated && isAks) {
-      if (metricsExporter == null
-          || metricsExporter.isEmpty()
-          || metricsExporter.equalsIgnoreCase("none")) {
-        // enable Azure Monitor metrics exporter by default when flag is enabled
-        properties.put("otel.metrics.exporter", azureMonitorName);
-      } else if (!metricsExporter.contains(azureMonitorName)) {
-        // ensure Azure Monitor exporter is included when flag is enabled
-        properties.put("otel.metrics.exporter", metricsExporter + "," + azureMonitorName);
-      }
-    } else {
-      if (metricsExporter == null) {
-        // preserve previous behavior: override default "otlp" so exporter can be configured later
-        properties.put("otel.metrics.exporter", "none");
-      }
+    if (isAksIntegratedAttach(otelConfig)) {
+      properties.put("otel.metrics.exporter", addAzureMonitorIfNotPresent(metricsExporter));
+    } else if (metricsExporter == null) {
+      // this overrides the default "otlp" so the exporter can be configured later
+      properties.put("otel.metrics.exporter", "none");
     }
 
     String logsExporter = otelConfig.getString("otel.logs.exporter");
@@ -353,6 +328,31 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
     if (config.preview.instrumentation.r2dbc.enabled) {
       properties.put("otel.instrumentation.r2dbc.enabled", "true");
     }
+  }
+
+  private static boolean isAksIntegratedAttach(ConfigProperties otelConfig) {
+    String envVar = otelConfig.getString("applicationinsights.metrics.to.loganalytics.enabled");
+    boolean metricsToLogAnalyticsEnabled = envVar == null || Boolean.parseBoolean(envVar);
+
+    boolean isAks = false;
+    try {
+      String aksNamespaceId = System.getenv("AKS_ARM_NAMESPACE_ID");
+      isAks = !Strings.isNullOrEmpty(aksNamespaceId);
+    } catch (SecurityException ignored) {
+      // if env is not accessible, assume not AKS
+    }
+
+    return metricsToLogAnalyticsEnabled && isAks;
+  }
+
+  private static String addAzureMonitorIfNotPresent(String metricsExporter) {
+    String azureMonitorName = AzureMonitorExporterProviderKeys.EXPORTER_NAME;
+    if (metricsExporter == null || metricsExporter.isEmpty() || metricsExporter.equals("none")) {
+      return azureMonitorName;
+    } else if (!metricsExporter.contains(azureMonitorName)) {
+      return metricsExporter + "," + azureMonitorName;
+    }
+    return metricsExporter;
   }
 
   private static void setHttpHeaderConfiguration(
