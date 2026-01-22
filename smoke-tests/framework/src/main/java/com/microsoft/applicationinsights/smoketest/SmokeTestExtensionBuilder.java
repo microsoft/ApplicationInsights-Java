@@ -109,7 +109,6 @@ public class SmokeTestExtensionBuilder {
     return this;
   }
 
-  
   public SmokeTestExtensionBuilder useOtlpEndpointOnly() {
     this.useOtlpEndpointOnly = true;
     return this;
