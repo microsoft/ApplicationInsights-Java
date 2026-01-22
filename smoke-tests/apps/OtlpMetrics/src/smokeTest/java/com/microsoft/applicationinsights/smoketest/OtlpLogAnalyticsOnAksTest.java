@@ -25,10 +25,14 @@ import org.springframework.boot.test.context.SpringBootTest;
     classes = {OtlpApplication.class},
     webEnvironment = RANDOM_PORT)
 @UseAgent
-abstract class OtlpTest {
+abstract class OtlpLogAnalyticsOnAksTest {
 
   @RegisterExtension
-  static final SmokeTestExtension testing = SmokeTestExtension.builder().useOtlpEndpoint().build();
+  static final SmokeTestExtension testing = SmokeTestExtension.builder()
+      .setEnvVar("APPLICATIONINSIGHTS_METRICS_TO_LOGANALYTICS_ENABLED", "true")
+      .setEnvVar("AKS_ARM_NAMESPACE_ID", "dummy-aks-namespace")
+      .useOtlpEndpointOnly()
+      .build();
 
   @Test
   @TargetUri("/ping")
@@ -41,14 +45,14 @@ abstract class OtlpTest {
 
     // verify custom histogram metric sent to Application Insights endpoint
     List<Envelope> metricList =
-        testing.mockedIngestion.waitForItems("MetricData", OtlpTest::isHistogramMetric, 1);
+        testing.mockedIngestion.waitForItems("MetricData", OtlpLogAnalyticsOnAksTest::isHistogramMetric, 1);
     Envelope metricEnvelope = metricList.get(0);
     MetricData metricData = (MetricData) ((Data<?>) metricEnvelope.getData()).getBaseData();
     assertThat(metricData.getMetrics().get(0).getName()).isEqualTo("histogram-test-otlp-exporter");
 
     // verify stable otel metric sent to Application Insights endpoint
     List<Envelope> stableOtelMetrics =
-        testing.mockedIngestion.waitForItems("MetricData", OtlpTest::isStableOtelMetric, 1);
+        testing.mockedIngestion.waitForItems("MetricData", OtlpLogAnalyticsOnAksTest::isStableOtelMetric, 1);
     Envelope stableOtelMetricEnvelope = stableOtelMetrics.get(0);
     assertThat(
             ((MetricData) ((Data<?>) stableOtelMetricEnvelope.getData()).getBaseData())
@@ -117,7 +121,7 @@ abstract class OtlpTest {
 
   private void verifyStatsbeatSentToBreezeEndpoint() throws Exception {
     List<Envelope> statsbeatMetricList =
-        testing.mockedIngestion.waitForItems("MetricData", OtlpTest::isAttachStatsbeat, 1);
+        testing.mockedIngestion.waitForItems("MetricData", OtlpLogAnalyticsOnAksTest::isAttachStatsbeat, 1);
     Envelope statsbeatEnvelope = statsbeatMetricList.get(0);
     MetricData statsbeatMetricData =
         (MetricData) ((Data<?>) statsbeatEnvelope.getData()).getBaseData();
@@ -126,21 +130,21 @@ abstract class OtlpTest {
     assertThat(statsbeatMetricData.getProperties().get("attach")).isEqualTo("StandaloneAuto");
 
     List<Envelope> features =
-        testing.mockedIngestion.waitForItems("MetricData", OtlpTest::isFeatureStatsbeat, 2);
+        testing.mockedIngestion.waitForItems("MetricData", OtlpLogAnalyticsOnAksTest::isFeatureStatsbeat, 2);
     Envelope featureEnvelope = features.get(0);
     MetricData featureMetricData = (MetricData) ((Data<?>) featureEnvelope.getData()).getBaseData();
     assertThat(featureMetricData.getMetrics().get(0).getName()).isEqualTo("Feature");
     assertThat(featureMetricData.getProperties().get("type")).isNotEmpty();
 
     List<Envelope> requestSuccessCounts =
-        testing.mockedIngestion.waitForItems("MetricData", OtlpTest::isRequestSuccessCount, 1);
+        testing.mockedIngestion.waitForItems("MetricData", OtlpLogAnalyticsOnAksTest::isRequestSuccessCount, 1);
     Envelope rscEnvelope = requestSuccessCounts.get(0);
     MetricData rscMetricData = (MetricData) ((Data<?>) rscEnvelope.getData()).getBaseData();
     assertThat(rscMetricData.getMetrics().get(0).getName()).isEqualTo("Request_Success_Count");
     assertThat(rscMetricData.getProperties().get("endpoint")).isEqualTo("breeze");
 
     List<Envelope> requestDurations =
-        testing.mockedIngestion.waitForItems("MetricData", OtlpTest::isRequestDuration, 1);
+        testing.mockedIngestion.waitForItems("MetricData", OtlpLogAnalyticsOnAksTest::isRequestDuration, 1);
     Envelope rdEnvelope = requestDurations.get(0);
     MetricData rdMetricData = (MetricData) ((Data<?>) rdEnvelope.getData()).getBaseData();
     assertThat(rdMetricData.getMetrics().get(0).getName()).isEqualTo("Request_Duration");
@@ -180,5 +184,5 @@ abstract class OtlpTest {
   }
 
   @Environment(TOMCAT_8_JAVA_8)
-  static class Tomcat8Java8Test extends OtlpTest {}
+  static class Tomcat8Java8Test extends OtlpLogAnalyticsOnAksTest {}
 }
