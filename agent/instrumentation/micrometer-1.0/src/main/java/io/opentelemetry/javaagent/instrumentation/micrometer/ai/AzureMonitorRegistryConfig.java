@@ -4,7 +4,6 @@
 package io.opentelemetry.javaagent.instrumentation.micrometer.ai;
 
 import io.micrometer.core.instrument.step.StepRegistryConfig;
-import io.opentelemetry.javaagent.bootstrap.internal.AgentInstrumentationConfig;
 import java.time.Duration;
 import javax.annotation.Nullable;
 
@@ -16,13 +15,22 @@ public class AzureMonitorRegistryConfig implements StepRegistryConfig {
   public static final AzureMonitorRegistryConfig INSTANCE = new AzureMonitorRegistryConfig();
 
   private AzureMonitorRegistryConfig() {
-    step =
-        AgentInstrumentationConfig.get()
-            .getDuration(
-                "applicationinsights.internal.micrometer.step.millis", Duration.ofSeconds(60));
-    namespace =
-        AgentInstrumentationConfig.get()
-            .getString("applicationinsights.internal.micrometer.namespace");
+    Duration defaultStep = Duration.ofSeconds(60);
+
+    String stepMillisString =
+        System.getProperty("applicationinsights.internal.micrometer.step.millis");
+    Duration resolvedStep = defaultStep;
+    if (stepMillisString != null) {
+      try {
+        long millis = Long.parseLong(stepMillisString);
+        resolvedStep = Duration.ofMillis(millis);
+      } catch (NumberFormatException ignored) {
+        // use default step
+      }
+    }
+    step = resolvedStep;
+
+    namespace = System.getProperty("applicationinsights.internal.micrometer.namespace");
   }
 
   @Override
