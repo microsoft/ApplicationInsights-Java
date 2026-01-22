@@ -118,8 +118,10 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
 
     String metricsExporter = otelConfig.getString("otel.metrics.exporter");
     String azureMonitorName = AzureMonitorExporterProviderKeys.EXPORTER_NAME;
-    boolean metricsToLogAnalyticsEnabled =
-        otelConfig.getBoolean("applicationinsights.metrics.to.loganalytics.enabled", false);
+    String metricsToLogAnalyticsEnabledEnvVar =
+        otelConfig.getString("applicationinsights.metrics.to.loganalytics.enabled");
+    boolean metricsToLogAnalyticsActivated =
+        metricsToLogAnalyticsEnabledEnvVar == null || Boolean.parseBoolean(metricsToLogAnalyticsEnabledEnvVar);
 
     boolean isAks = false;
     try {
@@ -129,7 +131,7 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
       // if env is not accessible, assume not AKS
     }
 
-    if (metricsToLogAnalyticsEnabled && isAks) {
+    if (metricsToLogAnalyticsActivated && isAks) {
       if (metricsExporter == null
           || metricsExporter.isEmpty()
           || metricsExporter.equalsIgnoreCase("none")) {
