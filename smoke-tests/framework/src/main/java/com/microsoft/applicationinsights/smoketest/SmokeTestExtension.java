@@ -114,6 +114,7 @@ public class SmokeTestExtension
   private final List<String> jvmArgs;
   private final boolean useDefaultHttpPort;
   private final boolean useOtlpEndpoint;
+  private final boolean useOtlpEndpointOnly;
 
   public static SmokeTestExtension create() {
     return builder().build();
@@ -139,7 +140,8 @@ public class SmokeTestExtension
       Map<String, String> envVars,
       List<String> jvmArgs,
       boolean useDefaultHttpPort,
-      boolean useOtlpEndpoint) {
+      boolean useOtlpEndpoint,
+      boolean useOtlpEndpointOnly) {
     this.skipHealthCheck = skipHealthCheck;
     this.readOnly = readOnly;
     this.dependencyContainer = dependencyContainer;
@@ -169,6 +171,7 @@ public class SmokeTestExtension
     this.jvmArgs = jvmArgs;
     this.useDefaultHttpPort = useDefaultHttpPort;
     this.useOtlpEndpoint = useOtlpEndpoint;
+    this.useOtlpEndpointOnly = useOtlpEndpointOnly;
 
     mockedIngestion = new MockedAppInsightsIngestionServer(useOld3xAgent);
   }
@@ -220,7 +223,7 @@ public class SmokeTestExtension
     mockedIngestion.startServer();
     mockedIngestion.setRequestLoggingEnabled(true);
     mockedIngestion.setQuickPulseRequestLoggingEnabled(true);
-    if (useOtlpEndpoint) {
+    if (useOtlpEndpoint || useOtlpEndpointOnly) {
       mockedOtlpIngestion.startServer();
     }
     network = Network.newNetwork();
@@ -430,6 +433,12 @@ public class SmokeTestExtension
       envVars.put("OTEL_EXPORTER_OTLP_PROTOCOL", "http/protobuf");
     }
 
+    if (useOtlpEndpointOnly) {
+      envVars.put("OTEL_METRICS_EXPORTER", "otlp");
+      envVars.put("OTEL_EXPORTER_OTLP_METRICS_ENDPOINT", FAKE_OTLP_INGESTION_ENDPOINT);
+      envVars.put("OTEL_EXPORTER_OTLP_PROTOCOL", "http/protobuf");
+    }
+
     GenericContainer<?> container;
     if (REMOTE_DEBUG || useDefaultHttpPort) {
       FixedHostPortGenericContainer fixedPortContainer =
@@ -479,6 +488,13 @@ public class SmokeTestExtension
       javaToolOptions.add("-Dotel.exporter.otlp.metrics.endpoint=" + FAKE_OTLP_INGESTION_ENDPOINT);
       javaToolOptions.add("-Dotel.exporter.otlp.protocol=http/protobuf");
     }
+    if (useOtlpEndpointOnly) {
+      // TODO (trask) don't use azure_monitor exporter for smoke test health check
+      javaToolOptions.add("-Dotel.metrics.exporter=otlp");
+      javaToolOptions.add("-Dotel.exporter.otlp.metrics.endpoint=" + FAKE_OTLP_INGESTION_ENDPOINT);
+      javaToolOptions.add("-Dotel.exporter.otlp.protocol=http/protobuf");
+    }
+
     if (REMOTE_DEBUG) {
       javaToolOptions.add(
           "-agentlib:jdwp=transport=dt_socket,address=0.0.0.0:5005,server=y,suspend=y");
@@ -579,7 +595,7 @@ public class SmokeTestExtension
     mockedIngestion.stopServer();
     mockedIngestion.setRequestLoggingEnabled(false);
     mockedIngestion.setQuickPulseRequestLoggingEnabled(false);
-    if (useOtlpEndpoint) {
+    if (useOtlpEndpoint || useOtlpEndpointOnly) {
       mockedOtlpIngestion.stopServer();
     }
   }
