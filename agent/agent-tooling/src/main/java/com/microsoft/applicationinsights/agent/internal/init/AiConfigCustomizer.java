@@ -117,8 +117,10 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
     }
 
     String metricsExporter = otelConfig.getString("otel.metrics.exporter");
-    if (isAksAttach(otelConfig)) {
-      properties.put("otel.metrics.exporter", addAzureMonitorIfNotPresent(metricsExporter));
+    String aksNamespaceId = System.getenv("AKS_ARM_NAMESPACE_ID");
+    String metricsToLogAnalyticsEnabled = otelConfig.getString("applicationinsights.metrics.to.loganalytics.enabled");
+    if (isAksAttach(aksNamespaceId)) {
+      properties.put("otel.metrics.exporter", updateMetricsExporter(metricsExporter, metricsToLogAnalyticsEnabled));
     } else if (metricsExporter == null) {
       // this overrides the default "otlp" so the exporter can be configured later
       properties.put("otel.metrics.exporter", "none");
@@ -330,26 +332,6 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
     }
   }
 
-  private static boolean isAksAttach(ConfigProperties otelConfig) {
-    String envVar = otelConfig.getString("applicationinsights.metrics.to.loganalytics.enabled");
-    boolean metricsToLogAnalyticsEnabled = envVar == null || Boolean.parseBoolean(envVar);
-
-    String aksNamespaceId = System.getenv("AKS_ARM_NAMESPACE_ID");
-    boolean isAks = !Strings.isNullOrEmpty(aksNamespaceId);
-
-    return metricsToLogAnalyticsEnabled && isAks;
-  }
-
-  private static String addAzureMonitorIfNotPresent(String metricsExporter) {
-    String azureMonitorName = AzureMonitorExporterProviderKeys.EXPORTER_NAME;
-    if (metricsExporter == null || metricsExporter.isEmpty() || metricsExporter.equals("none")) {
-      return azureMonitorName;
-    } else if (!metricsExporter.contains(azureMonitorName)) {
-      return metricsExporter + "," + azureMonitorName;
-    }
-    return metricsExporter;
-  }
-
   private static void setHttpHeaderConfiguration(
       Map<String, String> properties, String propertyName, List<String> headers) {
     if (!headers.isEmpty()) {
@@ -366,5 +348,51 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
       sb.append(val);
     }
     return sb.toString();
+  }
+
+  // visible for tests
+  static boolean isAksAttach(String aksNamespaceId) {
+    return !Strings.isNullOrEmpty(aksNamespaceId);
+  }
+
+  static String updateMetricsExporter(String metricsExporter, String metricsToLogAnalyticsEnabled) {
+    String azureMonitorName = AzureMonitorExporterProviderKeys.EXPORTER_NAME;
+    if (metricsExporter == null || metricsExporter.isEmpty()) {
+      if (metricsToLogAnalyticsEnabled == null || Boolean.parseBoolean(metricsToLogAnalyticsEnabled)) {
+        return azureMonitorName + ",otlp";
+      } else {
+        return azureMonitorName;
+      }
+    }
+
+    if (metricsToLogAnalyticsEnabled == null || metricsToLogAnalyticsEnabled.isEmpty()) {
+      if (metricsExporter.contains(azureMonitorName) && !metricsExporter.contains("otlp")) {
+        return metricsExporter + ",otlp";
+      }
+      return metricsExporter;
+    }
+
+    // If AMLE is true, make sure both otlp and azure monitor exporters are present
+    if (Boolean.parseBoolean(metricsToLogAnalyticsEnabled)) {
+      if (metricsExporter == null || metricsExporter.isEmpty() || metricsExporter.equals("none")) {
+        return azureMonitorName + ",otlp";
+      }
+      if (!metricsExporter.contains(azureMonitorName)) {
+        metricsExporter += "," + azureMonitorName;
+      }
+      if (!metricsExporter.contains("otlp")) {
+        metricsExporter += ",otlp";
+      }
+      return metricsExporter;
+    } else {
+      // If AMLE is false, make sure only azure monitor exporter is present
+      if (metricsExporter == null || metricsExporter.isEmpty()) {
+        return azureMonitorName;
+      }
+      if (metricsExporter.contains(azureMonitorName) && metricsExporter.contains("otlp")) {
+        return metricsExporter.replace(",otlp", "").replace("otlp,", "");
+      }
+      return metricsExporter;
+    }
   }
 }
