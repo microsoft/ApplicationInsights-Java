@@ -59,7 +59,7 @@ class AiConfigCustomizerTest {
         Arguments.of("none", "azure_monitor,otlp"),
         Arguments.of("azure_monitor", "azure_monitor,otlp"),
         Arguments.of("azure_monitor,otlp", "azure_monitor,otlp"),
-        Arguments.of("otlp", "otlp,azure_monitor"));
+        Arguments.of("otlp", "azure_monitor,otlp"));
   }
 
   @ParameterizedTest

@@ -360,43 +360,29 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
 
   static String updateMetricsExporter(String metricsExporter, String metricsToLogAnalyticsEnabled) {
     String azureMonitorName = AzureMonitorExporterProviderKeys.EXPORTER_NAME;
-    if (metricsExporter == null || metricsExporter.isEmpty()) {
-      if (metricsToLogAnalyticsEnabled == null
-          || Boolean.parseBoolean(metricsToLogAnalyticsEnabled)) {
-        return azureMonitorName + ",otlp";
-      } else {
-        return azureMonitorName;
-      }
-    }
-
-    if (metricsToLogAnalyticsEnabled == null || metricsToLogAnalyticsEnabled.isEmpty()) {
-      if (metricsExporter.contains(azureMonitorName) && !metricsExporter.contains("otlp")) {
-        return metricsExporter + ",otlp";
-      }
-      return metricsExporter;
-    }
-
-    // If AMLE is true, make sure both otlp and azure monitor exporters are present
+    // If AMLE is true, configure both otlp and azure monitor exporters
     if (Boolean.parseBoolean(metricsToLogAnalyticsEnabled)) {
-      if (metricsExporter == null || metricsExporter.isEmpty() || metricsExporter.equals("none")) {
+      return azureMonitorName + ",otlp";
+    }
+
+    // If AMLE is unset:
+    if (metricsToLogAnalyticsEnabled == null || metricsToLogAnalyticsEnabled.isEmpty()) {
+      if (metricsExporter == null || metricsExporter.isEmpty()) {
+        // default is "azure_monitor,otlp"
         return azureMonitorName + ",otlp";
-      }
-      if (!metricsExporter.contains(azureMonitorName)) {
-        metricsExporter += "," + azureMonitorName;
-      }
-      if (!metricsExporter.contains("otlp")) {
+      } else if (metricsExporter.contains(azureMonitorName) && !metricsExporter.contains("otlp")) {
+        // if azure monitor is already present and otlp is not, add otlp
         metricsExporter += ",otlp";
       }
       return metricsExporter;
-    } else {
-      // If AMLE is false, make sure only azure monitor exporter is present
-      if (metricsExporter == null || metricsExporter.isEmpty()) {
-        return azureMonitorName;
-      }
-      if (metricsExporter.contains(azureMonitorName) && metricsExporter.contains("otlp")) {
-        return metricsExporter.replace(",otlp", "").replace("otlp,", "");
-      }
-      return metricsExporter;
     }
+
+    // If AMLE is false, configure only azure monitor exporter.
+    // 1. Default is azure monitor
+    // 2. If otlp is set, cancel it and replace with azure monitor (AMLE false has higher priority than otlp setting)
+    if (metricsExporter == null || metricsExporter.isEmpty() || metricsExporter.contains(azureMonitorName)) {
+      return azureMonitorName;
+    }
+    return metricsExporter;
   }
 }
