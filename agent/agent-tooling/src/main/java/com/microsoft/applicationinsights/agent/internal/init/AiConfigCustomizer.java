@@ -118,9 +118,12 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
 
     String metricsExporter = otelConfig.getString("otel.metrics.exporter");
     String aksNamespaceId = System.getenv("AKS_ARM_NAMESPACE_ID");
-    String metricsToLogAnalyticsEnabled = otelConfig.getString("applicationinsights.metrics.to.loganalytics.enabled");
+    String metricsToLogAnalyticsEnabled =
+        otelConfig.getString("applicationinsights.metrics.to.loganalytics.enabled");
     if (isAksAttach(aksNamespaceId)) {
-      properties.put("otel.metrics.exporter", updateMetricsExporter(metricsExporter, metricsToLogAnalyticsEnabled));
+      properties.put(
+          "otel.metrics.exporter",
+          updateMetricsExporter(metricsExporter, metricsToLogAnalyticsEnabled));
     } else if (metricsExporter == null) {
       // this overrides the default "otlp" so the exporter can be configured later
       properties.put("otel.metrics.exporter", "none");
@@ -358,7 +361,8 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
   static String updateMetricsExporter(String metricsExporter, String metricsToLogAnalyticsEnabled) {
     String azureMonitorName = AzureMonitorExporterProviderKeys.EXPORTER_NAME;
     if (metricsExporter == null || metricsExporter.isEmpty()) {
-      if (metricsToLogAnalyticsEnabled == null || Boolean.parseBoolean(metricsToLogAnalyticsEnabled)) {
+      if (metricsToLogAnalyticsEnabled == null
+          || Boolean.parseBoolean(metricsToLogAnalyticsEnabled)) {
         return azureMonitorName + ",otlp";
       } else {
         return azureMonitorName;
