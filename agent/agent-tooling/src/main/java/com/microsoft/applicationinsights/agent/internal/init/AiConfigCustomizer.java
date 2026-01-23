@@ -5,8 +5,6 @@ package com.microsoft.applicationinsights.agent.internal.init;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 
-import com.azure.monitor.opentelemetry.autoconfigure.implementation.AzureMonitorExporterProviderKeys;
-import com.azure.monitor.opentelemetry.autoconfigure.implementation.utils.Strings;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.legacyheaders.DelegatingPropagatorProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
@@ -117,14 +115,7 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
     }
 
     String metricsExporter = otelConfig.getString("otel.metrics.exporter");
-    String aksNamespaceId = System.getenv("AKS_ARM_NAMESPACE_ID");
-    String metricsToLogAnalyticsEnabled =
-        otelConfig.getString("applicationinsights.metrics.to.loganalytics.enabled");
-    if (isAksAttach(aksNamespaceId)) {
-      properties.put(
-          "otel.metrics.exporter",
-          updateMetricsExporter(metricsExporter, metricsToLogAnalyticsEnabled));
-    } else if (metricsExporter == null) {
+    if (metricsExporter == null) {
       // this overrides the default "otlp" so the exporter can be configured later
       properties.put("otel.metrics.exporter", "none");
     }
@@ -351,38 +342,5 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
       sb.append(val);
     }
     return sb.toString();
-  }
-
-  // visible for tests
-  static boolean isAksAttach(String aksNamespaceId) {
-    return !Strings.isNullOrEmpty(aksNamespaceId);
-  }
-
-  static String updateMetricsExporter(String metricsExporter, String metricsToLogAnalyticsEnabled) {
-    String azureMonitorName = AzureMonitorExporterProviderKeys.EXPORTER_NAME;
-    // If AMLE is true, configure both otlp and azure monitor exporters
-    if (Boolean.parseBoolean(metricsToLogAnalyticsEnabled)) {
-      return azureMonitorName + ",otlp";
-    }
-
-    // If AMLE is unset:
-    if (metricsToLogAnalyticsEnabled == null || metricsToLogAnalyticsEnabled.isEmpty()) {
-      if (metricsExporter == null || metricsExporter.isEmpty()) {
-        // default is "azure_monitor,otlp"
-        return azureMonitorName + ",otlp";
-      } else if (metricsExporter.contains(azureMonitorName) && !metricsExporter.contains("otlp")) {
-        // if azure monitor is already present and otlp is not, add otlp
-        metricsExporter += ",otlp";
-      }
-      return metricsExporter;
-    }
-
-    // If AMLE is false, configure only azure monitor exporter.
-    // 1. Default is azure monitor
-    // 2. If otlp is set, cancel it and replace with azure monitor (AMLE false has higher priority than otlp setting)
-    if (metricsExporter == null || metricsExporter.isEmpty() || metricsExporter.contains(azureMonitorName)) {
-      return azureMonitorName;
-    }
-    return metricsExporter;
   }
 }
