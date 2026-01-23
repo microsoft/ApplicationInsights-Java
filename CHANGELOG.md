@@ -4,8 +4,8 @@
 
 ### Enhancements
 
-* Update OpenTelemetry Instrumentation to 2.20.0
-  ([#4465](https://github.com/microsoft/ApplicationInsights-Java/pull/4465))
+* Update to OpenTelemetry Java Instrumentation 2.21.0
+  ([#4511](https://github.com/microsoft/ApplicationInsights-Java/pull/4511))
 *  Enable Spring Cloud Gateway instrumentation
   ([#4559](https://github.com/microsoft/ApplicationInsights-Java/pull/4559))
 * Add azure_monitor to metrics exporter for AKS
