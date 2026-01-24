@@ -22,10 +22,12 @@ import com.microsoft.applicationinsights.agent.internal.configuration.Configurat
 import com.microsoft.applicationinsights.agent.internal.diagnostics.DiagnosticsHelper;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.semconv.ClientAttributes;
+import io.opentelemetry.semconv.DbAttributes;
 import io.opentelemetry.semconv.HttpAttributes;
 import io.opentelemetry.semconv.NetworkAttributes;
 import io.opentelemetry.semconv.ServerAttributes;
 import io.opentelemetry.semconv.UrlAttributes;
+import io.opentelemetry.semconv.incubating.DbIncubatingAttributes;
 import io.opentelemetry.semconv.incubating.HttpIncubatingAttributes;
 import io.opentelemetry.semconv.incubating.NetIncubatingAttributes;
 import java.io.IOException;
@@ -329,12 +331,16 @@ public class ConfigurationBuilder {
     for (Configuration.ProcessorConfig processor : config.preview.processors) {
       if (processor.include != null && processor.type == Configuration.ProcessorType.ATTRIBUTE) {
         for (Configuration.ProcessorAttribute attribute : processor.include.attributes) {
+          String oldKey = attribute.key;
           attribute.key = mapAttributeKey(attribute.key);
+          attribute.value = mapAttributeValue(oldKey, attribute.value);
         }
       }
       if (processor.exclude != null && processor.type == Configuration.ProcessorType.ATTRIBUTE) {
         for (Configuration.ProcessorAttribute attribute : processor.exclude.attributes) {
+          String oldKey = attribute.key;
           attribute.key = mapAttributeKey(attribute.key);
+          attribute.value = mapAttributeValue(oldKey, attribute.value);
         }
       }
       for (Configuration.ProcessorAction action : processor.actions) {
@@ -405,14 +411,105 @@ public class ConfigurationBuilder {
       result = ServerAttributes.SERVER_PORT.getKey();
     }
 
-    if (result == null) {
-      result = oldAttributeKey;
-    } else {
-      configurationLogger.warn(
-          "\"{}\" has been deprecated and replaced with \"{}\" since 3.5.0 GA.",
-          oldAttributeKey,
-          result);
+    // Database span attributes
+    if (oldAttributeKey.equals("db.system")) {
+      result = DbAttributes.DB_SYSTEM_NAME.getKey();
+    } else if (oldAttributeKey.equals(DbIncubatingAttributes.DB_STATEMENT.getKey())) {
+      result = DbAttributes.DB_QUERY_TEXT.getKey();
+    } else if (oldAttributeKey.equals(DbIncubatingAttributes.DB_OPERATION.getKey())) {
+      result = DbAttributes.DB_OPERATION_NAME.getKey();
+    } else if (oldAttributeKey.equals(DbIncubatingAttributes.DB_SQL_TABLE.getKey())
+        || oldAttributeKey.equals(DbIncubatingAttributes.DB_CASSANDRA_TABLE.getKey())
+        || oldAttributeKey.equals(DbIncubatingAttributes.DB_MONGODB_COLLECTION.getKey())
+        || oldAttributeKey.equals(DbIncubatingAttributes.DB_COSMOSDB_CONTAINER.getKey())) {
+      result = DbAttributes.DB_COLLECTION_NAME.getKey();
     }
+
+    if (result == null) {
+      return oldAttributeKey;
+    }
+
+    // Database attributes were stabilized in 3.8.0, HTTP attributes in 3.5.0
+    String version = oldAttributeKey.startsWith("db.") ? "3.8.0 GA" : "3.5.0 GA";
+    configurationLogger.warn(
+        "\"{}\" has been deprecated and replaced with \"{}\" since {}.",
+        oldAttributeKey,
+        result,
+        version);
+    return result;
+  }
+
+  @SuppressWarnings("deprecation") // support deprecated semconv for backwards compatibility
+  @Nullable
+  private static Object mapAttributeValue(
+      String oldAttributeKey, @Nullable Object oldAttributeValue) {
+    Object result = null;
+    if (DbIncubatingAttributes.DB_SYSTEM.getKey().equals(oldAttributeKey)
+        && oldAttributeValue instanceof String) {
+      String stringValue = (String) oldAttributeValue;
+      switch (stringValue) {
+        case DbIncubatingAttributes.DbSystemIncubatingValues.MSSQL:
+          result = DbAttributes.DbSystemNameValues.MICROSOFT_SQL_SERVER;
+          break;
+        case DbIncubatingAttributes.DbSystemIncubatingValues.DB2:
+          result = DbIncubatingAttributes.DbSystemNameIncubatingValues.IBM_DB2;
+          break;
+        case DbIncubatingAttributes.DbSystemIncubatingValues.ORACLE:
+          result = DbIncubatingAttributes.DbSystemNameIncubatingValues.ORACLE_DB;
+          break;
+        case DbIncubatingAttributes.DbSystemIncubatingValues.HANADB:
+          result = DbIncubatingAttributes.DbSystemNameIncubatingValues.SAP_HANA;
+          break;
+        case DbIncubatingAttributes.DbSystemIncubatingValues.MAXDB:
+          result = DbIncubatingAttributes.DbSystemNameIncubatingValues.SAP_MAXDB;
+          break;
+        case DbIncubatingAttributes.DbSystemIncubatingValues.CACHE:
+          result = DbIncubatingAttributes.DbSystemNameIncubatingValues.INTERSYSTEMS_CACHE;
+          break;
+        case DbIncubatingAttributes.DbSystemIncubatingValues.ADABAS:
+          result = DbIncubatingAttributes.DbSystemNameIncubatingValues.SOFTWAREAG_ADABAS;
+          break;
+        case DbIncubatingAttributes.DbSystemIncubatingValues.INGRES:
+          result = DbIncubatingAttributes.DbSystemNameIncubatingValues.ACTIAN_INGRES;
+          break;
+        case DbIncubatingAttributes.DbSystemIncubatingValues.NETEZZA:
+          result = DbIncubatingAttributes.DbSystemNameIncubatingValues.IBM_NETEZZA;
+          break;
+        case DbIncubatingAttributes.DbSystemIncubatingValues.INFORMIX:
+          result = DbIncubatingAttributes.DbSystemNameIncubatingValues.IBM_INFORMIX;
+          break;
+        case DbIncubatingAttributes.DbSystemIncubatingValues.SPANNER:
+          result = DbIncubatingAttributes.DbSystemNameIncubatingValues.GCP_SPANNER;
+          break;
+        case DbIncubatingAttributes.DbSystemIncubatingValues.COSMOSDB:
+          result = DbIncubatingAttributes.DbSystemNameIncubatingValues.AZURE_COSMOSDB;
+          break;
+        case DbIncubatingAttributes.DbSystemIncubatingValues.DYNAMODB:
+          result = DbIncubatingAttributes.DbSystemNameIncubatingValues.AWS_DYNAMODB;
+          break;
+        case DbIncubatingAttributes.DbSystemIncubatingValues.REDSHIFT:
+          result = DbIncubatingAttributes.DbSystemNameIncubatingValues.AWS_REDSHIFT;
+          break;
+        case DbIncubatingAttributes.DbSystemIncubatingValues.H2:
+          result = DbIncubatingAttributes.DbSystemNameIncubatingValues.H2DATABASE;
+          break;
+        case DbIncubatingAttributes.DbSystemIncubatingValues.FIREBIRD:
+          result = DbIncubatingAttributes.DbSystemNameIncubatingValues.FIREBIRDSQL;
+          break;
+        default:
+          // do nothing
+      }
+    }
+
+    if (result == null) {
+      return oldAttributeValue;
+    }
+
+    configurationLogger.warn(
+        "\"{}\" attribute value \"{}\" has been deprecated and replaced with \"{}\" since 3.8.0 GA.",
+        oldAttributeKey,
+        oldAttributeValue,
+        result);
     return result;
   }
 
