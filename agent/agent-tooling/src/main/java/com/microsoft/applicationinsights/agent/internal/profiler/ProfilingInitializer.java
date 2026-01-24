@@ -7,6 +7,7 @@ import com.azure.core.http.HttpMethod;
 import com.azure.core.http.HttpPipeline;
 import com.azure.core.http.policy.DefaultRedirectStrategy;
 import com.azure.core.http.policy.RedirectPolicy;
+import com.azure.core.http.policy.TimeoutPolicy;
 import com.azure.monitor.opentelemetry.autoconfigure.implementation.utils.SystemInformation;
 import com.azure.monitor.opentelemetry.autoconfigure.implementation.utils.ThreadPoolUtils;
 import com.microsoft.applicationinsights.agent.internal.common.FriendlyException;
@@ -23,6 +24,7 @@ import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.concurrent.Executors;
@@ -127,7 +129,8 @@ public class ProfilingInitializer {
                     3,
                     "Location",
                     new HashSet<>(
-                        Arrays.asList(HttpMethod.GET, HttpMethod.HEAD, HttpMethod.POST)))));
+                        Arrays.asList(HttpMethod.GET, HttpMethod.HEAD, HttpMethod.POST)))),
+            new TimeoutPolicy(Duration.ofSeconds(configuration.serviceProfilerHttpTimeoutSeconds)));
 
     serviceProfilerExecutorService =
         Executors.newScheduledThreadPool(
@@ -140,7 +143,8 @@ public class ProfilingInitializer {
             getServiceProfilerFrontEndPoint(configuration),
             telemetryClient.getInstrumentationKey(),
             httpPipeline,
-            userAgent);
+            userAgent,
+            configuration.serviceProfilerHttpTimeoutSeconds);
 
     // Monitor service remains alive permanently due to scheduling an periodic config pull
     startPollingForConfigUpdates();
