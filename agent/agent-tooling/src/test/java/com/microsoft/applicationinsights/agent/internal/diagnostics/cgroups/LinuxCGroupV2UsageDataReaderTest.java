@@ -14,12 +14,15 @@ import java.nio.file.Path;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.api.io.TempDir;
 
 /**
  * Tests for {@link LinuxCGroupV2UsageDataReader} verifying cgroup v2 usage data reading with
  * arbitrary mount locations.
  */
+@EnabledOnOs(OS.LINUX)
 @SuppressWarnings("checkstyle:AbbreviationAsWordInName")
 class LinuxCGroupV2UsageDataReaderTest {
 

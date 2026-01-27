@@ -14,9 +14,12 @@ import java.util.Arrays;
 import java.util.Collections;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.api.io.TempDir;
 
 /** Tests for {@link CGroupv2CpuReader} verifying cgroup v2 CPU stat file parsing. */
+@EnabledOnOs(OS.LINUX)
 @SuppressWarnings("checkstyle:AbbreviationAsWordInName")
 class CGroupv2CpuReaderTest {
 
