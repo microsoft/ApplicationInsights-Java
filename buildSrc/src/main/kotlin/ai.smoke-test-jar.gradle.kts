@@ -15,9 +15,15 @@ tasks.named<ShadowJar>("shadowJar") {
   archiveClassifier.set("")
   mergeServiceFiles()
   
-  // Use the standard main class convention for smoke test apps
+  // Set main class - can be overridden by individual projects via mainClassName property
   manifest {
-    attributes["Main-Class"] = "com.microsoft.applicationinsights.smoketestapp.SpringBootApp"
+    val mainClass = if (project.hasProperty("mainClassName")) {
+      project.property("mainClassName") as String
+    } else {
+      // Default main class for most smoke test apps
+      "com.microsoft.applicationinsights.smoketestapp.SpringBootApp"
+    }
+    attributes["Main-Class"] = mainClass
   }
 }
 
