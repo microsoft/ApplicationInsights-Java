@@ -43,7 +43,4 @@ dependencies {
 
   implementation("gradle.plugin.io.morethan.jmhreport:gradle-jmh-report:0.9.6")
   implementation("me.champeau.jmh:jmh-gradle-plugin:0.7.3")
-
-  // Spring Boot 3.5+ is required for Gradle 9 compatibility
-  implementation("org.springframework.boot:spring-boot-gradle-plugin:3.5.10")
 }
