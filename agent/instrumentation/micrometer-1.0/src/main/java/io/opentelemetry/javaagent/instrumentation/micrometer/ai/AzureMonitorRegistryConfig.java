@@ -25,9 +25,14 @@ public class AzureMonitorRegistryConfig implements StepRegistryConfig {
   private AzureMonitorRegistryConfig() {
     DeclarativeConfigProperties config =
         DeclarativeConfigUtil.getInstrumentationConfig(GlobalOpenTelemetry.get(), "micrometer");
-    
+
     // Get step duration in milliseconds, default to 60 seconds
     String stepMillisStr = config.getString("applicationinsights.internal.micrometer.step.millis");
+    // Fallback to system property if not found in declarative config
+    if (stepMillisStr == null) {
+      stepMillisStr = System.getProperty("applicationinsights.internal.micrometer.step.millis");
+    }
+    
     Duration parsedStep = DEFAULT_STEP;
     if (stepMillisStr != null) {
       try {
@@ -40,8 +45,13 @@ public class AzureMonitorRegistryConfig implements StepRegistryConfig {
       }
     }
     step = parsedStep;
-    
-    namespace = config.getString("applicationinsights.internal.micrometer.namespace");
+
+    String namespaceValue = config.getString("applicationinsights.internal.micrometer.namespace");
+    // Fallback to system property if not found in declarative config
+    if (namespaceValue == null) {
+      namespaceValue = System.getProperty("applicationinsights.internal.micrometer.namespace");
+    }
+    namespace = namespaceValue;
   }
 
   @Override
