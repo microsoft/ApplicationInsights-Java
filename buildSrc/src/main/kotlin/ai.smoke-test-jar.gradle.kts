@@ -27,5 +27,12 @@ tasks.named<ShadowJar>("shadowJar") {
   }
 }
 
+// Make jar task depend on shadowJar and use the shadow JAR output
+// This prevents the regular jar task from overwriting the fat JAR
+tasks.named<Jar>("jar") {
+  dependsOn(tasks.shadowJar)
+  enabled = false
+}
+
 aiSmokeTest.testAppArtifactDir.set(tasks.shadowJar.flatMap { it.destinationDirectory })
 aiSmokeTest.testAppArtifactFilename.set(tasks.shadowJar.flatMap { it.archiveFileName })
