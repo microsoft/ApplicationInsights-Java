@@ -8,9 +8,14 @@ import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
 import io.opentelemetry.instrumentation.api.incubator.config.internal.DeclarativeConfigUtil;
 import java.time.Duration;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
 public class AzureMonitorRegistryConfig implements StepRegistryConfig {
+
+  private static final Logger logger = Logger.getLogger(AzureMonitorRegistryConfig.class.getName());
+  private static final Duration DEFAULT_STEP = Duration.ofSeconds(60);
 
   private final Duration step;
   @Nullable private final String namespace;
@@ -23,17 +28,18 @@ public class AzureMonitorRegistryConfig implements StepRegistryConfig {
     
     // Get step duration in milliseconds, default to 60 seconds
     String stepMillisStr = config.getString("applicationinsights.internal.micrometer.step.millis");
-    Duration stepValue;
+    Duration parsedStep = DEFAULT_STEP;
     if (stepMillisStr != null) {
       try {
-        stepValue = Duration.ofMillis(Long.parseLong(stepMillisStr));
+        parsedStep = Duration.ofMillis(Long.parseLong(stepMillisStr));
       } catch (NumberFormatException e) {
-        stepValue = Duration.ofSeconds(60);
+        logger.log(
+            Level.WARNING,
+            "Invalid value for applicationinsights.internal.micrometer.step.millis: {0}, using default of {1}",
+            new Object[] {stepMillisStr, DEFAULT_STEP});
       }
-    } else {
-      stepValue = Duration.ofSeconds(60);
     }
-    step = stepValue;
+    step = parsedStep;
     
     namespace = config.getString("applicationinsights.internal.micrometer.namespace");
   }
