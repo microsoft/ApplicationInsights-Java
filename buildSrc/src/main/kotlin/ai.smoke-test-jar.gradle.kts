@@ -1,4 +1,5 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import com.github.jengelman.gradle.plugins.shadow.transformers.AppendingTransformer
 import com.microsoft.applicationinsights.gradle.AiSmokeTestExtension
 
 plugins {
@@ -14,6 +15,10 @@ val aiSmokeTest = extensions.getByType(AiSmokeTestExtension::class)
 tasks.named<ShadowJar>("shadowJar") {
   archiveClassifier.set("")
   mergeServiceFiles()
+  
+  // Append spring.factories files from all dependencies
+  // This is required for Spring Boot auto-configuration to work
+  append("META-INF/spring.factories")
   
   // Set main class - can be overridden by individual projects via mainClassName property
   manifest {
