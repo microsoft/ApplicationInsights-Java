@@ -23,7 +23,6 @@ import io.opentelemetry.javaagent.bootstrap.InstrumentationHolder;
 import io.opentelemetry.javaagent.bootstrap.InternalLogger;
 import io.opentelemetry.javaagent.bootstrap.JavaagentFileHolder;
 import io.opentelemetry.javaagent.tooling.LoggingCustomizer;
-import io.opentelemetry.javaagent.tooling.config.EarlyInitAgentConfig;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
@@ -77,7 +76,7 @@ public class FirstEntryPoint implements LoggingCustomizer {
   }
 
   @Override
-  public void init(EarlyInitAgentConfig earlyConfig) {
+  public void init() {
     try {
       if (DEBUG_SIGNED_JAR_ACCESS) {
         JarVerifierClassFileTransformer transformer = new JarVerifierClassFileTransformer();
