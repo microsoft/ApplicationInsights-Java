@@ -51,6 +51,7 @@ import org.testcontainers.containers.FixedHostPortGenericContainer;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.utility.DockerImageName;
+import org.testcontainers.utility.MountableFile;
 
 @SuppressWarnings({
   "SystemOut",
@@ -112,6 +113,7 @@ public class SmokeTestExtension
   private final Map<String, String> httpHeaders;
   private final Map<String, String> envVars;
   private final List<String> jvmArgs;
+  private final Map<String, String> additionalFiles;
   private final boolean useDefaultHttpPort;
   private final boolean useOtlpEndpoint;
   private final boolean useOtlpEndpointOnly;
@@ -139,6 +141,7 @@ public class SmokeTestExtension
       Map<String, String> httpHeaders,
       Map<String, String> envVars,
       List<String> jvmArgs,
+      Map<String, String> additionalFiles,
       boolean useDefaultHttpPort,
       boolean useOtlpEndpoint,
       boolean useOtlpEndpointOnly) {
@@ -169,6 +172,7 @@ public class SmokeTestExtension
     this.httpHeaders = httpHeaders;
     this.envVars = envVars;
     this.jvmArgs = jvmArgs;
+    this.additionalFiles = additionalFiles;
     this.useDefaultHttpPort = useDefaultHttpPort;
     this.useOtlpEndpoint = useOtlpEndpoint;
     this.useOtlpEndpointOnly = useOtlpEndpointOnly;
@@ -508,7 +512,9 @@ public class SmokeTestExtension
     }
     container.withEnv("JAVA_TOOL_OPTIONS", String.join(" ", javaToolOptions));
 
-    container = addAdditionalFile(container);
+    container =
+        mountAgentExtensionFile(container); // agent extension specified via setAgentExtensionFile()
+    container = mountAdditionalFiles(container); // Additional files specified via addFile()
 
     if (useAgent) {
       container =
@@ -559,12 +565,23 @@ public class SmokeTestExtension
     allContainers.add(container);
   }
 
-  private GenericContainer<?> addAdditionalFile(GenericContainer<?> container) {
+  private GenericContainer<?> mountAgentExtensionFile(GenericContainer<?> container) {
     if (agentExtensionFile != null) {
       return container.withFileSystemBind(
           agentExtensionFile.getAbsolutePath(),
           "/" + agentExtensionFile.getName(),
           BindMode.READ_ONLY);
+    }
+    return container;
+  }
+
+  private GenericContainer<?> mountAdditionalFiles(GenericContainer<?> container) {
+    for (Map.Entry<String, String> entry : additionalFiles.entrySet()) {
+      String resourceName = entry.getKey();
+      String containerPath = entry.getValue();
+      container =
+          container.withCopyFileToContainer(
+              MountableFile.forClasspathResource(resourceName), containerPath);
     }
     return container;
   }

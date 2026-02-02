@@ -40,6 +40,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import org.apache.commons.text.StringSubstitutor;
 import org.apache.commons.text.lookup.StringLookup;
@@ -715,16 +716,9 @@ public class ConfigurationBuilder {
       Function<String, String> envVarsFunction,
       Function<String, String> systemPropertiesFunction)
       throws IOException {
-    // load connection string from a file if connection string is in the format of
-    // "${file:mounted_connection_string_file.txt}"
-    Map<String, StringLookup> stringLookupMap =
-        Collections.singletonMap(StringLookupFactory.KEY_FILE, new FileStringLookup(baseDir));
-    StringLookup stringLookup =
-        StringLookupFactory.INSTANCE.interpolatorStringLookup(stringLookupMap, null, false);
-    StringSubstitutor stringSubstitutor = new StringSubstitutor(stringLookup);
     config.connectionString =
         overlayConnectionStringFromEnv(
-            stringSubstitutor.replace(config.connectionString),
+            () -> resolveFileLookup(config.connectionString, baseDir),
             envVarsFunction,
             systemPropertiesFunction);
 
@@ -828,27 +822,35 @@ public class ConfigurationBuilder {
       Function<String, String> systemPropertiesFunction) {
     config.connectionString =
         overlayConnectionStringFromEnv(
-            config.connectionString, envVarsFunction, systemPropertiesFunction);
+            () -> config.connectionString, envVarsFunction, systemPropertiesFunction);
     config.sampling.percentage =
         overlayWithEnvVar(
             APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE, config.sampling.percentage, envVarsFunction);
   }
 
+  private static String resolveFileLookup(String value, Path baseDir) {
+    Map<String, StringLookup> stringLookupMap =
+        Collections.singletonMap(StringLookupFactory.KEY_FILE, new FileStringLookup(baseDir));
+    StringLookup stringLookup =
+        StringLookupFactory.INSTANCE.interpolatorStringLookup(stringLookupMap, null, false);
+    StringSubstitutor stringSubstitutor = new StringSubstitutor(stringLookup);
+    return stringSubstitutor.replace(value);
+  }
+
   @Nullable
   private static String overlayConnectionStringFromEnv(
-      String connectionString,
+      Supplier<String> connectionStringSupplier,
       Function<String, String> envVarsFunction,
       Function<String, String> systemPropertiesFunction) {
-    String value =
+    String connectionString =
         overlayWithSysPropEnvVar(
             APPLICATIONINSIGHTS_CONNECTION_STRING_SYS,
             APPLICATIONINSIGHTS_CONNECTION_STRING_ENV,
-            connectionString,
+            connectionStringSupplier,
             envVarsFunction,
             systemPropertiesFunction);
-
-    if (value != null) {
-      return value;
+    if (connectionString != null) {
+      return connectionString;
     }
 
     // this is for backwards compatibility only
@@ -971,12 +973,31 @@ public class ConfigurationBuilder {
       String defaultValue,
       Function<String, String> envVarsFunction,
       Function<String, String> systemPropertiesFunction) {
+    return overlayWithSysPropEnvVar(
+        systemPropertyName,
+        envVarName,
+        () -> defaultValue,
+        envVarsFunction,
+        systemPropertiesFunction);
+  }
+
+  @Nullable
+  static String overlayWithSysPropEnvVar(
+      String systemPropertyName,
+      String envVarName,
+      Supplier<String> defaultValueSupplier,
+      Function<String, String> envVarsFunction,
+      Function<String, String> systemPropertiesFunction) {
     String value = getSystemProperty(systemPropertyName, systemPropertiesFunction);
     if (value != null) {
       configurationLogger.debug("using system property: {}", systemPropertyName);
       return value;
     }
-    return overlayWithEnvVar(envVarName, defaultValue, envVarsFunction);
+    String envVarValue = getEnvVar(envVarName, envVarsFunction);
+    if (envVarValue != null) {
+      return envVarValue;
+    }
+    return defaultValueSupplier.get();
   }
 
   public static String overlayWithEnvVar(

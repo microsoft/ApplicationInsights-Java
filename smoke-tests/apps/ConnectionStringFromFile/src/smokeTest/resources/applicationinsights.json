@@ -1,0 +1,7 @@
+{
+  "connectionString": "${file:/app/secrets/connection_string.txt}",
+  "role": {
+    "name": "testrolename",
+    "instance": "testroleinstance"
+  }
+}

@@ -27,6 +27,7 @@ public class SmokeTestExtensionBuilder {
   private final Map<String, String> httpHeaders = new HashMap<>();
   private final Map<String, String> envVars = new HashMap<>();
   private final List<String> jvmArgs = new ArrayList<>();
+  private final Map<String, String> additionalFiles = new HashMap<>();
   private boolean useDefaultHttpPort;
   private boolean useOtlpEndpoint;
   private boolean useOtlpEndpointOnly;
@@ -99,6 +100,11 @@ public class SmokeTestExtensionBuilder {
     return this;
   }
 
+  public SmokeTestExtensionBuilder addFile(String resourceName, String containerPath) {
+    additionalFiles.put(resourceName, containerPath);
+    return this;
+  }
+
   public SmokeTestExtensionBuilder setUseDefaultHttpPort() {
     this.useDefaultHttpPort = true;
     return this;
@@ -130,6 +136,7 @@ public class SmokeTestExtensionBuilder {
         httpHeaders,
         envVars,
         jvmArgs,
+        additionalFiles,
         useDefaultHttpPort,
         useOtlpEndpoint,
         useOtlpEndpointOnly);
