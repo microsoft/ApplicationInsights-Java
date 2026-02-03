@@ -5,21 +5,34 @@ package com.microsoft.applicationinsights.diagnostics.collection.libos.os.linux.
 
 import com.microsoft.applicationinsights.diagnostics.collection.libos.kernel.CGroupUsageDataReader;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-@SuppressWarnings(
-    "checkstyle:AbbreviationAsWordInName") // CGroup is the standard abbreviation for Control Group
+@SuppressWarnings("checkstyle:AbbreviationAsWordInName")
 public class LinuxCGroupUsageDataReader implements CGroupUsageDataReader {
+  private static final Path CGROUP_CPU_PATH = Paths.get("./cpu,cpuacct/");
 
-  private final CGroupCpuUsageReader cgroupCpuUsageReader = new CGroupCpuUsageReader();
+  private final CGroupCpuUsageReader cgroupCpuUsageReader;
 
-  private final CGroupCpuUserReader cgroupCpuUserReader = new CGroupCpuUserReader();
+  private final CGroupCpuUserReader cgroupCpuUserReader;
 
-  private final CGroupCpuSystemReader cgroupCpuSystemReader = new CGroupCpuSystemReader();
+  private final CGroupCpuSystemReader cgroupCpuSystemReader;
 
-  private final CGroupStatReader cgroupStatReader = new CGroupStatReader();
+  private final CGroupStatReader cgroupStatReader;
+
+  private final Path cgroupDirectory;
+
+  public LinuxCGroupUsageDataReader(Path cgroupDirectory) {
+    this.cgroupDirectory = cgroupDirectory.resolve(CGROUP_CPU_PATH);
+    cgroupCpuUsageReader = new CGroupCpuUsageReader(this.cgroupDirectory);
+    cgroupCpuUserReader = new CGroupCpuUserReader(this.cgroupDirectory);
+    cgroupCpuSystemReader = new CGroupCpuSystemReader(this.cgroupDirectory);
+    cgroupStatReader = new CGroupStatReader(this.cgroupDirectory);
+  }
 
   @Override
   public void poll() {
@@ -54,6 +67,11 @@ public class LinuxCGroupUsageDataReader implements CGroupUsageDataReader {
               }
             })
         .collect(Collectors.toList());
+  }
+
+  @Override
+  public boolean isAvailable() {
+    return Files.exists(cgroupDirectory);
   }
 
   @Override

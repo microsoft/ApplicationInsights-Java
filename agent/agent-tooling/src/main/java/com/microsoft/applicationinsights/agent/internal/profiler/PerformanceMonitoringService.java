@@ -145,7 +145,8 @@ public class PerformanceMonitoringService {
                 1, ThreadPoolUtils.createNamedDaemonThreadFactory("DiagnosisThreadPool"));
 
         DiagnosticEngine diagnosticEngine =
-            diagnosticEngineFactory.create(diagnosticEngineExecutorService);
+            diagnosticEngineFactory.create(
+                diagnosticEngineExecutorService, configuration.cgroupPath);
 
         if (diagnosticEngine != null) {
           diagnosticEngine.init(Integer.parseInt(new PidFinder().getValue(System::getenv)));

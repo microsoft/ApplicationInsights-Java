@@ -25,4 +25,9 @@ public class NoOpCGroupUsageDataReader implements CGroupUsageDataReader {
 
   @Override
   public void close() throws IOException {}
+
+  @Override
+  public boolean isAvailable() {
+    return true;
+  }
 }

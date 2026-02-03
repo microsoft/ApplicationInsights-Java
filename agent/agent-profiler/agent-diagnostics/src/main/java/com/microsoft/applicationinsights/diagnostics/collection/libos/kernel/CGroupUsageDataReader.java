@@ -13,4 +13,6 @@ import javax.annotation.Nullable;
 public interface CGroupUsageDataReader extends TwoStepUpdatable, Closeable {
   @Nullable
   List<Double> getTelemetry();
+
+  boolean isAvailable();
 }

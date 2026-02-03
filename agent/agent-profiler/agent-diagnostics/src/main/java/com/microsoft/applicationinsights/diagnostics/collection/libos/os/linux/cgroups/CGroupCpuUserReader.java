@@ -3,11 +3,12 @@
 
 package com.microsoft.applicationinsights.diagnostics.collection.libos.os.linux.cgroups;
 
-@SuppressWarnings(
-    "checkstyle:AbbreviationAsWordInName") // CGroup is the standard abbreviation for Control Group
+import java.nio.file.Path;
+
+@SuppressWarnings("checkstyle:AbbreviationAsWordInName")
 public class CGroupCpuUserReader extends CGroupValueReader {
   // total user CPU time (in nanoseconds) consumed by all tasks in this cgroup
-  public CGroupCpuUserReader() {
-    super("/sys/fs/cgroup/cpu,cpuacct/cpuacct.usage_user");
+  public CGroupCpuUserReader(Path cgroupPath) {
+    super(cgroupPath.resolve("./cpuacct.usage_user"));
   }
 }

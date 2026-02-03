@@ -123,19 +123,23 @@ public class ServiceProfilerClient {
       // this shouldn't happen, the mono should complete with a response or a failure
       return Mono.error(new AssertionError("http response mono returned empty"));
     }
-    try {
-      int statusCode = response.getStatusCode();
-      if (statusCode != 201 && statusCode != 202) {
-        logger.error("Trace upload failed: {}", statusCode);
-        return Mono.error(new AssertionError("http request failed"));
-      }
-      return response.getBodyAsString();
-    } finally {
-      // need to consume the body or close the response, otherwise get netty ByteBuf leak warnings:
-      // io.netty.util.ResourceLeakDetector - LEAK: ByteBuf.release() was not called before
-      // it's garbage-collected (see https://github.com/Azure/azure-sdk-for-java/issues/10467)
-      response.close();
+    int statusCode = response.getStatusCode();
+    if (statusCode != 201 && statusCode != 202) {
+      logger.error("Trace upload failed: {}", statusCode);
+      return Mono.error(new AssertionError("http request failed"));
     }
+
+    return response
+        .getBodyAsString()
+        .doFinally(
+            done -> {
+              // need to consume the body or close the response, otherwise get netty ByteBuf leak
+              // warnings:
+              // io.netty.util.ResourceLeakDetector - LEAK: ByteBuf.release() was not called before
+              // it's garbage-collected (see
+              // https://github.com/Azure/azure-sdk-for-java/issues/10467)
+              response.close();
+            });
   }
 
   /** Obtain current settings that have been configured within the UI. */

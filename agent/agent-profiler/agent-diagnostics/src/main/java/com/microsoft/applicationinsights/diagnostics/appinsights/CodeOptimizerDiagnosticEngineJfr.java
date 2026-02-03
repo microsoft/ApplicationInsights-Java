@@ -14,6 +14,7 @@ import com.microsoft.applicationinsights.diagnostics.jfr.MachineStats;
 import com.microsoft.applicationinsights.diagnostics.jfr.SystemStatsProvider;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.nio.file.Path;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
@@ -33,10 +34,13 @@ public class CodeOptimizerDiagnosticEngineJfr implements DiagnosticEngine {
   public static final long TIME_BEFORE_END_OF_PROFILE_TO_EMIT_EVENT = 10L;
   private final ScheduledExecutorService executorService;
   private final Semaphore semaphore = new Semaphore(1, false);
+  private final Path cgroupBasePath;
   private int thisPid;
 
-  public CodeOptimizerDiagnosticEngineJfr(ScheduledExecutorService executorService) {
+  public CodeOptimizerDiagnosticEngineJfr(
+      ScheduledExecutorService executorService, Path cgroupBasePath) {
     this.executorService = executorService;
+    this.cgroupBasePath = cgroupBasePath;
   }
 
   @Override
@@ -49,14 +53,14 @@ public class CodeOptimizerDiagnosticEngineJfr implements DiagnosticEngine {
     this.thisPid = thisPid;
 
     logger.debug("Initialising Code Optimizer Diagnostic Engine");
-    CodeOptimizerDiagnosticsJfrInit.initFeature(thisPid);
+    CodeOptimizerDiagnosticsJfrInit.initFeature(thisPid, cgroupBasePath);
     logger.debug("Code Optimizer Diagnostic Engine Initialised");
   }
 
-  private static void startDiagnosticCycle(int thisPid) {
+  private static void startDiagnosticCycle(int thisPid, Path cgroupBasePath) {
     logger.debug("Starting Code Optimizer Diagnostic Cycle");
-    CodeOptimizerDiagnosticsJfrInit.initFeature(thisPid);
-    CodeOptimizerDiagnosticsJfrInit.start(thisPid);
+    CodeOptimizerDiagnosticsJfrInit.initFeature(thisPid, cgroupBasePath);
+    CodeOptimizerDiagnosticsJfrInit.start(thisPid, cgroupBasePath);
   }
 
   private static void endDiagnosticCycle() {
@@ -70,13 +74,13 @@ public class CodeOptimizerDiagnosticEngineJfr implements DiagnosticEngine {
         new CompletableFuture<>();
     try {
       if (semaphore.tryAcquire(SEMAPHORE_TIMEOUT_IN_SEC, TimeUnit.SECONDS)) {
-        emitInfo(alert);
+        emitInfo(alert, cgroupBasePath);
 
         long profileDurationInSec = alert.getAlertConfiguration().getProfileDurationSeconds();
 
         long end = profileDurationInSec - TIME_BEFORE_END_OF_PROFILE_TO_EMIT_EVENT;
 
-        startDiagnosticCycle(thisPid);
+        startDiagnosticCycle(thisPid, cgroupBasePath);
 
         scheduleEmittingAlertBreachEvent(alert, end);
 
@@ -101,7 +105,7 @@ public class CodeOptimizerDiagnosticEngineJfr implements DiagnosticEngine {
     executorService.schedule(
         () -> {
           try {
-            emitInfo(alert);
+            emitInfo(alert, cgroupBasePath);
 
             // We do not return a result atm
             diagnosisResultCompletableFuture.complete(null);
@@ -123,7 +127,7 @@ public class CodeOptimizerDiagnosticEngineJfr implements DiagnosticEngine {
     executorService.schedule(
         () -> {
           try {
-            emitInfo(alert);
+            emitInfo(alert, cgroupBasePath);
           } catch (RuntimeException e) {
             logger.error("Failed to emit breach", e);
           }
@@ -132,10 +136,10 @@ public class CodeOptimizerDiagnosticEngineJfr implements DiagnosticEngine {
         TimeUnit.SECONDS);
   }
 
-  private static void emitInfo(AlertBreach alert) {
+  private static void emitInfo(AlertBreach alert, Path cgroupBasePath) {
     logger.debug("Emitting Code Optimizer Diagnostic Event");
     emitAlertBreachJfrEvent(alert);
-    CodeOptimizerDiagnosticsJfrInit.emitCGroupData();
+    CodeOptimizerDiagnosticsJfrInit.emitCGroupData(cgroupBasePath);
     emitMachineStats();
   }
 
