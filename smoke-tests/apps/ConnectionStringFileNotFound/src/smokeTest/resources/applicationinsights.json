@@ -1,0 +1,7 @@
+{
+  "connectionString": "${file:/app/secrets/applicationinsights_connection_string}",
+  "role": {
+    "name": "testrolename",
+    "instance": "testroleinstance"
+  }
+}
