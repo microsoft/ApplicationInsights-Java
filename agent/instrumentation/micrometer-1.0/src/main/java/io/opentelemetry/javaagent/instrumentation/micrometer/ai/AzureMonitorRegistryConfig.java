@@ -32,7 +32,7 @@ public class AzureMonitorRegistryConfig implements StepRegistryConfig {
     if (stepMillisStr == null) {
       stepMillisStr = System.getProperty("applicationinsights.internal.micrometer.step.millis");
     }
-    
+
     Duration parsedStep = DEFAULT_STEP;
     if (stepMillisStr != null) {
       try {

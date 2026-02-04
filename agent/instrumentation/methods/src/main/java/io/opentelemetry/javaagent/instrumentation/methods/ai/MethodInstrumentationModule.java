@@ -39,7 +39,7 @@ public class MethodInstrumentationModule extends InstrumentationModule {
     DeclarativeConfigProperties config =
         DeclarativeConfigUtil.getInstrumentationConfig(GlobalOpenTelemetry.get(), "ai-methods");
     String include = config.getString(TRACE_METHODS_CONFIG);
-    
+
     // Fallback to system property if not found in declarative config
     if (include == null) {
       include = System.getProperty(TRACE_METHODS_CONFIG);
