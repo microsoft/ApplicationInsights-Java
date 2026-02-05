@@ -16,12 +16,7 @@ public class SpringBootApp {
 
   public static void main(String[] args) throws IOException {
     if (args.length == 1 && args[0].equals("okhttp3")) {
-      try {
-        okHttp3();
-      } catch (IOException e) {
-        // IOException can occur if network is not available (e.g., in some CI environments)
-        // Still log "done" to test that logs outside request context are captured
-      }
+      okHttp3();
       logger.info("done");
       return;
     }
