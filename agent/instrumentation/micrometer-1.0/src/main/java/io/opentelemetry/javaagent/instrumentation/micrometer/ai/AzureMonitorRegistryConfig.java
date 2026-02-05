@@ -4,9 +4,6 @@
 package io.opentelemetry.javaagent.instrumentation.micrometer.ai;
 
 import io.micrometer.core.instrument.step.StepRegistryConfig;
-import io.opentelemetry.api.GlobalOpenTelemetry;
-import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
-import io.opentelemetry.instrumentation.api.incubator.config.internal.DeclarativeConfigUtil;
 import java.time.Duration;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -23,35 +20,23 @@ public class AzureMonitorRegistryConfig implements StepRegistryConfig {
   public static final AzureMonitorRegistryConfig INSTANCE = new AzureMonitorRegistryConfig();
 
   private AzureMonitorRegistryConfig() {
-    DeclarativeConfigProperties config =
-        DeclarativeConfigUtil.getInstrumentationConfig(GlobalOpenTelemetry.get(), "micrometer");
+    // Read configuration from system property (set by AiConfigCustomizer)
+    String stepConfigValue = System.getProperty("applicationinsights.internal.micrometer.step.millis");
 
-    // Get step duration in milliseconds, default to 60 seconds
-    String stepMillisStr = config.getString("applicationinsights.internal.micrometer.step.millis");
-    // Fallback to system property if not found in declarative config
-    if (stepMillisStr == null) {
-      stepMillisStr = System.getProperty("applicationinsights.internal.micrometer.step.millis");
-    }
-
-    Duration parsedStep = DEFAULT_STEP;
-    if (stepMillisStr != null) {
+    Duration configuredStep = DEFAULT_STEP;
+    if (stepConfigValue != null) {
       try {
-        parsedStep = Duration.ofMillis(Long.parseLong(stepMillisStr));
-      } catch (NumberFormatException e) {
+        configuredStep = Duration.ofMillis(Long.parseLong(stepConfigValue));
+      } catch (NumberFormatException ex) {
         logger.log(
             Level.WARNING,
             "Invalid value for applicationinsights.internal.micrometer.step.millis: {0}, using default of {1}",
-            new Object[] {stepMillisStr, DEFAULT_STEP});
+            new Object[] {stepConfigValue, DEFAULT_STEP});
       }
     }
-    step = parsedStep;
+    step = configuredStep;
 
-    String namespaceValue = config.getString("applicationinsights.internal.micrometer.namespace");
-    // Fallback to system property if not found in declarative config
-    if (namespaceValue == null) {
-      namespaceValue = System.getProperty("applicationinsights.internal.micrometer.namespace");
-    }
-    namespace = namespaceValue;
+    namespace = System.getProperty("applicationinsights.internal.micrometer.namespace");
   }
 
   @Override

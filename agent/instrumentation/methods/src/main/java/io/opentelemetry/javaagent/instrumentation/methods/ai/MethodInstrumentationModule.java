@@ -14,9 +14,6 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 
 import com.google.auto.service.AutoService;
-import io.opentelemetry.api.GlobalOpenTelemetry;
-import io.opentelemetry.api.incubator.config.DeclarativeConfigProperties;
-import io.opentelemetry.instrumentation.api.incubator.config.internal.DeclarativeConfigUtil;
 import io.opentelemetry.javaagent.extension.instrumentation.InstrumentationModule;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.tooling.config.MethodsConfigurationParser;
@@ -35,18 +32,11 @@ public class MethodInstrumentationModule extends InstrumentationModule {
   public MethodInstrumentationModule() {
     super("ai-methods");
 
-    // First try to get config from DeclarativeConfigUtil
-    DeclarativeConfigProperties config =
-        DeclarativeConfigUtil.getInstrumentationConfig(GlobalOpenTelemetry.get(), "ai-methods");
-    String include = config.getString(TRACE_METHODS_CONFIG);
-
-    // Fallback to system property if not found in declarative config
-    if (include == null) {
-      include = System.getProperty(TRACE_METHODS_CONFIG);
-    }
+    // Read configuration from system property (set by AiConfigCustomizer)
+    String methodsConfig = System.getProperty(TRACE_METHODS_CONFIG);
 
     Map<String, Set<String>> classMethodsToTrace =
-        include != null ? MethodsConfigurationParser.parse(include) : emptyMap();
+        methodsConfig != null ? MethodsConfigurationParser.parse(methodsConfig) : emptyMap();
 
     typeInstrumentations =
         classMethodsToTrace.entrySet().stream()

@@ -34,7 +34,6 @@ import com.microsoft.applicationinsights.agent.internal.configuration.Configurat
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.SamplingTelemetryType;
 import com.microsoft.applicationinsights.agent.internal.configuration.ConfigurationBuilder;
 import com.microsoft.applicationinsights.agent.internal.configuration.RpConfiguration;
-import com.microsoft.applicationinsights.agent.internal.configuration.SnippetConfiguration;
 import com.microsoft.applicationinsights.agent.internal.exporter.AgentLogExporter;
 import com.microsoft.applicationinsights.agent.internal.exporter.AgentMetricExporter;
 import com.microsoft.applicationinsights.agent.internal.exporter.AgentSpanExporter;
@@ -215,9 +214,7 @@ public class SecondEntryPoint
     }
 
     if (telemetryClient.getConnectionString() != null) {
-      if (configuration.preview.browserSdkLoader.enabled) {
-        SnippetConfiguration.initializeSnippet(configuration.connectionString);
-      }
+      // Snippet initialization moved to AfterAgentListener to avoid early GlobalOpenTelemetry.get() call
     }
 
     // TODO (trask) add this method to AutoConfigurationCustomizer upstream?

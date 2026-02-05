@@ -5,6 +5,7 @@ package com.microsoft.applicationinsights.agent.internal.init;
 
 import com.google.auto.service.AutoService;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
+import com.microsoft.applicationinsights.agent.internal.configuration.SnippetConfiguration;
 import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
 import com.microsoft.applicationinsights.agent.internal.profiler.ProfilingInitializer;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
@@ -42,6 +43,15 @@ public class AfterAgentListener implements AgentListener {
             TelemetryClient.getActive());
       } catch (RuntimeException e) {
         logger.warn("Failed to initialize profiler", e);
+      }
+    }
+    
+    // Initialize browser SDK loader snippet after GlobalOpenTelemetry is set
+    if (telemetryClient != null && telemetryClient.getConnectionString() != null) {
+      Configuration.BrowserSdkLoader sdkLoaderConfig = configuration.preview.browserSdkLoader;
+      if (sdkLoaderConfig.enabled) {
+        String connStr = configuration.connectionString;
+        SnippetConfiguration.initializeSnippet(connStr);
       }
     }
   }
