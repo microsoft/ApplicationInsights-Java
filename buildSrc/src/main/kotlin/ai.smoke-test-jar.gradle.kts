@@ -1,5 +1,5 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-import com.github.jengelman.gradle.plugins.shadow.transformers.AppendingTransformer
+import com.github.jengelman.gradle.plugins.shadow.transformers.PropertiesFileTransformer
 import com.microsoft.applicationinsights.gradle.AiSmokeTestExtension
 
 plugins {
@@ -16,9 +16,13 @@ tasks.named<ShadowJar>("shadowJar") {
   archiveClassifier.set("")
   mergeServiceFiles()
   
-  // Append spring.factories files from all dependencies
+  // Properly merge spring.factories files from all dependencies
   // This is required for Spring Boot auto-configuration to work
-  append("META-INF/spring.factories")
+  // Use PropertiesFileTransformer to merge duplicate keys instead of simple append
+  transform(PropertiesFileTransformer::class.java) {
+    paths = listOf("META-INF/spring.factories")
+    mergeStrategy = "append"
+  }
   
   // Set main class - can be overridden by individual projects via mainClassName property
   manifest {
