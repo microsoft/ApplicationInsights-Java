@@ -22,9 +22,10 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
 
     Map<String, String> properties = new HashMap<>();
 
-    properties.put(
-        "applicationinsights.internal.micrometer.step.millis",
-        Long.toString(SECONDS.toMillis(configuration.metricIntervalSeconds)));
+    String micrometerStepMillis = Long.toString(SECONDS.toMillis(configuration.metricIntervalSeconds));
+    properties.put("applicationinsights.internal.micrometer.step.millis", micrometerStepMillis);
+    // Also set as system property so AzureMonitorRegistryConfig can access it
+    System.setProperty("applicationinsights.internal.micrometer.step.millis", micrometerStepMillis);
 
     properties.put(
         "otel.metric.export.interval",
@@ -101,7 +102,10 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
         sb.append(customInstrumentation.methodName);
         sb.append(']');
       }
-      properties.put("applicationinsights.internal.methods.include", sb.toString());
+      String customInstrConfig = sb.toString();
+      properties.put("applicationinsights.internal.methods.include", customInstrConfig);
+      // Also set as system property so MethodInstrumentationModule can access it
+      System.setProperty("applicationinsights.internal.methods.include", customInstrConfig);
     }
 
     properties.put("otel.propagators", DelegatingPropagatorProvider.NAME);
