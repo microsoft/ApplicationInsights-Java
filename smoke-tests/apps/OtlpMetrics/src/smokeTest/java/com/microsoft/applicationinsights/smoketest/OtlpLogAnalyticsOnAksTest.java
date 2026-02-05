@@ -17,7 +17,6 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.mockserver.model.HttpRequest.request;
-import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
@@ -28,11 +27,7 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.mockserver.model.HttpRequest;
-import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest(
-    classes = {OtlpApplication.class},
-    webEnvironment = RANDOM_PORT)
 @UseAgent
 abstract class OtlpLogAnalyticsOnAksTest {
 

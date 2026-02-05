@@ -8,19 +8,6 @@ plugins {
 
 val aiSmokeTest = extensions.create<AiSmokeTestExtension>("aiSmokeTest")
 
-sourceSets {
-  create("smokeTest") {
-    compileClasspath += sourceSets.main.get().output
-    runtimeClasspath += sourceSets.main.get().output
-  }
-}
-
-val smokeTestImplementation by configurations.getting {
-  extendsFrom(configurations.implementation.get())
-}
-
-configurations["smokeTestRuntimeOnly"].extendsFrom(configurations.runtimeOnly.get())
-
 // FIXME (trask) copy-pasted from ai.java-conventions.gradle
 java {
   toolchain {
@@ -66,18 +53,33 @@ dependencies {
   // FIXME (trask) copy-pasted from ai.java-conventions.gradle
   dependencyManagement(platform(project(":dependencyManagement")))
 
-  smokeTestImplementation(project(":smoke-tests:framework"))
-
-  smokeTestImplementation("org.junit.jupiter:junit-jupiter-api")
-  smokeTestImplementation("org.junit.jupiter:junit-jupiter-params")
-  smokeTestImplementation("org.junit.jupiter:junit-jupiter-engine")
-  smokeTestImplementation("org.junit.platform:junit-platform-launcher")
-
-  smokeTestImplementation("org.assertj:assertj-core")
-
   agent(project(":agent:agent", configuration = "shadow"))
 
   old3xAgent("com.microsoft.azure:applicationinsights-agent:3.2.11")
+}
+
+// Configure test suites
+testing {
+  suites {
+    register<JvmTestSuite>("smokeTest") {
+      dependencies {
+        implementation(project(":smoke-tests:framework"))
+
+        implementation("org.junit.jupiter:junit-jupiter-api")
+        implementation("org.junit.jupiter:junit-jupiter-params")
+        runtimeOnly("org.junit.jupiter:junit-jupiter-engine")
+        runtimeOnly("org.junit.platform:junit-platform-launcher")
+
+        implementation("org.assertj:assertj-core")
+      }
+    }
+  }
+}
+
+// Make smokeTest configuration extend from main implementation configuration
+// so that project dependencies (e.g., log4j in ClassicSdkLog4j1Interop2x) are available
+configurations.named("smokeTestImplementation") {
+  extendsFrom(configurations.implementation.get())
 }
 
 configurations.all {
@@ -106,16 +108,13 @@ tasks {
     }
   }
 
-  register<Test>("smokeTest") {
+  named<Test>("smokeTest") {
     useJUnitPlatform()
 
     // this is just to force building the agent first
     dependsOn(":agent:agent:shadowJar")
 
     dependsOn(assemble)
-
-    testClassesDirs = sourceSets["smokeTest"].output.classesDirs
-    classpath = sourceSets["smokeTest"].runtimeClasspath
 
     // TODO (trask) experiment with parallelization
     // maxParallelForks = (Runtime.getRuntime().availableProcessors() / 2).takeIf { it > 0 } ?: 1
