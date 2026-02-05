@@ -61,8 +61,7 @@ class InvocationInstrumentation implements TypeInstrumentation {
 
       RpcTraceContext traceContext = request.getTraceContext();
       Context extractedContext =
-          W3CTraceContextPropagator.getInstance()
-              .extract(Context.root(), traceContext, GETTER);
+          W3CTraceContextPropagator.getInstance().extract(Context.root(), traceContext, GETTER);
       SpanContext spanContext = Span.fromContext(extractedContext).getSpanContext();
 
       // recreate SpanContext to override the trace flags since the host currently always sends "00"
