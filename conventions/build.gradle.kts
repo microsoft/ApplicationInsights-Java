@@ -1,5 +1,4 @@
 plugins {
-  `java-gradle-plugin`
   `kotlin-dsl`
   // When updating, update below in dependencies too
   id("com.diffplug.spotless") version "8.2.0"
@@ -20,10 +19,6 @@ repositories {
   mavenCentral()
   mavenLocal()
   gradlePluginPortal()
-}
-
-tasks.withType<Test>().configureEach {
-  useJUnitPlatform()
 }
 
 dependencies {

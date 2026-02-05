@@ -1,8 +1,8 @@
 # Gradle
 /.gradle/
-/buildSrc/.gradle/
+/conventions/.gradle/
+/conventions/.kotlin/
 /perf-tests/.gradle/
-/buildSrc/.kotlin/
 build/
 
 # Intellij
