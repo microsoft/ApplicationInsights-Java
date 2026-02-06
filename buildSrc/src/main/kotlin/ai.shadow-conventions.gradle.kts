@@ -22,13 +22,27 @@ tasks.withType<ShadowJar>().configureEach {
     // Exclude resource providers since they live in the agent class loader
     exclude("io.opentelemetry.instrumentation.resources.*")
     exclude("io.opentelemetry.instrumentation.spring.resources.*")
+    // Exclude already-shaded classes from upstream agent to prevent double relocation
+    exclude("io.opentelemetry.javaagent.shaded.instrumentation.*")
   }
 
   // relocate(OpenTelemetry API) since these classes live in the bootstrap class loader
-  relocate("io.opentelemetry.api", "io.opentelemetry.javaagent.shaded.io.opentelemetry.api")
-  relocate("io.opentelemetry.semconv", "io.opentelemetry.javaagent.shaded.io.opentelemetry.semconv")
-  relocate("io.opentelemetry.context", "io.opentelemetry.javaagent.shaded.io.opentelemetry.context")
-  relocate("io.opentelemetry.common", "io.opentelemetry.javaagent.shaded.io.opentelemetry.common")
+  relocate("io.opentelemetry.api", "io.opentelemetry.javaagent.shaded.io.opentelemetry.api") {
+    // Exclude already-shaded classes from upstream agent to prevent double relocation
+    exclude("io.opentelemetry.javaagent.shaded.io.opentelemetry.api.*")
+  }
+  relocate("io.opentelemetry.semconv", "io.opentelemetry.javaagent.shaded.io.opentelemetry.semconv") {
+    // Exclude already-shaded classes from upstream agent to prevent double relocation
+    exclude("io.opentelemetry.javaagent.shaded.io.opentelemetry.semconv.*")
+  }
+  relocate("io.opentelemetry.context", "io.opentelemetry.javaagent.shaded.io.opentelemetry.context") {
+    // Exclude already-shaded classes from upstream agent to prevent double relocation
+    exclude("io.opentelemetry.javaagent.shaded.io.opentelemetry.context.*")
+  }
+  relocate("io.opentelemetry.common", "io.opentelemetry.javaagent.shaded.io.opentelemetry.common") {
+    // Exclude already-shaded classes from upstream agent to prevent double relocation
+    exclude("io.opentelemetry.javaagent.shaded.io.opentelemetry.common.*")
+  }
 
   // relocate(the OpenTelemetry extensions that are used by instrumentation modules)
   // these extensions live in the AgentClassLoader, and are injected into the user's class loader

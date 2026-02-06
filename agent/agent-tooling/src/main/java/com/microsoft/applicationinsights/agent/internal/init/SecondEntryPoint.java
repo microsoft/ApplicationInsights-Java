@@ -34,7 +34,6 @@ import com.microsoft.applicationinsights.agent.internal.configuration.Configurat
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.SamplingTelemetryType;
 import com.microsoft.applicationinsights.agent.internal.configuration.ConfigurationBuilder;
 import com.microsoft.applicationinsights.agent.internal.configuration.RpConfiguration;
-import com.microsoft.applicationinsights.agent.internal.configuration.SnippetConfiguration;
 import com.microsoft.applicationinsights.agent.internal.exporter.AgentLogExporter;
 import com.microsoft.applicationinsights.agent.internal.exporter.AgentMetricExporter;
 import com.microsoft.applicationinsights.agent.internal.exporter.AgentSpanExporter;
@@ -215,9 +214,8 @@ public class SecondEntryPoint
     }
 
     if (telemetryClient.getConnectionString() != null) {
-      if (configuration.preview.browserSdkLoader.enabled) {
-        SnippetConfiguration.initializeSnippet(configuration.connectionString);
-      }
+      // Snippet initialization moved to AfterAgentListener to avoid early GlobalOpenTelemetry.get()
+      // call
     }
 
     // TODO (trask) add this method to AutoConfigurationCustomizer upstream?
@@ -760,15 +758,27 @@ public class SecondEntryPoint
                     || processor.type == Configuration.ProcessorType.LOG)
         .collect(Collectors.toCollection(ArrayList::new));
   }
+  
+  // SDK internal metrics that should not be exported to customers
+  private static final String[] SDK_INTERNAL_METRICS_TO_DROP = {
+    "otel.sdk.span.live",
+    "otel.sdk.span.started", 
+    "otel.sdk.log.created"
+  };
 
   private static SdkMeterProviderBuilder configureMetrics(
       SdkMeterProviderBuilder builder, Configuration configuration) {
 
-    // drop internal OpenTelemetry SDK metrics
+    // drop internal OpenTelemetry SDK metrics (legacy format)
     drop(builder, "io.opentelemetry.sdk.trace", "queueSize");
     drop(builder, "io.opentelemetry.sdk.trace", "processedSpans");
     drop(builder, "io.opentelemetry.sdk.logs", "queueSize");
     drop(builder, "io.opentelemetry.sdk.logs", "processedLogs");
+    
+    // drop SDK internal metrics added in OpenTelemetry 2.24.0
+    for (String metricName : SDK_INTERNAL_METRICS_TO_DROP) {
+      dropByName(builder, metricName);
+    }
 
     if (configuration.internal.preAggregatedStandardMetrics.enabled) {
       AiViewRegistry.registerViews(builder);
@@ -777,9 +787,15 @@ public class SecondEntryPoint
   }
 
   private static void drop(
-      SdkMeterProviderBuilder builder, String meterName, String processedSpans) {
+      SdkMeterProviderBuilder builder, String meterName, String metricName) {
     builder.registerView(
-        InstrumentSelector.builder().setMeterName(meterName).setName(processedSpans).build(),
+        InstrumentSelector.builder().setMeterName(meterName).setName(metricName).build(),
+        View.builder().setAggregation(Aggregation.drop()).build());
+  }
+  
+  private static void dropByName(SdkMeterProviderBuilder builder, String metricName) {
+    builder.registerView(
+        InstrumentSelector.builder().setName(metricName).build(),
         View.builder().setAggregation(Aggregation.drop()).build());
   }
 
