@@ -45,7 +45,7 @@ public class AfterAgentListener implements AgentListener {
         logger.warn("Failed to initialize profiler", e);
       }
     }
-    
+
     // Initialize browser SDK loader snippet after GlobalOpenTelemetry is set
     if (telemetryClient != null && telemetryClient.getConnectionString() != null) {
       Configuration.BrowserSdkLoader sdkLoaderConfig = configuration.preview.browserSdkLoader;

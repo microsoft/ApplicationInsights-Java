@@ -21,7 +21,8 @@ public class AzureMonitorRegistryConfig implements StepRegistryConfig {
 
   private AzureMonitorRegistryConfig() {
     // Read configuration from system property (set by AiConfigCustomizer)
-    String stepConfigValue = System.getProperty("applicationinsights.internal.micrometer.step.millis");
+    String stepConfigValue =
+        System.getProperty("applicationinsights.internal.micrometer.step.millis");
 
     Duration configuredStep = DEFAULT_STEP;
     if (stepConfigValue != null) {

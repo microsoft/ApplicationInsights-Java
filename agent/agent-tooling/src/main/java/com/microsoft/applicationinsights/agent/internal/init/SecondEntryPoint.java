@@ -214,7 +214,8 @@ public class SecondEntryPoint
     }
 
     if (telemetryClient.getConnectionString() != null) {
-      // Snippet initialization moved to AfterAgentListener to avoid early GlobalOpenTelemetry.get() call
+      // Snippet initialization moved to AfterAgentListener to avoid early GlobalOpenTelemetry.get()
+      // call
     }
 
     // TODO (trask) add this method to AutoConfigurationCustomizer upstream?
