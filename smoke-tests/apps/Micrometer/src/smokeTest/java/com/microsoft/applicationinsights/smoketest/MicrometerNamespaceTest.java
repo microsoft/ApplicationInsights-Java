@@ -3,7 +3,7 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
-import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_8;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_8;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.data.MapEntry.entry;
 
@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-@Environment(JAVA_8)
+@Environment(TOMCAT_8_JAVA_8)
 @UseAgent("namespace_applicationinsights.json")
 class MicrometerNamespaceTest {
 
@@ -27,8 +27,8 @@ class MicrometerNamespaceTest {
   void doMostBasicTest() throws Exception {
     Telemetry telemetry = testing.getTelemetry(0);
 
-    assertThat(telemetry.rd.getName()).isEqualTo("GET /test");
-    assertThat(telemetry.rd.getUrl()).matches("http://localhost:[0-9]+/test");
+    assertThat(telemetry.rd.getName()).isEqualTo("GET /Micrometer/test");
+    assertThat(telemetry.rd.getUrl()).matches("http://localhost:[0-9]+/Micrometer/test");
     assertThat(telemetry.rd.getResponseCode()).isEqualTo("200");
     assertThat(telemetry.rd.getSuccess()).isTrue();
     assertThat(telemetry.rd.getProperties())

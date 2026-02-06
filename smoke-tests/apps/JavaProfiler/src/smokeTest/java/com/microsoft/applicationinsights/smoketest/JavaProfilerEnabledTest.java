@@ -3,10 +3,10 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
-import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_11;
-import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_17;
-import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_21;
-import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_8;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_11;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_17;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_21;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_8;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
@@ -49,15 +49,15 @@ abstract class JavaProfilerEnabledTest {
             });
   }
 
-  @Environment(JAVA_8)
-  static class Java8Test extends JavaProfilerEnabledTest {}
+  @Environment(TOMCAT_8_JAVA_8)
+  static class Tomcat8Java8Test extends JavaProfilerEnabledTest {}
 
-  @Environment(JAVA_11)
-  static class Java11Test extends JavaProfilerEnabledTest {}
+  @Environment(TOMCAT_8_JAVA_11)
+  static class Tomcat8Java11Test extends JavaProfilerEnabledTest {}
 
-  @Environment(JAVA_17)
-  static class Java17Test extends JavaProfilerEnabledTest {}
+  @Environment(TOMCAT_8_JAVA_17)
+  static class Tomcat8Java17Test extends JavaProfilerEnabledTest {}
 
-  @Environment(JAVA_21)
-  static class Java21Test extends JavaProfilerEnabledTest {}
+  @Environment(TOMCAT_8_JAVA_21)
+  static class Tomcat8Java21Test extends JavaProfilerEnabledTest {}
 }

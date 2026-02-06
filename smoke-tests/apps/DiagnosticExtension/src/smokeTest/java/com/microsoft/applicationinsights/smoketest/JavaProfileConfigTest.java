@@ -3,7 +3,7 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
-import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_11;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_11;
 import static java.util.Collections.emptyMap;
 
 import com.microsoft.applicationinsights.smoketest.fakeingestion.ProfilerState;
@@ -36,7 +36,7 @@ abstract class JavaProfileConfigTest {
     Assertions.assertEquals(shouldBeEnabled, Boolean.parseBoolean(response));
   }
 
-  @Environment(JAVA_11)
+  @Environment(TOMCAT_8_JAVA_11)
   static class JavaProfilerConfiguredTest extends JavaProfileConfigTest {
     @RegisterExtension
     static final SmokeTestExtension testing =
@@ -47,7 +47,7 @@ abstract class JavaProfileConfigTest {
     }
   }
 
-  @Environment(JAVA_11)
+  @Environment(TOMCAT_8_JAVA_11)
   static class JavaProfilerUnconfiguredTest extends JavaProfileConfigTest {
     @RegisterExtension
     static final SmokeTestExtension testing =
@@ -58,7 +58,7 @@ abstract class JavaProfileConfigTest {
     }
   }
 
-  @Environment(JAVA_11)
+  @Environment(TOMCAT_8_JAVA_11)
   static class JavaProfilerDisabledTest extends JavaProfileConfigTest {
     @RegisterExtension
     static final SmokeTestExtension testing =
@@ -69,7 +69,7 @@ abstract class JavaProfileConfigTest {
     }
   }
 
-  @Environment(JAVA_11)
+  @Environment(TOMCAT_8_JAVA_11)
   static class JavaProfilerManualProfileTest extends JavaProfileConfigTest {
     @RegisterExtension
     static final SmokeTestExtension testing =

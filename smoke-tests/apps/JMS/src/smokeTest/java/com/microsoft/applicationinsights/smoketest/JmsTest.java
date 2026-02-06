@@ -3,16 +3,16 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
-import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_11;
-import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_11_OPENJ9;
-import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_17;
-import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_17_OPENJ9;
-import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_21;
-import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_21_OPENJ9;
-import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_25;
-import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_25_OPENJ9;
-import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_8;
-import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_8_OPENJ9;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_11;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_11_OPENJ9;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_17;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_17_OPENJ9;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_21;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_21_OPENJ9;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_25;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_25_OPENJ9;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_8;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_8_OPENJ9;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.data.MapEntry.entry;
 
@@ -34,7 +34,7 @@ abstract class JmsTest {
   void doMostBasicTest() throws Exception {
     List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 2);
 
-    Envelope rdEnvelope1 = getRequestEnvelope(rdList, "GET /sendMessage");
+    Envelope rdEnvelope1 = getRequestEnvelope(rdList, "GET /JMS/sendMessage");
     String operationId = rdEnvelope1.getTags().get("ai.operation.id");
     List<Envelope> rddList =
         testing.mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 2, operationId);
@@ -57,7 +57,7 @@ abstract class JmsTest {
     RemoteDependencyData rdd2 =
         (RemoteDependencyData) ((Data<?>) rddEnvelope2.getData()).getBaseData();
 
-    assertThat(rd1.getName()).isEqualTo("GET /sendMessage");
+    assertThat(rd1.getName()).isEqualTo("GET /JMS/sendMessage");
     assertThat(rd1.getProperties())
         .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
     assertThat(rd1.getSuccess()).isTrue();
@@ -82,9 +82,9 @@ abstract class JmsTest {
         .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
     assertThat(rdd2.getSuccess()).isTrue();
 
-    SmokeTestExtension.assertParentChild(rd1, rdEnvelope1, rddEnvelope1, "GET /sendMessage");
+    SmokeTestExtension.assertParentChild(rd1, rdEnvelope1, rddEnvelope1, "GET /JMS/sendMessage");
     SmokeTestExtension.assertParentChild(
-        rdd1.getId(), rddEnvelope1, rdEnvelope2, "GET /sendMessage", "message process", false);
+        rdd1.getId(), rddEnvelope1, rdEnvelope2, "GET /JMS/sendMessage", "message process", false);
     SmokeTestExtension.assertParentChild(
         rd2.getId(), rdEnvelope2, rddEnvelope2, "message process", "message process", false);
   }
@@ -110,33 +110,33 @@ abstract class JmsTest {
     throw new IllegalStateException("Could not find dependency with name: " + name);
   }
 
-  @Environment(JAVA_8)
-  static class Java8Test extends JmsTest {}
+  @Environment(TOMCAT_8_JAVA_8)
+  static class Tomcat8Java8Test extends JmsTest {}
 
-  @Environment(JAVA_8_OPENJ9)
-  static class Java8OpenJ9Test extends JmsTest {}
+  @Environment(TOMCAT_8_JAVA_8_OPENJ9)
+  static class Tomcat8Java8OpenJ9Test extends JmsTest {}
 
-  @Environment(JAVA_11)
-  static class Java11Test extends JmsTest {}
+  @Environment(TOMCAT_8_JAVA_11)
+  static class Tomcat8Java11Test extends JmsTest {}
 
-  @Environment(JAVA_11_OPENJ9)
-  static class Java11OpenJ9Test extends JmsTest {}
+  @Environment(TOMCAT_8_JAVA_11_OPENJ9)
+  static class Tomcat8Java11OpenJ9Test extends JmsTest {}
 
-  @Environment(JAVA_17)
-  static class Java17Test extends JmsTest {}
+  @Environment(TOMCAT_8_JAVA_17)
+  static class Tomcat8Java17Test extends JmsTest {}
 
-  @Environment(JAVA_17_OPENJ9)
-  static class Java17OpenJ9Test extends JmsTest {}
+  @Environment(TOMCAT_8_JAVA_17_OPENJ9)
+  static class Tomcat8Java17OpenJ9Test extends JmsTest {}
 
-  @Environment(JAVA_21)
-  static class Java21Test extends JmsTest {}
+  @Environment(TOMCAT_8_JAVA_21)
+  static class Tomcat8Java21Test extends JmsTest {}
 
-  @Environment(JAVA_21_OPENJ9)
-  static class Java21OpenJ9Test extends JmsTest {}
+  @Environment(TOMCAT_8_JAVA_21_OPENJ9)
+  static class Tomcat8Java21OpenJ9Test extends JmsTest {}
 
-  @Environment(JAVA_25)
-  static class Java23Test extends JmsTest {}
+  @Environment(TOMCAT_8_JAVA_25)
+  static class Tomcat8Java23Test extends JmsTest {}
 
-  @Environment(JAVA_25_OPENJ9)
-  static class Java23OpenJ9Test extends JmsTest {}
+  @Environment(TOMCAT_8_JAVA_25_OPENJ9)
+  static class Tomcat8Java23OpenJ9Test extends JmsTest {}
 }

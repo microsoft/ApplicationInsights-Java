@@ -3,14 +3,14 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
-import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_11;
-import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_11_OPENJ9;
-import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_17;
-import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_17_OPENJ9;
-import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_21;
-import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_21_OPENJ9;
-import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_8;
-import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_8_OPENJ9;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_11;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_11_OPENJ9;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_17;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_17_OPENJ9;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_21;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_21_OPENJ9;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_8;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_8_OPENJ9;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.data.MapEntry.entry;
 
@@ -44,7 +44,7 @@ public abstract class CustomInstrumentationTest {
 
     MessageData md = (MessageData) ((Data<?>) mdEnvelope.getData()).getBaseData();
 
-    assertThat(telemetry.rd.getName()).isEqualTo("GET /internal-span");
+    assertThat(telemetry.rd.getName()).isEqualTo("GET /CustomInstrumentation/internal-span");
     assertThat(telemetry.rd.getResponseCode()).isEqualTo("200");
     assertThat(telemetry.rd.getProperties())
         .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
@@ -62,10 +62,16 @@ public abstract class CustomInstrumentationTest {
     assertThat(md.getProperties()).hasSize(3);
 
     SmokeTestExtension.assertParentChild(
-        telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /internal-span");
+        telemetry.rd,
+        telemetry.rdEnvelope,
+        telemetry.rddEnvelope1,
+        "GET /CustomInstrumentation/internal-span");
 
     SmokeTestExtension.assertParentChild(
-        telemetry.rdd1, telemetry.rddEnvelope1, mdEnvelope, "GET /internal-span");
+        telemetry.rdd1,
+        telemetry.rddEnvelope1,
+        mdEnvelope,
+        "GET /CustomInstrumentation/internal-span");
   }
 
   @Test
@@ -73,7 +79,7 @@ public abstract class CustomInstrumentationTest {
   void serverSpan() throws Exception {
     List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 2);
 
-    Envelope rdEnvelope1 = getRequestEnvelope(rdList, "GET /server-span");
+    Envelope rdEnvelope1 = getRequestEnvelope(rdList, "GET /CustomInstrumentation/server-span");
     Envelope rdEnvelope2 = getRequestEnvelope(rdList, "TestController.run");
 
     String operationId = rdEnvelope2.getTags().get("ai.operation.id");
@@ -89,7 +95,7 @@ public abstract class CustomInstrumentationTest {
     RequestData rd2 = (RequestData) ((Data<?>) rdEnvelope2.getData()).getBaseData();
     MessageData md = (MessageData) ((Data<?>) mdEnvelope.getData()).getBaseData();
 
-    assertThat(rd1.getName()).isEqualTo("GET /server-span");
+    assertThat(rd1.getName()).isEqualTo("GET /CustomInstrumentation/server-span");
     assertThat(rd1.getResponseCode()).isEqualTo("200");
     assertThat(rd1.getProperties())
         .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
@@ -120,27 +126,27 @@ public abstract class CustomInstrumentationTest {
     throw new IllegalStateException("Could not find request with name: " + name);
   }
 
-  @Environment(JAVA_8)
-  static class Java8Test extends CustomInstrumentationTest {}
+  @Environment(TOMCAT_8_JAVA_8)
+  static class Tomcat8Java8Test extends CustomInstrumentationTest {}
 
-  @Environment(JAVA_8_OPENJ9)
-  static class Java8OpenJ9Test extends CustomInstrumentationTest {}
+  @Environment(TOMCAT_8_JAVA_8_OPENJ9)
+  static class Tomcat8Java8OpenJ9Test extends CustomInstrumentationTest {}
 
-  @Environment(JAVA_11)
-  static class Java11Test extends CustomInstrumentationTest {}
+  @Environment(TOMCAT_8_JAVA_11)
+  static class Tomcat8Java11Test extends CustomInstrumentationTest {}
 
-  @Environment(JAVA_11_OPENJ9)
-  static class Java11OpenJ9Test extends CustomInstrumentationTest {}
+  @Environment(TOMCAT_8_JAVA_11_OPENJ9)
+  static class Tomcat8Java11OpenJ9Test extends CustomInstrumentationTest {}
 
-  @Environment(JAVA_17)
-  static class Java17Test extends CustomInstrumentationTest {}
+  @Environment(TOMCAT_8_JAVA_17)
+  static class Tomcat8Java17Test extends CustomInstrumentationTest {}
 
-  @Environment(JAVA_17_OPENJ9)
-  static class Java17OpenJ9Test extends CustomInstrumentationTest {}
+  @Environment(TOMCAT_8_JAVA_17_OPENJ9)
+  static class Tomcat8Java17OpenJ9Test extends CustomInstrumentationTest {}
 
-  @Environment(JAVA_21)
-  static class Java21Test extends CustomInstrumentationTest {}
+  @Environment(TOMCAT_8_JAVA_21)
+  static class Tomcat8Java21Test extends CustomInstrumentationTest {}
 
-  @Environment(JAVA_21_OPENJ9)
-  static class Java21OpenJ9Test extends CustomInstrumentationTest {}
+  @Environment(TOMCAT_8_JAVA_21_OPENJ9)
+  static class Tomcat8Java21OpenJ9Test extends CustomInstrumentationTest {}
 }

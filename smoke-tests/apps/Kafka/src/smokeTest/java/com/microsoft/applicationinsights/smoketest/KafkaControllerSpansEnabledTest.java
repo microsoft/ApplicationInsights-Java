@@ -3,7 +3,7 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
-import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_8;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_8;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.data.MapEntry.entry;
 
@@ -17,7 +17,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import org.testcontainers.containers.KafkaContainer;
 import org.testcontainers.utility.DockerImageName;
 
-@Environment(JAVA_8)
+@Environment(TOMCAT_8_JAVA_8)
 @UseAgent("controller_spans_enabled_applicationinsights.json")
 class KafkaControllerSpansEnabledTest {
 
@@ -33,7 +33,7 @@ class KafkaControllerSpansEnabledTest {
   void doMostBasicTest() throws Exception {
     List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 2);
 
-    Envelope rdEnvelope1 = getRequestEnvelope(rdList, "GET /sendMessage");
+    Envelope rdEnvelope1 = getRequestEnvelope(rdList, "GET /Kafka/sendMessage");
     String operationId = rdEnvelope1.getTags().get("ai.operation.id");
     List<Envelope> rddList =
         testing.mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 3, operationId);
@@ -60,7 +60,7 @@ class KafkaControllerSpansEnabledTest {
     RemoteDependencyData rdd3 =
         (RemoteDependencyData) ((Data<?>) rddEnvelope3.getData()).getBaseData();
 
-    assertThat(rd1.getName()).isEqualTo("GET /sendMessage");
+    assertThat(rd1.getName()).isEqualTo("GET /Kafka/sendMessage");
     assertThat(rd1.getProperties())
         .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
     assertThat(rd1.getSuccess()).isTrue();
@@ -93,10 +93,16 @@ class KafkaControllerSpansEnabledTest {
         .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
     assertThat(rdd3.getSuccess()).isTrue();
 
-    SmokeTestExtension.assertParentChild(rd1, rdEnvelope1, rddEnvelope1, "GET /sendMessage");
-    SmokeTestExtension.assertParentChild(rdd1, rddEnvelope1, rddEnvelope2, "GET /sendMessage");
+    SmokeTestExtension.assertParentChild(rd1, rdEnvelope1, rddEnvelope1, "GET /Kafka/sendMessage");
     SmokeTestExtension.assertParentChild(
-        rdd2.getId(), rddEnvelope2, rdEnvelope2, "GET /sendMessage", "mytopic process", false);
+        rdd1, rddEnvelope1, rddEnvelope2, "GET /Kafka/sendMessage");
+    SmokeTestExtension.assertParentChild(
+        rdd2.getId(),
+        rddEnvelope2,
+        rdEnvelope2,
+        "GET /Kafka/sendMessage",
+        "mytopic process",
+        false);
     SmokeTestExtension.assertParentChild(
         rd2.getId(), rdEnvelope2, rddEnvelope3, "mytopic process", "mytopic process", false);
   }

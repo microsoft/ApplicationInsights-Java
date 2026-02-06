@@ -3,7 +3,7 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
-import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_11;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_11;
 import static java.util.Collections.emptyMap;
 
 import com.microsoft.applicationinsights.smoketest.fakeingestion.ProfilerState;
@@ -30,14 +30,14 @@ abstract class DiagnosticsTest {
     Assertions.assertTrue(Boolean.parseBoolean(response));
   }
 
-  @Environment(JAVA_11)
-  static class Java11Test extends DiagnosticsTest {
+  @Environment(TOMCAT_8_JAVA_11)
+  static class Tomcat8Java11Test extends DiagnosticsTest {
 
     @RegisterExtension
     static final SmokeTestExtension testing =
         BASE_BUILDER.setProfilerEndpoint(ProfilerState.manualprofile).build();
 
-    Java11Test() {
+    Tomcat8Java11Test() {
       super(testing);
     }
   }

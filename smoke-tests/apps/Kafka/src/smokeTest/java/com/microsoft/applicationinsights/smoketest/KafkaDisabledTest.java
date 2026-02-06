@@ -3,7 +3,7 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
-import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_8;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_8;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.data.MapEntry.entry;
 
@@ -17,7 +17,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import org.testcontainers.containers.KafkaContainer;
 import org.testcontainers.utility.DockerImageName;
 
-@Environment(JAVA_8)
+@Environment(TOMCAT_8_JAVA_8)
 @UseAgent("disabled_applicationinsights.json")
 class KafkaDisabledTest {
 
@@ -38,7 +38,7 @@ class KafkaDisabledTest {
     String operationId = rdEnvelope.getTags().get("ai.operation.id");
     assertThat(testing.mockedIngestion.getCountForType("EventData")).isZero();
 
-    assertThat(rd.getName()).isEqualTo("GET /sendMessage");
+    assertThat(rd.getName()).isEqualTo("GET /Kafka/sendMessage");
     assertThat(rd.getResponseCode()).isEqualTo("200");
     assertThat(rd.getProperties())
         .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));

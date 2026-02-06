@@ -3,14 +3,14 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
-import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_11;
-import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_11_OPENJ9;
-import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_17;
-import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_17_OPENJ9;
-import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_21;
-import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_21_OPENJ9;
-import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_8;
-import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_8_OPENJ9;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_11;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_11_OPENJ9;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_17;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_17_OPENJ9;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_21;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_21_OPENJ9;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_8;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_8_OPENJ9;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
@@ -58,7 +58,7 @@ abstract class ActuatorMetricsTest {
       return false;
     }
     MetricData data = (MetricData) ((Data<?>) input.getData()).getBaseData();
-    if (!"/test".equals(data.getProperties().get("uri"))) {
+    if (!"/ActuatorMetrics/test".equals(data.getProperties().get("uri"))) {
       return false;
     }
     for (DataPoint point : data.getMetrics()) {
@@ -69,27 +69,27 @@ abstract class ActuatorMetricsTest {
     return false;
   }
 
-  @Environment(JAVA_8)
-  static class Java8Test extends ActuatorMetricsTest {}
+  @Environment(TOMCAT_8_JAVA_8)
+  static class Tomcat8Java8Test extends ActuatorMetricsTest {}
 
-  @Environment(JAVA_8_OPENJ9)
-  static class Java8OpenJ9Test extends ActuatorMetricsTest {}
+  @Environment(TOMCAT_8_JAVA_8_OPENJ9)
+  static class Tomcat8Java8OpenJ9Test extends ActuatorMetricsTest {}
 
-  @Environment(JAVA_11)
-  static class Java11Test extends ActuatorMetricsTest {}
+  @Environment(TOMCAT_8_JAVA_11)
+  static class Tomcat8Java11Test extends ActuatorMetricsTest {}
 
-  @Environment(JAVA_11_OPENJ9)
-  static class Java11OpenJ9Test extends ActuatorMetricsTest {}
+  @Environment(TOMCAT_8_JAVA_11_OPENJ9)
+  static class Tomcat8Java11OpenJ9Test extends ActuatorMetricsTest {}
 
-  @Environment(JAVA_17)
-  static class Java17Test extends ActuatorMetricsTest {}
+  @Environment(TOMCAT_8_JAVA_17)
+  static class Tomcat8Java17Test extends ActuatorMetricsTest {}
 
-  @Environment(JAVA_17_OPENJ9)
-  static class Java17OpenJ9Test extends ActuatorMetricsTest {}
+  @Environment(TOMCAT_8_JAVA_17_OPENJ9)
+  static class Tomcat8Java17OpenJ9Test extends ActuatorMetricsTest {}
 
-  @Environment(JAVA_21)
-  static class Java21Test extends ActuatorMetricsTest {}
+  @Environment(TOMCAT_8_JAVA_21)
+  static class Tomcat8Java21Test extends ActuatorMetricsTest {}
 
-  @Environment(JAVA_21_OPENJ9)
-  static class Java21OpenJ9Test extends ActuatorMetricsTest {}
+  @Environment(TOMCAT_8_JAVA_21_OPENJ9)
+  static class Tomcat8Java21OpenJ9Test extends ActuatorMetricsTest {}
 }

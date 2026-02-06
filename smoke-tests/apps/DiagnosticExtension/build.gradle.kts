@@ -1,5 +1,5 @@
 plugins {
-  id("ai.smoke-test-jar")
+  id("ai.smoke-test-war")
 }
 
 dependencies {

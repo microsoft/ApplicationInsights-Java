@@ -3,13 +3,13 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
-import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_8;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_8;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-@Environment(JAVA_8)
+@Environment(TOMCAT_8_JAVA_8)
 @UseAgent("disabled_applicationinsights.json")
 class ActuatorMetricsDisabledTest {
 

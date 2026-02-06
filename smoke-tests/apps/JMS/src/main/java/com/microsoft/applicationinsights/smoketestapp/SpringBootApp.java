@@ -7,6 +7,8 @@ import javax.jms.ConnectionFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jms.DefaultJmsListenerContainerFactoryConfigurer;
+import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.jms.annotation.EnableJms;
 import org.springframework.jms.config.DefaultJmsListenerContainerFactory;
@@ -14,7 +16,12 @@ import org.springframework.jms.config.JmsListenerContainerFactory;
 
 @EnableJms
 @SpringBootApplication
-public class SpringBootApp {
+public class SpringBootApp extends SpringBootServletInitializer {
+
+  @Override
+  protected SpringApplicationBuilder configure(SpringApplicationBuilder applicationBuilder) {
+    return applicationBuilder.sources(SpringBootApp.class);
+  }
 
   public static void main(String[] args) {
     SpringApplication.run(SpringBootApp.class, args);

@@ -3,7 +3,7 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
-import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_8;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_8;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.data.MapEntry.entry;
 
@@ -15,7 +15,7 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-@Environment(JAVA_8)
+@Environment(TOMCAT_8_JAVA_8)
 @UseAgent("controller_spans_enabled_applicationinsights.json")
 class JmsControllerSpansEnabledTest {
 
@@ -26,7 +26,7 @@ class JmsControllerSpansEnabledTest {
   void doMostBasicTest() throws Exception {
     List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 2);
 
-    Envelope rdEnvelope1 = getRequestEnvelope(rdList, "GET /sendMessage");
+    Envelope rdEnvelope1 = getRequestEnvelope(rdList, "GET /JMS/sendMessage");
     String operationId = rdEnvelope1.getTags().get("ai.operation.id");
     List<Envelope> rddList =
         testing.mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 3, operationId);
@@ -53,7 +53,7 @@ class JmsControllerSpansEnabledTest {
     RemoteDependencyData rdd3 =
         (RemoteDependencyData) ((Data<?>) rddEnvelope3.getData()).getBaseData();
 
-    assertThat(rd1.getName()).isEqualTo("GET /sendMessage");
+    assertThat(rd1.getName()).isEqualTo("GET /JMS/sendMessage");
     assertThat(rd1.getProperties())
         .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
     assertThat(rd1.getSuccess()).isTrue();
@@ -85,10 +85,10 @@ class JmsControllerSpansEnabledTest {
         .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
     assertThat(rdd3.getSuccess()).isTrue();
 
-    SmokeTestExtension.assertParentChild(rd1, rdEnvelope1, rddEnvelope1, "GET /sendMessage");
-    SmokeTestExtension.assertParentChild(rdd1, rddEnvelope1, rddEnvelope2, "GET /sendMessage");
+    SmokeTestExtension.assertParentChild(rd1, rdEnvelope1, rddEnvelope1, "GET /JMS/sendMessage");
+    SmokeTestExtension.assertParentChild(rdd1, rddEnvelope1, rddEnvelope2, "GET /JMS/sendMessage");
     SmokeTestExtension.assertParentChild(
-        rdd2.getId(), rddEnvelope2, rdEnvelope2, "GET /sendMessage", "message process", false);
+        rdd2.getId(), rddEnvelope2, rdEnvelope2, "GET /JMS/sendMessage", "message process", false);
     SmokeTestExtension.assertParentChild(
         rd2.getId(), rdEnvelope2, rddEnvelope3, "message process", "message process", false);
   }

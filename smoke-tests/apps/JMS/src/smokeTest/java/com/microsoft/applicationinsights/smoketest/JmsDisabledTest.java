@@ -3,7 +3,7 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
-import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_8;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.TOMCAT_8_JAVA_8;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.data.MapEntry.entry;
 
@@ -15,7 +15,7 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-@Environment(JAVA_8)
+@Environment(TOMCAT_8_JAVA_8)
 @UseAgent("disabled_applicationinsights.json")
 class JmsDisabledTest {
 
@@ -31,7 +31,7 @@ class JmsDisabledTest {
 
     assertThat(testing.mockedIngestion.getCountForType("EventData")).isZero();
 
-    assertThat(rd.getName()).isEqualTo("GET /sendMessage");
+    assertThat(rd.getName()).isEqualTo("GET /JMS/sendMessage");
     assertThat(rd.getResponseCode()).isEqualTo("200");
     assertThat(rd.getProperties())
         .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
