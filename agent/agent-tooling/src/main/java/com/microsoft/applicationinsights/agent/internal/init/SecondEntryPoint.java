@@ -767,6 +767,12 @@ public class SecondEntryPoint
     drop(builder, "io.opentelemetry.sdk.trace", "processedSpans");
     drop(builder, "io.opentelemetry.sdk.logs", "queueSize");
     drop(builder, "io.opentelemetry.sdk.logs", "processedLogs");
+    
+    // drop new SDK internal metrics added in OpenTelemetry 2.24.0
+    // These metrics use different naming: otel.sdk.* instead of being under io.opentelemetry.sdk.* meter
+    dropByName(builder, "otel.sdk.span.live");
+    dropByName(builder, "otel.sdk.span.started");
+    dropByName(builder, "otel.sdk.log.created");
 
     if (configuration.internal.preAggregatedStandardMetrics.enabled) {
       AiViewRegistry.registerViews(builder);
@@ -775,9 +781,15 @@ public class SecondEntryPoint
   }
 
   private static void drop(
-      SdkMeterProviderBuilder builder, String meterName, String processedSpans) {
+      SdkMeterProviderBuilder builder, String meterName, String metricName) {
     builder.registerView(
-        InstrumentSelector.builder().setMeterName(meterName).setName(processedSpans).build(),
+        InstrumentSelector.builder().setMeterName(meterName).setName(metricName).build(),
+        View.builder().setAggregation(Aggregation.drop()).build());
+  }
+  
+  private static void dropByName(SdkMeterProviderBuilder builder, String metricName) {
+    builder.registerView(
+        InstrumentSelector.builder().setName(metricName).build(),
         View.builder().setAggregation(Aggregation.drop()).build());
   }
 
