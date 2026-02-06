@@ -58,7 +58,8 @@ abstract class ActuatorMetricsTest {
       return false;
     }
     MetricData data = (MetricData) ((Data<?>) input.getData()).getBaseData();
-    if (!"/ActuatorMetrics/test".equals(data.getProperties().get("uri"))) {
+    // micrometer reports servlet path without context path
+    if (!"/test".equals(data.getProperties().get("uri"))) {
       return false;
     }
     for (DataPoint point : data.getMetrics()) {
