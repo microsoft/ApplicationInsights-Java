@@ -62,7 +62,7 @@ tasks.withType<Test>().configureEach {
   // The sources are packaged into the testing jar so we need to make sure to exclude from the test
   // classpath, which automatically inherits them, to ensure our shaded versions are used.
   classpath = classpath.filter {
-    if (file("$buildDir/resources/main") == it || file("$buildDir/classes/java/main") == it) {
+    if (layout.buildDirectory.dir("resources/main").get().asFile == it || layout.buildDirectory.dir("classes/java/main").get().asFile == it) {
       return@filter false
     }
     return@filter true

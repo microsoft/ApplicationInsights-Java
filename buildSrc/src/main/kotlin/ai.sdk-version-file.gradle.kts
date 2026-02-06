@@ -2,7 +2,7 @@ plugins {
   `java-library`
 }
 
-val sdkVersionDir = "${buildDir}/generated/resources/sdk-version"
+val sdkVersionDir = layout.buildDirectory.dir("generated/resources/sdk-version")
 
 tasks {
   register("generateVersionResource") {
@@ -10,7 +10,7 @@ tasks {
     outputs.dir(sdkVersionDir)
 
     doLast {
-      File(sdkVersionDir, "ai.sdk-version.properties").writeText("version=${project.version}")
+      sdkVersionDir.get().file("ai.sdk-version.properties").asFile.writeText("version=${project.version}")
     }
   }
 }
