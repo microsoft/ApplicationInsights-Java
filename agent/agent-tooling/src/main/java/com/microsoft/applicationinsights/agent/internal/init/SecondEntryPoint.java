@@ -758,21 +758,27 @@ public class SecondEntryPoint
                     || processor.type == Configuration.ProcessorType.LOG)
         .collect(Collectors.toCollection(ArrayList::new));
   }
+  
+  // SDK internal metrics that should not be exported to customers
+  private static final String[] SDK_INTERNAL_METRICS_TO_DROP = {
+    "otel.sdk.span.live",
+    "otel.sdk.span.started", 
+    "otel.sdk.log.created"
+  };
 
   private static SdkMeterProviderBuilder configureMetrics(
       SdkMeterProviderBuilder builder, Configuration configuration) {
 
-    // drop internal OpenTelemetry SDK metrics
+    // drop internal OpenTelemetry SDK metrics (legacy format)
     drop(builder, "io.opentelemetry.sdk.trace", "queueSize");
     drop(builder, "io.opentelemetry.sdk.trace", "processedSpans");
     drop(builder, "io.opentelemetry.sdk.logs", "queueSize");
     drop(builder, "io.opentelemetry.sdk.logs", "processedLogs");
     
-    // drop new SDK internal metrics added in OpenTelemetry 2.24.0
-    // These metrics use different naming: otel.sdk.* instead of being under io.opentelemetry.sdk.* meter
-    dropByName(builder, "otel.sdk.span.live");
-    dropByName(builder, "otel.sdk.span.started");
-    dropByName(builder, "otel.sdk.log.created");
+    // drop SDK internal metrics added in OpenTelemetry 2.24.0
+    for (String metricName : SDK_INTERNAL_METRICS_TO_DROP) {
+      dropByName(builder, metricName);
+    }
 
     if (configuration.internal.preAggregatedStandardMetrics.enabled) {
       AiViewRegistry.registerViews(builder);
