@@ -4,16 +4,40 @@
 package com.microsoft.applicationinsights.smoketestapp;
 
 import io.grpc.ServerBuilder;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.apache.catalina.Context;
+import org.apache.catalina.startup.Tomcat;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
+import org.springframework.web.servlet.DispatcherServlet;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
-@SpringBootApplication
+@Configuration
+@EnableWebMvc
+@ComponentScan(basePackages = "com.microsoft.applicationinsights.smoketestapp")
 public class SpringBootApp {
 
   public static void main(String[] args) throws Exception {
 
+    // Start gRPC server on port 10203
     ServerBuilder.forPort(10203).addService(new HelloworldImpl()).build().start();
 
-    SpringApplication.run(SpringBootApp.class, args);
+    // Start embedded Tomcat with Spring MVC
+    Tomcat tomcat = new Tomcat();
+    tomcat.setPort(8080);
+    tomcat.getConnector();
+    Context context = tomcat.addContext("", System.getProperty("java.io.tmpdir"));
+
+    AnnotationConfigWebApplicationContext appContext = new AnnotationConfigWebApplicationContext();
+    appContext.setServletContext(context.getServletContext());
+    appContext.register(SpringBootApp.class);
+    appContext.refresh();
+
+    DispatcherServlet dispatcher = new DispatcherServlet(appContext);
+    Tomcat.addServlet(context, "dispatcher", dispatcher).setLoadOnStartup(1);
+    context.addServletMappingDecoded("/*", "dispatcher");
+
+    tomcat.start();
+    tomcat.getServer().await();
   }
 }
