@@ -83,6 +83,11 @@ tasks {
 
         // Requires adding compile dependency to JSpecify
         disable("AddNullMarkedToPackageInfo")
+
+        // AddNullMarkedToClass also requires JSpecify and causes "unknown enum constant ElementType.MODULE"
+        // warnings when compiling with --release 8, even though we use JDK 21 for compilation.
+        // See: https://github.com/jspecify/jspecify/wiki/version-compatibility
+        disable("AddNullMarkedToClass")
       }
     }
   }
