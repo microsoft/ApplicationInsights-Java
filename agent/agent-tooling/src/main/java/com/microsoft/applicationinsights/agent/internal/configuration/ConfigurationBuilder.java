@@ -900,10 +900,14 @@ public class ConfigurationBuilder {
       if (userInfo != null) {
         String[] usernamePassword = userInfo.split(":", 2);
         if (usernamePassword.length == 2) {
-          proxyFromEnv.username =
-              URLDecoder.decode(usernamePassword[0], StandardCharsets.UTF_8.toString());
-          proxyFromEnv.password =
-              URLDecoder.decode(usernamePassword[1], StandardCharsets.UTF_8.toString());
+          // suppressing warning because URLDecoder.decode(String, Charset) is only available
+          // since Java 10, but this project targets Java 8
+          @SuppressWarnings("JdkObsolete")
+          String username = URLDecoder.decode(usernamePassword[0], StandardCharsets.UTF_8.toString());
+          @SuppressWarnings("JdkObsolete")
+          String password = URLDecoder.decode(usernamePassword[1], StandardCharsets.UTF_8.toString());
+          proxyFromEnv.username = username;
+          proxyFromEnv.password = password;
         }
       }
     } catch (IOException e) {
