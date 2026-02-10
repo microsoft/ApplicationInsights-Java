@@ -16,6 +16,13 @@ public class SpringBootApp extends SpringBootServletInitializer {
   private static final String FAKE_INGESTION_ENDPOINT = "http://host.testcontainers.internal:6060/";
 
   public static void main(String[] args) {
+    // Pre-load MethodHandle to avoid ClassCircularityError on Java 17 with runtime attach
+    // See https://github.com/open-telemetry/opentelemetry-java-instrumentation/issues/3396
+    try {
+      Class.forName("java.lang.invoke.MethodHandle");
+    } catch (ClassNotFoundException e) {
+      // ignore
+    }
     ApplicationInsights.attach();
     ConnectionString.configure(
         "InstrumentationKey=00000000-0000-0000-0000-0FEEDDADBEEF;IngestionEndpoint="
