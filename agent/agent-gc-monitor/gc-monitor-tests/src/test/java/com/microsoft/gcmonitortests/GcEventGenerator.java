@@ -30,6 +30,9 @@ public class GcEventGenerator {
     System.out.println("Hit return to start");
 
     // Block until consumer sends the ready signal
+    // suppressing warning because Scanner(InputStream, Charset) is only available
+    // since Java 10, but this project targets Java 8
+    @SuppressWarnings("JdkObsolete")
     Scanner scanner = new Scanner(System.in, UTF_8.name());
     System.out.println(scanner.nextLine());
 
