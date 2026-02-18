@@ -39,6 +39,8 @@ import com.microsoft.applicationinsights.agent.internal.exporter.AgentLogExporte
 import com.microsoft.applicationinsights.agent.internal.exporter.AgentMetricExporter;
 import com.microsoft.applicationinsights.agent.internal.exporter.AgentSpanExporter;
 import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
+import com.microsoft.applicationinsights.agent.internal.keytransaction.KeyTransactionConfigSupplier;
+import com.microsoft.applicationinsights.agent.internal.keytransaction.KeyTransactionSpanProcessor;
 import com.microsoft.applicationinsights.agent.internal.legacyheaders.AiLegacyHeaderSpanProcessor;
 import com.microsoft.applicationinsights.agent.internal.processors.ExporterWithLogProcessor;
 import com.microsoft.applicationinsights.agent.internal.processors.ExporterWithSpanProcessor;
@@ -603,6 +605,10 @@ public class SecondEntryPoint
       tracerProvider.addSpanProcessor(new AiLegacyHeaderSpanProcessor());
     }
 
+    if (KeyTransactionConfigSupplier.KEY_TRANSACTIONS_ENABLED) {
+      tracerProvider.addSpanProcessor(new KeyTransactionSpanProcessor());
+    }
+
     return tracerProvider;
   }
 
@@ -785,6 +791,9 @@ public class SecondEntryPoint
 
   @Override
   public void afterAutoConfigure(OpenTelemetrySdk sdk) {
+
+    KeyTransactionSpanProcessor.initMeterProvider(sdk.getMeterProvider());
+
     Runtime.getRuntime()
         .addShutdownHook(
             new Thread(

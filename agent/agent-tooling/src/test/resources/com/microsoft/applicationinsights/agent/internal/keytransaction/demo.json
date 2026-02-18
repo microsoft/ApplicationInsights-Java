@@ -1,0 +1,47 @@
+{
+  "itemsReceived": 13,
+  "itemsAccepted": 13,
+  "appId": null,
+  "errors": [],
+  "sdkConfiguration": [
+    {
+      "Key": "Transaction",
+      "Value": {
+        "Name": "EarthOrbit",
+        "StartCriteria": [
+          {
+            "Field": "url.path",
+            "Operator": "==",
+            "Value": "/earth"
+          }
+        ],
+        "EndCriteria": []
+      }
+    },
+    {
+      "Key": "Transaction",
+      "Value": {
+        "Name": "MarsMission",
+        "StartCriteria": [
+          {
+            "Field": "url.path",
+            "Operator": "==",
+            "Value": "/mars"
+          }
+        ],
+        "EndCriteria": [
+          {
+            "Field": "messaging.operation",
+            "Operator": "==",
+            "Value": "process"
+          },
+          {
+            "Field": "messaging.destination.name",
+            "Operator": "==",
+            "Value": "space"
+          }
+        ]
+      }
+    }
+  ]
+}
