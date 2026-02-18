@@ -78,6 +78,16 @@ abstract class JavaUtilLoggingTest {
   @Test
   @TargetUri("/testWithException")
   void testWithException() throws Exception {
+    testWithException(false);
+  }
+
+  @Test
+  @TargetUri("/testWithException?test-null-message=true")
+  void testWithExceptionWithNullMessage() throws Exception {
+    testWithException(true);
+  }
+
+  private void testWithException(boolean testNullMessage) throws Exception {
     List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
 
     Envelope rdEnvelope = rdList.get(0);
@@ -97,7 +107,11 @@ abstract class JavaUtilLoggingTest {
     ExceptionData ed = (ExceptionData) ((Data<?>) edEnvelope.getData()).getBaseData();
 
     assertThat(ed.getExceptions().get(0).getTypeName()).isEqualTo("java.lang.Exception");
-    assertThat(ed.getExceptions().get(0).getMessage()).isEqualTo("Fake Exception");
+    if (testNullMessage) {
+      assertThat(ed.getExceptions().get(0).getMessage()).isEqualTo("java.lang.Exception");
+    } else {
+      assertThat(ed.getExceptions().get(0).getMessage()).isEqualTo("Fake Exception");
+    }
     assertThat(ed.getSeverityLevel()).isEqualTo(SeverityLevel.ERROR);
     assertThat(ed.getProperties()).containsEntry("Logger Message", "This is an exception!");
     assertThat(ed.getProperties()).containsEntry("SourceType", "Logger");
