@@ -11,9 +11,9 @@ package io.opentelemetry.javaagent.instrumentation.methods.ai;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.emptyMap;
 
 import com.google.auto.service.AutoService;
-import io.opentelemetry.javaagent.bootstrap.internal.AgentInstrumentationConfig;
 import io.opentelemetry.javaagent.extension.instrumentation.InstrumentationModule;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.tooling.config.MethodsConfigurationParser;
@@ -32,9 +32,11 @@ public class MethodInstrumentationModule extends InstrumentationModule {
   public MethodInstrumentationModule() {
     super("ai-methods");
 
+    // Read configuration from system property (set by AiConfigCustomizer)
+    String methodsConfig = System.getProperty(TRACE_METHODS_CONFIG);
+
     Map<String, Set<String>> classMethodsToTrace =
-        MethodsConfigurationParser.parse(
-            AgentInstrumentationConfig.get().getString(TRACE_METHODS_CONFIG));
+        methodsConfig != null ? MethodsConfigurationParser.parse(methodsConfig) : emptyMap();
 
     typeInstrumentations =
         classMethodsToTrace.entrySet().stream()
