@@ -13,6 +13,8 @@ import com.microsoft.applicationinsights.agent.internal.configuration.Configurat
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.ToAttributeConfig;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.Value;
+import io.opentelemetry.api.common.ValueType;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import io.opentelemetry.sdk.testing.logs.TestLogRecordData;
@@ -85,7 +87,10 @@ class ExporterWithLogProcessorTest {
     // verify that resulting logs are filtered in the way we want
     List<LogRecordData> result = mockExporter.getLogs();
     LogRecordData resultLog = result.get(0);
-    assertThat(resultLog.getBody().asString()).isEqualTo("locationget1234");
+    Value<?> bodyValue = resultLog.getBodyValue();
+    assertThat(bodyValue).isNotNull();
+    assertThat(bodyValue.getType()).isEqualTo(ValueType.STRING);
+    assertThat(bodyValue.asString()).isEqualTo("locationget1234");
   }
 
   @Test
@@ -104,7 +109,10 @@ class ExporterWithLogProcessorTest {
     // verify that resulting logs are filtered in the way we want
     List<LogRecordData> result = mockExporter.getLogs();
     LogRecordData resultLog = result.get(0);
-    assertThat(resultLog.getBody().asString()).isEqualTo("location::get::1234");
+    Value<?> bodyValue = resultLog.getBodyValue();
+    assertThat(bodyValue).isNotNull();
+    assertThat(bodyValue.getType()).isEqualTo(ValueType.STRING);
+    assertThat(bodyValue.asString()).isEqualTo("location::get::1234");
   }
 
   @Test
@@ -124,7 +132,10 @@ class ExporterWithLogProcessorTest {
     // verify that resulting logs are filtered in the way we want
     List<LogRecordData> result = mockExporter.getLogs();
     LogRecordData resultLog = result.get(0);
-    assertThat(resultLog.getBody().asString()).isEqualTo("location::get::1234");
+    Value<?> bodyValue = resultLog.getBodyValue();
+    assertThat(bodyValue).isNotNull();
+    assertThat(bodyValue.getType()).isEqualTo(ValueType.STRING);
+    assertThat(bodyValue.asString()).isEqualTo("location::get::1234");
   }
 
   @Test
@@ -169,7 +180,10 @@ class ExporterWithLogProcessorTest {
             Objects.requireNonNull(
                 resultLog.getAttributes().get(AttributeKey.stringKey("documentId"))))
         .isEqualTo("12345678");
-    assertThat(resultLog.getBody().asString()).isEqualTo("/api/v1/document/{documentId}/update");
+    Value<?> bodyValue = resultLog.getBodyValue();
+    assertThat(bodyValue).isNotNull();
+    assertThat(bodyValue.getType()).isEqualTo(ValueType.STRING);
+    assertThat(bodyValue.asString()).isEqualTo("/api/v1/document/{documentId}/update");
   }
 
   @Test
@@ -228,7 +242,10 @@ class ExporterWithLogProcessorTest {
             Objects.requireNonNull(
                 resultA.getAttributes().get(AttributeKey.stringKey("password2"))))
         .isEqualTo("555"); // The first match is taken to populate the attribute
-    assertThat(resultA.getBody().asString())
+    Value<?> bodyValueA = resultA.getBodyValue();
+    assertThat(bodyValueA).isNotNull();
+    assertThat(bodyValueA.getType()).isEqualTo(ValueType.STRING);
+    assertThat(bodyValueA.asString())
         .isEqualTo("yyyPassword={password1} aba Pass={password2} xyx Pass={password2} zzz");
     assertThat(
             Objects.requireNonNull(
@@ -238,7 +255,10 @@ class ExporterWithLogProcessorTest {
             Objects.requireNonNull(
                 resultB.getAttributes().get(AttributeKey.stringKey("password1"))))
         .isEqualTo("****");
-    assertThat(resultB.getBody().asString()).isEqualTo("yyyPassword={password1} aba");
+    Value<?> bodyValueB = resultB.getBodyValue();
+    assertThat(bodyValueB).isNotNull();
+    assertThat(bodyValueB.getType()).isEqualTo(ValueType.STRING);
+    assertThat(bodyValueB.asString()).isEqualTo("yyyPassword={password1} aba");
   }
 
   @Test
@@ -264,7 +284,10 @@ class ExporterWithLogProcessorTest {
     List<LogRecordData> result = mockExporter.getLogs();
     LogRecordData resultA = result.get(0);
 
-    assertThat(resultA.getBody().asString()).isEqualTo("yyyPassword={x} aba Password={x} xyx");
+    Value<?> bodyValueA = resultA.getBodyValue();
+    assertThat(bodyValueA).isNotNull();
+    assertThat(bodyValueA.getType()).isEqualTo(ValueType.STRING);
+    assertThat(bodyValueA.asString()).isEqualTo("yyyPassword={x} aba Password={x} xyx");
   }
 
   @Test
@@ -292,6 +315,9 @@ class ExporterWithLogProcessorTest {
     // verify that resulting logs are not modified
     List<LogRecordData> result = mockExporter.getLogs();
     LogRecordData resultLog = result.get(0);
-    assertThat(resultLog.getBody().asString()).isEqualTo("locationget1234");
+    Value<?> bodyValue = resultLog.getBodyValue();
+    assertThat(bodyValue).isNotNull();
+    assertThat(bodyValue.getType()).isEqualTo(ValueType.STRING);
+    assertThat(bodyValue.asString()).isEqualTo("locationget1234");
   }
 }
