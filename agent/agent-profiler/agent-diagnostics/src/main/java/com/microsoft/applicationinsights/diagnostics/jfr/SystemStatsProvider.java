@@ -20,6 +20,8 @@ import com.microsoft.applicationinsights.diagnostics.collection.libos.os.linux.L
 import com.microsoft.applicationinsights.diagnostics.collection.libos.os.linux.LinuxProcessDumper;
 import com.microsoft.applicationinsights.diagnostics.collection.libos.os.linux.cgroups.LinuxCGroupDataReader;
 import com.microsoft.applicationinsights.diagnostics.collection.libos.os.linux.cgroups.LinuxCGroupUsageDataReader;
+import com.microsoft.applicationinsights.diagnostics.collection.libos.os.linux.cgroupsv2.LinuxCGroupV2DataReader;
+import com.microsoft.applicationinsights.diagnostics.collection.libos.os.linux.cgroupsv2.LinuxCGroupV2UsageDataReader;
 import com.microsoft.applicationinsights.diagnostics.collection.libos.os.nop.NoOpCGroupDataReader;
 import com.microsoft.applicationinsights.diagnostics.collection.libos.os.nop.NoOpCGroupUsageDataReader;
 import com.microsoft.applicationinsights.diagnostics.collection.libos.os.nop.NoOpKernelMonitor;
@@ -30,6 +32,7 @@ import com.microsoft.applicationinsights.diagnostics.collection.libos.process.Pr
 import com.microsoft.applicationinsights.diagnostics.collection.libos.process.ThisPidSupplier;
 import java.io.Closeable;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -53,7 +56,7 @@ public class SystemStatsProvider {
 
   private SystemStatsProvider() {}
 
-  public static void init(int thisPid) {
+  public static void init(int thisPid, Path cgroupBasePath) {
     // Ensure we only initialize once
     if (initialised.compareAndSet(false, true)) {
       singletons.put(ThisPidSupplier.class, new AtomicReference<>((ThisPidSupplier) () -> thisPid));
@@ -62,7 +65,7 @@ public class SystemStatsProvider {
         try {
           getCalibration();
           getMachineStats();
-          getCGroupData();
+          getCGroupData(cgroupBasePath);
 
           // Close until needed
           close();
@@ -108,12 +111,12 @@ public class SystemStatsProvider {
     "checkstyle:AbbreviationAsWordInName",
     "MemberName"
   }) // CGroup is the standard abbreviation for Control Group
-  public static CGroupData getCGroupData() {
+  public static CGroupData getCGroupData(Path cgroupBasePath) {
     return getSingleton(
         CGroupData.class,
         () -> {
           try {
-            CGroupDataReader reader = buildCGroupDataReader();
+            CGroupDataReader reader = buildCGroupDataReader(cgroupBasePath);
             CGroupData data = new CGroupData();
 
             return data.setKmemLimit(reader.getKmemLimit())
@@ -169,10 +172,21 @@ public class SystemStatsProvider {
   @SuppressWarnings(
       "checkstyle:AbbreviationAsWordInName") // CGroup is the standard abbreviation for Control
   // Group
-  private static CGroupDataReader buildCGroupDataReader() {
+  private static CGroupDataReader buildCGroupDataReader(Path cgroupBasePath) {
     switch (OperatingSystemDetector.getOperatingSystem()) {
       case LINUX:
-        return new LinuxCGroupDataReader();
+        CGroupDataReader dataReader = new LinuxCGroupDataReader(cgroupBasePath);
+        if (dataReader.isAvailable()) {
+          return dataReader;
+        }
+
+        dataReader = new LinuxCGroupV2DataReader(cgroupBasePath);
+        if (dataReader.isAvailable()) {
+          return dataReader;
+        }
+
+        logger.info("No CGroup limits data not found");
+        return new NoOpCGroupDataReader();
       default:
         return new NoOpCGroupDataReader();
     }
@@ -194,13 +208,29 @@ public class SystemStatsProvider {
   @SuppressWarnings(
       "checkstyle:AbbreviationAsWordInName") // CGroup is the standard abbreviation for Control
   // Group
-  private static CGroupUsageDataReader buildCGroupUsageDataReader() {
+  private static CGroupUsageDataReader buildCGroupUsageDataReader(Path cgroupBasePath) {
     return getSingleton(
         CGroupUsageDataReader.class,
         () -> {
+          if (cgroupBasePath == null) {
+            logger.info("No CGroup data present");
+            return new NoOpCGroupUsageDataReader();
+          }
+
           switch (OperatingSystemDetector.getOperatingSystem()) {
             case LINUX:
-              return new LinuxCGroupUsageDataReader();
+              CGroupUsageDataReader usageReader = new LinuxCGroupUsageDataReader(cgroupBasePath);
+              if (usageReader.isAvailable()) {
+                return usageReader;
+              }
+
+              usageReader = new LinuxCGroupV2UsageDataReader(cgroupBasePath);
+              if (usageReader.isAvailable()) {
+                return usageReader;
+              }
+
+              logger.warn("CGroup data not found");
+              return new NoOpCGroupUsageDataReader();
             default:
               return new NoOpCGroupUsageDataReader();
           }
@@ -220,15 +250,15 @@ public class SystemStatsProvider {
         });
   }
 
-  private static SystemStatsReader getSystemStatsReader() {
-    return getSingleton(SystemStatsReader.class, SystemStatsProvider::buildSystemStatsReader);
+  private static SystemStatsReader getSystemStatsReader(Path cgroupBasePath) {
+    return getSingleton(SystemStatsReader.class, () -> buildSystemStatsReader(cgroupBasePath));
   }
 
-  private static SystemStatsReader buildSystemStatsReader() {
+  private static SystemStatsReader buildSystemStatsReader(Path cgroupBasePath) {
     SystemStatsReader ssr =
         new SystemStatsReader(
             getKernelMonitor(),
-            buildCGroupUsageDataReader(),
+            buildCGroupUsageDataReader(cgroupBasePath),
             getThisProcess().getCpuStats(),
             getThisProcess().getIoStats(),
             buildMemoryInfoReader());
@@ -257,9 +287,9 @@ public class SystemStatsProvider {
         });
   }
 
-  public static SystemStatsReader getStatsReader(int thisPidSupplier) {
-    init(thisPidSupplier);
-    return getSystemStatsReader();
+  public static SystemStatsReader getStatsReader(int thisPidSupplier, Path cgroupBasePath) {
+    init(thisPidSupplier, cgroupBasePath);
+    return getSystemStatsReader(cgroupBasePath);
   }
 
   public static void close() {

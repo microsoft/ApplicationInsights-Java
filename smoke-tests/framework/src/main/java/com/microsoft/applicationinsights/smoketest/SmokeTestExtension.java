@@ -51,6 +51,7 @@ import org.testcontainers.containers.FixedHostPortGenericContainer;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.utility.DockerImageName;
+import org.testcontainers.utility.MountableFile;
 
 @SuppressWarnings({
   "SystemOut",
@@ -112,8 +113,10 @@ public class SmokeTestExtension
   private final Map<String, String> httpHeaders;
   private final Map<String, String> envVars;
   private final List<String> jvmArgs;
+  private final Map<String, String> additionalFiles;
   private final boolean useDefaultHttpPort;
   private final boolean useOtlpEndpoint;
+  private final boolean useOtlpEndpointOnly;
 
   public static SmokeTestExtension create() {
     return builder().build();
@@ -138,8 +141,10 @@ public class SmokeTestExtension
       Map<String, String> httpHeaders,
       Map<String, String> envVars,
       List<String> jvmArgs,
+      Map<String, String> additionalFiles,
       boolean useDefaultHttpPort,
-      boolean useOtlpEndpoint) {
+      boolean useOtlpEndpoint,
+      boolean useOtlpEndpointOnly) {
     this.skipHealthCheck = skipHealthCheck;
     this.readOnly = readOnly;
     this.dependencyContainer = dependencyContainer;
@@ -167,8 +172,10 @@ public class SmokeTestExtension
     this.httpHeaders = httpHeaders;
     this.envVars = envVars;
     this.jvmArgs = jvmArgs;
+    this.additionalFiles = additionalFiles;
     this.useDefaultHttpPort = useDefaultHttpPort;
     this.useOtlpEndpoint = useOtlpEndpoint;
+    this.useOtlpEndpointOnly = useOtlpEndpointOnly;
 
     mockedIngestion = new MockedAppInsightsIngestionServer(useOld3xAgent);
   }
@@ -220,7 +227,7 @@ public class SmokeTestExtension
     mockedIngestion.startServer();
     mockedIngestion.setRequestLoggingEnabled(true);
     mockedIngestion.setQuickPulseRequestLoggingEnabled(true);
-    if (useOtlpEndpoint) {
+    if (useOtlpEndpoint || useOtlpEndpointOnly) {
       mockedOtlpIngestion.startServer();
     }
     network = Network.newNetwork();
@@ -430,6 +437,12 @@ public class SmokeTestExtension
       envVars.put("OTEL_EXPORTER_OTLP_PROTOCOL", "http/protobuf");
     }
 
+    if (useOtlpEndpointOnly) {
+      envVars.put("OTEL_METRICS_EXPORTER", "otlp");
+      envVars.put("OTEL_EXPORTER_OTLP_METRICS_ENDPOINT", FAKE_OTLP_INGESTION_ENDPOINT);
+      envVars.put("OTEL_EXPORTER_OTLP_PROTOCOL", "http/protobuf");
+    }
+
     GenericContainer<?> container;
     if (REMOTE_DEBUG || useDefaultHttpPort) {
       FixedHostPortGenericContainer fixedPortContainer =
@@ -479,6 +492,13 @@ public class SmokeTestExtension
       javaToolOptions.add("-Dotel.exporter.otlp.metrics.endpoint=" + FAKE_OTLP_INGESTION_ENDPOINT);
       javaToolOptions.add("-Dotel.exporter.otlp.protocol=http/protobuf");
     }
+    if (useOtlpEndpointOnly) {
+      // TODO (trask) don't use azure_monitor exporter for smoke test health check
+      javaToolOptions.add("-Dotel.metrics.exporter=otlp");
+      javaToolOptions.add("-Dotel.exporter.otlp.metrics.endpoint=" + FAKE_OTLP_INGESTION_ENDPOINT);
+      javaToolOptions.add("-Dotel.exporter.otlp.protocol=http/protobuf");
+    }
+
     if (REMOTE_DEBUG) {
       javaToolOptions.add(
           "-agentlib:jdwp=transport=dt_socket,address=0.0.0.0:5005,server=y,suspend=y");
@@ -492,7 +512,9 @@ public class SmokeTestExtension
     }
     container.withEnv("JAVA_TOOL_OPTIONS", String.join(" ", javaToolOptions));
 
-    container = addAdditionalFile(container);
+    container =
+        mountAgentExtensionFile(container); // agent extension specified via setAgentExtensionFile()
+    container = mountAdditionalFiles(container); // Additional files specified via addFile()
 
     if (useAgent) {
       container =
@@ -543,12 +565,23 @@ public class SmokeTestExtension
     allContainers.add(container);
   }
 
-  private GenericContainer<?> addAdditionalFile(GenericContainer<?> container) {
+  private GenericContainer<?> mountAgentExtensionFile(GenericContainer<?> container) {
     if (agentExtensionFile != null) {
       return container.withFileSystemBind(
           agentExtensionFile.getAbsolutePath(),
           "/" + agentExtensionFile.getName(),
           BindMode.READ_ONLY);
+    }
+    return container;
+  }
+
+  private GenericContainer<?> mountAdditionalFiles(GenericContainer<?> container) {
+    for (Map.Entry<String, String> entry : additionalFiles.entrySet()) {
+      String resourceName = entry.getKey();
+      String containerPath = entry.getValue();
+      container =
+          container.withCopyFileToContainer(
+              MountableFile.forClasspathResource(resourceName), containerPath);
     }
     return container;
   }
@@ -579,7 +612,7 @@ public class SmokeTestExtension
     mockedIngestion.stopServer();
     mockedIngestion.setRequestLoggingEnabled(false);
     mockedIngestion.setQuickPulseRequestLoggingEnabled(false);
-    if (useOtlpEndpoint) {
+    if (useOtlpEndpoint || useOtlpEndpointOnly) {
       mockedOtlpIngestion.stopServer();
     }
   }

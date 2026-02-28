@@ -1,5 +1,16 @@
 # CHANGELOG
 
+## Version 3.7.7 GA (01/23/2026)
+
+### Enhancements
+
+* Update to OpenTelemetry Java Instrumentation 2.21.0
+  ([#4511](https://github.com/microsoft/ApplicationInsights-Java/pull/4511))
+*  Enable Spring Cloud Gateway instrumentation
+  ([#4559](https://github.com/microsoft/ApplicationInsights-Java/pull/4559))
+* Add azure_monitor to metrics exporter for AKS
+  ([#4575](https://github.com/microsoft/ApplicationInsights-Java/pull/4575))
+
 ## Version 3.7.6 GA (10/28/2025)
 
 ### Enhancements

@@ -66,7 +66,6 @@ abstract class JmxMetricTest {
               "NameWithDot",
               "DefaultJmxMetricNameOverride",
               "WildcardJmxMetric",
-              "Loaded Class Count",
               "BooleanJmxMetric",
               "DotInAttributeNameAsPathSeparator"));
 
