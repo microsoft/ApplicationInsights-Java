@@ -1,0 +1,1 @@
+InstrumentationKey=00000000-0000-0000-0000-0FEEDDADBEEF;IngestionEndpoint=http://host.testcontainers.internal:6060/;LiveEndpoint=http://host.testcontainers.internal:6060/

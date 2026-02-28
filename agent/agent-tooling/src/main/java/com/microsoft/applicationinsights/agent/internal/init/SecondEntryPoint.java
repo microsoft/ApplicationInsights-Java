@@ -264,6 +264,19 @@ public class SecondEntryPoint
               return props;
             })
         .addPropertiesCustomizer(new AiConfigCustomizer())
+        .addPropertiesCustomizer(
+            otelConfig -> {
+              Map<String, String> props = new HashMap<>();
+              if (isAksAttach()) {
+                String metricsExporter = otelConfig.getString("otel.metrics.exporter");
+                String amle =
+                    otelConfig.getString("applicationinsights.metrics.to.loganalytics.enabled");
+                props.put(
+                    "otel.metrics.exporter",
+                    conditionallyAddAzureMonitorExporter(metricsExporter, amle));
+              }
+              return props;
+            })
         .addSpanExporterCustomizer(
             (spanExporter, configProperties) -> {
               if (spanExporter instanceof AzureMonitorSpanExporterProvider.MarkerSpanExporter) {
@@ -797,5 +810,47 @@ public class SecondEntryPoint
               });
         });
     return overallResult;
+  }
+
+  private static boolean isAksAttach() {
+    return !Strings.isNullOrEmpty(System.getenv("AKS_ARM_NAMESPACE_ID"));
+  }
+
+  // visible for tests
+  // Per spec: when amle=true, ensure azure_monitor is included; otherwise respect user's setting
+  // https://github.com/aep-health-and-standards/Telemetry-Collection-Spec/blob/main/ApplicationInsights/AutoAttach_Env_Vars.md#metrics-exporter
+  static String conditionallyAddAzureMonitorExporter(String metricsExporter, String amle) {
+
+    // Default to azure_monitor when not set
+    if (Strings.isNullOrEmpty(metricsExporter)) {
+      // Note: this won't really happen since we default otel.metrics.exporter
+      // already in the PropertiesSupplier above which runs before this
+      return AzureMonitorExporterProviderKeys.EXPORTER_NAME;
+    }
+
+    // When amle=true, ensure azure_monitor is included
+    if ("true".equals(amle)) {
+      if ("none".equals(metricsExporter)) {
+        return AzureMonitorExporterProviderKeys.EXPORTER_NAME;
+      }
+      if (!containsAzureMonitor(metricsExporter)) {
+        return metricsExporter + "," + AzureMonitorExporterProviderKeys.EXPORTER_NAME;
+      }
+    }
+
+    return metricsExporter;
+  }
+
+  // visible for tests
+  static boolean containsAzureMonitor(String metricsExporter) {
+    if (metricsExporter == null) {
+      return false;
+    }
+    for (String exporter : metricsExporter.split(",")) {
+      if (AzureMonitorExporterProviderKeys.EXPORTER_NAME.equals(exporter.trim())) {
+        return true;
+      }
+    }
+    return false;
   }
 }
