@@ -2,6 +2,9 @@ plugins {
   id("ai.smoke-test-jar")
 }
 
+// Override default main class
+ext.set("mainClassName", "com.microsoft.applicationinsights.smoketestapp.JettyNativeHandlerApp")
+
 dependencies {
   implementation("org.springframework.boot:spring-boot-starter:2.5.12")
 
