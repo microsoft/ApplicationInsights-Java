@@ -1,11 +1,7 @@
 
 # agent
 ## Dependency License Report
-<<<<<<< copilot/fix-runtimeattach-smoke-tests
-_2026-02-28 02:16:21 PST_
-=======
-_2026-02-04 17:34:04 PST_
->>>>>>> main
+_2026-02-28 02:29:42 PST_
 ## Apache License, Version 2.0
 
 **1** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-annotations` **Version:** `2.20`
