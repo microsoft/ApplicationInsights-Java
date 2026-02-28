@@ -1,7 +1,11 @@
 
 # agent
 ## Dependency License Report
+<<<<<<< copilot/fix-runtimeattach-smoke-tests
 _2026-02-28 02:16:21 PST_
+=======
+_2026-02-04 17:34:04 PST_
+>>>>>>> main
 ## Apache License, Version 2.0
 
 **1** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-annotations` **Version:** `2.20`
@@ -32,7 +36,7 @@ _2026-02-28 02:16:21 PST_
 > - **Embedded license files**: [jackson-datatype-jsr310-2.20.1.jar/META-INF/LICENSE](jackson-datatype-jsr310-2.20.1.jar/META-INF/LICENSE)
     - [jackson-datatype-jsr310-2.20.1.jar/META-INF/NOTICE](jackson-datatype-jsr310-2.20.1.jar/META-INF/NOTICE)
 
-**5** **Group:** `com.google.errorprone` **Name:** `error_prone_annotations` **Version:** `2.44.0`
+**5** **Group:** `com.google.errorprone` **Name:** `error_prone_annotations` **Version:** `2.46.0`
 > - **Manifest Project URL**: [https://errorprone.info/error_prone_annotations](https://errorprone.info/error_prone_annotations)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)

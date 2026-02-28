@@ -24,12 +24,12 @@ val DEPENDENCY_BOMS = listOf(
   "com.azure:azure-sdk-bom:1.3.3",
   "io.netty:netty-bom:4.2.9.Final",
   "org.junit:junit-bom:5.14.1",
-  "org.testcontainers:testcontainers-bom:2.0.2",
+  "org.testcontainers:testcontainers-bom:2.0.3",
 )
 
 val autoServiceVersion = "1.1.1"
 val autoValueVersion = "1.11.1"
-val errorProneVersion = "2.44.0"
+val errorProneVersion = "2.46.0"
 val jmhVersion = "1.37"
 val mockitoVersion = "4.11.0"
 val slf4jVersion = "2.0.17"

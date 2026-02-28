@@ -5,15 +5,14 @@ package com.microsoft.applicationinsights.diagnostics.collection.libos.os.linux.
 
 import com.microsoft.applicationinsights.diagnostics.collection.libos.BigIncrementalCounter;
 import com.microsoft.applicationinsights.diagnostics.collection.libos.os.linux.TwoStepProcReader;
-import java.io.File;
+import java.nio.file.Path;
 
-@SuppressWarnings(
-    "checkstyle:AbbreviationAsWordInName") // CGroup is the standard abbreviation for Control Group
+@SuppressWarnings("checkstyle:AbbreviationAsWordInName")
 public abstract class CGroupValueReader extends TwoStepProcReader {
   private final BigIncrementalCounter usage = new BigIncrementalCounter();
 
-  public CGroupValueReader(String fileName) {
-    super(new File(fileName), true);
+  public CGroupValueReader(Path file) {
+    super(file.toFile(), true);
   }
 
   @Override
