@@ -26,6 +26,11 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
         "applicationinsights.internal.micrometer.step.millis",
         Long.toString(SECONDS.toMillis(configuration.metricIntervalSeconds)));
 
+    // keep system properties in sync for internal consumers that read directly
+    System.setProperty(
+      "applicationinsights.internal.micrometer.step.millis",
+      Long.toString(SECONDS.toMillis(configuration.metricIntervalSeconds)));
+
     properties.put(
         "otel.metric.export.interval",
         Long.toString(SECONDS.toMillis(configuration.metricIntervalSeconds)));
@@ -101,7 +106,10 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
         sb.append(customInstrumentation.methodName);
         sb.append(']');
       }
-      properties.put("applicationinsights.internal.methods.include", sb.toString());
+      String includeConfig = sb.toString();
+      properties.put("applicationinsights.internal.methods.include", includeConfig);
+      // keep system property for internal methods instrumentation
+      System.setProperty("applicationinsights.internal.methods.include", includeConfig);
     }
 
     properties.put("otel.propagators", DelegatingPropagatorProvider.NAME);
@@ -223,6 +231,7 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
     String namespace = config.instrumentation.micrometer.namespace;
     if (namespace != null) {
       properties.put("applicationinsights.internal.micrometer.namespace", namespace);
+      System.setProperty("applicationinsights.internal.micrometer.namespace", namespace);
     }
     if (config.instrumentation.azureSdk.enabled) {
       properties.put("otel.instrumentation.azure-core.enabled", "true");
