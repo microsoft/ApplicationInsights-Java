@@ -34,6 +34,8 @@ import com.azure.monitor.opentelemetry.autoconfigure.implementation.utils.String
 import com.azure.monitor.opentelemetry.autoconfigure.implementation.utils.TempDirs;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
+import com.microsoft.applicationinsights.agent.internal.keytransaction.KeyTransactionConfigSupplier;
+import com.microsoft.applicationinsights.agent.internal.keytransaction.KeyTransactionTelemetryPipelineListener;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.File;
@@ -252,6 +254,12 @@ public class TelemetryClient {
                   telemetryPipeline,
                   statsbeatModule.getNonessentialStatsbeat(),
                   false));
+    }
+
+    if (KeyTransactionConfigSupplier.KEY_TRANSACTIONS_ENABLED) {
+      telemetryPipelineListener =
+          TelemetryPipelineListener.composite(
+              telemetryPipelineListener, new KeyTransactionTelemetryPipelineListener());
     }
 
     return BatchItemProcessor.builder(
