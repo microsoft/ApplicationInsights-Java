@@ -22,13 +22,10 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
 
     Map<String, String> properties = new HashMap<>();
 
-    properties.put(
-        "applicationinsights.internal.micrometer.step.millis",
-        Long.toString(SECONDS.toMillis(configuration.metricIntervalSeconds)));
+    String stepMillisValue = Long.toString(SECONDS.toMillis(configuration.metricIntervalSeconds));
+    properties.put("applicationinsights.internal.micrometer.step.millis", stepMillisValue);
     // also set as system property so that instrumentation modules can read it
-    System.setProperty(
-        "applicationinsights.internal.micrometer.step.millis",
-        Long.toString(SECONDS.toMillis(configuration.metricIntervalSeconds)));
+    System.setProperty("applicationinsights.internal.micrometer.step.millis", stepMillisValue);
 
     properties.put(
         "otel.metric.export.interval",

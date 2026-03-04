@@ -17,10 +17,15 @@ public class AzureMonitorRegistryConfig implements StepRegistryConfig {
   private AzureMonitorRegistryConfig() {
     String stepMillisStr =
         System.getProperty("applicationinsights.internal.micrometer.step.millis");
-    step =
-        stepMillisStr != null
-            ? Duration.ofMillis(Long.parseLong(stepMillisStr))
-            : Duration.ofSeconds(60);
+    Duration parsedStep = null;
+    if (stepMillisStr != null) {
+      try {
+        parsedStep = Duration.ofMillis(Long.parseLong(stepMillisStr));
+      } catch (NumberFormatException ignored) {
+        // fall through to default
+      }
+    }
+    step = parsedStep != null ? parsedStep : Duration.ofSeconds(60);
     namespace = System.getProperty("applicationinsights.internal.micrometer.namespace");
   }
 
