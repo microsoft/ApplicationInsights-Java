@@ -27,8 +27,7 @@ public class AzureMonitorRegistryConfig implements StepRegistryConfig {
       }
     }
     step = parsedStep != null ? parsedStep : Duration.ofSeconds(60);
-    namespace =
-        ConfigPropertiesUtil.getString("applicationinsights.internal.micrometer.namespace");
+    namespace = ConfigPropertiesUtil.getString("applicationinsights.internal.micrometer.namespace");
   }
 
   @Override
