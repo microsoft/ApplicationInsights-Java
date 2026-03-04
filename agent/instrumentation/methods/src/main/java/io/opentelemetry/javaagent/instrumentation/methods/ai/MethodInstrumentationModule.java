@@ -32,8 +32,7 @@ public class MethodInstrumentationModule extends InstrumentationModule {
     super("ai-methods");
 
     Map<String, Set<String>> classMethodsToTrace =
-        MethodsConfigurationParser.parse(
-            System.getProperty(TRACE_METHODS_CONFIG));
+        MethodsConfigurationParser.parse(System.getProperty(TRACE_METHODS_CONFIG));
 
     typeInstrumentations =
         classMethodsToTrace.entrySet().stream()
