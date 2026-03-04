@@ -84,6 +84,7 @@ tasks {
       exclude(dependency("io.opentelemetry:opentelemetry-api"))
       exclude(dependency("io.opentelemetry:opentelemetry-context"))
       exclude(dependency("io.opentelemetry:opentelemetry-api-incubator"))
+      exclude(dependency("io.opentelemetry:opentelemetry-common"))
     }
   }
 

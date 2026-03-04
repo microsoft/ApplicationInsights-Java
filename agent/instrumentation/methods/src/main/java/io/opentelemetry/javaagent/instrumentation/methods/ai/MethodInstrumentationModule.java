@@ -13,7 +13,6 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 
 import com.google.auto.service.AutoService;
-import io.opentelemetry.javaagent.bootstrap.internal.AgentInstrumentationConfig;
 import io.opentelemetry.javaagent.extension.instrumentation.InstrumentationModule;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.tooling.config.MethodsConfigurationParser;
@@ -34,7 +33,7 @@ public class MethodInstrumentationModule extends InstrumentationModule {
 
     Map<String, Set<String>> classMethodsToTrace =
         MethodsConfigurationParser.parse(
-            AgentInstrumentationConfig.get().getString(TRACE_METHODS_CONFIG));
+            System.getProperty(TRACE_METHODS_CONFIG));
 
     typeInstrumentations =
         classMethodsToTrace.entrySet().stream()
