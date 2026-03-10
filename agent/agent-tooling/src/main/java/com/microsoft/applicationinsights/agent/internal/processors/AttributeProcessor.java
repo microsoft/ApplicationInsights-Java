@@ -284,6 +284,8 @@ public class AttributeProcessor extends AgentProcessor {
       case DOUBLE_ARRAY:
         builder.put((AttributeKey<List<?>>) key, (List<?>) value);
         break;
+      default:
+        break;
     }
   }
 }
