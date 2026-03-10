@@ -20,6 +20,7 @@ import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import io.opentelemetry.semconv.ExceptionAttributes;
 import java.util.Collection;
+import java.util.Map;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import org.slf4j.Logger;
@@ -92,6 +93,13 @@ public class AgentLogExporter implements LogRecordExporter {
 
       // TODO (trask) get stack and sampleRate inside map() method instead of passing into
       TelemetryItem telemetryItem = mapper.map(log, stack, sampleRate);
+
+      Map<String, String> genAiValues =
+          GenAiPropertyUtil.extractGenAiAttributes(log.getAttributes());
+      if (!genAiValues.isEmpty()) {
+        GenAiPropertyUtil.restoreGenAiProperties(telemetryItem, genAiValues);
+      }
+
       telemetryItemConsumer.accept(telemetryItem);
 
       exportingLogLogger.recordSuccess();

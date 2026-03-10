@@ -17,6 +17,7 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.Collection;
+import java.util.Map;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import org.slf4j.Logger;
@@ -59,7 +60,18 @@ public final class AgentSpanExporter implements SpanExporter {
     for (SpanData span : spans) {
       logger.debug("exporting span: {}", span);
       try {
-        mapper.map(span, telemetryItemConsumer);
+        Map<String, String> genAiValues =
+            GenAiPropertyUtil.extractGenAiAttributes(span.getAttributes());
+        if (genAiValues.isEmpty()) {
+          mapper.map(span, telemetryItemConsumer);
+        } else {
+          mapper.map(
+              span,
+              item -> {
+                GenAiPropertyUtil.restoreGenAiProperties(item, genAiValues);
+                telemetryItemConsumer.accept(item);
+              });
+        }
         exportingSpanLogger.recordSuccess();
       } catch (Throwable t) {
         exportingSpanLogger.recordFailure(t.getMessage(), t, EXPORTER_MAPPING_ERROR);
