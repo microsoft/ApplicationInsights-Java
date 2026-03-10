@@ -9,6 +9,7 @@ import com.microsoft.applicationinsights.agent.internal.configuration.Configurat
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.api.common.Value;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.util.List;
@@ -284,7 +285,8 @@ public class AttributeProcessor extends AgentProcessor {
       case DOUBLE_ARRAY:
         builder.put((AttributeKey<List<?>>) key, (List<?>) value);
         break;
-      default:
+      case VALUE:
+        builder.put((AttributeKey<Value<?>>) key, (Value<?>) value);
         break;
     }
   }
