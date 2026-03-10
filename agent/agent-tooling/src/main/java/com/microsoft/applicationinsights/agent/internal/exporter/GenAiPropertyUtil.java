@@ -19,6 +19,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
 final class GenAiPropertyUtil {
@@ -94,36 +96,31 @@ final class GenAiPropertyUtil {
     MonitorDomain baseData = telemetryItem.getData().getBaseData();
     if (baseData instanceof MessageData) {
       MessageData data = (MessageData) baseData;
-      if (data.getProperties() == null) {
-        data.setProperties(new HashMap<>());
-      }
-      return data.getProperties();
+      return getOrInitProperties(data::getProperties, data::setProperties);
     } else if (baseData instanceof RequestData) {
       RequestData data = (RequestData) baseData;
-      if (data.getProperties() == null) {
-        data.setProperties(new HashMap<>());
-      }
-      return data.getProperties();
+      return getOrInitProperties(data::getProperties, data::setProperties);
     } else if (baseData instanceof RemoteDependencyData) {
       RemoteDependencyData data = (RemoteDependencyData) baseData;
-      if (data.getProperties() == null) {
-        data.setProperties(new HashMap<>());
-      }
-      return data.getProperties();
+      return getOrInitProperties(data::getProperties, data::setProperties);
     } else if (baseData instanceof TelemetryExceptionData) {
       TelemetryExceptionData data = (TelemetryExceptionData) baseData;
-      if (data.getProperties() == null) {
-        data.setProperties(new HashMap<>());
-      }
-      return data.getProperties();
+      return getOrInitProperties(data::getProperties, data::setProperties);
     } else if (baseData instanceof TelemetryEventData) {
       TelemetryEventData data = (TelemetryEventData) baseData;
-      if (data.getProperties() == null) {
-        data.setProperties(new HashMap<>());
-      }
-      return data.getProperties();
+      return getOrInitProperties(data::getProperties, data::setProperties);
     }
     return null;
+  }
+
+  private static Map<String, String> getOrInitProperties(
+      Supplier<Map<String, String>> getter, Consumer<Map<String, String>> setter) {
+    Map<String, String> properties = getter.get();
+    if (properties == null) {
+      properties = new HashMap<>();
+      setter.accept(properties);
+    }
+    return properties;
   }
 
   private GenAiPropertyUtil() {}
