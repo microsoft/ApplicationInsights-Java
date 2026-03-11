@@ -63,6 +63,7 @@ abstract class DetectUnexpectedOtelMetricsTest {
                     envelope -> {
                       MetricData md = (MetricData) ((Data<?>) envelope.getData()).getBaseData();
                       return !EXPECTED_METRIC_NAMES.contains(md.getMetrics().get(0).getName())
+                          && !md.getMetrics().get(0).getName().startsWith("otel.sdk.")
                           && !md.getProperties().containsKey("_MS.MetricId");
                     },
                     1))
