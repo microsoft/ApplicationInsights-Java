@@ -283,6 +283,9 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
       properties.put(
           "otel.instrumentation.log4j-appender.experimental.capture-marker-attribute", "true");
     }
+    if (config.preview.captureJdbcQueryParameters) {
+      properties.put("otel.instrumentation.jdbc.experimental.capture-query-parameters", "true");
+    }
     if (config.preview.instrumentation.akka.enabled) {
       properties.put("otel.instrumentation.akka-actor.enabled", "true");
       properties.put("otel.instrumentation.akka-http.enabled", "true");
