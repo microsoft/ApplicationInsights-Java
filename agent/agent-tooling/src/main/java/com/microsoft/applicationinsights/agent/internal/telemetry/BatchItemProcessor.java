@@ -13,7 +13,7 @@ import io.opentelemetry.api.logs.LoggerProvider;
 import io.opentelemetry.internal.shaded.jctools.queues.atomic.MpscAtomicArrayQueue;
 import io.opentelemetry.javaagent.bootstrap.CallDepth;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.internal.DaemonThreadFactory;
+import io.opentelemetry.sdk.common.internal.DaemonThreadFactory;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Queue;
