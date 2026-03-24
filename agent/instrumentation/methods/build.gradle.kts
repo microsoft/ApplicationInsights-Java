@@ -26,6 +26,6 @@ dependencies {
 
 tasks.withType<Test>().configureEach {
   jvmArgs(
-    "-Dapplicationinsights.internal.methods.include=io.opentelemetry.javaagent.instrumentation.methods.ai.MethodTest\$ConfigTracedCallable[call];io.opentelemetry.javaagent.instrumentation.methods.ai.MethodTest\$ConfigTracedCompletableFuture[getResult]"
+    "-Dotel.instrumentation.applicationinsights.internal.methods.include=io.opentelemetry.javaagent.instrumentation.methods.ai.MethodTest\$ConfigTracedCallable[call];io.opentelemetry.javaagent.instrumentation.methods.ai.MethodTest\$ConfigTracedCompletableFuture[getResult]"
   )
 }

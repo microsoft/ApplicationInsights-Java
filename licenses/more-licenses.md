@@ -1,36 +1,36 @@
 
 # agent
 ## Dependency License Report
-_2026-03-04 03:15:22 UTC_
+_2026-03-23 17:40:05 PDT_
 ## Apache License, Version 2.0
 
-**1** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-annotations` **Version:** `2.20`
+**1** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-annotations` **Version:** `2.21`
 > - **Project URL**: [https://github.com/FasterXML/jackson](https://github.com/FasterXML/jackson)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
-> - **Embedded license files**: [jackson-annotations-2.20.jar/META-INF/LICENSE](jackson-annotations-2.20.jar/META-INF/LICENSE)
-    - [jackson-annotations-2.20.jar/META-INF/NOTICE](jackson-annotations-2.20.jar/META-INF/NOTICE)
+> - **Embedded license files**: [jackson-annotations-2.21.jar/META-INF/LICENSE](jackson-annotations-2.21.jar/META-INF/LICENSE)
+    - [jackson-annotations-2.21.jar/META-INF/NOTICE](jackson-annotations-2.21.jar/META-INF/NOTICE)
 
-**2** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-core` **Version:** `2.20.1`
+**2** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-core` **Version:** `2.21.1`
 > - **Project URL**: [https://github.com/FasterXML/jackson-core](https://github.com/FasterXML/jackson-core)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
-> - **Embedded license files**: [jackson-core-2.20.1.jar/META-INF/LICENSE](jackson-core-2.20.1.jar/META-INF/LICENSE)
-    - [jackson-core-2.20.1.jar/META-INF/NOTICE](jackson-core-2.20.1.jar/META-INF/NOTICE)
+> - **Embedded license files**: [jackson-core-2.21.1.jar/META-INF/LICENSE](jackson-core-2.21.1.jar/META-INF/LICENSE)
+    - [jackson-core-2.21.1.jar/META-INF/NOTICE](jackson-core-2.21.1.jar/META-INF/NOTICE)
 
-**3** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-databind` **Version:** `2.20.1`
+**3** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-databind` **Version:** `2.21.1`
 > - **Project URL**: [https://github.com/FasterXML/jackson](https://github.com/FasterXML/jackson)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
-> - **Embedded license files**: [jackson-databind-2.20.1.jar/META-INF/LICENSE](jackson-databind-2.20.1.jar/META-INF/LICENSE)
-    - [jackson-databind-2.20.1.jar/META-INF/NOTICE](jackson-databind-2.20.1.jar/META-INF/NOTICE)
+> - **Embedded license files**: [jackson-databind-2.21.1.jar/META-INF/LICENSE](jackson-databind-2.21.1.jar/META-INF/LICENSE)
+    - [jackson-databind-2.21.1.jar/META-INF/NOTICE](jackson-databind-2.21.1.jar/META-INF/NOTICE)
 
-**4** **Group:** `com.fasterxml.jackson.datatype` **Name:** `jackson-datatype-jsr310` **Version:** `2.20.1`
+**4** **Group:** `com.fasterxml.jackson.datatype` **Name:** `jackson-datatype-jsr310` **Version:** `2.21.1`
 > - **Manifest Project URL**: [https://github.com/FasterXML/jackson-modules-java8/jackson-datatype-jsr310](https://github.com/FasterXML/jackson-modules-java8/jackson-datatype-jsr310)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
-> - **Embedded license files**: [jackson-datatype-jsr310-2.20.1.jar/META-INF/LICENSE](jackson-datatype-jsr310-2.20.1.jar/META-INF/LICENSE)
-    - [jackson-datatype-jsr310-2.20.1.jar/META-INF/NOTICE](jackson-datatype-jsr310-2.20.1.jar/META-INF/NOTICE)
+> - **Embedded license files**: [jackson-datatype-jsr310-2.21.1.jar/META-INF/LICENSE](jackson-datatype-jsr310-2.21.1.jar/META-INF/LICENSE)
+    - [jackson-datatype-jsr310-2.21.1.jar/META-INF/NOTICE](jackson-datatype-jsr310-2.21.1.jar/META-INF/NOTICE)
 
 **5** **Group:** `com.google.errorprone` **Name:** `error_prone_annotations` **Version:** `2.48.0`
 > - **Manifest Project URL**: [https://errorprone.info/error_prone_annotations](https://errorprone.info/error_prone_annotations)
@@ -170,47 +170,47 @@ _2026-03-04 03:15:22 UTC_
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
 
-**32** **Group:** `io.opentelemetry` **Name:** `opentelemetry-api` **Version:** `1.55.0`
+**32** **Group:** `io.opentelemetry` **Name:** `opentelemetry-api` **Version:** `1.60.1`
 > - **POM Project URL**: [https://github.com/open-telemetry/opentelemetry-java](https://github.com/open-telemetry/opentelemetry-java)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
-**33** **Group:** `io.opentelemetry` **Name:** `opentelemetry-common` **Version:** `1.55.0`
+**33** **Group:** `io.opentelemetry` **Name:** `opentelemetry-common` **Version:** `1.60.1`
 > - **POM Project URL**: [https://github.com/open-telemetry/opentelemetry-java](https://github.com/open-telemetry/opentelemetry-java)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
-**34** **Group:** `io.opentelemetry` **Name:** `opentelemetry-context` **Version:** `1.55.0`
+**34** **Group:** `io.opentelemetry` **Name:** `opentelemetry-context` **Version:** `1.60.1`
 > - **POM Project URL**: [https://github.com/open-telemetry/opentelemetry-java](https://github.com/open-telemetry/opentelemetry-java)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
-**35** **Group:** `io.opentelemetry` **Name:** `opentelemetry-sdk` **Version:** `1.55.0`
+**35** **Group:** `io.opentelemetry` **Name:** `opentelemetry-sdk` **Version:** `1.60.1`
 > - **POM Project URL**: [https://github.com/open-telemetry/opentelemetry-java](https://github.com/open-telemetry/opentelemetry-java)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
-**36** **Group:** `io.opentelemetry` **Name:** `opentelemetry-sdk-common` **Version:** `1.55.0`
+**36** **Group:** `io.opentelemetry` **Name:** `opentelemetry-sdk-common` **Version:** `1.60.1`
 > - **POM Project URL**: [https://github.com/open-telemetry/opentelemetry-java](https://github.com/open-telemetry/opentelemetry-java)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
-**37** **Group:** `io.opentelemetry` **Name:** `opentelemetry-sdk-extension-autoconfigure` **Version:** `1.55.0`
+**37** **Group:** `io.opentelemetry` **Name:** `opentelemetry-sdk-extension-autoconfigure` **Version:** `1.60.1`
 > - **POM Project URL**: [https://github.com/open-telemetry/opentelemetry-java](https://github.com/open-telemetry/opentelemetry-java)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
-**38** **Group:** `io.opentelemetry` **Name:** `opentelemetry-sdk-extension-autoconfigure-spi` **Version:** `1.55.0`
+**38** **Group:** `io.opentelemetry` **Name:** `opentelemetry-sdk-extension-autoconfigure-spi` **Version:** `1.60.1`
 > - **POM Project URL**: [https://github.com/open-telemetry/opentelemetry-java](https://github.com/open-telemetry/opentelemetry-java)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
-**39** **Group:** `io.opentelemetry` **Name:** `opentelemetry-sdk-logs` **Version:** `1.55.0`
+**39** **Group:** `io.opentelemetry` **Name:** `opentelemetry-sdk-logs` **Version:** `1.60.1`
 > - **POM Project URL**: [https://github.com/open-telemetry/opentelemetry-java](https://github.com/open-telemetry/opentelemetry-java)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
-**40** **Group:** `io.opentelemetry` **Name:** `opentelemetry-sdk-metrics` **Version:** `1.55.0`
+**40** **Group:** `io.opentelemetry` **Name:** `opentelemetry-sdk-metrics` **Version:** `1.60.1`
 > - **POM Project URL**: [https://github.com/open-telemetry/opentelemetry-java](https://github.com/open-telemetry/opentelemetry-java)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
-**41** **Group:** `io.opentelemetry` **Name:** `opentelemetry-sdk-trace` **Version:** `1.55.0`
+**41** **Group:** `io.opentelemetry` **Name:** `opentelemetry-sdk-trace` **Version:** `1.60.1`
 > - **POM Project URL**: [https://github.com/open-telemetry/opentelemetry-java](https://github.com/open-telemetry/opentelemetry-java)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
-**42** **Group:** `io.opentelemetry.contrib` **Name:** `opentelemetry-jfr-connection` **Version:** `1.48.0-alpha`
+**42** **Group:** `io.opentelemetry.contrib` **Name:** `opentelemetry-jfr-connection` **Version:** `1.54.0-alpha`
 > - **POM Project URL**: [https://github.com/open-telemetry/opentelemetry-java-contrib](https://github.com/open-telemetry/opentelemetry-java-contrib)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 

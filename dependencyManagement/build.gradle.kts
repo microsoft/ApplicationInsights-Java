@@ -7,23 +7,23 @@ data class DependencySet(val group: String, val version: String, val modules: Li
 val dependencyVersions = hashMapOf<String, String>()
 rootProject.extra["versions"] = dependencyVersions
 
-val otelSdkVersion = "1.55.0"
-val otelInstrumentationAlphaVersion = "2.21.0-alpha"
-val otelInstrumentationVersion = "2.21.0"
-val otelContribVersion = "1.48.0"
+val otelSdkVersion = "1.60.1"
+val otelInstrumentationAlphaVersion = "2.26.1-alpha"
+val otelInstrumentationVersion = "2.26.1"
+val otelContribVersion = "1.54.0"
 
 rootProject.extra["otelInstrumentationVersion"] = otelInstrumentationVersion
 rootProject.extra["otelInstrumentationAlphaVersion"] = otelInstrumentationAlphaVersion
 
 val DEPENDENCY_BOMS = listOf(
-  "com.fasterxml.jackson:jackson-bom:2.20.1",
+  "com.fasterxml.jackson:jackson-bom:2.21.1",
   "io.opentelemetry:opentelemetry-bom:${otelSdkVersion}",
   "io.opentelemetry:opentelemetry-bom-alpha:${otelSdkVersion}-alpha",
   "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:${otelInstrumentationVersion}",
   "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${otelInstrumentationAlphaVersion}",
   "com.azure:azure-sdk-bom:1.3.3",
   "io.netty:netty-bom:4.2.9.Final",
-  "org.junit:junit-bom:5.14.1",
+  "org.junit:junit-bom:5.14.2",
   "org.testcontainers:testcontainers-bom:2.0.3",
 )
 
@@ -35,8 +35,8 @@ val mockitoVersion = "4.11.0"
 val slf4jVersion = "2.0.17"
 
 val CORE_DEPENDENCIES = listOf(
-  "io.opentelemetry.semconv:opentelemetry-semconv:1.37.0",
-  "io.opentelemetry.semconv:opentelemetry-semconv-incubating:1.37.0-alpha",
+  "io.opentelemetry.semconv:opentelemetry-semconv:1.40.0",
+  "io.opentelemetry.semconv:opentelemetry-semconv-incubating:1.40.0-alpha",
   "io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-incubator:${otelInstrumentationAlphaVersion}",
   "com.google.auto.service:auto-service:${autoServiceVersion}",
   "com.google.auto.service:auto-service-annotations:${autoServiceVersion}",
@@ -65,7 +65,7 @@ val DEPENDENCIES = listOf(
   "org.apache.commons:commons-text:1.15.0",
   "com.google.code.gson:gson:2.13.2",
   "com.azure:azure-core-test:1.26.2", // this is not included in azure-sdk-bom
-  "org.assertj:assertj-core:3.27.6",
+  "org.assertj:assertj-core:3.27.7",
   "org.awaitility:awaitility:4.3.0",
   "io.opentelemetry.contrib:opentelemetry-jfr-connection:${otelContribVersion}-alpha",
   "io.opentelemetry.contrib:opentelemetry-runtime-attach-core:${otelContribVersion}-alpha",
