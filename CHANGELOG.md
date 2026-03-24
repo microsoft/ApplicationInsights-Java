@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## Version 3.7.8 GA (03/24/2026)
+
+* Update to OpenTelemetry Java Instrumentation 2.26.1
+  ([#4648](https://github.com/microsoft/ApplicationInsights-Java/pull/4648))
+
 ## Version 3.7.7 GA (01/23/2026)
 
 ### Enhancements
