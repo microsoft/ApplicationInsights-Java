@@ -21,7 +21,7 @@ tasks.named<ShadowJar>("shadowJar") {
   // Use PropertiesFileTransformer to merge duplicate keys instead of simple append
   transform(PropertiesFileTransformer::class.java) {
     paths = listOf("META-INF/spring.factories")
-    mergeStrategy = "append"
+    mergeStrategy = PropertiesFileTransformer.MergeStrategy.Append
   }
   
   // Set main class - can be overridden by individual projects via mainClassName property

@@ -6,10 +6,29 @@ plugins {
 
 tasks.withType<ShadowJar>().configureEach {
   mergeServiceFiles {
-    include("inst/META-INF/services/*")
+    include("META-INF/services/**")
+    include("inst/META-INF/services/**")
   }
 
   exclude("**/module-info.class")
+  exclude("META-INF/*.SF")
+  exclude("META-INF/*.DSA")
+  exclude("META-INF/*.RSA")
+  exclude("META-INF/maven/**")
+  exclude("META-INF/INDEX.LIST")
+
+  // Keep service loaders merged while deduplicating non-functional META-INF metadata.
+  eachFile {
+    if (path.startsWith("META-INF/") && !path.startsWith("META-INF/services/")) {
+      duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    }
+  }
+  filesMatching("META-INF/services/**") {
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+  }
+  filesMatching("inst/META-INF/services/**") {
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+  }
 
   // Prevents conflict with other SLF4J instances. Important for premain.
   relocate("org.slf4j", "io.opentelemetry.javaagent.slf4j")
