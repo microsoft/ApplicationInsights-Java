@@ -5,10 +5,8 @@ plugins {
 }
 
 tasks.withType<ShadowJar>().configureEach {
-  mergeServiceFiles {
-    include("META-INF/services/**")
-    include("inst/META-INF/services/**")
-  }
+  mergeServiceFiles()
+  mergeServiceFiles("inst/META-INF/services")
 
   exclude("**/module-info.class")
   exclude("META-INF/*.SF")
