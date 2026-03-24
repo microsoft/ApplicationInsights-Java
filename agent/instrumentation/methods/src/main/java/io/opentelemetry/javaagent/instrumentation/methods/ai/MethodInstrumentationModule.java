@@ -13,7 +13,8 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 
 import com.google.auto.service.AutoService;
-import io.opentelemetry.javaagent.bootstrap.internal.AgentInstrumentationConfig;
+import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.instrumentation.api.incubator.config.internal.DeclarativeConfigUtil;
 import io.opentelemetry.javaagent.extension.instrumentation.InstrumentationModule;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.tooling.config.MethodsConfigurationParser;
@@ -25,8 +26,6 @@ import java.util.stream.Collectors;
 @AutoService(InstrumentationModule.class)
 public class MethodInstrumentationModule extends InstrumentationModule {
 
-  private static final String TRACE_METHODS_CONFIG = "applicationinsights.internal.methods.include";
-
   private final List<TypeInstrumentation> typeInstrumentations;
 
   public MethodInstrumentationModule() {
@@ -34,7 +33,11 @@ public class MethodInstrumentationModule extends InstrumentationModule {
 
     Map<String, Set<String>> classMethodsToTrace =
         MethodsConfigurationParser.parse(
-            AgentInstrumentationConfig.get().getString(TRACE_METHODS_CONFIG));
+            DeclarativeConfigUtil.getInstrumentationConfig(
+                    GlobalOpenTelemetry.get(), "applicationinsights")
+                .get("internal")
+                .get("methods")
+                .getString("include"));
 
     typeInstrumentations =
         classMethodsToTrace.entrySet().stream()
