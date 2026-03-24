@@ -32,7 +32,7 @@ _2026-03-24 03:17:26 UTC_
 > - **Embedded license files**: [jackson-datatype-jsr310-2.21.1.jar/META-INF/LICENSE](jackson-datatype-jsr310-2.21.1.jar/META-INF/LICENSE)
     - [jackson-datatype-jsr310-2.21.1.jar/META-INF/NOTICE](jackson-datatype-jsr310-2.21.1.jar/META-INF/NOTICE)
 
-**5** **Group:** `com.google.errorprone` **Name:** `error_prone_annotations` **Version:** `2.46.0`
+**5** **Group:** `com.google.errorprone` **Name:** `error_prone_annotations` **Version:** `2.48.0`
 > - **Manifest Project URL**: [https://errorprone.info/error_prone_annotations](https://errorprone.info/error_prone_annotations)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
