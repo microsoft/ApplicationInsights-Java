@@ -1,7 +1,7 @@
 
 # agent
 ## Dependency License Report
-_2026-03-24 03:17:26 UTC_
+_2026-03-25 18:16:49 UTC_
 ## Apache License, Version 2.0
 
 **1** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-annotations` **Version:** `2.21`
@@ -266,48 +266,48 @@ _2026-03-24 03:17:26 UTC_
 
 **51** **Group:** `ch.qos.logback` **Name:** `logback-classic` **Version:** `1.3.16`
 > - **Manifest Project URL**: [http://www.qos.ch](http://www.qos.ch)
-> - **Manifest License**: GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 (Not Packaged)
-> - **POM License**: Eclipse Public License - v 1.0 - [http://www.eclipse.org/legal/epl-v10.html](http://www.eclipse.org/legal/epl-v10.html)
+> - **Manifest License**: Eclipse Public License - v 1.0 (Not Packaged)
+> - **POM License**: Eclipse Public License - v 1.0 - [https://www.eclipse.org/legal/epl-v10.html](https://www.eclipse.org/legal/epl-v10.html)
 > - **POM License**: GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 - [https://www.gnu.org/licenses/lgpl-2.1](https://www.gnu.org/licenses/lgpl-2.1)
 
 **52** **Group:** `ch.qos.logback` **Name:** `logback-core` **Version:** `1.3.16`
 > - **Manifest Project URL**: [http://www.qos.ch](http://www.qos.ch)
-> - **Manifest License**: GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 (Not Packaged)
-> - **POM License**: Eclipse Public License - v 1.0 - [http://www.eclipse.org/legal/epl-v10.html](http://www.eclipse.org/legal/epl-v10.html)
+> - **Manifest License**: Eclipse Public License - v 1.0 (Not Packaged)
+> - **POM License**: Eclipse Public License - v 1.0 - [https://www.eclipse.org/legal/epl-v10.html](https://www.eclipse.org/legal/epl-v10.html)
 > - **POM License**: GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 - [https://www.gnu.org/licenses/lgpl-2.1](https://www.gnu.org/licenses/lgpl-2.1)
 
 **53** **Group:** `ch.qos.logback.contrib` **Name:** `logback-json-classic` **Version:** `0.1.5`
-> - **Manifest License**: GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 (Not Packaged)
-> - **POM License**: Eclipse Public License - v 1.0 - [http://www.eclipse.org/legal/epl-v10.html](http://www.eclipse.org/legal/epl-v10.html)
+> - **Manifest License**: Eclipse Public License - v 1.0 (Not Packaged)
+> - **POM License**: Eclipse Public License - v 1.0 - [https://www.eclipse.org/legal/epl-v10.html](https://www.eclipse.org/legal/epl-v10.html)
 > - **POM License**: GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 - [https://www.gnu.org/licenses/lgpl-2.1](https://www.gnu.org/licenses/lgpl-2.1)
 
 **54** **Group:** `ch.qos.logback.contrib` **Name:** `logback-json-core` **Version:** `0.1.5`
-> - **Manifest License**: GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 (Not Packaged)
-> - **POM License**: Eclipse Public License - v 1.0 - [http://www.eclipse.org/legal/epl-v10.html](http://www.eclipse.org/legal/epl-v10.html)
+> - **Manifest License**: Eclipse Public License - v 1.0 (Not Packaged)
+> - **POM License**: Eclipse Public License - v 1.0 - [https://www.eclipse.org/legal/epl-v10.html](https://www.eclipse.org/legal/epl-v10.html)
 > - **POM License**: GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 - [https://www.gnu.org/licenses/lgpl-2.1](https://www.gnu.org/licenses/lgpl-2.1)
 
 ## GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1
 
 **55** **Group:** `ch.qos.logback` **Name:** `logback-classic` **Version:** `1.3.16`
 > - **Manifest Project URL**: [http://www.qos.ch](http://www.qos.ch)
-> - **Manifest License**: GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 (Not Packaged)
-> - **POM License**: Eclipse Public License - v 1.0 - [http://www.eclipse.org/legal/epl-v10.html](http://www.eclipse.org/legal/epl-v10.html)
+> - **Manifest License**: Eclipse Public License - v 1.0 (Not Packaged)
+> - **POM License**: Eclipse Public License - v 1.0 - [https://www.eclipse.org/legal/epl-v10.html](https://www.eclipse.org/legal/epl-v10.html)
 > - **POM License**: GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 - [https://www.gnu.org/licenses/lgpl-2.1](https://www.gnu.org/licenses/lgpl-2.1)
 
 **56** **Group:** `ch.qos.logback` **Name:** `logback-core` **Version:** `1.3.16`
 > - **Manifest Project URL**: [http://www.qos.ch](http://www.qos.ch)
-> - **Manifest License**: GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 (Not Packaged)
-> - **POM License**: Eclipse Public License - v 1.0 - [http://www.eclipse.org/legal/epl-v10.html](http://www.eclipse.org/legal/epl-v10.html)
+> - **Manifest License**: Eclipse Public License - v 1.0 (Not Packaged)
+> - **POM License**: Eclipse Public License - v 1.0 - [https://www.eclipse.org/legal/epl-v10.html](https://www.eclipse.org/legal/epl-v10.html)
 > - **POM License**: GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 - [https://www.gnu.org/licenses/lgpl-2.1](https://www.gnu.org/licenses/lgpl-2.1)
 
 **57** **Group:** `ch.qos.logback.contrib` **Name:** `logback-json-classic` **Version:** `0.1.5`
-> - **Manifest License**: GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 (Not Packaged)
-> - **POM License**: Eclipse Public License - v 1.0 - [http://www.eclipse.org/legal/epl-v10.html](http://www.eclipse.org/legal/epl-v10.html)
+> - **Manifest License**: Eclipse Public License - v 1.0 (Not Packaged)
+> - **POM License**: Eclipse Public License - v 1.0 - [https://www.eclipse.org/legal/epl-v10.html](https://www.eclipse.org/legal/epl-v10.html)
 > - **POM License**: GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 - [https://www.gnu.org/licenses/lgpl-2.1](https://www.gnu.org/licenses/lgpl-2.1)
 
 **58** **Group:** `ch.qos.logback.contrib` **Name:** `logback-json-core` **Version:** `0.1.5`
-> - **Manifest License**: GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 (Not Packaged)
-> - **POM License**: Eclipse Public License - v 1.0 - [http://www.eclipse.org/legal/epl-v10.html](http://www.eclipse.org/legal/epl-v10.html)
+> - **Manifest License**: Eclipse Public License - v 1.0 (Not Packaged)
+> - **POM License**: Eclipse Public License - v 1.0 - [https://www.eclipse.org/legal/epl-v10.html](https://www.eclipse.org/legal/epl-v10.html)
 > - **POM License**: GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 - [https://www.gnu.org/licenses/lgpl-2.1](https://www.gnu.org/licenses/lgpl-2.1)
 
 **59** **Group:** `net.java.dev.jna` **Name:** `jna` **Version:** `5.18.1`
