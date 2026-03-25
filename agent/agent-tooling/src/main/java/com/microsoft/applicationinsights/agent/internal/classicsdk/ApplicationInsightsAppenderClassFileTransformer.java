@@ -75,9 +75,7 @@ public class ApplicationInsightsAppenderClassFileTransformer implements ClassFil
       // match append(SomeLoggingEvent): the descriptor type-strings are not checked here
       // because Shadow relocates the "ch/qos/logback" literal, breaking the match at runtime;
       // class-name filtering in transform() already guarantees we are in the right class
-      if (name.equals("append")
-          && descriptor.startsWith("(L")
-          && descriptor.endsWith(";)V")) {
+      if (name.equals("append") && descriptor.startsWith("(L") && descriptor.endsWith(";)V")) {
         // no-op the append() method
         mv.visitCode();
         mv.visitInsn(RETURN);
