@@ -4,6 +4,12 @@
 
 * Update to OpenTelemetry Java Instrumentation 2.26.1
   ([#4648](https://github.com/microsoft/ApplicationInsights-Java/pull/4648))
+  ([#4632](https://github.com/microsoft/ApplicationInsights-Java/pull/4632))
+  ([#4631](https://github.com/microsoft/ApplicationInsights-Java/pull/4631))
+* Add cgroupv2 support and fix profile upload response body reading
+  ([#4592](https://github.com/microsoft/ApplicationInsights-Java/pull/4592))
+* Fix connection string env var precedence over ${file:...} config lookup
+  ([#4608](https://github.com/microsoft/ApplicationInsights-Java/pull/4608))
 
 ## Version 3.7.7 GA (01/23/2026)
 
