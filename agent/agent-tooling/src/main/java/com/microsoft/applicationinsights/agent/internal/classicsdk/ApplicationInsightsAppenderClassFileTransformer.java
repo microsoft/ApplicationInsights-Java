@@ -27,6 +27,8 @@ public class ApplicationInsightsAppenderClassFileTransformer implements ClassFil
       UnshadedSdkPackageName.get() + "/log4j/v2/ApplicationInsightsAppender";
   private static final String UNSHADED_CLASS_NAME_LOG_4_JV_1_2 =
       UnshadedSdkPackageName.get() + "/log4j/v1_2/ApplicationInsightsAppender";
+  private static final String UNSHADED_CLASS_NAME_LOGBACK_LOGGING_EVENT =
+      UnshadedSdkPackageName.getLogbackPrefix() + "logback/classic/spi/ILoggingEvent";
 
   @Override
   @Nullable
@@ -72,10 +74,10 @@ public class ApplicationInsightsAppenderClassFileTransformer implements ClassFil
         @Nullable String signature,
         @Nullable String[] exceptions) {
       MethodVisitor mv = cw.visitMethod(access, name, descriptor, signature, exceptions);
-      // match append(SomeLoggingEvent): the descriptor type-strings are not checked here
-      // because Shadow relocates the "ch/qos/logback" literal, breaking the match at runtime;
-      // class-name filtering in transform() already guarantees we are in the right class
-      if (name.equals("append") && descriptor.startsWith("(L") && descriptor.endsWith(";)V")) {
+      if (name.equals("append")
+          && (descriptor.equals("(L" + UNSHADED_CLASS_NAME_LOGBACK_LOGGING_EVENT + ";)V")
+              || descriptor.equals("(Lorg/apache/log4j/spi/LoggingEvent;)V")
+              || descriptor.equals("(Lorg/apache/logging/log4j/core/LogEvent;)V"))) {
         // no-op the append() method
         mv.visitCode();
         mv.visitInsn(RETURN);
