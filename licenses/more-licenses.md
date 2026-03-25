@@ -1,7 +1,7 @@
 
 # agent
 ## Dependency License Report
-_2026-03-23 17:40:05 PDT_
+_2026-03-25 08:48:31 UTC_
 ## Apache License, Version 2.0
 
 **1** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-annotations` **Version:** `2.21`
@@ -44,128 +44,128 @@ _2026-03-23 17:40:05 PDT_
 > - **Embedded license files**: [commons-codec-1.21.0.jar/META-INF/LICENSE.txt](commons-codec-1.21.0.jar/META-INF/LICENSE.txt)
     - [commons-codec-1.21.0.jar/META-INF/NOTICE.txt](commons-codec-1.21.0.jar/META-INF/NOTICE.txt)
 
-**7** **Group:** `io.netty` **Name:** `netty-buffer` **Version:** `4.2.9.Final`
+**7** **Group:** `io.netty` **Name:** `netty-buffer` **Version:** `4.2.11.Final`
 > - **Manifest Project URL**: [https://netty.io/](https://netty.io/)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
 
-**8** **Group:** `io.netty` **Name:** `netty-codec` **Version:** `4.2.9.Final`
+**8** **Group:** `io.netty` **Name:** `netty-codec` **Version:** `4.2.11.Final`
 > - **Manifest Project URL**: [https://netty.io/](https://netty.io/)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
 
-**9** **Group:** `io.netty` **Name:** `netty-codec-base` **Version:** `4.2.9.Final`
+**9** **Group:** `io.netty` **Name:** `netty-codec-base` **Version:** `4.2.11.Final`
 > - **Manifest Project URL**: [https://netty.io/](https://netty.io/)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
 
-**10** **Group:** `io.netty` **Name:** `netty-codec-compression` **Version:** `4.2.9.Final`
+**10** **Group:** `io.netty` **Name:** `netty-codec-compression` **Version:** `4.2.11.Final`
 > - **Manifest Project URL**: [https://netty.io/](https://netty.io/)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
 
-**11** **Group:** `io.netty` **Name:** `netty-codec-dns` **Version:** `4.2.9.Final`
+**11** **Group:** `io.netty` **Name:** `netty-codec-dns` **Version:** `4.2.11.Final`
 > - **Manifest Project URL**: [https://netty.io/](https://netty.io/)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
 
-**12** **Group:** `io.netty` **Name:** `netty-codec-http` **Version:** `4.2.9.Final`
+**12** **Group:** `io.netty` **Name:** `netty-codec-http` **Version:** `4.2.11.Final`
 > - **Manifest Project URL**: [https://netty.io/](https://netty.io/)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
 
-**13** **Group:** `io.netty` **Name:** `netty-codec-http2` **Version:** `4.2.9.Final`
+**13** **Group:** `io.netty` **Name:** `netty-codec-http2` **Version:** `4.2.11.Final`
 > - **Manifest Project URL**: [https://netty.io/](https://netty.io/)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
 
-**14** **Group:** `io.netty` **Name:** `netty-codec-marshalling` **Version:** `4.2.9.Final`
+**14** **Group:** `io.netty` **Name:** `netty-codec-marshalling` **Version:** `4.2.11.Final`
 > - **Manifest Project URL**: [https://netty.io/](https://netty.io/)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
 
-**15** **Group:** `io.netty` **Name:** `netty-codec-protobuf` **Version:** `4.2.9.Final`
+**15** **Group:** `io.netty` **Name:** `netty-codec-protobuf` **Version:** `4.2.11.Final`
 > - **Manifest Project URL**: [https://netty.io/](https://netty.io/)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
 
-**16** **Group:** `io.netty` **Name:** `netty-codec-socks` **Version:** `4.2.9.Final`
+**16** **Group:** `io.netty` **Name:** `netty-codec-socks` **Version:** `4.2.11.Final`
 > - **Manifest Project URL**: [https://netty.io/](https://netty.io/)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
 
-**17** **Group:** `io.netty` **Name:** `netty-common` **Version:** `4.2.9.Final`
+**17** **Group:** `io.netty` **Name:** `netty-common` **Version:** `4.2.11.Final`
 > - **Manifest Project URL**: [https://netty.io/](https://netty.io/)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
 
-**18** **Group:** `io.netty` **Name:** `netty-handler` **Version:** `4.2.9.Final`
+**18** **Group:** `io.netty` **Name:** `netty-handler` **Version:** `4.2.11.Final`
 > - **Manifest Project URL**: [https://netty.io/](https://netty.io/)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
 
-**19** **Group:** `io.netty` **Name:** `netty-handler-proxy` **Version:** `4.2.9.Final`
+**19** **Group:** `io.netty` **Name:** `netty-handler-proxy` **Version:** `4.2.11.Final`
 > - **Manifest Project URL**: [https://netty.io/](https://netty.io/)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
 
-**20** **Group:** `io.netty` **Name:** `netty-resolver` **Version:** `4.2.9.Final`
+**20** **Group:** `io.netty` **Name:** `netty-resolver` **Version:** `4.2.11.Final`
 > - **Manifest Project URL**: [https://netty.io/](https://netty.io/)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
 
-**21** **Group:** `io.netty` **Name:** `netty-resolver-dns` **Version:** `4.2.9.Final`
+**21** **Group:** `io.netty` **Name:** `netty-resolver-dns` **Version:** `4.2.11.Final`
 > - **Manifest Project URL**: [https://netty.io/](https://netty.io/)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
 
-**22** **Group:** `io.netty` **Name:** `netty-resolver-dns-classes-macos` **Version:** `4.2.9.Final`
+**22** **Group:** `io.netty` **Name:** `netty-resolver-dns-classes-macos` **Version:** `4.2.11.Final`
 > - **Manifest Project URL**: [https://netty.io/](https://netty.io/)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
 
-**23** **Group:** `io.netty` **Name:** `netty-resolver-dns-native-macos` **Version:** `4.2.9.Final`
+**23** **Group:** `io.netty` **Name:** `netty-resolver-dns-native-macos` **Version:** `4.2.11.Final`
 > - **Manifest Project URL**: [https://netty.io/](https://netty.io/)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
 
-**24** **Group:** `io.netty` **Name:** `netty-tcnative-boringssl-static` **Version:** `2.0.74.Final`
+**24** **Group:** `io.netty` **Name:** `netty-tcnative-boringssl-static` **Version:** `2.0.75.Final`
 > - **Manifest Project URL**: [https://netty.io/](https://netty.io/)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM Project URL**: [https://github.com/netty/netty-tcnative/netty-tcnative-boringssl-static/](https://github.com/netty/netty-tcnative/netty-tcnative-boringssl-static/)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
-**25** **Group:** `io.netty` **Name:** `netty-tcnative-classes` **Version:** `2.0.74.Final`
+**25** **Group:** `io.netty` **Name:** `netty-tcnative-classes` **Version:** `2.0.75.Final`
 > - **Manifest Project URL**: [https://netty.io/](https://netty.io/)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
-**26** **Group:** `io.netty` **Name:** `netty-transport` **Version:** `4.2.9.Final`
+**26** **Group:** `io.netty` **Name:** `netty-transport` **Version:** `4.2.11.Final`
 > - **Manifest Project URL**: [https://netty.io/](https://netty.io/)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
 
-**27** **Group:** `io.netty` **Name:** `netty-transport-classes-epoll` **Version:** `4.2.9.Final`
+**27** **Group:** `io.netty` **Name:** `netty-transport-classes-epoll` **Version:** `4.2.11.Final`
 > - **Manifest Project URL**: [https://netty.io/](https://netty.io/)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
 
-**28** **Group:** `io.netty` **Name:** `netty-transport-classes-kqueue` **Version:** `4.2.9.Final`
+**28** **Group:** `io.netty` **Name:** `netty-transport-classes-kqueue` **Version:** `4.2.11.Final`
 > - **Manifest Project URL**: [https://netty.io/](https://netty.io/)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
 
-**29** **Group:** `io.netty` **Name:** `netty-transport-native-epoll` **Version:** `4.2.9.Final`
+**29** **Group:** `io.netty` **Name:** `netty-transport-native-epoll` **Version:** `4.2.11.Final`
 > - **Manifest Project URL**: [https://netty.io/](https://netty.io/)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
 
-**30** **Group:** `io.netty` **Name:** `netty-transport-native-kqueue` **Version:** `4.2.9.Final`
+**30** **Group:** `io.netty` **Name:** `netty-transport-native-kqueue` **Version:** `4.2.11.Final`
 > - **Manifest Project URL**: [https://netty.io/](https://netty.io/)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
 
-**31** **Group:** `io.netty` **Name:** `netty-transport-native-unix-common` **Version:** `4.2.9.Final`
+**31** **Group:** `io.netty` **Name:** `netty-transport-native-unix-common` **Version:** `4.2.11.Final`
 > - **Manifest Project URL**: [https://netty.io/](https://netty.io/)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
@@ -214,20 +214,20 @@ _2026-03-23 17:40:05 PDT_
 > - **POM Project URL**: [https://github.com/open-telemetry/opentelemetry-java-contrib](https://github.com/open-telemetry/opentelemetry-java-contrib)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
-**43** **Group:** `io.projectreactor` **Name:** `reactor-core` **Version:** `3.7.11`
+**43** **Group:** `io.projectreactor` **Name:** `reactor-core` **Version:** `3.7.14`
 > - **POM Project URL**: [https://github.com/reactor/reactor-core](https://github.com/reactor/reactor-core)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
-> - **Embedded license files**: [reactor-core-3.7.11.jar/META-INF/LICENSE](reactor-core-3.7.11.jar/META-INF/LICENSE)
+> - **Embedded license files**: [reactor-core-3.7.14.jar/META-INF/LICENSE](reactor-core-3.7.14.jar/META-INF/LICENSE)
 
-**44** **Group:** `io.projectreactor.netty` **Name:** `reactor-netty-core` **Version:** `1.2.10`
+**44** **Group:** `io.projectreactor.netty` **Name:** `reactor-netty-core` **Version:** `1.2.13`
 > - **POM Project URL**: [https://github.com/reactor/reactor-netty](https://github.com/reactor/reactor-netty)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
-> - **Embedded license files**: [reactor-netty-core-1.2.10.jar/META-INF/LICENSE](reactor-netty-core-1.2.10.jar/META-INF/LICENSE)
+> - **Embedded license files**: [reactor-netty-core-1.2.13.jar/META-INF/LICENSE](reactor-netty-core-1.2.13.jar/META-INF/LICENSE)
 
-**45** **Group:** `io.projectreactor.netty` **Name:** `reactor-netty-http` **Version:** `1.2.10`
+**45** **Group:** `io.projectreactor.netty` **Name:** `reactor-netty-http` **Version:** `1.2.13`
 > - **POM Project URL**: [https://github.com/reactor/reactor-netty](https://github.com/reactor/reactor-netty)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
-> - **Embedded license files**: [reactor-netty-http-1.2.10.jar/META-INF/LICENSE](reactor-netty-http-1.2.10.jar/META-INF/LICENSE)
+> - **Embedded license files**: [reactor-netty-http-1.2.13.jar/META-INF/LICENSE](reactor-netty-http-1.2.13.jar/META-INF/LICENSE)
 
 **46** **Group:** `net.java.dev.jna` **Name:** `jna` **Version:** `5.18.1`
 > - **POM Project URL**: [https://github.com/java-native-access/jna](https://github.com/java-native-access/jna)
@@ -324,42 +324,42 @@ _2026-03-23 17:40:05 PDT_
 
 ## MIT License
 
-**61** **Group:** `com.azure` **Name:** `azure-core` **Version:** `1.57.0`
+**61** **Group:** `com.azure` **Name:** `azure-core` **Version:** `1.57.1`
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**62** **Group:** `com.azure` **Name:** `azure-core-http-netty` **Version:** `1.16.2`
+**62** **Group:** `com.azure` **Name:** `azure-core-http-netty` **Version:** `1.16.3`
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**63** **Group:** `com.azure` **Name:** `azure-identity` **Version:** `1.18.1`
+**63** **Group:** `com.azure` **Name:** `azure-identity` **Version:** `1.18.2`
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**64** **Group:** `com.azure` **Name:** `azure-json` **Version:** `1.5.0`
+**64** **Group:** `com.azure` **Name:** `azure-json` **Version:** `1.5.1`
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
 **65** **Group:** `com.azure` **Name:** `azure-monitor-opentelemetry-autoconfigure` **Version:** `1.4.0`
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**66** **Group:** `com.azure` **Name:** `azure-storage-blob` **Version:** `12.32.0`
+**66** **Group:** `com.azure` **Name:** `azure-storage-blob` **Version:** `12.33.1`
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**67** **Group:** `com.azure` **Name:** `azure-storage-common` **Version:** `12.31.0`
+**67** **Group:** `com.azure` **Name:** `azure-storage-common` **Version:** `12.32.2`
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**68** **Group:** `com.azure` **Name:** `azure-storage-internal-avro` **Version:** `12.17.0`
+**68** **Group:** `com.azure` **Name:** `azure-storage-internal-avro` **Version:** `12.18.2`
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**69** **Group:** `com.azure` **Name:** `azure-xml` **Version:** `1.2.0`
+**69** **Group:** `com.azure` **Name:** `azure-xml` **Version:** `1.2.1`
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**70** **Group:** `com.github.oshi` **Name:** `oshi-core` **Version:** `6.9.1`
+**70** **Group:** `com.github.oshi` **Name:** `oshi-core` **Version:** `6.10.0`
 > - **Manifest Project URL**: [https://github.com/oshi/oshi/oshi-core](https://github.com/oshi/oshi/oshi-core)
 > - **Manifest License**: MIT;link="https://opensource.org/licenses/MIT" (Not Packaged)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
