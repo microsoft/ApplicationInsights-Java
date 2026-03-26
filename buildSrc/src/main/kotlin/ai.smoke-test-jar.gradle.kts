@@ -15,13 +15,17 @@ val aiSmokeTest = extensions.getByType(AiSmokeTestExtension::class)
 tasks.named<ShadowJar>("shadowJar") {
   archiveClassifier.set("")
   mergeServiceFiles()
-  
+
+  filesMatching("META-INF/spring.factories") {
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+  }
+
   // Properly merge spring.factories files from all dependencies
   // This is required for Spring Boot auto-configuration to work
   // Use PropertiesFileTransformer to merge duplicate keys instead of simple append
   transform(PropertiesFileTransformer::class.java) {
     paths = listOf("META-INF/spring.factories")
-    mergeStrategy = "append"
+    mergeStrategy = PropertiesFileTransformer.MergeStrategy.Append
   }
   
   // Set main class - can be overridden by individual projects via mainClassName property
