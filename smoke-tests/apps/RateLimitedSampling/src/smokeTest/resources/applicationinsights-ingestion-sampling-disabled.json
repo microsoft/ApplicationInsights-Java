@@ -1,0 +1,14 @@
+{
+  "role": {
+    "name": "testrolename",
+    "instance": "testroleinstance"
+  },
+  "sampling" : {
+    "requestsPerSecond": 100000
+  },
+  "preview": {
+    "sampling": {
+      "ingestionSamplingEnabled": false
+    }
+  }
+}
