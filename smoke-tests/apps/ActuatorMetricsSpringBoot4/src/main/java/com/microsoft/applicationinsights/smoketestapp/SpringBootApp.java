@@ -4,7 +4,7 @@
 package com.microsoft.applicationinsights.smoketestapp;
 
 import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+import io.micrometer.core.instrument.Metrics;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.tomcat.servlet.TomcatServletWebServerFactory;
@@ -21,7 +21,7 @@ public class SpringBootApp {
 
   @Bean
   public MeterRegistry meterRegistry() {
-    return new SimpleMeterRegistry();
+    return Metrics.globalRegistry;
   }
 
   public static void main(String[] args) {
