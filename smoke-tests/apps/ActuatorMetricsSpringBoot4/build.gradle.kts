@@ -6,9 +6,10 @@ plugins {
 
 configurations.configureEach {
   resolutionStrategy.force(
-      "ch.qos.logback:logback-classic:1.5.21",
-      "ch.qos.logback:logback-core:1.5.21",
-      "org.slf4j:slf4j-api:2.0.17")
+    "ch.qos.logback:logback-classic:1.5.21",
+    "ch.qos.logback:logback-core:1.5.21",
+    "org.slf4j:slf4j-api:2.0.17"
+  )
 }
 
 dependencies {
@@ -19,6 +20,5 @@ dependencies {
 
 tasks.named<ShadowJar>("shadowJar") {
   append("META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports")
-  append(
-      "META-INF/spring/org.springframework.boot.actuate.autoconfigure.web.ManagementContextConfiguration.imports")
+  append("META-INF/spring/org.springframework.boot.actuate.autoconfigure.web.ManagementContextConfiguration.imports")
 }

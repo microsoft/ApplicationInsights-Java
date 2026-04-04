@@ -35,7 +35,8 @@ abstract class ActuatorMetricsSpringBoot4Test {
     MetricData data = (MetricData) ((Data<?>) metricItems.get(0).getData()).getBaseData();
     List<DataPoint> points = data.getMetrics();
 
-    assertThat(points).anySatisfy(point -> assertThat(point.getName()).isEqualTo("demo_requests_total"));
+    assertThat(points)
+        .anySatisfy(point -> assertThat(point.getName()).isEqualTo("demo_requests_total"));
     assertThat(data.getProperties()).containsEntry("endpoint", "test");
   }
 
