@@ -16,16 +16,16 @@ jobs:
   spotless:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: Set up JDK for running Gradle
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5
         with:
           distribution: temurin
           java-version: 21
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v5
+        uses: gradle/actions/setup-gradle@50e97c2cd7a37755bbfafc9c5b7cafaece252f6e # v6
 
       - name: Spotless
         run: ./gradlew spotlessCheck ${{ inputs.no-build-cache && '--no-build-cache' || '' }}
@@ -33,17 +33,17 @@ jobs:
   gradle-wrapper-validation:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
-      - uses: gradle/actions/wrapper-validation@v5
+      - uses: gradle/actions/wrapper-validation@50e97c2cd7a37755bbfafc9c5b7cafaece252f6e # v6
 
   license-check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: Set up JDK for running Gradle
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5
         with:
           distribution: temurin
           java-version: 21
@@ -53,7 +53,7 @@ jobs:
         run: ./.github/scripts/build-azure-monitor-dependency.sh
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v5
+        uses: gradle/actions/setup-gradle@50e97c2cd7a37755bbfafc9c5b7cafaece252f6e # v6
 
       - name: Generate license report
         run: |
@@ -84,10 +84,10 @@ jobs:
       - name: Support long paths
         run: git config --system core.longpaths true
 
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: Set up JDK for running Gradle
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5
         with:
           distribution: temurin
           java-version: 21
@@ -98,10 +98,10 @@ jobs:
         run: ./.github/scripts/build-azure-monitor-dependency.sh
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v5
+        uses: gradle/actions/setup-gradle@50e97c2cd7a37755bbfafc9c5b7cafaece252f6e # v6
 
       - name: Add MSBuild to PATH
-        uses: microsoft/setup-msbuild@v3
+        uses: microsoft/setup-msbuild@30375c66a4eea26614e0d39710365f22f8b0af57 # v3
 
       - name: Setup Visual Studio and Windows SDK environment
         shell: cmd
@@ -120,7 +120,7 @@ jobs:
           ${{ inputs.no-build-cache && '--no-build-cache' || '' }}
 
       - name: Upload snapshot
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           path: agent/agent/build/libs/applicationinsights-agent-*-SNAPSHOT.jar
 
@@ -147,17 +147,17 @@ jobs:
         run: git config --system core.longpaths true
         if: matrix.os == 'windows-2022'
 
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - id: setup-test-java
         name: Set up JDK ${{ matrix.test-java-version }}-${{ matrix.vm }} for running tests
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5
         with:
           distribution: ${{ matrix.vm == 'hotspot' && 'temurin' || 'adopt-openj9'}}
           java-version: ${{ matrix.test-java-version }}
 
       - name: Set up JDK for running Gradle
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5
         with:
           distribution: temurin
           java-version: 21
@@ -168,7 +168,7 @@ jobs:
         run: ./.github/scripts/build-azure-monitor-dependency.sh
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v5
+        uses: gradle/actions/setup-gradle@50e97c2cd7a37755bbfafc9c5b7cafaece252f6e # v6
 
       - name: Test
         # spotless is checked separately since it's a common source of failure
@@ -187,7 +187,7 @@ jobs:
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - id: set-matrix
         run: |
@@ -226,10 +226,10 @@ jobs:
       matrix: ${{fromJson(needs.setup-smoke-test-matrix.outputs.matrix)}}
       fail-fast: false
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: Set up Java 21
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5
         with:
           distribution: temurin
           java-version: 21
@@ -239,7 +239,7 @@ jobs:
         run: ./.github/scripts/build-azure-monitor-dependency.sh
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v5
+        uses: gradle/actions/setup-gradle@50e97c2cd7a37755bbfafc9c5b7cafaece252f6e # v6
 
       - name: Test
         run: ./gradlew ${{ matrix.module }}:smokeTest --tests "${{ matrix.test_class }}*"
@@ -254,7 +254,7 @@ jobs:
           echo "UPLOAD_ARTIFACT_NAME=$artifact_name" >> $GITHUB_ENV
 
       - name: Upload smoke test reports
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         if: failure()
         with:
           name: ${{ env.UPLOAD_ARTIFACT_NAME }}
