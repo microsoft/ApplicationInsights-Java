@@ -25,7 +25,10 @@ public class GcEventGenerator {
     new GcEventGenerator().run();
   }
 
-  @SuppressWarnings("SystemOut") // legitimate use of System.out for logging/output
+  @SuppressWarnings({
+    "SystemOut", // legitimate use of System.out for logging/output
+    "JdkObsolete" // Java 8 compatibility requires Scanner(InputStream, String)
+  })
   private void run() throws InterruptedException {
     System.out.println("Hit return to start");
 
