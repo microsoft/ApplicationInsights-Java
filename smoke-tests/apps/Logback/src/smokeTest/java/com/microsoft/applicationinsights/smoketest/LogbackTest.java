@@ -138,7 +138,7 @@ abstract class LogbackTest {
                               "ClassName",
                               "com.microsoft.applicationinsights.smoketestapp.LogbackWithExceptionServlet")
                           .hasProperty("MethodName", "doGet")
-                          .hasProperty("LineNumber", "21")
+                          .hasProperty("LineNumber", "22")
                           .hasPropertiesSize(9)));
     } else {
       testing.waitAndAssertTrace(
