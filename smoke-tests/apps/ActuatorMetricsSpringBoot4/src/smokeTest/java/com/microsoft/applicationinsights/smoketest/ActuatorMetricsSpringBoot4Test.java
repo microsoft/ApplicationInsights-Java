@@ -3,6 +3,8 @@
 
 package com.microsoft.applicationinsights.smoketest;
 
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_17;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_17_OPENJ9;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_21;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_21_OPENJ9;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_25;
@@ -55,6 +57,12 @@ abstract class ActuatorMetricsSpringBoot4Test {
     }
     return false;
   }
+
+  @Environment(JAVA_17)
+  static class Java17Test extends ActuatorMetricsSpringBoot4Test {}
+
+  @Environment(JAVA_17_OPENJ9)
+  static class Java17OpenJ9Test extends ActuatorMetricsSpringBoot4Test {}
 
   @Environment(JAVA_21)
   static class Java21Test extends ActuatorMetricsSpringBoot4Test {}
