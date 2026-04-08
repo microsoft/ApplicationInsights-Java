@@ -54,7 +54,7 @@ abstract class JdbcTest {
     assertThat(telemetry.rd.getSuccess()).isTrue();
 
     assertThat(telemetry.rdd1.getName()).isEqualTo("SELECT testdb.abc");
-    assertThat(telemetry.rdd1.getData()).isEqualTo("select * from abc where xyz = ?");
+    assertThat(telemetry.rdd1.getData()).isEqualTo("select * from abc where uvw = ? and xyz = ?");
     assertThat(telemetry.rdd1.getType()).isEqualTo("SQL");
     assertThat(telemetry.rdd1.getTarget()).isEqualTo("hsqldb | testdb");
     assertThat(telemetry.rdd1.getProperties()).isEmpty();
@@ -170,7 +170,7 @@ abstract class JdbcTest {
     assertThat(telemetry.rd.getSuccess()).isTrue();
 
     assertThat(telemetry.rdd1.getName()).isEqualTo("SELECT mysql.abc");
-    assertThat(telemetry.rdd1.getData()).isEqualTo("select * from abc where xyz = ?");
+    assertThat(telemetry.rdd1.getData()).isEqualTo("select * from abc where uvw = ? and xyz = ?");
     assertThat(telemetry.rdd1.getType()).isEqualTo("mysql");
     // not the best test, because this is both the db.name and db.system
     assertThat(telemetry.rdd1.getTarget()).matches("dependency[0-9]+ \\| mysql");
@@ -214,7 +214,7 @@ abstract class JdbcTest {
     assertThat(telemetry.rd.getSuccess()).isTrue();
 
     assertThat(telemetry.rdd1.getName()).isEqualTo("SELECT postgres.abc");
-    assertThat(telemetry.rdd1.getData()).isEqualTo("select * from abc where xyz = ?");
+    assertThat(telemetry.rdd1.getData()).isEqualTo("select * from abc where uvw = ? and xyz = ?");
     assertThat(telemetry.rdd1.getType()).isEqualTo("postgresql");
     // not the best test, because this is both the db.name and db.system
     assertThat(telemetry.rdd1.getTarget()).matches("dependency[0-9]+ \\| postgres");
@@ -256,7 +256,7 @@ abstract class JdbcTest {
     assertThat(telemetry.rd.getSuccess()).isTrue();
 
     assertThat(telemetry.rdd1.getName()).isEqualTo("SELECT abc");
-    assertThat(telemetry.rdd1.getData()).isEqualTo("select * from abc where xyz = ?");
+    assertThat(telemetry.rdd1.getData()).isEqualTo("select * from abc where uvw = ? and xyz = ?");
     assertThat(telemetry.rdd1.getType()).isEqualTo("SQL");
     assertThat(telemetry.rdd1.getTarget()).matches("dependency[0-9]+");
     assertThat(telemetry.rdd1.getProperties()).isEmpty();
