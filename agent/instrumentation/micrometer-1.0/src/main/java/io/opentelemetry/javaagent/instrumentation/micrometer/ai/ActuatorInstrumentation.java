@@ -16,11 +16,6 @@ import net.bytebuddy.matcher.ElementMatcher;
 
 public final class ActuatorInstrumentation implements TypeInstrumentation {
 
-  private static final String SPRING_BOOT_3_METRICS_AUTO_CONFIGURATION =
-      "org.springframework.boot.actuate.autoconfigure.metrics.MetricsAutoConfiguration";
-  private static final String SPRING_BOOT_4_METRICS_AUTO_CONFIGURATION =
-      "org.springframework.boot.micrometer.metrics.autoconfigure.MetricsAutoConfiguration";
-
   @Override
   public ElementMatcher<TypeDescription> typeMatcher() {
     return named("org.springframework.boot.autoconfigure.AutoConfigurationImportSelector");
@@ -41,9 +36,8 @@ public final class ActuatorInstrumentation implements TypeInstrumentation {
 
     @Advice.OnMethodExit(suppress = Throwable.class)
     public static void onExit(@Advice.Return(readOnly = false) List<String> configurations) {
-      if ((configurations.contains(SPRING_BOOT_3_METRICS_AUTO_CONFIGURATION)
-              || configurations.contains(SPRING_BOOT_4_METRICS_AUTO_CONFIGURATION))
-          && !configurations.contains(AzureMonitorAutoConfiguration.class.getName())) {
+      if (configurations.contains(
+          "org.springframework.boot.actuate.autoconfigure.metrics.MetricsAutoConfiguration")) {
         List<String> configs = new ArrayList<>(configurations.size() + 1);
         configs.addAll(configurations);
         // using class reference here so that muzzle will consider it a dependency of this advice
