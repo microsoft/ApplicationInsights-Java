@@ -35,4 +35,9 @@ public class NoOpCGroupDataReader implements CGroupDataReader {
   public long getCpuPeriod() {
     return -1;
   }
+
+  @Override
+  public boolean isAvailable() {
+    return true;
+  }
 }

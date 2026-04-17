@@ -2,7 +2,7 @@ import org.apache.tools.ant.taskdefs.condition.Os
 
 pluginManagement {
   plugins {
-    id("com.github.jk1.dependency-license-report") version "3.0.1"
+    id("com.github.jk1.dependency-license-report") version "3.1.2"
     id("me.champeau.jmh") version "0.7.3"
   }
 }
@@ -70,6 +70,8 @@ hideFromDependabot(":smoke-tests:apps:ClassicSdkLogbackInterop2x")
 hideFromDependabot(":smoke-tests:apps:ClassicSdkWebInterop2x")
 hideFromDependabot(":smoke-tests:apps:ClassicSdkWebInterop3x")
 hideFromDependabot(":smoke-tests:apps:ClassicSdkWebInterop3xUsingOld3xAgent")
+hideFromDependabot(":smoke-tests:apps:ConnectionStringFileNotFound")
+hideFromDependabot(":smoke-tests:apps:ConnectionStringFromFile")
 hideFromDependabot(":smoke-tests:apps:ConnectionStringOverrides")
 hideFromDependabot(":smoke-tests:apps:CoreAndFilter2x")
 hideFromDependabot(":smoke-tests:apps:CoreAndFilter3x")

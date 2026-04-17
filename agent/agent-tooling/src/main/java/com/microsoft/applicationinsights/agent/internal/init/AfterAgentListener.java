@@ -5,6 +5,7 @@ package com.microsoft.applicationinsights.agent.internal.init;
 
 import com.google.auto.service.AutoService;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
+import com.microsoft.applicationinsights.agent.internal.configuration.SnippetConfiguration;
 import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
 import com.microsoft.applicationinsights.agent.internal.profiler.ProfilingInitializer;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
@@ -29,6 +30,11 @@ public class AfterAgentListener implements AgentListener {
     PerformanceCounterInitializer.initialize(configuration);
 
     TelemetryClient telemetryClient = TelemetryClient.getActive();
+    if (configuration.preview.browserSdkLoader.enabled
+        && telemetryClient != null
+        && telemetryClient.getConnectionString() != null) {
+      SnippetConfiguration.initializeSnippet(configuration.connectionString);
+    }
     if (configuration.preview.profiler.enabled
         && telemetryClient != null
         && telemetryClient.getConnectionString() != null) {

@@ -4,6 +4,7 @@
 package com.microsoft.applicationinsights.diagnostics;
 
 import java.util.concurrent.ScheduledExecutorService;
+import javax.annotation.Nullable;
 
 /**
  * Factory to be invoked to create a DiagnosticEngine. This factory will be service loaded by the
@@ -11,5 +12,6 @@ import java.util.concurrent.ScheduledExecutorService;
  * this interface.
  */
 public interface DiagnosticEngineFactory {
-  DiagnosticEngine create(ScheduledExecutorService executorService);
+  DiagnosticEngine create(
+      ScheduledExecutorService executorService, @Nullable String cgroupBasePath);
 }

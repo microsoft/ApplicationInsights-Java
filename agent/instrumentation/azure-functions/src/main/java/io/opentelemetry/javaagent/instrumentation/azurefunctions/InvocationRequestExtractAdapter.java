@@ -5,6 +5,7 @@ package io.opentelemetry.javaagent.instrumentation.azurefunctions;
 
 import com.microsoft.azure.functions.rpc.messages.RpcTraceContext;
 import io.opentelemetry.context.propagation.TextMapGetter;
+import java.util.Arrays;
 import javax.annotation.Nullable;
 
 public class InvocationRequestExtractAdapter implements TextMapGetter<RpcTraceContext> {
@@ -14,7 +15,7 @@ public class InvocationRequestExtractAdapter implements TextMapGetter<RpcTraceCo
 
   @Override
   public Iterable<String> keys(RpcTraceContext carrier) {
-    return null;
+    return Arrays.asList("traceparent", "tracestate");
   }
 
   @Override

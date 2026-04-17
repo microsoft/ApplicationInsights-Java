@@ -1,17 +1,30 @@
 name: Pull request helper
 on:
-  push:
-    branches:
-      - 'dependabot/**/*'
+  pull_request_target:
+
+permissions:
+  contents: write
 
 jobs:
   pull-request-helper:
+    if: github.event.pull_request.user.login == 'dependabot[bot]'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          # this is the personal access token used for "git push" below
+          # which is needed in order to trigger workflows
+          token: ${{ secrets.PR_HELPER_GITHUB_TOKEN }}
+
+      - name: Check out PR branch
+        env:
+          NUMBER: ${{ github.event.pull_request.number }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh pr checkout $NUMBER
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v5
+        uses: gradle/actions/setup-gradle@50e97c2cd7a37755bbfafc9c5b7cafaece252f6e # v6
         with:
           cache-read-only: true
 
@@ -19,6 +32,16 @@ jobs:
         run: |
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+
+      # - name: Spotless
+      #   env:
+      #     NUMBER: ${{ github.event.issue.number }}
+      #   run: |
+      #     ./gradlew spotlessApply
+      #     if git diff --quiet; then
+      #       exit 0 # success
+      #     fi
+      #     git commit -a -m "./gradlew spotlessApply"
 
       - name: Update license report
         env:
@@ -47,4 +70,7 @@ jobs:
           git commit -m "./gradlew resolveAndLockAll --write-locks"
 
       - name: Push
-        run: git push
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git push

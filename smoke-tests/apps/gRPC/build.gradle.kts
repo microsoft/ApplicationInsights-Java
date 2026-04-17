@@ -2,7 +2,7 @@ import com.google.protobuf.gradle.*
 
 plugins {
   id("ai.smoke-test-jar")
-  id("com.google.protobuf") version "0.8.19"
+  id("com.google.protobuf") version "0.9.6"
 }
 
 val grpcVersion = "1.26.0" // first version with support for arm64

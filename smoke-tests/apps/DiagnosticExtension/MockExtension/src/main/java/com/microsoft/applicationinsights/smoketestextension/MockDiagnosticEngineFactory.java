@@ -13,7 +13,7 @@ import java.util.concurrent.ScheduledExecutorService;
 public class MockDiagnosticEngineFactory implements DiagnosticEngineFactory {
 
   @Override
-  public DiagnosticEngine create(ScheduledExecutorService executorService) {
+  public DiagnosticEngine create(ScheduledExecutorService executorService, String cgroupBasePath) {
     return new DiagnosticEngine() {
 
       @Override

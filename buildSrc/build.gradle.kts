@@ -2,7 +2,7 @@ plugins {
   `java-gradle-plugin`
   `kotlin-dsl`
   // When updating, update below in dependencies too
-  id("com.diffplug.spotless") version "8.1.0"
+  id("com.diffplug.spotless") version "8.4.0"
 }
 
 spotless {
@@ -30,20 +30,17 @@ dependencies {
   implementation(gradleApi())
 
   // When updating, update above in plugins too
-  implementation("com.diffplug.spotless:spotless-plugin-gradle:8.1.0")
-  implementation("com.github.spotbugs.snom:spotbugs-gradle-plugin:6.3.0")
-  implementation("com.gradleup.shadow:shadow-gradle-plugin:8.3.9")
+  implementation("com.diffplug.spotless:spotless-plugin-gradle:8.4.0")
+  implementation("com.github.spotbugs.snom:spotbugs-gradle-plugin:6.4.8")
+  implementation("com.gradleup.shadow:shadow-gradle-plugin:9.4.1")
 
-  implementation("org.owasp:dependency-check-gradle:12.1.9")
+  implementation("org.owasp:dependency-check-gradle:12.2.0")
 
-  implementation("io.opentelemetry.instrumentation:gradle-plugins:2.19.0-alpha")
+  implementation("io.opentelemetry.instrumentation:gradle-plugins:2.26.1-alpha")
 
-  implementation("net.ltgt.gradle:gradle-errorprone-plugin:4.3.0")
-  implementation("net.ltgt.gradle:gradle-nullaway-plugin:2.3.0")
+  implementation("net.ltgt.gradle:gradle-errorprone-plugin:5.1.0")
+  implementation("net.ltgt.gradle:gradle-nullaway-plugin:3.0.0")
 
   implementation("gradle.plugin.io.morethan.jmhreport:gradle-jmh-report:0.9.6")
   implementation("me.champeau.jmh:jmh-gradle-plugin:0.7.3")
-
-  // earlier versions aren't compatible with Gradle 8.1.1
-  implementation("org.springframework.boot:spring-boot-gradle-plugin:2.5.12")
 }
