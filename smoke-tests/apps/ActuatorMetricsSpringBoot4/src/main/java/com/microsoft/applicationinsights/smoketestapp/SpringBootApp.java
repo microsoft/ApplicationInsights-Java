@@ -3,8 +3,6 @@
 
 package com.microsoft.applicationinsights.smoketestapp;
 
-import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.Metrics;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.tomcat.servlet.TomcatServletWebServerFactory;
@@ -17,11 +15,6 @@ public class SpringBootApp {
   @Bean
   public ServletWebServerFactory servletWebServerFactory() {
     return new TomcatServletWebServerFactory();
-  }
-
-  @Bean
-  public MeterRegistry meterRegistry() {
-    return Metrics.globalRegistry;
   }
 
   public static void main(String[] args) {

@@ -18,7 +18,11 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-micrometer-metrics:4.0.0")
 }
 
+// Spring Boot 4 splits auto-configuration across many module JARs, each with its own
+// META-INF/spring/AutoConfiguration.imports file. Shadow's default behavior keeps only
+// one copy, losing most entries. We provide a pre-merged resource file in
+// src/main/resources/META-INF/spring/ and use append() to prevent any single
+// dependency copy from overwriting it.
 tasks.named<ShadowJar>("shadowJar") {
   append("META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports")
-  append("META-INF/spring/org.springframework.boot.actuate.autoconfigure.web.ManagementContextConfiguration.imports")
 }
