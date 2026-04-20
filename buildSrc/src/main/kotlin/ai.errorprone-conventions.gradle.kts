@@ -20,14 +20,14 @@ tasks {
       errorprone {
         if (disableErrorProne) {
           logger.warn("Errorprone has been disabled. Build may not result in a valid PR build.")
-          isEnabled.set(false)
+          isEnabled = false
         }
 
-        disableWarningsInGeneratedCode.set(true)
-        allDisabledChecksAsWarnings.set(true)
+        disableWarningsInGeneratedCode = true
+        allDisabledChecksAsWarnings = true
 
         // Ignore warnings for generated classes
-        excludedPaths.set(".*/build/generated/.*")
+        excludedPaths = ".*/build/generated/.*"
 
         // it's very convenient to debug stuff in the javaagent using System.out.println
         // and we don't want to conditionally only check this in CI
