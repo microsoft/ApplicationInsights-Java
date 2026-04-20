@@ -865,8 +865,6 @@ public class ConfigurationBuilder {
     return null;
   }
 
-  @SuppressWarnings(
-      "JdkObsolete") // Java 8 target does not support URLDecoder.decode(String, Charset)
   private static Configuration.Proxy overlayProxyFromEnv(
       Configuration.Proxy proxy, Function<String, String> envVarsFunction) {
     String proxyEnvVar = getEnvVar(APPLICATIONINSIGHTS_PROXY, envVarsFunction);
