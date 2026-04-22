@@ -1,9 +1,13 @@
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import com.microsoft.applicationinsights.gradle.AiSmokeTestExtension
 
 plugins {
-  id("ai.smoke-test-jar")
+  id("ai.smoke-test")
+  id("org.springframework.boot") version "4.0.0"
 }
 
+// Override the workspace-wide dependencyManagement pin of logback 1.3.x (Java 8 target)
+// so Spring Boot 4 can resolve its required logback 1.5.x (requires Java 17, which this
+// app already targets).
 configurations.configureEach {
   resolutionStrategy.force(
     "ch.qos.logback:logback-classic:1.5.21",
@@ -18,11 +22,6 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-micrometer-metrics:4.0.0")
 }
 
-// Spring Boot 4 splits auto-configuration across many module JARs, each with its own
-// META-INF/spring/AutoConfiguration.imports file. Shadow's default behavior keeps only
-// one copy, losing most entries. We provide a pre-merged resource file in
-// src/main/resources/META-INF/spring/ and use append() to prevent any single
-// dependency copy from overwriting it.
-tasks.named<ShadowJar>("shadowJar") {
-  append("META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports")
-}
+val aiSmokeTest = extensions.getByType(AiSmokeTestExtension::class)
+aiSmokeTest.testAppArtifactDir.set(tasks.bootJar.flatMap { it.destinationDirectory })
+aiSmokeTest.testAppArtifactFilename.set(tasks.bootJar.flatMap { it.archiveFileName })
