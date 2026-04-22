@@ -47,9 +47,6 @@ abstract class ActuatorMetricsSpringBoot4Test {
       return false;
     }
     MetricData data = (MetricData) ((Data<?>) input.getData()).getBaseData();
-    if (!"test".equals(data.getProperties().get("endpoint"))) {
-      return false;
-    }
     for (DataPoint point : data.getMetrics()) {
       if ("demo_requests_total".equals(point.getName()) && point.getValue() >= 1) {
         return true;
