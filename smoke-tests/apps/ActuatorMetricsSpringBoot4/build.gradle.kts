@@ -5,12 +5,11 @@ plugins {
   id("org.springframework.boot") version "4.0.0"
 }
 
-// The workspace-wide dependencyManagement module pins logback-classic to 1.3.16 (Java 8
-// compatible). Spring Boot 4 starters don't declare a logback version directly (they rely
-// on Spring Boot's BOM, which we don't apply here -- applying io.spring.dependency-management
-// would also downgrade Jetty used by the smoke-test framework), so the 1.3.16 constraint
-// wins and fails at startup with AbstractMethodError against the SB4 RootLogLevelConfigurator.
-// Force the logback 1.5.x line required by Spring Boot 4.
+// The ai.smoke-test convention plugin applies `resolutionStrategy.force` on every
+// configuration to pin logback-classic to 1.2.12 and slf4j-api to 1.7.36 (needed by the
+// older Spring Boot smoke-test apps). Spring Boot 4 requires logback 1.5.x and slf4j 2.x
+// and fails at startup with AbstractMethodError against SB4's RootLogLevelConfigurator
+// otherwise. Re-force the newer versions here to override the convention's force.
 configurations.configureEach {
   resolutionStrategy.force(
     "ch.qos.logback:logback-classic:1.5.21",
