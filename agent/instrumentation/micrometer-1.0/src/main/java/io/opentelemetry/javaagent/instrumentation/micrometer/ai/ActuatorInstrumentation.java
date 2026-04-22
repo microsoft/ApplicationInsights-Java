@@ -41,6 +41,8 @@ public final class ActuatorInstrumentation implements TypeInstrumentation {
 
     @Advice.OnMethodExit(suppress = Throwable.class)
     public static void onExit(@Advice.Return(readOnly = false) List<String> configurations) {
+      // guard against re-adding AzureMonitorAutoConfiguration if this advice runs more than once
+      // on the same list (e.g. nested/repeated invocations of getCandidateConfigurations)
       if ((configurations.contains(SPRING_BOOT_3_METRICS_AUTO_CONFIGURATION)
               || configurations.contains(SPRING_BOOT_4_METRICS_AUTO_CONFIGURATION))
           && !configurations.contains(AzureMonitorAutoConfiguration.class.getName())) {
