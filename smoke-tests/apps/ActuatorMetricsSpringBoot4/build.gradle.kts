@@ -5,9 +5,12 @@ plugins {
   id("org.springframework.boot") version "4.0.0"
 }
 
-// Override the workspace-wide dependencyManagement pin of logback 1.3.x (Java 8 target)
-// so Spring Boot 4 can resolve its required logback 1.5.x (requires Java 17, which this
-// app already targets).
+// The workspace-wide dependencyManagement module pins logback-classic to 1.3.16 (Java 8
+// compatible). Spring Boot 4 starters don't declare a logback version directly (they rely
+// on Spring Boot's BOM, which we don't apply here -- applying io.spring.dependency-management
+// would also downgrade Jetty used by the smoke-test framework), so the 1.3.16 constraint
+// wins and fails at startup with AbstractMethodError against the SB4 RootLogLevelConfigurator.
+// Force the logback 1.5.x line required by Spring Boot 4.
 configurations.configureEach {
   resolutionStrategy.force(
     "ch.qos.logback:logback-classic:1.5.21",
