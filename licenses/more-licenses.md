@@ -1,7 +1,7 @@
 
 # agent
 ## Dependency License Report
-_2026-04-06 03:19:59 UTC_
+_2026-04-27 03:19:50 UTC_
 ## Apache License, Version 2.0
 
 **1** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-annotations` **Version:** `2.21`
@@ -37,12 +37,12 @@ _2026-04-06 03:19:59 UTC_
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
-**6** **Group:** `commons-codec` **Name:** `commons-codec` **Version:** `1.21.0`
+**6** **Group:** `commons-codec` **Name:** `commons-codec` **Version:** `1.22.0`
 > - **Project URL**: [https://commons.apache.org/proper/commons-codec/](https://commons.apache.org/proper/commons-codec/)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
-> - **Embedded license files**: [commons-codec-1.21.0.jar/META-INF/LICENSE.txt](commons-codec-1.21.0.jar/META-INF/LICENSE.txt)
-    - [commons-codec-1.21.0.jar/META-INF/NOTICE.txt](commons-codec-1.21.0.jar/META-INF/NOTICE.txt)
+> - **Embedded license files**: [commons-codec-1.22.0.jar/META-INF/LICENSE.txt](commons-codec-1.22.0.jar/META-INF/LICENSE.txt)
+    - [commons-codec-1.22.0.jar/META-INF/NOTICE.txt](commons-codec-1.22.0.jar/META-INF/NOTICE.txt)
 
 **7** **Group:** `io.netty` **Name:** `netty-buffer` **Version:** `4.2.12.Final`
 > - **Manifest Project URL**: [https://netty.io/](https://netty.io/)
