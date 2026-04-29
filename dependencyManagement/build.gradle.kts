@@ -63,7 +63,7 @@ val DEPENDENCIES = listOf(
   "ch.qos.logback.contrib:logback-json-classic:0.1.5",
   "commons-codec:commons-codec:1.21.0",
   "org.apache.commons:commons-text:1.15.0",
-  "com.google.code.gson:gson:2.13.2",
+  "com.google.code.gson:gson:2.14.0",
   "com.azure:azure-core-test:1.26.2", // this is not included in azure-sdk-bom
   "org.assertj:assertj-core:3.27.7",
   "org.awaitility:awaitility:4.3.0",
