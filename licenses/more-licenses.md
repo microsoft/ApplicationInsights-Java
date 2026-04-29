@@ -1,7 +1,7 @@
 
 # agent
 ## Dependency License Report
-_2026-04-09 03:15:24 UTC_
+_2026-04-29 02:29:20 UTC_
 ## Apache License, Version 2.0
 
 **1** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-annotations` **Version:** `2.21`
@@ -32,7 +32,7 @@ _2026-04-09 03:15:24 UTC_
 > - **Embedded license files**: [jackson-datatype-jsr310-2.21.2.jar/META-INF/LICENSE](jackson-datatype-jsr310-2.21.2.jar/META-INF/LICENSE)
     - [jackson-datatype-jsr310-2.21.2.jar/META-INF/NOTICE](jackson-datatype-jsr310-2.21.2.jar/META-INF/NOTICE)
 
-**5** **Group:** `com.google.errorprone` **Name:** `error_prone_annotations` **Version:** `2.48.0`
+**5** **Group:** `com.google.errorprone` **Name:** `error_prone_annotations` **Version:** `2.49.0`
 > - **Manifest Project URL**: [https://errorprone.info/error_prone_annotations](https://errorprone.info/error_prone_annotations)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
