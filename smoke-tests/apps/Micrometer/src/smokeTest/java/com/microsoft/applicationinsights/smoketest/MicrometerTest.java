@@ -9,6 +9,8 @@ import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_17_OPENJ9;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_21;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_21_OPENJ9;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_25;
+import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_25_OPENJ9;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_8;
 import static com.microsoft.applicationinsights.smoketest.EnvironmentValue.JAVA_8_OPENJ9;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -99,4 +101,10 @@ abstract class MicrometerTest {
 
   @Environment(JAVA_21_OPENJ9)
   static class Java21OpenJ9Test extends MicrometerTest {}
+
+  @Environment(JAVA_25)
+  static class Java25Test extends MicrometerTest {}
+
+  @Environment(JAVA_25_OPENJ9)
+  static class Java25OpenJ9Test extends MicrometerTest {}
 }
