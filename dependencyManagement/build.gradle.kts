@@ -23,7 +23,7 @@ val DEPENDENCY_BOMS = listOf(
   "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${otelInstrumentationAlphaVersion}",
   "com.azure:azure-sdk-bom:1.3.6",
   "io.netty:netty-bom:4.2.12.Final",
-  "org.junit:junit-bom:5.14.3",
+  "org.junit:junit-bom:5.14.4",
   "org.testcontainers:testcontainers-bom:2.0.5",
 )
 
@@ -36,7 +36,7 @@ val slf4jVersion = "2.0.17"
 
 val CORE_DEPENDENCIES = listOf(
   "io.opentelemetry.semconv:opentelemetry-semconv:1.40.0",
-  "io.opentelemetry.semconv:opentelemetry-semconv-incubating:1.40.0-alpha",
+  "io.opentelemetry.semconv:opentelemetry-semconv-incubating:1.41.0-alpha",
   "io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-incubator:${otelInstrumentationAlphaVersion}",
   "com.google.auto.service:auto-service:${autoServiceVersion}",
   "com.google.auto.service:auto-service-annotations:${autoServiceVersion}",
@@ -63,7 +63,7 @@ val DEPENDENCIES = listOf(
   "ch.qos.logback.contrib:logback-json-classic:0.1.5",
   "commons-codec:commons-codec:1.22.0",
   "org.apache.commons:commons-text:1.15.0",
-  "com.google.code.gson:gson:2.13.2",
+  "com.google.code.gson:gson:2.14.0",
   "com.azure:azure-core-test:1.26.2", // this is not included in azure-sdk-bom
   "org.assertj:assertj-core:3.27.7",
   "org.awaitility:awaitility:4.3.0",
