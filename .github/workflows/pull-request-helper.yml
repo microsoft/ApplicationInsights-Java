@@ -21,6 +21,10 @@ jobs:
           NUMBER: ${{ github.event.pull_request.number }}
           GH_TOKEN: ${{ github.token }}
         run: |
+          # Discard any working-tree differences (e.g. from line-ending
+          # renormalization due to .gitattributes) so that `gh pr checkout`
+          # can switch branches cleanly when the PR also touches those files.
+          git reset --hard HEAD
           gh pr checkout $NUMBER
 
       - name: Setup Gradle
