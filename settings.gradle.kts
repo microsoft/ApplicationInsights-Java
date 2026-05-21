@@ -59,6 +59,7 @@ include(":smoke-tests:framework")
 
 // TODO (trask) consider un-hiding these and running smoke tests against the latest versions
 hideFromDependabot(":smoke-tests:apps:ActuatorMetrics")
+hideFromDependabot(":smoke-tests:apps:ActuatorMetricsSpringBoot4")
 hideFromDependabot(":smoke-tests:apps:AutoPerfCounters")
 hideFromDependabot(":smoke-tests:apps:AzureSdk")
 hideFromDependabot(":smoke-tests:apps:AzureFunctions")
