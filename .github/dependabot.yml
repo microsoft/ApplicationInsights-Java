@@ -43,6 +43,20 @@ updates:
         patterns:
           - "org.testcontainers:*"
 
+      opentelemetry:
+        patterns:
+          - "io.opentelemetry*:*"
+          - "otelSdkVersion"
+          - "otelInstrumentationVersion"
+          - "otelInstrumentationAlphaVersion"
+          - "otelContribVersion"
+      
+      # Spotless repeatedly appears as two separate dependency names for the same version bump
+      spotless:
+        patterns:
+          - "com.diffplug.spotless"
+          - "com.diffplug.spotless:*"
+
   - package-ecosystem: "gradle"
     directory: "/perf-tests"
     registries:
