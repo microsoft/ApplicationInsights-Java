@@ -32,7 +32,7 @@ val autoValueVersion = "1.11.1"
 val errorProneVersion = "2.49.0"
 val jmhVersion = "1.37"
 val mockitoVersion = "4.11.0"
-val slf4jVersion = "2.0.17"
+val slf4jVersion = "2.0.18"
 
 val CORE_DEPENDENCIES = listOf(
   "io.opentelemetry.semconv:opentelemetry-semconv:1.41.1",
