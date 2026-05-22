@@ -8,6 +8,6 @@
 #  https://help.github.com/en/articles/about-code-owners
 #
 
-* @harsimar @jeanbisutti @rajkumar-rangaraj @ramthi @trask @xiang17
-/agent/agent-profiler @harsimar @jeanbisutti @johnoliver @rajkumar-rangaraj @ramthi @trask @xiang17
-/agent/agent-gc-monitor @harsimar @jeanbisutti @johnoliver @rajkumar-rangaraj @ramthi @trask @xiang17
+* @harsimar @mattsains-msft @rajkumar-rangaraj @ramthi @trask @xiang17
+/agent/agent-profiler @harsimar @mattsains-msft @johnoliver @rajkumar-rangaraj @ramthi @trask @xiang17
+/agent/agent-gc-monitor @harsimar @mattsains-msft @johnoliver @rajkumar-rangaraj @ramthi @trask @xiang17
