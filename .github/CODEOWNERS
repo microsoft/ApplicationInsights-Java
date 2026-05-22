@@ -9,5 +9,5 @@
 #
 
 * @harsimar @mattsains-msft @rajkumar-rangaraj @ramthi @trask @xiang17
-/agent/agent-profiler @harsimar @mattsains-msft @johnoliver @rajkumar-rangaraj @ramthi @trask @xiang17
-/agent/agent-gc-monitor @harsimar @mattsains-msft @johnoliver @rajkumar-rangaraj @ramthi @trask @xiang17
+/agent/agent-profiler @harsimar @johnoliver @mattsains-msft @rajkumar-rangaraj @ramthi @trask @xiang17
+/agent/agent-gc-monitor @harsimar @johnoliver @mattsains-msft @rajkumar-rangaraj @ramthi @trask @xiang17
