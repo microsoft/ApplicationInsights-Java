@@ -15,8 +15,13 @@ jobs:
           # this is the personal access token used for "git push" below
           # which is needed in order to trigger workflows
           token: ${{ secrets.PR_HELPER_GITHUB_TOKEN }}
-          repository: ${{ github.event.pull_request.head.repo.full_name }}
-          ref: ${{ github.event.pull_request.head.ref }}
+
+      - name: Check out PR branch
+        env:
+          NUMBER: ${{ github.event.pull_request.number }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh pr checkout $NUMBER
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@50e97c2cd7a37755bbfafc9c5b7cafaece252f6e # v6
