@@ -59,7 +59,7 @@ jobs:
           message="Update the applicationinsights-java version to $VERSION"
           body="Update the applicationinsights-java version to \`$VERSION\`.
 
-          cc @harsimar @jeanbisutti @mattmccleary @rajkumar-rangaraj @trask @xiang17
+          cc @harsimar @mattmccleary @mattsains-msft @rajkumar-rangaraj @trask @xiang17
           "
           branch="update-applicationinsights-java-to-${VERSION}"
 
