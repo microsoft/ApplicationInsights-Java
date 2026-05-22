@@ -45,12 +45,18 @@ updates:
 
       opentelemetry:
         patterns:
-          - "io.opentelemetry*:*"
           - "otelSdkVersion"
           - "otelInstrumentationVersion"
           - "otelInstrumentationAlphaVersion"
           - "otelContribVersion"
-      
+          - "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom"
+          - "io.opentelemetry.instrumentation:gradle-plugins"
+
+      opentelemetry-semconv:
+        patterns:
+          - "io.opentelemetry.semconv:opentelemetry-semconv"
+          - "io.opentelemetry.semconv:opentelemetry-semconv-incubating"
+
       # Spotless repeatedly appears as two separate dependency names for the same version bump
       spotless:
         patterns:
