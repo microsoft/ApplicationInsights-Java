@@ -1,0 +1,9 @@
+{
+  "role": {
+    "name": "testrolename",
+    "instance": "testroleinstance"
+  },
+  "sampling" : {
+    "requestsPerSecond": 100000
+  }
+}
