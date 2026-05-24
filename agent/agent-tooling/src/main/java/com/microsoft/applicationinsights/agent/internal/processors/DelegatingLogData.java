@@ -6,6 +6,7 @@ package com.microsoft.applicationinsights.agent.internal.processors;
 import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.Value;
 import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
@@ -59,8 +60,14 @@ public abstract class DelegatingLogData implements LogRecordData {
   }
 
   @Override
+  @SuppressWarnings("deprecation") // Implementation of deprecated method
   public Body getBody() {
     return delegate.getBody();
+  }
+
+  @Override
+  public Value<?> getBodyValue() {
+    return delegate.getBodyValue();
   }
 
   @Override
@@ -100,8 +107,8 @@ public abstract class DelegatingLogData implements LogRecordData {
         + "severityText="
         + getSeverityText()
         + ", "
-        + "body="
-        + getBody()
+        + "bodyValue="
+        + getBodyValue()
         + "}";
   }
 }
