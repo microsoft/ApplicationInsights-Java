@@ -11,6 +11,7 @@ dependencies {
   annotationProcessor("com.google.auto.value:auto-value")
 
   implementation("io.opentelemetry.contrib:opentelemetry-jfr-connection")
+  compileOnly("org.gradle.jfr.polyfill:jfr-polyfill:1.0.2")
   implementation("com.azure:azure-storage-blob")
 
   implementation(project(":agent:agent-profiler:agent-alerting-api"))
