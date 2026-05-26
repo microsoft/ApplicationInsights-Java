@@ -85,6 +85,11 @@ tasks {
       exclude(dependency("io.opentelemetry:opentelemetry-context"))
       exclude(dependency("io.opentelemetry:opentelemetry-api-incubator"))
       exclude(dependency("io.opentelemetry:opentelemetry-common"))
+
+      // oshi-core 7.x brings jna-jpms/jna-platform-jpms, which overlap with the non-jpms
+      // jna/jna-platform artifacts already present in the agent distribution.
+      exclude(dependency("net.java.dev.jna:jna-jpms"))
+      exclude(dependency("net.java.dev.jna:jna-platform-jpms"))
     }
   }
 
