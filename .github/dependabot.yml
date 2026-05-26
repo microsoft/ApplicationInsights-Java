@@ -46,15 +46,19 @@ updates:
       opentelemetry:
         patterns:
           - "otelSdkVersion"
+          - "otelSdkAlphaVersion"
           - "otelInstrumentationVersion"
           - "otelInstrumentationAlphaVersion"
           - "otelContribVersion"
+          - "otelContribAlphaVersion"
           - "io.opentelemetry:opentelemetry-bom"
           - "io.opentelemetry:opentelemetry-bom-alpha"
           - "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom"
           - "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha"
           - "io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-incubator"
           - "io.opentelemetry.instrumentation:gradle-plugins"
+          - "io.opentelemetry.contrib:opentelemetry-jfr-connection"
+          - "io.opentelemetry.contrib:opentelemetry-runtime-attach-core"
 
       opentelemetry-semconv:
         patterns:

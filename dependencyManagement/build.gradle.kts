@@ -8,9 +8,11 @@ val dependencyVersions = hashMapOf<String, String>()
 rootProject.extra["versions"] = dependencyVersions
 
 val otelSdkVersion = "1.61.0"
+val otelSdkAlphaVersion = "1.61.0-alpha"
 val otelInstrumentationAlphaVersion = "2.27.0-alpha"
 val otelInstrumentationVersion = "2.27.0"
 val otelContribVersion = "1.56.0"
+val otelContribAlphaVersion = "1.56.0-alpha"
 
 rootProject.extra["otelInstrumentationVersion"] = otelInstrumentationVersion
 rootProject.extra["otelInstrumentationAlphaVersion"] = otelInstrumentationAlphaVersion
@@ -18,7 +20,7 @@ rootProject.extra["otelInstrumentationAlphaVersion"] = otelInstrumentationAlphaV
 val DEPENDENCY_BOMS = listOf(
   "com.fasterxml.jackson:jackson-bom:2.21.3",
   "io.opentelemetry:opentelemetry-bom:${otelSdkVersion}",
-  "io.opentelemetry:opentelemetry-bom-alpha:${otelSdkVersion}-alpha",
+  "io.opentelemetry:opentelemetry-bom-alpha:${otelSdkAlphaVersion}",
   "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:${otelInstrumentationVersion}",
   "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${otelInstrumentationAlphaVersion}",
   "com.azure:azure-sdk-bom:1.3.6",
@@ -67,8 +69,8 @@ val DEPENDENCIES = listOf(
   "com.azure:azure-core-test:1.26.2", // this is not included in azure-sdk-bom
   "org.assertj:assertj-core:3.27.7",
   "org.awaitility:awaitility:4.3.0",
-  "io.opentelemetry.contrib:opentelemetry-jfr-connection:${otelContribVersion}-alpha",
-  "io.opentelemetry.contrib:opentelemetry-runtime-attach-core:${otelContribVersion}-alpha",
+  "io.opentelemetry.contrib:opentelemetry-jfr-connection:${otelContribAlphaVersion}",
+  "io.opentelemetry.contrib:opentelemetry-runtime-attach-core:${otelContribAlphaVersion}",
   "com.google.code.findbugs:jsr305:3.0.2",
   "com.github.spotbugs:spotbugs-annotations:4.9.8"
 )
