@@ -14,6 +14,7 @@ import com.azure.monitor.opentelemetry.autoconfigure.implementation.utils.Format
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.configuration.GcReportingLevel;
 import com.microsoft.applicationinsights.agent.internal.profiler.Profiler;
+import com.microsoft.applicationinsights.agent.internal.profiler.ProfilerControl;
 import com.microsoft.applicationinsights.agent.internal.profiler.upload.ServiceProfilerIndex;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryObservers;
@@ -23,6 +24,7 @@ import com.microsoft.applicationinsights.alerting.analysis.TimeSource;
 import com.microsoft.applicationinsights.alerting.analysis.pipelines.AlertPipeline;
 import com.microsoft.applicationinsights.alerting.analysis.pipelines.AlertPipelineMultiplexer;
 import com.microsoft.applicationinsights.alerting.config.AlertMetricType;
+import com.microsoft.applicationinsights.alerting.config.AlertingProfileFileTriggerConfiguration;
 import com.microsoft.applicationinsights.diagnostics.DiagnosticEngine;
 import java.util.List;
 import java.util.Map;
@@ -47,14 +49,17 @@ public class AlertingSubsystemInit {
       Profiler profiler,
       TelemetryClient telemetryClient,
       DiagnosticEngine diagnosticEngine,
-      ExecutorService executorService) {
+      ExecutorService executorService,
+      AlertingProfileFileTriggerConfiguration alertingProfileFileTriggerConfiguration) {
 
     // TODO (trask) delay creation of AlertingSubsystem until after Profiler is created and
     // initialized?
     Consumer<AlertBreach> alertAction =
         alert -> alertAction(alert, profiler, diagnosticEngine, telemetryClient);
 
-    alertingSubsystem = AlertingSubsystem.create(alertAction, TimeSource.DEFAULT);
+    alertingSubsystem =
+        AlertingSubsystem.create(
+            alertAction, TimeSource.DEFAULT, alertingProfileFileTriggerConfiguration);
 
     if (configuration.enableRequestTriggering) {
       if (!configuration.requestTriggerEndpoints.isEmpty()) {
@@ -79,6 +84,11 @@ public class AlertingSubsystemInit {
         telemetryClient,
         executorService,
         fromGcEventMonitorConfiguration(reportingLevel));
+
+    // Register JMX MBean for triggering profiles via jcmd / JMX tools
+    if (configuration.enableProfilerControlMBean) {
+      ProfilerControl.register(alertAction);
+    }
 
     return alertingSubsystem;
   }

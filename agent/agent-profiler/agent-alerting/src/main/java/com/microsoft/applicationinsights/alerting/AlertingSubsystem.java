@@ -11,9 +11,11 @@ import com.microsoft.applicationinsights.alerting.analysis.pipelines.AlertPipeli
 import com.microsoft.applicationinsights.alerting.config.AlertConfiguration;
 import com.microsoft.applicationinsights.alerting.config.AlertMetricType;
 import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration;
+import com.microsoft.applicationinsights.alerting.config.AlertingProfileFileTriggerConfiguration;
 import com.microsoft.applicationinsights.alerting.config.CollectionPlanConfiguration;
 import com.microsoft.applicationinsights.alerting.config.CollectionPlanConfiguration.EngineMode;
 import com.microsoft.applicationinsights.alerting.config.DefaultConfiguration;
+import java.io.File;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -33,7 +35,6 @@ import org.slf4j.LoggerFactory;
 public class AlertingSubsystem {
 
   private static final Logger logger = LoggerFactory.getLogger(AlertingSubsystem.class);
-
   // Downstream observer of alerts produced by the alerting system
   private final Consumer<AlertBreach> alertHandler;
 
@@ -46,25 +47,40 @@ public class AlertingSubsystem {
   // Current configuration of the alerting subsystem
   private AlertingConfiguration alertConfig;
 
-  private boolean enableRequestTriggerUpdates;
+  /** Configuration controlling the file-based manual profile trigger. */
+  private final AlertingProfileFileTriggerConfiguration alertingProfileFileTriggerConfiguration;
 
-  protected AlertingSubsystem(Consumer<AlertBreach> alertHandler) {
-    this(alertHandler, TimeSource.DEFAULT, false);
-  }
+  private boolean enableRequestTriggerUpdates;
 
   protected AlertingSubsystem(
       Consumer<AlertBreach> alertHandler,
       TimeSource timeSource,
-      boolean enableRequestTriggerUpdates) {
+      boolean enableRequestTriggerUpdates,
+      AlertingProfileFileTriggerConfiguration alertingProfileFileTriggerConfiguration) {
     this.alertHandler = alertHandler;
     this.alertPipelines = new AlertPipelines(alertHandler);
     this.timeSource = timeSource;
     this.enableRequestTriggerUpdates = enableRequestTriggerUpdates;
+    this.alertingProfileFileTriggerConfiguration = alertingProfileFileTriggerConfiguration;
   }
 
+  /**
+   * Creates and initializes an {@link AlertingSubsystem} with an initially-disabled configuration.
+   *
+   * @param alertHandler downstream consumer that handles generated alert breaches
+   * @param timeSource time source used for alert evaluation windows
+   * @param alertingProfileFileTriggerConfiguration configuration for the file-based manual trigger
+   * @return a fully initialized alerting subsystem ready to receive configuration updates
+   */
   public static AlertingSubsystem create(
-      Consumer<AlertBreach> alertHandler, TimeSource timeSource) {
-    AlertingSubsystem alertingSubsystem = new AlertingSubsystem(alertHandler, timeSource, true);
+      Consumer<AlertBreach> alertHandler,
+      TimeSource timeSource,
+      AlertingProfileFileTriggerConfiguration alertingProfileFileTriggerConfiguration) {
+
+    AlertingSubsystem alertingSubsystem =
+        new AlertingSubsystem(
+            alertHandler, timeSource, true, alertingProfileFileTriggerConfiguration);
+
     // init with disabled config
     alertingSubsystem.initialize(
         AlertingConfiguration.create(
@@ -145,8 +161,17 @@ public class AlertingSubsystem {
     }
   }
 
-  /** Determine if a manual alert has been requested. */
+  /**
+   * Determine if a manual alert has been requested via any supported mechanism. Currently evaluates
+   * both the server-side collection plan and the local file-based trigger.
+   */
   private void evaluateManualTrigger(AlertingConfiguration alertConfig) {
+    evaluateCollectionPlanTrigger(alertConfig);
+    evaluateFileTrigger(alertConfig);
+  }
+
+  /** Check if the collection plan configuration requests a manual profile. */
+  private void evaluateCollectionPlanTrigger(AlertingConfiguration alertConfig) {
     CollectionPlanConfiguration config = alertConfig.getCollectionPlanConfiguration();
 
     boolean shouldTrigger =
@@ -174,6 +199,61 @@ public class AlertingSubsystem {
               .build();
       alertHandler.accept(alertBreach);
     }
+  }
+
+  /**
+   * Check if a trigger file is present on the local file system and was recently modified. If so,
+   * delete the file and trigger a manual profile. The global cooldown in Profiler prevents
+   * overlapping profiles.
+   */
+  private void evaluateFileTrigger(AlertingConfiguration alertConfig) {
+    if (!alertingProfileFileTriggerConfiguration.isEnabled()) {
+      return;
+    }
+
+    File manualTriggerFile = alertingProfileFileTriggerConfiguration.getFilePath();
+    if (manualTriggerFile == null || !manualTriggerFile.exists()) {
+      return;
+    }
+
+    long lastModified = manualTriggerFile.lastModified();
+    long age = timeSource.getNow().toEpochMilli() - lastModified;
+
+    if (age > AlertingProfileFileTriggerConfiguration.MANUAL_TRIGGER_FILE_MAX_AGE_MS) {
+      return;
+    }
+
+    // Delete the trigger file to prevent re-triggering
+    if (!manualTriggerFile.delete()) {
+      logger.warn(
+          "Failed to delete manual profile trigger file: {}", manualTriggerFile.getAbsolutePath());
+    }
+
+    logger.info("Manual profile trigger file detected, initiating profile recording");
+
+    // Use the collection plan's duration if configured, otherwise fall back to the
+    // file trigger's default duration setting.
+    CollectionPlanConfiguration collectionPlan = alertConfig.getCollectionPlanConfiguration();
+    int durationSeconds = collectionPlan.getImmediateProfilingDurationSeconds();
+    if (durationSeconds <= 0) {
+      durationSeconds = alertingProfileFileTriggerConfiguration.getDefaultProfileDurationSeconds();
+    }
+
+    AlertBreach alertBreach =
+        AlertBreach.builder()
+            .setType(AlertMetricType.MANUAL)
+            .setAlertValue(0.0)
+            .setAlertConfiguration(
+                AlertConfiguration.builder()
+                    .setType(AlertMetricType.MANUAL)
+                    .setEnabled(true)
+                    .setProfileDurationSeconds(durationSeconds)
+                    .build())
+            .setProfileId(UUID.randomUUID().toString())
+            .setCpuMetric(0)
+            .setMemoryUsage(0)
+            .build();
+    alertHandler.accept(alertBreach);
   }
 
   public void setPipeline(AlertMetricType type, AlertPipeline alertPipeline) {

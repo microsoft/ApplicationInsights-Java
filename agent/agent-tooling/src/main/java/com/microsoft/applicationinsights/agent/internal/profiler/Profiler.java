@@ -8,6 +8,7 @@ import com.microsoft.applicationinsights.agent.internal.profiler.config.Profiler
 import com.microsoft.applicationinsights.agent.internal.profiler.upload.UploadListener;
 import com.microsoft.applicationinsights.agent.internal.profiler.upload.UploadService;
 import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
+import com.microsoft.applicationinsights.alerting.analysis.TimeSource;
 import com.microsoft.applicationinsights.alerting.config.AlertConfiguration;
 import com.microsoft.applicationinsights.alerting.config.AlertMetricType;
 import io.opentelemetry.contrib.jfr.connection.FlightRecorderConnection;
@@ -60,6 +61,15 @@ public class Profiler {
   @Nullable private Recording activeRecording = null;
   @Nullable private File activeRecordingFile = null;
 
+  // Global cooldown: earliest time at which a new recording is allowed, regardless of trigger type.
+  // This prevents rapid successive profiles from different trigger sources (e.g., file trigger
+  // immediately followed by a CPU threshold breach). Reset after each recording completes.
+  private volatile Instant globalCooldownUntil = Instant.MIN;
+
+  // Duration (in seconds) of the global cooldown period. A value of 0 disables the global cooldown
+  // (individual per-trigger cooldowns still apply).
+  private final int globalCooldownSeconds;
+
   private final RecordingConfiguration memoryRecordingConfiguration;
   private final RecordingConfiguration cpuRecordingConfiguration;
   private final RecordingConfiguration spanRecordingConfiguration;
@@ -67,7 +77,15 @@ public class Profiler {
 
   private final File temporaryDirectory;
 
+  private final TimeSource timeSource;
+
   public Profiler(Configuration.ProfilerConfiguration config, File tempDir) {
+    this(config, tempDir, TimeSource.DEFAULT);
+  }
+
+  public Profiler(Configuration.ProfilerConfiguration config, File tempDir, TimeSource timeSource) {
+
+    this.timeSource = timeSource;
 
     periodicConfig =
         AlertConfiguration.builder()
@@ -77,6 +95,8 @@ public class Profiler {
             .setProfileDurationSeconds(config.periodicRecordingDurationSeconds)
             .setCooldownSeconds(config.periodicRecordingIntervalSeconds)
             .build();
+
+    globalCooldownSeconds = config.globalCooldownSeconds;
 
     memoryRecordingConfiguration = AlternativeJfrConfigurations.getMemoryProfileConfig(config);
     cpuRecordingConfiguration = AlternativeJfrConfigurations.getCpuProfileConfig(config);
@@ -109,6 +129,17 @@ public class Profiler {
     }
   }
 
+  // visible for testing
+  void initialize(
+      UploadService uploadService,
+      ScheduledExecutorService scheduledExecutorService,
+      FlightRecorderConnection flightRecorderConnection) {
+    this.uploadService = uploadService;
+    this.scheduledExecutorService = scheduledExecutorService;
+    this.recordingOptionsBuilder = new RecordingOptions.Builder();
+    this.flightRecorderConnection = flightRecorderConnection;
+  }
+
   /** Apply new configuration settings obtained from Service Profiler. */
   public void updateConfiguration(ProfilerConfiguration newConfig) {
     logger.debug("Received config {}", newConfig.getLastModified());
@@ -118,7 +149,7 @@ public class Profiler {
 
   // visible for tests
   void profileAndUpload(AlertBreach alertBreach, Duration duration, UploadListener uploadListener) {
-    Instant recordingStart = Instant.now();
+    Instant recordingStart = timeSource.getNow();
     executeProfile(
         alertBreach.getType(),
         duration,
@@ -130,6 +161,15 @@ public class Profiler {
     synchronized (activeRecordingLock) {
       if (activeRecording != null) {
         logger.warn("Alert received, however a profile is already in progress, ignoring request.");
+        return null;
+      }
+
+      // Enforce global cooldown across all trigger sources
+      if (globalCooldownSeconds > 0 && timeSource.getNow().isBefore(globalCooldownUntil)) {
+        logger.info(
+            "Alert received (type={}), but global cooldown is active until {}. Ignoring request.",
+            alertType,
+            globalCooldownUntil);
         return null;
       }
 
@@ -278,9 +318,16 @@ public class Profiler {
     }
   }
 
-  private void clearActiveRecording() {
+  // visible for testing
+  void clearActiveRecording() {
     synchronized (activeRecordingLock) {
       activeRecording = null;
+
+      // Start global cooldown now that the recording is complete
+      if (globalCooldownSeconds > 0) {
+        globalCooldownUntil = timeSource.getNow().plusSeconds(globalCooldownSeconds);
+        logger.debug("Global profile cooldown active until {}", globalCooldownUntil);
+      }
 
       // delete uploaded profile
       if (activeRecordingFile != null && activeRecordingFile.exists()) {
@@ -289,6 +336,18 @@ public class Profiler {
         }
       }
       activeRecordingFile = null;
+    }
+  }
+
+  // visible for testing
+  Instant getGlobalCooldownUntil() {
+    return globalCooldownUntil;
+  }
+
+  // visible for testing
+  boolean isRecordingActive() {
+    synchronized (activeRecordingLock) {
+      return activeRecording != null;
     }
   }
 
@@ -302,7 +361,7 @@ public class Profiler {
       }
     }
 
-    Instant recordingStart = Instant.now();
+    Instant recordingStart = timeSource.getNow();
     Instant recordingEnd = recordingStart.plus(duration);
 
     return new File(

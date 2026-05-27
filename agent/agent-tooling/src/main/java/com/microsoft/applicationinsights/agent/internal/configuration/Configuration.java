@@ -1531,6 +1531,38 @@ public class Configuration {
     public boolean enableRequestTriggering = false;
     public List<RequestTrigger> requestTriggerEndpoints = new ArrayList<>();
     @Nullable public String cgroupPath = null;
+
+    /** Configuration for the file-based manual profile trigger mechanism. */
+    public ManualProfileTriggerConfiguration manualTrigger =
+        new ManualProfileTriggerConfiguration();
+
+    // Global cooldown in seconds applied after any profile recording completes, regardless of
+    // trigger source. During cooldown, all trigger sources (CPU, memory, request, manual, periodic)
+    // are suppressed. Set to 0 to disable (individual trigger cooldowns still apply).
+    public int globalCooldownSeconds = 120;
+
+    // Whether to register a JMX MBean that allows triggering profiles via jcmd or JMX tools.
+    public boolean enableProfilerControlMBean = false;
+  }
+
+  /**
+   * Configuration for the file-based manual profile trigger.
+   *
+   * <p>When enabled, the agent watches for the creation of a trigger file. Touching or creating the
+   * file initiates an on-demand profile recording. The file is deleted after the trigger is
+   * processed to prevent repeated recordings.
+   */
+  public static class ManualProfileTriggerConfiguration {
+    // Whether the file-based manual trigger is enabled.
+    public boolean enabled = true;
+
+    // Path to the file that triggers a manual profile when created/touched.
+    // If relative, it is resolved against the agent's temp directory.
+    public String filePath = "applicationinsights-agent-profile-trigger";
+
+    // Default duration (in seconds) for profiles initiated by the file trigger when no override
+    // is specified in the collection plan configuration.
+    public int defaultProfileDurationSeconds = 120;
   }
 
   public static class GcEventConfiguration {

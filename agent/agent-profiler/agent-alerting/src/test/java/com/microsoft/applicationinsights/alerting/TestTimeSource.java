@@ -15,6 +15,10 @@ class TestTimeSource extends TimeSource {
     return now;
   }
 
+  void setNow(Instant now) {
+    this.now = now;
+  }
+
   void increment(int milliseconds) {
     this.now = now.plusMillis(milliseconds);
   }

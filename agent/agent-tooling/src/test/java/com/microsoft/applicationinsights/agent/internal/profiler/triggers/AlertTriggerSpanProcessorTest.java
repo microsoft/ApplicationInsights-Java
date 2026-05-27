@@ -10,6 +10,7 @@ import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
 import com.microsoft.applicationinsights.alerting.analysis.TimeSource;
 import com.microsoft.applicationinsights.alerting.analysis.pipelines.AlertPipelineMultiplexer;
 import com.microsoft.applicationinsights.alerting.config.AlertMetricType;
+import com.microsoft.applicationinsights.alerting.config.AlertingProfileFileTriggerConfiguration;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
@@ -121,7 +122,11 @@ public class AlertTriggerSpanProcessorTest {
     triggerConfig.filter.value = "foo.*";
     triggerConfig.threshold.value = 0.75f;
 
-    AlertingSubsystem alertingSubsystem = AlertingSubsystem.create(alertAction, TimeSource.DEFAULT);
+    AlertingSubsystem alertingSubsystem =
+        AlertingSubsystem.create(
+            alertAction,
+            TimeSource.DEFAULT,
+            AlertingProfileFileTriggerConfiguration.createDefault());
 
     TestTimeSource timeSource = new TestTimeSource();
     timeSource.setNow(Instant.EPOCH);

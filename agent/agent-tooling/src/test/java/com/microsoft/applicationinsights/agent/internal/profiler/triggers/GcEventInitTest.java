@@ -12,6 +12,7 @@ import com.microsoft.applicationinsights.alerting.AlertingSubsystem;
 import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
 import com.microsoft.applicationinsights.alerting.analysis.TimeSource;
 import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration;
+import com.microsoft.applicationinsights.alerting.config.AlertingProfileFileTriggerConfiguration;
 import com.microsoft.gcmonitor.GcCollectionEvent;
 import com.microsoft.gcmonitor.GcEventConsumer;
 import com.microsoft.gcmonitor.GcMonitorFactory;
@@ -73,7 +74,10 @@ class GcEventInitTest {
   private static AlertingSubsystem getAlertingSubsystem(
       CompletableFuture<AlertBreach> alertFuture, TimeSource timeSource) {
     AlertingSubsystem alertingSubsystem =
-        AlertingSubsystem.create(alertFuture::complete, timeSource);
+        AlertingSubsystem.create(
+            alertFuture::complete,
+            timeSource,
+            AlertingProfileFileTriggerConfiguration.createDefault());
 
     AlertingConfiguration config =
         AlertConfigParser.parse(
