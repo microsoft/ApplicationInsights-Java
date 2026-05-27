@@ -167,7 +167,7 @@ public class AlertingSubsystem {
    */
   private void evaluateManualTrigger(AlertingConfiguration alertConfig) {
     evaluateCollectionPlanTrigger(alertConfig);
-    evaluateFileTrigger();
+    evaluateFileTrigger(alertConfig);
   }
 
   /** Check if the collection plan configuration requests a manual profile. */
@@ -211,6 +211,18 @@ public class AlertingSubsystem {
       return;
     }
 
+    if (alertConfig == null) {
+      return;
+    }
+
+    evaluateFileTrigger(alertConfig);
+  }
+
+  private void evaluateFileTrigger(AlertingConfiguration currentConfig) {
+    if (!alertingProfileFileTriggerConfiguration.isEnabled()) {
+      return;
+    }
+
     File manualTriggerFile = alertingProfileFileTriggerConfiguration.getFilePath();
     if (manualTriggerFile == null || !manualTriggerFile.exists()) {
       return;
@@ -233,7 +245,7 @@ public class AlertingSubsystem {
 
     // Use the collection plan's duration if configured, otherwise fall back to the
     // file trigger's default duration setting.
-    CollectionPlanConfiguration collectionPlan = alertConfig.getCollectionPlanConfiguration();
+    CollectionPlanConfiguration collectionPlan = currentConfig.getCollectionPlanConfiguration();
     int durationSeconds = collectionPlan.getImmediateProfilingDurationSeconds();
     if (durationSeconds <= 0) {
       durationSeconds = alertingProfileFileTriggerConfiguration.getDefaultProfileDurationSeconds();
