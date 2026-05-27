@@ -167,7 +167,7 @@ public class AlertingSubsystem {
    */
   private void evaluateManualTrigger(AlertingConfiguration alertConfig) {
     evaluateCollectionPlanTrigger(alertConfig);
-    evaluateFileTrigger(alertConfig);
+    evaluateFileTrigger();
   }
 
   /** Check if the collection plan configuration requests a manual profile. */
@@ -206,7 +206,7 @@ public class AlertingSubsystem {
    * delete the file and trigger a manual profile. The global cooldown in Profiler prevents
    * overlapping profiles.
    */
-  private void evaluateFileTrigger(AlertingConfiguration alertConfig) {
+  public void evaluateFileTrigger() {
     if (!alertingProfileFileTriggerConfiguration.isEnabled()) {
       return;
     }

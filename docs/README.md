@@ -133,7 +133,7 @@ cooldowns still apply).
 
 `enableProfilerControlMBean` - (default: false) Whether to register a JMX MBean
 (`com.microsoft:type=AI-alert,name=ProfilerControl`) that allows triggering profiles via
-`jcmd` or JMX tools. See [Manual Profile Triggering](#manual-profile-triggering) for usage.
+JMX tools. See [Manual Profile Triggering](#manual-profile-triggering) for usage.
 
 `manualTrigger` - Configuration for the file-based manual profile trigger:
 
@@ -162,21 +162,25 @@ The file must have been modified within the last 60 seconds to be considered val
 are ignored to prevent unintended recordings after restarts). After the trigger is detected, the
 file is automatically deleted.
 
+> **Note:** The file trigger is evaluated on the profiler's configuration polling cycle
+> (default every 60 seconds), so there may be up to a one-minute delay between touching the file
+> and the profile recording starting.
+
 ### JMX MBean trigger
 
 When `enableProfilerControlMBean` is `true`, the agent registers a JMX MBean that can be invoked
 to trigger profiles:
 
-**Via jcmd (JDK 17+):**
-```bash
-jcmd <pid> MBean.invoke com.microsoft:type=AI-alert,name=ProfilerControl triggerProfile
-```
-
-**Via jmxterm (any JDK):**
+**Via jmxterm:**
 ```bash
 echo "run -b com.microsoft:type=AI-alert,name=ProfilerControl triggerProfile" | \
   java -jar jmxterm.jar -l <pid>
 ```
+
+**Via JConsole:**
+
+Connect to the target JVM process, navigate to the MBeans tab, expand
+`com.microsoft` → `AI-alert` → `ProfilerControl`, and invoke the `triggerProfile` operation.
 
 Both manual triggering mechanisms respect the `globalCooldownSeconds` setting — if a profile was
 recently recorded, manual triggers will be suppressed until the cooldown expires.

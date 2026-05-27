@@ -1541,7 +1541,7 @@ public class Configuration {
     // are suppressed. Set to 0 to disable (individual trigger cooldowns still apply).
     public int globalCooldownSeconds = 120;
 
-    // Whether to register a JMX MBean that allows triggering profiles via jcmd or JMX tools.
+    // Whether to register a JMX MBean that allows triggering profiles via JMX tools.
     public boolean enableProfilerControlMBean = false;
   }
 

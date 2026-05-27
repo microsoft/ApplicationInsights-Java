@@ -40,6 +40,8 @@ import org.slf4j.LoggerFactory;
  * <ul>
  *   <li>Instantiates FlightRecorder subsystem
  *   <li>Creates profiles on demand
+ *   <li>Enforces a global cooldown between recordings to prevent rapid successive profiles from
+ *       different trigger sources (CPU, memory, request, manual, periodic)
  * </ul>
  */
 public class Profiler {

@@ -18,18 +18,15 @@ import org.slf4j.LoggerFactory;
 /**
  * JMX MBean that exposes profile triggering via JMX tools.
  *
- * <p>Usage via jcmd (JDK 17+):
- *
- * <pre>
- *   jcmd &lt;pid&gt; MBean.invoke com.microsoft:type=AI-alert,name=ProfilerControl triggerProfile
- * </pre>
- *
  * <p>Usage via jmxterm (any JDK):
  *
  * <pre>
  *   echo "run -b com.microsoft:type=AI-alert,name=ProfilerControl triggerProfile" | \
  *     java -jar jmxterm.jar -l &lt;pid&gt;
  * </pre>
+ *
+ * <p>Or connect with JConsole and invoke {@code triggerProfile()} on the {@code
+ * com.microsoft:type=AI-alert,name=ProfilerControl} MBean.
  */
 public class ProfilerControl implements ProfilerControlMBean {
 
@@ -99,8 +96,7 @@ public class ProfilerControl implements ProfilerControlMBean {
       beanServer.registerMBean(bean, objectName);
       logger.info(
           "Registered profiler control MBean: {}. "
-              + "Trigger profiles with: jcmd <pid> MBean.invoke {} triggerProfile",
-          OBJECT_NAME,
+              + "Trigger profiles via JMX tools (e.g. jmxterm or JConsole).",
           OBJECT_NAME);
     } catch (InstanceAlreadyExistsException e) {
       logger.debug("Profiler control MBean already registered");

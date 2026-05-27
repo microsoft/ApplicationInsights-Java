@@ -201,4 +201,10 @@ public class PerformanceMonitoringService {
       alerting.updateConfiguration(alertingConfig);
     }
   }
+
+  public void evaluateFileTrigger() {
+    if (alerting != null) {
+      alerting.evaluateFileTrigger();
+    }
+  }
 }

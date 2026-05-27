@@ -85,7 +85,7 @@ public class AlertingSubsystemInit {
         executorService,
         fromGcEventMonitorConfiguration(reportingLevel));
 
-    // Register JMX MBean for triggering profiles via jcmd / JMX tools
+    // Register JMX MBean for triggering profiles via JMX tools (e.g. jmxterm, JConsole)
     if (configuration.enableProfilerControlMBean) {
       ProfilerControl.register(alertAction);
     }

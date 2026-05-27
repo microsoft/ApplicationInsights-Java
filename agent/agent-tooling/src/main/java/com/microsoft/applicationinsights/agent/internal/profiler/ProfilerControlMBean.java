@@ -6,14 +6,11 @@ package com.microsoft.applicationinsights.agent.internal.profiler;
 /**
  * MBean interface for triggering Application Insights profiles via JMX.
  *
- * <p>Can be invoked via jcmd (JDK 17+):
+ * <p>Can be invoked via jmxterm, JConsole, or any JMX-compatible tool. The MBean is registered
+ * under {@code com.microsoft:type=AI-alert,name=ProfilerControl} when {@code
+ * enableProfilerControlMBean} is set to {@code true} in the profiler configuration.
  *
- * <pre>
- *   jcmd &lt;pid&gt; MBean.invoke com.microsoft:type=AI-alert,name=ProfilerControl triggerProfile
- *   jcmd &lt;pid&gt; MBean.invoke com.microsoft:type=AI-alert,name=ProfilerControl triggerProfile 120
- * </pre>
- *
- * <p>Or via jmxterm / JConsole on any JDK version.
+ * @see ProfilerControl
  */
 public interface ProfilerControlMBean {
 
