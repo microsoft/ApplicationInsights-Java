@@ -227,6 +227,7 @@ public class AlertingSubsystem {
     if (!manualTriggerFile.delete()) {
       logger.warn(
           "Failed to delete manual profile trigger file: {}", manualTriggerFile.getAbsolutePath());
+      return;
     }
 
     logger.info("Manual profile trigger file detected, initiating profile recording");
