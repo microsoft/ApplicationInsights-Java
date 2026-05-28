@@ -22,8 +22,12 @@ import io.opentelemetry.contrib.jfr.connection.RecordingOptions;
 import java.io.File;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -31,6 +35,13 @@ class ProfilerGlobalCooldownTest {
   @TempDir File tempDir;
 
   private final TestTimeSource timeSource = new TestTimeSource();
+  private final List<ScheduledExecutorService> scheduledExecutorServices = new ArrayList<>();
+
+  @AfterEach
+  void tearDown() {
+    scheduledExecutorServices.forEach(ScheduledExecutorService::shutdownNow);
+    scheduledExecutorServices.clear();
+  }
 
   private static AlertBreach manualBreach(int durationSeconds) {
     return AlertBreach.builder()
@@ -62,7 +73,15 @@ class ProfilerGlobalCooldownTest {
     FlightRecorderConnection frc = mock(FlightRecorderConnection.class);
     when(frc.newRecording(any(), any())).thenReturn(mock(Recording.class));
 
-    profiler.initialize(mock(UploadService.class), Executors.newScheduledThreadPool(1), frc);
+    ScheduledExecutorService scheduledExecutorService =
+        Executors.newSingleThreadScheduledExecutor(
+            runnable -> {
+              Thread thread = new Thread(runnable);
+              thread.setDaemon(true);
+              return thread;
+            });
+    scheduledExecutorServices.add(scheduledExecutorService);
+    profiler.initialize(mock(UploadService.class), scheduledExecutorService, frc);
     return profiler;
   }
 
