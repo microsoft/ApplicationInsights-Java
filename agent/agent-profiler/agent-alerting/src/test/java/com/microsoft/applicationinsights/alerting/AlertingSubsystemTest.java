@@ -9,6 +9,7 @@ import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
 import com.microsoft.applicationinsights.alerting.config.AlertConfiguration;
 import com.microsoft.applicationinsights.alerting.config.AlertMetricType;
 import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration;
+import com.microsoft.applicationinsights.alerting.config.AlertingProfileFileTriggerConfiguration;
 import com.microsoft.applicationinsights.alerting.config.CollectionPlanConfiguration;
 import com.microsoft.applicationinsights.alerting.config.CollectionPlanConfiguration.EngineMode;
 import com.microsoft.applicationinsights.alerting.config.DefaultConfiguration;
@@ -23,7 +24,9 @@ class AlertingSubsystemTest {
 
   private static AlertingSubsystem getAlertMonitor(
       Consumer<AlertBreach> consumer, TestTimeSource timeSource) {
-    AlertingSubsystem monitor = AlertingSubsystem.create(consumer, timeSource);
+    AlertingSubsystem monitor =
+        AlertingSubsystem.create(
+            consumer, timeSource, AlertingProfileFileTriggerConfiguration.createDefault());
 
     monitor.updateConfiguration(
         AlertingConfiguration.create(
@@ -82,7 +85,9 @@ class AlertingSubsystemTest {
     Consumer<AlertBreach> consumer = called::set;
     TestTimeSource timeSource = new TestTimeSource();
 
-    AlertingSubsystem service = AlertingSubsystem.create(consumer, timeSource);
+    AlertingSubsystem service =
+        AlertingSubsystem.create(
+            consumer, timeSource, AlertingProfileFileTriggerConfiguration.createDefault());
 
     service.updateConfiguration(
         AlertingConfiguration.create(
@@ -122,8 +127,11 @@ class AlertingSubsystemTest {
     AtomicReference<AlertBreach> called = new AtomicReference<>();
     Consumer<AlertBreach> consumer = called::set;
     TestTimeSource timeSource = new TestTimeSource();
+    timeSource.setNow(Instant.now());
 
-    AlertingSubsystem service = AlertingSubsystem.create(consumer, timeSource);
+    AlertingSubsystem service =
+        AlertingSubsystem.create(
+            consumer, timeSource, AlertingProfileFileTriggerConfiguration.createDefault());
 
     service.updateConfiguration(
         AlertingConfiguration.create(

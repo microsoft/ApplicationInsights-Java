@@ -157,9 +157,20 @@ public class ProfilingInitializer {
 
   private void pullProfilerSettings(ConfigService configService) {
     try {
-      configService.pullSettings().subscribe(this::applyConfiguration, this::logProfilerPullError);
+      configService
+          .pullSettings()
+          .doFinally(result -> evaluateFileTrigger())
+          .subscribe(this::applyConfiguration, this::logProfilerPullError);
     } catch (Throwable t) {
       logProfilerPullError(t);
+    }
+  }
+
+  private synchronized void evaluateFileTrigger() {
+    if (currentlyEnabled.get()) {
+      if (performanceMonitoringService != null) {
+        performanceMonitoringService.evaluateFileTrigger();
+      }
     }
   }
 
