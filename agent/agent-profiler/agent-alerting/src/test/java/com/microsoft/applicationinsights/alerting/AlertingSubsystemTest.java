@@ -127,6 +127,7 @@ class AlertingSubsystemTest {
     AtomicReference<AlertBreach> called = new AtomicReference<>();
     Consumer<AlertBreach> consumer = called::set;
     TestTimeSource timeSource = new TestTimeSource();
+    timeSource.setNow(Instant.now());
 
     AlertingSubsystem service =
         AlertingSubsystem.create(
