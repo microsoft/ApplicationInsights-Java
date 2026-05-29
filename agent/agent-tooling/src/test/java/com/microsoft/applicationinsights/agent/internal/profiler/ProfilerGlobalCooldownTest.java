@@ -24,6 +24,8 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.UUID;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -31,6 +33,14 @@ class ProfilerGlobalCooldownTest {
   @TempDir File tempDir;
 
   private final TestTimeSource timeSource = new TestTimeSource();
+  private ScheduledExecutorService executor;
+
+  @AfterEach
+  void tearDown() {
+    if (executor != null) {
+      executor.shutdownNow();
+    }
+  }
 
   private static AlertBreach manualBreach(int durationSeconds) {
     return AlertBreach.builder()
@@ -62,7 +72,8 @@ class ProfilerGlobalCooldownTest {
     FlightRecorderConnection frc = mock(FlightRecorderConnection.class);
     when(frc.newRecording(any(), any())).thenReturn(mock(Recording.class));
 
-    profiler.initialize(mock(UploadService.class), Executors.newScheduledThreadPool(1), frc);
+    executor = Executors.newScheduledThreadPool(1);
+    profiler.initialize(mock(UploadService.class), executor, frc);
     return profiler;
   }
 

@@ -177,7 +177,7 @@ public class AlertingSubsystem {
     boolean shouldTrigger =
         config.isSingle()
             && config.getMode() == EngineMode.immediate
-            && Instant.now().isBefore(config.getExpiration())
+            && timeSource.getNow().isBefore(config.getExpiration())
             && !manualTriggersExecuted.contains(config.getSettingsMoniker());
 
     if (shouldTrigger) {
@@ -223,6 +223,10 @@ public class AlertingSubsystem {
       return;
     }
 
+    if (currentConfig == null) {
+      return;
+    }
+
     File manualTriggerFile = alertingProfileFileTriggerConfiguration.getFilePath();
     if (manualTriggerFile == null || !manualTriggerFile.exists()) {
       return;
@@ -239,6 +243,7 @@ public class AlertingSubsystem {
     if (!manualTriggerFile.delete()) {
       logger.warn(
           "Failed to delete manual profile trigger file: {}", manualTriggerFile.getAbsolutePath());
+      return;
     }
 
     logger.info("Manual profile trigger file detected, initiating profile recording");
