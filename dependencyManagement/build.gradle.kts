@@ -7,36 +7,38 @@ data class DependencySet(val group: String, val version: String, val modules: Li
 val dependencyVersions = hashMapOf<String, String>()
 rootProject.extra["versions"] = dependencyVersions
 
-val otelSdkVersion = "1.60.1"
-val otelInstrumentationAlphaVersion = "2.26.1-alpha"
-val otelInstrumentationVersion = "2.26.1"
-val otelContribVersion = "1.54.0"
+val otelSdkVersion = "1.62.0"
+val otelSdkAlphaVersion = "1.62.0-alpha"
+val otelInstrumentationAlphaVersion = "2.28.1-alpha"
+val otelInstrumentationVersion = "2.28.1"
+val otelContribVersion = "1.56.0"
+val otelContribAlphaVersion = "1.57.0-alpha"
 
 rootProject.extra["otelInstrumentationVersion"] = otelInstrumentationVersion
 rootProject.extra["otelInstrumentationAlphaVersion"] = otelInstrumentationAlphaVersion
 
 val DEPENDENCY_BOMS = listOf(
-  "com.fasterxml.jackson:jackson-bom:2.21.2",
+  "com.fasterxml.jackson:jackson-bom:2.21.3",
   "io.opentelemetry:opentelemetry-bom:${otelSdkVersion}",
-  "io.opentelemetry:opentelemetry-bom-alpha:${otelSdkVersion}-alpha",
+  "io.opentelemetry:opentelemetry-bom-alpha:${otelSdkAlphaVersion}",
   "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:${otelInstrumentationVersion}",
   "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${otelInstrumentationAlphaVersion}",
-  "com.azure:azure-sdk-bom:1.3.6",
-  "io.netty:netty-bom:4.2.12.Final",
-  "org.junit:junit-bom:5.14.3",
+  "com.azure:azure-sdk-bom:1.3.7",
+  "io.netty:netty-bom:4.2.14.Final",
+  "org.junit:junit-bom:5.14.4",
   "org.testcontainers:testcontainers-bom:2.0.5",
 )
 
 val autoServiceVersion = "1.1.1"
 val autoValueVersion = "1.11.1"
-val errorProneVersion = "2.48.0"
+val errorProneVersion = "2.49.0"
 val jmhVersion = "1.37"
 val mockitoVersion = "4.11.0"
-val slf4jVersion = "2.0.17"
+val slf4jVersion = "2.0.18"
 
 val CORE_DEPENDENCIES = listOf(
-  "io.opentelemetry.semconv:opentelemetry-semconv:1.40.0",
-  "io.opentelemetry.semconv:opentelemetry-semconv-incubating:1.40.0-alpha",
+  "io.opentelemetry.semconv:opentelemetry-semconv:1.41.1",
+  "io.opentelemetry.semconv:opentelemetry-semconv-incubating:1.41.1-alpha",
   "io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-incubator:${otelInstrumentationAlphaVersion}",
   "com.google.auto.service:auto-service:${autoServiceVersion}",
   "com.google.auto.service:auto-service-annotations:${autoServiceVersion}",
@@ -61,14 +63,14 @@ val CORE_DEPENDENCIES = listOf(
 val DEPENDENCIES = listOf(
   "ch.qos.logback:logback-classic:1.3.16", // logback 1.4+ requires Java 11+
   "ch.qos.logback.contrib:logback-json-classic:0.1.5",
-  "commons-codec:commons-codec:1.21.0",
+  "commons-codec:commons-codec:1.22.0",
   "org.apache.commons:commons-text:1.15.0",
   "com.google.code.gson:gson:2.14.0",
   "com.azure:azure-core-test:1.26.2", // this is not included in azure-sdk-bom
   "org.assertj:assertj-core:3.27.7",
   "org.awaitility:awaitility:4.3.0",
-  "io.opentelemetry.contrib:opentelemetry-jfr-connection:${otelContribVersion}-alpha",
-  "io.opentelemetry.contrib:opentelemetry-runtime-attach-core:${otelContribVersion}-alpha",
+  "io.opentelemetry.contrib:opentelemetry-jfr-connection:${otelContribAlphaVersion}",
+  "io.opentelemetry.contrib:opentelemetry-runtime-attach-core:${otelContribAlphaVersion}",
   "com.google.code.findbugs:jsr305:3.0.2",
   "com.github.spotbugs:spotbugs-annotations:4.9.8"
 )
