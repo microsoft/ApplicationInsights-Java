@@ -1,7 +1,7 @@
 
 # agent
 ## Dependency License Report
-_2026-05-28 21:06:23 UTC_
+_2026-06-08 03:16:04 UTC_
 ## Apache License, Version 2.0
 
 **1** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-annotations` **Version:** `2.21`
@@ -235,11 +235,11 @@ _2026-05-28 21:06:23 UTC_
 > - **POM License**: GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 - [https://www.gnu.org/licenses/lgpl-2.1](https://www.gnu.org/licenses/lgpl-2.1)
 > - **Embedded license files**: [jna-5.17.0.jar/META-INF/LICENSE](jna-5.17.0.jar/META-INF/LICENSE)
 
-**47** **Group:** `net.java.dev.jna` **Name:** `jna-jpms` **Version:** `5.18.1`
+**47** **Group:** `net.java.dev.jna` **Name:** `jna-jpms` **Version:** `5.19.0`
 > - **POM Project URL**: [https://github.com/java-native-access/jna](https://github.com/java-native-access/jna)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 > - **POM License**: GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 - [https://www.gnu.org/licenses/lgpl-2.1](https://www.gnu.org/licenses/lgpl-2.1)
-> - **Embedded license files**: [jna-jpms-5.18.1.jar/META-INF/LICENSE](jna-jpms-5.18.1.jar/META-INF/LICENSE)
+> - **Embedded license files**: [jna-jpms-5.19.0.jar/META-INF/LICENSE](jna-jpms-5.19.0.jar/META-INF/LICENSE)
 
 **48** **Group:** `net.java.dev.jna` **Name:** `jna-platform` **Version:** `5.17.0`
 > - **POM Project URL**: [https://github.com/java-native-access/jna](https://github.com/java-native-access/jna)
@@ -247,11 +247,11 @@ _2026-05-28 21:06:23 UTC_
 > - **POM License**: GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 - [https://www.gnu.org/licenses/lgpl-2.1](https://www.gnu.org/licenses/lgpl-2.1)
 > - **Embedded license files**: [jna-platform-5.17.0.jar/META-INF/LICENSE](jna-platform-5.17.0.jar/META-INF/LICENSE)
 
-**49** **Group:** `net.java.dev.jna` **Name:** `jna-platform-jpms` **Version:** `5.18.1`
+**49** **Group:** `net.java.dev.jna` **Name:** `jna-platform-jpms` **Version:** `5.19.0`
 > - **POM Project URL**: [https://github.com/java-native-access/jna](https://github.com/java-native-access/jna)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 > - **POM License**: GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 - [https://www.gnu.org/licenses/lgpl-2.1](https://www.gnu.org/licenses/lgpl-2.1)
-> - **Embedded license files**: [jna-platform-jpms-5.18.1.jar/META-INF/LICENSE](jna-platform-jpms-5.18.1.jar/META-INF/LICENSE)
+> - **Embedded license files**: [jna-platform-jpms-5.19.0.jar/META-INF/LICENSE](jna-platform-jpms-5.19.0.jar/META-INF/LICENSE)
 
 **50** **Group:** `org.apache.commons` **Name:** `commons-lang3` **Version:** `3.20.0`
 > - **Project URL**: [https://commons.apache.org/proper/commons-lang/](https://commons.apache.org/proper/commons-lang/)
@@ -328,11 +328,11 @@ _2026-05-28 21:06:23 UTC_
 > - **POM License**: GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 - [https://www.gnu.org/licenses/lgpl-2.1](https://www.gnu.org/licenses/lgpl-2.1)
 > - **Embedded license files**: [jna-5.17.0.jar/META-INF/LICENSE](jna-5.17.0.jar/META-INF/LICENSE)
 
-**62** **Group:** `net.java.dev.jna` **Name:** `jna-jpms` **Version:** `5.18.1`
+**62** **Group:** `net.java.dev.jna` **Name:** `jna-jpms` **Version:** `5.19.0`
 > - **POM Project URL**: [https://github.com/java-native-access/jna](https://github.com/java-native-access/jna)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 > - **POM License**: GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 - [https://www.gnu.org/licenses/lgpl-2.1](https://www.gnu.org/licenses/lgpl-2.1)
-> - **Embedded license files**: [jna-jpms-5.18.1.jar/META-INF/LICENSE](jna-jpms-5.18.1.jar/META-INF/LICENSE)
+> - **Embedded license files**: [jna-jpms-5.19.0.jar/META-INF/LICENSE](jna-jpms-5.19.0.jar/META-INF/LICENSE)
 
 **63** **Group:** `net.java.dev.jna` **Name:** `jna-platform` **Version:** `5.17.0`
 > - **POM Project URL**: [https://github.com/java-native-access/jna](https://github.com/java-native-access/jna)
@@ -340,11 +340,11 @@ _2026-05-28 21:06:23 UTC_
 > - **POM License**: GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 - [https://www.gnu.org/licenses/lgpl-2.1](https://www.gnu.org/licenses/lgpl-2.1)
 > - **Embedded license files**: [jna-platform-5.17.0.jar/META-INF/LICENSE](jna-platform-5.17.0.jar/META-INF/LICENSE)
 
-**64** **Group:** `net.java.dev.jna` **Name:** `jna-platform-jpms` **Version:** `5.18.1`
+**64** **Group:** `net.java.dev.jna` **Name:** `jna-platform-jpms` **Version:** `5.19.0`
 > - **POM Project URL**: [https://github.com/java-native-access/jna](https://github.com/java-native-access/jna)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 > - **POM License**: GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 - [https://www.gnu.org/licenses/lgpl-2.1](https://www.gnu.org/licenses/lgpl-2.1)
-> - **Embedded license files**: [jna-platform-jpms-5.18.1.jar/META-INF/LICENSE](jna-platform-jpms-5.18.1.jar/META-INF/LICENSE)
+> - **Embedded license files**: [jna-platform-jpms-5.19.0.jar/META-INF/LICENSE](jna-platform-jpms-5.19.0.jar/META-INF/LICENSE)
 
 ## MIT License
 
@@ -383,12 +383,12 @@ _2026-05-28 21:06:23 UTC_
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**74** **Group:** `com.github.oshi` **Name:** `oshi-common` **Version:** `7.2.1`
+**74** **Group:** `com.github.oshi` **Name:** `oshi-common` **Version:** `7.3.0`
 > - **Manifest Project URL**: [https://github.com/oshi/oshi/oshi-common](https://github.com/oshi/oshi/oshi-common)
 > - **Manifest License**: MIT;link="https://opensource.org/licenses/MIT" (Not Packaged)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**75** **Group:** `com.github.oshi` **Name:** `oshi-core` **Version:** `7.2.1`
+**75** **Group:** `com.github.oshi` **Name:** `oshi-core` **Version:** `7.3.0`
 > - **Manifest Project URL**: [https://github.com/oshi/oshi/oshi-core](https://github.com/oshi/oshi/oshi-core)
 > - **Manifest License**: MIT;link="https://opensource.org/licenses/MIT" (Not Packaged)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
