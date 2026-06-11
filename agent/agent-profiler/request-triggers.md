@@ -140,6 +140,11 @@ Currently, we support:
 - `type` - Currently supports `fixed-duration-cooldown`
 - `value` - Time in seconds during which a profile will not be triggered
 
+> **Note:** In addition to per-trigger throttling, a global cooldown (`globalCooldownSeconds`,
+> default 120s) is applied after any profile recording completes — regardless of trigger source.
+> During global cooldown, all triggers (CPU, memory, request, manual, periodic) are suppressed.
+> See [Profiler Configuration](../../docs/README.md#configuration-file) for details.
+
 ```json
 {
   "throttling": {

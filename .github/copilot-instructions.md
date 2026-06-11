@@ -9,6 +9,7 @@ This is a **Java agent** that extends OpenTelemetry Java Agent to provide Azure 
 - **Agent Entry Point**: `Agent.java` - wraps OpenTelemetry Agent with Application Insights-specific initialization
 - **Agent Bootstrap**: Minimal classes loaded into bootstrap classloader for early initialization
 - **Agent Tooling**: Main Application Insights logic (configuration, exporters, processors) isolated in agent classloader
+- **Profiler Subsystem**: JFR-based profiling with threshold triggers (CPU, memory, request), manual triggers (file touch, JMX MBean), and global cooldown
 - **Instrumentation Modules**: C Functions, ASP.NET Core interop, etc.
 - **Classic SDK**: Legacy 2.x SDK maintained for compatibility
 
