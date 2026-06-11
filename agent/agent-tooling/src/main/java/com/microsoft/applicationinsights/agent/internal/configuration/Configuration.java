@@ -1531,6 +1531,7 @@ public class Configuration {
     public boolean enableRequestTriggering = false;
     public List<RequestTrigger> requestTriggerEndpoints = new ArrayList<>();
     @Nullable public String cgroupPath = null;
+    @Nullable public String localProfilerConfigDir = null;
   }
 
   public static class GcEventConfiguration {

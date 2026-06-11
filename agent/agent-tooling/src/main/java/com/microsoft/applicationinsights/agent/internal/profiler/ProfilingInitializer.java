@@ -15,6 +15,7 @@ import com.microsoft.applicationinsights.agent.internal.configuration.GcReportin
 import com.microsoft.applicationinsights.agent.internal.diagnostics.SdkVersionFinder;
 import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
 import com.microsoft.applicationinsights.agent.internal.profiler.config.ConfigService;
+import com.microsoft.applicationinsights.agent.internal.profiler.config.LocalProfilerConfigService;
 import com.microsoft.applicationinsights.agent.internal.profiler.config.ProfilerConfiguration;
 import com.microsoft.applicationinsights.agent.internal.profiler.service.ServiceProfilerClient;
 import com.microsoft.applicationinsights.agent.internal.profiler.triggers.AlertConfigParser;
@@ -29,6 +30,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,6 +61,7 @@ public class ProfilingInitializer {
   private HttpPipeline httpPipeline;
   private ScheduledExecutorService serviceProfilerExecutorService;
   private ServiceProfilerClient serviceProfilerClient;
+  @Nullable private LocalProfilerConfigService localConfigService;
   //////////////////////////////////////////////////////////
 
   private PerformanceMonitoringService performanceMonitoringService;
@@ -142,6 +145,14 @@ public class ProfilingInitializer {
             httpPipeline,
             userAgent);
 
+    if (configuration.localProfilerConfigDir != null) {
+      File localConfigDir = new File(configuration.localProfilerConfigDir);
+      localConfigService = new LocalProfilerConfigService(localConfigDir);
+      logger.info(
+          "Local profiler configuration directory configured: {}",
+          localConfigDir.getAbsolutePath());
+    }
+
     // Monitor service remains alive permanently due to scheduling an periodic config pull
     startPollingForConfigUpdates();
   }
@@ -157,10 +168,25 @@ public class ProfilingInitializer {
 
   private void pullProfilerSettings(ConfigService configService) {
     try {
+      // Local config takes precedence over remote when the local file is present
+      if (localConfigService != null && localConfigService.isLocalConfigPresent()) {
+        localConfigService
+            .pullSettings()
+            .subscribe(this::applyConfiguration, ProfilingInitializer::logLocalConfigError);
+        return;
+      }
+
       configService.pullSettings().subscribe(this::applyConfiguration, this::logProfilerPullError);
     } catch (Throwable t) {
       logProfilerPullError(t);
     }
+  }
+
+  private static void logLocalConfigError(Throwable e) {
+    logger.error(
+        "Error reading local profiler configuration. "
+            + "Fix or remove the file to restore normal operation.",
+        e);
   }
 
   private void logProfilerPullError(Throwable e) {
