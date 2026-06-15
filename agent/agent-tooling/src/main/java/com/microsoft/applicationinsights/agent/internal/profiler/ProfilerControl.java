@@ -76,7 +76,7 @@ public class ProfilerControl implements ProfilerControlMBean {
             .build();
 
     alertHandler.accept(alertBreach);
-    return "Profile recording started (duration="
+    return "Profile trigger requested (duration="
         + durationSeconds
         + "s, id="
         + alertBreach.getProfileId()
