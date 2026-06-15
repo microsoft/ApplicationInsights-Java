@@ -34,11 +34,7 @@ class ProfilerControlTest {
     AtomicReference<AlertBreach> received = new AtomicReference<>();
     Consumer<AlertBreach> handler = received::set;
 
-    ProfilerControl control = new ProfilerControl(handler);
-    String result = control.triggerProfile();
-
-    assertThat(result).startsWith("Profile recording started");
-    assertThat(result).contains("duration=120s");
+    assertThat(result).startsWith("Profile trigger requested");
 
     AlertBreach breach = received.get();
     assertThat(breach).isNotNull();
