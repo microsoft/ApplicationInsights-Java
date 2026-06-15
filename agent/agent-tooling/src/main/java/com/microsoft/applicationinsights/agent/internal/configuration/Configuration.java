@@ -1554,7 +1554,7 @@ public class Configuration {
    */
   public static class ManualProfileTriggerConfiguration {
     // Whether the file-based manual trigger is enabled.
-    public boolean enabled = true;
+    public boolean enabled = false;
 
     // Path to the file that triggers a manual profile when created/touched.
     // If relative, it is resolved against the agent's temp directory.
