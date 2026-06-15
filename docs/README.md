@@ -97,7 +97,7 @@ Additionally, a number of parameters can be configured using environment variabl
       "globalCooldownSeconds": 120,
       "enableProfilerControlMBean": false,
       "manualTrigger": {
-        "enabled": true,
+        "enabled": false,
         "filePath": "applicationinsights-agent-profile-trigger",
         "defaultProfileDurationSeconds": 120
       }
@@ -137,7 +137,7 @@ JMX tools. See [Manual Profile Triggering](#manual-profile-triggering) for usage
 
 `manualTrigger` - Configuration for the file-based manual profile trigger:
 
-- `enabled` - (default: true) Whether the file-based manual trigger is enabled.
+- `enabled` - (default: false) Whether the file-based manual trigger is enabled.
 - `filePath` - (default: `applicationinsights-agent-profile-trigger`) Path to the trigger file.
   If relative, it is resolved against the agent's temp directory. Creating or touching this file
   triggers a profile recording.
@@ -151,8 +151,8 @@ the file-based trigger or the JMX MBean.
 
 ### File-based trigger
 
-When `manualTrigger.enabled` is `true` (the default), you can trigger a profile by creating or
-touching the trigger file:
+When `manualTrigger.enabled` is `true`, you can trigger a profile by creating or touching the
+trigger file:
 
 ```bash
 touch /tmp/applicationinsights-agent-profile-trigger
