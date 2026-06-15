@@ -17,6 +17,7 @@ import java.io.File;
  * requiring JMX access – simply {@code touch} the trigger file from a shell or orchestration tool.
  */
 public class AlertingProfileFileTriggerConfiguration {
+  private static final String DEFAULT_TRIGGER_FILENAME = "applicationinsights-agent-profile-trigger";
 
   /**
    * Maximum age (in milliseconds) of the trigger file for it to be considered valid. Files older
@@ -58,10 +59,14 @@ public class AlertingProfileFileTriggerConfiguration {
       justification = "File path is set by trusted user configuration (applicationinsights.json)")
   public static AlertingProfileFileTriggerConfiguration create(
       boolean enabled, String filePath, int defaultProfileDurationSeconds, File tempDir) {
+    String resolvedFilePath = filePath;
+    if (resolvedFilePath == null || resolvedFilePath.trim().isEmpty()) {
+      resolvedFilePath = DEFAULT_TRIGGER_FILENAME;
+    }
 
-    File manualTriggerFile = new File(filePath);
-    if (!manualTriggerFile.isAbsolute()) {
-      manualTriggerFile = new File(tempDir, filePath);
+    File manualTriggerFile = new File(resolvedFilePath);
+    if (!manualTriggerFile.isAbsolute() && tempDir != null) {
+      manualTriggerFile = new File(tempDir, resolvedFilePath);
     }
 
     return new AlertingProfileFileTriggerConfiguration(
@@ -71,7 +76,7 @@ public class AlertingProfileFileTriggerConfiguration {
   /** Creates a disabled configuration suitable for tests. */
   public static AlertingProfileFileTriggerConfiguration createDefault() {
     return new AlertingProfileFileTriggerConfiguration(
-        false, new File("applicationinsights-agent-profile-trigger"), 120);
+        false, new File(DEFAULT_TRIGGER_FILENAME), 120);
   }
 
   /** Returns the default profile duration in seconds for file-triggered recordings. */

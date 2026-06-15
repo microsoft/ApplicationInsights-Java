@@ -235,7 +235,8 @@ public class AlertingSubsystem {
     long lastModified = manualTriggerFile.lastModified();
     long age = timeSource.getNow().toEpochMilli() - lastModified;
 
-    if (age > AlertingProfileFileTriggerConfiguration.MANUAL_TRIGGER_FILE_MAX_AGE_MS) {
+    if (age < 0
+        || age > AlertingProfileFileTriggerConfiguration.MANUAL_TRIGGER_FILE_MAX_AGE_MS) {
       return;
     }
 

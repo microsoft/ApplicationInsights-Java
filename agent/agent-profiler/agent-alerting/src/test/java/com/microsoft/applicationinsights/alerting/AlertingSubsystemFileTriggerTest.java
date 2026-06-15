@@ -26,6 +26,12 @@ class AlertingSubsystemFileTriggerTest {
 
   @TempDir File tempDir;
 
+  private static TestTimeSource createTimeSourceAtFileModification(File triggerFile) {
+    TestTimeSource timeSource = new TestTimeSource();
+    timeSource.setNow(Instant.ofEpochMilli(triggerFile.lastModified()));
+    return timeSource;
+  }
+
   private static AlertingConfiguration defaultAlertingConfig() {
     return AlertingConfiguration.create(
         AlertConfiguration.builder()
@@ -64,7 +70,8 @@ class AlertingSubsystemFileTriggerTest {
     AlertingProfileFileTriggerConfiguration config =
         AlertingProfileFileTriggerConfiguration.create(true, "trigger", 120, tempDir);
 
-    AlertingSubsystem subsystem = AlertingSubsystem.create(consumer, new TestTimeSource(), config);
+    AlertingSubsystem subsystem =
+        AlertingSubsystem.create(consumer, createTimeSourceAtFileModification(triggerFile), config);
 
     subsystem.updateConfiguration(defaultAlertingConfig());
 
@@ -153,7 +160,8 @@ class AlertingSubsystemFileTriggerTest {
     AlertingProfileFileTriggerConfiguration config =
         AlertingProfileFileTriggerConfiguration.create(true, "trigger", 120, tempDir);
 
-    AlertingSubsystem subsystem = AlertingSubsystem.create(consumer, new TestTimeSource(), config);
+    AlertingSubsystem subsystem =
+        AlertingSubsystem.create(consumer, createTimeSourceAtFileModification(triggerFile), config);
 
     subsystem.updateConfiguration(defaultAlertingConfig());
 
@@ -174,7 +182,8 @@ class AlertingSubsystemFileTriggerTest {
         AlertingProfileFileTriggerConfiguration.create(
             true, "trigger", expectedDefaultDuration, tempDir);
 
-    AlertingSubsystem subsystem = AlertingSubsystem.create(consumer, new TestTimeSource(), config);
+    AlertingSubsystem subsystem =
+        AlertingSubsystem.create(consumer, createTimeSourceAtFileModification(triggerFile), config);
 
     // The default alerting config has immediateProfilingDurationSeconds=0
     subsystem.updateConfiguration(defaultAlertingConfig());
@@ -182,5 +191,46 @@ class AlertingSubsystemFileTriggerTest {
     assertThat(breach.get()).isNotNull();
     assertThat(breach.get().getAlertConfiguration().getProfileDurationSeconds())
         .isEqualTo(expectedDefaultDuration);
+  }
+
+  @Test
+  void fileTriggerDoesNotFireWhenFileTimestampIsInFuture() throws IOException {
+    File triggerFile = new File(tempDir, "trigger");
+    assertThat(triggerFile.createNewFile()).isTrue();
+
+    TestTimeSource timeSource = new TestTimeSource();
+    long currentMillis = System.currentTimeMillis();
+    timeSource.setNow(Instant.ofEpochMilli(currentMillis));
+    assertThat(triggerFile.setLastModified(currentMillis + 1_000)).isTrue();
+
+    AtomicReference<AlertBreach> breach = new AtomicReference<>();
+    Consumer<AlertBreach> consumer = breach::set;
+
+    AlertingProfileFileTriggerConfiguration config =
+        AlertingProfileFileTriggerConfiguration.create(true, "trigger", 120, tempDir);
+
+    AlertingSubsystem subsystem = AlertingSubsystem.create(consumer, timeSource, config);
+
+    subsystem.updateConfiguration(defaultAlertingConfig());
+
+    assertThat(breach.get()).isNull();
+    assertThat(triggerFile.exists()).isTrue();
+  }
+
+  @Test
+  void fileTriggerConfigurationFallsBackToDefaultPathWhenConfiguredPathIsNull() {
+    AlertingProfileFileTriggerConfiguration config =
+        AlertingProfileFileTriggerConfiguration.create(true, null, 120, tempDir);
+
+    assertThat(config.getFilePath().getAbsolutePath())
+        .isEqualTo(new File(tempDir, "applicationinsights-agent-profile-trigger").getAbsolutePath());
+  }
+
+  @Test
+  void fileTriggerConfigurationAllowsNullTempDirForRelativePath() {
+    AlertingProfileFileTriggerConfiguration config =
+        AlertingProfileFileTriggerConfiguration.create(true, "trigger", 120, null);
+
+    assertThat(config.getFilePath().getPath()).isEqualTo("trigger");
   }
 }
