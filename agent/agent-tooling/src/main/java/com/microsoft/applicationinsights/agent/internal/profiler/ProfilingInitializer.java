@@ -157,9 +157,20 @@ public class ProfilingInitializer {
 
   private void pullProfilerSettings(ConfigService configService) {
     try {
-      configService.pullSettings().subscribe(this::applyConfiguration, this::logProfilerPullError);
+      configService
+          .pullSettings()
+          .doFinally(result -> evaluateFileTrigger())
+          .subscribe(this::applyConfiguration, this::logProfilerPullError);
     } catch (Throwable t) {
       logProfilerPullError(t);
+    }
+  }
+
+  private synchronized void evaluateFileTrigger() {
+    if (currentlyEnabled.get()) {
+      if (performanceMonitoringService != null) {
+        performanceMonitoringService.evaluateFileTrigger();
+      }
     }
   }
 
@@ -175,8 +186,10 @@ public class ProfilingInitializer {
     if (currentlyEnabled.get() || (config.isEnabled() && config.hasBeenConfigured())) {
 
       AlertingConfiguration alertingConfig = AlertConfigParser.toAlertingConfig(config);
+      boolean manualProfilingConfigured =
+          configuration.manualTrigger.enabled || configuration.enableProfilerControlMBean;
 
-      if (alertingConfig.hasAnEnabledTrigger()) {
+      if (alertingConfig.hasAnEnabledTrigger() || manualProfilingConfigured) {
         if (!currentlyEnabled.getAndSet(true)) {
           enableProfiler();
         }

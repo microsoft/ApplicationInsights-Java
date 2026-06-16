@@ -92,7 +92,15 @@ Additionally, a number of parameters can be configured using environment variabl
     "profiler": {
       "enabled": true,
       "cpuTriggeredSettings": "profile-without-env-data",
-      "memoryTriggeredSettings": "profile-without-env-data"
+      "memoryTriggeredSettings": "profile-without-env-data",
+      "manualTriggeredSettings": "profile-without-env-data",
+      "globalCooldownSeconds": 120,
+      "enableProfilerControlMBean": false,
+      "manualTrigger": {
+        "enabled": false,
+        "filePath": "applicationinsights-agent-profile-trigger",
+        "defaultProfileDurationSeconds": 120
+      }
     }
   }
 }
@@ -114,3 +122,65 @@ This can be one of:
   [Warning](#Warning) section for details.
 - `profile`. Uses the `profile.jfc` jfc configuration that ships with JFR.
 - A path to a custom jfc configuration file on the file system, i.e `/tmp/myconfig.jfc`.
+
+`manualTriggeredSettings` - This configuration will be used for manually triggered profiles (via
+file trigger or JMX MBean). Accepts the same values as `cpuTriggeredSettings`.
+
+`globalCooldownSeconds` - (default: 120) Cooldown period in seconds applied after any profile
+recording completes, regardless of trigger source. During cooldown, all trigger sources (CPU,
+memory, request, manual, periodic) are suppressed. Set to `0` to disable (individual trigger
+cooldowns still apply).
+
+`enableProfilerControlMBean` - (default: false) Whether to register a JMX MBean
+(`com.microsoft:type=AI-alert,name=ProfilerControl`) that allows triggering profiles via
+JMX tools. See [Manual Profile Triggering](#manual-profile-triggering) for usage.
+
+`manualTrigger` - Configuration for the file-based manual profile trigger:
+
+- `enabled` - (default: false) Whether the file-based manual trigger is enabled.
+- `filePath` - (default: `applicationinsights-agent-profile-trigger`) Path to the trigger file.
+  If relative, it is resolved against the agent's temp directory. Creating or touching this file
+  triggers a profile recording.
+- `defaultProfileDurationSeconds` - (default: 120) Duration in seconds for profiles initiated by
+  the file trigger when no override is specified in the collection plan.
+
+## Manual Profile Triggering
+
+In addition to automatic threshold-based triggers, profiles can be initiated manually using either
+the file-based trigger or the JMX MBean.
+
+### File-based trigger
+
+When `manualTrigger.enabled` is `true`, you can trigger a profile by creating or touching the
+trigger file:
+
+```bash
+touch /tmp/applicationinsights-agent-profile-trigger
+```
+
+The file must have been modified within the last 60 seconds to be considered valid (stale files
+are ignored to prevent unintended recordings after restarts). After the trigger is detected, the
+file is automatically deleted.
+
+> **Note:** The file trigger is evaluated on the profiler's configuration polling cycle
+> (default every 60 seconds), so there may be up to a one-minute delay between touching the file
+> and the profile recording starting.
+
+### JMX MBean trigger
+
+When `enableProfilerControlMBean` is `true`, the agent registers a JMX MBean that can be invoked
+to trigger profiles:
+
+**Via jmxterm:**
+```bash
+echo "run -b com.microsoft:type=AI-alert,name=ProfilerControl triggerProfile" | \
+  java -jar jmxterm.jar -l <pid>
+```
+
+**Via JConsole:**
+
+Connect to the target JVM process, navigate to the MBeans tab, expand
+`com.microsoft` → `AI-alert` → `ProfilerControl`, and invoke the `triggerProfile` operation.
+
+Both manual triggering mechanisms respect the `globalCooldownSeconds` setting — if a profile was
+recently recorded, manual triggers will be suppressed until the cooldown expires.
