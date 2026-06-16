@@ -223,7 +223,8 @@ class AlertingSubsystemFileTriggerTest {
         AlertingProfileFileTriggerConfiguration.create(true, null, 120, tempDir);
 
     assertThat(config.getFilePath().getAbsolutePath())
-        .isEqualTo(new File(tempDir, "applicationinsights-agent-profile-trigger").getAbsolutePath());
+        .isEqualTo(
+            new File(tempDir, "applicationinsights-agent-profile-trigger").getAbsolutePath());
   }
 
   @Test

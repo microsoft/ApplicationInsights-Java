@@ -17,7 +17,8 @@ import java.io.File;
  * requiring JMX access – simply {@code touch} the trigger file from a shell or orchestration tool.
  */
 public class AlertingProfileFileTriggerConfiguration {
-  private static final String DEFAULT_TRIGGER_FILENAME = "applicationinsights-agent-profile-trigger";
+  private static final String DEFAULT_TRIGGER_FILENAME =
+      "applicationinsights-agent-profile-trigger";
 
   /**
    * Maximum age (in milliseconds) of the trigger file for it to be considered valid. Files older
