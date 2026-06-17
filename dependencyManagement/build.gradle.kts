@@ -37,8 +37,8 @@ val mockitoVersion = "4.11.0"
 val slf4jVersion = "2.0.18"
 
 val CORE_DEPENDENCIES = listOf(
-  "io.opentelemetry.semconv:opentelemetry-semconv:1.41.1",
-  "io.opentelemetry.semconv:opentelemetry-semconv-incubating:1.41.1-alpha",
+  "io.opentelemetry.semconv:opentelemetry-semconv:1.42.0",
+  "io.opentelemetry.semconv:opentelemetry-semconv-incubating:1.42.0-alpha",
   "io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-incubator:${otelInstrumentationAlphaVersion}",
   "com.google.auto.service:auto-service:${autoServiceVersion}",
   "com.google.auto.service:auto-service-annotations:${autoServiceVersion}",
