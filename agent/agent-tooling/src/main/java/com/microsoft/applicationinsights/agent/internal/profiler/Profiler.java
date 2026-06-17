@@ -23,6 +23,8 @@ import java.lang.management.ManagementFactory;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ScheduledExecutorService;
@@ -30,6 +32,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import javax.management.MBeanServerConnection;
+import jdk.jfr.FlightRecorder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,6 +67,13 @@ public class Profiler {
   private final RecordingConfiguration cpuRecordingConfiguration;
   private final RecordingConfiguration spanRecordingConfiguration;
   private final RecordingConfiguration manualRecordingConfiguration;
+
+  // Events to force-disable regardless of .jfc configuration
+  private static final List<String> DISABLED_EVENTS = Arrays.asList(
+          "jdk.InitialSystemProperty",
+          "jdk.InitialEnvironmentVariable",
+          "jdk.InitialSecurityProperty",
+          "jdk.OldObjectSample");
 
   private final File temporaryDirectory;
 
@@ -194,6 +204,7 @@ public class Profiler {
 
     try {
       newRecording.start();
+      disableEvents(newRecording.getId());
 
       // schedule closing the recording
       scheduledExecutorService.schedule(
@@ -208,6 +219,24 @@ public class Profiler {
       CompletableFuture<?> future = new CompletableFuture<>();
       future.completeExceptionally(internalError);
     }
+  }
+
+  /**
+   * Disable configured events on the recording using the direct JFR API. This acts as a safety net
+   * to override .jfc settings that may have been misconfigured.
+   */
+  @SuppressWarnings("Java8ApiChecker")
+  private static void disableEvents(long recordingId) {
+    FlightRecorder.getFlightRecorder().getRecordings().stream()
+        .filter(r -> r.getId() == recordingId)
+        .findFirst()
+        .ifPresent(
+            recording -> {
+              for (String event : DISABLED_EVENTS) {
+                recording.disable(event);
+                logger.debug("Disabled JFR event: {}", event);
+              }
+            });
   }
 
   /** When a profile has been created, upload it to service profiler. */
