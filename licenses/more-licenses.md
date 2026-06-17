@@ -1,7 +1,7 @@
 
 # agent
 ## Dependency License Report
-_2026-06-12 02:00:41 UTC_
+_2026-06-16 13:11:47 PDT_
 ## Apache License, Version 2.0
 
 **1** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-annotations` **Version:** `2.22`
@@ -129,13 +129,13 @@ _2026-06-12 02:00:41 UTC_
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
 
-**24** **Group:** `io.netty` **Name:** `netty-tcnative-boringssl-static` **Version:** `2.0.77.Final`
+**24** **Group:** `io.netty` **Name:** `netty-tcnative-boringssl-static` **Version:** `2.0.78.Final`
 > - **Manifest Project URL**: [https://netty.io/](https://netty.io/)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM Project URL**: [https://github.com/netty/netty-tcnative/netty-tcnative-boringssl-static/](https://github.com/netty/netty-tcnative/netty-tcnative-boringssl-static/)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
-**25** **Group:** `io.netty` **Name:** `netty-tcnative-classes` **Version:** `2.0.77.Final`
+**25** **Group:** `io.netty` **Name:** `netty-tcnative-classes` **Version:** `2.0.78.Final`
 > - **Manifest Project URL**: [https://netty.io/](https://netty.io/)
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
@@ -214,20 +214,20 @@ _2026-06-12 02:00:41 UTC_
 > - **POM Project URL**: [https://github.com/open-telemetry/opentelemetry-java-contrib](https://github.com/open-telemetry/opentelemetry-java-contrib)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
-**43** **Group:** `io.projectreactor` **Name:** `reactor-core` **Version:** `3.7.17`
+**43** **Group:** `io.projectreactor` **Name:** `reactor-core` **Version:** `3.7.19`
 > - **POM Project URL**: [https://github.com/reactor/reactor-core](https://github.com/reactor/reactor-core)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
-> - **Embedded license files**: [reactor-core-3.7.17.jar/META-INF/LICENSE](reactor-core-3.7.17.jar/META-INF/LICENSE)
+> - **Embedded license files**: [reactor-core-3.7.19.jar/META-INF/LICENSE](reactor-core-3.7.19.jar/META-INF/LICENSE)
 
-**44** **Group:** `io.projectreactor.netty` **Name:** `reactor-netty-core` **Version:** `1.2.16`
+**44** **Group:** `io.projectreactor.netty` **Name:** `reactor-netty-core` **Version:** `1.2.18`
 > - **POM Project URL**: [https://github.com/reactor/reactor-netty](https://github.com/reactor/reactor-netty)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
-> - **Embedded license files**: [reactor-netty-core-1.2.16.jar/META-INF/LICENSE](reactor-netty-core-1.2.16.jar/META-INF/LICENSE)
+> - **Embedded license files**: [reactor-netty-core-1.2.18.jar/META-INF/LICENSE](reactor-netty-core-1.2.18.jar/META-INF/LICENSE)
 
-**45** **Group:** `io.projectreactor.netty` **Name:** `reactor-netty-http` **Version:** `1.2.16`
+**45** **Group:** `io.projectreactor.netty` **Name:** `reactor-netty-http` **Version:** `1.2.18`
 > - **POM Project URL**: [https://github.com/reactor/reactor-netty](https://github.com/reactor/reactor-netty)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
-> - **Embedded license files**: [reactor-netty-http-1.2.16.jar/META-INF/LICENSE](reactor-netty-http-1.2.16.jar/META-INF/LICENSE)
+> - **Embedded license files**: [reactor-netty-http-1.2.18.jar/META-INF/LICENSE](reactor-netty-http-1.2.18.jar/META-INF/LICENSE)
 
 **46** **Group:** `net.java.dev.jna` **Name:** `jna` **Version:** `5.17.0`
 > - **POM Project URL**: [https://github.com/java-native-access/jna](https://github.com/java-native-access/jna)
@@ -348,11 +348,11 @@ _2026-06-12 02:00:41 UTC_
 
 ## MIT License
 
-**65** **Group:** `com.azure` **Name:** `azure-core` **Version:** `1.58.0`
+**65** **Group:** `com.azure` **Name:** `azure-core` **Version:** `1.58.1`
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**66** **Group:** `com.azure` **Name:** `azure-core-http-netty` **Version:** `1.16.4`
+**66** **Group:** `com.azure` **Name:** `azure-core-http-netty` **Version:** `1.16.5`
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
@@ -364,7 +364,7 @@ _2026-06-12 02:00:41 UTC_
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**69** **Group:** `com.azure` **Name:** `azure-monitor-opentelemetry-autoconfigure` **Version:** `1.4.0`
+**69** **Group:** `com.azure` **Name:** `azure-monitor-opentelemetry-autoconfigure` **Version:** `1.5.0`
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
 **70** **Group:** `com.azure` **Name:** `azure-storage-blob` **Version:** `12.34.0`
