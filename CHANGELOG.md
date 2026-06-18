@@ -2,13 +2,23 @@
 
 ## Unreleased
 
+## Version 3.7.9 GA (06/18/2026)
+
 ### Enhancements
 
+* Disable errors from profiles
+  ([#4736](https://github.com/microsoft/ApplicationInsights-Java/pull/4736))
 * Add manual profile triggering via file touch and JMX MBean
+  ([#4730](https://github.com/microsoft/ApplicationInsights-Java/pull/4730))
 * Add global cooldown (`globalCooldownSeconds`) to prevent rapid successive profiles from different
   trigger sources
 * Add `manualTriggeredSettings` configuration for controlling the JFR profile used during manual
   recordings
+
+### Bug fixes
+
+* Fix Spring Boot 4 Micrometer auto-configuration and add actuator metrics smoke coverage
+  ([#4672](https://github.com/microsoft/ApplicationInsights-Java/pull/4672))
 
 ## Version 3.7.8 GA (03/24/2026)
 
