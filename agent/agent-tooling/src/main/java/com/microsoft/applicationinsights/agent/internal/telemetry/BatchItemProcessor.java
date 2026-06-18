@@ -211,6 +211,11 @@ public final class BatchItemProcessor {
             }
           } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
+            // complete any pending flush request to prevent callers from hanging indefinitely
+            CompletableResultCode flushResult = flushRequested.getAndSet(null);
+            if (flushResult != null) {
+              flushResult.fail();
+            }
             return;
           }
         }
