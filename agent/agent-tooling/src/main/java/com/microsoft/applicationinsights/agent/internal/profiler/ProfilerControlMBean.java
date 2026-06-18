@@ -17,7 +17,7 @@ public interface ProfilerControlMBean {
   /**
    * Trigger a manual profile with the default duration (120 seconds).
    *
-   * @return a status message indicating whether the profile was started
+   * @return a status message indicating whether the profile was requested
    */
   String triggerProfile();
 
@@ -25,7 +25,7 @@ public interface ProfilerControlMBean {
    * Trigger a manual profile with the specified duration.
    *
    * @param durationSeconds the desired recording duration in seconds; must be positive
-   * @return a status message indicating whether the profile was started
+   * @return a status message indicating whether the profile was requested
    */
   String triggerProfile(int durationSeconds);
 }
