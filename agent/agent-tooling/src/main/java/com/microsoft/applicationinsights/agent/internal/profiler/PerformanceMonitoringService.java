@@ -15,6 +15,7 @@ import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClien
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryObservers;
 import com.microsoft.applicationinsights.alerting.AlertingSubsystem;
 import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration;
+import com.microsoft.applicationinsights.alerting.config.AlertingProfileFileTriggerConfiguration;
 import com.microsoft.applicationinsights.diagnostics.DiagnosticEngine;
 import com.microsoft.applicationinsights.diagnostics.DiagnosticEngineFactory;
 import com.microsoft.applicationinsights.diagnostics.appinsights.CodeOptimizerApplicationInsightFactoryJfr;
@@ -102,6 +103,14 @@ public class PerformanceMonitoringService {
 
     profiler = new Profiler(configuration, tempDir);
 
+    // Build file-trigger configuration, resolving relative paths against the agent's temp directory
+    AlertingProfileFileTriggerConfiguration alertingProfileFileTriggerConfiguration =
+        AlertingProfileFileTriggerConfiguration.create(
+            configuration.manualTrigger.enabled,
+            configuration.manualTrigger.filePath,
+            configuration.manualTrigger.defaultProfileDurationSeconds,
+            tempDir);
+
     alerting =
         AlertingSubsystemInit.create(
             configuration,
@@ -110,7 +119,8 @@ public class PerformanceMonitoringService {
             profiler,
             telemetryClient,
             diagnosticEngine,
-            alertServiceExecutorService);
+            alertServiceExecutorService,
+            alertingProfileFileTriggerConfiguration);
 
     uploadService =
         new UploadService(
@@ -189,6 +199,12 @@ public class PerformanceMonitoringService {
   public void updateConfiguration(AlertingConfiguration alertingConfig) {
     if (alerting != null) {
       alerting.updateConfiguration(alertingConfig);
+    }
+  }
+
+  public void evaluateFileTrigger() {
+    if (alerting != null) {
+      alerting.evaluateFileTrigger();
     }
   }
 }

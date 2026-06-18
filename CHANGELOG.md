@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## Unreleased
+
+### Enhancements
+
+* Add manual profile triggering via file touch and JMX MBean
+* Add global cooldown (`globalCooldownSeconds`) to prevent rapid successive profiles from different
+  trigger sources
+* Add `manualTriggeredSettings` configuration for controlling the JFR profile used during manual
+  recordings
+
 ## Version 3.7.8 GA (03/24/2026)
 
 * Update to OpenTelemetry Java Instrumentation 2.26.1

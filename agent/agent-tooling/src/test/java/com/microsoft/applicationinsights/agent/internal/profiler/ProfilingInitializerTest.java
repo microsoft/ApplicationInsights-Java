@@ -30,6 +30,7 @@ public class ProfilingInitializerTest {
   private static class ProfilingInitializerTestCaseBuilder {
     final String name;
     final List<ProfilerConfiguration> configurations = new ArrayList<>();
+    Configuration.ProfilerConfiguration localConfiguration = defaultLocalConfiguration();
 
     private ProfilingInitializerTestCaseBuilder(String name) {
       this.name = name;
@@ -40,22 +41,31 @@ public class ProfilingInitializerTest {
       return this;
     }
 
+    ProfilingInitializerTestCaseBuilder withLocalConfiguration(
+        Configuration.ProfilerConfiguration localConfiguration) {
+      this.localConfiguration = localConfiguration;
+      return this;
+    }
+
     ProfilingInitializerTestCase assertThat(Consumer<ProfilingInitializer> assertion) {
-      return new ProfilingInitializerTestCase(name, configurations, assertion);
+      return new ProfilingInitializerTestCase(name, configurations, localConfiguration, assertion);
     }
   }
 
   private static class ProfilingInitializerTestCase {
     final String name;
     final List<ProfilerConfiguration> configurations;
+    final Configuration.ProfilerConfiguration localConfiguration;
     final Consumer<ProfilingInitializer> assertion;
 
     private ProfilingInitializerTestCase(
         String name,
         List<ProfilerConfiguration> configurations,
+        Configuration.ProfilerConfiguration localConfiguration,
         Consumer<ProfilingInitializer> assertion) {
       this.name = name;
       this.configurations = configurations;
+      this.localConfiguration = localConfiguration;
       this.assertion = assertion;
     }
   }
@@ -143,6 +153,20 @@ public class ProfilingInitializerTest {
             .then(userConfiguredTriggersState(true))
             .then(userConfiguredTriggersState(true))
             .assertThat(ENABLED));
+
+    tests.add(
+        new ProfilingInitializerTestCaseBuilder(
+                "Manual file trigger enabled with no automatic triggers enables profiler")
+            .withLocalConfiguration(localConfiguration(true, false))
+            .then(userConfiguredTriggersState(false))
+            .assertThat(ENABLED));
+
+    tests.add(
+        new ProfilingInitializerTestCaseBuilder(
+                "Profiler control MBean enabled with no automatic triggers enables profiler")
+            .withLocalConfiguration(localConfiguration(false, true))
+            .then(userConfiguredTriggersState(false))
+            .assertThat(ENABLED));
   }
 
   @TestFactory
@@ -153,7 +177,8 @@ public class ProfilingInitializerTest {
               return DynamicTest.dynamicTest(
                   testCase.name,
                   () -> {
-                    ProfilingInitializer profiler = createProfilingInitializer();
+                    ProfilingInitializer profiler =
+                        createProfilingInitializer(testCase.localConfiguration);
 
                     testCase.configurations.forEach(profiler::applyConfiguration);
 
@@ -213,7 +238,8 @@ public class ProfilingInitializerTest {
 
   @SuppressWarnings(
       "DirectInvocationOnMock") // direct mock invocation is intentional for test setup
-  private static ProfilingInitializer createProfilingInitializer() {
+  private static ProfilingInitializer createProfilingInitializer(
+      Configuration.ProfilerConfiguration localConfiguration) {
     TelemetryClient client = Mockito.mock(TelemetryClient.class);
     MessageTelemetryBuilder messageTelemetryBuilder = MessageTelemetryBuilder.create();
     Mockito.when(client.newMessageTelemetryBuilder()).thenReturn(messageTelemetryBuilder);
@@ -225,7 +251,7 @@ public class ProfilingInitializerTest {
     ProfilingInitializer profiler =
         ProfilingInitializer.initialize(
             new File("/tmp/"),
-            new Configuration.ProfilerConfiguration(),
+            localConfiguration,
             GcReportingLevel.NONE,
             "test-role-name",
             "test-role-instance",
@@ -239,5 +265,17 @@ public class ProfilingInitializerTest {
   static long toBinaryDate(Instant expiration) {
     OffsetDateTime offset = OffsetDateTime.of(1, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
     return Duration.between(offset, expiration.atZone(ZoneOffset.UTC)).getSeconds() * 10000000L;
+  }
+
+  private static Configuration.ProfilerConfiguration defaultLocalConfiguration() {
+    return localConfiguration(false, false);
+  }
+
+  private static Configuration.ProfilerConfiguration localConfiguration(
+      boolean manualTriggerEnabled, boolean profilerControlMBeanEnabled) {
+    Configuration.ProfilerConfiguration configuration = new Configuration.ProfilerConfiguration();
+    configuration.manualTrigger.enabled = manualTriggerEnabled;
+    configuration.enableProfilerControlMBean = profilerControlMBeanEnabled;
+    return configuration;
   }
 }
