@@ -786,23 +786,13 @@ public class SecondEntryPoint
 
   private static CompletableResultCode flushAll(
       OpenTelemetrySdk sdk, TelemetryClient telemetryClient) {
-    CompletableResultCode sdkShutdownResult = sdk.shutdown();
-    CompletableResultCode overallResult = new CompletableResultCode();
-    sdkShutdownResult.whenComplete(
-        () -> {
-          // IMPORTANT: the metric reader flush will fail if the periodic metric reader is already
-          // mid-exporter
-          CompletableResultCode telemetryClientResult = telemetryClient.forceFlush();
-          telemetryClientResult.whenComplete(
-              () -> {
-                if (sdkShutdownResult.isSuccess() && telemetryClientResult.isSuccess()) {
-                  overallResult.succeed();
-                } else {
-                  overallResult.fail();
-                }
-              });
-        });
-    return overallResult;
+    // shutdown the SDK first to flush pending telemetry (e.g. logs) into the telemetry client;
+    // wait up to 5 seconds for the SDK to shut down, but proceed with the telemetry client flush
+    // even if the SDK shutdown times out (e.g. due to a hung daemon thread on some JVMs)
+    sdk.shutdown().join(5, TimeUnit.SECONDS);
+    // IMPORTANT: the metric reader flush will fail if the periodic metric reader is already
+    // mid-exporter
+    return telemetryClient.forceFlush();
   }
 
   private static boolean isAksAttach() {
