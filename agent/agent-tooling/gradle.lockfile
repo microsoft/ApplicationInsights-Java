@@ -1,6 +1,7 @@
 # This is a Gradle generated file for dependency locking.
 # Manual edits can break the build and are not advised.
 # This file is expected to be part of source control.
+# To regenerate this file, run: ./gradlew :agent:agent-tooling:dependencies --write-locks
 ch.qos.logback.contrib:logback-json-classic:0.1.5=runtimeClasspath
 ch.qos.logback.contrib:logback-json-core:0.1.5=runtimeClasspath
 ch.qos.logback:logback-classic:1.3.16=runtimeClasspath
