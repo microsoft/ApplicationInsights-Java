@@ -9,7 +9,7 @@ rootProject.extra["versions"] = dependencyVersions
 
 val otelSdkVersion = "1.62.0"
 val otelSdkAlphaVersion = "1.62.0-alpha"
-val otelInstrumentationAlphaVersion = "2.28.1-alpha"
+val otelInstrumentationAlphaVersion = "2.29.0-alpha"
 val otelInstrumentationVersion = "2.28.1"
 val otelContribVersion = "1.56.0"
 val otelContribAlphaVersion = "1.57.0-alpha"
