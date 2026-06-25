@@ -5,6 +5,8 @@ package com.microsoft.applicationinsights.agent.internal.processors;
 
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.ProcessorConfig;
 import com.microsoft.applicationinsights.agent.internal.processors.AgentProcessor.IncludeExclude;
+import io.opentelemetry.api.common.Value;
+import io.opentelemetry.api.common.ValueType;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
@@ -36,12 +38,22 @@ public class ExporterWithLogProcessor implements LogRecordExporter {
 
   private LogRecordData process(LogRecordData log) {
     IncludeExclude include = logProcessor.getInclude();
-    if (include != null && !include.isMatch(log.getAttributes(), log.getBody().asString())) {
+    Value<?> bodyValue = log.getBodyValue();
+    String body;
+    if (bodyValue == null) {
+      body = "";
+    } else if (bodyValue.getType() == ValueType.STRING) {
+      body = bodyValue.asString();
+    } else {
+      // TODO (trask) support complex log bodies
+      body = "";
+    }
+    if (include != null && !include.isMatch(log.getAttributes(), body)) {
       // If Not included we can skip further processing
       return log;
     }
     IncludeExclude exclude = logProcessor.getExclude();
-    if (exclude != null && exclude.isMatch(log.getAttributes(), log.getBody().asString())) {
+    if (exclude != null && exclude.isMatch(log.getAttributes(), body)) {
       return log;
     }
 
