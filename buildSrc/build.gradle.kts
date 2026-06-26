@@ -32,7 +32,7 @@ dependencies {
   // When updating, update above in plugins too
   implementation("com.diffplug.spotless:spotless-plugin-gradle:8.7.0")
   implementation("com.github.spotbugs.snom:spotbugs-gradle-plugin:6.5.5")
-  implementation("com.gradleup.shadow:shadow-gradle-plugin:9.4.2")
+  implementation("com.gradleup.shadow:shadow-gradle-plugin:9.4.3")
 
   implementation("org.owasp:dependency-check-gradle:12.2.2")
 
