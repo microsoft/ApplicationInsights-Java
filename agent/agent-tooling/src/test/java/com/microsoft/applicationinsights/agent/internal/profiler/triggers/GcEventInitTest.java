@@ -42,7 +42,6 @@ import org.mockito.Mockito;
 
 class GcEventInitTest {
 
-
   @Test
   void gcEventIsEmittedWithSampleRateThatBypassesIngestionSampling()
       throws ExecutionException, InterruptedException, TimeoutException {
