@@ -42,8 +42,6 @@ import org.mockito.Mockito;
 
 class GcEventInitTest {
 
-  private static final String FAKE_CONNECTION_STRING =
-      "InstrumentationKey=00000000-0000-0000-0000-000000000000;IngestionEndpoint=https://fake-ingestion-endpoint.example.com/";
 
   @Test
   void gcEventIsEmittedWithSampleRateThatBypassesIngestionSampling()
@@ -88,21 +86,25 @@ class GcEventInitTest {
               .setCustomDimensions(new HashMap<>())
               .setMetricFilters(new ArrayList<>())
               .setStatsbeatModule(new StatsbeatModule(response -> {}))
-              .setConnectionStrings(FAKE_CONNECTION_STRING)
               .build();
       telemetryClient.setOtelResource(Resource.empty());
 
-      GcEventInit.init(
-          alertingSubsystem,
-          telemetryClient,
-          Executors.newSingleThreadExecutor(),
-          new GcEventInit.GcEventMonitorConfiguration(GcReportingLevel.ALL),
-          factory);
+      ExecutorService executorService = Executors.newSingleThreadExecutor();
+      try {
+        GcEventInit.init(
+            alertingSubsystem,
+            telemetryClient,
+            executorService,
+            new GcEventInit.GcEventMonitorConfiguration(GcReportingLevel.ALL),
+            factory);
 
-      TelemetryItem gcEvent = gcEventFuture.get(10, TimeUnit.SECONDS);
+        TelemetryItem gcEvent = gcEventFuture.get(10, TimeUnit.SECONDS);
 
-      assertThat(gcEvent.getSampleRate())
-          .isEqualTo((float) SamplerUtil.SAMPLE_RATE_TO_DISABLE_INGESTION_SAMPLING);
+        assertThat(gcEvent.getSampleRate())
+            .isEqualTo((float) SamplerUtil.SAMPLE_RATE_TO_DISABLE_INGESTION_SAMPLING);
+      } finally {
+        executorService.shutdownNow();
+      }
     } finally {
       TelemetryObservers.INSTANCE.getObservers().remove(observer);
     }
