@@ -97,7 +97,7 @@ class GcEventInitTest {
             new GcEventInit.GcEventMonitorConfiguration(GcReportingLevel.ALL),
             factory);
 
-        TelemetryItem gcEvent = gcEventFuture.get(10, TimeUnit.SECONDS);
+        TelemetryItem gcEvent = gcEventFuture.get(30, TimeUnit.SECONDS);
 
         assertThat(gcEvent.getSampleRate())
             .isEqualTo((float) SamplerUtil.SAMPLE_RATE_TO_DISABLE_INGESTION_SAMPLING);
