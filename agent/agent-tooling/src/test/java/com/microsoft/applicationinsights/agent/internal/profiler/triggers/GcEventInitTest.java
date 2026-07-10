@@ -85,6 +85,8 @@ class GcEventInitTest {
               .setCustomDimensions(new HashMap<>())
               .setMetricFilters(new ArrayList<>())
               .setStatsbeatModule(new StatsbeatModule(response -> {}))
+              .setConnectionStrings(
+                  "InstrumentationKey=00000000-0000-0000-0000-000000000000;IngestionEndpoint=https://test.in.applicationinsights.azure.com/")
               .build();
       telemetryClient.setOtelResource(Resource.empty());
 
