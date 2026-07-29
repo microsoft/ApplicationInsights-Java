@@ -2,7 +2,7 @@ import org.apache.tools.ant.taskdefs.condition.Os
 
 pluginManagement {
   plugins {
-    id("com.github.jk1.dependency-license-report") version "3.1.2"
+    id("com.github.jk1.dependency-license-report") version "3.1.4"
     id("me.champeau.jmh") version "0.7.3"
   }
 }
