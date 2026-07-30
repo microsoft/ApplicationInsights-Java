@@ -17,6 +17,10 @@
     <Bug pattern="CT_CONSTRUCTOR_THROW"/> <!-- inner class exception thrown in constructor can be ignored -->
   </Match>
   <Match>
+    <Class name="com.microsoft.applicationinsights.agent.internal.processors.DelegatingLogData"/>
+    <Bug pattern="CT_CONSTRUCTOR_THROW"/> <!-- inner class exception thrown in constructor can be ignored -->
+  </Match>
+  <Match>
     <Class name="com.microsoft.gcmonitor.collectors.JmxGarbageCollectorStats"/>
     <Bug pattern="CT_CONSTRUCTOR_THROW"/> <!-- inner class exception thrown in constructor can be ignored -->
   </Match>

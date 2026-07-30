@@ -14,6 +14,7 @@ spotbugs {
     // and https://github.com/find-sec-bugs/find-sec-bugs/blob/master/findsecbugs-plugin/src/main/resources/metadata/findbugs.xml
     "CheckRelaxingNullnessAnnotation",
     "FindDeadLocalStores",
+    "FindImproperSynchronization",
     "FindNullDeref",
     "FindReturnRef",
     "FindUselessObjects",
