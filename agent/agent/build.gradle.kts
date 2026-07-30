@@ -177,7 +177,7 @@ tasks {
         val normalizedReportContents =
           reportContents.replace(
             Regex(
-              """(?m)(^## Dependency License Report\r?\n)_\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} UTC_\r?\n"""
+              """(?m)(^## Dependency License Report\r?\n)_\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}[^\r\n]*_\r?\n"""
             ),
             "$1",
           )
