@@ -48,6 +48,7 @@ public class AiSampler implements Sampler {
   }
 
   @Override
+  @SuppressWarnings("ReferenceEquality") // intentional identity check for fixed-rate optimization
   public SamplingResult shouldSample(
       Context parentContext,
       String traceId,
