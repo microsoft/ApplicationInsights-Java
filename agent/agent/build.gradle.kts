@@ -1,6 +1,7 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import com.github.jk1.license.filter.LicenseBundleNormalizer
 import com.github.jk1.license.render.InventoryMarkdownReportRenderer
+import java.nio.charset.StandardCharsets
 
 plugins {
   id("com.github.jk1.dependency-license-report")
@@ -169,6 +170,22 @@ tasks {
   named("generateLicenseReport").configure {
     dependsOn(cleanLicenses)
     finalizedBy(":spotlessApply")
+    doLast {
+      val reportFile = rootProject.file("licenses/more-licenses.md")
+      if (reportFile.exists()) {
+        val reportContents = reportFile.readText(StandardCharsets.UTF_8)
+        val normalizedReportContents =
+          reportContents.replace(
+            Regex(
+              """(?m)(^## Dependency License Report\r?\n)_\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} UTC_\r?\n"""
+            ),
+            "$1",
+          )
+        if (normalizedReportContents != reportContents) {
+          reportFile.writeText(normalizedReportContents, StandardCharsets.UTF_8)
+        }
+      }
+    }
     // disable licence report generation unless this task is explicitly run
     // the files produced by this task are used by other tasks without declaring them as dependency
     // which gradle considers an error
