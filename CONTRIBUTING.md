@@ -56,7 +56,7 @@ This ensures all third-party licenses are properly documented.
 Generated files (`**/gradle.lockfile` and `licenses/more-licenses.md`) are automatically refreshed by GitHub Actions:
 
 - On each push to `main`, open dependency PRs are merged with `main` and regenerated automatically.
-- On an individual PR, comment `/regen` to run the regeneration workflow on demand.
+- On an individual Dependabot PR, a repository member can comment `/regen` to run the regeneration workflow on demand.
 - `pull-request-helper.yml` continues to refresh generated files for newly opened Dependabot PRs.
 
 If regeneration detects merge conflicts in non-generated source files (`.kts`, `.java`, `.toml`, workflows, etc.), the bot leaves a PR comment and stops. In that case, resolve those source conflicts manually and rerun `/regen` if needed.
