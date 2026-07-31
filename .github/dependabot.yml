@@ -61,6 +61,8 @@ updates:
           - "io.opentelemetry.instrumentation:gradle-plugins"
           - "io.opentelemetry.contrib:opentelemetry-jfr-connection"
           - "io.opentelemetry.contrib:opentelemetry-runtime-attach-core"
+      opentelemetry-semconv:
+        patterns:
           - "io.opentelemetry.semconv:opentelemetry-semconv"
           - "io.opentelemetry.semconv:opentelemetry-semconv-incubating"
       all-dependencies:
