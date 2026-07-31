@@ -64,16 +64,15 @@ jobs:
         run: |
           # add any untracked folders that may have been added by generateLicenseReport
           git add licenses
-          # there's always going to one line difference due to the timestamp included in the report
-          if [[ $(git diff --cached --shortstat licenses) == " 1 file changed, 1 insertion(+), 1 deletion(-)" ]]
+          if git diff --cached --quiet licenses
           then
             echo "Licenses are up-to-date."
           else
             echo "Licenses are not up-to-date, please run './gradlew generateLicenseReport' locally and commit."
             echo
-            echo "$(git diff --cached --stat licenses)"
+            git diff --cached --stat licenses
             echo
-            echo "$(git diff --cached licenses)"
+            git diff --cached licenses
             exit 1
           fi
 
