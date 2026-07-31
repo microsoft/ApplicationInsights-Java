@@ -9,7 +9,12 @@ updates:
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "daily"
+      interval: "weekly"
+      day: "monday"
+    groups:
+      all-dependencies:
+        patterns:
+          - "*"
 
   - package-ecosystem: "gradle"
     directory: "/"
@@ -36,13 +41,10 @@ updates:
         # junit 6 requires Java 17
         versions: [ "[6,)" ]
     schedule:
-      interval: "daily"
-    open-pull-requests-limit: 10
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
     groups:
-      testcontainers:
-        patterns:
-          - "org.testcontainers:*"
-
       opentelemetry:
         patterns:
           - "otelSdkVersion"
@@ -59,30 +61,43 @@ updates:
           - "io.opentelemetry.instrumentation:gradle-plugins"
           - "io.opentelemetry.contrib:opentelemetry-jfr-connection"
           - "io.opentelemetry.contrib:opentelemetry-runtime-attach-core"
-
-      opentelemetry-semconv:
-        patterns:
           - "io.opentelemetry.semconv:opentelemetry-semconv"
           - "io.opentelemetry.semconv:opentelemetry-semconv-incubating"
-
-      # Spotless repeatedly appears as two separate dependency names for the same version bump
-      spotless:
+      all-dependencies:
         patterns:
-          - "com.diffplug.spotless"
-          - "com.diffplug.spotless:*"
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
 
   - package-ecosystem: "gradle"
     directory: "/perf-tests"
     registries:
       - gradle-plugin-portal
     schedule:
-      interval: "daily"
-    open-pull-requests-limit: 10
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    groups:
+      all-dependencies:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
 
   - package-ecosystem: "gradle"
     directory: "/etw/etw-testapp"
     registries:
       - gradle-plugin-portal
     schedule:
-      interval: "daily"
-    open-pull-requests-limit: 10
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    groups:
+      all-dependencies:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
