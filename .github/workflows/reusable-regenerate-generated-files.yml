@@ -1,0 +1,131 @@
+name: Reusable - Regenerate generated files
+
+on:
+  workflow_call:
+    inputs:
+      pr_number:
+        type: number
+        required: true
+      skip_if_contains_main:
+        type: boolean
+        required: false
+        default: true
+    secrets:
+      PR_HELPER_GITHUB_TOKEN:
+        required: true
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  regenerate-generated-files:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Resolve PR head branch
+        id: pr
+        env:
+          GH_TOKEN: ${{ secrets.PR_HELPER_GITHUB_TOKEN }}
+          PR_NUMBER: ${{ inputs.pr_number }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+
+          pr_json=$(gh pr view "$PR_NUMBER" --repo "$REPO" --json headRefName,headRepository)
+          head_repo=$(echo "$pr_json" | jq -r '.headRepository.nameWithOwner // ""')
+          head_ref=$(echo "$pr_json" | jq -r '.headRefName')
+
+          echo "head_repo=$head_repo" >> "$GITHUB_OUTPUT"
+          echo "head_ref=$head_ref" >> "$GITHUB_OUTPUT"
+
+          if [[ "$head_repo" != "$REPO" ]]; then
+            echo "eligible=false" >> "$GITHUB_OUTPUT"
+            echo "Skipping PR #$PR_NUMBER from fork repository: $head_repo"
+          else
+            echo "eligible=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Checkout PR head
+        if: steps.pr.outputs.eligible == 'true'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # this personal access token is required so pushes retrigger workflows
+          token: ${{ secrets.PR_HELPER_GITHUB_TOKEN }}
+          repository: ${{ steps.pr.outputs.head_repo }}
+          ref: ${{ steps.pr.outputs.head_ref }}
+          fetch-depth: 0
+
+      - name: Setup Gradle
+        if: steps.pr.outputs.eligible == 'true'
+        uses: gradle/actions/setup-gradle@3f131e8634966bd73d06cc69884922b02e6faf92 # v6
+        with:
+          cache-read-only: true
+
+      - name: Set git user
+        if: steps.pr.outputs.eligible == 'true'
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+
+      - name: Merge main and regenerate generated files
+        if: steps.pr.outputs.eligible == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.PR_HELPER_GITHUB_TOKEN }}
+          PR_NUMBER: ${{ inputs.pr_number }}
+          REPO: ${{ github.repository }}
+          SKIP_IF_CONTAINS_MAIN: ${{ inputs.skip_if_contains_main }}
+        run: |
+          set -euo pipefail
+
+          git fetch origin main
+
+          if [[ "$SKIP_IF_CONTAINS_MAIN" == "true" ]] && git merge-base --is-ancestor origin/main HEAD; then
+            echo "PR #$PR_NUMBER already contains origin/main, skipping"
+            exit 0
+          fi
+
+          git merge --no-edit origin/main || true
+
+          mapfile -t conflicted < <(git diff --name-only --diff-filter=U)
+
+          if [ ${#conflicted[@]} -gt 0 ]; then
+            generated=()
+            real=()
+
+            for f in "${conflicted[@]}"; do
+              case "$f" in
+                *gradle.lockfile|licenses/more-licenses.md) generated+=("$f") ;;
+                *)                                        real+=("$f") ;;
+              esac
+            done
+
+            if [ ${#real[@]} -gt 0 ]; then
+              printf 'genuine conflict, aborting: %s\n' "${real[@]}"
+
+              comment=$'Auto-regeneration stopped because this PR has genuine merge conflicts in non-generated files:\n\n'
+              for f in "${real[@]}"; do
+                comment+="- \`$f\`"$'\n'
+              done
+              comment+=$'\nPlease resolve these conflicts manually, then rerun `/regen` if needed.'
+
+              gh pr comment "$PR_NUMBER" --repo "$REPO" --body "$comment"
+              git merge --abort
+              exit 0
+            fi
+
+            for f in "${generated[@]}"; do
+              git checkout --ours -- "$f"
+              git add -- "$f"
+            done
+          fi
+
+          if [ -f .git/MERGE_HEAD ]; then
+            git commit --no-edit
+          fi
+
+          ./gradlew resolveAndLockAll --write-locks
+          ./gradlew generateLicenseReport --no-build-cache
+
+          git add -A -- '*.lockfile' licenses
+          git diff --cached --quiet || git commit -m "regenerate lock files and license report"
+          git push

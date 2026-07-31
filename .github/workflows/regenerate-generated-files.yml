@@ -1,0 +1,75 @@
+name: Regenerate generated files
+
+on:
+  push:
+    branches:
+      - main
+  issue_comment:
+    types:
+      - created
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: Pull request number to process
+        required: false
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  prepare-targets:
+    if: github.event_name != 'issue_comment' || (github.event.issue.pull_request != null && startsWith(github.event.comment.body, '/regen'))
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.targets.outputs.matrix }}
+    steps:
+      - name: Determine target pull requests
+        id: targets
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          ISSUE_PR_NUMBER: ${{ github.event.issue.number }}
+          GH_TOKEN: ${{ secrets.PR_HELPER_GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          WORKFLOW_DISPATCH_PR_NUMBER: ${{ inputs.pr_number }}
+        run: |
+          set -euo pipefail
+
+          if [[ "$EVENT_NAME" == "push" ]]; then
+            prs=$(gh pr list --repo "$REPO" --state open --label dependencies --json number,headRepository)
+            matrix=$(echo "$prs" | jq -c '[.[] | {pr: .number}]')
+          elif [[ "$EVENT_NAME" == "issue_comment" ]]; then
+            matrix=$(jq -cn --argjson pr "$ISSUE_PR_NUMBER" '[{pr:$pr}]')
+          elif [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
+            if [[ -z "$WORKFLOW_DISPATCH_PR_NUMBER" ]]; then
+              echo "No workflow_dispatch pr_number provided, skipping"
+              matrix='[]'
+            else
+              matrix=$(jq -cn --argjson pr "$WORKFLOW_DISPATCH_PR_NUMBER" '[{pr:$pr}]')
+            fi
+          else
+            echo "Unsupported event: $EVENT_NAME"
+            exit 1
+          fi
+
+          echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
+
+  regenerate-generated-files:
+    needs:
+      - prepare-targets
+    if: needs.prepare-targets.outputs.matrix != '[]'
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        include: ${{ fromJson(needs.prepare-targets.outputs.matrix) }}
+    concurrency:
+      group: regen-${{ matrix.pr }}
+      cancel-in-progress: true
+    uses: ./.github/workflows/reusable-regenerate-generated-files.yml
+    with:
+      pr_number: ${{ matrix.pr }}
+      skip_if_contains_main: true
+    secrets:
+      PR_HELPER_GITHUB_TOKEN: ${{ secrets.PR_HELPER_GITHUB_TOKEN }}

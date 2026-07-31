@@ -51,6 +51,16 @@ After updating dependencies, regenerate the license report to include licenses f
 
 This ensures all third-party licenses are properly documented.
 
+### Automatic regeneration for dependency pull requests
+
+Generated files (`**/gradle.lockfile` and `licenses/more-licenses.md`) are automatically refreshed by GitHub Actions:
+
+- On each push to `main`, open dependency PRs are merged with `main` and regenerated automatically.
+- On an individual PR, comment `/regen` to run the regeneration workflow on demand.
+- `pull-request-helper.yml` continues to refresh generated files for newly opened Dependabot PRs.
+
+If regeneration detects merge conflicts in non-generated source files (`.kts`, `.java`, `.toml`, workflows, etc.), the bot leaves a PR comment and stops. In that case, resolve those source conflicts manually and rerun `/regen` if needed.
+
 ## IntelliJ setup and troubleshooting
 
 See [IntelliJ setup and troubleshooting](https://github.com/open-telemetry/opentelemetry-java-instrumentation/blob/main/docs/contributing/intellij-setup-and-troubleshooting.md)
