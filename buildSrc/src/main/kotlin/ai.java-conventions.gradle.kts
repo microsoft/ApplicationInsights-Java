@@ -174,7 +174,11 @@ dependencyCheck {
 
 if (!path.startsWith(":smoke-tests")) {
   configurations.configureEach {
-    if (name.lowercase().endsWith("runtimeclasspath")) {
+    // only lock runtimeClasspath, which is what resolveAndLockAll resolves and
+    // what actually ships; endsWith("runtimeclasspath") also matched
+    // testRuntimeClasspath, which Dependabot resolves and locks even though our
+    // own regeneration task never does
+    if (name == "runtimeClasspath") {
       resolutionStrategy.activateDependencyLocking()
     }
   }
