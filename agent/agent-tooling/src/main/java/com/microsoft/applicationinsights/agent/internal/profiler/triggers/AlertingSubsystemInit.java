@@ -55,7 +55,13 @@ public class AlertingSubsystemInit {
     // TODO (trask) delay creation of AlertingSubsystem until after Profiler is created and
     // initialized?
     Consumer<AlertBreach> alertAction =
-        alert -> alertAction(alert, profiler, diagnosticEngine, telemetryClient);
+        alert ->
+            alertAction(
+                alert,
+                profiler,
+                diagnosticEngine,
+                telemetryClient,
+                configuration.enableContinuousProfiling);
 
     alertingSubsystem =
         AlertingSubsystem.create(
@@ -126,18 +132,28 @@ public class AlertingSubsystemInit {
       AlertBreach alert,
       Profiler profiler,
       DiagnosticEngine diagnosticEngine,
-      TelemetryClient telemetryClient) {
+      TelemetryClient telemetryClient,
+      boolean continuousProfilingEnabled) {
 
     if (profiler != null) {
       // This is an event that the backend specifically looks for to track when a profile is
       // started
       sendMessageTelemetry(telemetryClient, "StartProfiler triggered.");
 
+      // With continuous profiling the profiler immediately dumps a backward-looking snapshot of the
+      // circular buffer, so the breach diagnostics (AlertBreach, CGroupData, MachineInfo) must be
+      // emitted before the dump in order to be captured in the recording.
+      if (continuousProfilingEnabled && diagnosticEngine != null) {
+        diagnosticEngine.performDiagnosis(alert);
+      }
+
       profiler.accept(
           alert,
           serviceProfilerIndex -> sendServiceProfilerIndex(serviceProfilerIndex, telemetryClient));
 
-      if (diagnosticEngine != null) {
+      // With traditional profiling a new forward-looking recording is created, so diagnostics are
+      // emitted after the recording has started.
+      if (!continuousProfilingEnabled && diagnosticEngine != null) {
         diagnosticEngine.performDiagnosis(alert);
       }
     }

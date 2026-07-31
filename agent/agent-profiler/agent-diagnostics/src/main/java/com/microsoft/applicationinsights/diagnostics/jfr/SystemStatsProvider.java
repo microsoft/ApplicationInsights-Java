@@ -4,10 +4,6 @@
 package com.microsoft.applicationinsights.diagnostics.jfr;
 
 import com.microsoft.applicationinsights.diagnostics.collection.SystemStatsReader;
-import com.microsoft.applicationinsights.diagnostics.collection.calibration.Calibration;
-import com.microsoft.applicationinsights.diagnostics.collection.calibration.Calibrator;
-import com.microsoft.applicationinsights.diagnostics.collection.calibration.CalibratorDefault;
-import com.microsoft.applicationinsights.diagnostics.collection.calibration.ContextSwitchingRunner;
 import com.microsoft.applicationinsights.diagnostics.collection.cores.RuntimeCoreCounter;
 import com.microsoft.applicationinsights.diagnostics.collection.libos.OperatingSystemInteractionException;
 import com.microsoft.applicationinsights.diagnostics.collection.libos.hardware.MemoryInfoReader;
@@ -61,10 +57,9 @@ public class SystemStatsProvider {
     if (initialised.compareAndSet(false, true)) {
       singletons.put(ThisPidSupplier.class, new AtomicReference<>((ThisPidSupplier) () -> thisPid));
 
-      if (singletons.get(Calibrator.class) == null) {
+      if (singletons.get(MachineInfo.class) == null) {
         try {
-          getCalibration();
-          getMachineStats();
+          getMachineInfo();
           getCGroupData(cgroupBasePath);
 
           // Close until needed
@@ -132,25 +127,10 @@ public class SystemStatsProvider {
         });
   }
 
-  public static MachineStats getMachineStats() {
+  public static MachineInfo getMachineInfo() {
     return getSingleton(
-        MachineStats.class,
-        () ->
-            new MachineStats()
-                .setContextSwitchesPerMs(getCalibration().getContextSwitchingRate())
-                .setCoreCount(new RuntimeCoreCounter().getCoreCount()));
-  }
-
-  private static Calibration getCalibration() {
-    return getSingleton(
-        Calibration.class,
-        () -> {
-          Calibrator calibrator =
-              new CalibratorDefault(
-                  new ContextSwitchingRunner(), getKernelMonitor(), getThisProcess());
-
-          return calibrator.calibrate();
-        });
+        MachineInfo.class,
+        () -> new MachineInfo().setCoreCount(new RuntimeCoreCounter().getCoreCount()));
   }
 
   private static Process getThisProcess() {
@@ -158,9 +138,6 @@ public class SystemStatsProvider {
         Process.class,
         () -> {
           ProcessDumper processDumper = getProcessDumper();
-          if (processDumper == null) {
-            return null;
-          }
           processDumper.poll();
 
           Process thisProcess = processDumper.thisProcess();

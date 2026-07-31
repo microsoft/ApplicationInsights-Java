@@ -17,4 +17,17 @@ public interface DiagnosticEngine {
    * alertBreach.alertConfiguration.profileDuration
    */
   Future<DiagnosisResult<?>> performDiagnosis(AlertBreach alertBreach);
+
+  /**
+   * Start collecting diagnostics continuously.
+   *
+   * <p>Used with continuous profiling, where a circular buffer is dumped on demand rather than a
+   * forward-looking recording being created per breach. Registering the periodic diagnostic
+   * emitters up front ensures diagnostic events populate the continuous recording buffer, so they
+   * are present in any snapshot that is dumped. Defaults to a no-op.
+   */
+  default void startContinuousDiagnostics() {}
+
+  /** Stop collecting diagnostics continuously. Defaults to a no-op. */
+  default void stopContinuousDiagnostics() {}
 }

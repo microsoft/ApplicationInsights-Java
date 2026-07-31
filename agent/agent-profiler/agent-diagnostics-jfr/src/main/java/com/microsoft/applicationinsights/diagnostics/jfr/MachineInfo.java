@@ -17,15 +17,20 @@ import jdk.jfr.Period;
 import jdk.jfr.StackTrace;
 
 @SuppressWarnings("Java8ApiChecker") // JFR APIs require Java 11+, but agent targets Java 8 bytecode
-@Name("com.microsoft.applicationinsights.diagnostics.jfr.MachineStats")
-@Label("MachineStats")
+@Name("com.microsoft.applicationinsights.diagnostics.jfr.MachineInfo")
+@Label("MachineInfo")
 @Category("Diagnostic")
-@Description("MachineStats")
+@Description("MachineInfo")
 @StackTrace(false)
 @Period("beginChunk")
-public class MachineStats extends Event implements JsonSerializable<MachineStats> {
-  public static final String NAME =
-      "com.microsoft.applicationinsights.diagnostics.jfr.MachineStats";
+public class MachineInfo extends Event implements JsonSerializable<MachineInfo> {
+  public static final String NAME = "com.microsoft.applicationinsights.diagnostics.jfr.MachineInfo";
+
+  /**
+   * Legacy calibration field. No longer populated (calibration was removed) but retained — along
+   * with its accessor and deserialization — so previously-recorded recordings can still be read and
+   * scored. New recordings emit it as 0.
+   */
   private double contextSwitchesPerMs;
 
   private int coreCount;
@@ -34,7 +39,7 @@ public class MachineStats extends Event implements JsonSerializable<MachineStats
     return contextSwitchesPerMs;
   }
 
-  public MachineStats setContextSwitchesPerMs(double contextSwitchesPerMs) {
+  public MachineInfo setContextSwitchesPerMs(double contextSwitchesPerMs) {
     this.contextSwitchesPerMs = contextSwitchesPerMs;
     return this;
   }
@@ -43,7 +48,7 @@ public class MachineStats extends Event implements JsonSerializable<MachineStats
     return coreCount;
   }
 
-  public MachineStats setCoreCount(int coreCount) {
+  public MachineInfo setCoreCount(int coreCount) {
     this.coreCount = coreCount;
     return this;
   }
@@ -57,10 +62,10 @@ public class MachineStats extends Event implements JsonSerializable<MachineStats
         .writeEndObject();
   }
 
-  public static MachineStats fromJson(JsonReader jsonReader) throws IOException {
+  public static MachineInfo fromJson(JsonReader jsonReader) throws IOException {
     return jsonReader.readObject(
         reader -> {
-          MachineStats deserializedValue = new MachineStats();
+          MachineInfo deserializedValue = new MachineInfo();
 
           while (reader.nextToken() != JsonToken.END_OBJECT) {
             String fieldName = reader.getFieldName();

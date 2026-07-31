@@ -135,6 +135,13 @@ public class PerformanceMonitoringService {
       // Daemon remains alive permanently due to scheduling an update
       profiler.initialize(uploadService, serviceProfilerExecutorService);
 
+      // When continuous profiling is enabled the profiler dumps a backward-looking circular buffer
+      // on demand, so diagnostics must run continuously to populate that buffer with diagnostic
+      // events (rather than being started per-breach for a forward-looking recording).
+      if (configuration.enableContinuousProfiling && diagnosticEngine != null) {
+        diagnosticEngine.startContinuousDiagnostics();
+      }
+
     } catch (Throwable t) {
       logger.error(
           "Failed to initialise profiler service",

@@ -10,7 +10,7 @@ import com.microsoft.applicationinsights.diagnostics.DiagnosisResult;
 import com.microsoft.applicationinsights.diagnostics.DiagnosticEngine;
 import com.microsoft.applicationinsights.diagnostics.jfr.AlertBreachJfrEvent;
 import com.microsoft.applicationinsights.diagnostics.jfr.CodeOptimizerDiagnosticsJfrInit;
-import com.microsoft.applicationinsights.diagnostics.jfr.MachineStats;
+import com.microsoft.applicationinsights.diagnostics.jfr.MachineInfo;
 import com.microsoft.applicationinsights.diagnostics.jfr.SystemStatsProvider;
 import java.io.IOException;
 import java.io.StringWriter;
@@ -20,6 +20,8 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,7 +37,11 @@ public class CodeOptimizerDiagnosticEngineJfr implements DiagnosticEngine {
   private final ScheduledExecutorService executorService;
   private final Semaphore semaphore = new Semaphore(1, false);
   private final Path cgroupBasePath;
-  private int thisPid;
+  private final AtomicInteger thisPid = new AtomicInteger();
+
+  // When true, periodic diagnostic emitters are registered continuously (for continuous profiling)
+  // and must not be torn down by an individual performDiagnosis cycle.
+  private final AtomicBoolean continuous = new AtomicBoolean(false);
 
   public CodeOptimizerDiagnosticEngineJfr(
       ScheduledExecutorService executorService, Path cgroupBasePath) {
@@ -50,7 +56,7 @@ public class CodeOptimizerDiagnosticEngineJfr implements DiagnosticEngine {
       return;
     }
 
-    this.thisPid = thisPid;
+    this.thisPid.set(thisPid);
 
     logger.debug("Initialising Code Optimizer Diagnostic Engine");
     CodeOptimizerDiagnosticsJfrInit.initFeature(thisPid, cgroupBasePath);
@@ -69,7 +75,47 @@ public class CodeOptimizerDiagnosticEngineJfr implements DiagnosticEngine {
   }
 
   @Override
+  public void startContinuousDiagnostics() {
+    if (!CodeOptimizerDiagnosticsJfrInit.isOsSupported()) {
+      logger.warn("Code Optimizer diagnostics is not supported on this operating system");
+      return;
+    }
+
+    continuous.set(true);
+    logger.debug("Starting continuous Code Optimizer diagnostics");
+    // Registers the periodic diagnostic emitters (Telemetry, CGroupData) so they continuously
+    // populate the continuous profiling circular buffer.
+    startDiagnosticCycle(thisPid.get(), cgroupBasePath);
+  }
+
+  @Override
+  public void stopContinuousDiagnostics() {
+    if (!CodeOptimizerDiagnosticsJfrInit.isOsSupported()) {
+      return;
+    }
+
+    continuous.set(false);
+    logger.debug("Stopping continuous Code Optimizer diagnostics");
+    endDiagnosticCycle();
+  }
+
+  @Override
   public Future<DiagnosisResult<?>> performDiagnosis(AlertBreach alert) {
+    if (continuous.get()) {
+      // Periodic diagnostics are already running continuously, so we must not start or stop the
+      // diagnostic cycle here (doing so would remove the continuously-registered emitters). Just
+      // emit the point-in-time breach information.
+      CompletableFuture<DiagnosisResult<?>> diagnosisResultCompletableFuture =
+          new CompletableFuture<>();
+      try {
+        emitInfo(alert, cgroupBasePath);
+        diagnosisResultCompletableFuture.complete(null);
+      } catch (RuntimeException e) {
+        diagnosisResultCompletableFuture.completeExceptionally(e);
+      }
+      return diagnosisResultCompletableFuture;
+    }
+
     CompletableFuture<DiagnosisResult<?>> diagnosisResultCompletableFuture =
         new CompletableFuture<>();
     try {
@@ -80,7 +126,7 @@ public class CodeOptimizerDiagnosticEngineJfr implements DiagnosticEngine {
 
         long end = profileDurationInSec - TIME_BEFORE_END_OF_PROFILE_TO_EMIT_EVENT;
 
-        startDiagnosticCycle(thisPid, cgroupBasePath);
+        startDiagnosticCycle(thisPid.get(), cgroupBasePath);
 
         scheduleEmittingAlertBreachEvent(alert, end);
 
@@ -140,12 +186,12 @@ public class CodeOptimizerDiagnosticEngineJfr implements DiagnosticEngine {
     logger.debug("Emitting Code Optimizer Diagnostic Event");
     emitAlertBreachJfrEvent(alert);
     CodeOptimizerDiagnosticsJfrInit.emitCGroupData(cgroupBasePath);
-    emitMachineStats();
+    emitMachineInfo();
   }
 
-  private static void emitMachineStats() {
-    MachineStats machineStats = SystemStatsProvider.getMachineStats();
-    machineStats.commit();
+  private static void emitMachineInfo() {
+    MachineInfo machineInfo = SystemStatsProvider.getMachineInfo();
+    machineInfo.commit();
   }
 
   private static void emitAlertBreachJfrEvent(AlertBreach alert) {
