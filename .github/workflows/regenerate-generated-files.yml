@@ -19,8 +19,23 @@ permissions:
   pull-requests: write
 
 jobs:
+  dispatch-regeneration-request:
+    if: github.event_name == 'issue_comment' && github.event.issue.pull_request != null && startsWith(github.event.comment.body, '/regen') && github.event.issue.user.login == 'dependabot[bot]' && (github.event.comment.author_association == 'OWNER' || github.event.comment.author_association == 'MEMBER' || github.event.comment.author_association == 'COLLABORATOR')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger workflow_dispatch for target pull request
+        env:
+          GH_TOKEN: ${{ secrets.PR_HELPER_GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.issue.number }}
+          REPO: ${{ github.repository }}
+        run: |
+          gh workflow run regenerate-generated-files.yml \
+            --repo "$REPO" \
+            --ref main \
+            -f pr_number="$PR_NUMBER"
+
   prepare-targets:
-    if: github.event_name != 'issue_comment' || (github.event.issue.pull_request != null && startsWith(github.event.comment.body, '/regen') && github.event.issue.user.login == 'dependabot[bot]' && (github.event.comment.author_association == 'OWNER' || github.event.comment.author_association == 'MEMBER' || github.event.comment.author_association == 'COLLABORATOR'))
+    if: github.event_name != 'issue_comment'
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.targets.outputs.matrix }}
@@ -29,7 +44,6 @@ jobs:
         id: targets
         env:
           EVENT_NAME: ${{ github.event_name }}
-          ISSUE_PR_NUMBER: ${{ github.event.issue.number }}
           GH_TOKEN: ${{ secrets.PR_HELPER_GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
           WORKFLOW_DISPATCH_PR_NUMBER: ${{ inputs.pr_number }}
@@ -39,8 +53,6 @@ jobs:
           if [[ "$EVENT_NAME" == "push" ]]; then
             prs=$(gh pr list --repo "$REPO" --state open --label dependencies --json number,headRepository)
             matrix=$(echo "$prs" | jq -c '[.[] | {pr: .number}]')
-          elif [[ "$EVENT_NAME" == "issue_comment" ]]; then
-            matrix=$(jq -cn --argjson pr "$ISSUE_PR_NUMBER" '[{pr:$pr}]')
           elif [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
             if [[ -z "$WORKFLOW_DISPATCH_PR_NUMBER" ]]; then
               echo "No workflow_dispatch pr_number provided, skipping"
