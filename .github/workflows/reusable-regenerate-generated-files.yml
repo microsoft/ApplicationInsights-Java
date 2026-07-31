@@ -32,12 +32,14 @@ jobs:
         run: |
           set -euo pipefail
 
-          pr_json=$(gh pr view "$PR_NUMBER" --repo "$REPO" --json headRefName,headRepository)
+          pr_json=$(gh pr view "$PR_NUMBER" --repo "$REPO" --json headRefName,headRefOid,headRepository)
           head_repo=$(echo "$pr_json" | jq -r '.headRepository.nameWithOwner // ""')
           head_ref=$(echo "$pr_json" | jq -r '.headRefName')
+          head_sha=$(echo "$pr_json" | jq -r '.headRefOid')
 
           echo "head_repo=$head_repo" >> "$GITHUB_OUTPUT"
           echo "head_ref=$head_ref" >> "$GITHUB_OUTPUT"
+          echo "head_sha=$head_sha" >> "$GITHUB_OUTPUT"
 
           if [[ "$head_repo" != "$REPO" ]]; then
             echo "eligible=false" >> "$GITHUB_OUTPUT"
@@ -53,7 +55,7 @@ jobs:
           # this personal access token is required so pushes retrigger workflows
           token: ${{ secrets.PR_HELPER_GITHUB_TOKEN }}
           repository: ${{ steps.pr.outputs.head_repo }}
-          ref: ${{ steps.pr.outputs.head_ref }}
+          ref: ${{ steps.pr.outputs.head_sha }}
           fetch-depth: 0
 
       - name: Setup Gradle
@@ -75,6 +77,7 @@ jobs:
           PR_NUMBER: ${{ inputs.pr_number }}
           REPO: ${{ github.repository }}
           SKIP_IF_CONTAINS_MAIN: ${{ inputs.skip_if_contains_main }}
+          HEAD_REF: ${{ steps.pr.outputs.head_ref }}
         run: |
           set -euo pipefail
 
@@ -129,4 +132,4 @@ jobs:
 
           git add -A -- '*.lockfile' licenses
           git diff --cached --quiet || git commit -m "regenerate lock files and license report"
-          git push
+          git push origin "HEAD:$HEAD_REF"
