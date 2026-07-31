@@ -27,22 +27,23 @@ public class MachineInfo extends Event implements JsonSerializable<MachineInfo> 
   public static final String NAME = "com.microsoft.applicationinsights.diagnostics.jfr.MachineInfo";
 
   /**
-   * Legacy calibration field. No longer populated (calibration was removed) but retained — along
-   * with its accessor and deserialization — so previously-recorded recordings can still be read and
-   * scored. New recordings emit it as 0.
+   * Event name emitted by agents prior to the MachineStats-&gt;MachineInfo rename. Readers fall
+   * back to this so previously-recorded recordings (which carry a "MachineStats" event) can still
+   * be located and scored.
    */
-  private double contextSwitchesPerMs;
+  public static final String LEGACY_NAME =
+      "com.microsoft.applicationinsights.diagnostics.jfr.MachineStats";
+
+  /**
+   * Current schema version. Version 2 drops the legacy {@code contextSwitchesPerMs} field;
+   * recordings produced before the schemaVersion field was added carry schemaVersion 1 (the
+   * implicit legacy version) and still serialize {@code contextSwitchesPerMs}.
+   */
+  public static final int SCHEMA_VERSION = 2;
 
   private int coreCount;
 
-  public double getContextSwitchesPerMs() {
-    return contextSwitchesPerMs;
-  }
-
-  public MachineInfo setContextSwitchesPerMs(double contextSwitchesPerMs) {
-    this.contextSwitchesPerMs = contextSwitchesPerMs;
-    return this;
-  }
+  private int schemaVersion;
 
   public int getCoreCount() {
     return coreCount;
@@ -53,12 +54,21 @@ public class MachineInfo extends Event implements JsonSerializable<MachineInfo> 
     return this;
   }
 
+  public int getSchemaVersion() {
+    return schemaVersion;
+  }
+
+  public MachineInfo setSchemaVersion(int schemaVersion) {
+    this.schemaVersion = schemaVersion;
+    return this;
+  }
+
   @Override
   public JsonWriter toJson(JsonWriter jsonWriter) throws IOException {
+    jsonWriter.writeStartObject();
     return jsonWriter
-        .writeStartObject()
-        .writeDoubleField("contextSwitchesPerMs", contextSwitchesPerMs)
         .writeIntField("coreCount", coreCount)
+        .writeIntField("schemaVersion", schemaVersion)
         .writeEndObject();
   }
 
@@ -70,10 +80,10 @@ public class MachineInfo extends Event implements JsonSerializable<MachineInfo> 
           while (reader.nextToken() != JsonToken.END_OBJECT) {
             String fieldName = reader.getFieldName();
             reader.nextToken();
-            if ("contextSwitchesPerMs".equals(fieldName)) {
-              deserializedValue.setContextSwitchesPerMs(reader.getDouble());
-            } else if ("coreCount".equals(fieldName)) {
+            if ("coreCount".equals(fieldName)) {
               deserializedValue.setCoreCount(reader.getInt());
+            } else if ("schemaVersion".equals(fieldName)) {
+              deserializedValue.setSchemaVersion(reader.getInt());
             } else {
               reader.skipChildren();
             }
