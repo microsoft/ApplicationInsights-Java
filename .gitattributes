@@ -1,4 +1,6 @@
 * text=auto eol=lf
 
-*.bat text eol=crlf
-*.cmd text eol=crlf
+# stored verbatim (CRLF) so bots that commit via the GitHub API, which bypasses
+# eol normalization, cannot reintroduce whole-file line ending diffs
+*.bat -text
+*.cmd -text
