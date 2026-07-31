@@ -29,7 +29,7 @@ jobs:
           PR_NUMBER: ${{ github.event.issue.number }}
           REPO: ${{ github.repository }}
         run: |
-          gh workflow run regenerate-generated-files.yml \
+          gh workflow run regenerate-generated-files-runner.yml \
             --repo "$REPO" \
             --ref main \
             -f pr_number="$PR_NUMBER"
@@ -71,9 +71,6 @@ jobs:
     needs:
       - prepare-targets
     if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && needs.prepare-targets.outputs.matrix != '[]'
-    permissions:
-      contents: write
-      pull-requests: write
     strategy:
       fail-fast: false
       max-parallel: 3
@@ -82,9 +79,15 @@ jobs:
     concurrency:
       group: regen-${{ matrix.pr }}
       cancel-in-progress: true
-    uses: ./.github/workflows/reusable-regenerate-generated-files.yml
-    with:
-      pr_number: ${{ matrix.pr }}
-      skip_if_contains_main: true
-    secrets:
-      PR_HELPER_GITHUB_TOKEN: ${{ secrets.PR_HELPER_GITHUB_TOKEN }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger workflow_dispatch for target pull request
+        env:
+          GH_TOKEN: ${{ secrets.PR_HELPER_GITHUB_TOKEN }}
+          PR_NUMBER: ${{ matrix.pr }}
+          REPO: ${{ github.repository }}
+        run: |
+          gh workflow run regenerate-generated-files-runner.yml \
+            --repo "$REPO" \
+            --ref main \
+            -f pr_number="$PR_NUMBER"

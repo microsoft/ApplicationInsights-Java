@@ -1,0 +1,22 @@
+name: Regenerate generated files runner
+
+on:
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: Pull request number to process
+        required: true
+        type: number
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  regenerate-generated-files:
+    uses: ./.github/workflows/reusable-regenerate-generated-files.yml
+    with:
+      pr_number: ${{ inputs.pr_number }}
+      skip_if_contains_main: true
+    secrets:
+      PR_HELPER_GITHUB_TOKEN: ${{ secrets.PR_HELPER_GITHUB_TOKEN }}
