@@ -35,7 +35,7 @@ jobs:
             -f pr_number="$PR_NUMBER"
 
   prepare-targets:
-    if: github.event_name != 'issue_comment'
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.targets.outputs.matrix }}
@@ -70,7 +70,7 @@ jobs:
   regenerate-generated-files:
     needs:
       - prepare-targets
-    if: github.event_name != 'issue_comment' && needs.prepare-targets.outputs.matrix != '[]'
+    if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && needs.prepare-targets.outputs.matrix != '[]'
     strategy:
       fail-fast: false
       max-parallel: 3
