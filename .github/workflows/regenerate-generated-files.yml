@@ -15,8 +15,8 @@ on:
         type: string
 
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
+  pull-requests: read
 
 jobs:
   dispatch-regeneration-request:
@@ -71,6 +71,9 @@ jobs:
     needs:
       - prepare-targets
     if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && needs.prepare-targets.outputs.matrix != '[]'
+    permissions:
+      contents: write
+      pull-requests: write
     strategy:
       fail-fast: false
       max-parallel: 3
