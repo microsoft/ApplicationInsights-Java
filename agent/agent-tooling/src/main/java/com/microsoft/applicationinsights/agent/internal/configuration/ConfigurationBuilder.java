@@ -1085,7 +1085,7 @@ public class ConfigurationBuilder {
     }
   }
 
-  private static class JsonOrigin {
+  static class JsonOrigin {
 
     private static final JsonOrigin ENV_VAR =
         new JsonOrigin("env var " + APPLICATIONINSIGHTS_CONFIGURATION_CONTENT);

@@ -141,7 +141,7 @@ public class Configuration {
     }
   }
 
-  private enum IncludeExclude {
+  enum IncludeExclude {
     INCLUDE,
     EXCLUDE;
 
