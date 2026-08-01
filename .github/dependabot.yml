@@ -43,31 +43,33 @@ updates:
     schedule:
       interval: "weekly"
       day: "monday"
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 10
+    # a dependency lands in the first group it matches, and whatever is left over gets its own PR,
+    # so major updates are intentionally left ungrouped
     groups:
-      opentelemetry:
-        patterns:
-          - "otelSdkVersion"
-          - "otelSdkAlphaVersion"
-          - "otelInstrumentationVersion"
-          - "otelInstrumentationAlphaVersion"
-          - "otelContribVersion"
-          - "otelContribAlphaVersion"
-          - "io.opentelemetry:opentelemetry-bom"
-          - "io.opentelemetry:opentelemetry-bom-alpha"
-          - "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom"
-          - "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha"
-          - "io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-incubator"
-          - "io.opentelemetry.instrumentation:gradle-plugins"
-          - "io.opentelemetry.contrib:opentelemetry-jfr-connection"
-          - "io.opentelemetry.contrib:opentelemetry-runtime-attach-core"
+      # semconv bumps rename attributes and require test changes, so they are kept out of the
+      # opentelemetry group to avoid mixing a version bump with semantic code churn
       opentelemetry-semconv:
         patterns:
-          - "io.opentelemetry.semconv:opentelemetry-semconv"
-          - "io.opentelemetry.semconv:opentelemetry-semconv-incubating"
+          - "io.opentelemetry.semconv:*"
+
+      # the otel sdk/instrumentation/contrib/javaagent artifacts are interdependent and need to be
+      # reviewed, tested and merged together
+      opentelemetry:
+        patterns:
+          - "otel*Version" # version properties in dependencyManagement/build.gradle.kts
+          - "io.opentelemetry*"
+        exclude-patterns:
+          - "io.opentelemetry.semconv:*"
+          # released independently of the otel sdk, and only used by the smoke test framework
+          - "io.opentelemetry.proto:*"
+
       all-dependencies:
         patterns:
           - "*"
+        exclude-patterns:
+          # every release adds checks that fire on existing code
+          - "errorProneVersion"
         update-types:
           - "minor"
           - "patch"
