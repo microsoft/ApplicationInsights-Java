@@ -10,7 +10,7 @@ jobs:
     if: github.event.pull_request.user.login == 'dependabot[bot]'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           # this is the personal access token used for "git push" below
           # which is needed in order to trigger workflows
@@ -19,7 +19,7 @@ jobs:
           ref: ${{ github.event.pull_request.head.ref }}
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@5e2ebd065dc2488b7a6ad670704656cbbe1e8f60 # v6
+        uses: gradle/actions/setup-gradle@3f131e8634966bd73d06cc69884922b02e6faf92 # v6
         with:
           cache-read-only: true
 
@@ -44,11 +44,7 @@ jobs:
         run: |
           ./gradlew generateLicenseReport
           git add licenses
-          # there's always going to one line difference due to the timestamp included in the report
-          if [[ $(git diff --cached --shortstat licenses) == " 1 file changed, 1 insertion(+), 1 deletion(-)" ]]
-          then
-            git reset HEAD licenses
-            git checkout -- licenses
+          if git diff --cached --quiet; then
             exit 0 # success
           fi
           git commit -m "./gradlew generateLicenseReport"
