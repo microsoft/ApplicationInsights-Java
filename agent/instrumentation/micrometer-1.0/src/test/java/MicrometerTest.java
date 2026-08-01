@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
+import org.awaitility.Awaitility;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -33,6 +35,13 @@ class MicrometerTest {
 
   static {
     MicrometerUtil.setDelegate(delegate);
+  }
+
+  @BeforeAll
+  static void setUp() {
+    // Increase default timeout to be resilient on slow CI runners (e.g. Windows).
+    // The step interval is 1000ms (set via JVM arg), so 30s gives ample margin.
+    Awaitility.setDefaultTimeout(Duration.ofSeconds(30));
   }
 
   @Test
