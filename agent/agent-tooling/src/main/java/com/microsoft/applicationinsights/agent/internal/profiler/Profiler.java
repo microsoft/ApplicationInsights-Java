@@ -245,7 +245,8 @@ public class Profiler {
       }
 
       // A live circular buffer can only be dumped in its entirety; the JFR connection only supports
-      // streaming a sub-window from a stopped recording, so a shorter portal-/JMX-configured profile
+      // streaming a sub-window from a stopped recording, so a shorter portal-/JMX-configured
+      // profile
       // duration cannot be honored without tearing down continuous profiling. The dump therefore
       // always covers the full retained window, [recordingEnd - maxAge, recordingEnd]. Index the
       // profile at the start of that window rather than at dump time.
