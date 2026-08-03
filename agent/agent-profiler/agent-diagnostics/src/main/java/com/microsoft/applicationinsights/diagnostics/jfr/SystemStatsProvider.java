@@ -129,7 +129,10 @@ public class SystemStatsProvider {
   public static MachineInfo getMachineInfo() {
     return getSingleton(
         MachineInfo.class,
-        () -> new MachineInfo().setCoreCount(new RuntimeCoreCounter().getCoreCount()));
+        () ->
+            new MachineInfo()
+                .setCoreCount(new RuntimeCoreCounter().getCoreCount())
+                .setSchemaVersion(MachineInfo.SCHEMA_VERSION));
   }
 
   private static Process getThisProcess() {
@@ -141,8 +144,12 @@ public class SystemStatsProvider {
 
           Process thisProcess = processDumper.thisProcess();
           if (thisProcess == null) {
-            // e.g. NoOpProcessDumper on unsupported operating systems returns no process
-            return null;
+            // e.g. NoOpProcessDumper on unsupported operating systems returns no process. The only
+            // caller (buildSystemStatsReader) dereferences the result, so fail fast with a clear
+            // message rather than returning null and triggering an opaque NPE later.
+            throw new IllegalStateException(
+                "Current process information is unavailable on this operating system; "
+                    + "system stats cannot be collected");
           }
           processDumper.closeProcesses(Collections.singletonList(thisProcess.getPid()));
           return thisProcess;

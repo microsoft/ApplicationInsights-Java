@@ -71,8 +71,9 @@ public class TestController {
   private boolean pollForJfrFileMatching(JfrFilePredicate predicate) throws Exception {
     for (int i = 0; i < 60; i++) {
       for (Path jfrFile : findJfrFilesNewestFirst()) {
+        Path decompressedFile = null;
         try {
-          Path decompressedFile = decompressFile(jfrFile);
+          decompressedFile = decompressFile(jfrFile);
           if (predicate.test(decompressedFile)) {
             return true;
           }
@@ -81,6 +82,16 @@ public class TestController {
           // candidate / next poll iteration.
           if (i > 55) {
             e.printStackTrace();
+          }
+        } finally {
+          // decompressFile returns the original file (not a temp copy) when decompression fails, so
+          // only delete files we actually created to avoid removing the agent's dump.
+          if (decompressedFile != null && !decompressedFile.equals(jfrFile)) {
+            try {
+              Files.deleteIfExists(decompressedFile);
+            } catch (java.io.IOException ignored) {
+              // best effort cleanup
+            }
           }
         }
       }
