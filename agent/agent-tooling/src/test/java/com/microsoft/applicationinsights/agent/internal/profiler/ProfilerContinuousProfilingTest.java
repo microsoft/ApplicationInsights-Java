@@ -10,7 +10,6 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.profiler.testutil.TestTimeSource;
@@ -23,9 +22,7 @@ import io.opentelemetry.contrib.jfr.connection.FlightRecorderConnection;
 import io.opentelemetry.contrib.jfr.connection.Recording;
 import io.opentelemetry.contrib.jfr.connection.RecordingConfiguration;
 import io.opentelemetry.contrib.jfr.connection.RecordingOptions;
-import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.UUID;
@@ -65,15 +62,13 @@ class ProfilerContinuousProfilingTest {
   }
 
   @Test
-  void profileRequestCapturesRequestedWindowOfContinuousRecording() throws Exception {
+  void profileRequestAlwaysDumpsWholeBufferEvenForShorterRequestedDuration() throws Exception {
     Configuration.ProfilerConfiguration config = new Configuration.ProfilerConfiguration();
     config.enableContinuousProfiling = true;
     config.continuousProfilingMaxAgeSeconds = 60;
     config.globalCooldownSeconds = 0;
 
     Recording continuousRecording = mock(Recording.class);
-    when(continuousRecording.getStream(any(), any()))
-        .thenReturn(new ByteArrayInputStream("jfr".getBytes(StandardCharsets.UTF_8)));
 
     Profiler profiler =
         new Profiler(config, tempDir, timeSource) {
@@ -95,16 +90,17 @@ class ProfilerContinuousProfilingTest {
     timeSource.setNow(now);
     UploadListener noOp = index -> {};
 
-    // The portal-/JMX-configured duration (10s) is shorter than the 60s buffer, so only the
-    // trailing 10s window of the circular buffer is captured.
+    // A live circular buffer can only be dumped in its entirety; a shorter portal-/JMX-configured
+    // duration (10s) cannot be honored by streaming a sub-window from the still-running recording,
+    // so the whole 60s buffer is dumped via the robust dump() path.
     profiler.profileAndUpload(manualBreach(10), Duration.ofSeconds(10), noOp);
 
-    verify(continuousRecording).getStream(eq(now.minusSeconds(10)), eq(now));
-    verify(continuousRecording, never()).dump(anyString());
+    verify(continuousRecording).dump(anyString());
+    verify(continuousRecording, never()).getStream(any(), any());
     verify(continuousRecording, never()).stop();
-    // The profile is timestamped at the start of the captured window (now - 10s), not at dump time.
+    // The captured window is the whole 60s buffer, so the profile is timestamped at now - 60s.
     verify(uploadService)
-        .upload(any(), eq(now.minusSeconds(10).toEpochMilli()), any(File.class), any());
+        .upload(any(), eq(now.minusSeconds(60).toEpochMilli()), any(File.class), any());
     assertThat(profiler.isRecordingActive()).isFalse();
   }
 

@@ -184,7 +184,7 @@ public class Profiler {
   void profileAndUpload(AlertBreach alertBreach, Duration duration, UploadListener uploadListener) {
     Instant recordingStart = timeSource.getNow();
     if (continuousProfilingEnabled) {
-      captureContinuousRecording(alertBreach, duration, recordingStart, uploadListener);
+      captureContinuousRecording(alertBreach, recordingStart, uploadListener);
       return;
     }
     executeProfile(
@@ -226,10 +226,7 @@ public class Profiler {
   @SuppressWarnings(
       "CatchingUnchecked") // catching unchecked exception is necessary for proper error handling
   private void captureContinuousRecording(
-      AlertBreach alertBreach,
-      Duration requestedDuration,
-      Instant recordingEnd,
-      UploadListener uploadListener) {
+      AlertBreach alertBreach, Instant recordingEnd, UploadListener uploadListener) {
     File dumpFile;
     Instant bufferStart;
     synchronized (activeRecordingLock) {
@@ -247,16 +244,12 @@ public class Profiler {
         return;
       }
 
-      // The circular buffer only retains up to maxAge of data, so the captured window can never
-      // exceed maxAge. Honor a shorter portal-/JMX-configured profile duration when one is
-      // provided, otherwise fall back to the full maxAge window.
-      Duration captureWindow = resolveContinuousCaptureWindow(requestedDuration);
-
-      // The dumped buffer covers [recordingEnd - captureWindow, recordingEnd]. Use the start of
-      // that
-      // window as the profile timestamp and file name so the profile is indexed at the point the
-      // data actually begins rather than at dump time.
-      bufferStart = recordingEnd.minus(captureWindow);
+      // A live circular buffer can only be dumped in its entirety; the JFR connection only supports
+      // streaming a sub-window from a stopped recording, so a shorter portal-/JMX-configured profile
+      // duration cannot be honored without tearing down continuous profiling. The dump therefore
+      // always covers the full retained window, [recordingEnd - maxAge, recordingEnd]. Index the
+      // profile at the start of that window rather than at dump time.
+      bufferStart = recordingEnd.minus(continuousProfilingMaxAge);
 
       try {
         dumpFile = createJfrFile(bufferStart, recordingEnd);
@@ -266,9 +259,9 @@ public class Profiler {
       }
 
       try {
-        // Dump the trailing captureWindow of the circular buffer. The continuous recording keeps
-        // running so future requests can be serviced immediately.
-        dumpContinuousRecording(dumpFile, recordingEnd, captureWindow);
+        // Dump the current state of the circular buffer, capturing up to maxAge of data. The
+        // continuous recording keeps running so future requests can be serviced immediately.
+        continuousRecording.dump(dumpFile.getAbsolutePath());
       } catch (IOException | JfrConnectionException e) {
         logger.error("Failed to dump continuous recording", e);
         if (dumpFile.exists() && !dumpFile.delete()) {
@@ -296,38 +289,6 @@ public class Profiler {
         logger.error("Failed to remove file " + dumpFile.getAbsolutePath());
       }
     }
-  }
-
-  /**
-   * Resolves the window of buffered data to capture from the continuous recording. The window is
-   * bounded by the configured continuous profiling maxAge (the circular buffer can hold no more
-   * than that) but is otherwise driven by the requested profile duration so that a shorter
-   * portal-/JMX-configured duration is honored rather than silently ignored.
-   */
-  private Duration resolveContinuousCaptureWindow(@Nullable Duration requestedDuration) {
-    if (requestedDuration == null
-        || requestedDuration.isZero()
-        || requestedDuration.isNegative()
-        || requestedDuration.compareTo(continuousProfilingMaxAge) > 0) {
-      return continuousProfilingMaxAge;
-    }
-    return requestedDuration;
-  }
-
-  /**
-   * Writes the trailing {@code captureWindow} of the continuous recording's circular buffer to
-   * {@code dumpFile}. When the requested window covers the whole buffer the more robust {@link
-   * Recording#dump(String)} path is used; otherwise only the requested trailing window is streamed
-   * out so the configured profile duration is respected.
-   */
-  private void dumpContinuousRecording(File dumpFile, Instant recordingEnd, Duration captureWindow)
-      throws IOException, JfrConnectionException {
-    if (captureWindow.compareTo(continuousProfilingMaxAge) >= 0) {
-      continuousRecording.dump(dumpFile.getAbsolutePath());
-      return;
-    }
-    writeFileFromStream(
-        continuousRecording, dumpFile, recordingEnd.minus(captureWindow), recordingEnd);
   }
 
   @Nullable
@@ -477,18 +438,12 @@ public class Profiler {
 
   private static void writeFileFromStream(Recording recording, File recordingFile)
       throws IOException, JfrConnectionException {
-    writeFileFromStream(recording, recordingFile, null, null);
-  }
-
-  private static void writeFileFromStream(
-      Recording recording, File recordingFile, @Nullable Instant start, @Nullable Instant end)
-      throws IOException, JfrConnectionException {
     if (recordingFile.exists()) {
       recordingFile.delete();
     }
     recordingFile.createNewFile();
 
-    try (BufferedInputStream stream = new BufferedInputStream(recording.getStream(start, end));
+    try (BufferedInputStream stream = new BufferedInputStream(recording.getStream(null, null));
         FileOutputStream fos = new FileOutputStream(recordingFile)) {
       int read;
       byte[] buffer = new byte[10 * 1024];

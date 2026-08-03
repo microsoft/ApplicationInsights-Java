@@ -8,8 +8,10 @@ import java.io.OutputStream;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.Comparator;
-import java.util.Optional;
+import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipException;
@@ -61,30 +63,25 @@ public class TestController {
   }
 
   /**
-   * Polls for up to 60 seconds for the most recently modified {@code .jfr} file produced by the
-   * agent and applies {@code predicate} to it. Continuous profiling can produce several dumps, so
-   * the newest file is used rather than an arbitrary one.
+   * Polls for up to 60 seconds for a {@code .jfr} file produced by the agent that satisfies {@code
+   * predicate}. Continuous profiling can produce several dumps and a dump may be observed
+   * mid-write, so every candidate file is examined (newest first) and any file that cannot be read
+   * yet is skipped rather than failing the whole request.
    */
   private boolean pollForJfrFileMatching(JfrFilePredicate predicate) throws Exception {
     for (int i = 0; i < 60; i++) {
-      try {
-        Optional<Path> jfrFile = findNewestJfrFile();
-
-        if (!jfrFile.isPresent()) {
-          Thread.sleep(1000, 0);
-          continue;
-        }
-
-        Path decompressedFile = decompressFile(jfrFile.get());
-
-        if (predicate.test(decompressedFile)) {
-          return true;
-        }
-      } catch (Exception e) {
-        // Ignore early exceptions, as to be expected, throw them if they are still happening
-        // towards the end
-        if (i > 55) {
-          throw e;
+      for (Path jfrFile : findJfrFilesNewestFirst()) {
+        try {
+          Path decompressedFile = decompressFile(jfrFile);
+          if (predicate.test(decompressedFile)) {
+            return true;
+          }
+        } catch (Exception e) {
+          // A dump may still be being written, or otherwise unreadable; skip it and try the next
+          // candidate / next poll iteration.
+          if (i > 55) {
+            e.printStackTrace();
+          }
         }
       }
       Thread.sleep(1000, 0);
@@ -98,12 +95,17 @@ public class TestController {
     boolean test(Path decompressedFile) throws Exception;
   }
 
-  private static Optional<Path> findNewestJfrFile() {
-    try (Stream<Path> files = Files.walk(new File("/tmp/root/applicationinsights").toPath())) {
+  private static List<Path> findJfrFilesNewestFirst() {
+    Path root = new File("/tmp/root/applicationinsights").toPath();
+    if (!Files.isDirectory(root)) {
+      return Collections.emptyList();
+    }
+    try (Stream<Path> files = Files.walk(root)) {
       return files
           .filter(Files::isRegularFile)
           .filter(it -> it.toFile().getName().contains(".jfr"))
-          .max(Comparator.comparingLong(it -> it.toFile().lastModified()));
+          .sorted(Comparator.comparingLong((Path it) -> it.toFile().lastModified()).reversed())
+          .collect(Collectors.toList());
     } catch (java.io.IOException e) {
       throw new UncheckedIOException(e);
     }
