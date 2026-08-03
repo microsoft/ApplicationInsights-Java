@@ -5,9 +5,12 @@ package com.microsoft.applicationinsights.smoketestapp;
 
 import java.io.File;
 import java.io.OutputStream;
+import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Comparator;
 import java.util.Optional;
+import java.util.stream.Stream;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipException;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,41 +25,12 @@ public class TestController {
 
   @GetMapping("/jfrFileHasDiagnostics")
   public String jfrFileHasDiagnostics() throws Exception {
-    Optional<Path> jfrFile;
-    for (int i = 0; i < 60; i++) {
-      try {
-        jfrFile =
-            Files.walk(new File("/tmp/root/applicationinsights").toPath())
-                .filter(Files::isRegularFile)
-                .filter(it -> it.toFile().getName().contains(".jfr"))
-                .findFirst();
-
-        if (!jfrFile.isPresent()) {
-          Thread.sleep(1000, 0);
-          continue;
-        }
-
-        Path decompressedFile = decompressFile(jfrFile.get());
-
-        boolean hasTelemetry =
-            com.microsoft.applicationinsights.jfrfile.JfrFileReader.hasEventOfType(
-                decompressedFile, "com.microsoft.applicationinsights.diagnostics.jfr.Telemetry");
-
-        if (hasTelemetry) {
-          return String.valueOf(true);
-        }
-      } catch (Exception e) {
-        // Ignore early exceptions, as to be expected, throw them if they are still happening
-        // towards the end
-        if (i > 55) {
-          throw e;
-        } else {
-          Thread.sleep(1000, 0);
-        }
-      }
-    }
-
-    return String.valueOf(false);
+    return String.valueOf(
+        pollForJfrFileMatching(
+            decompressedFile ->
+                com.microsoft.applicationinsights.jfrfile.JfrFileReader.hasEventOfType(
+                    decompressedFile,
+                    "com.microsoft.applicationinsights.diagnostics.jfr.Telemetry")));
   }
 
   /**
@@ -73,13 +47,28 @@ public class TestController {
       "com.microsoft.applicationinsights.diagnostics.jfr.CGroupData",
     };
 
+    return String.valueOf(
+        pollForJfrFileMatching(
+            decompressedFile -> {
+              for (String event : requiredEvents) {
+                if (!com.microsoft.applicationinsights.jfrfile.JfrFileReader.hasEventInstanceOfType(
+                    decompressedFile, event)) {
+                  return false;
+                }
+              }
+              return true;
+            }));
+  }
+
+  /**
+   * Polls for up to 60 seconds for the most recently modified {@code .jfr} file produced by the
+   * agent and applies {@code predicate} to it. Continuous profiling can produce several dumps, so
+   * the newest file is used rather than an arbitrary one.
+   */
+  private boolean pollForJfrFileMatching(JfrFilePredicate predicate) throws Exception {
     for (int i = 0; i < 60; i++) {
       try {
-        Optional<Path> jfrFile =
-            Files.walk(new File("/tmp/root/applicationinsights").toPath())
-                .filter(Files::isRegularFile)
-                .filter(it -> it.toFile().getName().contains(".jfr"))
-                .findFirst();
+        Optional<Path> jfrFile = findNewestJfrFile();
 
         if (!jfrFile.isPresent()) {
           Thread.sleep(1000, 0);
@@ -88,17 +77,8 @@ public class TestController {
 
         Path decompressedFile = decompressFile(jfrFile.get());
 
-        boolean hasAll = true;
-        for (String event : requiredEvents) {
-          if (!com.microsoft.applicationinsights.jfrfile.JfrFileReader.hasEventInstanceOfType(
-              decompressedFile, event)) {
-            hasAll = false;
-            break;
-          }
-        }
-
-        if (hasAll) {
-          return String.valueOf(true);
+        if (predicate.test(decompressedFile)) {
+          return true;
         }
       } catch (Exception e) {
         // Ignore early exceptions, as to be expected, throw them if they are still happening
@@ -110,7 +90,23 @@ public class TestController {
       Thread.sleep(1000, 0);
     }
 
-    return String.valueOf(false);
+    return false;
+  }
+
+  @FunctionalInterface
+  private interface JfrFilePredicate {
+    boolean test(Path decompressedFile) throws Exception;
+  }
+
+  private static Optional<Path> findNewestJfrFile() {
+    try (Stream<Path> files = Files.walk(new File("/tmp/root/applicationinsights").toPath())) {
+      return files
+          .filter(Files::isRegularFile)
+          .filter(it -> it.toFile().getName().contains(".jfr"))
+          .max(Comparator.comparingLong(it -> it.toFile().lastModified()));
+    } catch (java.io.IOException e) {
+      throw new UncheckedIOException(e);
+    }
   }
 
   private Path decompressFile(Path jfrFile) {

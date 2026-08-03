@@ -57,16 +57,15 @@ public class SystemStatsProvider {
     if (initialised.compareAndSet(false, true)) {
       singletons.put(ThisPidSupplier.class, new AtomicReference<>((ThisPidSupplier) () -> thisPid));
 
-      if (singletons.get(MachineInfo.class) == null) {
-        try {
-          getMachineInfo();
-          getCGroupData(cgroupBasePath);
+      try {
+        // Eagerly warm up the machine and cgroup singletons, then release resources until needed.
+        getMachineInfo();
+        getCGroupData(cgroupBasePath);
 
-          // Close until needed
-          close();
-        } catch (RuntimeException e) {
-          logger.error("Failed to initialise Code Optimizer", e);
-        }
+        // Close until needed
+        close();
+      } catch (RuntimeException e) {
+        logger.error("Failed to initialise Code Optimizer", e);
       }
     }
   }

@@ -128,6 +128,9 @@ public class CodeOptimizerDiagnosticEngineJfr implements DiagnosticEngine {
         emitInfo(alert);
         diagnosisResultCompletableFuture.complete(null);
       } catch (RuntimeException e) {
+        // The caller discards the returned future, so log here to avoid silently swallowing the
+        // failure to emit breach diagnostics.
+        logger.error("Failed to emit continuous diagnostic breach information", e);
         diagnosisResultCompletableFuture.completeExceptionally(e);
       }
       return diagnosisResultCompletableFuture;
