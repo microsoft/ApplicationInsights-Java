@@ -18,4 +18,9 @@ dependencies {
 
   compileOnly("com.google.auto.service:auto-service")
   annotationProcessor("com.google.auto.service:auto-service")
+
+  testImplementation("org.assertj:assertj-core")
+  testImplementation("org.mockito:mockito-core")
+  testImplementation("org.gradle.jfr.polyfill:jfr-polyfill:1.0.2")
+  testImplementation("com.azure:azure-json")
 }
