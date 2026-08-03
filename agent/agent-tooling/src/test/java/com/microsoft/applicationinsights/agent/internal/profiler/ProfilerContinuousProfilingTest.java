@@ -5,7 +5,6 @@ package com.microsoft.applicationinsights.agent.internal.profiler;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -103,7 +102,9 @@ class ProfilerContinuousProfilingTest {
     verify(continuousRecording).getStream(eq(now.minusSeconds(10)), eq(now));
     verify(continuousRecording, never()).dump(anyString());
     verify(continuousRecording, never()).stop();
-    verify(uploadService).upload(any(), anyLong(), any(File.class), any());
+    // The profile is timestamped at the start of the captured window (now - 10s), not at dump time.
+    verify(uploadService)
+        .upload(any(), eq(now.minusSeconds(10).toEpochMilli()), any(File.class), any());
     assertThat(profiler.isRecordingActive()).isFalse();
   }
 
@@ -131,6 +132,7 @@ class ProfilerContinuousProfilingTest {
     verify(continuousRecording).start();
 
     timeSource.setNow(Instant.parse("2025-01-01T00:00:00Z"));
+    Instant now = Instant.parse("2025-01-01T00:00:00Z");
     UploadListener noOp = index -> {};
 
     // The requested duration (90s) exceeds the 60s buffer, so the whole circular buffer is dumped
@@ -140,7 +142,9 @@ class ProfilerContinuousProfilingTest {
     verify(continuousRecording).dump(anyString());
     verify(continuousRecording, never()).getStream(any(), any());
     verify(continuousRecording, never()).stop();
-    verify(uploadService).upload(any(), anyLong(), any(File.class), any());
+    // The captured window is the whole 60s buffer, so the profile is timestamped at now - 60s.
+    verify(uploadService)
+        .upload(any(), eq(now.minusSeconds(60).toEpochMilli()), any(File.class), any());
     assertThat(profiler.isRecordingActive()).isFalse();
   }
 }

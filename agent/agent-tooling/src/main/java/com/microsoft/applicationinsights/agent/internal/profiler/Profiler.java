@@ -48,6 +48,8 @@ public class Profiler {
 
   private static final Logger logger = LoggerFactory.getLogger(Profiler.class);
 
+  private static final Duration DEFAULT_CONTINUOUS_PROFILING_MAX_AGE = Duration.ofMinutes(2);
+
   // service execution context
   private ScheduledExecutorService scheduledExecutorService;
 
@@ -113,9 +115,23 @@ public class Profiler {
     spanRecordingConfiguration = AlternativeJfrConfigurations.getSpanProfileConfig(config);
     manualRecordingConfiguration = AlternativeJfrConfigurations.getManualProfileConfig(config);
     continuousProfilingEnabled = config.enableContinuousProfiling;
-    continuousProfilingMaxAge = Duration.ofSeconds(config.continuousProfilingMaxAgeSeconds);
-    continuousRecordingConfiguration = AlternativeJfrConfigurations.getCpuProfileConfig(config);
+    continuousProfilingMaxAge =
+        resolveContinuousProfilingMaxAge(config.continuousProfilingMaxAgeSeconds);
+    // Continuous profiling uses a single always-on recording, so it can only carry one JFC. Reuse
+    // the CPU configuration rather than opening a second stream on the same resource.
+    continuousRecordingConfiguration = cpuRecordingConfiguration;
     temporaryDirectory = tempDir;
+  }
+
+  private static Duration resolveContinuousProfilingMaxAge(int continuousProfilingMaxAgeSeconds) {
+    if (continuousProfilingMaxAgeSeconds <= 0) {
+      logger.warn(
+          "continuousProfilingMaxAgeSeconds must be positive but was {}; falling back to {}s",
+          continuousProfilingMaxAgeSeconds,
+          DEFAULT_CONTINUOUS_PROFILING_MAX_AGE.getSeconds());
+      return DEFAULT_CONTINUOUS_PROFILING_MAX_AGE;
+    }
+    return Duration.ofSeconds(continuousProfilingMaxAgeSeconds);
   }
 
   /**
@@ -188,8 +204,10 @@ public class Profiler {
       try {
         // A continuous recording uses a circular buffer bounded by maxAge and no duration, so it
         // runs indefinitely while only retaining the most recent window of data on disk.
+        // Use a dedicated builder so the maxAge/disk options for the continuous circular buffer do
+        // not mutate the shared recordingOptionsBuilder used by on-demand recordings.
         RecordingOptions recordingOptions =
-            recordingOptionsBuilder
+            new RecordingOptions.Builder()
                 .maxAge(continuousProfilingMaxAge.toMillis() + " ms")
                 .disk("true")
                 .build();
@@ -210,8 +228,10 @@ public class Profiler {
   private void captureContinuousRecording(
       AlertBreach alertBreach,
       Duration requestedDuration,
-      Instant recordingStart,
+      Instant recordingEnd,
       UploadListener uploadListener) {
+    File dumpFile;
+    Instant bufferStart;
     synchronized (activeRecordingLock) {
       if (continuousRecording == null) {
         logger.warn("Profile requested but continuous recording is not running, ignoring request.");
@@ -232,9 +252,14 @@ public class Profiler {
       // provided, otherwise fall back to the full maxAge window.
       Duration captureWindow = resolveContinuousCaptureWindow(requestedDuration);
 
-      File dumpFile;
+      // The dumped buffer covers [recordingEnd - captureWindow, recordingEnd]. Use the start of
+      // that
+      // window as the profile timestamp and file name so the profile is indexed at the point the
+      // data actually begins rather than at dump time.
+      bufferStart = recordingEnd.minus(captureWindow);
+
       try {
-        dumpFile = createJfrFile(captureWindow);
+        dumpFile = createJfrFile(bufferStart, recordingEnd);
       } catch (IOException e) {
         logger.error("Failed to create jfr file", e);
         return;
@@ -243,7 +268,7 @@ public class Profiler {
       try {
         // Dump the trailing captureWindow of the circular buffer. The continuous recording keeps
         // running so future requests can be serviced immediately.
-        dumpContinuousRecording(dumpFile, recordingStart, captureWindow);
+        dumpContinuousRecording(dumpFile, recordingEnd, captureWindow);
       } catch (IOException | JfrConnectionException e) {
         logger.error("Failed to dump continuous recording", e);
         if (dumpFile.exists() && !dumpFile.delete()) {
@@ -252,13 +277,14 @@ public class Profiler {
         return;
       }
 
-      activeRecordingFile = dumpFile;
+      // Start the global cooldown while still holding the lock so concurrent triggers are rejected
+      // before they can dump another snapshot.
+      startGlobalCooldown();
     }
 
     try {
       logger.info("Uploading continuous recording snapshot");
-      uploadService.upload(
-          alertBreach, recordingStart.toEpochMilli(), activeRecordingFile, uploadListener);
+      uploadService.upload(alertBreach, bufferStart.toEpochMilli(), dumpFile, uploadListener);
     } catch (Exception e) {
       logger.error("Failed to upload recording", e);
     } catch (Error e) {
@@ -266,7 +292,9 @@ public class Profiler {
       logger.error("Failed to upload recording", e);
       throw e;
     } finally {
-      clearActiveRecording();
+      if (dumpFile.exists() && !dumpFile.delete()) {
+        logger.error("Failed to remove file " + dumpFile.getAbsolutePath());
+      }
     }
   }
 
@@ -476,10 +504,7 @@ public class Profiler {
       activeRecording = null;
 
       // Start global cooldown now that the recording is complete
-      if (globalCooldownSeconds > 0) {
-        globalCooldownUntil = timeSource.getNow().plusSeconds(globalCooldownSeconds);
-        logger.debug("Global profile cooldown active until {}", globalCooldownUntil);
-      }
+      startGlobalCooldown();
 
       // delete uploaded profile
       if (activeRecordingFile != null && activeRecordingFile.exists()) {
@@ -488,6 +513,14 @@ public class Profiler {
         }
       }
       activeRecordingFile = null;
+    }
+  }
+
+  // Advances the global cooldown window. Callers must hold activeRecordingLock.
+  private void startGlobalCooldown() {
+    if (globalCooldownSeconds > 0) {
+      globalCooldownUntil = timeSource.getNow().plusSeconds(globalCooldownSeconds);
+      logger.debug("Global profile cooldown active until {}", globalCooldownUntil);
     }
   }
 
@@ -506,15 +539,19 @@ public class Profiler {
   /** Dump JFR profile to file. */
   // visible for testing
   protected File createJfrFile(Duration duration) throws IOException {
+    Instant recordingStart = timeSource.getNow();
+    return createJfrFile(recordingStart, recordingStart.plus(duration));
+  }
+
+  /** Create a JFR file whose name encodes the window of data it contains. */
+  // visible for testing
+  protected File createJfrFile(Instant recordingStart, Instant recordingEnd) throws IOException {
     if (!temporaryDirectory.exists()) {
       if (!temporaryDirectory.mkdirs()) {
         throw new IOException(
             "Failed to create temporary directory " + temporaryDirectory.getAbsolutePath());
       }
     }
-
-    Instant recordingStart = timeSource.getNow();
-    Instant recordingEnd = recordingStart.plus(duration);
 
     return new File(
         temporaryDirectory,
