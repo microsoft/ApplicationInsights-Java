@@ -141,6 +141,10 @@ public class SystemStatsProvider {
           processDumper.poll();
 
           Process thisProcess = processDumper.thisProcess();
+          if (thisProcess == null) {
+            // e.g. NoOpProcessDumper on unsupported operating systems returns no process
+            return null;
+          }
           processDumper.closeProcesses(Collections.singletonList(thisProcess.getPid()));
           return thisProcess;
         });
