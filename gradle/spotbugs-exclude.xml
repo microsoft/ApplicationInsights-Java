@@ -25,6 +25,18 @@
     <Bug pattern="CT_CONSTRUCTOR_THROW"/> <!-- inner class exception thrown in constructor can be ignored -->
   </Match>
   <Match>
+    <Class name="com.microsoft.applicationinsights.agent.internal.processors.DelegatingLogData"/>
+    <Bug pattern="CT_CONSTRUCTOR_THROW"/> <!-- inner class exception thrown in constructor can be ignored -->
+  </Match>
+  <Match>
+    <Class name="com.microsoft.applicationinsights.agent.internal.perfcounter.PerformanceCounterContainer"/>
+    <Bug pattern="USO_UNSAFE_OBJECT_SYNCHRONIZATION"/> <!-- agent internal singleton, not reachable by untrusted code -->
+  </Match>
+  <Match>
+    <Class name="com.microsoft.applicationinsights.agent.internal.diagnostics.status.StatusFile"/>
+    <Bug pattern="USO_UNSAFE_ACCESSIBLE_OBJECT_SYNCHRONIZATION"/> <!-- private lock only exposed via a synthetic accessor for a nested class -->
+  </Match>
+  <Match>
     <Class name="com.microsoft.applicationinsights.agent.internal.diagnostics.status.StatusFile"/>
     <Bug pattern="ENV_USE_PROPERTY_INSTEAD_OF_ENV"/> <!-- inner class use env var 'HOME' instead of 'user.home' can be ignored -->
   </Match>
