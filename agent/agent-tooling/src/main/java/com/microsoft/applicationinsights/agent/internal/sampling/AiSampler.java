@@ -48,6 +48,7 @@ public class AiSampler implements Sampler {
   }
 
   @Override
+  @SuppressWarnings("ReferenceEquality") // intentional identity check on the two percentage objects
   public SamplingResult shouldSample(
       Context parentContext,
       String traceId,

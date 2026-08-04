@@ -39,7 +39,7 @@ public class ProcessData implements ProcessInfo, JsonSerializable<ProcessData> {
 
   private static final Comparator<ProcessInfo> COMPARATOR =
       Comparator.nullsFirst(
-          Comparator.comparing(ProcessInfo::getName).thenComparing(ProcessInfo::getPid));
+          Comparator.comparing(ProcessInfo::getName).thenComparingInt(ProcessInfo::getPid));
 
   static {
     String spaceOrNull = " " + (char) 0;
