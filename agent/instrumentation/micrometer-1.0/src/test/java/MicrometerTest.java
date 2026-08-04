@@ -3,7 +3,6 @@
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
 
 import com.microsoft.applicationinsights.agent.bootstrap.MicrometerUtil;
 import io.micrometer.core.instrument.Clock;
@@ -13,18 +12,19 @@ import io.micrometer.core.instrument.FunctionCounter;
 import io.micrometer.core.instrument.FunctionTimer;
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.LongTaskTimer;
+import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Metrics;
+import io.micrometer.core.instrument.MockClock;
 import io.micrometer.core.instrument.TimeGauge;
 import io.micrometer.core.instrument.Timer;
-import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 import io.opentelemetry.javaagent.instrumentation.micrometer.ai.AzureMonitorMeterRegistry;
+import io.opentelemetry.javaagent.instrumentation.micrometer.ai.AzureMonitorRegistryConfig;
 import java.time.Duration;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
-import org.awaitility.Awaitility;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -38,10 +38,14 @@ class MicrometerTest {
   }
 
   @BeforeAll
-  static void setUp() {
-    // Increase default timeout to be resilient on slow CI runners (e.g. Windows).
-    // The step interval is 1000ms (set via JVM arg), so 30s gives ample margin.
-    Awaitility.setDefaultTimeout(Duration.ofSeconds(30));
+  static void applyInstrumentation() {
+    // loading Metrics triggers the agent's injection of AzureMonitorMeterRegistry
+    Metrics.globalRegistry.getRegistries();
+  }
+
+  @BeforeEach
+  void resetMeasurements() {
+    delegate.reset();
   }
 
   @Test
@@ -66,13 +70,12 @@ class MicrometerTest {
 
   @Test
   void shouldCaptureTimeGauge() {
-    // given
-    CompositeMeterRegistry registry = Metrics.globalRegistry;
-    TimeGauge.builder("test-time-gauge", "", MILLISECONDS, obj -> 11.0).register(registry);
+    // when
+    recordAndPublish(
+        registry ->
+            TimeGauge.builder("test-time-gauge", "", MILLISECONDS, obj -> 11.0).register(registry));
 
     // then
-    await().until(() -> getLastMeasurement("test-time-gauge") != null);
-
     AgentTestingMicrometerDelegate.Measurement measurement = getLastMeasurement("test-time-gauge");
     assertThat(measurement.value).isEqualTo(11);
     assertThat(measurement.count).isNull();
@@ -83,15 +86,10 @@ class MicrometerTest {
 
   @Test
   void shouldCaptureGauge() {
-    // given
-    CompositeMeterRegistry registry = Metrics.globalRegistry;
-
     // when
-    Gauge.builder("test-gauge", () -> 22.0).register(registry);
+    recordAndPublish(registry -> Gauge.builder("test-gauge", () -> 22.0).register(registry));
 
     // then
-    await().until(() -> getLastMeasurement("test-gauge") != null);
-
     AgentTestingMicrometerDelegate.Measurement measurement = getLastMeasurement("test-gauge");
     assertThat(measurement.value).isEqualTo(22);
     assertThat(measurement.count).isNull();
@@ -103,16 +101,14 @@ class MicrometerTest {
   @Disabled
   @Test
   void shouldCaptureCounter() {
-    // given
-    CompositeMeterRegistry registry = Metrics.globalRegistry;
-
     // when
-    Counter counter = Counter.builder("test-counter").register(registry);
-    counter.increment(3.3);
+    recordAndPublish(
+        registry -> {
+          Counter counter = Counter.builder("test-counter").register(registry);
+          counter.increment(3.3);
+        });
 
     // then
-    await().until(() -> getLastMeasurement("test-counter") != null);
-
     AgentTestingMicrometerDelegate.Measurement measurement = getLastMeasurement("test-counter");
     assertThat(measurement.value).isEqualTo(3.3);
     assertThat(measurement.count).isNull();
@@ -123,17 +119,15 @@ class MicrometerTest {
 
   @Test
   void shouldCaptureTimer() {
-    // given
-    CompositeMeterRegistry registry = Metrics.globalRegistry;
-    Timer timer = Timer.builder("test-timer").register(registry);
-
     // when
-    timer.record(Duration.ofMillis(44));
-    timer.record(Duration.ofMillis(55));
+    recordAndPublish(
+        registry -> {
+          Timer timer = Timer.builder("test-timer").register(registry);
+          timer.record(Duration.ofMillis(44));
+          timer.record(Duration.ofMillis(55));
+        });
 
     // then
-    await().until(() -> getLastMeasurement("test-timer") != null);
-
     AgentTestingMicrometerDelegate.Measurement measurement = getLastMeasurement("test-timer");
     assertThat(measurement.value).isEqualTo(99);
     assertThat(measurement.count).isEqualTo(2);
@@ -145,18 +139,16 @@ class MicrometerTest {
 
   @Test
   void shouldCaptureDistributionSummary() {
-    // given
-    CompositeMeterRegistry registry = Metrics.globalRegistry;
-    DistributionSummary distributionSummary =
-        DistributionSummary.builder("test-summary").register(registry);
-
     // when
-    distributionSummary.record(4.4);
-    distributionSummary.record(5.5);
+    recordAndPublish(
+        registry -> {
+          DistributionSummary distributionSummary =
+              DistributionSummary.builder("test-summary").register(registry);
+          distributionSummary.record(4.4);
+          distributionSummary.record(5.5);
+        });
 
     // then
-    await().until(() -> getLastMeasurement("test-summary") != null);
-
     AgentTestingMicrometerDelegate.Measurement measurement = getLastMeasurement("test-summary");
     assertThat(measurement.value).isEqualTo(9.9);
     assertThat(measurement.count).isEqualTo(2);
@@ -168,45 +160,15 @@ class MicrometerTest {
 
   @Test
   void shouldCaptureLongTaskTimer() {
-    // given
-    CompositeMeterRegistry registry = Metrics.globalRegistry;
-
     // when
-    LongTaskTimer timer = LongTaskTimer.builder("test-long-task-timer").register(registry);
-    ExecutorService executor = Executors.newCachedThreadPool();
-    executor.execute(
-        () -> {
-          timer.record(
-              () -> {
-                try {
-                  Thread.sleep(Long.MAX_VALUE);
-                } catch (InterruptedException e) {
-                  throw new RuntimeException(e);
-                }
-              });
-        });
-    executor.execute(
-        () -> {
-          timer.record(
-              () -> {
-                try {
-                  Thread.sleep(Long.MAX_VALUE);
-                } catch (InterruptedException e) {
-                  throw new RuntimeException(e);
-                }
-              });
+    recordAndPublish(
+        registry -> {
+          LongTaskTimer timer = LongTaskTimer.builder("test-long-task-timer").register(registry);
+          timer.start();
+          timer.start();
         });
 
     // then
-    await()
-        .untilAsserted(
-            () -> {
-              AgentTestingMicrometerDelegate.Measurement activeMeasurement =
-                  getLastMeasurement("test-long-task-timer_active");
-              assertThat(activeMeasurement).isNotNull();
-              assertThat(activeMeasurement.value).isEqualTo(2);
-            });
-
     AgentTestingMicrometerDelegate.Measurement activeMeasurement =
         getLastMeasurement("test-long-task-timer_active");
     assertThat(activeMeasurement.value).isEqualTo(2);
@@ -214,15 +176,6 @@ class MicrometerTest {
     assertThat(activeMeasurement.min).isNull();
     assertThat(activeMeasurement.max).isNull();
     assertThat(activeMeasurement.namespace).isNull();
-
-    await()
-        .untilAsserted(
-            () -> {
-              AgentTestingMicrometerDelegate.Measurement durationMeasurement =
-                  getLastMeasurement("test-long-task-timer_duration");
-              assertThat(durationMeasurement).isNotNull();
-              assertThat(durationMeasurement.value).isGreaterThan(50);
-            });
 
     AgentTestingMicrometerDelegate.Measurement durationMeasurement =
         getLastMeasurement("test-long-task-timer_duration");
@@ -235,15 +188,12 @@ class MicrometerTest {
 
   @Test
   void shouldCaptureFunctionCounter() {
-    // given
-    CompositeMeterRegistry registry = Metrics.globalRegistry;
-
     // when
-    FunctionCounter.builder("test-function-counter", "", obj -> 6.6).register(registry);
+    recordAndPublish(
+        registry ->
+            FunctionCounter.builder("test-function-counter", "", obj -> 6.6).register(registry));
 
     // then
-    await().until(() -> getLastMeasurement("test-function-counter") != null);
-
     AgentTestingMicrometerDelegate.Measurement measurements =
         getLastMeasurement("test-function-counter");
     assertThat(measurements.value).isEqualTo(6.6);
@@ -255,16 +205,13 @@ class MicrometerTest {
 
   @Test
   void shouldCaptureFunctionTimer() {
-    // given
-    CompositeMeterRegistry registry = Metrics.globalRegistry;
-
     // when
-    FunctionTimer.builder("test-function-timer", "", obj -> 2, obj -> 4.4, MILLISECONDS)
-        .register(registry);
+    recordAndPublish(
+        registry ->
+            FunctionTimer.builder("test-function-timer", "", obj -> 2, obj -> 4.4, MILLISECONDS)
+                .register(registry));
 
     // then
-    await().until(() -> getLastMeasurement("test-function-timer") != null);
-
     AgentTestingMicrometerDelegate.Measurement measurement =
         getLastMeasurement("test-function-timer");
     assertThat(measurement.value).isEqualTo(4.4);
@@ -274,14 +221,37 @@ class MicrometerTest {
     assertThat(measurement.namespace).isNull();
   }
 
+  // driven by a mock clock instead of the registry's background publisher: a step value that isn't
+  // polled in the very next step is reset to zero and lost forever, which made these tests flaky
+  // whenever a publish tick was delayed on a busy machine
+  private static void recordAndPublish(Consumer<MeterRegistry> recorder) {
+    MockClock clock = new MockClock();
+    AzureMonitorMeterRegistry registry = new AzureMonitorMeterRegistry(clock);
+    try {
+      recorder.accept(registry);
+      clock.add(AzureMonitorRegistryConfig.INSTANCE.step());
+    } finally {
+      // stops the background publisher and performs one final publish
+      registry.close();
+    }
+  }
+
   private static AgentTestingMicrometerDelegate.Measurement getLastMeasurement(String name) {
     List<AgentTestingMicrometerDelegate.Measurement> measurements =
         delegate.getMeasurements().stream()
             .filter(measurement -> measurement.name.equals(name) && measurement.value != 0)
             .collect(Collectors.toList());
-    if (measurements.isEmpty()) {
-      return null;
-    }
+    assertThat(measurements)
+        .as(
+            "non-zero measurements named \"%s\", out of everything published: %s",
+            name, describeAll())
+        .isNotEmpty();
     return measurements.get(measurements.size() - 1);
+  }
+
+  private static String describeAll() {
+    return delegate.getMeasurements().stream()
+        .map(measurement -> measurement.name + "=" + measurement.value)
+        .collect(Collectors.joining(", ", "[", "]"));
   }
 }
