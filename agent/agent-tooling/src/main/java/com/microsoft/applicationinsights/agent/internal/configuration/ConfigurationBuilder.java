@@ -1085,7 +1085,7 @@ public class ConfigurationBuilder {
     }
   }
 
-  static class JsonOrigin {
+  private static class JsonOrigin {
 
     private static final JsonOrigin ENV_VAR =
         new JsonOrigin("env var " + APPLICATIONINSIGHTS_CONFIGURATION_CONTENT);
@@ -1220,7 +1220,7 @@ public class ConfigurationBuilder {
     return "The configuration " + location + " contains malformed JSON";
   }
 
-  static String getJsonEncodingExceptionMessage(String message, JsonOrigin jsonOrigin) {
+  private static String getJsonEncodingExceptionMessage(String message, JsonOrigin jsonOrigin) {
     if (message != null && !message.isEmpty()) {
       return message;
     }

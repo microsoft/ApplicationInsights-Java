@@ -141,7 +141,7 @@ public class Configuration {
     }
   }
 
-  enum IncludeExclude {
+  private enum IncludeExclude {
     INCLUDE,
     EXCLUDE;
 
@@ -926,7 +926,7 @@ public class Configuration {
     public List<String> metricNames = new ArrayList<>();
     public List<ProcessorAttribute> attributes = new ArrayList<>();
 
-    public void validate(ProcessorType processorType, IncludeExclude includeExclude) {
+    private void validate(ProcessorType processorType, IncludeExclude includeExclude) {
       if (matchType == null) {
         throw new FriendlyException(
             processorType.anX
