@@ -1220,7 +1220,7 @@ public class ConfigurationBuilder {
     return "The configuration " + location + " contains malformed JSON";
   }
 
-  static String getJsonEncodingExceptionMessage(String message, JsonOrigin jsonOrigin) {
+  private static String getJsonEncodingExceptionMessage(String message, JsonOrigin jsonOrigin) {
     if (message != null && !message.isEmpty()) {
       return message;
     }
