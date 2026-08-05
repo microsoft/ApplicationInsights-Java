@@ -31,12 +31,15 @@
     <cve>CVE-2024-35255</cve>
   </suppress>
   <suppress>
-    <notes>
+    <notes><![CDATA[
       CVE-2026-33117 affects azure-security-keyvault-keys (fixed in 4.10.6), which we do not depend on.
       NVD maps it to the generic cpe:2.3:a:microsoft:azure_sdk_for_java "up to (excluding) 4.10.6",
       so it matches every com.azure artifact whose own (unrelated) version is below 4.10.6,
       e.g. azure-core 1.58.1, azure-core-http-netty 1.16.5, azure-identity 1.18.3, azure-json 1.5.1.
-    </notes>
+      Those version lines will never reach 4.10.6, so upgrading cannot clear this finding.
+      If azure-security-keyvault-keys is ever added as a dependency, revisit this suppression.
+    ]]></notes>
+    <packageUrl regex="true">^pkg:maven/com\.azure/(?!azure-security-keyvault-keys@).*$</packageUrl>
     <cve>CVE-2026-33117</cve>
   </suppress>
   <suppress>
