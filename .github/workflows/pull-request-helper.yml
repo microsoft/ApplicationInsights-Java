@@ -68,7 +68,5 @@ jobs:
           git commit -m "./gradlew resolveAndLockAll --write-locks"
 
       - name: Push
-        env:
-          GH_TOKEN: ${{ github.token }}
         run: |
           git push
