@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration version="2.0" label="Diagnosis Only" description="Minimal JFR configuration enabling only the events consumed by the diagnosis analyses and report generation. Event settings are aligned with diagnostic-cpu-profile.jfc." provider="Microsoft">
+
+  <event name="jdk.ExecutionSample">
+    <setting name="enabled">true</setting>
+    <setting name="period">10 ms</setting>
+  </event>
+
+  <event name="jdk.NativeMethodSample">
+    <setting name="enabled">true</setting>
+    <setting name="period">20 ms</setting>
+  </event>
+  <event name="jdk.CPULoad">
+    <setting name="enabled">true</setting>
+    <setting name="period">1000 ms</setting>
+  </event>
+  <event name="jdk.CPUInformation">
+    <setting name="enabled">true</setting>
+    <setting name="period">beginChunk</setting>
+  </event>
+
+  <event name="jdk.ThreadContextSwitchRate">
+    <setting name="enabled">true</setting>
+    <setting name="period">10 s</setting>
+  </event>
+  <event name="jdk.GarbageCollection">
+    <setting name="enabled">true</setting>
+    <setting name="threshold">0 ms</setting>
+  </event>
+
+  <event name="jdk.YoungGarbageCollection">
+    <setting name="enabled">true</setting>
+    <setting name="threshold">0 ms</setting>
+  </event>
+
+  <event name="jdk.OldGarbageCollection">
+    <setting name="enabled">true</setting>
+    <setting name="threshold">0 ms</setting>
+  </event>
+
+  
+  <event name="jdk.GCConfiguration">
+    <setting name="enabled">true</setting>
+    <setting name="period">everyChunk</setting>
+  </event>
+
+  
+  <event name="jdk.GCHeapConfiguration">
+    <setting name="enabled">true</setting>
+    <setting name="period">beginChunk</setting>
+  </event>
+
+  
+  <event name="jdk.GCHeapSummary">
+    <setting name="enabled">true</setting>
+  </event>
+
+  
+  
+  <event name="jdk.JavaMonitorEnter">
+    <setting name="enabled">true</setting>
+    <setting name="stackTrace">true</setting>
+    <setting name="threshold">1 ms</setting>
+  </event>
+
+  <event name="jdk.JavaMonitorWait">
+    <setting name="enabled">true</setting>
+    <setting name="stackTrace">true</setting>
+    <setting name="threshold">1 ms</setting>
+  </event>
+
+  <event name="jdk.ThreadPark">
+    <setting name="enabled">true</setting>
+    <setting name="stackTrace">true</setting>
+    <setting name="threshold">10 ms</setting>
+  </event>
+
+  <event name="jdk.ThreadSleep">
+    <setting name="enabled">true</setting>
+    <setting name="stackTrace">true</setting>
+    <setting name="threshold">10 ms</setting>
+  </event>
+
+  
+  <event name="jdk.ThreadStart">
+    <setting name="enabled">true</setting>
+    <setting name="stackTrace">true</setting>
+  </event>
+
+  <event name="jdk.ThreadEnd">
+    <setting name="enabled">true</setting>
+  </event>
+
+  
+  
+  <event name="jdk.FileRead">
+    <setting name="enabled">true</setting>
+    <setting name="stackTrace">true</setting>
+    <setting name="threshold">1 ns</setting>
+    <setting name="throttle">300/s</setting>
+  </event>
+
+  <event name="jdk.FileWrite">
+    <setting name="enabled">true</setting>
+    <setting name="stackTrace">true</setting>
+    <setting name="threshold">1 ns</setting>
+    <setting name="throttle">300/s</setting>
+  </event>
+
+  <event name="jdk.SocketRead">
+    <setting name="enabled">true</setting>
+    <setting name="stackTrace">true</setting>
+    <setting name="threshold">1 ns</setting>
+    <setting name="throttle">300/s</setting>
+  </event>
+
+  <event name="jdk.SocketWrite">
+    <setting name="enabled">true</setting>
+    <setting name="stackTrace">true</setting>
+    <setting name="threshold">1 ns</setting>
+    <setting name="throttle">300/s</setting>
+  </event>
+
+  
+  
+  <event name="com.microsoft.applicationinsights.diagnostics.jfr.Telemetry">
+    <setting name="enabled">true</setting>
+    <setting name="period">100 ms</setting>
+    <setting name="threshold">0 ms</setting>
+  </event>
+
+  <event name="com.microsoft.applicationinsights.diagnostics.jfr.CGroupData">
+    <setting name="enabled">true</setting>
+    <setting name="period">beginChunk</setting>
+  </event>
+
+  
+  <event name="com.microsoft.applicationinsights.diagnostics.jfr.MachineInfo">
+    <setting name="enabled">true</setting>
+    <setting name="period">beginChunk</setting>
+  </event>
+
+  
+  <event name="com.microsoft.applicationinsights.diagnostics.jfr.AlertBreach">
+    <setting name="enabled">true</setting>
+    <setting name="period">beginChunk</setting>
+  </event>
+
+  
+  <event name="jdk.ActiveRecording">
+    <setting name="enabled">true</setting>
+  </event>
+
+  <event name="jdk.ActiveSetting">
+    <setting name="enabled">true</setting>
+  </event>
+
+  <event name="jdk.DataLoss">
+    <setting name="enabled">true</setting>
+  </event>
+
+  <event name="jdk.DumpReason">
+    <setting name="enabled">true</setting>
+  </event>
+
+</configuration>

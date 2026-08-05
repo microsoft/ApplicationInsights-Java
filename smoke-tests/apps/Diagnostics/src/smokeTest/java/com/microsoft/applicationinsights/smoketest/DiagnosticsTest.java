@@ -41,4 +41,25 @@ abstract class DiagnosticsTest {
       super(testing);
     }
   }
+
+  @UseAgent("applicationinsights-continuous.json")
+  @Environment(JAVA_11)
+  static class ContinuousProfilingJava11Test extends DiagnosticsTest {
+
+    @RegisterExtension
+    static final SmokeTestExtension testing =
+        BASE_BUILDER.setProfilerEndpoint(ProfilerState.manualprofile).build();
+
+    ContinuousProfilingJava11Test() {
+      super(testing);
+    }
+
+    @Test
+    @TargetUri("/")
+    void continuousRecordingHasBreachDiagnostics() throws Exception {
+      String url = testing.getBaseUrl() + "/continuousJfrFileHasDiagnostics";
+      String response = HttpHelper.get(url, "", emptyMap());
+      Assertions.assertTrue(Boolean.parseBoolean(response));
+    }
+  }
 }
