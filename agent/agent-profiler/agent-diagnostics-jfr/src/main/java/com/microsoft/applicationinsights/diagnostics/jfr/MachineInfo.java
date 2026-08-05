@@ -16,6 +16,28 @@ import jdk.jfr.Name;
 import jdk.jfr.Period;
 import jdk.jfr.StackTrace;
 
+/**
+ * Machine-level diagnostic event.
+ *
+ * <p><b>Compatibility contract.</b> The JFR wire event name ({@link #NAME}) is an explicitly
+ * versioned identifier. It was renamed from {@link #LEGACY_NAME} ("MachineStats") to "MachineInfo".
+ * Because the event name is the key by which a reader locates the event, changing it is a
+ * compatibility boundary that {@link #SCHEMA_VERSION} (payload versioning) cannot bridge:
+ *
+ * <ul>
+ *   <li><b>Read side (backward compatibility):</b> readers must look up {@link #NAME} and fall back
+ *       to {@link #LEGACY_NAME} so that recordings produced by older agents (which carry a
+ *       "MachineStats" event) can still be discovered and scored.
+ *   <li><b>Write side (forward compatibility):</b> agents at this version and later emit only
+ *       {@link #NAME}. Consumers/backends and any custom JFC files must therefore be updated to
+ *       recognize "MachineInfo"; older consumers that only know "MachineStats" will not find the
+ *       event. This is a deliberate, documented minimum-consumer-version requirement rather than a
+ *       silent change.
+ * </ul>
+ *
+ * <p>Once the write side no longer needs to interoperate with the old name, {@link #LEGACY_NAME}
+ * and its read-side fallback can be removed.
+ */
 @SuppressWarnings("Java8ApiChecker") // JFR APIs require Java 11+, but agent targets Java 8 bytecode
 @Name("com.microsoft.applicationinsights.diagnostics.jfr.MachineInfo")
 @Label("MachineInfo")

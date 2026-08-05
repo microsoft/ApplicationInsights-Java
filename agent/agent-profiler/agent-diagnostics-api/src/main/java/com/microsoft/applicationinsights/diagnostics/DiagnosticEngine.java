@@ -24,9 +24,16 @@ public interface DiagnosticEngine {
    * <p>Used with continuous profiling, where a circular buffer is dumped on demand rather than a
    * forward-looking recording being created per breach. Registering the periodic diagnostic
    * emitters up front ensures diagnostic events populate the continuous recording buffer, so they
-   * are present in any snapshot that is dumped. Defaults to a no-op.
+   * are present in any snapshot that is dumped.
+   *
+   * @return {@code true} if continuous diagnostics were started successfully; {@code false} if this
+   *     engine does not support continuous diagnostics or startup failed. The default
+   *     implementation returns {@code false} so alternate implementations do not silently appear to
+   *     support continuous diagnostics while doing nothing.
    */
-  default void startContinuousDiagnostics() {}
+  default boolean startContinuousDiagnostics() {
+    return false;
+  }
 
   /** Stop collecting diagnostics continuously. Defaults to a no-op. */
   default void stopContinuousDiagnostics() {}

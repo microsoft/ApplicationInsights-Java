@@ -81,12 +81,16 @@ class ProfilerContinuousProfilingTest {
     UploadService uploadService = mock(UploadService.class);
     FlightRecorderConnection frc = mock(FlightRecorderConnection.class);
     executor = Executors.newScheduledThreadPool(1);
+
+    Instant now = Instant.parse("2025-01-01T00:00:00Z");
+    // The continuous recording has been running for longer than maxAge, so the circular buffer is
+    // already full and the reported window covers the whole maxAge window.
+    timeSource.setNow(now.minusSeconds(120));
     profiler.initialize(uploadService, executor, frc);
 
     // Continuous recording is started up-front and kept running.
     verify(continuousRecording).start();
 
-    Instant now = Instant.parse("2025-01-01T00:00:00Z");
     timeSource.setNow(now);
     UploadListener noOp = index -> {};
 
@@ -123,12 +127,15 @@ class ProfilerContinuousProfilingTest {
     UploadService uploadService = mock(UploadService.class);
     FlightRecorderConnection frc = mock(FlightRecorderConnection.class);
     executor = Executors.newScheduledThreadPool(1);
+
+    Instant now = Instant.parse("2025-01-01T00:00:00Z");
+    // The continuous recording has been running for longer than maxAge, so the buffer is full.
+    timeSource.setNow(now.minusSeconds(120));
     profiler.initialize(uploadService, executor, frc);
 
     verify(continuousRecording).start();
 
-    timeSource.setNow(Instant.parse("2025-01-01T00:00:00Z"));
-    Instant now = Instant.parse("2025-01-01T00:00:00Z");
+    timeSource.setNow(now);
     UploadListener noOp = index -> {};
 
     // The requested duration (90s) exceeds the 60s buffer, so the whole circular buffer is dumped
@@ -141,6 +148,45 @@ class ProfilerContinuousProfilingTest {
     // The captured window is the whole 60s buffer, so the profile is timestamped at now - 60s.
     verify(uploadService)
         .upload(any(), eq(now.minusSeconds(60).toEpochMilli()), any(File.class), any());
+    assertThat(profiler.isRecordingActive()).isFalse();
+  }
+
+  @Test
+  void profileRequestSoonAfterStartupReportsActualCapturedWindow() throws Exception {
+    Configuration.ProfilerConfiguration config = new Configuration.ProfilerConfiguration();
+    config.enableContinuousProfiling = true;
+    config.continuousProfilingMaxAgeSeconds = 60;
+    config.globalCooldownSeconds = 0;
+
+    Recording continuousRecording = mock(Recording.class);
+    Profiler profiler =
+        new Profiler(config, tempDir, timeSource) {
+          @Override
+          protected Recording createRecording(RecordingOptions o, RecordingConfiguration c) {
+            return continuousRecording;
+          }
+        };
+
+    UploadService uploadService = mock(UploadService.class);
+    FlightRecorderConnection frc = mock(FlightRecorderConnection.class);
+    executor = Executors.newScheduledThreadPool(1);
+
+    Instant start = Instant.parse("2025-01-01T00:00:00Z");
+    timeSource.setNow(start);
+    profiler.initialize(uploadService, executor, frc);
+
+    verify(continuousRecording).start();
+
+    // Only 10s after startup the buffer holds far less than the 60s maxAge, so the reported window
+    // must be clamped to the actual recording start rather than now - 60s.
+    Instant now = start.plusSeconds(10);
+    timeSource.setNow(now);
+    UploadListener noOp = index -> {};
+
+    profiler.profileAndUpload(manualBreach(10), Duration.ofSeconds(10), noOp);
+
+    verify(continuousRecording).dump(anyString());
+    verify(uploadService).upload(any(), eq(start.toEpochMilli()), any(File.class), any());
     assertThat(profiler.isRecordingActive()).isFalse();
   }
 }

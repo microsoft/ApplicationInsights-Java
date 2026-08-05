@@ -88,18 +88,31 @@ public class CodeOptimizerDiagnosticEngineJfr implements DiagnosticEngine {
   }
 
   @Override
-  public void startContinuousDiagnostics() {
+  public boolean startContinuousDiagnostics() {
     if (!isOsSupported()) {
       logger.warn("Code Optimizer diagnostics is not supported on this operating system");
-      return;
+      return false;
     }
 
     synchronized (continuousLifecycleLock) {
-      continuous.set(true);
+      if (continuous.get()) {
+        // Idempotent: the emitters are already registered, so a repeated start is a no-op.
+        logger.debug("Continuous Code Optimizer diagnostics already started");
+        return true;
+      }
       logger.debug("Starting continuous Code Optimizer diagnostics");
-      // Registers the periodic diagnostic emitters (Telemetry, CGroupData) so they continuously
-      // populate the continuous profiling circular buffer.
-      startDiagnosticCycle();
+      try {
+        // Registers the periodic diagnostic emitters (Telemetry, CGroupData) so they continuously
+        // populate the continuous profiling circular buffer.
+        startDiagnosticCycle();
+      } catch (RuntimeException e) {
+        // Publish the active state only after a successful startup; on failure leave continuous
+        // false so the engine does not report continuous mode while no emitters are running.
+        logger.error("Failed to start continuous Code Optimizer diagnostics", e);
+        return false;
+      }
+      continuous.set(true);
+      return true;
     }
   }
 
@@ -110,7 +123,11 @@ public class CodeOptimizerDiagnosticEngineJfr implements DiagnosticEngine {
     }
 
     synchronized (continuousLifecycleLock) {
-      continuous.set(false);
+      if (!continuous.getAndSet(false)) {
+        // Idempotent: continuous diagnostics were not running, so there is nothing to tear down.
+        logger.debug("Continuous Code Optimizer diagnostics already stopped");
+        return;
+      }
       logger.debug("Stopping continuous Code Optimizer diagnostics");
       endDiagnosticCycle();
     }
