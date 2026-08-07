@@ -5,14 +5,12 @@ package com.microsoft.applicationinsights.agent.internal.profiler.triggers;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.azure.monitor.opentelemetry.autoconfigure.implementation.models.TelemetryEventData;
+import com.azure.monitor.opentelemetry.autoconfigure.implementation.builders.EventTelemetryBuilder;
 import com.azure.monitor.opentelemetry.autoconfigure.implementation.models.TelemetryItem;
-import com.azure.monitor.opentelemetry.autoconfigure.implementation.statsbeat.StatsbeatModule;
 import com.microsoft.applicationinsights.agent.internal.configuration.GcReportingLevel;
 import com.microsoft.applicationinsights.agent.internal.profiler.testutil.TestTimeSource;
 import com.microsoft.applicationinsights.agent.internal.sampling.SamplerUtil;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
-import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryObservers;
 import com.microsoft.applicationinsights.alerting.AlertingSubsystem;
 import com.microsoft.applicationinsights.alerting.alert.AlertBreach;
 import com.microsoft.applicationinsights.alerting.analysis.TimeSource;
@@ -24,10 +22,7 @@ import com.microsoft.gcmonitor.GcMonitorFactory;
 import com.microsoft.gcmonitor.MemoryManagement;
 import com.microsoft.gcmonitor.garbagecollectors.GarbageCollector;
 import com.microsoft.gcmonitor.memorypools.MemoryPool;
-import io.opentelemetry.sdk.resources.Resource;
 import java.lang.management.MemoryUsage;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -35,79 +30,58 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.function.Consumer;
 import javax.management.MBeanServerConnection;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 class GcEventInitTest {
 
   @Test
-  void gcEventIsEmittedWithSampleRateThatBypassesIngestionSampling()
-      throws ExecutionException, InterruptedException, TimeoutException {
+  void gcEventIsEmittedWithSampleRateThatBypassesIngestionSampling() {
 
-    CompletableFuture<TelemetryItem> gcEventFuture = new CompletableFuture<>();
-    Consumer<TelemetryItem> observer =
-        telemetryItem -> {
-          if (telemetryItem.getData().getBaseData() instanceof TelemetryEventData
-              && "GcEvent"
-                  .equals(((TelemetryEventData) telemetryItem.getData().getBaseData()).getName())) {
-            gcEventFuture.complete(telemetryItem);
+    TelemetryClient telemetryClient = Mockito.mock(TelemetryClient.class);
+    Mockito.when(telemetryClient.newEventTelemetryBuilder())
+        .thenReturn(EventTelemetryBuilder.create());
+
+    CompletableFuture<AlertBreach> alertFuture = new CompletableFuture<>();
+    TestTimeSource timeSource = new TestTimeSource();
+    AlertingSubsystem alertingSubsystem = getAlertingSubsystem(alertFuture, timeSource);
+
+    GcMonitorFactory factory =
+        new GcMonitorFactory() {
+          @Override
+          public MemoryManagement monitorSelf(
+              ExecutorService executorService, GcEventConsumer consumer) {
+            consumer.accept(fullyMockedGcEvent());
+            return null;
+          }
+
+          @Override
+          public MemoryManagement monitor(
+              MBeanServerConnection connection,
+              ExecutorService executorService,
+              GcEventConsumer consumer) {
+            return null;
           }
         };
-    TelemetryObservers.INSTANCE.getObservers().add(observer);
 
+    ExecutorService executorService = Executors.newSingleThreadExecutor();
     try {
-      CompletableFuture<AlertBreach> alertFuture = new CompletableFuture<>();
-      TestTimeSource timeSource = new TestTimeSource();
-      AlertingSubsystem alertingSubsystem = getAlertingSubsystem(alertFuture, timeSource);
+      GcEventInit.init(
+          alertingSubsystem,
+          telemetryClient,
+          executorService,
+          new GcEventInit.GcEventMonitorConfiguration(GcReportingLevel.ALL),
+          factory);
 
-      GcMonitorFactory factory =
-          new GcMonitorFactory() {
-            @Override
-            public MemoryManagement monitorSelf(
-                ExecutorService executorService, GcEventConsumer consumer) {
-              consumer.accept(fullyMockedGcEvent());
-              return null;
-            }
+      ArgumentCaptor<TelemetryItem> captor = ArgumentCaptor.forClass(TelemetryItem.class);
+      Mockito.verify(telemetryClient).trackAsync(captor.capture());
 
-            @Override
-            public MemoryManagement monitor(
-                MBeanServerConnection connection,
-                ExecutorService executorService,
-                GcEventConsumer consumer) {
-              return null;
-            }
-          };
-
-      TelemetryClient telemetryClient =
-          TelemetryClient.builder()
-              .setCustomDimensions(new HashMap<>())
-              .setMetricFilters(new ArrayList<>())
-              .setStatsbeatModule(new StatsbeatModule(response -> {}))
-              .setConnectionStrings(
-                  "InstrumentationKey=00000000-0000-0000-0000-000000000000;IngestionEndpoint=https://test.in.applicationinsights.azure.com/")
-              .build();
-      telemetryClient.setOtelResource(Resource.empty());
-
-      ExecutorService executorService = Executors.newSingleThreadExecutor();
-      try {
-        GcEventInit.init(
-            alertingSubsystem,
-            telemetryClient,
-            executorService,
-            new GcEventInit.GcEventMonitorConfiguration(GcReportingLevel.ALL),
-            factory);
-
-        TelemetryItem gcEvent = gcEventFuture.get(30, TimeUnit.SECONDS);
-
-        assertThat(gcEvent.getSampleRate())
-            .isEqualTo((float) SamplerUtil.SAMPLE_RATE_TO_DISABLE_INGESTION_SAMPLING);
-      } finally {
-        executorService.shutdownNow();
-      }
+      assertThat(captor.getValue().getSampleRate())
+          .isEqualTo((float) SamplerUtil.SAMPLE_RATE_TO_DISABLE_INGESTION_SAMPLING);
     } finally {
-      TelemetryObservers.INSTANCE.getObservers().remove(observer);
+      executorService.shutdownNow();
     }
   }
 
