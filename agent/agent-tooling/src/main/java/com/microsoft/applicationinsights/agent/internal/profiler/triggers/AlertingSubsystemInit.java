@@ -16,6 +16,7 @@ import com.microsoft.applicationinsights.agent.internal.configuration.GcReportin
 import com.microsoft.applicationinsights.agent.internal.profiler.Profiler;
 import com.microsoft.applicationinsights.agent.internal.profiler.ProfilerControl;
 import com.microsoft.applicationinsights.agent.internal.profiler.upload.ServiceProfilerIndex;
+import com.microsoft.applicationinsights.agent.internal.sampling.SamplerUtil;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryObservers;
 import com.microsoft.applicationinsights.alerting.AlertingSubsystem;
@@ -149,6 +150,7 @@ public class AlertingSubsystemInit {
     EventTelemetryBuilder telemetryBuilder = telemetryClient.newEventTelemetryBuilder();
 
     telemetryBuilder.setName("ServiceProfilerIndex");
+    telemetryBuilder.setSampleRate((float) SamplerUtil.SAMPLE_RATE_TO_DISABLE_INGESTION_SAMPLING);
 
     for (Map.Entry<String, String> entry : serviceProfilerIndex.getProperties().entrySet()) {
       telemetryBuilder.addProperty(entry.getKey(), entry.getValue());
@@ -170,6 +172,7 @@ public class AlertingSubsystemInit {
     MessageTelemetryBuilder telemetryBuilder = telemetryClient.newMessageTelemetryBuilder();
 
     telemetryBuilder.setMessage(message);
+    telemetryBuilder.setSampleRate((float) SamplerUtil.SAMPLE_RATE_TO_DISABLE_INGESTION_SAMPLING);
     telemetryBuilder.setTime(FormattedTime.offSetDateTimeFromNow());
 
     telemetryClient.trackAsync(telemetryBuilder.build());

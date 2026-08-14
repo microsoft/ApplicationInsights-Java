@@ -7,6 +7,7 @@ import com.azure.monitor.opentelemetry.autoconfigure.implementation.builders.Eve
 import com.azure.monitor.opentelemetry.autoconfigure.implementation.utils.FormattedTime;
 import com.microsoft.applicationinsights.agent.internal.configuration.GcReportingLevel;
 import com.microsoft.applicationinsights.agent.internal.profiler.util.ServiceLoaderUtil;
+import com.microsoft.applicationinsights.agent.internal.sampling.SamplerUtil;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import com.microsoft.applicationinsights.alerting.AlertingSubsystem;
 import com.microsoft.applicationinsights.alerting.config.AlertMetricType;
@@ -125,6 +126,7 @@ class GcEventInit {
     EventTelemetryBuilder telemetryBuilder = telemetryClient.newEventTelemetryBuilder();
 
     telemetryBuilder.setName("GcEvent");
+    telemetryBuilder.setSampleRate((float) SamplerUtil.SAMPLE_RATE_TO_DISABLE_INGESTION_SAMPLING);
 
     telemetryBuilder.addProperty("collector", event.getCollector().getName());
     telemetryBuilder.addProperty("type", event.getGcCause());

@@ -12,7 +12,7 @@ import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 
 public class SamplerUtil {
 
-  private static final double SAMPLE_RATE_TO_DISABLE_INGESTION_SAMPLING = 99.99;
+  public static final double SAMPLE_RATE_TO_DISABLE_INGESTION_SAMPLING = 99.99;
 
   private static final Cache<Double, SamplingResult> recordAndSampleWithSampleRateMap =
       Cache.bounded(100);
