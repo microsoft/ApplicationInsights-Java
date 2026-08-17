@@ -1,0 +1,17 @@
+{
+  "role" : {
+    "name" : "testrolename",
+    "instance" : "testroleinstance"
+  },
+  "sampling" : {
+    "percentage" : 100
+  },
+  "preview" : {
+    "profiler" : {
+      "enabled" : true,
+      "enableContinuousProfiling" : true,
+      "continuousProfilingMaxAgeSeconds" : 120,
+      "enableDiagnostics" : true
+    }
+  }
+}

@@ -10,7 +10,7 @@ import com.microsoft.applicationinsights.diagnostics.DiagnosisResult;
 import com.microsoft.applicationinsights.diagnostics.DiagnosticEngine;
 import com.microsoft.applicationinsights.diagnostics.jfr.AlertBreachJfrEvent;
 import com.microsoft.applicationinsights.diagnostics.jfr.CodeOptimizerDiagnosticsJfrInit;
-import com.microsoft.applicationinsights.diagnostics.jfr.MachineStats;
+import com.microsoft.applicationinsights.diagnostics.jfr.MachineInfo;
 import com.microsoft.applicationinsights.diagnostics.jfr.SystemStatsProvider;
 import java.io.IOException;
 import java.io.StringWriter;
@@ -20,6 +20,8 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,7 +37,16 @@ public class CodeOptimizerDiagnosticEngineJfr implements DiagnosticEngine {
   private final ScheduledExecutorService executorService;
   private final Semaphore semaphore = new Semaphore(1, false);
   private final Path cgroupBasePath;
-  private int thisPid;
+  private final AtomicInteger thisPid = new AtomicInteger();
+
+  // When true, periodic diagnostic emitters are registered continuously (for continuous profiling)
+  // and must not be torn down by an individual performDiagnosis cycle.
+  private final AtomicBoolean continuous = new AtomicBoolean(false);
+
+  // Guards transitions of the continuous flag against the teardown performed at the end of a
+  // (non-continuous) diagnostic cycle, so that a breach processed during startup cannot tear down
+  // the continuously-registered emitters once continuous profiling has been enabled.
+  private final Object continuousLifecycleLock = new Object();
 
   public CodeOptimizerDiagnosticEngineJfr(
       ScheduledExecutorService executorService, Path cgroupBasePath) {
@@ -45,42 +56,114 @@ public class CodeOptimizerDiagnosticEngineJfr implements DiagnosticEngine {
 
   @Override
   public void init(int thisPid) {
-    if (!CodeOptimizerDiagnosticsJfrInit.isOsSupported()) {
+    if (!isOsSupported()) {
       logger.warn("Code Optimizer diagnostics is not supported on this operating system");
       return;
     }
 
-    this.thisPid = thisPid;
+    this.thisPid.set(thisPid);
 
     logger.debug("Initialising Code Optimizer Diagnostic Engine");
     CodeOptimizerDiagnosticsJfrInit.initFeature(thisPid, cgroupBasePath);
     logger.debug("Code Optimizer Diagnostic Engine Initialised");
   }
 
-  private static void startDiagnosticCycle(int thisPid, Path cgroupBasePath) {
-    logger.debug("Starting Code Optimizer Diagnostic Cycle");
-    CodeOptimizerDiagnosticsJfrInit.initFeature(thisPid, cgroupBasePath);
-    CodeOptimizerDiagnosticsJfrInit.start(thisPid, cgroupBasePath);
+  // visible for testing
+  protected boolean isOsSupported() {
+    return CodeOptimizerDiagnosticsJfrInit.isOsSupported();
   }
 
-  private static void endDiagnosticCycle() {
+  // visible for testing
+  protected void startDiagnosticCycle() {
+    logger.debug("Starting Code Optimizer Diagnostic Cycle");
+    int pid = thisPid.get();
+    CodeOptimizerDiagnosticsJfrInit.initFeature(pid, cgroupBasePath);
+    CodeOptimizerDiagnosticsJfrInit.start(pid, cgroupBasePath);
+  }
+
+  // visible for testing
+  protected void endDiagnosticCycle() {
     logger.debug("Ending Code Optimizer Diagnostic Cycle");
     CodeOptimizerDiagnosticsJfrInit.stop();
   }
 
   @Override
+  public boolean startContinuousDiagnostics() {
+    if (!isOsSupported()) {
+      logger.warn("Code Optimizer diagnostics is not supported on this operating system");
+      return false;
+    }
+
+    synchronized (continuousLifecycleLock) {
+      if (continuous.get()) {
+        // Idempotent: the emitters are already registered, so a repeated start is a no-op.
+        logger.debug("Continuous Code Optimizer diagnostics already started");
+        return true;
+      }
+      logger.debug("Starting continuous Code Optimizer diagnostics");
+      try {
+        // Registers the periodic diagnostic emitters (Telemetry, CGroupData) so they continuously
+        // populate the continuous profiling circular buffer.
+        startDiagnosticCycle();
+      } catch (RuntimeException e) {
+        // Publish the active state only after a successful startup; on failure leave continuous
+        // false so the engine does not report continuous mode while no emitters are running.
+        logger.error("Failed to start continuous Code Optimizer diagnostics", e);
+        return false;
+      }
+      continuous.set(true);
+      return true;
+    }
+  }
+
+  @Override
+  public void stopContinuousDiagnostics() {
+    if (!isOsSupported()) {
+      return;
+    }
+
+    synchronized (continuousLifecycleLock) {
+      if (!continuous.getAndSet(false)) {
+        // Idempotent: continuous diagnostics were not running, so there is nothing to tear down.
+        logger.debug("Continuous Code Optimizer diagnostics already stopped");
+        return;
+      }
+      logger.debug("Stopping continuous Code Optimizer diagnostics");
+      endDiagnosticCycle();
+    }
+  }
+
+  @Override
   public Future<DiagnosisResult<?>> performDiagnosis(AlertBreach alert) {
+    if (continuous.get()) {
+      // Periodic diagnostics are already running continuously, so we must not start or stop the
+      // diagnostic cycle here (doing so would remove the continuously-registered emitters). Just
+      // emit the point-in-time breach information.
+      CompletableFuture<DiagnosisResult<?>> diagnosisResultCompletableFuture =
+          new CompletableFuture<>();
+      try {
+        emitInfo(alert);
+        diagnosisResultCompletableFuture.complete(null);
+      } catch (RuntimeException e) {
+        // The caller discards the returned future, so log here to avoid silently swallowing the
+        // failure to emit breach diagnostics.
+        logger.error("Failed to emit continuous diagnostic breach information", e);
+        diagnosisResultCompletableFuture.completeExceptionally(e);
+      }
+      return diagnosisResultCompletableFuture;
+    }
+
     CompletableFuture<DiagnosisResult<?>> diagnosisResultCompletableFuture =
         new CompletableFuture<>();
     try {
       if (semaphore.tryAcquire(SEMAPHORE_TIMEOUT_IN_SEC, TimeUnit.SECONDS)) {
-        emitInfo(alert, cgroupBasePath);
+        emitInfo(alert);
 
         long profileDurationInSec = alert.getAlertConfiguration().getProfileDurationSeconds();
 
         long end = profileDurationInSec - TIME_BEFORE_END_OF_PROFILE_TO_EMIT_EVENT;
 
-        startDiagnosticCycle(thisPid, cgroupBasePath);
+        startDiagnosticCycle();
 
         scheduleEmittingAlertBreachEvent(alert, end);
 
@@ -105,13 +188,25 @@ public class CodeOptimizerDiagnosticEngineJfr implements DiagnosticEngine {
     executorService.schedule(
         () -> {
           try {
-            emitInfo(alert, cgroupBasePath);
+            emitInfo(alert);
 
             // We do not return a result atm
             diagnosisResultCompletableFuture.complete(null);
 
-            logger.debug("Shutting down diagnostic cycle");
-            endDiagnosticCycle();
+            // Only tear down the diagnostic cycle if continuous diagnostics has not been enabled in
+            // the meantime. If a breach is processed during startup, before
+            // startContinuousDiagnostics
+            // has run, this shutdown would otherwise permanently stop the continuously-registered
+            // emitters once continuous profiling starts. The lock ensures the check-and-stop cannot
+            // interleave with a concurrent startContinuousDiagnostics.
+            synchronized (continuousLifecycleLock) {
+              if (continuous.get()) {
+                logger.debug("Continuous diagnostics is active; leaving diagnostic cycle running");
+              } else {
+                logger.debug("Shutting down diagnostic cycle");
+                endDiagnosticCycle();
+              }
+            }
           } catch (RuntimeException e) {
             logger.error("Failed to shutdown cleanly", e);
           } finally {
@@ -127,7 +222,7 @@ public class CodeOptimizerDiagnosticEngineJfr implements DiagnosticEngine {
     executorService.schedule(
         () -> {
           try {
-            emitInfo(alert, cgroupBasePath);
+            emitInfo(alert);
           } catch (RuntimeException e) {
             logger.error("Failed to emit breach", e);
           }
@@ -136,16 +231,17 @@ public class CodeOptimizerDiagnosticEngineJfr implements DiagnosticEngine {
         TimeUnit.SECONDS);
   }
 
-  private static void emitInfo(AlertBreach alert, Path cgroupBasePath) {
+  // visible for testing
+  protected void emitInfo(AlertBreach alert) {
     logger.debug("Emitting Code Optimizer Diagnostic Event");
     emitAlertBreachJfrEvent(alert);
     CodeOptimizerDiagnosticsJfrInit.emitCGroupData(cgroupBasePath);
-    emitMachineStats();
+    emitMachineInfo();
   }
 
-  private static void emitMachineStats() {
-    MachineStats machineStats = SystemStatsProvider.getMachineStats();
-    machineStats.commit();
+  private static void emitMachineInfo() {
+    MachineInfo machineInfo = SystemStatsProvider.getMachineInfo();
+    machineInfo.commit();
   }
 
   private static void emitAlertBreachJfrEvent(AlertBreach alert) {
