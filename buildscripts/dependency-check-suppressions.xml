@@ -45,13 +45,16 @@
   <suppress>
     <notes><![CDATA[
       azure-monitor-opentelemetry-autoconfigure is an Azure Java library, but dependency-check infers
-      cpe:2.3:a:opentelemetry:opentelemetry from its name. That CPE then matches OpenTelemetry
+      cpe:2.3:a:opentelemetry:opentelemetry from its name. The report displays CPE 2.3, but
+      suppression matching converts detected CPEs to CPE 2.2, so this rule uses the CPE 2.2 form.
+      The trailing colon enforces a whole product-name boundary and does not match
+      opentelemetry_collector. That CPE then matches OpenTelemetry
       Go / .NET / C++ CVEs whose fixed versions happen to be higher than this artifact's version,
       e.g. CVE-2026-39882 and CVE-2026-41178 (Go), CVE-2026-40894 and CVE-2026-41078 (.NET),
       CVE-2026-44967 (C++). None of them apply to Java.
     ]]></notes>
     <packageUrl regex="true">^pkg:maven/com\.azure/azure-monitor-opentelemetry-autoconfigure@.*$</packageUrl>
-    <cpe>cpe:2.3:a:opentelemetry:opentelemetry</cpe>
+    <cpe>cpe:/a:opentelemetry:opentelemetry:</cpe>
   </suppress>
   <suppress>
     <notes>
