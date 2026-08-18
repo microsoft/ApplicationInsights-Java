@@ -4,6 +4,9 @@
 
 ### Enhancements
 
+* Add Java agent support for ServiceProfiler targeted collection plans by cloud role or
+  role-qualified instance
+
 * Add continuous profiling (`enableContinuousProfiling`, `continuousProfilingMaxAgeSeconds`) which
   keeps a single JFR recording running in a circular buffer so profile requests dump the most recent
   window of data immediately

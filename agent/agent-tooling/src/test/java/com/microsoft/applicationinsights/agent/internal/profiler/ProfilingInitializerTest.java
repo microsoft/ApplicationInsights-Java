@@ -8,6 +8,8 @@ import com.azure.monitor.opentelemetry.autoconfigure.implementation.configuratio
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.configuration.GcReportingLevel;
 import com.microsoft.applicationinsights.agent.internal.profiler.config.ProfilerConfiguration;
+import com.microsoft.applicationinsights.agent.internal.profiler.config.TargetedCollectionPlan;
+import com.microsoft.applicationinsights.agent.internal.profiler.config.TargetedInstance;
 import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryClient;
 import java.io.File;
 import java.time.Duration;
@@ -17,6 +19,7 @@ import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.function.Consumer;
@@ -167,6 +170,16 @@ public class ProfilingInitializerTest {
             .withLocalConfiguration(localConfiguration(false, true))
             .then(userConfiguredTriggersState(false))
             .assertThat(ENABLED));
+
+    tests.add(
+        new ProfilingInitializerTestCaseBuilder("Matching targeted plan enables profiler")
+            .then(targetedProfileState("test-role-name", "test-role-instance"))
+            .assertThat(ENABLED));
+
+    tests.add(
+        new ProfilingInitializerTestCaseBuilder("Unmatched targeted plan does not enable profiler")
+            .then(targetedProfileState("other-role", "test-role-instance"))
+            .assertThat(NOT_ENABLED));
   }
 
   @TestFactory
@@ -234,6 +247,18 @@ public class ProfilingInitializerTest {
         .setMemoryTriggerConfiguration(
             "--memory-threshold 80 --memory-trigger-profilingDuration 120 --memory-trigger-cooldown 14400 --memory-trigger-enabled "
                 + triggersEnabled);
+  }
+
+  private static ProfilerConfiguration targetedProfileState(String role, String instance) {
+    return userConfiguredTriggersState(false)
+        .setTargetedCollectionPlan(
+            new TargetedCollectionPlan()
+                .setInstances(
+                    Collections.singletonList(
+                        new TargetedInstance().setRole(role).setName(instance)))
+                .setImmediateProfilingDuration(120)
+                .setExpiration("2099-08-17T19:00:00.0000000Z")
+                .setSettingsMoniker("Portal_test"));
   }
 
   @SuppressWarnings(
