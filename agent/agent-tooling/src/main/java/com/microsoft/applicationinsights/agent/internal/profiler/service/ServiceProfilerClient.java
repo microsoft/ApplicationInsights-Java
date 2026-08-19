@@ -35,7 +35,7 @@ public class ServiceProfilerClient {
   private static final String SETTINGS_PATH = PROFILER_API_PREFIX + "/settings";
   public static final String OLD_TIMESTAMP_PARAMETER = "oldTimestamp";
   public static final String FEATURE_VERSION_PARAMETER = "featureVersion";
-  public static final String FEATURE_VERSION = "1.0.0";
+  public static final String FEATURE_VERSION = "2.0.0";
   public static final String API_FEATURE_VERSION = "2020-10-14-preview";
 
   private final URL hostUrl;
@@ -153,6 +153,10 @@ public class ServiceProfilerClient {
   }
 
   private static Mono<ProfilerConfiguration> handle(HttpResponse response, URL requestUrl) {
+    if (response.getStatusCode() == 304) {
+      response.close();
+      return Mono.empty();
+    }
     if (response.getStatusCode() >= 300) {
       // need to consume the body or close the response, otherwise get netty ByteBuf leak warnings:
       // io.netty.util.ResourceLeakDetector - LEAK: ByteBuf.release() was not called before

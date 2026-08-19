@@ -25,7 +25,7 @@ import com.microsoft.applicationinsights.alerting.analysis.TimeSource;
 import com.microsoft.applicationinsights.alerting.analysis.pipelines.AlertPipeline;
 import com.microsoft.applicationinsights.alerting.analysis.pipelines.AlertPipelineMultiplexer;
 import com.microsoft.applicationinsights.alerting.config.AlertMetricType;
-import com.microsoft.applicationinsights.alerting.config.AlertingProfileFileTriggerConfiguration;
+import com.microsoft.applicationinsights.alerting.config.AlertingSubsystemConfiguration;
 import com.microsoft.applicationinsights.diagnostics.DiagnosticEngine;
 import java.util.List;
 import java.util.Map;
@@ -51,7 +51,7 @@ public class AlertingSubsystemInit {
       TelemetryClient telemetryClient,
       DiagnosticEngine diagnosticEngine,
       ExecutorService executorService,
-      AlertingProfileFileTriggerConfiguration alertingProfileFileTriggerConfiguration) {
+      AlertingSubsystemConfiguration alertingSubsystemConfiguration) {
 
     // TODO (trask) delay creation of AlertingSubsystem until after Profiler is created and
     // initialized?
@@ -66,7 +66,11 @@ public class AlertingSubsystemInit {
 
     alertingSubsystem =
         AlertingSubsystem.create(
-            alertAction, TimeSource.DEFAULT, alertingProfileFileTriggerConfiguration);
+            alertAction,
+            TimeSource.DEFAULT,
+            alertingSubsystemConfiguration.getRoleName(),
+            alertingSubsystemConfiguration.getRoleInstance(),
+            alertingSubsystemConfiguration.getProfileFileTriggerConfiguration());
 
     if (configuration.enableRequestTriggering) {
       if (!configuration.requestTriggerEndpoints.isEmpty()) {
