@@ -18,7 +18,7 @@ rootProject.extra["otelInstrumentationVersion"] = otelInstrumentationVersion
 rootProject.extra["otelInstrumentationAlphaVersion"] = otelInstrumentationAlphaVersion
 
 val DEPENDENCY_BOMS = listOf(
-  "com.fasterxml.jackson:jackson-bom:2.22.1",
+  "com.fasterxml.jackson:jackson-bom:2.22.2",
   "io.opentelemetry:opentelemetry-bom:${otelSdkVersion}",
   "io.opentelemetry:opentelemetry-bom-alpha:${otelSdkAlphaVersion}",
   "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:${otelInstrumentationVersion}",
@@ -72,7 +72,7 @@ val DEPENDENCIES = listOf(
   "io.opentelemetry.contrib:opentelemetry-jfr-connection:${otelContribAlphaVersion}",
   "io.opentelemetry.contrib:opentelemetry-runtime-attach-core:${otelContribAlphaVersion}",
   "com.google.code.findbugs:jsr305:3.0.2",
-  "com.github.spotbugs:spotbugs-annotations:4.10.3"
+  "com.github.spotbugs:spotbugs-annotations:4.10.4"
 )
 
 javaPlatform {

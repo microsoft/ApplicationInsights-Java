@@ -2,7 +2,7 @@ plugins {
   `java-gradle-plugin`
   `kotlin-dsl`
   // When updating, update below in dependencies too
-  id("com.diffplug.spotless") version "8.9.0"
+  id("com.diffplug.spotless") version "8.10.0"
 }
 
 spotless {
@@ -30,8 +30,8 @@ dependencies {
   implementation(gradleApi())
 
   // When updating, update above in plugins too
-  implementation("com.diffplug.spotless:spotless-plugin-gradle:8.9.0")
-  implementation("com.github.spotbugs.snom:spotbugs-gradle-plugin:6.5.10")
+  implementation("com.diffplug.spotless:spotless-plugin-gradle:8.10.0")
+  implementation("com.github.spotbugs.snom:spotbugs-gradle-plugin:6.5.11")
   implementation("com.gradleup.shadow:shadow-gradle-plugin:9.6.1")
 
   implementation("org.owasp:dependency-check-gradle:13.0.0")
