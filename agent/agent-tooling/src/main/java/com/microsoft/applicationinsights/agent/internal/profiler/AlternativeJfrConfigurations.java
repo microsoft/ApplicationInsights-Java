@@ -28,6 +28,10 @@ class AlternativeJfrConfigurations {
   public static final String DIAGNOSTIC_MEMORY_PROFILE = "diagnostic-memory-profile.jfc";
   public static final String DIAGNOSTIC_CPU_PROFILE = "diagnostic-cpu-profile.jfc";
 
+  // Minimal CPU profile enabling only the events consumed by the diagnosis analyses. Used as the
+  // default configuration for the always-on continuous profiling recording.
+  public static final String MINIMAL_DIAGNOSIS_CPU_PROFILE = "minimal-diagnosis-cpu-profile.jfc";
+
   private AlternativeJfrConfigurations() {}
 
   /** Loads a pre-set recoding file that ships with Application Insights. */
@@ -157,5 +161,16 @@ class AlternativeJfrConfigurations {
   static RecordingConfiguration getManualProfileConfig(Configuration.ProfilerConfiguration config) {
     return getRecordingConfiguration(
         config, config.manualTriggeredSettings, AlertMetricType.MANUAL);
+  }
+
+  /**
+   * Default configuration for the always-on continuous profiling recording. Loads the minimal
+   * diagnosis CPU profile, which enables only the events consumed by the diagnosis analyses and
+   * report generation.
+   */
+  static RecordingConfiguration getContinuousProfileConfig() {
+    return new JfcFileConfiguration(
+        Objects.requireNonNull(
+            AlternativeJfrConfigurations.class.getResourceAsStream(MINIMAL_DIAGNOSIS_CPU_PROFILE)));
   }
 }

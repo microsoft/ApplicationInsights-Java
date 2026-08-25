@@ -1543,6 +1543,18 @@ public class Configuration {
 
     // Whether to register a JMX MBean that allows triggering profiles via JMX tools.
     public boolean enableProfilerControlMBean = false;
+
+    // When enabled, the profiler keeps a single JFR recording running continuously using a
+    // circular buffer (bounded by continuousProfilingMaxAgeSeconds) instead of starting a new
+    // timed recording for each trigger. When a profile is requested, the current contents of the
+    // circular buffer are dumped and uploaded immediately, capturing the most recent
+    // continuousProfilingMaxAgeSeconds of data. This lets profile requests be serviced without
+    // waiting for a recording duration to elapse.
+    public boolean enableContinuousProfiling = false;
+
+    // The maximum age (in seconds) of data retained in the continuous profiling circular buffer.
+    // Only used when enableContinuousProfiling is true.
+    public int continuousProfilingMaxAgeSeconds = 120;
   }
 
   /**
