@@ -28,6 +28,13 @@ val upstreamAgent: Configuration by configurations.creating {
   isCanBeResolved = true
   isCanBeConsumed = false
 }
+// OpenTelemetry 2.30 makes its Azure Core 1.36/1.53 modules require the application's
+// OpenTelemetry context classes. Keep the last modules that also support Azure applications
+// without a direct OpenTelemetry API dependency.
+val upstreamAzureAgent: Configuration by configurations.creating {
+  isCanBeResolved = true
+  isCanBeConsumed = false
+}
 
 val otelInstrumentationVersion: String by project
 val otelInstrumentationAlphaVersion: String by project
@@ -46,6 +53,9 @@ dependencies {
   javaagentLibs(project(":agent:agent-tooling"))
 
   upstreamAgent("io.opentelemetry.javaagent:opentelemetry-javaagent:$otelInstrumentationVersion")
+  upstreamAzureAgent("io.opentelemetry.javaagent:opentelemetry-javaagent") {
+    version { strictly("2.28.1") }
+  }
 
   licenseReportDependencies(project(":agent:agent-tooling"))
 }
@@ -118,6 +128,8 @@ tasks {
 
     exclude("inst/io/prometheus/**")
     exclude("inst/zipkin/**")
+    exclude("inst/io/opentelemetry/javaagent/instrumentation/azurecore/v1_36/**")
+    exclude("inst/io/opentelemetry/javaagent/instrumentation/azurecore/v1_53/**")
 
     dependsOn(isolateJavaagentLibs)
     from(isolateJavaagentLibs.get().outputs)
@@ -145,6 +157,10 @@ tasks {
     dependsOn(shadowJarWithDuplicates)
 
     from(zipTree(shadowJarWithDuplicates.get().archiveFile))
+    from(zipTree(upstreamAzureAgent.singleFile)) {
+      include("inst/io/opentelemetry/javaagent/instrumentation/azurecore/v1_36/**")
+      include("inst/io/opentelemetry/javaagent/instrumentation/azurecore/v1_53/**")
+    }
 
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 
