@@ -14,7 +14,7 @@ updates:
     cooldown:
       default-days: 7
     groups:
-      all-dependencies:
+      github-actions-dependencies:
         patterns:
           - "*"
 
@@ -72,6 +72,8 @@ updates:
         exclude-patterns:
           # every release adds checks that fire on existing code
           - "errorProneVersion"
+          # Make AutoConfigure get its own PR that can be merged without waiting on the batch
+          - "com.azure:azure-monitor-opentelemetry-autoconfigure"
         update-types:
           - "minor"
           - "patch"
