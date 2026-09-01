@@ -2,6 +2,19 @@
 
 ## Unreleased
 
+### Enhancements
+
+* Add continuous profiling (`enableContinuousProfiling`, `continuousProfilingMaxAgeSeconds`) which
+  keeps a single JFR recording running in a circular buffer so profile requests dump the most recent
+  window of data immediately
+  ([#4807](https://github.com/microsoft/ApplicationInsights-Java/pull/4807))
+
+### Breaking changes
+
+* Rename the `MachineStats` JFR diagnostic event to `MachineInfo`. Custom `.jfc` files that enable
+  `com.microsoft.applicationinsights.diagnostics.jfr.MachineStats` must be updated to the new event
+  name ([#4807](https://github.com/microsoft/ApplicationInsights-Java/pull/4807))
+
 ## Version 3.7.9 GA (06/18/2026)
 
 ### Enhancements
