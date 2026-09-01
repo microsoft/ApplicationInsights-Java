@@ -12,7 +12,7 @@ val otelSdkAlphaVersion = "1.64.0-alpha"
 val otelInstrumentationAlphaVersion = "2.30.0-alpha"
 val otelInstrumentationVersion = "2.30.0"
 val otelContribVersion = "1.56.0"
-val otelContribAlphaVersion = "1.59.0-alpha"
+val otelContribAlphaVersion = "1.60.0-alpha"
 
 rootProject.extra["otelInstrumentationVersion"] = otelInstrumentationVersion
 rootProject.extra["otelInstrumentationAlphaVersion"] = otelInstrumentationAlphaVersion
