@@ -382,12 +382,12 @@
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**74** **Group:** `com.github.oshi` **Name:** `oshi-common` **Version:** `7.5.0`
+**74** **Group:** `com.github.oshi` **Name:** `oshi-common` **Version:** `7.6.0`
 > - **Manifest Project URL**: [https://github.com/oshi/oshi/oshi-common](https://github.com/oshi/oshi/oshi-common)
 > - **Manifest License**: [https://opensource.org/licenses/MIT](MIT License)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**75** **Group:** `com.github.oshi` **Name:** `oshi-core` **Version:** `7.5.0`
+**75** **Group:** `com.github.oshi` **Name:** `oshi-core` **Version:** `7.6.0`
 > - **Manifest Project URL**: [https://github.com/oshi/oshi/oshi-core](https://github.com/oshi/oshi/oshi-core)
 > - **Manifest License**: [https://opensource.org/licenses/MIT](MIT License)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
