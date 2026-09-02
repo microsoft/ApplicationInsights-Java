@@ -13,9 +13,12 @@ import com.microsoft.applicationinsights.alerting.config.AlertingProfileFileTrig
 import com.microsoft.applicationinsights.alerting.config.CollectionPlanConfiguration;
 import com.microsoft.applicationinsights.alerting.config.CollectionPlanConfiguration.EngineMode;
 import com.microsoft.applicationinsights.alerting.config.DefaultConfiguration;
+import com.microsoft.applicationinsights.alerting.config.TargetedCollectionPlanConfiguration;
+import com.microsoft.applicationinsights.alerting.config.TargetedInstanceConfiguration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import org.junit.jupiter.api.Test;
@@ -77,6 +80,7 @@ class AlertingSubsystemTest {
 
     assertThat(called.get().getType()).isEqualTo(AlertMetricType.CPU);
     assertThat(called.get().getAlertValue()).isEqualTo(90.0);
+    assertThat(called.get().getSettingsMoniker()).isNull();
   }
 
   @Test
@@ -120,6 +124,7 @@ class AlertingSubsystemTest {
             new ArrayList<>()));
 
     assertThat(called.get().getType()).isEqualTo(AlertMetricType.MANUAL);
+    assertThat(called.get().getSettingsMoniker()).isEqualTo("a-settings-moniker");
   }
 
   @Test
@@ -164,5 +169,111 @@ class AlertingSubsystemTest {
             new ArrayList<>()));
 
     assertThat(called.get()).isNull();
+  }
+
+  @Test
+  void targetedAlertTriggersOnlyForMatchingIdentity() {
+    AtomicReference<AlertBreach> matchingBreach = new AtomicReference<>();
+    TestTimeSource timeSource = new TestTimeSource();
+    AlertingConfiguration config = targetedAlertingConfig(false);
+
+    AlertingSubsystem matching =
+        AlertingSubsystem.create(
+            matchingBreach::set,
+            timeSource,
+            "frontend",
+            "instance-1",
+            AlertingProfileFileTriggerConfiguration.createDefault());
+    matching.updateConfiguration(config);
+
+    AtomicReference<AlertBreach> unmatchedBreach = new AtomicReference<>();
+    AlertingSubsystem unmatched =
+        AlertingSubsystem.create(
+            unmatchedBreach::set,
+            timeSource,
+            "backend",
+            "instance-1",
+            AlertingProfileFileTriggerConfiguration.createDefault());
+    unmatched.updateConfiguration(config);
+
+    assertThat(matchingBreach.get()).isNotNull();
+    assertThat(matchingBreach.get().getType()).isEqualTo(AlertMetricType.MANUAL);
+    assertThat(matchingBreach.get().getSettingsMoniker()).isEqualTo("Portal_test");
+    assertThat(unmatchedBreach.get()).isNull();
+  }
+
+  @Test
+  void targetedSelectionNormalizesRoleAndInstance() {
+    TargetedCollectionPlanConfiguration instancePlan =
+        TargetedCollectionPlanConfiguration.create(
+            null,
+            Collections.singletonList(
+                TargetedInstanceConfiguration.create(" frontend ", " instance-1 ")),
+            120,
+            Instant.ofEpochSecond(60),
+            "Portal_test");
+
+    assertThat(instancePlan.isSelected("FRONTEND", "INSTANCE-1")).isTrue();
+    assertThat(instancePlan.isSelected("frontend", "instance-2")).isFalse();
+    assertThat(instancePlan.isSelected(null, "instance-1")).isFalse();
+  }
+
+  @Test
+  void targetedPlanIsActionableOnlyBeforeExpiration() {
+    TargetedCollectionPlanConfiguration rolePlan =
+        TargetedCollectionPlanConfiguration.create(
+            Collections.singletonList("frontend"),
+            null,
+            120,
+            Instant.ofEpochSecond(60),
+            "Portal_test");
+
+    assertThat(rolePlan.isActionable("frontend", "instance-1", Instant.ofEpochSecond(59))).isTrue();
+    assertThat(rolePlan.isActionable("frontend", "instance-1", Instant.ofEpochSecond(60)))
+        .isFalse();
+  }
+
+  @Test
+  void targetedPlanTakesPrecedenceOverLegacyPlan() {
+    AtomicReference<AlertBreach> breach = new AtomicReference<>();
+    TestTimeSource timeSource = new TestTimeSource();
+    AlertingSubsystem subsystem =
+        AlertingSubsystem.create(
+            breach::set,
+            timeSource,
+            "frontend",
+            "instance-1",
+            AlertingProfileFileTriggerConfiguration.createDefault());
+
+    subsystem.updateConfiguration(targetedAlertingConfig(true));
+
+    assertThat(breach.get()).isNotNull();
+    assertThat(breach.get().getAlertConfiguration().getProfileDurationSeconds()).isEqualTo(120);
+  }
+
+  private static AlertingConfiguration targetedAlertingConfig(boolean legacyEnabled) {
+    CollectionPlanConfiguration legacyPlan =
+        CollectionPlanConfiguration.builder()
+            .setSingle(legacyEnabled)
+            .setMode(EngineMode.immediate)
+            .setExpiration(Instant.ofEpochSecond(60))
+            .setImmediateProfilingDurationSeconds(30)
+            .setSettingsMoniker("legacy")
+            .build();
+    TargetedCollectionPlanConfiguration targetedPlan =
+        TargetedCollectionPlanConfiguration.create(
+            null,
+            Collections.singletonList(
+                TargetedInstanceConfiguration.create("frontend", "instance-1")),
+            120,
+            Instant.ofEpochSecond(60),
+            "Portal_test");
+    return AlertingConfiguration.create(
+        AlertConfiguration.builder().setType(AlertMetricType.CPU).build(),
+        AlertConfiguration.builder().setType(AlertMetricType.MEMORY).build(),
+        DefaultConfiguration.builder().build(),
+        legacyPlan,
+        new ArrayList<>(),
+        targetedPlan);
   }
 }

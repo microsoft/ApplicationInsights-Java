@@ -23,6 +23,7 @@ import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.concurrent.Executors;
@@ -189,7 +190,8 @@ public class ProfilingInitializer {
       boolean manualProfilingConfigured =
           configuration.manualTrigger.enabled || configuration.enableProfilerControlMBean;
 
-      if (alertingConfig.hasAnEnabledTrigger() || manualProfilingConfigured) {
+      if (alertingConfig.hasAnEnabledTrigger(roleName, machineName, Instant.now())
+          || manualProfilingConfigured) {
         if (!currentlyEnabled.getAndSet(true)) {
           enableProfiler();
         }

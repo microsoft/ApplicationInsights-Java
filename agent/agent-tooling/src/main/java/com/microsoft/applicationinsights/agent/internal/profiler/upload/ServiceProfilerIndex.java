@@ -43,6 +43,8 @@ public class ServiceProfilerIndex {
     private static final String SERVICE_PROFILER_PROCESSID_PROPERTY_NAME = "ProcessId";
     // visible for testing
     public static final String SERVICE_PROFILER_ETLFILESESSIONID_PROPERTY_NAME = "EtlFileSessionId";
+    // visible for testing
+    public static final String SERVICE_PROFILER_SETTINGS_MONIKER_PROPERTY_NAME = "SettingsMoniker";
     private static final String SERVICE_PROFILER_OPERATINGSYSTEM_PROPERTY_NAME = "OperatingSystem";
     private static final String SERVICE_PROFILER_AVERAGECPUUSAGE_METRIC_NAME = "AverageCPUUsage";
     private static final String SERVICE_PROFILER_AVERAGE_MEMORY_USAGE_METRIC_NAME =
@@ -76,6 +78,11 @@ public class ServiceProfilerIndex {
 
     public Builder setTimeStamp(String timeStamp) {
       sampleEvent.put(SERVICE_PROFILER_ETLFILESESSIONID_PROPERTY_NAME, timeStamp);
+      return this;
+    }
+
+    public Builder setSettingsMoniker(String settingsMoniker) {
+      sampleEvent.put(SERVICE_PROFILER_SETTINGS_MONIKER_PROPERTY_NAME, settingsMoniker);
       return this;
     }
 
