@@ -7,6 +7,7 @@ import com.azure.core.http.HttpMethod;
 import com.azure.core.http.HttpPipeline;
 import com.azure.core.http.policy.DefaultRedirectStrategy;
 import com.azure.core.http.policy.RedirectPolicy;
+import com.azure.monitor.opentelemetry.autoconfigure.implementation.models.ContextTagKeys;
 import com.azure.monitor.opentelemetry.autoconfigure.implementation.utils.SystemInformation;
 import com.azure.monitor.opentelemetry.autoconfigure.implementation.utils.ThreadPoolUtils;
 import com.microsoft.applicationinsights.agent.internal.common.FriendlyException;
@@ -26,6 +27,7 @@ import java.net.URL;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -90,6 +92,20 @@ public class ProfilingInitializer {
       String roleName,
       String roleInstance,
       TelemetryClient telemetryClient) {
+
+    Map<String, String> telemetryTags =
+        telemetryClient.newMessageTelemetryBuilder().build().getTags();
+    if (telemetryTags != null) {
+      String resolvedRoleName = telemetryTags.get(ContextTagKeys.AI_CLOUD_ROLE.toString());
+      String resolvedRoleInstance =
+          telemetryTags.get(ContextTagKeys.AI_CLOUD_ROLE_INSTANCE.toString());
+      if (resolvedRoleName != null) {
+        roleName = resolvedRoleName;
+      }
+      if (resolvedRoleInstance != null) {
+        roleInstance = resolvedRoleInstance;
+      }
+    }
 
     ProfilingInitializer profilingInitializer =
         new ProfilingInitializer(

@@ -208,7 +208,7 @@ public class Profiler {
   void profileAndUpload(AlertBreach alertBreach, Duration duration, UploadListener uploadListener) {
     Instant recordingStart = timeSource.getNow();
     if (continuousProfilingEnabled) {
-      captureContinuousRecording(alertBreach, recordingStart, uploadListener);
+      captureContinuousRecording(alertBreach, recordingStart, duration, uploadListener);
       return;
     }
     executeProfile(
@@ -266,7 +266,10 @@ public class Profiler {
   @SuppressWarnings(
       "CatchingUnchecked") // catching unchecked exception is necessary for proper error handling
   private void captureContinuousRecording(
-      AlertBreach alertBreach, Instant recordingEnd, UploadListener uploadListener) {
+      AlertBreach alertBreach,
+      Instant recordingEnd,
+      Duration requestedDuration,
+      UploadListener uploadListener) {
     File dumpFile;
     Instant bufferStart;
     synchronized (activeRecordingLock) {
@@ -297,6 +300,14 @@ public class Profiler {
           (continuousRecordingStart != null && continuousRecordingStart.isAfter(maxAgeStart))
               ? continuousRecordingStart
               : maxAgeStart;
+      Duration capturedDuration = Duration.between(bufferStart, recordingEnd);
+      if (!capturedDuration.equals(requestedDuration)) {
+        logger.info(
+            "Continuous profiling captures the retained buffer; requested duration was {} seconds,"
+                + " actual captured duration is {} seconds",
+            requestedDuration.getSeconds(),
+            capturedDuration.getSeconds());
+      }
 
       try {
         dumpFile = createJfrFile(bufferStart, recordingEnd);

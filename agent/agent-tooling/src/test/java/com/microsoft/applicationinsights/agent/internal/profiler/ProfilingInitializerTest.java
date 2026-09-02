@@ -5,6 +5,7 @@ package com.microsoft.applicationinsights.agent.internal.profiler;
 
 import com.azure.monitor.opentelemetry.autoconfigure.implementation.builders.MessageTelemetryBuilder;
 import com.azure.monitor.opentelemetry.autoconfigure.implementation.configuration.ConnectionString;
+import com.azure.monitor.opentelemetry.autoconfigure.implementation.models.ContextTagKeys;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
 import com.microsoft.applicationinsights.agent.internal.configuration.GcReportingLevel;
 import com.microsoft.applicationinsights.agent.internal.profiler.config.ProfilerConfiguration;
@@ -34,6 +35,8 @@ public class ProfilingInitializerTest {
     final String name;
     final List<ProfilerConfiguration> configurations = new ArrayList<>();
     Configuration.ProfilerConfiguration localConfiguration = defaultLocalConfiguration();
+    String telemetryRoleName;
+    String telemetryRoleInstance;
 
     private ProfilingInitializerTestCaseBuilder(String name) {
       this.name = name;
@@ -50,8 +53,21 @@ public class ProfilingInitializerTest {
       return this;
     }
 
+    ProfilingInitializerTestCaseBuilder withTelemetryIdentity(
+        String roleName, String roleInstance) {
+      telemetryRoleName = roleName;
+      telemetryRoleInstance = roleInstance;
+      return this;
+    }
+
     ProfilingInitializerTestCase assertThat(Consumer<ProfilingInitializer> assertion) {
-      return new ProfilingInitializerTestCase(name, configurations, localConfiguration, assertion);
+      return new ProfilingInitializerTestCase(
+          name,
+          configurations,
+          localConfiguration,
+          telemetryRoleName,
+          telemetryRoleInstance,
+          assertion);
     }
   }
 
@@ -59,16 +75,22 @@ public class ProfilingInitializerTest {
     final String name;
     final List<ProfilerConfiguration> configurations;
     final Configuration.ProfilerConfiguration localConfiguration;
+    final String telemetryRoleName;
+    final String telemetryRoleInstance;
     final Consumer<ProfilingInitializer> assertion;
 
     private ProfilingInitializerTestCase(
         String name,
         List<ProfilerConfiguration> configurations,
         Configuration.ProfilerConfiguration localConfiguration,
+        String telemetryRoleName,
+        String telemetryRoleInstance,
         Consumer<ProfilingInitializer> assertion) {
       this.name = name;
       this.configurations = configurations;
       this.localConfiguration = localConfiguration;
+      this.telemetryRoleName = telemetryRoleName;
+      this.telemetryRoleInstance = telemetryRoleInstance;
       this.assertion = assertion;
     }
   }
@@ -180,6 +202,19 @@ public class ProfilingInitializerTest {
         new ProfilingInitializerTestCaseBuilder("Unmatched targeted plan does not enable profiler")
             .then(targetedProfileState("other-role", "test-role-instance"))
             .assertThat(NOT_ENABLED));
+
+    tests.add(
+        new ProfilingInitializerTestCaseBuilder(
+                "Resource-derived service identity enables targeted plan")
+            .withTelemetryIdentity("[production]/orders", "pod-1")
+            .then(targetedProfileState("[production]/orders", "pod-1"))
+            .assertThat(ENABLED));
+
+    tests.add(
+        new ProfilingInitializerTestCaseBuilder("AKS-derived identity enables targeted plan")
+            .withTelemetryIdentity("orders-deployment", "orders-pod-1")
+            .then(targetedProfileState("orders-deployment", "orders-pod-1"))
+            .assertThat(ENABLED));
   }
 
   @TestFactory
@@ -191,7 +226,10 @@ public class ProfilingInitializerTest {
                   testCase.name,
                   () -> {
                     ProfilingInitializer profiler =
-                        createProfilingInitializer(testCase.localConfiguration);
+                        createProfilingInitializer(
+                            testCase.localConfiguration,
+                            testCase.telemetryRoleName,
+                            testCase.telemetryRoleInstance);
 
                     testCase.configurations.forEach(profiler::applyConfiguration);
 
@@ -264,9 +302,18 @@ public class ProfilingInitializerTest {
   @SuppressWarnings(
       "DirectInvocationOnMock") // direct mock invocation is intentional for test setup
   private static ProfilingInitializer createProfilingInitializer(
-      Configuration.ProfilerConfiguration localConfiguration) {
+      Configuration.ProfilerConfiguration localConfiguration,
+      String telemetryRoleName,
+      String telemetryRoleInstance) {
     TelemetryClient client = Mockito.mock(TelemetryClient.class);
     MessageTelemetryBuilder messageTelemetryBuilder = MessageTelemetryBuilder.create();
+    if (telemetryRoleName != null) {
+      messageTelemetryBuilder.addTag(ContextTagKeys.AI_CLOUD_ROLE.toString(), telemetryRoleName);
+    }
+    if (telemetryRoleInstance != null) {
+      messageTelemetryBuilder.addTag(
+          ContextTagKeys.AI_CLOUD_ROLE_INSTANCE.toString(), telemetryRoleInstance);
+    }
     Mockito.when(client.newMessageTelemetryBuilder()).thenReturn(messageTelemetryBuilder);
     Mockito.when(client.getConnectionString())
         .thenReturn(
