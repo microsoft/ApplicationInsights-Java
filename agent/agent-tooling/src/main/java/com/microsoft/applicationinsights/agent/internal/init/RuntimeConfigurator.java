@@ -110,9 +110,6 @@ public class RuntimeConfigurator {
     return copy(currentConfig);
   }
 
-  @SuppressWarnings(
-      "CatchingUnchecked") // optional profiler failures must not affect the instrumented
-  // application
   public void apply(RuntimeConfiguration runtimeConfig) {
 
     logger.debug("Applying runtime configuration");
@@ -154,9 +151,9 @@ public class RuntimeConfigurator {
               runtimeConfig.role.name,
               runtimeConfig.role.instance,
               telemetryClient);
-        } catch (Throwable t) {
+        } catch (RuntimeException e) {
           profilerStarted.set(false);
-          logger.warn("Failed to initialize profiler", t);
+          logger.warn("Failed to initialize profiler", e);
         }
       } else {
         logger.debug("Profiler has already been initialized.");

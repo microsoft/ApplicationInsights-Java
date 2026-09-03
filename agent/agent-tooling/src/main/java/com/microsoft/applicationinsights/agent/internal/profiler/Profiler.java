@@ -261,8 +261,8 @@ public class Profiler {
                 + " of {} bytes",
             continuousProfilingMaxAge.getSeconds(),
             CONTINUOUS_PROFILING_MAX_SIZE_BYTES);
-      } catch (Throwable t) {
-        logger.error("Failed to start continuous JFR recording", t);
+      } catch (Exception e) {
+        logger.error("Failed to start continuous JFR recording", e);
         closeRecordingAfterFailure(newRecording);
         continuousRecording = null;
         continuousRecordingStart = null;
@@ -337,8 +337,8 @@ public class Profiler {
 
       try {
         dumpFile = createJfrFile(bufferStart, recordingEnd);
-      } catch (Throwable t) {
-        logger.error("Failed to create jfr file", t);
+      } catch (Exception e) {
+        logger.error("Failed to create jfr file", e);
         return;
       }
 
@@ -346,8 +346,8 @@ public class Profiler {
         // Dump the current state of the circular buffer, capturing up to maxAge of data. The
         // continuous recording keeps running so future requests can be serviced immediately.
         continuousRecording.dump(dumpFile.getAbsolutePath());
-      } catch (Throwable t) {
-        logger.error("Failed to dump continuous recording", t);
+      } catch (Exception e) {
+        logger.error("Failed to dump continuous recording", e);
         deleteFileQuietly(dumpFile);
         return;
       }
@@ -360,8 +360,8 @@ public class Profiler {
     try {
       logger.info("Uploading continuous recording snapshot");
       uploadService.upload(alertBreach, bufferStart.toEpochMilli(), dumpFile, uploadListener);
-    } catch (Throwable t) {
-      logger.error("Failed to upload recording", t);
+    } catch (Exception e) {
+      logger.error("Failed to upload recording", e);
     } finally {
       deleteFileQuietly(dumpFile);
     }
@@ -457,8 +457,8 @@ public class Profiler {
           () -> handler.accept(startedRecording), duration.getSeconds(), TimeUnit.SECONDS);
       runDiagnosticAction(diagnosticAction);
 
-    } catch (Throwable t) {
-      logger.error("Failed to start or schedule JFR recording", t);
+    } catch (Exception e) {
+      logger.error("Failed to start or schedule JFR recording", e);
       closeRecordingAfterFailure(newRecording);
       clearActiveRecordingAfterFailure();
     }
@@ -469,21 +469,19 @@ public class Profiler {
   private static void runDiagnosticAction(Runnable diagnosticAction) {
     try {
       diagnosticAction.run();
-    } catch (Throwable t) {
-      logger.error("Failed to emit profiler diagnostics", t);
+    } catch (Exception e) {
+      logger.error("Failed to emit profiler diagnostics", e);
     }
   }
 
-  @SuppressWarnings(
-      "CatchingUnchecked") // profiler failures must never escape into the instrumented application
   private static void closeRecordingAfterFailure(@Nullable Recording recording) {
     if (recording == null) {
       return;
     }
     try {
       recording.close();
-    } catch (Throwable t) {
-      logger.error("Failed to close JFR recording after startup failure", t);
+    } catch (IOException | JfrConnectionException e) {
+      logger.error("Failed to close JFR recording after startup failure", e);
     }
   }
 
@@ -502,8 +500,8 @@ public class Profiler {
         uploadService.upload(
             alertBreach, recordingStart.toEpochMilli(), activeRecordingFile, uploadListener);
 
-      } catch (Throwable t) {
-        logger.error("Failed to upload recording", t);
+      } catch (Exception e) {
+        logger.error("Failed to upload recording", e);
       } finally {
         clearActiveRecording();
       }
@@ -575,8 +573,6 @@ public class Profiler {
     clearActiveRecording(false);
   }
 
-  @SuppressWarnings(
-      "CatchingUnchecked") // cleanup failures must not affect the instrumented application
   private static void deleteFileQuietly(@Nullable File file) {
     if (file == null) {
       return;
@@ -585,8 +581,8 @@ public class Profiler {
       if (file.exists() && !file.delete()) {
         logger.error("Failed to remove file " + file.getAbsolutePath());
       }
-    } catch (Throwable t) {
-      logger.error("Failed to remove file " + file.getAbsolutePath(), t);
+    } catch (RuntimeException e) {
+      logger.error("Failed to remove file " + file.getAbsolutePath(), e);
     }
   }
 

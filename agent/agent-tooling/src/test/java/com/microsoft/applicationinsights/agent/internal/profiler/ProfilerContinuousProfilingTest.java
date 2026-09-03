@@ -169,7 +169,7 @@ class ProfilerContinuousProfilingTest {
   }
 
   @Test
-  void targetedProfileUploadErrorDoesNotEscape() throws Exception {
+  void targetedProfileUploadFailureDoesNotEscape() throws Exception {
     Configuration.ProfilerConfiguration config = new Configuration.ProfilerConfiguration();
     config.enableContinuousProfiling = true;
     config.continuousProfilingMaxAgeSeconds = 60;
@@ -196,7 +196,7 @@ class ProfilerContinuousProfilingTest {
     profiler.profileAndUpload(targetedBreach(1), Duration.ofSeconds(1), index -> {});
 
     verify(executor).schedule(scheduledUpload.capture(), eq(1L), eq(TimeUnit.SECONDS));
-    doThrow(new AssertionError("simulated upload failure"))
+    doThrow(new IllegalStateException("simulated upload failure"))
         .when(uploadService)
         .upload(any(), any(Long.class), any(File.class), any());
 
@@ -205,7 +205,7 @@ class ProfilerContinuousProfilingTest {
   }
 
   @Test
-  void targetedProfileCreationErrorDoesNotEscape() throws Exception {
+  void targetedProfileCreationFailureDoesNotEscape() throws Exception {
     Configuration.ProfilerConfiguration config = new Configuration.ProfilerConfiguration();
     config.enableContinuousProfiling = true;
     config.continuousProfilingMaxAgeSeconds = 60;
@@ -220,7 +220,7 @@ class ProfilerContinuousProfilingTest {
             if (recordingCount.getAndIncrement() == 0) {
               return continuousRecording;
             }
-            throw new AssertionError("simulated recording creation failure");
+            throw new IllegalStateException("simulated recording creation failure");
           }
         };
 
@@ -238,7 +238,7 @@ class ProfilerContinuousProfilingTest {
   }
 
   @Test
-  void targetedProfileSchedulingErrorClosesRecordingAndDoesNotEscape() throws Exception {
+  void targetedProfileSchedulingFailureClosesRecordingAndDoesNotEscape() throws Exception {
     Configuration.ProfilerConfiguration config = new Configuration.ProfilerConfiguration();
     config.enableContinuousProfiling = true;
     config.continuousProfilingMaxAgeSeconds = 60;
@@ -258,7 +258,7 @@ class ProfilerContinuousProfilingTest {
     UploadService uploadService = mock(UploadService.class);
     FlightRecorderConnection frc = mock(FlightRecorderConnection.class);
     executor = mock(ScheduledExecutorService.class);
-    doThrow(new AssertionError("simulated scheduling failure"))
+    doThrow(new IllegalStateException("simulated scheduling failure"))
         .when(executor)
         .schedule(any(Runnable.class), eq(1L), eq(TimeUnit.SECONDS));
 
@@ -274,13 +274,13 @@ class ProfilerContinuousProfilingTest {
   }
 
   @Test
-  void continuousRecordingStartupErrorClosesRecordingAndDoesNotEscape() throws Exception {
+  void continuousRecordingStartupFailureClosesRecordingAndDoesNotEscape() throws Exception {
     Configuration.ProfilerConfiguration config = new Configuration.ProfilerConfiguration();
     config.enableContinuousProfiling = true;
     config.continuousProfilingMaxAgeSeconds = 60;
 
     Recording continuousRecording = mock(Recording.class);
-    doThrow(new AssertionError("simulated startup failure")).when(continuousRecording).start();
+    doThrow(new IllegalStateException("simulated startup failure")).when(continuousRecording).start();
     Profiler profiler =
         new Profiler(config, tempDir, timeSource) {
           @Override

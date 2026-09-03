@@ -20,9 +20,6 @@ public class AfterAgentListener implements AgentListener {
   private static final Logger logger = LoggerFactory.getLogger(AfterAgentListener.class);
 
   @Override
-  @SuppressWarnings(
-      "CatchingUnchecked") // optional profiler failures must not affect the instrumented
-  // application
   public void afterAgent(AutoConfiguredOpenTelemetrySdk autoConfiguredOpenTelemetrySdk) {
     // only safe now to make HTTPS calls because Java SSL classes
     // trigger loading of java.util.logging (starting with Java 8u231)
@@ -49,8 +46,8 @@ public class AfterAgentListener implements AgentListener {
             configuration.role.name,
             configuration.role.instance,
             TelemetryClient.getActive());
-      } catch (Throwable t) {
-        logger.warn("Failed to initialize profiler", t);
+      } catch (RuntimeException e) {
+        logger.warn("Failed to initialize profiler", e);
       }
     }
   }
