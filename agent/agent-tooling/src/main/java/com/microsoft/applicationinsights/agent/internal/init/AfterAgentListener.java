@@ -33,7 +33,6 @@ public class AfterAgentListener implements AgentListener {
     PerformanceCounterInitializer.initialize(configuration);
 
     TelemetryClient telemetryClient = TelemetryClient.getActive();
-    SecondEntryPoint.startHeartbeat(configuration, telemetryClient);
     if (configuration.preview.browserSdkLoader.enabled
         && telemetryClient != null
         && telemetryClient.getConnectionString() != null) {

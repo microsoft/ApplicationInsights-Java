@@ -148,6 +148,17 @@ public class SecondEntryPoint
     Consumer<List<TelemetryItem>> heartbeatTelemetryItemConsumer =
         createHeartbeatTelemetryItemConsumer(telemetryClient);
 
+    if (telemetryClient.getConnectionString() != null) {
+      startupLogger.verbose("connection string is not null, start HeartbeatExporter");
+      // interval longer than 15 minutes is not allowed since we use this data for usage telemetry
+      long intervalSeconds =
+          Math.min(configuration.heartbeat.intervalSeconds, MINUTES.toSeconds(15));
+      HeartbeatExporter.start(
+          intervalSeconds,
+          telemetryClient::populateDefaultsForHeartbeat,
+          heartbeatTelemetryItemConsumer);
+    }
+
     TelemetryClient.setActive(telemetryClient);
 
     // TODO (heya) remove duplicate code in both RuntimeConfigurator and SecondEntryPoint
@@ -303,19 +314,6 @@ public class SecondEntryPoint
           telemetryClient.setOtelResource(resource);
           return resource;
         });
-  }
-
-  static void startHeartbeat(Configuration configuration, TelemetryClient telemetryClient) {
-    if (telemetryClient.getConnectionString() == null) {
-      return;
-    }
-    startupLogger.verbose("connection string is not null, start HeartbeatExporter");
-    // interval longer than 15 minutes is not allowed since we use this data for usage telemetry
-    long intervalSeconds = Math.min(configuration.heartbeat.intervalSeconds, MINUTES.toSeconds(15));
-    HeartbeatExporter.start(
-        intervalSeconds,
-        telemetryClient::populateDefaultsForHeartbeat,
-        createHeartbeatTelemetryItemConsumer(telemetryClient));
   }
 
   private static Consumer<List<TelemetryItem>> createHeartbeatTelemetryItemConsumer(
