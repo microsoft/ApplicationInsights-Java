@@ -25,7 +25,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
@@ -206,15 +206,29 @@ public class Profiler {
 
   // visible for tests
   void profileAndUpload(AlertBreach alertBreach, Duration duration, UploadListener uploadListener) {
+    profileAndUpload(alertBreach, duration, uploadListener, () -> {});
+  }
+
+  private void profileAndUpload(
+      AlertBreach alertBreach,
+      Duration duration,
+      UploadListener uploadListener,
+      Runnable diagnosticAction) {
     Instant recordingStart = timeSource.getNow();
-    if (continuousProfilingEnabled) {
-      captureContinuousRecording(alertBreach, recordingStart, uploadListener);
+    if (usesContinuousRecordingSnapshot(alertBreach)) {
+      captureContinuousRecording(
+          alertBreach, recordingStart, duration, uploadListener, diagnosticAction);
       return;
     }
     executeProfile(
         alertBreach.getType(),
         duration,
-        uploadNewRecording(alertBreach, recordingStart, uploadListener));
+        uploadNewRecording(alertBreach, recordingStart, uploadListener),
+        diagnosticAction);
+  }
+
+  private boolean usesContinuousRecordingSnapshot(AlertBreach alertBreach) {
+    return continuousProfilingEnabled && !alertBreach.isTargeted();
   }
 
   private void startContinuousRecordingIfEnabled() {
@@ -225,6 +239,7 @@ public class Profiler {
       if (continuousRecording != null) {
         return;
       }
+      Recording newRecording = null;
       try {
         // A continuous recording uses a circular buffer bounded by maxAge and no duration, so it
         // runs indefinitely while only retaining the most recent window of data on disk.
@@ -236,16 +251,18 @@ public class Profiler {
                 .maxSize(Long.toString(CONTINUOUS_PROFILING_MAX_SIZE_BYTES))
                 .disk("true")
                 .build();
-        continuousRecording = createRecording(recordingOptions, continuousRecordingConfiguration);
-        continuousRecording.start();
+        newRecording = createRecording(recordingOptions, continuousRecordingConfiguration);
+        newRecording.start();
+        continuousRecording = newRecording;
         continuousRecordingStart = timeSource.getNow();
         logger.info(
             "Started continuous JFR recording with circular buffer maxAge of {} seconds and maxSize"
                 + " of {} bytes",
             continuousProfilingMaxAge.getSeconds(),
             CONTINUOUS_PROFILING_MAX_SIZE_BYTES);
-      } catch (IOException | JfrConnectionException e) {
+      } catch (IOException | JfrConnectionException | IllegalStateException e) {
         logger.error("Failed to start continuous JFR recording", e);
+        closeRecordingAfterFailure(newRecording);
         continuousRecording = null;
         continuousRecordingStart = null;
       }
@@ -266,12 +283,21 @@ public class Profiler {
   @SuppressWarnings(
       "CatchingUnchecked") // catching unchecked exception is necessary for proper error handling
   private void captureContinuousRecording(
-      AlertBreach alertBreach, Instant recordingEnd, UploadListener uploadListener) {
+      AlertBreach alertBreach,
+      Instant recordingEnd,
+      Duration requestedDuration,
+      UploadListener uploadListener,
+      Runnable diagnosticAction) {
     File dumpFile;
     Instant bufferStart;
     synchronized (activeRecordingLock) {
       if (continuousRecording == null) {
         logger.warn("Profile requested but continuous recording is not running, ignoring request.");
+        return;
+      }
+      if (activeRecording != null) {
+        logger.warn(
+            "Profile requested, but an on-demand profile is already in progress, ignoring request.");
         return;
       }
 
@@ -283,6 +309,8 @@ public class Profiler {
             globalCooldownUntil);
         return;
       }
+
+      runDiagnosticAction(diagnosticAction);
 
       // A live circular buffer can only be dumped in its entirety; the JFR connection only supports
       // streaming a sub-window from a stopped recording, so a shorter portal-/JMX-configured
@@ -297,6 +325,14 @@ public class Profiler {
           (continuousRecordingStart != null && continuousRecordingStart.isAfter(maxAgeStart))
               ? continuousRecordingStart
               : maxAgeStart;
+      Duration capturedDuration = Duration.between(bufferStart, recordingEnd);
+      if (!capturedDuration.equals(requestedDuration)) {
+        logger.info(
+            "Continuous profiling captures the retained buffer; requested duration was {} seconds,"
+                + " actual captured duration is {} seconds",
+            requestedDuration.getSeconds(),
+            capturedDuration.getSeconds());
+      }
 
       try {
         dumpFile = createJfrFile(bufferStart, recordingEnd);
@@ -309,11 +345,9 @@ public class Profiler {
         // Dump the current state of the circular buffer, capturing up to maxAge of data. The
         // continuous recording keeps running so future requests can be serviced immediately.
         continuousRecording.dump(dumpFile.getAbsolutePath());
-      } catch (IOException | JfrConnectionException e) {
+      } catch (IOException | JfrConnectionException | IllegalStateException e) {
         logger.error("Failed to dump continuous recording", e);
-        if (dumpFile.exists() && !dumpFile.delete()) {
-          logger.error("Failed to remove file " + dumpFile.getAbsolutePath());
-        }
+        deleteFileQuietly(dumpFile);
         return;
       }
 
@@ -327,14 +361,8 @@ public class Profiler {
       uploadService.upload(alertBreach, bufferStart.toEpochMilli(), dumpFile, uploadListener);
     } catch (Exception e) {
       logger.error("Failed to upload recording", e);
-    } catch (Error e) {
-      // rethrow errors
-      logger.error("Failed to upload recording", e);
-      throw e;
     } finally {
-      if (dumpFile.exists() && !dumpFile.delete()) {
-        logger.error("Failed to remove file " + dumpFile.getAbsolutePath());
-      }
+      deleteFileQuietly(dumpFile);
     }
   }
 
@@ -399,7 +427,10 @@ public class Profiler {
 
   /** Perform a profile and notify the handler. */
   private void executeProfile(
-      AlertMetricType alertType, Duration duration, Consumer<Recording> handler) {
+      AlertMetricType alertType,
+      Duration duration,
+      Consumer<Recording> handler,
+      Runnable diagnosticAction) {
 
     logger.info("Received " + alertType + " alert, Starting profile");
 
@@ -408,27 +439,47 @@ public class Profiler {
       return;
     }
 
-    Recording newRecording = startRecording(alertType, duration);
-
-    if (newRecording == null) {
-      return;
-    }
-
+    Recording newRecording = null;
     try {
+      newRecording = startRecording(alertType, duration);
+      if (newRecording == null) {
+        return;
+      }
+
       newRecording.start();
 
       // schedule closing the recording
+      Recording startedRecording = newRecording;
       scheduledExecutorService.schedule(
-          () -> handler.accept(newRecording), duration.getSeconds(), TimeUnit.SECONDS);
+          () -> handler.accept(startedRecording), duration.getSeconds(), TimeUnit.SECONDS);
+      runDiagnosticAction(diagnosticAction);
 
-    } catch (IOException ioException) {
-      logger.error("Failed to start JFR recording", ioException);
-      CompletableFuture<?> future = new CompletableFuture<>();
-      future.completeExceptionally(ioException);
-    } catch (JfrConnectionException internalError) {
-      logger.error("Internal JFR Error", internalError);
-      CompletableFuture<?> future = new CompletableFuture<>();
-      future.completeExceptionally(internalError);
+    } catch (IOException
+        | JfrConnectionException
+        | IllegalStateException
+        | RejectedExecutionException e) {
+      logger.error("Failed to start or schedule JFR recording", e);
+      closeRecordingAfterFailure(newRecording);
+      clearActiveRecordingAfterFailure();
+    }
+  }
+
+  private static void runDiagnosticAction(Runnable diagnosticAction) {
+    try {
+      diagnosticAction.run();
+    } catch (RuntimeException e) {
+      logger.error("Failed to emit profiler diagnostics", e);
+    }
+  }
+
+  private static void closeRecordingAfterFailure(@Nullable Recording recording) {
+    if (recording == null) {
+      return;
+    }
+    try {
+      recording.close();
+    } catch (IOException | JfrConnectionException e) {
+      logger.error("Failed to close JFR recording after startup failure", e);
     }
   }
 
@@ -449,10 +500,6 @@ public class Profiler {
 
       } catch (Exception e) {
         logger.error("Failed to upload recording", e);
-      } catch (Error e) {
-        // rethrow errors
-        logger.error("Failed to upload recording", e);
-        throw e;
       } finally {
         clearActiveRecording();
       }
@@ -502,19 +549,38 @@ public class Profiler {
 
   // visible for testing
   void clearActiveRecording() {
+    clearActiveRecording(true);
+  }
+
+  private void clearActiveRecording(boolean startCooldown) {
     synchronized (activeRecordingLock) {
       activeRecording = null;
 
-      // Start global cooldown now that the recording is complete
-      startGlobalCooldown();
-
-      // delete uploaded profile
-      if (activeRecordingFile != null && activeRecordingFile.exists()) {
-        if (!activeRecordingFile.delete()) {
-          logger.error("Failed to remove file " + activeRecordingFile.getAbsolutePath());
-        }
+      if (startCooldown) {
+        // Start global cooldown now that the recording is complete
+        startGlobalCooldown();
       }
+
+      File recordingFile = activeRecordingFile;
       activeRecordingFile = null;
+      deleteFileQuietly(recordingFile);
+    }
+  }
+
+  private void clearActiveRecordingAfterFailure() {
+    clearActiveRecording(false);
+  }
+
+  private static void deleteFileQuietly(@Nullable File file) {
+    if (file == null) {
+      return;
+    }
+    try {
+      if (file.exists() && !file.delete()) {
+        logger.error("Failed to remove file " + file.getAbsolutePath());
+      }
+    } catch (RuntimeException e) {
+      logger.error("Failed to remove file " + file.getAbsolutePath(), e);
     }
   }
 
@@ -580,6 +646,11 @@ public class Profiler {
   /** Dispatch alert breach event to handler. */
   // visible for tests
   public void accept(AlertBreach alertBreach, UploadListener uploadListener) {
+    accept(alertBreach, uploadListener, () -> {});
+  }
+
+  public void accept(
+      AlertBreach alertBreach, UploadListener uploadListener, Runnable diagnosticAction) {
 
     if (alertBreach.getType() == AlertMetricType.PERIODIC) {
       performPeriodicProfile(uploadListener);
@@ -587,7 +658,8 @@ public class Profiler {
       profileAndUpload(
           alertBreach,
           Duration.ofSeconds(alertBreach.getAlertConfiguration().getProfileDurationSeconds()),
-          uploadListener);
+          uploadListener,
+          diagnosticAction);
     }
   }
 }
