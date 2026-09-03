@@ -280,7 +280,9 @@ class ProfilerContinuousProfilingTest {
     config.continuousProfilingMaxAgeSeconds = 60;
 
     Recording continuousRecording = mock(Recording.class);
-    doThrow(new IllegalStateException("simulated startup failure")).when(continuousRecording).start();
+    doThrow(new IllegalStateException("simulated startup failure"))
+        .when(continuousRecording)
+        .start();
     Profiler profiler =
         new Profiler(config, tempDir, timeSource) {
           @Override
