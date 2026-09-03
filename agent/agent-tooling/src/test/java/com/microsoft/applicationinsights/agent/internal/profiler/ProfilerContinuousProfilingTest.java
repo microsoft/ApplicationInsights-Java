@@ -30,6 +30,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.UUID;
 import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -258,7 +259,7 @@ class ProfilerContinuousProfilingTest {
     UploadService uploadService = mock(UploadService.class);
     FlightRecorderConnection frc = mock(FlightRecorderConnection.class);
     executor = mock(ScheduledExecutorService.class);
-    doThrow(new IllegalStateException("simulated scheduling failure"))
+    doThrow(new RejectedExecutionException("simulated scheduling failure"))
         .when(executor)
         .schedule(any(Runnable.class), eq(1L), eq(TimeUnit.SECONDS));
 

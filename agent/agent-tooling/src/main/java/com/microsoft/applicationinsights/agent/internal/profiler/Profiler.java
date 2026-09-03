@@ -25,6 +25,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
@@ -230,8 +231,6 @@ public class Profiler {
     return continuousProfilingEnabled && !alertBreach.isTargeted();
   }
 
-  @SuppressWarnings(
-      "CatchingUnchecked") // profiler failures must never escape into the instrumented application
   private void startContinuousRecordingIfEnabled() {
     if (!continuousProfilingEnabled) {
       return;
@@ -261,7 +260,7 @@ public class Profiler {
                 + " of {} bytes",
             continuousProfilingMaxAge.getSeconds(),
             CONTINUOUS_PROFILING_MAX_SIZE_BYTES);
-      } catch (Exception e) {
+      } catch (IOException | JfrConnectionException | IllegalStateException e) {
         logger.error("Failed to start continuous JFR recording", e);
         closeRecordingAfterFailure(newRecording);
         continuousRecording = null;
@@ -337,7 +336,7 @@ public class Profiler {
 
       try {
         dumpFile = createJfrFile(bufferStart, recordingEnd);
-      } catch (Exception e) {
+      } catch (IOException e) {
         logger.error("Failed to create jfr file", e);
         return;
       }
@@ -346,7 +345,7 @@ public class Profiler {
         // Dump the current state of the circular buffer, capturing up to maxAge of data. The
         // continuous recording keeps running so future requests can be serviced immediately.
         continuousRecording.dump(dumpFile.getAbsolutePath());
-      } catch (Exception e) {
+      } catch (IOException | JfrConnectionException | IllegalStateException e) {
         logger.error("Failed to dump continuous recording", e);
         deleteFileQuietly(dumpFile);
         return;
@@ -427,8 +426,6 @@ public class Profiler {
   }
 
   /** Perform a profile and notify the handler. */
-  @SuppressWarnings(
-      "CatchingUnchecked") // profiler failures must never escape into the instrumented application
   private void executeProfile(
       AlertMetricType alertType,
       Duration duration,
@@ -457,19 +454,20 @@ public class Profiler {
           () -> handler.accept(startedRecording), duration.getSeconds(), TimeUnit.SECONDS);
       runDiagnosticAction(diagnosticAction);
 
-    } catch (Exception e) {
+    } catch (IOException
+        | JfrConnectionException
+        | IllegalStateException
+        | RejectedExecutionException e) {
       logger.error("Failed to start or schedule JFR recording", e);
       closeRecordingAfterFailure(newRecording);
       clearActiveRecordingAfterFailure();
     }
   }
 
-  @SuppressWarnings(
-      "CatchingUnchecked") // diagnostic failures must not abort or escape profiler capture
   private static void runDiagnosticAction(Runnable diagnosticAction) {
     try {
       diagnosticAction.run();
-    } catch (Exception e) {
+    } catch (RuntimeException e) {
       logger.error("Failed to emit profiler diagnostics", e);
     }
   }
