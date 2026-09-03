@@ -146,23 +146,7 @@ public class SecondEntryPoint
             .build();
 
     Consumer<List<TelemetryItem>> heartbeatTelemetryItemConsumer =
-        telemetryItems -> {
-          for (TelemetryItem telemetryItem : telemetryItems) {
-            TelemetryObservers.INSTANCE
-                .getObservers()
-                .forEach(consumer -> consumer.accept(telemetryItem));
-            telemetryClient.getMetricsBatchItemProcessor().trackAsync(telemetryItem);
-          }
-        };
-
-    if (telemetryClient.getConnectionString() != null) {
-      startupLogger.verbose("connection string is not null, start HeartbeatExporter");
-      // interval longer than 15 minutes is not allowed since we use this data for usage telemetry
-      long intervalSeconds =
-          Math.min(configuration.heartbeat.intervalSeconds, MINUTES.toSeconds(15));
-      HeartbeatExporter.start(
-          intervalSeconds, telemetryClient::populateDefaults, heartbeatTelemetryItemConsumer);
-    }
+        createHeartbeatTelemetryItemConsumer(telemetryClient);
 
     TelemetryClient.setActive(telemetryClient);
 
@@ -319,6 +303,31 @@ public class SecondEntryPoint
           telemetryClient.setOtelResource(resource);
           return resource;
         });
+  }
+
+  static void startHeartbeat(Configuration configuration, TelemetryClient telemetryClient) {
+    if (telemetryClient.getConnectionString() == null) {
+      return;
+    }
+    startupLogger.verbose("connection string is not null, start HeartbeatExporter");
+    // interval longer than 15 minutes is not allowed since we use this data for usage telemetry
+    long intervalSeconds = Math.min(configuration.heartbeat.intervalSeconds, MINUTES.toSeconds(15));
+    HeartbeatExporter.start(
+        intervalSeconds,
+        telemetryClient::populateDefaultsForHeartbeat,
+        createHeartbeatTelemetryItemConsumer(telemetryClient));
+  }
+
+  private static Consumer<List<TelemetryItem>> createHeartbeatTelemetryItemConsumer(
+      TelemetryClient telemetryClient) {
+    return telemetryItems -> {
+      for (TelemetryItem telemetryItem : telemetryItems) {
+        TelemetryObservers.INSTANCE
+            .getObservers()
+            .forEach(consumer -> consumer.accept(telemetryItem));
+        telemetryClient.getMetricsBatchItemProcessor().trackAsync(telemetryItem);
+      }
+    };
   }
 
   private static LogRecordProcessor wrapBatchLogRecordProcessor(

@@ -125,6 +125,7 @@ class AlertingSubsystemTest {
 
     assertThat(called.get().getType()).isEqualTo(AlertMetricType.MANUAL);
     assertThat(called.get().getSettingsMoniker()).isEqualTo("a-settings-moniker");
+    assertThat(called.get().isTargeted()).isFalse();
   }
 
   @Test
@@ -199,6 +200,7 @@ class AlertingSubsystemTest {
     assertThat(matchingBreach.get()).isNotNull();
     assertThat(matchingBreach.get().getType()).isEqualTo(AlertMetricType.MANUAL);
     assertThat(matchingBreach.get().getSettingsMoniker()).isEqualTo("Portal_test");
+    assertThat(matchingBreach.get().isTargeted()).isTrue();
     assertThat(unmatchedBreach.get()).isNull();
   }
 

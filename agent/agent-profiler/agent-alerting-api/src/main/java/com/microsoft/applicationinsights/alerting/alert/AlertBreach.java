@@ -72,13 +72,16 @@ public abstract class AlertBreach implements JsonSerializable<AlertBreach> {
   @Nullable
   public abstract String getSettingsMoniker();
 
+  public abstract boolean isTargeted();
+
   public abstract Builder toBuilder();
 
   public static AlertBreach.Builder builder() {
     return new AutoValue_AlertBreach.Builder()
         .setCpuMetric(0)
         .setMemoryUsage(0)
-        .setProfileId(UUID.randomUUID().toString());
+        .setProfileId(UUID.randomUUID().toString())
+        .setTargeted(false);
   }
 
   @Override
@@ -121,6 +124,8 @@ public abstract class AlertBreach implements JsonSerializable<AlertBreach> {
     public abstract Builder setProfileId(String profileId);
 
     public abstract Builder setSettingsMoniker(@Nullable String settingsMoniker);
+
+    public abstract Builder setTargeted(boolean targeted);
 
     public abstract AlertBreach build();
 

@@ -110,6 +110,9 @@ public class RuntimeConfigurator {
     return copy(currentConfig);
   }
 
+  @SuppressWarnings(
+      "CatchingUnchecked") // optional profiler failures must not affect the instrumented
+  // application
   public void apply(RuntimeConfiguration runtimeConfig) {
 
     logger.debug("Applying runtime configuration");
@@ -151,8 +154,9 @@ public class RuntimeConfigurator {
               runtimeConfig.role.name,
               runtimeConfig.role.instance,
               telemetryClient);
-        } catch (RuntimeException e) {
-          logger.warn("Failed to initialize profiler", e);
+        } catch (Throwable t) {
+          profilerStarted.set(false);
+          logger.warn("Failed to initialize profiler", t);
         }
       } else {
         logger.debug("Profiler has already been initialized.");
@@ -167,7 +171,9 @@ public class RuntimeConfigurator {
         long intervalSeconds =
             Math.min(runtimeConfig.heartbeatIntervalSeconds, MINUTES.toSeconds(15));
         HeartbeatExporter.start(
-            intervalSeconds, telemetryClient::populateDefaults, heartbeatTelemetryItemsConsumer);
+            intervalSeconds,
+            telemetryClient::populateDefaultsForHeartbeat,
+            heartbeatTelemetryItemsConsumer);
       } else {
         logger.debug("Heartbeat has already started.");
       }

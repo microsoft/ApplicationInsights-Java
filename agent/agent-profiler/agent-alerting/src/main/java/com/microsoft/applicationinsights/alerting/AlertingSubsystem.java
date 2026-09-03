@@ -222,7 +222,7 @@ public class AlertingSubsystem {
 
     if (shouldTrigger) {
       dispatchManualAlert(
-          config.getImmediateProfilingDurationSeconds(), config.getSettingsMoniker());
+          config.getImmediateProfilingDurationSeconds(), config.getSettingsMoniker(), false);
     }
   }
 
@@ -243,11 +243,11 @@ public class AlertingSubsystem {
     String settingsMoniker = config.getSettingsMoniker();
     if (settingsMoniker != null
         && executedMonikers.tryMarkExecuted(settingsMoniker, timeSource.getNow())) {
-      dispatchManualAlert(config.getImmediateProfilingDurationSeconds(), settingsMoniker);
+      dispatchManualAlert(config.getImmediateProfilingDurationSeconds(), settingsMoniker, true);
     }
   }
 
-  private void dispatchManualAlert(int durationSeconds, String settingsMoniker) {
+  private void dispatchManualAlert(int durationSeconds, String settingsMoniker, boolean targeted) {
     AlertBreach alertBreach =
         AlertBreach.builder()
             .setType(AlertMetricType.MANUAL)
@@ -262,6 +262,7 @@ public class AlertingSubsystem {
             .setCpuMetric(0)
             .setMemoryUsage(0)
             .setSettingsMoniker(settingsMoniker)
+            .setTargeted(targeted)
             .build();
     alertHandler.accept(alertBreach);
   }
