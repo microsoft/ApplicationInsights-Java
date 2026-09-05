@@ -18,7 +18,13 @@ public class Log4j2WithExceptionServlet extends HttpServlet {
 
   protected void doGet(HttpServletRequest request, HttpServletResponse response) {
     ThreadContext.put("MDC key", "MDC value");
-    logger.error("This is an exception!", new Exception("Fake Exception"));
+    Exception e = testNullMessage(request) ? new Exception() : new Exception("Fake Exception");
+    logger.error("This is an exception!", e);
     ThreadContext.remove("MDC key");
+  }
+
+  private static boolean testNullMessage(HttpServletRequest request) {
+    String testNullMessage = request.getParameter("test-null-message");
+    return "true".equalsIgnoreCase(testNullMessage);
   }
 }

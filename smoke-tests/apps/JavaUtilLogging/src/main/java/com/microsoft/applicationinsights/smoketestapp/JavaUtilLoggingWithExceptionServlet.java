@@ -16,6 +16,12 @@ public class JavaUtilLoggingWithExceptionServlet extends HttpServlet {
   private static final Logger logger = Logger.getLogger("smoketestapp");
 
   protected void doGet(HttpServletRequest request, HttpServletResponse response) {
-    logger.log(Level.SEVERE, "This is an exception!", new Exception("Fake Exception"));
+    Exception e = testNullMessage(request) ? new Exception() : new Exception("Fake Exception");
+    logger.log(Level.SEVERE, "This is an exception!", e);
+  }
+
+  private static boolean testNullMessage(HttpServletRequest request) {
+    String testNullMessage = request.getParameter("test-null-message");
+    return "true".equalsIgnoreCase(testNullMessage);
   }
 }
