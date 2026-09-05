@@ -1,0 +1,49 @@
+name: Stress Test - Java 8 Windows
+
+on:
+  pull_request:
+
+jobs:
+  stress-test:
+    runs-on: windows-2022
+    strategy:
+      matrix:
+        batch: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
+        run: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+      fail-fast: false
+      max-parallel: 5
+    name: "Batch ${{ matrix.batch }} Run ${{ matrix.run }}"
+    steps:
+      - name: Support long paths
+        run: git config --system core.longpaths true
+
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 8
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Test
+        continue-on-error: true
+        run: >
+          ./gradlew
+          check
+          -x spotlessCheck
+          -PtestJavaVersion=8
+          -PtestJavaVM=hotspot
+          --no-build-cache
+
+      - name: Upload failure reports
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: failure-reports-batch${{ matrix.batch }}-run${{ matrix.run }}
+          path: '**/build/reports/tests/**/*'
