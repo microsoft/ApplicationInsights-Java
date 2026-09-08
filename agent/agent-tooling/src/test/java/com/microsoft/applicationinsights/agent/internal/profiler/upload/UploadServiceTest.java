@@ -46,7 +46,9 @@ class UploadServiceTest extends TestBase {
             "a-role-name");
 
     ServiceProfilerIndex serviceProfilerIndex =
-        uploadService.uploadJfrFile(profileId, "a-trigger", 321, tmpFile, 0.0, 0.0).block();
+        uploadService
+            .uploadJfrFile(profileId, "a-trigger", 321, tmpFile, 0.0, 0.0, "Portal_test")
+            .block();
 
     assertThat(
             serviceProfilerIndex
@@ -71,6 +73,12 @@ class UploadServiceTest extends TestBase {
                 .getProperties()
                 .get(ServiceProfilerIndex.Builder.SERVICE_PROFILER_DATACUBE_PROPERTY_NAME))
         .isEqualTo(appId.toString());
+
+    assertThat(
+            serviceProfilerIndex
+                .getProperties()
+                .get(ServiceProfilerIndex.Builder.SERVICE_PROFILER_SETTINGS_MONIKER_PROPERTY_NAME))
+        .isEqualTo("Portal_test");
   }
 
   private static File createFakeJfrFile() throws IOException {
