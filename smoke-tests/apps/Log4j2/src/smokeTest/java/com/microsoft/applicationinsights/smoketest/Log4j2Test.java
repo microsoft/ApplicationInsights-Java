@@ -110,6 +110,16 @@ abstract class Log4j2Test {
   @Test
   @TargetUri("/testWithException")
   void testWithException() throws Exception {
+    testWithException(false);
+  }
+
+  @Test
+  @TargetUri("/testWithException?test-null-message=true")
+  void testWithExceptionWithNullMessage() throws Exception {
+    testWithException(true);
+  }
+
+  private void testWithException(boolean testNullMessage) throws Exception {
     List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 1);
 
     Envelope rdEnvelope = rdList.get(0);
@@ -130,7 +140,11 @@ abstract class Log4j2Test {
     ExceptionDetails ex = details.get(0);
 
     assertThat(ex.getTypeName()).isEqualTo("java.lang.Exception");
-    assertThat(ex.getMessage()).isEqualTo("Fake Exception");
+    if (testNullMessage) {
+      assertThat(ex.getMessage()).isEqualTo("java.lang.Exception");
+    } else {
+      assertThat(ex.getMessage()).isEqualTo("Fake Exception");
+    }
     assertThat(ed.getSeverityLevel()).isEqualTo(SeverityLevel.ERROR);
     assertThat(ed.getProperties()).containsEntry("Logger Message", "This is an exception!");
     assertThat(ed.getProperties()).containsEntry("SourceType", "Logger");
