@@ -121,7 +121,7 @@ abstract class JdbcTest {
         .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
     assertThat(telemetry.rd.getSuccess()).isTrue();
 
-    assertThat(telemetry.rdd1.getName()).isEqualTo("INSERT testdb.abc");
+    assertThat(telemetry.rdd1.getName()).isEqualTo("BATCH INSERT testdb.abc");
     assertThat(telemetry.rdd1.getData()).isEqualTo("insert into abc (xyz) values (?)");
     assertThat(telemetry.rdd1.getType()).isEqualTo("SQL");
     assertThat(telemetry.rdd1.getTarget()).isEqualTo("hsqldb | testdb");
