@@ -342,6 +342,8 @@ public class Configuration {
 
     public boolean captureLogbackCodeAttributes;
 
+    public boolean captureLogbackKeyValues;
+
     public boolean captureLogbackMarker;
 
     public boolean captureLog4jMarker;
