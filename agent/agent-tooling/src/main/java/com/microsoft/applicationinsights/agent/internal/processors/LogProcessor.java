@@ -10,7 +10,6 @@ import com.microsoft.applicationinsights.agent.internal.configuration.Configurat
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
-import io.opentelemetry.sdk.logs.data.Body;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
 import java.util.ArrayList;
 import java.util.List;
@@ -84,7 +83,7 @@ public class LogProcessor extends AgentProcessor {
         updatedLogBuffer.setLength(updatedLogBuffer.length() - separator.length());
       }
 
-      return new MyLogData(log, existingLogAttributes, Body.string(updatedLogBuffer.toString()));
+      return new MyLogData(log, existingLogAttributes, updatedLogBuffer.toString());
     }
 
     return log;
@@ -107,7 +106,7 @@ public class LogProcessor extends AgentProcessor {
           applyRule(groupNames.get(i), toAttributeRulePatterns.get(i), bodyAsString, builder);
     }
 
-    return new MyLogData(log, builder.build(), Body.string(bodyAsString));
+    return new MyLogData(log, builder.build(), bodyAsString);
   }
 
   public static boolean logHasAllFromAttributeKeys(
