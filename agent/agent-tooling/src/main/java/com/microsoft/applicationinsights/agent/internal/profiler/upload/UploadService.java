@@ -100,7 +100,8 @@ public class UploadService {
             timestamp,
             file,
             alertBreach.getCpuMetric(),
-            alertBreach.getMemoryUsage())
+            alertBreach.getMemoryUsage(),
+            alertBreach.getSettingsMoniker())
         .subscribe(onUploadComplete(uploadListener), e -> logger.error("Failed to upload file", e));
   }
 
@@ -122,9 +123,29 @@ public class UploadService {
       File file,
       double cpuUsage,
       double memoryUsage) {
+    return uploadJfrFile(profileId, triggerName, timestamp, file, cpuUsage, memoryUsage, null);
+  }
 
+  // visible for tests
+  Mono<ServiceProfilerIndex> uploadJfrFile(
+      UUID profileId,
+      String triggerName,
+      long timestamp,
+      File file,
+      double cpuUsage,
+      double memoryUsage,
+      @Nullable String settingsMoniker) {
     return uploadFile(
-        triggerName, timestamp, profileId, file, cpuUsage, memoryUsage, "Profile", "jfr", "jfr");
+        triggerName,
+        timestamp,
+        profileId,
+        file,
+        cpuUsage,
+        memoryUsage,
+        "Profile",
+        "jfr",
+        "jfr",
+        settingsMoniker);
   }
 
   @SuppressWarnings("TooManyParameters") // parameter count justified by method complexity
@@ -138,6 +159,31 @@ public class UploadService {
       String artifactKind,
       String extension,
       String fileFormat) {
+    return uploadFile(
+        triggerName,
+        timestamp,
+        profileId,
+        file,
+        cpuUsage,
+        memoryUsage,
+        artifactKind,
+        extension,
+        fileFormat,
+        null);
+  }
+
+  @SuppressWarnings("TooManyParameters") // parameter count justified by method complexity
+  private Mono<ServiceProfilerIndex> uploadFile(
+      String triggerName,
+      long timestamp,
+      UUID profileId,
+      File file,
+      double cpuUsage,
+      double memoryUsage,
+      String artifactKind,
+      String extension,
+      String fileFormat,
+      @Nullable String settingsMoniker) {
     String appId = appIdSupplier.get();
     if (appId == null || appId.isEmpty()) {
       logger.error("Failed to upload due to lack of appId");
@@ -163,21 +209,25 @@ public class UploadService {
               String fileId = createId();
               String formattedTimestamp = TimestampContract.padNanos(done.getTimeStamp());
 
-              return ServiceProfilerIndex.builder()
-                  .setTriggeredBy(triggerName)
-                  .setFileId(fileId)
-                  .setStampId(done.getStampId())
-                  .setDataCubeId(UUID.fromString(appId))
-                  .setTimeStamp(formattedTimestamp)
-                  .setMachineName(uploadContext.getMachineName())
-                  .setOs(OsPlatformProvider.getOsPlatformDescription())
-                  .setProcessId(processId)
-                  .setArtifactKind(artifactKind)
-                  .setArtifactId(profileId.toString())
-                  .setExtension(extension)
-                  .setCpuUsage(cpuUsage)
-                  .setMemoryUsage(memoryUsage)
-                  .build();
+              ServiceProfilerIndex.Builder indexBuilder =
+                  ServiceProfilerIndex.builder()
+                      .setTriggeredBy(triggerName)
+                      .setFileId(fileId)
+                      .setStampId(done.getStampId())
+                      .setDataCubeId(UUID.fromString(appId))
+                      .setTimeStamp(formattedTimestamp)
+                      .setMachineName(uploadContext.getMachineName())
+                      .setOs(OsPlatformProvider.getOsPlatformDescription())
+                      .setProcessId(processId)
+                      .setArtifactKind(artifactKind)
+                      .setArtifactId(profileId.toString())
+                      .setExtension(extension)
+                      .setCpuUsage(cpuUsage)
+                      .setMemoryUsage(memoryUsage);
+              if (settingsMoniker != null && !settingsMoniker.trim().isEmpty()) {
+                indexBuilder.setSettingsMoniker(settingsMoniker.trim());
+              }
+              return indexBuilder.build();
             });
   }
 
