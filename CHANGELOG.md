@@ -2,8 +2,12 @@
 
 ## Unreleased
 
+## Version 3.7.10 GA (09/17/2026)
+
 ### Enhancements
 
+* Update to OpenTelemetry Java Instrumentation 2.31.1
+  ([#4821](https://github.com/microsoft/ApplicationInsights-Java/pull/4821)
 * Add continuous profiling (`enableContinuousProfiling`, `continuousProfilingMaxAgeSeconds`) which
   keeps a single JFR recording running in a circular buffer so profile requests dump the most recent
   window of data immediately
