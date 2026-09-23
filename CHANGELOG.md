@@ -4,7 +4,7 @@
 
 * Add Java agent support for ServiceProfiler targeted collection plans by cloud role or
   role-qualified instance
-  
+
 ## Version 3.7.10 GA (09/17/2026)
 
 ### Enhancements
