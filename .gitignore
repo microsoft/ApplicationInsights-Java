@@ -11,3 +11,5 @@ build/
 # VSCode
 /.vscode/
 bin/
+
+/docs/adr/targettedProfiling/targettedProfiling_goal.md

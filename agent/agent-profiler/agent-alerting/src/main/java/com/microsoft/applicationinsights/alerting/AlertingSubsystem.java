@@ -15,12 +15,11 @@ import com.microsoft.applicationinsights.alerting.config.AlertingProfileFileTrig
 import com.microsoft.applicationinsights.alerting.config.CollectionPlanConfiguration;
 import com.microsoft.applicationinsights.alerting.config.CollectionPlanConfiguration.EngineMode;
 import com.microsoft.applicationinsights.alerting.config.DefaultConfiguration;
+import com.microsoft.applicationinsights.alerting.config.TargetedCollectionPlanConfiguration;
 import java.io.File;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
@@ -38,11 +37,12 @@ public class AlertingSubsystem {
   // Downstream observer of alerts produced by the alerting system
   private final Consumer<AlertBreach> alertHandler;
 
-  // List of manual triggers that have already been processed
-  private final Set<String> manualTriggersExecuted = new HashSet<>();
+  private final ExecutedMonikerTracker executedMonikers;
 
   private final AlertPipelines alertPipelines;
   private final TimeSource timeSource;
+  @Nullable private final String roleName;
+  @Nullable private final String roleInstance;
 
   // Current configuration of the alerting subsystem
   private AlertingConfiguration alertConfig;
@@ -57,11 +57,32 @@ public class AlertingSubsystem {
       TimeSource timeSource,
       boolean enableRequestTriggerUpdates,
       AlertingProfileFileTriggerConfiguration alertingProfileFileTriggerConfiguration) {
+    this(
+        alertHandler,
+        timeSource,
+        enableRequestTriggerUpdates,
+        alertingProfileFileTriggerConfiguration,
+        null,
+        null,
+        new ExecutedMonikerTracker());
+  }
+
+  AlertingSubsystem(
+      Consumer<AlertBreach> alertHandler,
+      TimeSource timeSource,
+      boolean enableRequestTriggerUpdates,
+      AlertingProfileFileTriggerConfiguration alertingProfileFileTriggerConfiguration,
+      @Nullable String roleName,
+      @Nullable String roleInstance,
+      ExecutedMonikerTracker executedMonikers) {
     this.alertHandler = alertHandler;
     this.alertPipelines = new AlertPipelines(alertHandler);
     this.timeSource = timeSource;
     this.enableRequestTriggerUpdates = enableRequestTriggerUpdates;
     this.alertingProfileFileTriggerConfiguration = alertingProfileFileTriggerConfiguration;
+    this.roleName = roleName;
+    this.roleInstance = roleInstance;
+    this.executedMonikers = executedMonikers;
   }
 
   /**
@@ -76,10 +97,25 @@ public class AlertingSubsystem {
       Consumer<AlertBreach> alertHandler,
       TimeSource timeSource,
       AlertingProfileFileTriggerConfiguration alertingProfileFileTriggerConfiguration) {
+    return create(alertHandler, timeSource, null, null, alertingProfileFileTriggerConfiguration);
+  }
+
+  public static AlertingSubsystem create(
+      Consumer<AlertBreach> alertHandler,
+      TimeSource timeSource,
+      @Nullable String roleName,
+      @Nullable String roleInstance,
+      AlertingProfileFileTriggerConfiguration alertingProfileFileTriggerConfiguration) {
 
     AlertingSubsystem alertingSubsystem =
         new AlertingSubsystem(
-            alertHandler, timeSource, true, alertingProfileFileTriggerConfiguration);
+            alertHandler,
+            timeSource,
+            true,
+            alertingProfileFileTriggerConfiguration,
+            roleName,
+            roleInstance,
+            new ExecutedMonikerTracker());
 
     // init with disabled config
     alertingSubsystem.initialize(
@@ -166,7 +202,11 @@ public class AlertingSubsystem {
    * both the server-side collection plan and the local file-based trigger.
    */
   private void evaluateManualTrigger(AlertingConfiguration alertConfig) {
-    evaluateCollectionPlanTrigger(alertConfig);
+    if (alertConfig.getTargetedCollectionPlanConfiguration() == null) {
+      evaluateCollectionPlanTrigger(alertConfig);
+    } else {
+      evaluateTargetedCollectionPlanTrigger(alertConfig);
+    }
     evaluateFileTrigger(alertConfig);
   }
 
@@ -178,27 +218,53 @@ public class AlertingSubsystem {
         config.isSingle()
             && config.getMode() == EngineMode.immediate
             && timeSource.getNow().isBefore(config.getExpiration())
-            && !manualTriggersExecuted.contains(config.getSettingsMoniker());
+            && executedMonikers.tryMarkExecuted(config.getSettingsMoniker(), timeSource.getNow());
 
     if (shouldTrigger) {
-      manualTriggersExecuted.add(config.getSettingsMoniker());
-
-      AlertBreach alertBreach =
-          AlertBreach.builder()
-              .setType(AlertMetricType.MANUAL)
-              .setAlertValue(0.0)
-              .setAlertConfiguration(
-                  AlertConfiguration.builder()
-                      .setType(AlertMetricType.MANUAL)
-                      .setEnabled(true)
-                      .setProfileDurationSeconds(config.getImmediateProfilingDurationSeconds())
-                      .build())
-              .setProfileId(UUID.randomUUID().toString())
-              .setCpuMetric(0)
-              .setMemoryUsage(0)
-              .build();
-      alertHandler.accept(alertBreach);
+      dispatchManualAlert(
+          config.getImmediateProfilingDurationSeconds(), config.getSettingsMoniker(), false);
     }
+  }
+
+  private void evaluateTargetedCollectionPlanTrigger(AlertingConfiguration alertConfig) {
+    TargetedCollectionPlanConfiguration config =
+        alertConfig.getTargetedCollectionPlanConfiguration();
+    if (config == null) {
+      return;
+    }
+    if (!config.isValid()) {
+      logger.warn("Ignoring invalid targeted profiler collection plan");
+      return;
+    }
+    if (!config.isActionable(roleName, roleInstance, timeSource.getNow())) {
+      return;
+    }
+
+    String settingsMoniker = config.getSettingsMoniker();
+    if (settingsMoniker != null
+        && executedMonikers.tryMarkExecuted(settingsMoniker, timeSource.getNow())) {
+      dispatchManualAlert(config.getImmediateProfilingDurationSeconds(), settingsMoniker, true);
+    }
+  }
+
+  private void dispatchManualAlert(int durationSeconds, String settingsMoniker, boolean targeted) {
+    AlertBreach alertBreach =
+        AlertBreach.builder()
+            .setType(AlertMetricType.MANUAL)
+            .setAlertValue(0.0)
+            .setAlertConfiguration(
+                AlertConfiguration.builder()
+                    .setType(AlertMetricType.MANUAL)
+                    .setEnabled(true)
+                    .setProfileDurationSeconds(durationSeconds)
+                    .build())
+            .setProfileId(UUID.randomUUID().toString())
+            .setCpuMetric(0)
+            .setMemoryUsage(0)
+            .setSettingsMoniker(settingsMoniker)
+            .setTargeted(targeted)
+            .build();
+    alertHandler.accept(alertBreach);
   }
 
   /**
