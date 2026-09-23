@@ -7,12 +7,12 @@ data class DependencySet(val group: String, val version: String, val modules: Li
 val dependencyVersions = hashMapOf<String, String>()
 rootProject.extra["versions"] = dependencyVersions
 
-val otelSdkVersion = "1.62.0"
-val otelSdkAlphaVersion = "1.62.0-alpha"
-val otelInstrumentationAlphaVersion = "2.28.1-alpha"
-val otelInstrumentationVersion = "2.28.1"
+val otelSdkVersion = "1.66.0"
+val otelSdkAlphaVersion = "1.66.0-alpha"
+val otelInstrumentationAlphaVersion = "2.31.1-alpha"
+val otelInstrumentationVersion = "2.31.1"
 val otelContribVersion = "1.56.0"
-val otelContribAlphaVersion = "1.57.0-alpha"
+val otelContribAlphaVersion = "1.60.0-alpha"
 
 rootProject.extra["otelInstrumentationVersion"] = otelInstrumentationVersion
 rootProject.extra["otelInstrumentationAlphaVersion"] = otelInstrumentationAlphaVersion
@@ -24,7 +24,7 @@ val DEPENDENCY_BOMS = listOf(
   "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:${otelInstrumentationVersion}",
   "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${otelInstrumentationAlphaVersion}",
   "com.azure:azure-sdk-bom:1.3.8",
-  "io.netty:netty-bom:4.2.17.Final",
+  "io.netty:netty-bom:4.2.18.Final",
   "org.junit:junit-bom:5.14.4",
   "org.testcontainers:testcontainers-bom:2.0.5",
 )
@@ -34,11 +34,11 @@ val autoValueVersion = "1.11.1"
 val errorProneVersion = "2.50.0"
 val jmhVersion = "1.37"
 val mockitoVersion = "4.11.0"
-val slf4jVersion = "2.0.18"
+val slf4jVersion = "2.0.19"
 
 val CORE_DEPENDENCIES = listOf(
-  "io.opentelemetry.semconv:opentelemetry-semconv:1.43.0",
-  "io.opentelemetry.semconv:opentelemetry-semconv-incubating:1.43.0-alpha",
+  "io.opentelemetry.semconv:opentelemetry-semconv:1.44.0",
+  "io.opentelemetry.semconv:opentelemetry-semconv-incubating:1.44.0-alpha",
   "io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-incubator:${otelInstrumentationAlphaVersion}",
   "com.google.auto.service:auto-service:${autoServiceVersion}",
   "com.google.auto.service:auto-service-annotations:${autoServiceVersion}",
