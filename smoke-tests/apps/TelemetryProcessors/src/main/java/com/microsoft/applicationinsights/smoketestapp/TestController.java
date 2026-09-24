@@ -5,8 +5,14 @@ package com.microsoft.applicationinsights.smoketestapp;
 
 import static io.opentelemetry.api.common.AttributeKey.doubleArrayKey;
 
+import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Value;
+import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.api.trace.Span;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.slf4j.MDC;
@@ -60,6 +66,26 @@ public class TestController {
   public String testNonStringRegexSpanAttributes() {
     Span.current().setAttribute("myLongRegexAttributeKey", 428);
     return "Test non string regex type span attributes";
+  }
+
+  @GetMapping("/test-custom-measurements")
+  public String testCustomMeasurements() {
+    AttributeKey<Value<?>> key = AttributeKey.valueKey("microsoft.custom_measurements");
+    Map<String, Value<?>> measurementValues = new HashMap<>();
+    measurementValues.put("itemsProcessed", Value.of(42.0));
+    measurementValues.put("queueDepth", Value.of(7.0));
+    Value<?> measurements = Value.of(measurementValues);
+
+    Span.current().setAttribute(key, measurements);
+    GlobalOpenTelemetry.get()
+        .getLogsBridge()
+        .get("custom-measurements-test")
+        .logRecordBuilder()
+        .setBody("custom measurements")
+        .setSeverity(Severity.INFO)
+        .setAttribute(key, measurements)
+        .emit();
+    return "Test custom measurements";
   }
 
   @GetMapping("/mask-user-id-in-log-body")
