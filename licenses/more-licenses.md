@@ -363,7 +363,7 @@
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**69** **Group:** `com.azure` **Name:** `azure-monitor-opentelemetry-autoconfigure` **Version:** `1.8.0-beta.1`
+**69** **Group:** `com.azure` **Name:** `azure-monitor-opentelemetry-autoconfigure` **Version:** `1.7.0`
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
 **70** **Group:** `com.azure` **Name:** `azure-storage-blob` **Version:** `12.35.0`
