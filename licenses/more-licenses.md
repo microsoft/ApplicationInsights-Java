@@ -10,26 +10,26 @@
 > - **Embedded license files**: [jackson-annotations-2.22.jar/META-INF/LICENSE](jackson-annotations-2.22.jar/META-INF/LICENSE)
     - [jackson-annotations-2.22.jar/META-INF/NOTICE](jackson-annotations-2.22.jar/META-INF/NOTICE)
 
-**2** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-core` **Version:** `2.22.2`
+**2** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-core` **Version:** `2.22.3`
 > - **Project URL**: [https://github.com/FasterXML/jackson-core](https://github.com/FasterXML/jackson-core)
 > - **Manifest License**: [https://www.apache.org/licenses/LICENSE-2.0](Apache License, Version 2.0)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
-> - **Embedded license files**: [jackson-core-2.22.2.jar/META-INF/LICENSE](jackson-core-2.22.2.jar/META-INF/LICENSE)
-    - [jackson-core-2.22.2.jar/META-INF/NOTICE](jackson-core-2.22.2.jar/META-INF/NOTICE)
+> - **Embedded license files**: [jackson-core-2.22.3.jar/META-INF/LICENSE](jackson-core-2.22.3.jar/META-INF/LICENSE)
+    - [jackson-core-2.22.3.jar/META-INF/NOTICE](jackson-core-2.22.3.jar/META-INF/NOTICE)
 
-**3** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-databind` **Version:** `2.22.2`
+**3** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-databind` **Version:** `2.22.3`
 > - **Project URL**: [https://github.com/FasterXML/jackson](https://github.com/FasterXML/jackson)
 > - **Manifest License**: [https://www.apache.org/licenses/LICENSE-2.0](Apache License, Version 2.0)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
-> - **Embedded license files**: [jackson-databind-2.22.2.jar/META-INF/LICENSE](jackson-databind-2.22.2.jar/META-INF/LICENSE)
-    - [jackson-databind-2.22.2.jar/META-INF/NOTICE](jackson-databind-2.22.2.jar/META-INF/NOTICE)
+> - **Embedded license files**: [jackson-databind-2.22.3.jar/META-INF/LICENSE](jackson-databind-2.22.3.jar/META-INF/LICENSE)
+    - [jackson-databind-2.22.3.jar/META-INF/NOTICE](jackson-databind-2.22.3.jar/META-INF/NOTICE)
 
-**4** **Group:** `com.fasterxml.jackson.datatype` **Name:** `jackson-datatype-jsr310` **Version:** `2.22.2`
+**4** **Group:** `com.fasterxml.jackson.datatype` **Name:** `jackson-datatype-jsr310` **Version:** `2.22.3`
 > - **Manifest Project URL**: [https://github.com/FasterXML/jackson-modules-java8/jackson-datatype-jsr310](https://github.com/FasterXML/jackson-modules-java8/jackson-datatype-jsr310)
 > - **Manifest License**: [https://www.apache.org/licenses/LICENSE-2.0](Apache License, Version 2.0)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
-> - **Embedded license files**: [jackson-datatype-jsr310-2.22.2.jar/META-INF/LICENSE](jackson-datatype-jsr310-2.22.2.jar/META-INF/LICENSE)
-    - [jackson-datatype-jsr310-2.22.2.jar/META-INF/NOTICE](jackson-datatype-jsr310-2.22.2.jar/META-INF/NOTICE)
+> - **Embedded license files**: [jackson-datatype-jsr310-2.22.3.jar/META-INF/LICENSE](jackson-datatype-jsr310-2.22.3.jar/META-INF/LICENSE)
+    - [jackson-datatype-jsr310-2.22.3.jar/META-INF/NOTICE](jackson-datatype-jsr310-2.22.3.jar/META-INF/NOTICE)
 
 **5** **Group:** `com.google.errorprone` **Name:** `error_prone_annotations` **Version:** `2.50.0`
 > - **Manifest Project URL**: [https://errorprone.info/error_prone_annotations](https://errorprone.info/error_prone_annotations)
@@ -266,12 +266,12 @@
 > - **Embedded license files**: [commons-text-1.15.0.jar/META-INF/LICENSE.txt](commons-text-1.15.0.jar/META-INF/LICENSE.txt)
     - [commons-text-1.15.0.jar/META-INF/NOTICE.txt](commons-text-1.15.0.jar/META-INF/NOTICE.txt)
 
-**52** **Group:** `org.slf4j` **Name:** `jcl-over-slf4j` **Version:** `2.0.19`
+**52** **Group:** `org.slf4j` **Name:** `jcl-over-slf4j` **Version:** `2.0.20`
 > - **Project URL**: [http://www.slf4j.org](http://www.slf4j.org)
 > - **Manifest License**: [https://www.apache.org/licenses/LICENSE-2.0](Apache License, Version 2.0)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
-> - **Embedded license files**: [jcl-over-slf4j-2.0.19.jar/META-INF/LICENSE.txt](jcl-over-slf4j-2.0.19.jar/META-INF/LICENSE.txt)
+> - **Embedded license files**: [jcl-over-slf4j-2.0.20.jar/META-INF/LICENSE.txt](jcl-over-slf4j-2.0.20.jar/META-INF/LICENSE.txt)
 
 ## Eclipse Public License - v 1.0
 
@@ -401,17 +401,17 @@
 > - **POM Project URL**: [https://github.com/AzureAD/microsoft-authentication-library-for-java](https://github.com/AzureAD/microsoft-authentication-library-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**78** **Group:** `org.slf4j` **Name:** `jcl-over-slf4j` **Version:** `2.0.19`
+**78** **Group:** `org.slf4j` **Name:** `jcl-over-slf4j` **Version:** `2.0.20`
 > - **Project URL**: [http://www.slf4j.org](http://www.slf4j.org)
 > - **Manifest License**: [https://www.apache.org/licenses/LICENSE-2.0](Apache License, Version 2.0)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
-> - **Embedded license files**: [jcl-over-slf4j-2.0.19.jar/META-INF/LICENSE.txt](jcl-over-slf4j-2.0.19.jar/META-INF/LICENSE.txt)
+> - **Embedded license files**: [jcl-over-slf4j-2.0.20.jar/META-INF/LICENSE.txt](jcl-over-slf4j-2.0.20.jar/META-INF/LICENSE.txt)
 
-**79** **Group:** `org.slf4j` **Name:** `slf4j-api` **Version:** `2.0.19`
+**79** **Group:** `org.slf4j` **Name:** `slf4j-api` **Version:** `2.0.20`
 > - **Project URL**: [http://www.slf4j.org](http://www.slf4j.org)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
-> - **Embedded license files**: [slf4j-api-2.0.19.jar/META-INF/LICENSE.txt](slf4j-api-2.0.19.jar/META-INF/LICENSE.txt)
+> - **Embedded license files**: [slf4j-api-2.0.20.jar/META-INF/LICENSE.txt](slf4j-api-2.0.20.jar/META-INF/LICENSE.txt)
 
 ## MIT-0
 
