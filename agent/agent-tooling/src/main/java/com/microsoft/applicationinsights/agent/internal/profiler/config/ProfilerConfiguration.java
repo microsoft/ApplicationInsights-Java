@@ -42,6 +42,7 @@ public class ProfilerConfiguration implements JsonSerializable<ProfilerConfigura
   private String memoryTriggerConfiguration;
   private String defaultConfiguration;
   private List<AlertingConfig.RequestTrigger> requestTriggerConfiguration;
+  @Nullable private TargetedCollectionPlan targetedCollectionPlan;
 
   public boolean hasBeenConfigured() {
     return getLastModified().compareTo(DEFAULT_DATE) != 0;
@@ -134,6 +135,17 @@ public class ProfilerConfiguration implements JsonSerializable<ProfilerConfigura
     return this;
   }
 
+  @Nullable
+  public TargetedCollectionPlan getTargetedCollectionPlan() {
+    return targetedCollectionPlan;
+  }
+
+  public ProfilerConfiguration setTargetedCollectionPlan(
+      @Nullable TargetedCollectionPlan targetedCollectionPlan) {
+    this.targetedCollectionPlan = targetedCollectionPlan;
+    return this;
+  }
+
   @Override
   public JsonWriter toJson(JsonWriter jsonWriter) throws IOException {
     jsonWriter.writeStartObject();
@@ -151,6 +163,7 @@ public class ProfilerConfiguration implements JsonSerializable<ProfilerConfigura
       trigger.toJson(jsonWriter);
     }
     jsonWriter.writeEndArray();
+    jsonWriter.writeJsonField("targetedCollectionPlan", targetedCollectionPlan);
     jsonWriter.writeEndObject();
     return jsonWriter;
   }
@@ -194,6 +207,9 @@ public class ProfilerConfiguration implements JsonSerializable<ProfilerConfigura
             } else if ("requestTriggerConfiguration".equals(fieldName)) {
               deserializedProfilerConfiguration.setRequestTriggerConfiguration(
                   reader.readArray(AlertingConfig.RequestTrigger::fromJson));
+            } else if ("targetedCollectionPlan".equals(fieldName)) {
+              deserializedProfilerConfiguration.setTargetedCollectionPlan(
+                  TargetedCollectionPlan.fromJson(reader));
             } else {
               reader.skipChildren();
             }

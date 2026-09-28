@@ -10,6 +10,7 @@ import com.microsoft.applicationinsights.alerting.config.AlertConfiguration;
 import com.microsoft.applicationinsights.alerting.config.AlertMetricType;
 import java.io.IOException;
 import java.util.UUID;
+import javax.annotation.Nullable;
 
 /** Represents a breach of an alert threshold. */
 @AutoValue
@@ -68,13 +69,19 @@ public abstract class AlertBreach implements JsonSerializable<AlertBreach> {
     return this;
   }
 
+  @Nullable
+  public abstract String getSettingsMoniker();
+
+  public abstract boolean isTargeted();
+
   public abstract Builder toBuilder();
 
   public static AlertBreach.Builder builder() {
     return new AutoValue_AlertBreach.Builder()
         .setCpuMetric(0)
         .setMemoryUsage(0)
-        .setProfileId(UUID.randomUUID().toString());
+        .setProfileId(UUID.randomUUID().toString())
+        .setTargeted(false);
   }
 
   @Override
@@ -88,6 +95,9 @@ public abstract class AlertBreach implements JsonSerializable<AlertBreach> {
     jsonWriter.writeDoubleField("cpuMetric", cpuMetric);
     jsonWriter.writeDoubleField("memoryUsage", memoryUsage);
     jsonWriter.writeStringField("profileId", profileId);
+    if (getSettingsMoniker() != null) {
+      jsonWriter.writeStringField("settingsMoniker", getSettingsMoniker());
+    }
     jsonWriter.writeEndObject();
     return jsonWriter;
   }
@@ -112,6 +122,10 @@ public abstract class AlertBreach implements JsonSerializable<AlertBreach> {
     public abstract Builder setMemoryUsage(double memoryUsage);
 
     public abstract Builder setProfileId(String profileId);
+
+    public abstract Builder setSettingsMoniker(@Nullable String settingsMoniker);
+
+    public abstract Builder setTargeted(boolean targeted);
 
     public abstract AlertBreach build();
 
