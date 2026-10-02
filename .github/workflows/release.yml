@@ -63,7 +63,7 @@ jobs:
     with:
       version: ${{ needs.release.outputs.version }}
     secrets:
-      PERSONAL_ACCESS_TOKEN: ${{ secrets.XIANG17_TOKEN }}
+      AI_JAVA_HELPER_APP_PRIVATE_KEY: ${{ secrets.AI_JAVA_HELPER_APP_PRIVATE_KEY }}
 
   create-version-bump-pull-request:
     permissions: write-all
