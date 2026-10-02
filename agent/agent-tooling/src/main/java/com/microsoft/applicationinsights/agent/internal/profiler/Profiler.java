@@ -130,10 +130,9 @@ public class Profiler {
     continuousProfilingEnabled = config.enableContinuousProfiling;
     continuousProfilingMaxAge =
         resolveContinuousProfilingMaxAge(config.continuousProfilingMaxAgeSeconds);
-    // Continuous profiling uses a single always-on recording, so it can only carry one JFC. Use the
-    // minimal diagnosis CPU profile, which enables just the events needed by the diagnosis
-    // analyses.
-    continuousRecordingConfiguration = AlternativeJfrConfigurations.getContinuousProfileConfig();
+    // Continuous profiling uses a single always-on recording, so it can only carry one JFC.
+    continuousRecordingConfiguration =
+        AlternativeJfrConfigurations.getContinuousProfileConfig(config);
     temporaryDirectory = tempDir;
   }
 
