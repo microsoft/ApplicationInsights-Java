@@ -35,13 +35,16 @@ public class ServiceProfilerClient {
   private static final String SETTINGS_PATH = PROFILER_API_PREFIX + "/settings";
   public static final String OLD_TIMESTAMP_PARAMETER = "oldTimestamp";
   public static final String FEATURE_VERSION_PARAMETER = "featureVersion";
-  public static final String FEATURE_VERSION = "1.0.0";
+  public static final String FEATURE_VERSION = "2.0.0";
+  private static final String LEGACY_FEATURE_VERSION = "1.0.0";
+  private static final String EMPTY_GUID = "00000000-0000-0000-0000-000000000000";
   public static final String API_FEATURE_VERSION = "2020-10-14-preview";
 
   private final URL hostUrl;
   private final String instrumentationKey;
   private final HttpPipeline httpPipeline;
   @Nullable private final String userAgent;
+  private volatile String settingsFeatureVersion = FEATURE_VERSION;
 
   public ServiceProfilerClient(
       URL hostUrl,
@@ -144,15 +147,39 @@ public class ServiceProfilerClient {
 
   /** Obtain current settings that have been configured within the UI. */
   public Mono<ProfilerConfiguration> getSettings(Date oldTimeStamp) {
+    String featureVersion = settingsFeatureVersion;
+    return getSettings(oldTimeStamp, featureVersion)
+        .flatMap(
+            config -> {
+              if (FEATURE_VERSION.equals(featureVersion)
+                  && isUnsupportedFeatureVersionResponse(config)) {
+                logger.info(
+                    "Service Profiler settings protocol {} is not supported; falling back to {}",
+                    FEATURE_VERSION,
+                    LEGACY_FEATURE_VERSION);
+                settingsFeatureVersion = LEGACY_FEATURE_VERSION;
+                return getSettings(oldTimeStamp, LEGACY_FEATURE_VERSION);
+              }
+              return Mono.just(config);
+            });
+  }
 
-    URL requestUrl = getSettingsPath(oldTimeStamp);
-
+  private Mono<ProfilerConfiguration> getSettings(Date oldTimeStamp, String featureVersion) {
+    URL requestUrl = getSettingsPath(oldTimeStamp, featureVersion);
     HttpRequest request = new HttpRequest(HttpMethod.GET, requestUrl);
-
     return httpPipeline.send(request).flatMap(response -> handle(response, requestUrl));
   }
 
+  private static boolean isUnsupportedFeatureVersionResponse(ProfilerConfiguration config) {
+    String id = config.id();
+    return !config.isEnabled() && (id == null || id.isEmpty() || EMPTY_GUID.equals(id));
+  }
+
   private static Mono<ProfilerConfiguration> handle(HttpResponse response, URL requestUrl) {
+    if (response.getStatusCode() == 304) {
+      response.close();
+      return Mono.empty();
+    }
     if (response.getStatusCode() >= 300) {
       // need to consume the body or close the response, otherwise get netty ByteBuf leak warnings:
       // io.netty.util.ResourceLeakDetector - LEAK: ByteBuf.release() was not called before
@@ -175,7 +202,7 @@ public class ServiceProfilerClient {
   }
 
   // api/profileragent/v4/settings?ikey=xyz&featureVersion=1.0.0&oldTimestamp=123
-  private URL getSettingsPath(Date oldTimeStamp) {
+  private URL getSettingsPath(Date oldTimeStamp, String featureVersion) {
 
     String path =
         SETTINGS_PATH
@@ -190,7 +217,7 @@ public class ServiceProfilerClient {
             + "&"
             + FEATURE_VERSION_PARAMETER
             + "="
-            + FEATURE_VERSION;
+            + featureVersion;
 
     try {
       return new URL(hostUrl, path);
