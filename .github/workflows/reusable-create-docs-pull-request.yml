@@ -7,7 +7,7 @@ on:
         type: string
         required: true
     secrets:
-      PERSONAL_ACCESS_TOKEN:
+      AI_JAVA_HELPER_APP_PRIVATE_KEY:
         required: true
   # to help with partial release build failures
   workflow_dispatch:
@@ -20,14 +20,23 @@ jobs:
   create-docs-pull-request:
     runs-on: ubuntu-latest
     steps:
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ vars.AI_JAVA_HELPER_APP_CLIENT_ID }}
+          private-key: ${{ secrets.AI_JAVA_HELPER_APP_PRIVATE_KEY }}
+          owner: xiang17
+          repositories: azure-monitor-docs-pr
+          permission-contents: write
+
       - name: Repo sync
         # this step avoids having to do a deep fetch of the very large upstream repo
         # (cannot use "git fetch --depth 1 upstream main" because that leads to an error when
         #         pushing below to the origin repo: "shallow update not allowed")
         env:
           VERSION: ${{ inputs.version }}
-          # this is the personal access token used for "gh repo sync" below
-          GH_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
         run: |
           gh repo sync xiang17/azure-monitor-docs-pr \
               --source MicrosoftDocs/azure-monitor-docs-pr
@@ -35,8 +44,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: xiang17/azure-monitor-docs-pr
-          # this is the personal access token used for "git push" below
-          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          token: ${{ steps.app-token.outputs.token }}
 
       - name: Update version in docs
         env:
@@ -53,8 +61,7 @@ jobs:
       - name: Create pull request against azure-docs-pr
         env:
           VERSION: ${{ inputs.version }}
-          # this is the personal access token used for "gh pr create" below
-          GH_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
         run: |
           message="Update the applicationinsights-java version to $VERSION"
           body="Update the applicationinsights-java version to \`$VERSION\`.
