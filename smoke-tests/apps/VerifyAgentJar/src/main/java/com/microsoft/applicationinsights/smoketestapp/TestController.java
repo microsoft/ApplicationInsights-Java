@@ -21,10 +21,11 @@ public class TestController {
   private static final File AGENT_JAR = getAgentJarFile();
   private static final long ONE_MEGABYTE = 1024 * 1024;
 
-  // current jar size 37872243 version 3.4.18
-  // there was a 4mb bump from 3.6.1 to 3.6.2 due to bytebuddy 1.15.5 becoming a multi-release jar
-  // which effectively doubled the size of the bytebuddy jar from 4mb to 8mb
-  private static final long CURRENT_AGENT_JAR_SIZE = 43798057;
+  // size of the unsigned agent jar built by CI (released jars are ~3mb larger due to code signing)
+  // measured on 3.7.10-SNAPSHOT (otel instrumentation 2.31.1, oshi 7.7.0)
+  // growth since the previous baseline (43798057, set in 3.6.2) is mostly from upstream otel
+  // instrumentation and protobuf, which upstream started bundling in 2.28
+  private static final long CURRENT_AGENT_JAR_SIZE = 44848880;
 
   @GetMapping("/")
   public String root() {
