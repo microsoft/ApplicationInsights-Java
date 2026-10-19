@@ -8,5 +8,6 @@ dependencies {
   }
   // this dependency is needed to make wildfly happy
   implementation("org.reactivestreams:reactive-streams:1.0.3")
-  implementation("io.opentelemetry:opentelemetry-api:1.31.0")
+
+  implementation("io.opentelemetry:opentelemetry-api:1.59.0")
 }
