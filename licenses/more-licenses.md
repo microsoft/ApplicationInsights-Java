@@ -36,12 +36,12 @@
 > - **Manifest License**: [http://www.apache.org/licenses/LICENSE-2.0](Apache License, Version 2.0)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
-**6** **Group:** `commons-codec` **Name:** `commons-codec` **Version:** `1.22.1`
+**6** **Group:** `commons-codec` **Name:** `commons-codec` **Version:** `1.23.0`
 > - **Project URL**: [https://commons.apache.org/proper/commons-codec/](https://commons.apache.org/proper/commons-codec/)
 > - **Manifest License**: [https://www.apache.org/licenses/LICENSE-2.0](Apache License, Version 2.0)
 > - **POM License**: Apache License, Version 2.0 - [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
-> - **Embedded license files**: [commons-codec-1.22.1.jar/META-INF/LICENSE.txt](commons-codec-1.22.1.jar/META-INF/LICENSE.txt)
-    - [commons-codec-1.22.1.jar/META-INF/NOTICE.txt](commons-codec-1.22.1.jar/META-INF/NOTICE.txt)
+> - **Embedded license files**: [commons-codec-1.23.0.jar/META-INF/LICENSE.txt](commons-codec-1.23.0.jar/META-INF/LICENSE.txt)
+    - [commons-codec-1.23.0.jar/META-INF/NOTICE.txt](commons-codec-1.23.0.jar/META-INF/NOTICE.txt)
 
 **7** **Group:** `io.netty` **Name:** `netty-buffer` **Version:** `4.2.19.Final`
 > - **Manifest Project URL**: [https://netty.io/](https://netty.io/)
@@ -347,15 +347,15 @@
 
 ## MIT License
 
-**65** **Group:** `com.azure` **Name:** `azure-core` **Version:** `1.59.1`
+**65** **Group:** `com.azure` **Name:** `azure-core` **Version:** `1.60.0`
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**66** **Group:** `com.azure` **Name:** `azure-core-http-netty` **Version:** `1.16.7`
+**66** **Group:** `com.azure` **Name:** `azure-core-http-netty` **Version:** `1.16.8`
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**67** **Group:** `com.azure` **Name:** `azure-identity` **Version:** `1.18.4`
+**67** **Group:** `com.azure` **Name:** `azure-identity` **Version:** `1.18.7`
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
@@ -366,15 +366,15 @@
 **69** **Group:** `com.azure` **Name:** `azure-monitor-opentelemetry-autoconfigure` **Version:** `1.8.0`
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**70** **Group:** `com.azure` **Name:** `azure-storage-blob` **Version:** `12.35.0`
+**70** **Group:** `com.azure` **Name:** `azure-storage-blob` **Version:** `12.36.0`
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**71** **Group:** `com.azure` **Name:** `azure-storage-common` **Version:** `12.34.0`
+**71** **Group:** `com.azure` **Name:** `azure-storage-common` **Version:** `12.35.0`
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**72** **Group:** `com.azure` **Name:** `azure-storage-internal-avro` **Version:** `12.20.0`
+**72** **Group:** `com.azure` **Name:** `azure-storage-internal-avro` **Version:** `12.21.0`
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
@@ -382,17 +382,17 @@
 > - **POM Project URL**: [https://github.com/Azure/azure-sdk-for-java](https://github.com/Azure/azure-sdk-for-java)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**74** **Group:** `com.github.oshi` **Name:** `oshi-common` **Version:** `7.7.0`
+**74** **Group:** `com.github.oshi` **Name:** `oshi-common` **Version:** `7.7.1`
 > - **Manifest Project URL**: [https://github.com/oshi/oshi/oshi-common](https://github.com/oshi/oshi/oshi-common)
 > - **Manifest License**: [https://opensource.org/licenses/MIT](MIT License)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**75** **Group:** `com.github.oshi` **Name:** `oshi-core` **Version:** `7.7.0`
+**75** **Group:** `com.github.oshi` **Name:** `oshi-core` **Version:** `7.7.1`
 > - **Manifest Project URL**: [https://github.com/oshi/oshi/oshi-core](https://github.com/oshi/oshi/oshi-core)
 > - **Manifest License**: [https://opensource.org/licenses/MIT](MIT License)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
-**76** **Group:** `com.microsoft.azure` **Name:** `msal4j` **Version:** `1.23.1`
+**76** **Group:** `com.microsoft.azure` **Name:** `msal4j` **Version:** `1.26.0`
 > - **Project URL**: [https://github.com/AzureAD/microsoft-authentication-library-for-java](https://github.com/AzureAD/microsoft-authentication-library-for-java)
 > - **Manifest License**: [https://opensource.org/licenses/MIT](MIT License)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
