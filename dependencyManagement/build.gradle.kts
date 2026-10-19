@@ -23,7 +23,7 @@ val DEPENDENCY_BOMS = listOf(
   "io.opentelemetry:opentelemetry-bom-alpha:${otelSdkAlphaVersion}",
   "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:${otelInstrumentationVersion}",
   "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${otelInstrumentationAlphaVersion}",
-  "com.azure:azure-sdk-bom:1.3.8",
+  "com.azure:azure-sdk-bom:1.3.9",
   "io.netty:netty-bom:4.2.19.Final",
   "org.junit:junit-bom:5.14.4",
   "org.testcontainers:testcontainers-bom:2.0.5",
@@ -63,7 +63,7 @@ val CORE_DEPENDENCIES = listOf(
 val DEPENDENCIES = listOf(
   "ch.qos.logback:logback-classic:1.3.16", // logback 1.4+ requires Java 11+
   "ch.qos.logback.contrib:logback-json-classic:0.1.5",
-  "commons-codec:commons-codec:1.22.1",
+  "commons-codec:commons-codec:1.23.0",
   "org.apache.commons:commons-text:1.15.0",
   "com.google.code.gson:gson:2.14.0",
   "com.azure:azure-core-test:1.26.2", // this is not included in azure-sdk-bom
@@ -72,7 +72,7 @@ val DEPENDENCIES = listOf(
   "io.opentelemetry.contrib:opentelemetry-jfr-connection:${otelContribAlphaVersion}",
   "io.opentelemetry.contrib:opentelemetry-runtime-attach-core:${otelContribAlphaVersion}",
   "com.google.code.findbugs:jsr305:3.0.2",
-  "com.github.spotbugs:spotbugs-annotations:4.10.4"
+  "com.github.spotbugs:spotbugs-annotations:4.10.5"
 )
 
 javaPlatform {
