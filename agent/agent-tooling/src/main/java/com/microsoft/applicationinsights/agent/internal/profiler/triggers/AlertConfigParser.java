@@ -4,6 +4,8 @@
 package com.microsoft.applicationinsights.agent.internal.profiler.triggers;
 
 import com.microsoft.applicationinsights.agent.internal.profiler.config.ProfilerConfiguration;
+import com.microsoft.applicationinsights.agent.internal.profiler.config.TargetedCollectionPlan;
+import com.microsoft.applicationinsights.agent.internal.profiler.config.TargetedInstance;
 import com.microsoft.applicationinsights.alerting.aiconfig.AlertingConfig;
 import com.microsoft.applicationinsights.alerting.config.AlertConfiguration;
 import com.microsoft.applicationinsights.alerting.config.AlertMetricType;
@@ -11,18 +13,26 @@ import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration;
 import com.microsoft.applicationinsights.alerting.config.CollectionPlanConfiguration;
 import com.microsoft.applicationinsights.alerting.config.CollectionPlanConfiguration.EngineMode;
 import com.microsoft.applicationinsights.alerting.config.DefaultConfiguration;
+import com.microsoft.applicationinsights.alerting.config.TargetedCollectionPlanConfiguration;
+import com.microsoft.applicationinsights.alerting.config.TargetedInstanceConfiguration;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /** Parses the configuration from the service profiler endpoint. */
 public class AlertConfigParser {
+
+  private static final Logger logger = LoggerFactory.getLogger(AlertConfigParser.class);
 
   static AlertingConfiguration parse(
       String cpuConfig,
@@ -61,13 +71,7 @@ public class AlertConfigParser {
   // --settings-moniker Portal_b5bd7880-7406-4058-a6f8-3ea0102706b1
   private static CollectionPlanConfiguration parseCollectionPlan(@Nullable String collectionPlan) {
     if (collectionPlan == null || collectionPlan.isEmpty()) {
-      return CollectionPlanConfiguration.builder()
-          .setSingle(false)
-          .setMode(EngineMode.immediate)
-          .setExpiration(Instant.ofEpochMilli(0))
-          .setImmediateProfilingDurationSeconds(0)
-          .setSettingsMoniker("")
-          .build();
+      return disabledCollectionPlan();
     }
 
     String[] tokens = collectionPlan.split(" ");
@@ -90,7 +94,22 @@ public class AlertConfigParser {
         "settings-moniker",
         new ParseConfigValue<>(true, (config, arg) -> config.setSettingsMoniker(arg)));
 
-    return parseConfig(CollectionPlanConfiguration.builder(), tokens, parsers).build();
+    try {
+      return parseConfig(CollectionPlanConfiguration.builder(), tokens, parsers).build();
+    } catch (NumberFormatException | IllegalStateException e) {
+      logger.warn("Ignoring invalid profiler collection plan", e);
+      return disabledCollectionPlan();
+    }
+  }
+
+  private static CollectionPlanConfiguration disabledCollectionPlan() {
+    return CollectionPlanConfiguration.builder()
+        .setSingle(false)
+        .setMode(EngineMode.immediate)
+        .setExpiration(Instant.ofEpochMilli(0))
+        .setImmediateProfilingDurationSeconds(0)
+        .setSettingsMoniker("")
+        .build();
   }
 
   static DefaultConfiguration parseDefaultConfiguration(@Nullable String defaultConfig) {
@@ -227,13 +246,57 @@ public class AlertConfigParser {
 
   public static AlertingConfiguration toAlertingConfig(
       ProfilerConfiguration profilerConfiguration) {
+    String legacyPlan = profilerConfiguration.getCollectionPlan();
+    TargetedCollectionPlan targetedPlan = profilerConfiguration.getTargetedCollectionPlan();
 
-    return AlertConfigParser.parse(
-        profilerConfiguration.getCpuTriggerConfiguration(),
-        profilerConfiguration.getMemoryTriggerConfiguration(),
-        profilerConfiguration.getDefaultConfiguration(),
-        profilerConfiguration.getCollectionPlan(),
-        profilerConfiguration.getRequestTriggerConfiguration());
+    return AlertingConfiguration.create(
+        parseFromCpu(profilerConfiguration.getCpuTriggerConfiguration()),
+        parseFromMemory(profilerConfiguration.getMemoryTriggerConfiguration()),
+        parseDefaultConfiguration(profilerConfiguration.getDefaultConfiguration()),
+        parseCollectionPlan(legacyPlan),
+        buildRequestTriggerConfiguration(profilerConfiguration.getRequestTriggerConfiguration()),
+        parseTargetedCollectionPlan(targetedPlan));
+  }
+
+  @Nullable
+  private static TargetedCollectionPlanConfiguration parseTargetedCollectionPlan(
+      @Nullable TargetedCollectionPlan plan) {
+    if (plan == null) {
+      return null;
+    }
+
+    List<TargetedInstanceConfiguration> instances = null;
+    if (plan.getInstances() != null) {
+      instances = new ArrayList<>();
+      for (TargetedInstance instance : plan.getInstances()) {
+        instances.add(
+            instance == null
+                ? null
+                : TargetedInstanceConfiguration.create(instance.getRole(), instance.getName()));
+      }
+    }
+
+    Instant expiration = null;
+    if (!isBlank(plan.getExpiration())) {
+      try {
+        expiration =
+            OffsetDateTime.parse(plan.getExpiration(), DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+                .toInstant();
+      } catch (DateTimeParseException e) {
+        logger.warn("Targeted profiler collection plan has invalid expiration");
+      }
+    }
+
+    return TargetedCollectionPlanConfiguration.create(
+        plan.getRoles(),
+        instances,
+        plan.getImmediateProfilingDuration(),
+        expiration,
+        plan.getSettingsMoniker());
+  }
+
+  private static boolean isBlank(@Nullable String value) {
+    return value == null || value.trim().isEmpty();
   }
 
   // visible for testing
