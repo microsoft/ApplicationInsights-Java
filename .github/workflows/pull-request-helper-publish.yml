@@ -1,0 +1,139 @@
+name: Publish pull request helper
+
+on:
+  workflow_run:
+    workflows: ["Pull request helper"]
+    types: [completed]
+
+permissions:
+  actions: read
+  contents: read
+  pull-requests: read
+
+env:
+  GIT_DIR: pr-helper.git
+  GIT_CONFIG_NOSYSTEM: '1'
+  GIT_CONFIG_GLOBAL: /dev/null
+  GIT_TERMINAL_PROMPT: '0'
+
+jobs:
+  publish:
+    if: >-
+      github.event.workflow_run.event == 'pull_request' &&
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.head_repository.id == github.event.repository.id
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate source PR
+        id: source
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            const run = context.payload.workflow_run;
+            const {data: artifacts} = await github.rest.actions.listWorkflowRunArtifacts({
+              ...context.repo, run_id: run.id, name: `pr-helper-${run.id}-${run.run_attempt}`
+            });
+            if (artifacts.total_count === 0) return;
+            if (run.path !== '.github/workflows/pull-request-helper.yml' ||
+                run.pull_requests.length !== 1) {
+              throw new Error('Unexpected source workflow or missing PR');
+            }
+            const {data: pr} = await github.rest.pulls.get({
+              ...context.repo, pull_number: run.pull_requests[0].number
+            });
+            if (pr.user.login !== 'dependabot[bot]' || pr.state !== 'open' ||
+                pr.head.repo?.id !== context.payload.repository.id ||
+                pr.head.sha !== run.head_sha || pr.head.ref !== run.head_branch ||
+                pr.head.ref === context.payload.repository.default_branch) {
+              core.notice('Skipping ineligible PR or stale source SHA');
+              return;
+            }
+            core.setOutput('sha', run.head_sha);
+            core.setOutput('branch', pr.head.ref);
+            core.setOutput('number', pr.number);
+
+      - name: Download source patch
+        if: steps.source.outputs.sha != ''
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: pr-helper-${{ github.event.workflow_run.id }}-${{ github.event.workflow_run.run_attempt }}
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ github.token }}
+          path: ${{ runner.temp }}/pr-helper-artifact
+          digest-mismatch: error
+
+      - name: Apply patch and create commit
+        if: steps.source.outputs.sha != ''
+        id: patch
+        env:
+          SOURCE_SHA: ${{ steps.source.outputs.sha }}
+        run: |
+          patch="$RUNNER_TEMP/pr-helper-artifact/changes.patch"
+          if [[ ! -f "$patch" || -L "$patch" || $(wc -c < "$patch") -gt 8388608 ]]; then
+            echo "::error::Missing, nonregular or oversized patch" >&2
+            exit 1
+          fi
+          if [[ ! -s "$patch" ]]; then
+            exit 0
+          fi
+          if grep -q '^GIT binary patch' "$patch"; then
+            echo "::error::Binary patches are not supported" >&2
+            exit 1
+          fi
+          git init --bare --template= "$GIT_DIR"
+          git config core.hooksPath /dev/null
+          git remote add origin "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY.git"
+          git fetch --no-tags --depth=1 origin "$SOURCE_SHA"
+          git read-tree "$SOURCE_SHA"
+          git apply --cached --whitespace=nowarn "$patch"
+          git diff --cached --raw --no-renames -z "$SOURCE_SHA" > "$GIT_DIR/changes"
+          while IFS= read -r -d '' metadata && IFS= read -r -d '' file; do
+            case "$file" in
+              /*|*\\*|*:*|*[[:cntrl:]]*|.*|*/.*|*//*)
+                echo "::error::Unsafe patch path" >&2; exit 1 ;;
+            esac
+            case "$file" in
+              *.lockfile|licenses/*) ;;
+              *) echo "::error::Patch path outside lockfiles/licenses" >&2; exit 1 ;;
+            esac
+            read -r old_mode new_mode _ <<< "${metadata#:}"
+            case "$old_mode:$new_mode" in
+              100644:100644|000000:100644|100644:000000) ;;
+              *) echo "::error::Patch must only change regular nonexecutable files" >&2; exit 1 ;;
+            esac
+          done < "$GIT_DIR/changes"
+          if [[ ! -s "$GIT_DIR/changes" ]]; then
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          commit=$(git commit-tree "$(git write-tree)" -p "$SOURCE_SHA" -m "Update dependency locks and licenses")
+          echo "commit=$commit" >> "$GITHUB_OUTPUT"
+
+      - name: Generate GitHub App token
+        if: steps.patch.outputs.commit != ''
+        id: app-token
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+        with:
+          client-id: ${{ vars.AI_JAVA_HELPER_APP_CLIENT_ID }}
+          private-key: ${{ secrets.AI_JAVA_HELPER_APP_PRIVATE_KEY }}
+          permission-contents: write
+
+      - name: Push generated commit
+        if: steps.patch.outputs.commit != ''
+        env:
+          SOURCE_SHA: ${{ steps.source.outputs.sha }}
+          BRANCH: ${{ steps.source.outputs.branch }}
+          PR_NUMBER: ${{ steps.source.outputs.number }}
+          COMMIT: ${{ steps.patch.outputs.commit }}
+          GH_TOKEN: ${{ github.token }}
+          APP_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          current=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER" --jq '.state + " " + .head.sha')
+          if [[ "$current" != "open $SOURCE_SHA" ]]; then
+            echo "::notice::Skipping closed PR or stale patch"
+            exit 0
+          fi
+          # The bare repo has no checkout credentials; use the App token so this push triggers CI.
+          GH_TOKEN="$APP_TOKEN" git -c 'credential.helper=!gh auth git-credential' \
+            push origin "$COMMIT:refs/heads/$BRANCH"
