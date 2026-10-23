@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+* Add `continuousProfilingSettings` to configure the JFC used by continuous profiling
+
 ## Version 3.7.10 GA (09/17/2026)
 
 ### Enhancements

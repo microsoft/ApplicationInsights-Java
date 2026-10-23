@@ -97,6 +97,7 @@ Additionally, a number of parameters can be configured using environment variabl
       "globalCooldownSeconds": 120,
       "enableProfilerControlMBean": false,
       "enableContinuousProfiling": false,
+      "continuousProfilingSettings": "minimal-diagnosis-cpu-profile.jfc",
       "continuousProfilingMaxAgeSeconds": 120,
       "manualTrigger": {
         "enabled": false,
@@ -144,14 +145,22 @@ contents of the circular buffer are dumped and uploaded immediately, so requests
 waiting for a recording duration to elapse. The uploaded profile is timestamped at the start of the
 captured window. Note the following limitations while this feature is in preview:
 
-- The continuous recording uses the `cpuTriggeredSettings` JFC for all trigger types, so
-  `memoryTriggeredSettings` and `manualTriggeredSettings` are not applied to continuous captures.
+- The continuous recording uses `continuousProfilingSettings` for all trigger types, so
+  `cpuTriggeredSettings`, `memoryTriggeredSettings`, and `manualTriggeredSettings` are not applied
+  to continuous captures.
 - A requested profile duration (from the portal, JMX, or a file trigger) is ignored: each request
   dumps the whole retained circular buffer (up to `continuousProfilingMaxAgeSeconds`), because a
   live JFR recording can only be dumped in its entirety and cannot be streamed for a sub-window
   without being stopped.
 - Because JFR runs for the lifetime of the JVM rather than in short bursts, expect a steady-state
   increase in CPU, memory and disk I/O compared to on-demand profiling.
+
+`continuousProfilingSettings` - (default: `minimal-diagnosis-cpu-profile.jfc`) The JFR configuration
+used by the always-on continuous recording. It accepts the same preset values and custom `.jfc` file
+paths as `cpuTriggeredSettings`, as well as bundled JFC names such as
+`diagnostic-cpu-profile.jfc`. The default enables only the events required by Application Insights
+diagnosis analyses. More extensive configurations increase continuous profiling overhead and may
+capture sensitive deployment information; review their enabled events before use.
 
 `continuousProfilingMaxAgeSeconds` - (default: 120) The maximum age, in seconds, of data retained in
 the continuous profiling circular buffer. Only used when `enableContinuousProfiling` is `true`.
