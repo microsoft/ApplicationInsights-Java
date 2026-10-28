@@ -9,22 +9,22 @@ rootProject.extra["versions"] = dependencyVersions
 
 val otelSdkVersion = "1.66.0"
 val otelSdkAlphaVersion = "1.66.0-alpha"
-val otelInstrumentationAlphaVersion = "2.31.1-alpha"
-val otelInstrumentationVersion = "2.31.1"
+val otelInstrumentationAlphaVersion = "2.32.0-alpha"
+val otelInstrumentationVersion = "2.32.0"
 val otelContribVersion = "1.56.0"
-val otelContribAlphaVersion = "1.60.0-alpha"
+val otelContribAlphaVersion = "1.61.0-alpha"
 
 rootProject.extra["otelInstrumentationVersion"] = otelInstrumentationVersion
 rootProject.extra["otelInstrumentationAlphaVersion"] = otelInstrumentationAlphaVersion
 
 val DEPENDENCY_BOMS = listOf(
-  "com.fasterxml.jackson:jackson-bom:2.22.2",
+  "com.fasterxml.jackson:jackson-bom:2.22.3",
   "io.opentelemetry:opentelemetry-bom:${otelSdkVersion}",
   "io.opentelemetry:opentelemetry-bom-alpha:${otelSdkAlphaVersion}",
   "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:${otelInstrumentationVersion}",
   "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${otelInstrumentationAlphaVersion}",
-  "com.azure:azure-sdk-bom:1.3.8",
-  "io.netty:netty-bom:4.2.18.Final",
+  "com.azure:azure-sdk-bom:1.3.9",
+  "io.netty:netty-bom:4.2.19.Final",
   "org.junit:junit-bom:5.14.4",
   "org.testcontainers:testcontainers-bom:2.0.5",
 )
@@ -34,7 +34,7 @@ val autoValueVersion = "1.11.1"
 val errorProneVersion = "2.50.0"
 val jmhVersion = "1.37"
 val mockitoVersion = "4.11.0"
-val slf4jVersion = "2.0.19"
+val slf4jVersion = "2.0.20"
 
 val CORE_DEPENDENCIES = listOf(
   "io.opentelemetry.semconv:opentelemetry-semconv:1.44.0",
@@ -63,7 +63,7 @@ val CORE_DEPENDENCIES = listOf(
 val DEPENDENCIES = listOf(
   "ch.qos.logback:logback-classic:1.3.16", // logback 1.4+ requires Java 11+
   "ch.qos.logback.contrib:logback-json-classic:0.1.5",
-  "commons-codec:commons-codec:1.22.1",
+  "commons-codec:commons-codec:1.23.0",
   "org.apache.commons:commons-text:1.15.0",
   "com.google.code.gson:gson:2.14.0",
   "com.azure:azure-core-test:1.26.2", // this is not included in azure-sdk-bom
@@ -72,7 +72,7 @@ val DEPENDENCIES = listOf(
   "io.opentelemetry.contrib:opentelemetry-jfr-connection:${otelContribAlphaVersion}",
   "io.opentelemetry.contrib:opentelemetry-runtime-attach-core:${otelContribAlphaVersion}",
   "com.google.code.findbugs:jsr305:3.0.2",
-  "com.github.spotbugs:spotbugs-annotations:4.10.4"
+  "com.github.spotbugs:spotbugs-annotations:4.10.5"
 )
 
 javaPlatform {

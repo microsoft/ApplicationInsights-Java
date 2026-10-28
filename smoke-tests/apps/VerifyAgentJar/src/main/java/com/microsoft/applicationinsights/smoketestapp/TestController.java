@@ -19,12 +19,16 @@ import org.springframework.web.bind.annotation.RestController;
 public class TestController {
 
   private static final File AGENT_JAR = getAgentJarFile();
-  private static final long ONE_MEGABYTE = 1024 * 1024;
+  // size of the unsigned agent jar built by CI (released jars are ~3mb larger due to code signing)
+  // measured on 3.7.10-SNAPSHOT (otel instrumentation 2.32.0)
+  // most growth comes from upstream otel instrumentation, which typically adds 0-450kb per release
+  // with occasional larger jumps (e.g. 2.20.1 started bundling protobuf, 2.32.0 expanded database
+  // semconv instrumentation)
+  private static final long CURRENT_AGENT_JAR_SIZE = 46031493;
 
-  // current jar size 37872243 version 3.4.18
-  // there was a 4mb bump from 3.6.1 to 3.6.2 due to bytebuddy 1.15.5 becoming a multi-release jar
-  // which effectively doubled the size of the bytebuddy jar from 4mb to 8mb
-  private static final long CURRENT_AGENT_JAR_SIZE = 43798057;
+  // large enough to absorb a few months of normal upstream growth, small enough to catch
+  // unexpected multi-megabyte jumps (e.g. a shading mistake or an unintentionally bundled library)
+  private static final long ALLOWED_GROWTH_BYTES = 2 * 1024 * 1024;
 
   @GetMapping("/")
   public String root() {
@@ -51,8 +55,18 @@ public class TestController {
   @GetMapping("/verifyAgentJarSize")
   public String verifyAgentJarSize() throws IOException {
     long size = Files.size(AGENT_JAR.toPath());
-    if (size - CURRENT_AGENT_JAR_SIZE >= ONE_MEGABYTE) {
-      throw new AssertionError("Agent jar size" + size + " has exceeded more than 1 Megabyte.");
+    long growth = size - CURRENT_AGENT_JAR_SIZE;
+    if (growth >= ALLOWED_GROWTH_BYTES) {
+      throw new AssertionError(
+          "Agent jar size "
+              + size
+              + " has grown by "
+              + growth
+              + " bytes over the baseline "
+              + CURRENT_AGENT_JAR_SIZE
+              + ", which is more than the allowed "
+              + ALLOWED_GROWTH_BYTES
+              + " bytes.");
     }
     return "OK";
   }

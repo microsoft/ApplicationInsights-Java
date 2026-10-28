@@ -1,72 +1,53 @@
 name: Pull request helper
 on:
-  pull_request_target:
+  pull_request:
+    types: [opened, synchronize, reopened]
 
 permissions:
-  contents: write
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
 
 jobs:
   pull-request-helper:
-    if: github.event.pull_request.user.login == 'dependabot[bot]'
+    if: >-
+      github.event.pull_request.user.login == 'dependabot[bot]' &&
+      github.event.pull_request.head.repo.id == github.event.repository.id
     runs-on: ubuntu-latest
     steps:
-      - name: Generate GitHub App token
-        id: app-token
-        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+      - name: Checkout exact PR head
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          client-id: ${{ vars.AI_JAVA_HELPER_APP_CLIENT_ID }}
-          private-key: ${{ secrets.AI_JAVA_HELPER_APP_PRIVATE_KEY }}
-          permission-contents: write
-
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          # an app token is used (instead of GITHUB_TOKEN) so that "git push" below triggers workflows
-          token: ${{ steps.app-token.outputs.token }}
-          repository: ${{ github.event.pull_request.head.repo.full_name }}
-          ref: ${{ github.event.pull_request.head.ref }}
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
+        uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
         with:
           cache-read-only: true
 
-      - name: Set git user
-        run: |
-          git config user.name github-actions[bot]
-          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-
-      # - name: Spotless
-      #   env:
-      #     NUMBER: ${{ github.event.issue.number }}
-      #   run: |
-      #     ./gradlew spotlessApply
-      #     if git diff --quiet; then
-      #       exit 0 # success
-      #     fi
-      #     git commit -a -m "./gradlew spotlessApply"
+      - name: Update lock files
+        run: ./gradlew resolveAndLockAll --write-locks
 
       - name: Update license report
-        env:
-          NUMBER: ${{ github.event.issue.number }}
-        run: |
-          ./gradlew generateLicenseReport
-          git add licenses
-          if git diff --cached --quiet; then
-            exit 0 # success
-          fi
-          git commit -m "./gradlew generateLicenseReport"
+        run: ./gradlew generateLicenseReport --no-build-cache
 
-      - name: Update lock files
-        env:
-          NUMBER: ${{ github.event.issue.number }}
+      - name: Create generated-file patch
+        id: patch
         run: |
-          ./gradlew resolveAndLockAll --write-locks
-          git add "*.lockfile"
+          git add '*.lockfile' licenses/
           if git diff --cached --quiet; then
-            exit 0 # success
+            exit 0
           fi
-          git commit -m "./gradlew resolveAndLockAll --write-locks"
+          git diff --cached > "$RUNNER_TEMP/changes.patch"
+          echo "changed=true" >> "$GITHUB_OUTPUT"
 
-      - name: Push
-        run: |
-          git push
+      - name: Upload generated changes
+        if: steps.patch.outputs.changed == 'true'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: pr-helper-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/changes.patch
+          if-no-files-found: error
