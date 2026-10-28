@@ -163,12 +163,17 @@ class AlternativeJfrConfigurations {
         config, config.manualTriggeredSettings, AlertMetricType.MANUAL);
   }
 
-  /**
-   * Default configuration for the always-on continuous profiling recording. Loads the minimal
-   * diagnosis CPU profile, which enables only the events consumed by the diagnosis analyses and
-   * report generation.
-   */
-  static RecordingConfiguration getContinuousProfileConfig() {
+  static RecordingConfiguration getContinuousProfileConfig(
+      Configuration.ProfilerConfiguration config) {
+    if (config.continuousProfilingSettings == null
+        || MINIMAL_DIAGNOSIS_CPU_PROFILE.equals(config.continuousProfilingSettings)) {
+      return getMinimalDiagnosisCpuProfile();
+    }
+    return getRecordingConfiguration(
+        config, config.continuousProfilingSettings, AlertMetricType.CPU);
+  }
+
+  private static RecordingConfiguration getMinimalDiagnosisCpuProfile() {
     return new JfcFileConfiguration(
         Objects.requireNonNull(
             AlternativeJfrConfigurations.class.getResourceAsStream(MINIMAL_DIAGNOSIS_CPU_PROFILE)));

@@ -16,6 +16,7 @@ import com.microsoft.applicationinsights.agent.internal.telemetry.TelemetryObser
 import com.microsoft.applicationinsights.alerting.AlertingSubsystem;
 import com.microsoft.applicationinsights.alerting.config.AlertingConfiguration;
 import com.microsoft.applicationinsights.alerting.config.AlertingProfileFileTriggerConfiguration;
+import com.microsoft.applicationinsights.alerting.config.AlertingSubsystemConfiguration;
 import com.microsoft.applicationinsights.diagnostics.DiagnosticEngine;
 import com.microsoft.applicationinsights.diagnostics.DiagnosticEngineFactory;
 import com.microsoft.applicationinsights.diagnostics.appinsights.CodeOptimizerApplicationInsightFactoryJfr;
@@ -120,7 +121,8 @@ public class PerformanceMonitoringService {
             telemetryClient,
             diagnosticEngine,
             alertServiceExecutorService,
-            alertingProfileFileTriggerConfiguration);
+            AlertingSubsystemConfiguration.create(
+                roleName, machineName, alertingProfileFileTriggerConfiguration));
 
     uploadService =
         new UploadService(

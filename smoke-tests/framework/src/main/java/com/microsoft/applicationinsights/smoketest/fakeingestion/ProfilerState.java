@@ -7,5 +7,7 @@ public enum ProfilerState {
   unconfigured,
   configuredEnabled,
   configuredDisabled,
-  manualprofile
+  manualprofile,
+  targetedMatching,
+  targetedUnmatched
 }
