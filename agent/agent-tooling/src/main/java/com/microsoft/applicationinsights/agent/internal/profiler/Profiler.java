@@ -214,7 +214,7 @@ public class Profiler {
       UploadListener uploadListener,
       Runnable diagnosticAction) {
     Instant recordingStart = timeSource.getNow();
-    if (usesContinuousRecordingSnapshot(alertBreach)) {
+    if (continuousProfilingEnabled) {
       captureContinuousRecording(
           alertBreach, recordingStart, duration, uploadListener, diagnosticAction);
       return;
@@ -224,10 +224,6 @@ public class Profiler {
         duration,
         uploadNewRecording(alertBreach, recordingStart, uploadListener),
         diagnosticAction);
-  }
-
-  private boolean usesContinuousRecordingSnapshot(AlertBreach alertBreach) {
-    return continuousProfilingEnabled && !alertBreach.isTargeted();
   }
 
   private void startContinuousRecordingIfEnabled() {

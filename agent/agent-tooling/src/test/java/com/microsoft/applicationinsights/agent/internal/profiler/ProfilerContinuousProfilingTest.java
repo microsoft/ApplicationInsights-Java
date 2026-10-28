@@ -6,6 +6,7 @@ package com.microsoft.applicationinsights.agent.internal.profiler;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
@@ -37,7 +38,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.mockito.ArgumentCaptor;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 class ProfilerContinuousProfilingTest {
   @TempDir File tempDir;
@@ -76,8 +78,9 @@ class ProfilerContinuousProfilingTest {
         .build();
   }
 
-  @Test
-  void targetedProfileUsesExactOneSecondOnDemandRecording() throws Exception {
+  @ParameterizedTest
+  @ValueSource(ints = {1, 30, 360})
+  void targetedProfileImmediatelyUploadsContinuousBuffer(int requestedSeconds) throws Exception {
     Configuration.ProfilerConfiguration config = new Configuration.ProfilerConfiguration();
     config.enableContinuousProfiling = true;
     config.continuousProfilingMaxAgeSeconds = 60;
@@ -111,36 +114,43 @@ class ProfilerContinuousProfilingTest {
     timeSource.setNow(now);
     UploadListener noOp = index -> {};
 
-    profiler.profileAndUpload(targetedBreach(1), Duration.ofSeconds(1), noOp);
+    AlertBreach breach = targetedBreach(requestedSeconds);
+    Runnable diagnosticAction = mock(Runnable.class);
+    profiler.accept(breach, noOp, diagnosticAction);
 
-    verify(continuousRecording, never()).dump(anyString());
+    File dumpFile =
+        new File(
+            tempDir,
+            "recording_" + now.minusSeconds(60).toEpochMilli() + "-" + now.toEpochMilli() + ".jfr");
+    verify(diagnosticAction).run();
+    verify(continuousRecording).dump(dumpFile.getAbsolutePath());
+    verify(uploadService)
+        .upload(eq(breach), eq(now.minusSeconds(60).toEpochMilli()), eq(dumpFile), eq(noOp));
     verify(continuousRecording, never()).getStream(any(), any());
     verify(continuousRecording, never()).stop();
-    verify(onDemandRecording).start();
-    verify(executor).schedule(any(Runnable.class), eq(1L), eq(TimeUnit.SECONDS));
-    assertThat(profiler.isRecordingActive()).isTrue();
-
-    Runnable rejectedDiagnostic = mock(Runnable.class);
-    profiler.accept(manualBreach(1), noOp, rejectedDiagnostic);
-    verify(continuousRecording, never()).dump(anyString());
-    verify(rejectedDiagnostic, never()).run();
+    verify(continuousRecording, never()).close();
+    verify(onDemandRecording, never()).start();
+    verify(executor, never()).schedule(any(Runnable.class), anyLong(), any(TimeUnit.class));
+    assertThat(recordingCount.get()).isEqualTo(1);
+    assertThat(profiler.isRecordingActive()).isFalse();
+    assertThat(profiler.isContinuousRecordingRunning()).isTrue();
   }
 
   @Test
-  void targetedProfileUsesExactMaximumDurationOnDemandRecording() throws Exception {
+  void targetedProfileUsesOnDemandRecordingWhenContinuousProfilingIsDisabled() throws Exception {
     Configuration.ProfilerConfiguration config = new Configuration.ProfilerConfiguration();
-    config.enableContinuousProfiling = true;
+    config.enableContinuousProfiling = false;
     config.continuousProfilingMaxAgeSeconds = 60;
     config.globalCooldownSeconds = 0;
 
-    Recording continuousRecording = mock(Recording.class);
     Recording onDemandRecording = mock(Recording.class);
     AtomicInteger recordingCount = new AtomicInteger();
     Profiler profiler =
         new Profiler(config, tempDir, timeSource) {
           @Override
           protected Recording createRecording(RecordingOptions o, RecordingConfiguration c) {
-            return recordingCount.getAndIncrement() == 0 ? continuousRecording : onDemandRecording;
+            recordingCount.incrementAndGet();
+            return onDemandRecording;
           }
         };
 
@@ -149,23 +159,19 @@ class ProfilerContinuousProfilingTest {
     executor = mock(ScheduledExecutorService.class);
 
     Instant now = Instant.parse("2025-01-01T00:00:00Z");
-    // The continuous recording has been running for longer than maxAge, so the buffer is full.
     timeSource.setNow(now.minusSeconds(120));
     profiler.initialize(uploadService, executor, frc);
 
-    verify(continuousRecording).start();
+    assertThat(recordingCount.get()).isZero();
 
     timeSource.setNow(now);
     UploadListener noOp = index -> {};
 
     profiler.profileAndUpload(targetedBreach(360), Duration.ofMinutes(6), noOp);
 
-    verify(continuousRecording, never()).clone(true);
-    verify(continuousRecording, never()).dump(anyString());
-    verify(continuousRecording, never()).getStream(any(), any());
-    verify(continuousRecording, never()).stop();
     verify(onDemandRecording).start();
     verify(executor).schedule(any(Runnable.class), eq(360L), eq(TimeUnit.SECONDS));
+    assertThat(recordingCount.get()).isEqualTo(1);
     assertThat(profiler.isRecordingActive()).isTrue();
   }
 
@@ -190,37 +196,34 @@ class ProfilerContinuousProfilingTest {
     UploadService uploadService = mock(UploadService.class);
     FlightRecorderConnection frc = mock(FlightRecorderConnection.class);
     executor = mock(ScheduledExecutorService.class);
-    ArgumentCaptor<Runnable> scheduledUpload = ArgumentCaptor.forClass(Runnable.class);
-
     timeSource.setNow(Instant.parse("2025-01-01T00:00:00Z"));
     profiler.initialize(uploadService, executor, frc);
-    profiler.profileAndUpload(targetedBreach(1), Duration.ofSeconds(1), index -> {});
-
-    verify(executor).schedule(scheduledUpload.capture(), eq(1L), eq(TimeUnit.SECONDS));
     doThrow(new IllegalStateException("simulated upload failure"))
         .when(uploadService)
         .upload(any(), any(Long.class), any(File.class), any());
 
-    assertThatCode(scheduledUpload.getValue()::run).doesNotThrowAnyException();
+    assertThatCode(
+            () -> profiler.profileAndUpload(targetedBreach(1), Duration.ofSeconds(1), index -> {}))
+        .doesNotThrowAnyException();
+    verify(continuousRecording).dump(anyString());
+    verify(continuousRecording, never()).close();
+    verify(onDemandRecording, never()).start();
+    assertThat(recordingCount.get()).isEqualTo(1);
+    assertThat(profiler.isContinuousRecordingRunning()).isTrue();
     assertThat(profiler.isRecordingActive()).isFalse();
   }
 
   @Test
   void targetedProfileCreationFailureDoesNotEscape() throws Exception {
     Configuration.ProfilerConfiguration config = new Configuration.ProfilerConfiguration();
-    config.enableContinuousProfiling = true;
+    config.enableContinuousProfiling = false;
     config.continuousProfilingMaxAgeSeconds = 60;
     config.globalCooldownSeconds = 0;
 
-    Recording continuousRecording = mock(Recording.class);
-    AtomicInteger recordingCount = new AtomicInteger();
     Profiler profiler =
         new Profiler(config, tempDir, timeSource) {
           @Override
           protected Recording createRecording(RecordingOptions o, RecordingConfiguration c) {
-            if (recordingCount.getAndIncrement() == 0) {
-              return continuousRecording;
-            }
             throw new IllegalStateException("simulated recording creation failure");
           }
         };
@@ -241,18 +244,16 @@ class ProfilerContinuousProfilingTest {
   @Test
   void targetedProfileSchedulingFailureClosesRecordingAndDoesNotEscape() throws Exception {
     Configuration.ProfilerConfiguration config = new Configuration.ProfilerConfiguration();
-    config.enableContinuousProfiling = true;
+    config.enableContinuousProfiling = false;
     config.continuousProfilingMaxAgeSeconds = 60;
     config.globalCooldownSeconds = 120;
 
-    Recording continuousRecording = mock(Recording.class);
     Recording onDemandRecording = mock(Recording.class);
-    AtomicInteger recordingCount = new AtomicInteger();
     Profiler profiler =
         new Profiler(config, tempDir, timeSource) {
           @Override
           protected Recording createRecording(RecordingOptions o, RecordingConfiguration c) {
-            return recordingCount.getAndIncrement() == 0 ? continuousRecording : onDemandRecording;
+            return onDemandRecording;
           }
         };
 

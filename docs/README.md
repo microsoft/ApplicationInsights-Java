@@ -148,10 +148,11 @@ captured window. Note the following limitations while this feature is in preview
 - The continuous recording uses `continuousProfilingSettings` for all trigger types, so
   `cpuTriggeredSettings`, `memoryTriggeredSettings`, and `manualTriggeredSettings` are not applied
   to continuous captures.
-- A targeted portal request uses a separate on-demand recording so that its requested duration is
-  honored. Other requests, including legacy Profile Now, JMX, and file triggers, dump the whole
-  retained circular buffer (up to `continuousProfilingMaxAgeSeconds`), because a live JFR recording
-  can only be dumped in its entirety and cannot be streamed for a sub-window without being stopped.
+- All requests, including targeted portal requests, legacy Profile Now, JMX, and file triggers, dump
+  the whole retained circular buffer (up to `continuousProfilingMaxAgeSeconds`) immediately rather
+  than starting an on-demand recording. The requested duration does not limit the captured window,
+  because a live JFR recording can only be dumped in its entirety and cannot be streamed for a
+  sub-window without being stopped.
 - Because JFR runs for the lifetime of the JVM rather than in short bursts, expect a steady-state
   increase in CPU, memory and disk I/O compared to on-demand profiling.
 
