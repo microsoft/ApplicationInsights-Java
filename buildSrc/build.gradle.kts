@@ -42,5 +42,5 @@ dependencies {
   implementation("net.ltgt.gradle:gradle-nullaway-plugin:3.3.0")
 
   implementation("gradle.plugin.io.morethan.jmhreport:gradle-jmh-report:0.9.6")
-  implementation("me.champeau.jmh:jmh-gradle-plugin:0.7.3")
+  implementation("me.champeau.jmh:jmh-gradle-plugin:0.7.4")
 }
