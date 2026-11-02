@@ -17,6 +17,9 @@ public class MessageData extends Domain {
   /** Backing field for property Properties. */
   private ConcurrentMap<String, String> properties;
 
+  /** Backing field for property Measurements. */
+  private ConcurrentMap<String, Double> measurements;
+
   /** Initializes a new instance of the MessageData class. */
   public MessageData() {}
 
@@ -48,6 +51,14 @@ public class MessageData extends Domain {
     return this.properties;
   }
 
+  /** Gets the Measurements property. */
+  public ConcurrentMap<String, Double> getMeasurements() {
+    if (this.measurements == null) {
+      this.measurements = new ConcurrentHashMap<>();
+    }
+    return this.measurements;
+  }
+
   @Override
   public String toString() {
     return "MessageData{"
@@ -58,6 +69,8 @@ public class MessageData extends Domain {
         + severityLevel
         + ", properties="
         + properties
+        + ", measurements="
+        + measurements
         + '}';
   }
 }
