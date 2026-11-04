@@ -146,14 +146,7 @@ public class SecondEntryPoint
             .build();
 
     Consumer<List<TelemetryItem>> heartbeatTelemetryItemConsumer =
-        telemetryItems -> {
-          for (TelemetryItem telemetryItem : telemetryItems) {
-            TelemetryObservers.INSTANCE
-                .getObservers()
-                .forEach(consumer -> consumer.accept(telemetryItem));
-            telemetryClient.getMetricsBatchItemProcessor().trackAsync(telemetryItem);
-          }
-        };
+        createHeartbeatTelemetryItemConsumer(telemetryClient);
 
     if (telemetryClient.getConnectionString() != null) {
       startupLogger.verbose("connection string is not null, start HeartbeatExporter");
@@ -161,7 +154,9 @@ public class SecondEntryPoint
       long intervalSeconds =
           Math.min(configuration.heartbeat.intervalSeconds, MINUTES.toSeconds(15));
       HeartbeatExporter.start(
-          intervalSeconds, telemetryClient::populateDefaults, heartbeatTelemetryItemConsumer);
+          intervalSeconds,
+          telemetryClient::populateDefaultsForHeartbeat,
+          heartbeatTelemetryItemConsumer);
     }
 
     TelemetryClient.setActive(telemetryClient);
@@ -319,6 +314,18 @@ public class SecondEntryPoint
           telemetryClient.setOtelResource(resource);
           return resource;
         });
+  }
+
+  private static Consumer<List<TelemetryItem>> createHeartbeatTelemetryItemConsumer(
+      TelemetryClient telemetryClient) {
+    return telemetryItems -> {
+      for (TelemetryItem telemetryItem : telemetryItems) {
+        TelemetryObservers.INSTANCE
+            .getObservers()
+            .forEach(consumer -> consumer.accept(telemetryItem));
+        telemetryClient.getMetricsBatchItemProcessor().trackAsync(telemetryItem);
+      }
+    };
   }
 
   private static LogRecordProcessor wrapBatchLogRecordProcessor(

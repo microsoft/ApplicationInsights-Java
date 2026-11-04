@@ -99,6 +99,44 @@ public class MockedProfilerSettingsServlet extends HttpServlet {
             + "\",\n"
             + "   \"memoryTriggerConfiguration\" : \"--memory-threshold 80 --memory-trigger-profilingDuration 120 --memory-trigger-cooldown 14400 --memory-trigger-enabled true\"\n"
             + "}\n");
+
+    CONFIGS.put(
+        ProfilerState.targetedMatching,
+        targetedConfig(now, Instant.now().plusSeconds(3600), "testrolename", "testroleinstance"));
+    CONFIGS.put(
+        ProfilerState.targetedUnmatched,
+        targetedConfig(now, Instant.now().plusSeconds(3600), "other-role", "testroleinstance"));
+  }
+
+  private static String targetedConfig(
+      String now, Instant expiration, String roleName, String roleInstance) {
+    return "{\n"
+        + "   \"agentConcurrency\" : 0,\n"
+        + "   \"collectionPlan\" : \"\",\n"
+        + "   \"cpuTriggerConfiguration\" : \"--cpu-threshold 80 --cpu-trigger-profilingDuration 120 --cpu-trigger-cooldown 14400 --cpu-trigger-enabled false\",\n"
+        + "   \"defaultConfiguration\" : null,\n"
+        + "   \"enabled\" : true,\n"
+        + "   \"enabledLastModified\" : \""
+        + now
+        + "\",\n"
+        + "   \"id\" : \"an-id\",\n"
+        + "   \"lastModified\" : \""
+        + now
+        + "\",\n"
+        + "   \"memoryTriggerConfiguration\" : \"--memory-threshold 80 --memory-trigger-profilingDuration 120 --memory-trigger-cooldown 14400 --memory-trigger-enabled false\",\n"
+        + "   \"targetedCollectionPlan\" : {\n"
+        + "      \"instances\" : [{ \"role\" : \""
+        + roleName
+        + "\", \"name\" : \""
+        + roleInstance
+        + "\" }],\n"
+        + "      \"immediateProfilingDuration\" : 1,\n"
+        + "      \"expiration\" : \""
+        + expiration
+        + "\",\n"
+        + "      \"settingsMoniker\" : \"Portal_targeted-smoke\"\n"
+        + "   }\n"
+        + "}\n";
   }
 
   private static long toSeconds(Instant time) {

@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+* Add Java agent support for ServiceProfiler targeted collection plans by cloud role or
+  role-qualified instance
+* Add `continuousProfilingSettings` to configure the JFC used by continuous profiling
+
 ## Version 3.7.10 GA (09/17/2026)
 
 ### Enhancements

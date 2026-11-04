@@ -1544,6 +1544,9 @@ public class Configuration {
     // Whether to register a JMX MBean that allows triggering profiles via JMX tools.
     public boolean enableProfilerControlMBean = false;
 
+    // JFR configuration used by the always-on continuous profiling recording.
+    public String continuousProfilingSettings = "minimal-diagnosis-cpu-profile.jfc";
+
     // When enabled, the profiler keeps a single JFR recording running continuously using a
     // circular buffer (bounded by continuousProfilingMaxAgeSeconds) instead of starting a new
     // timed recording for each trigger. When a profile is requested, the current contents of the

@@ -348,6 +348,14 @@ public class TelemetryClient {
     new ResourceParser().updateRoleNameAndInstance(telemetryBuilder, resource);
   }
 
+  public void populateDefaultsForHeartbeat(
+      AbstractTelemetryBuilder telemetryBuilder, Resource ignoredResource) {
+    // HeartbeatExporter supplies Resource.empty(), but targeting must use the same final resource
+    // identity as every other telemetry item.
+    Resource resource = otelResource;
+    populateDefaults(telemetryBuilder, resource == null ? ignoredResource : resource);
+  }
+
   @Nullable
   public ConnectionString getConnectionString() {
     return connectionString;
