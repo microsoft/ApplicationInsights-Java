@@ -83,14 +83,13 @@ public class JmxMemoryManagement implements MemoryManagement {
     NotificationObserver observer = new NotificationObserver(executorService);
     observer.watchGcNotificationEvents();
     try {
-      collectors.forEach(
-          collector -> {
-            try {
-              connection.addNotificationListener(collector.getName(), observer, null, collector);
-            } catch (Exception e) {
-              throw new IllegalStateException(e);
-            }
-          });
+      collectors.forEach(collector -> {
+        try {
+          connection.addNotificationListener(collector.getName(), observer, null, collector);
+        } catch (Exception e) {
+          throw new IllegalStateException(e);
+        }
+      });
     } catch (RuntimeException e) {
       throw new UnableToMonitorMemoryException(e);
     }
