@@ -67,21 +67,20 @@ public class AlertPipelines {
       List<AlertConfiguration> newAlertConfig, TimeSource timeSource) {
     List<AlertPipeline> requestPipelines =
         newAlertConfig.stream()
-            .map(
-                alert -> {
-                  AlertingConfig.RequestTrigger trigger = alert.getRequestTrigger();
+            .map(alert -> {
+              AlertingConfig.RequestTrigger trigger = alert.getRequestTrigger();
 
-                  return SingleAlertPipeline.create(
-                      new AlertRequestFilter.RegexRequestNameFilter(trigger.filter.value),
-                      new ThresholdBreachRatioAggregation(
-                          trigger.aggregation.configuration.thresholdMillis,
-                          trigger.aggregation.configuration.minimumSamples,
-                          trigger.aggregation.windowSizeMillis / 1000,
-                          timeSource,
-                          false),
-                      alert,
-                      alertHandler);
-                })
+              return SingleAlertPipeline.create(
+                  new AlertRequestFilter.RegexRequestNameFilter(trigger.filter.value),
+                  new ThresholdBreachRatioAggregation(
+                      trigger.aggregation.configuration.thresholdMillis,
+                      trigger.aggregation.configuration.minimumSamples,
+                      trigger.aggregation.windowSizeMillis / 1000,
+                      timeSource,
+                      false),
+                  alert,
+                  alertHandler);
+            })
             .collect(Collectors.toList());
 
     alertPipelines.put(AlertMetricType.REQUEST, new AlertPipelineMultiplexer(requestPipelines));

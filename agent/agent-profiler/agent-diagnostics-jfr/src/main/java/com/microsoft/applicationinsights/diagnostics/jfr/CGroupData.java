@@ -104,29 +104,28 @@ public class CGroupData extends Event implements JsonSerializable<CGroupData> {
   }
 
   public static CGroupData fromJson(JsonReader jsonReader) throws IOException {
-    return jsonReader.readObject(
-        reader -> {
-          CGroupData deserializedValue = new CGroupData();
+    return jsonReader.readObject(reader -> {
+      CGroupData deserializedValue = new CGroupData();
 
-          while (reader.nextToken() != JsonToken.END_OBJECT) {
-            String fieldName = reader.getFieldName();
-            reader.nextToken();
-            if ("kmemLimit".equals(fieldName)) {
-              deserializedValue.setKmemLimit(reader.getLong());
-            } else if ("memoryLimit".equals(fieldName)) {
-              deserializedValue.setMemoryLimit(reader.getLong());
-            } else if ("memorySoftLimit".equals(fieldName)) {
-              deserializedValue.setMemorySoftLimit(reader.getLong());
-            } else if ("cpuLimit".equals(fieldName)) {
-              deserializedValue.setCpuLimit(reader.getLong());
-            } else if ("cpuPeriod".equals(fieldName)) {
-              deserializedValue.setCpuPeriod(reader.getLong());
-            } else {
-              reader.skipChildren();
-            }
-          }
+      while (reader.nextToken() != JsonToken.END_OBJECT) {
+        String fieldName = reader.getFieldName();
+        reader.nextToken();
+        if ("kmemLimit".equals(fieldName)) {
+          deserializedValue.setKmemLimit(reader.getLong());
+        } else if ("memoryLimit".equals(fieldName)) {
+          deserializedValue.setMemoryLimit(reader.getLong());
+        } else if ("memorySoftLimit".equals(fieldName)) {
+          deserializedValue.setMemorySoftLimit(reader.getLong());
+        } else if ("cpuLimit".equals(fieldName)) {
+          deserializedValue.setCpuLimit(reader.getLong());
+        } else if ("cpuPeriod".equals(fieldName)) {
+          deserializedValue.setCpuPeriod(reader.getLong());
+        } else {
+          reader.skipChildren();
+        }
+      }
 
-          return deserializedValue;
-        });
+      return deserializedValue;
+    });
   }
 }

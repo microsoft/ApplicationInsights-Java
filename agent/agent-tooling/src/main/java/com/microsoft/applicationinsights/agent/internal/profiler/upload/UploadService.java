@@ -157,28 +157,27 @@ public class UploadService {
 
     // upload trace to service profiler
     return uploadTrace(uploadContext)
-        .map(
-            done -> {
-              // return associated profile metadata
-              String fileId = createId();
-              String formattedTimestamp = TimestampContract.padNanos(done.getTimeStamp());
+        .map(done -> {
+          // return associated profile metadata
+          String fileId = createId();
+          String formattedTimestamp = TimestampContract.padNanos(done.getTimeStamp());
 
-              return ServiceProfilerIndex.builder()
-                  .setTriggeredBy(triggerName)
-                  .setFileId(fileId)
-                  .setStampId(done.getStampId())
-                  .setDataCubeId(UUID.fromString(appId))
-                  .setTimeStamp(formattedTimestamp)
-                  .setMachineName(uploadContext.getMachineName())
-                  .setOs(OsPlatformProvider.getOsPlatformDescription())
-                  .setProcessId(processId)
-                  .setArtifactKind(artifactKind)
-                  .setArtifactId(profileId.toString())
-                  .setExtension(extension)
-                  .setCpuUsage(cpuUsage)
-                  .setMemoryUsage(memoryUsage)
-                  .build();
-            });
+          return ServiceProfilerIndex.builder()
+              .setTriggeredBy(triggerName)
+              .setFileId(fileId)
+              .setStampId(done.getStampId())
+              .setDataCubeId(UUID.fromString(appId))
+              .setTimeStamp(formattedTimestamp)
+              .setMachineName(uploadContext.getMachineName())
+              .setOs(OsPlatformProvider.getOsPlatformDescription())
+              .setProcessId(processId)
+              .setArtifactKind(artifactKind)
+              .setArtifactId(profileId.toString())
+              .setExtension(extension)
+              .setCpuUsage(cpuUsage)
+              .setMemoryUsage(memoryUsage)
+              .build();
+        });
   }
 
   @SuppressFBWarnings(
@@ -204,17 +203,16 @@ public class UploadService {
       File finalZippedTraceFile1 = zippedTraceFile;
       return serviceProfilerClient
           .getUploadAccess(uploadContext.getProfileId(), uploadContext.getExtension())
-          .flatMap(
-              uploadPass -> {
-                if (uploadPass == null) {
-                  close(finalZippedTraceFile1);
-                  return Mono.error(new UploadFailedException("Failed to obtain upload pass"));
-                }
+          .flatMap(uploadPass -> {
+            if (uploadPass == null) {
+              close(finalZippedTraceFile1);
+              return Mono.error(new UploadFailedException("Failed to obtain upload pass"));
+            }
 
-                // perform upload then finally close file
-                return performUpload(uploadContext, uploadPass, finalZippedTraceFile1)
-                    .doFinally((signal) -> close(finalZippedTraceFile1));
-              });
+            // perform upload then finally close file
+            return performUpload(uploadContext, uploadPass, finalZippedTraceFile1)
+                .doFinally(signal -> close(finalZippedTraceFile1));
+          });
     } catch (Exception e) {
       logger.error("Upload of the trace file failed", e);
       if (zippedTraceFile != null) {
@@ -246,7 +244,7 @@ public class UploadService {
       BlobAsyncClient blobClient = blobContainerClient.getBlobAsyncClient(uploadPass.getBlobName());
       return blobClient
           .uploadFromFileWithResponse(options)
-          .doFinally((done) -> logger.info("upload done"));
+          .doFinally(done -> logger.info("upload done"));
     } catch (MalformedURLException e) {
       throw new IllegalArgumentException("Malformed url", e);
     }
@@ -272,17 +270,16 @@ public class UploadService {
               uploadContext.getProfileId(),
               uploadContext.getExtension(),
               response.getValue().getETag())
-          .flatMap(
-              uploadResponse -> {
-                logger.debug("Completed upload request: {}", statusCode);
-                if (uploadResponse != null) {
-                  return Mono.just(
-                      new UploadFinishArgs(
-                          uploadResponse.getStampId(), uploadResponse.getAcceptedTime()));
-                } else {
-                  return Mono.error(new UploadFailedException("Report upload finish failed"));
-                }
-              });
+          .flatMap(uploadResponse -> {
+            logger.debug("Completed upload request: {}", statusCode);
+            if (uploadResponse != null) {
+              return Mono.just(
+                  new UploadFinishArgs(
+                      uploadResponse.getStampId(), uploadResponse.getAcceptedTime()));
+            } else {
+              return Mono.error(new UploadFailedException("Report upload finish failed"));
+            }
+          });
 
     } else {
       logger.error("Upload of the trace file to block BLOB failed: {}", statusCode);
@@ -356,12 +353,11 @@ public class UploadService {
       stream
           .sorted(Comparator.reverseOrder())
           .map(Path::toFile)
-          .forEach(
-              file -> {
-                if (!file.delete()) {
-                  logger.error("Failed to delete " + file.getAbsolutePath());
-                }
-              });
+          .forEach(file -> {
+            if (!file.delete()) {
+              logger.error("Failed to delete " + file.getAbsolutePath());
+            }
+          });
     }
   }
 }

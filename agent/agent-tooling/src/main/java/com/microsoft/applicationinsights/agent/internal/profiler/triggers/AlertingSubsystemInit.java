@@ -111,22 +111,21 @@ public class AlertingSubsystemInit {
 
   private static void addObserver(
       AlertingSubsystem alertingSubsystem, TelemetryObservers telemetryObservers) {
-    telemetryObservers.addObserver(
-        telemetry -> {
-          MonitorDomain data = telemetry.getData().getBaseData();
-          if (!(data instanceof MetricsData)) {
-            return;
-          }
-          MetricDataPoint point = ((MetricsData) data).getMetrics().get(0);
-          AlertMetricType alertMetricType = null;
-          if (point.getName().equals(TOTAL_CPU_PERCENTAGE)) {
-            alertMetricType = AlertMetricType.CPU;
-          }
+    telemetryObservers.addObserver(telemetry -> {
+      MonitorDomain data = telemetry.getData().getBaseData();
+      if (!(data instanceof MetricsData)) {
+        return;
+      }
+      MetricDataPoint point = ((MetricsData) data).getMetrics().get(0);
+      AlertMetricType alertMetricType = null;
+      if (point.getName().equals(TOTAL_CPU_PERCENTAGE)) {
+        alertMetricType = AlertMetricType.CPU;
+      }
 
-          if (alertMetricType != null) {
-            alertingSubsystem.track(alertMetricType, point.getValue());
-          }
-        });
+      if (alertMetricType != null) {
+        alertingSubsystem.track(alertMetricType, point.getValue());
+      }
+    });
   }
 
   private static void alertAction(

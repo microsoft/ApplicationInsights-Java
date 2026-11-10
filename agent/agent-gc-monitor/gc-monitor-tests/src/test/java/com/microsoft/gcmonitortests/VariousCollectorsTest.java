@@ -103,21 +103,20 @@ class VariousCollectorsTest {
   @SuppressWarnings({"SystemOut", "unused"}) // legitimate use of System.out for logging/output
   private static void print(List<GcCollectionEvent> events) {
     System.out.println("Obtained: " + events.size());
-    events.forEach(
-        event -> {
-          Optional<MemoryPool> tenuredPool = event.getTenuredPool();
-          if (tenuredPool.isPresent()) {
-            System.out.println(
-                new StringJoiner(",")
-                    .add(Long.toString(event.getId()))
-                    .add(event.getGcCause())
-                    .add(Long.toString(event.getDuration()))
-                    .add(Long.toString(event.getEndTime()))
-                    .add(event.getCollector().toString())
-                    .add(event.getGcAction())
-                    .add(Long.toString(event.getMemoryUsageBeforeGc(tenuredPool.get()).getUsed()))
-                    .add(Long.toString(event.getMemoryUsageAfterGc(tenuredPool.get()).getUsed())));
-          }
-        });
+    events.forEach(event -> {
+      Optional<MemoryPool> tenuredPool = event.getTenuredPool();
+      if (tenuredPool.isPresent()) {
+        System.out.println(
+            new StringJoiner(",")
+                .add(Long.toString(event.getId()))
+                .add(event.getGcCause())
+                .add(Long.toString(event.getDuration()))
+                .add(Long.toString(event.getEndTime()))
+                .add(event.getCollector().toString())
+                .add(event.getGcAction())
+                .add(Long.toString(event.getMemoryUsageBeforeGc(tenuredPool.get()).getUsed()))
+                .add(Long.toString(event.getMemoryUsageAfterGc(tenuredPool.get()).getUsed())));
+      }
+    });
   }
 }

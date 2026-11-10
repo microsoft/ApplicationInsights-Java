@@ -30,19 +30,18 @@ abstract class SamplingOverrides4Test {
   @TargetUri(value = "/health-check", callCount = 100)
   void testSampling() throws Exception {
     await()
-        .untilAsserted(
-            () -> {
-              int requestCount = testing.mockedIngestion.getCountForType("RequestData");
-              int dependencyCount = testing.mockedIngestion.getCountForType("RemoteDependencyData");
-              int logCount = testing.mockedIngestion.getCountForType("MessageData");
+        .untilAsserted(() -> {
+          int requestCount = testing.mockedIngestion.getCountForType("RequestData");
+          int dependencyCount = testing.mockedIngestion.getCountForType("RemoteDependencyData");
+          int logCount = testing.mockedIngestion.getCountForType("MessageData");
 
-              assertThat(requestCount).isGreaterThanOrEqualTo(25);
-              assertThat(requestCount).isLessThanOrEqualTo(75);
-              assertThat(dependencyCount).isGreaterThanOrEqualTo(2);
-              assertThat(dependencyCount).isLessThanOrEqualTo(20);
-              assertThat(logCount).isGreaterThanOrEqualTo(2);
-              assertThat(logCount).isLessThanOrEqualTo(20);
-            });
+          assertThat(requestCount).isGreaterThanOrEqualTo(25);
+          assertThat(requestCount).isLessThanOrEqualTo(75);
+          assertThat(dependencyCount).isGreaterThanOrEqualTo(2);
+          assertThat(dependencyCount).isLessThanOrEqualTo(20);
+          assertThat(logCount).isGreaterThanOrEqualTo(2);
+          assertThat(logCount).isLessThanOrEqualTo(20);
+        });
 
     testing
         .mockedIngestion

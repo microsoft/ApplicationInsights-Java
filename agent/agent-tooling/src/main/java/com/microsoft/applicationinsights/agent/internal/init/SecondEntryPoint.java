@@ -236,73 +236,66 @@ public class SecondEntryPoint
     telemetryClient.setQuickPulse(quickPulse);
 
     autoConfiguration
-        .addPropertiesSupplier(
-            () -> {
-              Map<String, String> props = new HashMap<>();
-              props.put("otel.traces.exporter", AzureMonitorExporterProviderKeys.EXPORTER_NAME);
-              props.put("otel.metrics.exporter", AzureMonitorExporterProviderKeys.EXPORTER_NAME);
-              props.put("otel.logs.exporter", AzureMonitorExporterProviderKeys.EXPORTER_NAME);
-              props.put(
-                  AzureMonitorExporterProviderKeys.INTERNAL_USING_AZURE_MONITOR_EXPORTER_BUILDER,
-                  "true");
-              props.put(
-                  "otel.metric.export.interval",
-                  Integer.toString(configuration.metricIntervalSeconds * 1000));
-              // using small interval because need to convert to TelemetryItem as soon as possible
-              // to grab data for live metrics. the real batching is done at a lower level
-              // (not using batch size 1 because that seems to cause poor performance on small
-              // containers)
-              props.put("otel.bsp.schedule.delay", "100");
-              props.put("otel.blrp.schedule.delay", "100");
-              return props;
-            })
+        .addPropertiesSupplier(() -> {
+          Map<String, String> props = new HashMap<>();
+          props.put("otel.traces.exporter", AzureMonitorExporterProviderKeys.EXPORTER_NAME);
+          props.put("otel.metrics.exporter", AzureMonitorExporterProviderKeys.EXPORTER_NAME);
+          props.put("otel.logs.exporter", AzureMonitorExporterProviderKeys.EXPORTER_NAME);
+          props.put(
+              AzureMonitorExporterProviderKeys.INTERNAL_USING_AZURE_MONITOR_EXPORTER_BUILDER,
+              "true");
+          props.put(
+              "otel.metric.export.interval",
+              Integer.toString(configuration.metricIntervalSeconds * 1000));
+          // using small interval because need to convert to TelemetryItem as soon as possible
+          // to grab data for live metrics. the real batching is done at a lower level
+          // (not using batch size 1 because that seems to cause poor performance on small
+          // containers)
+          props.put("otel.bsp.schedule.delay", "100");
+          props.put("otel.blrp.schedule.delay", "100");
+          return props;
+        })
         .addPropertiesCustomizer(new AiConfigCustomizer())
-        .addPropertiesCustomizer(
-            otelConfig -> {
-              Map<String, String> props = new HashMap<>();
-              if (isAksAttach()) {
-                String metricsExporter = otelConfig.getString("otel.metrics.exporter");
-                String amle =
-                    otelConfig.getString("applicationinsights.metrics.to.loganalytics.enabled");
-                props.put(
-                    "otel.metrics.exporter",
-                    conditionallyAddAzureMonitorExporter(metricsExporter, amle));
-              }
-              return props;
-            })
-        .addSpanExporterCustomizer(
-            (spanExporter, configProperties) -> {
-              if (spanExporter instanceof AzureMonitorSpanExporterProvider.MarkerSpanExporter) {
-                return buildTraceExporter(configuration, telemetryClient, quickPulse);
-              }
-              return wrapSpanExporter(spanExporter, configuration);
-            })
-        .addMetricExporterCustomizer(
-            (metricExporter, configProperties) -> {
-              if (metricExporter
-                  instanceof AzureMonitorMetricExporterProvider.MarkerMetricExporter) {
-                return buildMetricExporter(
-                    configuration, telemetryClient, metricFilters, configProperties);
-              } else {
-                return metricExporter;
-              }
-            })
-        .addLogRecordProcessorCustomizer(
-            (logRecordProcessor, configProperties) -> {
-              if (logRecordProcessor instanceof BatchLogRecordProcessor) {
-                return wrapBatchLogRecordProcessor(logRecordProcessor, configuration);
-              }
-              return logRecordProcessor;
-            })
-        .addLogRecordExporterCustomizer(
-            (logRecordExporter, configProperties) -> {
-              if (logRecordExporter
-                  instanceof AzureMonitorLogRecordExporterProvider.MarkerLogRecordExporter) {
-                return buildLogRecordExporter(configuration, telemetryClient, quickPulse);
-              } else {
-                return wrapLogExporter(logRecordExporter, configuration);
-              }
-            })
+        .addPropertiesCustomizer(otelConfig -> {
+          Map<String, String> props = new HashMap<>();
+          if (isAksAttach()) {
+            String metricsExporter = otelConfig.getString("otel.metrics.exporter");
+            String amle =
+                otelConfig.getString("applicationinsights.metrics.to.loganalytics.enabled");
+            props.put(
+                "otel.metrics.exporter",
+                conditionallyAddAzureMonitorExporter(metricsExporter, amle));
+          }
+          return props;
+        })
+        .addSpanExporterCustomizer((spanExporter, configProperties) -> {
+          if (spanExporter instanceof AzureMonitorSpanExporterProvider.MarkerSpanExporter) {
+            return buildTraceExporter(configuration, telemetryClient, quickPulse);
+          }
+          return wrapSpanExporter(spanExporter, configuration);
+        })
+        .addMetricExporterCustomizer((metricExporter, configProperties) -> {
+          if (metricExporter instanceof AzureMonitorMetricExporterProvider.MarkerMetricExporter) {
+            return buildMetricExporter(
+                configuration, telemetryClient, metricFilters, configProperties);
+          } else {
+            return metricExporter;
+          }
+        })
+        .addLogRecordProcessorCustomizer((logRecordProcessor, configProperties) -> {
+          if (logRecordProcessor instanceof BatchLogRecordProcessor) {
+            return wrapBatchLogRecordProcessor(logRecordProcessor, configuration);
+          }
+          return logRecordProcessor;
+        })
+        .addLogRecordExporterCustomizer((logRecordExporter, configProperties) -> {
+          if (logRecordExporter
+              instanceof AzureMonitorLogRecordExporterProvider.MarkerLogRecordExporter) {
+            return buildLogRecordExporter(configuration, telemetryClient, quickPulse);
+          } else {
+            return wrapLogExporter(logRecordExporter, configuration);
+          }
+        })
         .addTracerProviderCustomizer(
             (builder, otelConfig) -> configureTracing(builder, configuration))
         .addMeterProviderCustomizer(
@@ -314,11 +307,10 @@ public class SecondEntryPoint
             configuration.preview.roleNameOverrides));
 
     // needed for 2.x bridge
-    autoConfiguration.addResourceCustomizer(
-        (resource, configProperties) -> {
-          telemetryClient.setOtelResource(resource);
-          return resource;
-        });
+    autoConfiguration.addResourceCustomizer((resource, configProperties) -> {
+      telemetryClient.setOtelResource(resource);
+      return resource;
+    });
   }
 
   private static LogRecordProcessor wrapBatchLogRecordProcessor(
@@ -673,10 +665,9 @@ public class SecondEntryPoint
 
   private static List<ProcessorConfig> getSpanProcessorConfigs(Configuration configuration) {
     return configuration.preview.processors.stream()
-        .filter(
-            processor ->
-                processor.type == Configuration.ProcessorType.ATTRIBUTE
-                    || processor.type == Configuration.ProcessorType.SPAN)
+        .filter(processor ->
+            processor.type == Configuration.ProcessorType.ATTRIBUTE
+                || processor.type == Configuration.ProcessorType.SPAN)
         .collect(Collectors.toCollection(ArrayList::new));
   }
 
@@ -747,10 +738,9 @@ public class SecondEntryPoint
 
   private static List<ProcessorConfig> getLogProcessorConfigs(Configuration configuration) {
     return configuration.preview.processors.stream()
-        .filter(
-            processor ->
-                processor.type == Configuration.ProcessorType.ATTRIBUTE
-                    || processor.type == Configuration.ProcessorType.LOG)
+        .filter(processor ->
+            processor.type == Configuration.ProcessorType.ATTRIBUTE
+                || processor.type == Configuration.ProcessorType.LOG)
         .collect(Collectors.toCollection(ArrayList::new));
   }
 
@@ -788,20 +778,18 @@ public class SecondEntryPoint
       OpenTelemetrySdk sdk, TelemetryClient telemetryClient) {
     CompletableResultCode sdkShutdownResult = sdk.shutdown();
     CompletableResultCode overallResult = new CompletableResultCode();
-    sdkShutdownResult.whenComplete(
-        () -> {
-          // IMPORTANT: the metric reader flush will fail if the periodic metric reader is already
-          // mid-exporter
-          CompletableResultCode telemetryClientResult = telemetryClient.forceFlush();
-          telemetryClientResult.whenComplete(
-              () -> {
-                if (sdkShutdownResult.isSuccess() && telemetryClientResult.isSuccess()) {
-                  overallResult.succeed();
-                } else {
-                  overallResult.fail();
-                }
-              });
-        });
+    sdkShutdownResult.whenComplete(() -> {
+      // IMPORTANT: the metric reader flush will fail if the periodic metric reader is already
+      // mid-exporter
+      CompletableResultCode telemetryClientResult = telemetryClient.forceFlush();
+      telemetryClientResult.whenComplete(() -> {
+        if (sdkShutdownResult.isSuccess() && telemetryClientResult.isSuccess()) {
+          overallResult.succeed();
+        } else {
+          overallResult.fail();
+        }
+      });
+    });
     return overallResult;
   }
 

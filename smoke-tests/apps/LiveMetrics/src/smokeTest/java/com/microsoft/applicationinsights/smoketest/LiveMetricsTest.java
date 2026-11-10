@@ -37,19 +37,17 @@ abstract class LiveMetricsTest {
         .until(() -> testing.mockedIngestion.getCountForType("RequestData") == 1);
 
     await()
-        .untilAsserted(
-            () -> {
-              LiveMetricsVerifier verifier = testing.mockedIngestion.getLiveMetrics();
+        .untilAsserted(() -> {
+          LiveMetricsVerifier verifier = testing.mockedIngestion.getLiveMetrics();
 
-              verifier.confirmDocsAreFiltered();
-              verifier.confirmPerfCountersNonZero();
+          verifier.confirmDocsAreFiltered();
+          verifier.confirmPerfCountersNonZero();
 
-              assertThat(verifier.getExceptionCount("Fake Exception")).isEqualTo(1);
-              assertThat(verifier.getTraceCount("This message should generate a trace"))
-                  .isEqualTo(1);
-              assertThat(verifier.getDependencyCountFromMetric()).isEqualTo(1);
-              assertThat(verifier.getRequestCountFromMetric()).isEqualTo(1);
-            });
+          assertThat(verifier.getExceptionCount("Fake Exception")).isEqualTo(1);
+          assertThat(verifier.getTraceCount("This message should generate a trace")).isEqualTo(1);
+          assertThat(verifier.getDependencyCountFromMetric()).isEqualTo(1);
+          assertThat(verifier.getRequestCountFromMetric()).isEqualTo(1);
+        });
   }
 
   @Environment(TOMCAT_8_JAVA_8)

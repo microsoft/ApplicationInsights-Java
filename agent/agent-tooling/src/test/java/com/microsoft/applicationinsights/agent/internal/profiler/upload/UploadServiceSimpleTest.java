@@ -107,11 +107,10 @@ class UploadServiceSimpleTest {
             appId::toString,
             "a-role-name");
 
-    assertThatThrownBy(
-            () ->
-                uploadService
-                    .uploadJfrFile(profileId, "a-trigger", 321, new File("./not-a-file"), 0.0, 0.0)
-                    .block())
+    assertThatThrownBy(() ->
+            uploadService
+                .uploadJfrFile(profileId, "a-trigger", 321, new File("./not-a-file"), 0.0, 0.0)
+                .block())
         .hasRootCauseInstanceOf(NoSuchFileException.class);
   }
 

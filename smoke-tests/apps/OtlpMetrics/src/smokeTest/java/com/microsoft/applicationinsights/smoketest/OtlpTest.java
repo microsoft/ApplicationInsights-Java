@@ -80,22 +80,17 @@ abstract class OtlpTest {
   private void verifyMetricsSentToOtlpEndpoint() {
     await()
         .atMost(60, SECONDS)
-        .untilAsserted(
-            () -> {
-              HttpRequest[] requests =
-                  testing
-                      .mockedOtlpIngestion
-                      .getCollectorServer()
-                      .retrieveRecordedRequests(request());
+        .untilAsserted(() -> {
+          HttpRequest[] requests =
+              testing.mockedOtlpIngestion.getCollectorServer().retrieveRecordedRequests(request());
 
-              // verify metrics
-              List<Metric> metrics =
-                  testing.mockedOtlpIngestion.extractMetricsFromRequests(requests);
-              assertThat(metrics)
-                  .extracting(Metric::getName)
-                  .contains("histogram-test-otlp-exporter", "http.server.request.duration")
-                  .doesNotContain("Attach", "Feature"); // statsbeat
-            });
+          // verify metrics
+          List<Metric> metrics = testing.mockedOtlpIngestion.extractMetricsFromRequests(requests);
+          assertThat(metrics)
+              .extracting(Metric::getName)
+              .contains("histogram-test-otlp-exporter", "http.server.request.duration")
+              .doesNotContain("Attach", "Feature"); // statsbeat
+        });
   }
 
   private static boolean isHistogramMetric(Envelope envelope) {

@@ -301,10 +301,9 @@ public class SmokeTestExtension
       if (!useOld3xAgent) {
         try {
           await()
-              .untilAsserted(
-                  () ->
-                      assertThat(mockedIngestion.getLiveMetrics().getRequestCount(contextRootUrl))
-                          .isEqualTo(1));
+              .untilAsserted(() ->
+                  assertThat(mockedIngestion.getLiveMetrics().getRequestCount(contextRootUrl))
+                      .isEqualTo(1));
         } catch (ConditionTimeoutException e) {
           // TODO (trask) need to fix race condition in live metrics
           //  where sometimes it loses telemetry
@@ -782,20 +781,18 @@ public class SmokeTestExtension
 
   public void waitAndAssertTrace(Consumer<TraceAssert> assertions) {
     await()
-        .untilAsserted(
-            () -> {
-              List<Envelope> envelopes = mockedIngestion.getAllItems();
+        .untilAsserted(() -> {
+          List<Envelope> envelopes = mockedIngestion.getAllItems();
 
-              Collection<List<Envelope>> traces =
-                  envelopes.stream()
-                      .filter(envelope -> envelope.getTags().get("ai.operation.id") != null)
-                      .collect(
-                          Collectors.groupingBy(
-                              envelope -> envelope.getTags().get("ai.operation.id")))
-                      .values();
+          Collection<List<Envelope>> traces =
+              envelopes.stream()
+                  .filter(envelope -> envelope.getTags().get("ai.operation.id") != null)
+                  .collect(
+                      Collectors.groupingBy(envelope -> envelope.getTags().get("ai.operation.id")))
+                  .values();
 
-              assertThat(traces).anySatisfy(trace -> assertions.accept(new TraceAssert(trace)));
-            });
+          assertThat(traces).anySatisfy(trace -> assertions.accept(new TraceAssert(trace)));
+        });
   }
 
   // passing name into this, instead of asserting the name afterwards via hasName()
@@ -808,14 +805,13 @@ public class SmokeTestExtension
     // TODO
     //  assertThat(metrics.size()).isEqualTo(1);
     await()
-        .untilAsserted(
-            () -> {
-              List<Envelope> envelopes =
-                  mockedIngestion.getItemsEnvelopeDataType("MetricData").stream()
-                      .filter(getMetricPredicate(name))
-                      .collect(Collectors.toList());
-              assertThat(envelopes)
-                  .anySatisfy(envelope -> assertions.accept(new MetricAssert(envelope)));
-            });
+        .untilAsserted(() -> {
+          List<Envelope> envelopes =
+              mockedIngestion.getItemsEnvelopeDataType("MetricData").stream()
+                  .filter(getMetricPredicate(name))
+                  .collect(Collectors.toList());
+          assertThat(envelopes)
+              .anySatisfy(envelope -> assertions.accept(new MetricAssert(envelope)));
+        });
   }
 }

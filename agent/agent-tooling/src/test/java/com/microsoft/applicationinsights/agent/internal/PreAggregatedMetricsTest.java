@@ -112,26 +112,22 @@ public class PreAggregatedMetricsTest {
     }
 
     assertThat(metricDataCollection)
-        .satisfiesExactly(
-            metric ->
-                assertThat(metric)
-                    .hasName("http.client.request.duration")
-                    .hasUnit("s")
-                    .hasHistogramSatisfying(
-                        histogram ->
-                            histogram.hasPointsSatisfying(
-                                point ->
-                                    point
-                                        .hasSum(0.15 /* seconds */)
-                                        .hasAttributesSatisfying(
-                                            equalTo(ServerAttributes.SERVER_ADDRESS, "localhost"),
-                                            equalTo(ServerAttributes.SERVER_PORT, 1234),
-                                            equalTo(HttpAttributes.HTTP_RESPONSE_STATUS_CODE, 200))
-                                        .hasExemplarsSatisfying(
-                                            exemplar ->
-                                                exemplar
-                                                    .hasTraceId("ff01020304050600ff0a0b0c0d0e0f00")
-                                                    .hasSpanId("090a0b0c0d0e0f00")))));
+        .satisfiesExactly(metric ->
+            assertThat(metric)
+                .hasName("http.client.request.duration")
+                .hasUnit("s")
+                .hasHistogramSatisfying(histogram ->
+                    histogram.hasPointsSatisfying(point ->
+                        point
+                            .hasSum(0.15 /* seconds */)
+                            .hasAttributesSatisfying(
+                                equalTo(ServerAttributes.SERVER_ADDRESS, "localhost"),
+                                equalTo(ServerAttributes.SERVER_PORT, 1234),
+                                equalTo(HttpAttributes.HTTP_RESPONSE_STATUS_CODE, 200))
+                            .hasExemplarsSatisfying(exemplar ->
+                                exemplar
+                                    .hasTraceId("ff01020304050600ff0a0b0c0d0e0f00")
+                                    .hasSpanId("090a0b0c0d0e0f00")))));
 
     MetricTelemetryBuilder builder = MetricTelemetryBuilder.create();
     MetricData metricData = metricDataCollection.iterator().next();
@@ -187,26 +183,22 @@ public class PreAggregatedMetricsTest {
     assertThat(metricDataCollection.size()).isEqualTo(1);
 
     assertThat(metricDataCollection)
-        .satisfiesExactlyInAnyOrder(
-            metric ->
-                assertThat(metric)
-                    .hasName("rpc.client.duration")
-                    .hasUnit("ms")
-                    .hasHistogramSatisfying(
-                        histogram ->
-                            histogram.hasPointsSatisfying(
-                                point ->
-                                    point
-                                        .hasSum(150 /* millis */)
-                                        .hasAttributesSatisfying(
-                                            equalTo(RpcIncubatingAttributes.RPC_SYSTEM, "grpc"),
-                                            equalTo(ServerAttributes.SERVER_ADDRESS, "example.com"),
-                                            equalTo(ServerAttributes.SERVER_PORT, 8080))
-                                        .hasExemplarsSatisfying(
-                                            exemplar ->
-                                                exemplar
-                                                    .hasTraceId("ff01020304050600ff0a0b0c0d0e0f00")
-                                                    .hasSpanId("090a0b0c0d0e0f00")))));
+        .satisfiesExactlyInAnyOrder(metric ->
+            assertThat(metric)
+                .hasName("rpc.client.duration")
+                .hasUnit("ms")
+                .hasHistogramSatisfying(histogram ->
+                    histogram.hasPointsSatisfying(point ->
+                        point
+                            .hasSum(150 /* millis */)
+                            .hasAttributesSatisfying(
+                                equalTo(RpcIncubatingAttributes.RPC_SYSTEM, "grpc"),
+                                equalTo(ServerAttributes.SERVER_ADDRESS, "example.com"),
+                                equalTo(ServerAttributes.SERVER_PORT, 8080))
+                            .hasExemplarsSatisfying(exemplar ->
+                                exemplar
+                                    .hasTraceId("ff01020304050600ff0a0b0c0d0e0f00")
+                                    .hasSpanId("090a0b0c0d0e0f00")))));
 
     MetricTelemetryBuilder builder = MetricTelemetryBuilder.create();
     MetricData metricData = metricDataCollection.iterator().next();
@@ -264,28 +256,24 @@ public class PreAggregatedMetricsTest {
     }
 
     assertThat(target)
-        .satisfiesAnyOf(
-            metric ->
-                assertThat(metric)
-                    .hasName("http.server.request.duration")
-                    .hasUnit("s")
-                    .hasHistogramSatisfying(
-                        histogram ->
-                            histogram.hasPointsSatisfying(
-                                point ->
-                                    point
-                                        .hasSum(0.15 /* seconds */)
-                                        .hasAttributesSatisfying(
-                                            equalTo(HttpAttributes.HTTP_RESPONSE_STATUS_CODE, 200),
-                                            equalTo(
-                                                AttributeKey.booleanKey(
-                                                    "applicationinsights.internal.is_synthetic"),
-                                                false))
-                                        .hasExemplarsSatisfying(
-                                            exemplar ->
-                                                exemplar
-                                                    .hasTraceId(spanContext1.getTraceId())
-                                                    .hasSpanId(spanContext1.getSpanId())))));
+        .satisfiesAnyOf(metric ->
+            assertThat(metric)
+                .hasName("http.server.request.duration")
+                .hasUnit("s")
+                .hasHistogramSatisfying(histogram ->
+                    histogram.hasPointsSatisfying(point ->
+                        point
+                            .hasSum(0.15 /* seconds */)
+                            .hasAttributesSatisfying(
+                                equalTo(HttpAttributes.HTTP_RESPONSE_STATUS_CODE, 200),
+                                equalTo(
+                                    AttributeKey.booleanKey(
+                                        "applicationinsights.internal.is_synthetic"),
+                                    false))
+                            .hasExemplarsSatisfying(exemplar ->
+                                exemplar
+                                    .hasTraceId(spanContext1.getTraceId())
+                                    .hasSpanId(spanContext1.getSpanId())))));
 
     listener.onEnd(context1, responseAttributes, nanos(250));
     MetricTelemetryBuilder builder = MetricTelemetryBuilder.create();

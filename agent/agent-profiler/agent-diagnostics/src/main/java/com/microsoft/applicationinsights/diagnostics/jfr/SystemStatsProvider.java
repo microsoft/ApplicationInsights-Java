@@ -281,18 +281,17 @@ public class SystemStatsProvider {
 
   public static void close() {
     // Shutdown all closable singletons
-    singletons.forEach(
-        (clazz, supplier) -> {
-          Object instance = supplier.get();
-          if (instance instanceof Closeable) {
-            try {
-              ((Closeable) instance).close();
-            } catch (IOException e) {
-              logger.error("Failed to close reader", e);
-            }
+    singletons.forEach((clazz, supplier) -> {
+      Object instance = supplier.get();
+      if (instance instanceof Closeable) {
+        try {
+          ((Closeable) instance).close();
+        } catch (IOException e) {
+          logger.error("Failed to close reader", e);
+        }
 
-            singletons.get(clazz).set(null);
-          }
-        });
+        singletons.get(clazz).set(null);
+      }
+    });
   }
 }

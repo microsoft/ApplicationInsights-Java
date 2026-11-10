@@ -45,7 +45,7 @@ public class AlternativeJfrConfigurationsTest {
       config.enableDiagnostics = true;
       assertForAllConfigs(
           config,
-          (fileContent) -> {
+          fileContent -> {
             Assertions.assertEquals("a-jfc-file", fileContent);
           });
 

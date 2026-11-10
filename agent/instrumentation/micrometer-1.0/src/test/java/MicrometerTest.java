@@ -71,9 +71,8 @@ class MicrometerTest {
   @Test
   void shouldCaptureTimeGauge() {
     // when
-    recordAndPublish(
-        registry ->
-            TimeGauge.builder("test-time-gauge", "", MILLISECONDS, obj -> 11.0).register(registry));
+    recordAndPublish(registry ->
+        TimeGauge.builder("test-time-gauge", "", MILLISECONDS, obj -> 11.0).register(registry));
 
     // then
     AgentTestingMicrometerDelegate.Measurement measurement = getLastMeasurement("test-time-gauge");
@@ -102,11 +101,10 @@ class MicrometerTest {
   @Test
   void shouldCaptureCounter() {
     // when
-    recordAndPublish(
-        registry -> {
-          Counter counter = Counter.builder("test-counter").register(registry);
-          counter.increment(3.3);
-        });
+    recordAndPublish(registry -> {
+      Counter counter = Counter.builder("test-counter").register(registry);
+      counter.increment(3.3);
+    });
 
     // then
     AgentTestingMicrometerDelegate.Measurement measurement = getLastMeasurement("test-counter");
@@ -120,12 +118,11 @@ class MicrometerTest {
   @Test
   void shouldCaptureTimer() {
     // when
-    recordAndPublish(
-        registry -> {
-          Timer timer = Timer.builder("test-timer").register(registry);
-          timer.record(Duration.ofMillis(44));
-          timer.record(Duration.ofMillis(55));
-        });
+    recordAndPublish(registry -> {
+      Timer timer = Timer.builder("test-timer").register(registry);
+      timer.record(Duration.ofMillis(44));
+      timer.record(Duration.ofMillis(55));
+    });
 
     // then
     AgentTestingMicrometerDelegate.Measurement measurement = getLastMeasurement("test-timer");
@@ -140,13 +137,12 @@ class MicrometerTest {
   @Test
   void shouldCaptureDistributionSummary() {
     // when
-    recordAndPublish(
-        registry -> {
-          DistributionSummary distributionSummary =
-              DistributionSummary.builder("test-summary").register(registry);
-          distributionSummary.record(4.4);
-          distributionSummary.record(5.5);
-        });
+    recordAndPublish(registry -> {
+      DistributionSummary distributionSummary =
+          DistributionSummary.builder("test-summary").register(registry);
+      distributionSummary.record(4.4);
+      distributionSummary.record(5.5);
+    });
 
     // then
     AgentTestingMicrometerDelegate.Measurement measurement = getLastMeasurement("test-summary");
@@ -161,12 +157,11 @@ class MicrometerTest {
   @Test
   void shouldCaptureLongTaskTimer() {
     // when
-    recordAndPublish(
-        registry -> {
-          LongTaskTimer timer = LongTaskTimer.builder("test-long-task-timer").register(registry);
-          timer.start();
-          timer.start();
-        });
+    recordAndPublish(registry -> {
+      LongTaskTimer timer = LongTaskTimer.builder("test-long-task-timer").register(registry);
+      timer.start();
+      timer.start();
+    });
 
     // then
     AgentTestingMicrometerDelegate.Measurement activeMeasurement =
@@ -189,9 +184,8 @@ class MicrometerTest {
   @Test
   void shouldCaptureFunctionCounter() {
     // when
-    recordAndPublish(
-        registry ->
-            FunctionCounter.builder("test-function-counter", "", obj -> 6.6).register(registry));
+    recordAndPublish(registry ->
+        FunctionCounter.builder("test-function-counter", "", obj -> 6.6).register(registry));
 
     // then
     AgentTestingMicrometerDelegate.Measurement measurements =
@@ -206,10 +200,9 @@ class MicrometerTest {
   @Test
   void shouldCaptureFunctionTimer() {
     // when
-    recordAndPublish(
-        registry ->
-            FunctionTimer.builder("test-function-timer", "", obj -> 2, obj -> 4.4, MILLISECONDS)
-                .register(registry));
+    recordAndPublish(registry ->
+        FunctionTimer.builder("test-function-timer", "", obj -> 2, obj -> 4.4, MILLISECONDS)
+            .register(registry));
 
     // then
     AgentTestingMicrometerDelegate.Measurement measurement =

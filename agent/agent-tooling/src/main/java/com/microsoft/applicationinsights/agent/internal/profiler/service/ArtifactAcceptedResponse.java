@@ -65,25 +65,24 @@ public class ArtifactAcceptedResponse implements JsonSerializable<ArtifactAccept
   }
 
   public static ArtifactAcceptedResponse fromJson(JsonReader jsonReader) throws IOException {
-    return jsonReader.readObject(
-        reader -> {
-          ArtifactAcceptedResponse deserializedArtifactAcceptedResponse =
-              new ArtifactAcceptedResponse();
-          while (reader.nextToken() != JsonToken.END_OBJECT) {
-            String fieldName = reader.getFieldName();
-            if ("acceptedTime".equals(fieldName)) {
-              deserializedArtifactAcceptedResponse.setAcceptedTime(reader.getString());
-            } else if ("stampId".equals(fieldName)) {
-              deserializedArtifactAcceptedResponse.setStampId(reader.getString());
-            } else if ("correlationId".equals(fieldName)) {
-              deserializedArtifactAcceptedResponse.setCorrelationId(reader.getString());
-            } else if ("blobUri".equals(fieldName)) {
-              deserializedArtifactAcceptedResponse.setBlobUri(reader.getString());
-            } else {
-              reader.skipChildren();
-            }
-          }
-          return deserializedArtifactAcceptedResponse;
-        });
+    return jsonReader.readObject(reader -> {
+      ArtifactAcceptedResponse deserializedArtifactAcceptedResponse =
+          new ArtifactAcceptedResponse();
+      while (reader.nextToken() != JsonToken.END_OBJECT) {
+        String fieldName = reader.getFieldName();
+        if ("acceptedTime".equals(fieldName)) {
+          deserializedArtifactAcceptedResponse.setAcceptedTime(reader.getString());
+        } else if ("stampId".equals(fieldName)) {
+          deserializedArtifactAcceptedResponse.setStampId(reader.getString());
+        } else if ("correlationId".equals(fieldName)) {
+          deserializedArtifactAcceptedResponse.setCorrelationId(reader.getString());
+        } else if ("blobUri".equals(fieldName)) {
+          deserializedArtifactAcceptedResponse.setBlobUri(reader.getString());
+        } else {
+          reader.skipChildren();
+        }
+      }
+      return deserializedArtifactAcceptedResponse;
+    });
   }
 }

@@ -78,57 +78,52 @@ abstract class HttpClientTest {
   }
 
   private static void verify(String successUrlWithQueryString) throws Exception {
-    testing.waitAndAssertTrace(
-        trace ->
-            trace
-                .hasRequestSatisying(
-                    request ->
-                        request
-                            .hasSuccess(true)
-                            .hasProperty("_MS.ProcessedByMetricExtractors", "True")
-                            .hasNoParent()
-                            // TODO (trask) add this check in all smoke tests?
-                            .hasNoSampleRate()
-                            .hasTag("ai.operation.name", "GET /HttpClients/*"))
-                .hasDependencySatisying(
-                    dependency ->
-                        dependency
-                            .hasName("GET /mock/200")
-                            .hasData(successUrlWithQueryString)
-                            .hasType("Http")
-                            .hasTarget("host.testcontainers.internal:6060")
-                            .hasResultCode("200")
-                            .hasSuccess(true)
-                            .hasProperty("_MS.ProcessedByMetricExtractors", "True")
-                            .hasParent(trace.getRequestId(0))
-                            .hasNoSampleRate()
-                            .hasTag("ai.operation.name", "GET /HttpClients/*"))
-                .hasDependencySatisying(
-                    dependency ->
-                        dependency
-                            .hasName("GET /mock/404")
-                            .hasData("http://host.testcontainers.internal:6060/mock/404")
-                            .hasType("Http")
-                            .hasTarget("host.testcontainers.internal:6060")
-                            .hasResultCode("404")
-                            .hasSuccess(false)
-                            .hasProperty("_MS.ProcessedByMetricExtractors", "True")
-                            .hasParent(trace.getRequestId(0))
-                            .hasNoSampleRate()
-                            .hasTag("ai.operation.name", "GET /HttpClients/*"))
-                .hasDependencySatisying(
-                    dependency ->
-                        dependency
-                            .hasName("GET /mock/500")
-                            .hasData("http://host.testcontainers.internal:6060/mock/500")
-                            .hasType("Http")
-                            .hasTarget("host.testcontainers.internal:6060")
-                            .hasResultCode("500")
-                            .hasSuccess(false)
-                            .hasProperty("_MS.ProcessedByMetricExtractors", "True")
-                            .hasParent(trace.getRequestId(0))
-                            .hasNoSampleRate()
-                            .hasTag("ai.operation.name", "GET /HttpClients/*")));
+    testing.waitAndAssertTrace(trace ->
+        trace
+            .hasRequestSatisying(request ->
+                request
+                    .hasSuccess(true)
+                    .hasProperty("_MS.ProcessedByMetricExtractors", "True")
+                    .hasNoParent()
+                    // TODO (trask) add this check in all smoke tests?
+                    .hasNoSampleRate()
+                    .hasTag("ai.operation.name", "GET /HttpClients/*"))
+            .hasDependencySatisying(dependency ->
+                dependency
+                    .hasName("GET /mock/200")
+                    .hasData(successUrlWithQueryString)
+                    .hasType("Http")
+                    .hasTarget("host.testcontainers.internal:6060")
+                    .hasResultCode("200")
+                    .hasSuccess(true)
+                    .hasProperty("_MS.ProcessedByMetricExtractors", "True")
+                    .hasParent(trace.getRequestId(0))
+                    .hasNoSampleRate()
+                    .hasTag("ai.operation.name", "GET /HttpClients/*"))
+            .hasDependencySatisying(dependency ->
+                dependency
+                    .hasName("GET /mock/404")
+                    .hasData("http://host.testcontainers.internal:6060/mock/404")
+                    .hasType("Http")
+                    .hasTarget("host.testcontainers.internal:6060")
+                    .hasResultCode("404")
+                    .hasSuccess(false)
+                    .hasProperty("_MS.ProcessedByMetricExtractors", "True")
+                    .hasParent(trace.getRequestId(0))
+                    .hasNoSampleRate()
+                    .hasTag("ai.operation.name", "GET /HttpClients/*"))
+            .hasDependencySatisying(dependency ->
+                dependency
+                    .hasName("GET /mock/500")
+                    .hasData("http://host.testcontainers.internal:6060/mock/500")
+                    .hasType("Http")
+                    .hasTarget("host.testcontainers.internal:6060")
+                    .hasResultCode("500")
+                    .hasSuccess(false)
+                    .hasProperty("_MS.ProcessedByMetricExtractors", "True")
+                    .hasParent(trace.getRequestId(0))
+                    .hasNoSampleRate()
+                    .hasTag("ai.operation.name", "GET /HttpClients/*")));
   }
 
   @Environment(TOMCAT_8_JAVA_8)
