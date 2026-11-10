@@ -157,12 +157,11 @@ public class AttributeProcessor extends AgentProcessor {
 
     AttributesBuilder builder = Attributes.builder();
     AttributeKey<String> finalAttributeKey = attributeKey;
-    existingAttributes.forEach(
-        (key, value) -> {
-          if (!key.equals(finalAttributeKey)) {
-            putIntoBuilder(builder, key, value);
-          }
-        });
+    existingAttributes.forEach((key, value) -> {
+      if (!key.equals(finalAttributeKey)) {
+        putIntoBuilder(builder, key, value);
+      }
+    });
     return builder.build();
   }
 

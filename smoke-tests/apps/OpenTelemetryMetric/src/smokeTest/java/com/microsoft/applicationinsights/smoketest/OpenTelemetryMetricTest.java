@@ -146,13 +146,12 @@ abstract class OpenTelemetryMetricTest {
     List<Envelope> metrics = testing.mockedIngestion.waitForMetricItems(name, 3);
 
     metrics.sort(
-        Comparator.comparing(
-            obj -> {
-              MetricData metricData = (MetricData) ((Data<?>) obj.getData()).getBaseData();
-              List<DataPoint> dataPointList = metricData.getMetrics();
-              DataPoint dataPoint = dataPointList.get(0);
-              return dataPoint.getValue();
-            }));
+        Comparator.comparing(obj -> {
+          MetricData metricData = (MetricData) ((Data<?>) obj.getData()).getBaseData();
+          List<DataPoint> dataPointList = metricData.getMetrics();
+          DataPoint dataPoint = dataPointList.get(0);
+          return dataPoint.getValue();
+        }));
 
     Envelope rdEnvelope = rdList.get(0);
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();

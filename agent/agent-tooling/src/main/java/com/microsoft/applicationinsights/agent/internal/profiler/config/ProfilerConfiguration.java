@@ -156,49 +156,48 @@ public class ProfilerConfiguration implements JsonSerializable<ProfilerConfigura
   }
 
   public static ProfilerConfiguration fromJson(JsonReader jsonReader) throws IOException {
-    return jsonReader.readObject(
-        reader -> {
-          ProfilerConfiguration deserializedProfilerConfiguration = new ProfilerConfiguration();
-          while (reader.nextToken() != JsonToken.END_OBJECT) {
-            reader.nextToken();
-            String fieldName = reader.getFieldName();
-            if ("id".equals(fieldName)) {
-              String id = reader.getString();
-              deserializedProfilerConfiguration.setId(id);
-            } else if ("lastModified".equals(fieldName)) {
-              String lastModified = reader.getString();
-              try {
-                deserializedProfilerConfiguration.setLastModified(
-                    new StdDateFormat().parse(lastModified));
-              } catch (ParseException ignored) {
-                deserializedProfilerConfiguration.setLastModified(DEFAULT_DATE);
-              }
-            } else if ("enabledLastModified".equals(fieldName)) {
-              String enabledLastModified = reader.getString();
-              try {
-                deserializedProfilerConfiguration.setEnabledLastModified(
-                    STD_DATE_FORMAT.parse(enabledLastModified));
-              } catch (ParseException ignored) {
-                deserializedProfilerConfiguration.setEnabledLastModified(DEFAULT_DATE);
-              }
-            } else if ("enabled".equals(fieldName)) {
-              deserializedProfilerConfiguration.setEnabled(reader.getBoolean());
-            } else if ("collectionPlan".equals(fieldName)) {
-              deserializedProfilerConfiguration.setCollectionPlan(reader.getString());
-            } else if ("cpuTriggerConfiguration".equals(fieldName)) {
-              deserializedProfilerConfiguration.setCpuTriggerConfiguration(reader.getString());
-            } else if ("memoryTriggerConfiguration".equals(fieldName)) {
-              deserializedProfilerConfiguration.setMemoryTriggerConfiguration(reader.getString());
-            } else if ("defaultConfiguration".equals(fieldName)) {
-              deserializedProfilerConfiguration.setDefaultConfiguration(reader.getString());
-            } else if ("requestTriggerConfiguration".equals(fieldName)) {
-              deserializedProfilerConfiguration.setRequestTriggerConfiguration(
-                  reader.readArray(AlertingConfig.RequestTrigger::fromJson));
-            } else {
-              reader.skipChildren();
-            }
+    return jsonReader.readObject(reader -> {
+      ProfilerConfiguration deserializedProfilerConfiguration = new ProfilerConfiguration();
+      while (reader.nextToken() != JsonToken.END_OBJECT) {
+        reader.nextToken();
+        String fieldName = reader.getFieldName();
+        if ("id".equals(fieldName)) {
+          String id = reader.getString();
+          deserializedProfilerConfiguration.setId(id);
+        } else if ("lastModified".equals(fieldName)) {
+          String lastModified = reader.getString();
+          try {
+            deserializedProfilerConfiguration.setLastModified(
+                new StdDateFormat().parse(lastModified));
+          } catch (ParseException ignored) {
+            deserializedProfilerConfiguration.setLastModified(DEFAULT_DATE);
           }
-          return deserializedProfilerConfiguration;
-        });
+        } else if ("enabledLastModified".equals(fieldName)) {
+          String enabledLastModified = reader.getString();
+          try {
+            deserializedProfilerConfiguration.setEnabledLastModified(
+                STD_DATE_FORMAT.parse(enabledLastModified));
+          } catch (ParseException ignored) {
+            deserializedProfilerConfiguration.setEnabledLastModified(DEFAULT_DATE);
+          }
+        } else if ("enabled".equals(fieldName)) {
+          deserializedProfilerConfiguration.setEnabled(reader.getBoolean());
+        } else if ("collectionPlan".equals(fieldName)) {
+          deserializedProfilerConfiguration.setCollectionPlan(reader.getString());
+        } else if ("cpuTriggerConfiguration".equals(fieldName)) {
+          deserializedProfilerConfiguration.setCpuTriggerConfiguration(reader.getString());
+        } else if ("memoryTriggerConfiguration".equals(fieldName)) {
+          deserializedProfilerConfiguration.setMemoryTriggerConfiguration(reader.getString());
+        } else if ("defaultConfiguration".equals(fieldName)) {
+          deserializedProfilerConfiguration.setDefaultConfiguration(reader.getString());
+        } else if ("requestTriggerConfiguration".equals(fieldName)) {
+          deserializedProfilerConfiguration.setRequestTriggerConfiguration(
+              reader.readArray(AlertingConfig.RequestTrigger::fromJson));
+        } else {
+          reader.skipChildren();
+        }
+      }
+      return deserializedProfilerConfiguration;
+    });
   }
 }

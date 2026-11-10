@@ -44,16 +44,15 @@ public class AlertConfigParser {
       return new ArrayList<>();
     }
     return requestTriggerConfig.stream()
-        .map(
-            trigger ->
-                AlertConfiguration.builder()
-                    .setType(AlertMetricType.REQUEST)
-                    .setEnabled(true)
-                    .setThreshold(trigger.threshold.value)
-                    .setProfileDurationSeconds((int) trigger.profileDuration)
-                    .setCooldownSeconds((int) trigger.throttling.value)
-                    .setRequestTrigger(trigger)
-                    .build())
+        .map(trigger ->
+            AlertConfiguration.builder()
+                .setType(AlertMetricType.REQUEST)
+                .setEnabled(true)
+                .setThreshold(trigger.threshold.value)
+                .setProfileDurationSeconds((int) trigger.profileDuration)
+                .setCooldownSeconds((int) trigger.throttling.value)
+                .setRequestTrigger(trigger)
+                .build())
         .collect(Collectors.toList());
   }
 

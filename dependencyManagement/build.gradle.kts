@@ -18,20 +18,20 @@ rootProject.extra["otelInstrumentationVersion"] = otelInstrumentationVersion
 rootProject.extra["otelInstrumentationAlphaVersion"] = otelInstrumentationAlphaVersion
 
 val DEPENDENCY_BOMS = listOf(
-  "com.fasterxml.jackson:jackson-bom:2.22.3",
+  "com.fasterxml.jackson:jackson-bom:2.22.4",
   "io.opentelemetry:opentelemetry-bom:${otelSdkVersion}",
   "io.opentelemetry:opentelemetry-bom-alpha:${otelSdkAlphaVersion}",
   "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:${otelInstrumentationVersion}",
   "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${otelInstrumentationAlphaVersion}",
   "com.azure:azure-sdk-bom:1.3.9",
-  "io.netty:netty-bom:4.2.19.Final",
+  "io.netty:netty-bom:4.2.20.Final",
   "org.junit:junit-bom:5.14.4",
   "org.testcontainers:testcontainers-bom:2.0.5",
 )
 
 val autoServiceVersion = "1.1.1"
 val autoValueVersion = "1.11.1"
-val errorProneVersion = "2.50.0"
+val errorProneVersion = "2.52.0"
 val jmhVersion = "1.37"
 val mockitoVersion = "4.11.0"
 val slf4jVersion = "2.0.20"
@@ -65,7 +65,7 @@ val DEPENDENCIES = listOf(
   "ch.qos.logback.contrib:logback-json-classic:0.1.5",
   "commons-codec:commons-codec:1.23.0",
   "org.apache.commons:commons-text:1.15.0",
-  "com.google.code.gson:gson:2.14.0",
+  "com.google.code.gson:gson:2.15.0",
   "com.azure:azure-core-test:1.26.2", // this is not included in azure-sdk-bom
   "org.assertj:assertj-core:3.27.7",
   "org.awaitility:awaitility:4.3.0",

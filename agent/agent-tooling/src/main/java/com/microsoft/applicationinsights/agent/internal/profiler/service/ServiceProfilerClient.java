@@ -100,22 +100,21 @@ public class ServiceProfilerClient {
 
     return executePostWithRedirect(requestUrl)
         .flatMap(ServiceProfilerClient::reportUploadFinish)
-        .flatMap(
-            json -> {
-              if (json == null) {
-                // this shouldn't happen, the mono should complete with a response or a failure
-                return Mono.error(new AssertionError("response body mono returned empty"));
-              }
-              try (JsonReader reader = JsonProviders.createReader(json)) {
-                ArtifactAcceptedResponse data = ArtifactAcceptedResponse.fromJson(reader);
-                if (data == null) {
-                  return Mono.error(new IllegalStateException("Failed to deserialize response"));
-                }
-                return Mono.just(data);
-              } catch (IOException e) {
-                return Mono.error(new IllegalStateException("Failed to deserialize response", e));
-              }
-            });
+        .flatMap(json -> {
+          if (json == null) {
+            // this shouldn't happen, the mono should complete with a response or a failure
+            return Mono.error(new AssertionError("response body mono returned empty"));
+          }
+          try (JsonReader reader = JsonProviders.createReader(json)) {
+            ArtifactAcceptedResponse data = ArtifactAcceptedResponse.fromJson(reader);
+            if (data == null) {
+              return Mono.error(new IllegalStateException("Failed to deserialize response"));
+            }
+            return Mono.just(data);
+          } catch (IOException e) {
+            return Mono.error(new IllegalStateException("Failed to deserialize response", e));
+          }
+        });
   }
 
   private static Mono<String> reportUploadFinish(HttpResponse response) {
@@ -131,15 +130,14 @@ public class ServiceProfilerClient {
 
     return response
         .getBodyAsString()
-        .doFinally(
-            done -> {
-              // need to consume the body or close the response, otherwise get netty ByteBuf leak
-              // warnings:
-              // io.netty.util.ResourceLeakDetector - LEAK: ByteBuf.release() was not called before
-              // it's garbage-collected (see
-              // https://github.com/Azure/azure-sdk-for-java/issues/10467)
-              response.close();
-            });
+        .doFinally(done -> {
+          // need to consume the body or close the response, otherwise get netty ByteBuf leak
+          // warnings:
+          // io.netty.util.ResourceLeakDetector - LEAK: ByteBuf.release() was not called before
+          // it's garbage-collected (see
+          // https://github.com/Azure/azure-sdk-for-java/issues/10467)
+          response.close();
+        });
   }
 
   /** Obtain current settings that have been configured within the UI. */
@@ -164,14 +162,13 @@ public class ServiceProfilerClient {
     }
     return response
         .getBodyAsString()
-        .flatMap(
-            body -> {
-              try (JsonReader jsonReader = JsonProviders.createReader(body)) {
-                return Mono.just(ProfilerConfiguration.fromJson(jsonReader));
-              } catch (IOException e) {
-                return Mono.error(e);
-              }
-            });
+        .flatMap(body -> {
+          try (JsonReader jsonReader = JsonProviders.createReader(body)) {
+            return Mono.just(ProfilerConfiguration.fromJson(jsonReader));
+          } catch (IOException e) {
+            return Mono.error(e);
+          }
+        });
   }
 
   // api/profileragent/v4/settings?ikey=xyz&featureVersion=1.0.0&oldTimestamp=123

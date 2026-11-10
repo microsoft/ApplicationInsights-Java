@@ -52,24 +52,23 @@ public class NotificationObserver implements NotificationListener {
 
   /** Start event loop that monitors for new notifications and processes them. */
   public void watchGcNotificationEvents() {
-    executorService.submit(
-        () -> {
+    executorService.submit(() -> {
+      try {
+        //noinspection InfiniteLoopStatement
+        while (true) {
           try {
-            //noinspection InfiniteLoopStatement
-            while (true) {
-              try {
-                NotificationJob sample = workQueue.poll(Long.MAX_VALUE, TimeUnit.SECONDS);
-                if (sample != null) {
-                  sample.collector.update(sample.notification);
-                }
-              } catch (RuntimeException e) {
-                logger.error("Error while reading GC notification data", e);
-              }
+            NotificationJob sample = workQueue.poll(Long.MAX_VALUE, TimeUnit.SECONDS);
+            if (sample != null) {
+              sample.collector.update(sample.notification);
             }
-          } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw e;
+          } catch (RuntimeException e) {
+            logger.error("Error while reading GC notification data", e);
           }
-        });
+        }
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+        throw e;
+      }
+    });
   }
 }

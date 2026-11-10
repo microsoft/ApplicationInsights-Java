@@ -170,39 +170,35 @@ abstract class CoreAndFilter3xTest {
     List<RequestData> requests = testing.mockedIngestion.getTelemetryDataByType("RequestData");
 
     assertThat(requests)
-        .anySatisfy(
-            r -> {
-              assertThat(r.getName()).isEqualTo("HttpRequestDataTest");
-              assertThat(r.getResponseCode()).isEqualTo("200");
-              assertThat(r.getDuration()).isEqualTo(new Duration(4711));
-              assertThat(r.getSuccess()).isTrue();
-            });
+        .anySatisfy(r -> {
+          assertThat(r.getName()).isEqualTo("HttpRequestDataTest");
+          assertThat(r.getResponseCode()).isEqualTo("200");
+          assertThat(r.getDuration()).isEqualTo(new Duration(4711));
+          assertThat(r.getSuccess()).isTrue();
+        });
     assertThat(requests)
-        .anySatisfy(
-            r -> {
-              assertThat(r.getName()).isEqualTo("PingTest");
-              assertThat(r.getResponseCode()).isEqualTo("200");
-              assertThat(r.getDuration()).isEqualTo(new Duration(1));
-              assertThat(r.getSuccess()).isTrue();
-              assertThat(r.getUrl()).isEqualTo("http://tempuri.org/ping");
-            });
+        .anySatisfy(r -> {
+          assertThat(r.getName()).isEqualTo("PingTest");
+          assertThat(r.getResponseCode()).isEqualTo("200");
+          assertThat(r.getDuration()).isEqualTo(new Duration(1));
+          assertThat(r.getSuccess()).isTrue();
+          assertThat(r.getUrl()).isEqualTo("http://tempuri.org/ping");
+        });
     assertThat(requests)
-        .anySatisfy(
-            r -> {
-              assertThat(r.getName()).isEqualTo("FailedHttpRequest");
-              assertThat(r.getResponseCode()).isEqualTo("404");
-              assertThat(r.getDuration()).isEqualTo(new Duration(6666));
-              assertThat(r.getSuccess()).isFalse();
-            });
+        .anySatisfy(r -> {
+          assertThat(r.getName()).isEqualTo("FailedHttpRequest");
+          assertThat(r.getResponseCode()).isEqualTo("404");
+          assertThat(r.getDuration()).isEqualTo(new Duration(6666));
+          assertThat(r.getSuccess()).isFalse();
+        });
     assertThat(requests)
-        .anySatisfy(
-            r -> {
-              assertThat(r.getName()).isEqualTo("FailedHttpRequest2");
-              assertThat(r.getResponseCode()).isEqualTo("505");
-              assertThat(r.getDuration()).isEqualTo(new Duration(8888));
-              assertThat(r.getSuccess()).isFalse();
-              assertThat(r.getUrl()).isEqualTo("https://www.bingasdasdasdasda.com/");
-            });
+        .anySatisfy(r -> {
+          assertThat(r.getName()).isEqualTo("FailedHttpRequest2");
+          assertThat(r.getResponseCode()).isEqualTo("505");
+          assertThat(r.getDuration()).isEqualTo(new Duration(8888));
+          assertThat(r.getSuccess()).isFalse();
+          assertThat(r.getUrl()).isEqualTo("https://www.bingasdasdasdasda.com/");
+        });
   }
 
   @Test
@@ -264,19 +260,17 @@ abstract class CoreAndFilter3xTest {
         .anySatisfy(m -> assertThat(m.getMessage()).isEqualTo("This is first trace message."));
 
     assertThat(messages)
-        .anySatisfy(
-            m -> {
-              assertThat(m.getMessage()).isEqualTo("This is second trace message.");
-              assertThat(m.getSeverityLevel()).isEqualTo(SeverityLevel.ERROR);
-            });
+        .anySatisfy(m -> {
+          assertThat(m.getMessage()).isEqualTo("This is second trace message.");
+          assertThat(m.getSeverityLevel()).isEqualTo(SeverityLevel.ERROR);
+        });
 
     assertThat(messages)
-        .anySatisfy(
-            m -> {
-              assertThat(m.getMessage()).isEqualTo("This is third trace message.");
-              assertThat(m.getSeverityLevel()).isEqualTo(SeverityLevel.INFORMATION);
-              assertThat(m.getProperties()).containsEntry("key", "value");
-            });
+        .anySatisfy(m -> {
+          assertThat(m.getMessage()).isEqualTo("This is third trace message.");
+          assertThat(m.getSeverityLevel()).isEqualTo(SeverityLevel.INFORMATION);
+          assertThat(m.getProperties()).containsEntry("key", "value");
+        });
 
     SmokeTestExtension.assertParentChild(
         rd, rdEnvelope, mdEnvelope1, "GET /CoreAndFilter3x/trackTrace");

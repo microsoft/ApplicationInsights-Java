@@ -245,15 +245,14 @@ public final class BatchItemProcessor {
       CompletableResultCode result = new CompletableResultCode();
 
       CompletableResultCode flushResult = forceFlush();
-      flushResult.whenComplete(
-          () -> {
-            continueWork = false;
-            if (!flushResult.isSuccess()) {
-              result.fail();
-            } else {
-              result.succeed();
-            }
-          });
+      flushResult.whenComplete(() -> {
+        continueWork = false;
+        if (!flushResult.isSuccess()) {
+          result.fail();
+        } else {
+          result.succeed();
+        }
+      });
 
       return result;
     }
@@ -261,22 +260,20 @@ public final class BatchItemProcessor {
     private CompletableResultCode forceFlush() {
       CompletableResultCode overallResult = new CompletableResultCode();
       CompletableResultCode workerResult = forceFlushWorker();
-      workerResult.whenComplete(
-          () -> {
-            if (!workerResult.isSuccess()) {
-              overallResult.fail();
-              return;
-            }
-            CompletableResultCode exporterResult = exporter.flush();
-            exporterResult.whenComplete(
-                () -> {
-                  if (exporterResult.isSuccess()) {
-                    overallResult.succeed();
-                  } else {
-                    overallResult.fail();
-                  }
-                });
-          });
+      workerResult.whenComplete(() -> {
+        if (!workerResult.isSuccess()) {
+          overallResult.fail();
+          return;
+        }
+        CompletableResultCode exporterResult = exporter.flush();
+        exporterResult.whenComplete(() -> {
+          if (exporterResult.isSuccess()) {
+            overallResult.succeed();
+          } else {
+            overallResult.fail();
+          }
+        });
+      });
       return overallResult;
     }
 
@@ -304,10 +301,9 @@ public final class BatchItemProcessor {
         if (pendingExports.size() < maxPendingExports - 1) {
           addAsyncExport.recordSuccess();
           pendingExports.add(result);
-          result.whenComplete(
-              () -> {
-                pendingExports.remove(result);
-              });
+          result.whenComplete(() -> {
+            pendingExports.remove(result);
+          });
         } else {
           // need conditional, otherwise this will always get logged when maxPendingExports is 1
           // (e.g. statsbeat)

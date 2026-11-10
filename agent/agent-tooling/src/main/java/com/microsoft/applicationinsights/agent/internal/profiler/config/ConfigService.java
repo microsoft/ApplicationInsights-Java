@@ -24,13 +24,12 @@ public class ConfigService {
   public Mono<ProfilerConfiguration> pullSettings() {
     return serviceProfilerClient
         .getSettings(lastModified)
-        .flatMap(
-            config -> {
-              if (config != null && config.getLastModified().compareTo(lastModified) != 0) {
-                lastModified = config.getLastModified();
-                return Mono.just(config);
-              }
-              return Mono.empty();
-            });
+        .flatMap(config -> {
+          if (config != null && config.getLastModified().compareTo(lastModified) != 0) {
+            lastModified = config.getLastModified();
+            return Mono.just(config);
+          }
+          return Mono.empty();
+        });
   }
 }

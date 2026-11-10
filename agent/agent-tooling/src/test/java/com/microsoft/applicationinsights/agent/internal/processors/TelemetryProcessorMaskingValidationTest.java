@@ -21,15 +21,14 @@ class TelemetryProcessorMaskingValidationTest {
     String anyFromAttribute = null;
     String anyReplace = null;
 
-    assertThatThrownBy(
-            () ->
-                new Configuration.ProcessorAction(
-                    anyKey,
-                    Configuration.ProcessorActionType.MASK,
-                    anyValue,
-                    anyFromAttribute,
-                    invalidRegEx,
-                    anyReplace))
+    assertThatThrownBy(() ->
+            new Configuration.ProcessorAction(
+                anyKey,
+                Configuration.ProcessorActionType.MASK,
+                anyValue,
+                anyFromAttribute,
+                invalidRegEx,
+                anyReplace))
         .hasMessageContaining("Telemetry processor configuration does not have valid regex");
   }
 
@@ -43,16 +42,15 @@ class TelemetryProcessorMaskingValidationTest {
     String anyFromAttribute = null;
     String anyReplace = null;
 
-    assertThatThrownBy(
-            () ->
-                new Configuration.ProcessorAction(
-                        noAttributeKey,
-                        Configuration.ProcessorActionType.MASK,
-                        anyValue,
-                        anyFromAttribute,
-                        validRegEx,
-                        anyReplace)
-                    .validate())
+    assertThatThrownBy(() ->
+            new Configuration.ProcessorAction(
+                    noAttributeKey,
+                    Configuration.ProcessorActionType.MASK,
+                    anyValue,
+                    anyFromAttribute,
+                    validRegEx,
+                    anyReplace)
+                .validate())
         .hasMessageContaining(
             "An attribute processor configuration has an action section that is missing a \"key\"");
   }
@@ -66,16 +64,15 @@ class TelemetryProcessorMaskingValidationTest {
     String anyValue = null;
     String anyFromAttribute = null;
 
-    assertThatThrownBy(
-            () ->
-                new Configuration.ProcessorAction(
-                        anAttributeKey,
-                        Configuration.ProcessorActionType.MASK,
-                        anyValue,
-                        anyFromAttribute,
-                        validRegEx,
-                        noReplace)
-                    .validate())
+    assertThatThrownBy(() ->
+            new Configuration.ProcessorAction(
+                    anAttributeKey,
+                    Configuration.ProcessorActionType.MASK,
+                    anyValue,
+                    anyFromAttribute,
+                    validRegEx,
+                    noReplace)
+                .validate())
         .hasMessageContaining(
             "An attribute processor configuration has an mask action that is missing")
         .hasMessageContaining("\"replace\" section");
@@ -91,16 +88,15 @@ class TelemetryProcessorMaskingValidationTest {
     String anyFromAttribute = null;
 
     assertThatNoException()
-        .isThrownBy(
-            () ->
-                new Configuration.ProcessorAction(
-                        anAttributeKey,
-                        Configuration.ProcessorActionType.MASK,
-                        anyValue,
-                        anyFromAttribute,
-                        validRegEx,
-                        anyReplacementPattern)
-                    .validate());
+        .isThrownBy(() ->
+            new Configuration.ProcessorAction(
+                    anAttributeKey,
+                    Configuration.ProcessorActionType.MASK,
+                    anyValue,
+                    anyFromAttribute,
+                    validRegEx,
+                    anyReplacementPattern)
+                .validate());
   }
 
   @Test
@@ -113,16 +109,15 @@ class TelemetryProcessorMaskingValidationTest {
     String anyFromAttribute = null;
 
     assertThatNoException()
-        .isThrownBy(
-            () ->
-                new Configuration.ProcessorAction(
-                        anAttributeKey,
-                        Configuration.ProcessorActionType.MASK,
-                        anyValue,
-                        anyFromAttribute,
-                        validRegEx,
-                        replacementPattern)
-                    .validate());
+        .isThrownBy(() ->
+            new Configuration.ProcessorAction(
+                    anAttributeKey,
+                    Configuration.ProcessorActionType.MASK,
+                    anyValue,
+                    anyFromAttribute,
+                    validRegEx,
+                    replacementPattern)
+                .validate());
   }
 
   @Test
@@ -135,16 +130,15 @@ class TelemetryProcessorMaskingValidationTest {
     String anyValue = null;
     String anyFromAttribute = null;
 
-    assertThatThrownBy(
-            () ->
-                new Configuration.ProcessorAction(
-                        anAttributeKey,
-                        Configuration.ProcessorActionType.MASK,
-                        anyValue,
-                        anyFromAttribute,
-                        validRegEx,
-                        replacementPattern)
-                    .validate())
+    assertThatThrownBy(() ->
+            new Configuration.ProcessorAction(
+                    anAttributeKey,
+                    Configuration.ProcessorActionType.MASK,
+                    anyValue,
+                    anyFromAttribute,
+                    validRegEx,
+                    replacementPattern)
+                .validate())
         .hasMessageContaining(
             "Please make sure the replace value matches group names used in the `pattern` regex.");
   }

@@ -50,12 +50,11 @@ abstract class SpringBootTest {
     assertThat(data).anySatisfy(ed -> assertThat(ed.getName()).isEqualTo("EventDataTest"));
 
     assertThat(data)
-        .anySatisfy(
-            ed -> {
-              assertThat(ed.getName()).isEqualTo("EventDataPropertyTest");
-              assertThat(ed.getProperties()).containsEntry("key", "value");
-              assertThat(ed.getMeasurements()).containsEntry("key", 1.0);
-            });
+        .anySatisfy(ed -> {
+          assertThat(ed.getName()).isEqualTo("EventDataPropertyTest");
+          assertThat(ed.getProperties()).containsEntry("key", "value");
+          assertThat(ed.getMeasurements()).containsEntry("key", 1.0);
+        });
   }
 
   @Test

@@ -40,14 +40,13 @@ public class LinuxCGroupV2UsageDataReader implements CGroupUsageDataReader {
             cgroupV2CpuReader.getCpuSystem().getIncrement(),
             cgroupV2CpuReader.getCpuUser().getIncrement(),
             cgroupV2CpuReader.getCpuSystem().getIncrement())
-        .map(
-            value -> {
-              if (value == null) {
-                return -1.0d;
-              } else {
-                return value.doubleValue();
-              }
-            })
+        .map(value -> {
+          if (value == null) {
+            return -1.0d;
+          } else {
+            return value.doubleValue();
+          }
+        })
         .collect(Collectors.toList());
   }
 

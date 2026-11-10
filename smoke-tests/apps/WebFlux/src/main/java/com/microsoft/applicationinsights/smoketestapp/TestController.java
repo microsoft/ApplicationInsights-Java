@@ -21,14 +21,13 @@ public class TestController {
   public Mono<String> test() {
     CompletableFuture<String> completableFuture = new CompletableFuture<>();
     Executors.newSingleThreadExecutor()
-        .execute(
-            () -> {
-              try {
-                Thread.sleep(500);
-              } catch (InterruptedException ignored) {
-              }
-              completableFuture.complete("hello");
-            });
+        .execute(() -> {
+          try {
+            Thread.sleep(500);
+          } catch (InterruptedException ignored) {
+          }
+          completableFuture.complete("hello");
+        });
     return Mono.fromFuture(completableFuture);
   }
 
@@ -41,14 +40,13 @@ public class TestController {
   public Mono<String> futureException() {
     CompletableFuture<String> completableFuture = new CompletableFuture<>();
     Executors.newSingleThreadExecutor()
-        .execute(
-            () -> {
-              try {
-                Thread.sleep(500);
-              } catch (InterruptedException ignored) {
-              }
-              completableFuture.completeExceptionally(new RuntimeException("oops!"));
-            });
+        .execute(() -> {
+          try {
+            Thread.sleep(500);
+          } catch (InterruptedException ignored) {
+          }
+          completableFuture.completeExceptionally(new RuntimeException("oops!"));
+        });
     return Mono.fromFuture(completableFuture);
   }
 }

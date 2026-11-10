@@ -28,11 +28,9 @@ public class TestController {
   @GetMapping("/jfrFileHasDiagnostics")
   public String jfrFileHasDiagnostics() throws Exception {
     return String.valueOf(
-        pollForJfrFileMatching(
-            decompressedFile ->
-                com.microsoft.applicationinsights.jfrfile.JfrFileReader.hasEventOfType(
-                    decompressedFile,
-                    "com.microsoft.applicationinsights.diagnostics.jfr.Telemetry")));
+        pollForJfrFileMatching(decompressedFile ->
+            com.microsoft.applicationinsights.jfrfile.JfrFileReader.hasEventOfType(
+                decompressedFile, "com.microsoft.applicationinsights.diagnostics.jfr.Telemetry")));
   }
 
   /**
@@ -50,16 +48,15 @@ public class TestController {
     };
 
     return String.valueOf(
-        pollForJfrFileMatching(
-            decompressedFile -> {
-              for (String event : requiredEvents) {
-                if (!com.microsoft.applicationinsights.jfrfile.JfrFileReader.hasEventInstanceOfType(
-                    decompressedFile, event)) {
-                  return false;
-                }
-              }
-              return true;
-            }));
+        pollForJfrFileMatching(decompressedFile -> {
+          for (String event : requiredEvents) {
+            if (!com.microsoft.applicationinsights.jfrfile.JfrFileReader.hasEventInstanceOfType(
+                decompressedFile, event)) {
+              return false;
+            }
+          }
+          return true;
+        }));
   }
 
   /**
