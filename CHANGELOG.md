@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### Bug fixes
+
+* Support `TenantId` and `AuthorityHost` in `APPLICATIONINSIGHTS_AUTHENTICATION_STRING` so that
+  client secret authentication configured via the environment variable can work
+  ([#4892](https://github.com/microsoft/ApplicationInsights-Java/pull/4892))
+
 ## Version 3.7.10 GA (09/17/2026)
 
 ### Enhancements
