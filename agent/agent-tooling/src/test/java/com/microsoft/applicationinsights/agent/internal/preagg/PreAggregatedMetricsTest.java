@@ -376,6 +376,55 @@ public class PreAggregatedMetricsTest {
     assertThat(metricsState.isResolved()).isTrue();
   }
 
+  @Test
+  void missingMetricsStateFieldFallsBackGracefully() {
+    assertThat(MetricsState.lookupContextKey(HttpServerMetrics.class, "DOES_NOT_EXIST")).isNull();
+  }
+
+  // e.g. when span suppression is disabled, a nested http client instrumenter that doesn't record
+  // the duration metric inherits the metrics state of its parent
+  @Test
+  void nestedSpanWithoutMetricsIsNotMarkedFromInheritedMetricsState() {
+    OperationListener listener = HttpClientMetrics.get().create(meterProvider.get("test"));
+    Attributes attributes = Attributes.builder().put("http.response.status_code", 200).build();
+
+    Span parentSpan = tracerProvider.get("test").spanBuilder("parent").startSpan();
+    Context parentContext =
+        start(
+            MetricsState.HTTP_CLIENT,
+            false,
+            listener,
+            Context.root().with(parentSpan),
+            Attributes.empty());
+
+    PreAggregatedMetricsCustomizer childCustomizer =
+        new PreAggregatedMetricsCustomizer(
+            Collections.singletonList(MetricsState.HTTP_CLIENT), false);
+    Span childSpan =
+        tracerProvider.get("test").spanBuilder("child").setParent(parentContext).startSpan();
+    Context childContext =
+        childCustomizer.onStart(parentContext.with(childSpan), REQUEST, Attributes.empty());
+    AttributesBuilder childEndAttributes = Attributes.builder();
+    childCustomizer.onEnd(childEndAttributes, childContext, REQUEST, null, null);
+    childSpan.end();
+
+    end(MetricsState.HTTP_CLIENT, false, listener, parentContext, attributes);
+    parentSpan.end();
+
+    assertThat(spanExporter.getFinishedSpanItems())
+        .satisfiesExactlyInAnyOrder(
+            span ->
+                assertThat(span)
+                    .hasName("child")
+                    .satisfies(s ->
+                        assertThat(s.getAttributes().get(AiSemanticAttributes.IS_PRE_AGGREGATED))
+                            .isNull()),
+            span ->
+                assertThat(span)
+                    .hasName("parent")
+                    .hasAttribute(AiSemanticAttributes.IS_PRE_AGGREGATED, true));
+  }
+
   // mirrors the order in which Instrumenter calls the context customizers, attributes extractors
   // and operation listeners
   private static Context start(
@@ -387,10 +436,7 @@ public class PreAggregatedMetricsTest {
     PreAggregatedMetricsCustomizer customizer =
         new PreAggregatedMetricsCustomizer(
             Collections.singletonList(metricsState), captureSynthetic);
-    Context context = parentContext;
-    if (captureSynthetic) {
-      context = customizer.onStart(context, REQUEST, startAttributes);
-    }
+    Context context = customizer.onStart(parentContext, REQUEST, startAttributes);
     return listener.onStart(context, startAttributes, nanos(100));
   }
 

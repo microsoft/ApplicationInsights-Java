@@ -18,6 +18,7 @@ import io.opentelemetry.context.ContextKey;
 import io.opentelemetry.instrumentation.api.incubator.instrumenter.InstrumenterCustomizer;
 import io.opentelemetry.instrumentation.api.instrumenter.AttributesExtractor;
 import io.opentelemetry.instrumentation.api.instrumenter.ContextCustomizer;
+import io.opentelemetry.instrumentation.api.internal.SemconvStability;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nullable;
@@ -29,6 +30,10 @@ import javax.annotation.Nullable;
  *
  * <p>The attributes are added in {@link #onEnd}, which runs right before the upstream metrics
  * record the duration with the same context and attributes.
+ *
+ * <p>Note: this only applies to the agent's instrumenters. Duration metrics recorded by
+ * OpenTelemetry instrumentation libraries bundled in the application (through the OpenTelemetry API
+ * bridge) only go through the views, so their spans are not marked as pre-aggregated.
  */
 public final class PreAggregatedMetricsCustomizer
     implements ContextCustomizer<Object>, AttributesExtractor<Object, Object> {
@@ -40,6 +45,11 @@ public final class PreAggregatedMetricsCustomizer
   private final boolean captureSynthetic;
 
   public static void customize(InstrumenterCustomizer customizer) {
+    customize(customizer, SemconvStability.emitOldRpcSemconv());
+  }
+
+  // visible for testing
+  static void customize(InstrumenterCustomizer customizer, boolean emitOldRpcSemconv) {
     List<MetricsState> metricsStates = new ArrayList<>();
     if (customizer.hasType(HTTP_SERVER)) {
       metricsStates.add(MetricsState.HTTP_SERVER);
@@ -47,21 +57,21 @@ public final class PreAggregatedMetricsCustomizer
     if (customizer.hasType(HTTP_CLIENT)) {
       metricsStates.add(MetricsState.HTTP_CLIENT);
     }
-    if (customizer.hasType(RPC_SERVER)) {
+    // with stable rpc semconv only, the upstream rpc metrics record rpc.*.call.duration instead of
+    // rpc.*.duration, which are not pre-aggregated standard metrics
+    if (emitOldRpcSemconv && customizer.hasType(RPC_SERVER)) {
       metricsStates.add(MetricsState.RPC_SERVER);
     }
-    if (customizer.hasType(RPC_CLIENT)) {
+    if (emitOldRpcSemconv && customizer.hasType(RPC_CLIENT)) {
       metricsStates.add(MetricsState.RPC_CLIENT);
     }
     if (metricsStates.isEmpty()) {
       return;
     }
-    boolean captureSynthetic = metricsStates.contains(MetricsState.HTTP_SERVER);
     PreAggregatedMetricsCustomizer instance =
-        new PreAggregatedMetricsCustomizer(metricsStates, captureSynthetic);
-    if (captureSynthetic) {
-      customizer.addContextCustomizer(instance);
-    }
+        new PreAggregatedMetricsCustomizer(
+            metricsStates, metricsStates.contains(MetricsState.HTTP_SERVER));
+    customizer.addContextCustomizer(instance);
     customizer.addAttributesExtractor(instance);
   }
 
@@ -70,15 +80,21 @@ public final class PreAggregatedMetricsCustomizer
     this.captureSynthetic = captureSynthetic;
   }
 
-  // context customizers receive the start attributes from all of the attributes extractors,
-  // which is needed to get the user agent
+  // context customizers run before the operation listeners' onStart(), and receive the start
+  // attributes from all of the attributes extractors, which is needed to get the user agent
   @Override
   public Context onStart(Context parentContext, Object request, Attributes startAttributes) {
-    boolean synthetic = UserAgents.isBot(startAttributes);
-    if (synthetic == Boolean.TRUE.equals(parentContext.get(IS_SYNTHETIC))) {
-      return parentContext;
+    Context context = parentContext;
+    for (MetricsState metricsState : metricsStates) {
+      context = metricsState.captureInherited(context);
     }
-    return parentContext.with(IS_SYNTHETIC, synthetic);
+    if (captureSynthetic) {
+      boolean synthetic = UserAgents.isBot(startAttributes);
+      if (synthetic != Boolean.TRUE.equals(context.get(IS_SYNTHETIC))) {
+        context = context.with(IS_SYNTHETIC, synthetic);
+      }
+    }
+    return context;
   }
 
   @Override
@@ -120,7 +136,7 @@ public final class PreAggregatedMetricsCustomizer
 
   private boolean isMetricRecorded(Context context) {
     for (MetricsState metricsState : metricsStates) {
-      if (metricsState.isPresent(context)) {
+      if (metricsState.isRecorded(context)) {
         return true;
       }
     }
