@@ -275,7 +275,7 @@ public class ConfigurationBuilder {
       configurationLogger.warn(
           "\"clientsecret\" json configuration has been deprecated since 3.5.0 GA. Please use \"user-assigned managed identity\" or \"system-assigned managed identity\" instead. "
               + "If you're on premise, you can use APPLICATIONINSIGHTS_AUTHENTICATION_STRING environment variable to pass the client ID and secret, "
-              + "e.g. APPLICATIONINSIGHTS_AUTHENTICATION_STRING=Authorization=AAD;ClientId={CLIENT_ID};ClientSecret={CLIENT_SECRET}.");
+              + "e.g. APPLICATIONINSIGHTS_AUTHENTICATION_STRING=Authorization=AAD;ClientId={CLIENT_ID};ClientSecret={CLIENT_SECRET};TenantId={TENANT_ID}.");
     }
     if (config.sampling.requestsPerSecond != null && config.sampling.percentage != null) {
       configurationLogger.warn(
@@ -516,6 +516,11 @@ public class ConfigurationBuilder {
             // Override type to Client Secret
             config.authentication.type = Configuration.AuthenticationType.CLIENTSECRET;
             config.authentication.clientSecret = clientSecret;
+            config.authentication.tenantId = keyValueMap.get("TenantId");
+            String authorityHost = keyValueMap.get("AuthorityHost");
+            if (authorityHost != null && !authorityHost.isEmpty()) {
+              config.authentication.authorityHost = authorityHost;
+            }
           } else {
             // Override type to User Assigned Managed Identity
             config.authentication.type = Configuration.AuthenticationType.UAMI;
