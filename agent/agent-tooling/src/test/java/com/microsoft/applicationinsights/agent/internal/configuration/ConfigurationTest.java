@@ -10,6 +10,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
+import com.microsoft.applicationinsights.agent.internal.common.FriendlyException;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.JmxMetric;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.MatchType;
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration.PreviewConfiguration;
@@ -705,6 +706,36 @@ class ConfigurationTest {
         .isEqualTo(Configuration.AuthenticationType.CLIENTSECRET);
     assertThat(configuration3.authentication.clientId).isEqualTo("12345678");
     assertThat(configuration3.authentication.clientSecret).isEqualTo("clientsecret123");
+    assertThat(configuration3.authentication.tenantId).isNull();
+    assertThatThrownBy(configuration3.authentication::validate)
+        .isInstanceOf(FriendlyException.class)
+        .hasMessageContaining("missing \"tenantId\"");
+
+    envVars.put(
+        "APPLICATIONINSIGHTS_AUTHENTICATION_STRING",
+        "Authorization=AAD;ClientId=12345678;ClientSecret=clientsecret123;TenantId=tenant123");
+    Configuration configuration4 = loadConfiguration("applicationinsights_aadauthenv.json");
+    ConfigurationBuilder.overlayFromEnv(
+        configuration4, Paths.get("."), this::envVars, this::systemProperties);
+    assertThat(configuration4.authentication.type)
+        .isEqualTo(Configuration.AuthenticationType.CLIENTSECRET);
+    assertThat(configuration4.authentication.clientId).isEqualTo("12345678");
+    assertThat(configuration4.authentication.clientSecret).isEqualTo("clientsecret123");
+    assertThat(configuration4.authentication.tenantId).isEqualTo("tenant123");
+    assertThat(configuration4.authentication.authorityHost).isNull();
+    configuration4.authentication.validate();
+
+    envVars.put(
+        "APPLICATIONINSIGHTS_AUTHENTICATION_STRING",
+        "Authorization=AAD;ClientId=12345678;ClientSecret=clientsecret123;TenantId=tenant123;"
+            + "AuthorityHost=https://login.microsoftonline.us/");
+    Configuration configuration5 = loadConfiguration("applicationinsights_aadauthenv.json");
+    ConfigurationBuilder.overlayFromEnv(
+        configuration5, Paths.get("."), this::envVars, this::systemProperties);
+    assertThat(configuration5.authentication.tenantId).isEqualTo("tenant123");
+    assertThat(configuration5.authentication.authorityHost)
+        .isEqualTo("https://login.microsoftonline.us/");
+    configuration5.authentication.validate();
   }
 
   @Test

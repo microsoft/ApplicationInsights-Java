@@ -7,6 +7,9 @@
 * Fix startup deprecation warning for `capture-mdc-attributes` by using the replacement
   `mdc-attributes.included` properties
   ([#4893](https://github.com/microsoft/ApplicationInsights-Java/pull/4893))
+* Support `TenantId` and `AuthorityHost` in `APPLICATIONINSIGHTS_AUTHENTICATION_STRING` so that
+  client secret authentication configured via the environment variable can work
+  ([#4891](https://github.com/microsoft/ApplicationInsights-Java/issues/4891))
 
 ## Version 3.7.10 GA (09/17/2026)
 

@@ -1619,7 +1619,8 @@ public class Configuration {
         if (isEmpty(tenantId)) {
           throw new FriendlyException(
               "AAD Authentication configuration of type Client Secret Identity is missing \"tenantId\".",
-              "Please provide a valid \"tenantId\" under the \"authentication\" configuration. "
+              "Please provide a valid \"tenantId\" under the \"authentication\" configuration, "
+                  + "or add \"TenantId={TENANT_ID}\" to the APPLICATIONINSIGHTS_AUTHENTICATION_STRING environment variable. "
                   + "Learn more about authentication configuration here: https://docs.microsoft.com/en-us/azure/azure-monitor/app/java-standalone-config#authentication");
         }
 
@@ -1639,6 +1640,8 @@ public class Configuration {
     SAMI, // APPLICATIONINSIGHTS_AUTHENTICATION_STRING=Authorization=AAD,
     @Deprecated
     VSCODE,
+    // APPLICATIONINSIGHTS_AUTHENTICATION_STRING=Authorization=AAD;ClientId={CLIENT_ID};
+    // ClientSecret={CLIENT_SECRET};TenantId={TENANT_ID}[;AuthorityHost={AUTHORITY_HOST}]
     @Deprecated
     CLIENTSECRET
   }
