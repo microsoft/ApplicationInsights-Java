@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### Bug fixes
+
+* Fix startup deprecation warning for `capture-mdc-attributes` by using the replacement
+  `mdc-attributes.included` properties
+  ([#4890](https://github.com/microsoft/ApplicationInsights-Java/issues/4890))
+
 ## Version 3.7.10 GA (09/17/2026)
 
 ### Enhancements
