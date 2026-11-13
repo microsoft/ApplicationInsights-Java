@@ -39,6 +39,8 @@ import com.microsoft.applicationinsights.agent.internal.exporter.AgentMetricExpo
 import com.microsoft.applicationinsights.agent.internal.exporter.AgentSpanExporter;
 import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
 import com.microsoft.applicationinsights.agent.internal.legacyheaders.AiLegacyHeaderSpanProcessor;
+import com.microsoft.applicationinsights.agent.internal.preagg.AiViewRegistry;
+import com.microsoft.applicationinsights.agent.internal.preagg.PreAggregatedMetricsCustomizer;
 import com.microsoft.applicationinsights.agent.internal.processors.ExporterWithLogProcessor;
 import com.microsoft.applicationinsights.agent.internal.processors.ExporterWithSpanProcessor;
 import com.microsoft.applicationinsights.agent.internal.processors.LogExporterWithAttributeProcessor;
@@ -65,7 +67,6 @@ import io.opentelemetry.sdk.metrics.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.View;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
-import io.opentelemetry.sdk.metrics.internal.view.AiViewRegistry;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.SamplingDecision;
@@ -276,6 +277,9 @@ public class SecondEntryPoint
         })
         .addMetricExporterCustomizer((metricExporter, configProperties) -> {
           if (metricExporter instanceof AzureMonitorMetricExporterProvider.MarkerMetricExporter) {
+            // the metric exporters are created when the SDK is built, which is before any
+            // instrumenter is built
+            PreAggregatedMetricsCustomizer.setAzureMonitorMetricExporterEnabled(true);
             return buildMetricExporter(
                 configuration, telemetryClient, metricFilters, configProperties);
           } else {

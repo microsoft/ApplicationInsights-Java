@@ -1,8 +1,9 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-package io.opentelemetry.sdk.metrics.internal.view;
+package com.microsoft.applicationinsights.agent.internal.preagg;
 
+import com.azure.monitor.opentelemetry.autoconfigure.implementation.AiSemanticAttributes;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.semconv.HttpAttributes;
 import io.opentelemetry.semconv.ServerAttributes;
@@ -34,12 +35,18 @@ enum MetricView {
     return instrumentName;
   }
 
-  Set<AttributeKey<?>> getAttributeKeys() {
-    return attributeKeys;
-  }
-
-  boolean isCaptureSynthetic() {
-    return captureSynthetic;
+  // the view attribute keys plus the internal attributes added by PreAggregatedMetricsCustomizer
+  Set<String> getRetainedAttributeKeys() {
+    Set<String> keys = new HashSet<>();
+    for (AttributeKey<?> key : attributeKeys) {
+      keys.add(key.getKey());
+    }
+    keys.add(AiSemanticAttributes.INTERNAL_CONNECTION_STRING.getKey());
+    keys.add(AiSemanticAttributes.INTERNAL_ROLE_NAME.getKey());
+    if (captureSynthetic) {
+      keys.add(AiSemanticAttributes.IS_SYNTHETIC.getKey());
+    }
+    return keys;
   }
 
   private static Set<AttributeKey<?>> httpClientDurationAttributeKeys() {
