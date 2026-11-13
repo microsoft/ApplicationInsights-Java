@@ -40,6 +40,7 @@ import com.microsoft.applicationinsights.agent.internal.exporter.AgentSpanExport
 import com.microsoft.applicationinsights.agent.internal.httpclient.LazyHttpClient;
 import com.microsoft.applicationinsights.agent.internal.legacyheaders.AiLegacyHeaderSpanProcessor;
 import com.microsoft.applicationinsights.agent.internal.preagg.AiViewRegistry;
+import com.microsoft.applicationinsights.agent.internal.preagg.PreAggregatedMetricsCustomizer;
 import com.microsoft.applicationinsights.agent.internal.processors.ExporterWithLogProcessor;
 import com.microsoft.applicationinsights.agent.internal.processors.ExporterWithSpanProcessor;
 import com.microsoft.applicationinsights.agent.internal.processors.LogExporterWithAttributeProcessor;
@@ -276,6 +277,9 @@ public class SecondEntryPoint
         })
         .addMetricExporterCustomizer((metricExporter, configProperties) -> {
           if (metricExporter instanceof AzureMonitorMetricExporterProvider.MarkerMetricExporter) {
+            // the metric exporters are created when the SDK is built, which is before any
+            // instrumenter is built
+            PreAggregatedMetricsCustomizer.setAzureMonitorMetricExporterEnabled(true);
             return buildMetricExporter(
                 configuration, telemetryClient, metricFilters, configProperties);
           } else {

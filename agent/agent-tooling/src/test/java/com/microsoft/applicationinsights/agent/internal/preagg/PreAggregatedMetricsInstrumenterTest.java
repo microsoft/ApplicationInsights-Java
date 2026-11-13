@@ -78,7 +78,47 @@ class PreAggregatedMetricsInstrumenterTest {
   void cleanup() {
     InternalInstrumenterCustomizerUtil.setInstrumenterCustomizerProviders(
         originalCustomizerProviders);
+    PreAggregatedMetricsCustomizer.setAzureMonitorMetricExporterEnabled(false);
     openTelemetry.close();
+  }
+
+  // e.g. otel.metrics.exporter=none or otlp only, the pre-aggregated metrics don't reach
+  // Application Insights, so the standard metrics need to be generated from the spans
+  @Test
+  void notCustomizedWithoutAzureMonitorMetricExporter() {
+    useAgentCustomizerEntryPoint();
+
+    runHttpServer();
+
+    assertThat(getSingleSpan().getAttributes().get(AiSemanticAttributes.IS_PRE_AGGREGATED))
+        .isNull();
+  }
+
+  @Test
+  void customizedWithAzureMonitorMetricExporter() {
+    useAgentCustomizerEntryPoint();
+    PreAggregatedMetricsCustomizer.setAzureMonitorMetricExporterEnabled(true);
+
+    runHttpServer();
+
+    assertThat(getSingleSpan()).hasAttribute(AiSemanticAttributes.IS_PRE_AGGREGATED, true);
+  }
+
+  private static void useAgentCustomizerEntryPoint() {
+    InternalInstrumenterCustomizerUtil.setInstrumenterCustomizerProviders(
+        singletonList(customizer ->
+            PreAggregatedMetricsCustomizer.customize(new InstrumenterCustomizerImpl(customizer))));
+  }
+
+  private void runHttpServer() {
+    Instrumenter<TestRequest, Integer> instrumenter =
+        Instrumenter.<TestRequest, Integer>builder(openTelemetry, "test", request -> "GET")
+            .addAttributesExtractor(HttpServerAttributesExtractor.create(new HttpGetter()))
+            .addOperationMetrics(HttpServerMetrics.get())
+            .buildInstrumenter(SpanKindExtractor.alwaysServer());
+    TestRequest request = new TestRequest(null);
+    Context context = instrumenter.start(Context.root(), request);
+    instrumenter.end(context, request, 200, null);
   }
 
   @Test

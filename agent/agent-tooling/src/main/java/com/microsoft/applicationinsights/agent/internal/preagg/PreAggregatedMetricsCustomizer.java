@@ -41,10 +41,22 @@ public final class PreAggregatedMetricsCustomizer
   private static final ContextKey<Boolean> IS_SYNTHETIC =
       ContextKey.named("applicationinsights.internal.is_synthetic");
 
+  private static volatile boolean azureMonitorMetricExporterEnabled;
+
   private final List<MetricsState> metricsStates;
   private final boolean captureSynthetic;
 
+  // the pre-aggregated metrics only reach Application Insights through the Azure Monitor metric
+  // exporter, e.g. with otel.metrics.exporter=none the duration metrics are not collected at all,
+  // so the spans must not be marked as pre-aggregated
+  public static void setAzureMonitorMetricExporterEnabled(boolean enabled) {
+    azureMonitorMetricExporterEnabled = enabled;
+  }
+
   public static void customize(InstrumenterCustomizer customizer) {
+    if (!azureMonitorMetricExporterEnabled) {
+      return;
+    }
     customize(customizer, SemconvStability.emitOldRpcSemconv());
   }
 
