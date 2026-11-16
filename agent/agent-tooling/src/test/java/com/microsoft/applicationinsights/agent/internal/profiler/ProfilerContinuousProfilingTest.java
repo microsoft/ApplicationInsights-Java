@@ -293,12 +293,11 @@ class ProfilerContinuousProfilingTest {
           }
         };
 
-    assertThatCode(
-            () ->
-                profiler.initialize(
-                    mock(UploadService.class),
-                    mock(ScheduledExecutorService.class),
-                    mock(FlightRecorderConnection.class)))
+    assertThatCode(() ->
+            profiler.initialize(
+                mock(UploadService.class),
+                mock(ScheduledExecutorService.class),
+                mock(FlightRecorderConnection.class)))
         .doesNotThrowAnyException();
     verify(continuousRecording).close();
     assertThat(profiler.isContinuousRecordingRunning()).isFalse();

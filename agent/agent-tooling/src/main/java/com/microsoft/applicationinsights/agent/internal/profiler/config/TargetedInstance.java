@@ -45,21 +45,20 @@ public class TargetedInstance implements JsonSerializable<TargetedInstance> {
   }
 
   public static TargetedInstance fromJson(JsonReader jsonReader) throws IOException {
-    return jsonReader.readObject(
-        reader -> {
-          TargetedInstance instance = new TargetedInstance();
-          while (reader.nextToken() != JsonToken.END_OBJECT) {
-            reader.nextToken();
-            String fieldName = reader.getFieldName();
-            if ("role".equals(fieldName)) {
-              instance.setRole(reader.getString());
-            } else if ("name".equals(fieldName)) {
-              instance.setName(reader.getString());
-            } else {
-              reader.skipChildren();
-            }
-          }
-          return instance;
-        });
+    return jsonReader.readObject(reader -> {
+      TargetedInstance instance = new TargetedInstance();
+      while (reader.nextToken() != JsonToken.END_OBJECT) {
+        reader.nextToken();
+        String fieldName = reader.getFieldName();
+        if ("role".equals(fieldName)) {
+          instance.setRole(reader.getString());
+        } else if ("name".equals(fieldName)) {
+          instance.setName(reader.getString());
+        } else {
+          reader.skipChildren();
+        }
+      }
+      return instance;
+    });
   }
 }

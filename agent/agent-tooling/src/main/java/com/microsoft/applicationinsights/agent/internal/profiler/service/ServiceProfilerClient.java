@@ -147,19 +147,18 @@ public class ServiceProfilerClient {
   public Mono<ProfilerConfiguration> getSettings(Date oldTimeStamp) {
     String featureVersion = settingsFeatureVersion;
     return getSettings(oldTimeStamp, featureVersion)
-        .flatMap(
-            config -> {
-              if (FEATURE_VERSION.equals(featureVersion)
-                  && isUnsupportedFeatureVersionResponse(config)) {
-                logger.info(
-                    "Service Profiler settings protocol {} is not supported; falling back to {}",
-                    FEATURE_VERSION,
-                    LEGACY_FEATURE_VERSION);
-                settingsFeatureVersion = LEGACY_FEATURE_VERSION;
-                return getSettings(oldTimeStamp, LEGACY_FEATURE_VERSION);
-              }
-              return Mono.just(config);
-            });
+        .flatMap(config -> {
+          if (FEATURE_VERSION.equals(featureVersion)
+              && isUnsupportedFeatureVersionResponse(config)) {
+            logger.info(
+                "Service Profiler settings protocol {} is not supported; falling back to {}",
+                FEATURE_VERSION,
+                LEGACY_FEATURE_VERSION);
+            settingsFeatureVersion = LEGACY_FEATURE_VERSION;
+            return getSettings(oldTimeStamp, LEGACY_FEATURE_VERSION);
+          }
+          return Mono.just(config);
+        });
   }
 
   private Mono<ProfilerConfiguration> getSettings(Date oldTimeStamp, String featureVersion) {

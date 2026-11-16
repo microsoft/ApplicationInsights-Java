@@ -84,27 +84,26 @@ public class TargetedCollectionPlan implements JsonSerializable<TargetedCollecti
   }
 
   public static TargetedCollectionPlan fromJson(JsonReader jsonReader) throws IOException {
-    return jsonReader.readObject(
-        reader -> {
-          TargetedCollectionPlan plan = new TargetedCollectionPlan();
-          while (reader.nextToken() != JsonToken.END_OBJECT) {
-            reader.nextToken();
-            String fieldName = reader.getFieldName();
-            if ("roles".equals(fieldName)) {
-              plan.setRoles(reader.readArray(JsonReader::getString));
-            } else if ("instances".equals(fieldName)) {
-              plan.setInstances(reader.readArray(TargetedInstance::fromJson));
-            } else if ("immediateProfilingDuration".equals(fieldName)) {
-              plan.setImmediateProfilingDuration(reader.getInt());
-            } else if ("expiration".equals(fieldName)) {
-              plan.setExpiration(reader.getString());
-            } else if ("settingsMoniker".equals(fieldName)) {
-              plan.setSettingsMoniker(reader.getString());
-            } else {
-              reader.skipChildren();
-            }
-          }
-          return plan;
-        });
+    return jsonReader.readObject(reader -> {
+      TargetedCollectionPlan plan = new TargetedCollectionPlan();
+      while (reader.nextToken() != JsonToken.END_OBJECT) {
+        reader.nextToken();
+        String fieldName = reader.getFieldName();
+        if ("roles".equals(fieldName)) {
+          plan.setRoles(reader.readArray(JsonReader::getString));
+        } else if ("instances".equals(fieldName)) {
+          plan.setInstances(reader.readArray(TargetedInstance::fromJson));
+        } else if ("immediateProfilingDuration".equals(fieldName)) {
+          plan.setImmediateProfilingDuration(reader.getInt());
+        } else if ("expiration".equals(fieldName)) {
+          plan.setExpiration(reader.getString());
+        } else if ("settingsMoniker".equals(fieldName)) {
+          plan.setSettingsMoniker(reader.getString());
+        } else {
+          reader.skipChildren();
+        }
+      }
+      return plan;
+    });
   }
 }

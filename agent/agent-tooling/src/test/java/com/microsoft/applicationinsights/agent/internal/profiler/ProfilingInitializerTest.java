@@ -96,7 +96,7 @@ public class ProfilingInitializerTest {
   }
 
   public static final Consumer<ProfilingInitializer> NOT_ENABLED =
-      (profiler) -> {
+      profiler -> {
         Mockito.verify(profiler, Mockito.never()).enableProfiler();
 
         // This should be false, but currently we do not fully bring down the profiler on demand
@@ -104,13 +104,13 @@ public class ProfilingInitializerTest {
       };
 
   public static final Consumer<ProfilingInitializer> ENABLED =
-      (profiler) -> {
+      profiler -> {
         Mockito.verify(profiler, Mockito.times(1)).enableProfiler();
         Assertions.assertTrue(profiler.isEnabled());
       };
 
   public static final Consumer<ProfilingInitializer> ENABLED_THEN_DISABLED =
-      (profiler) -> {
+      profiler -> {
         Mockito.verify(profiler, Mockito.times(1)).enableProfiler();
         Mockito.verify(profiler, Mockito.times(1)).disableProfiler();
 
@@ -220,22 +220,21 @@ public class ProfilingInitializerTest {
   @TestFactory
   public Collection<DynamicTest> runTests() {
     return tests.stream()
-        .map(
-            testCase -> {
-              return DynamicTest.dynamicTest(
-                  testCase.name,
-                  () -> {
-                    ProfilingInitializer profiler =
-                        createProfilingInitializer(
-                            testCase.localConfiguration,
-                            testCase.telemetryRoleName,
-                            testCase.telemetryRoleInstance);
+        .map(testCase -> {
+          return DynamicTest.dynamicTest(
+              testCase.name,
+              () -> {
+                ProfilingInitializer profiler =
+                    createProfilingInitializer(
+                        testCase.localConfiguration,
+                        testCase.telemetryRoleName,
+                        testCase.telemetryRoleInstance);
 
-                    testCase.configurations.forEach(profiler::applyConfiguration);
+                testCase.configurations.forEach(profiler::applyConfiguration);
 
-                    testCase.assertion.accept(profiler);
-                  });
-            })
+                testCase.assertion.accept(profiler);
+              });
+        })
         .collect(Collectors.toList());
   }
 
