@@ -35,111 +35,97 @@ abstract class LogbackTest {
   @Test
   @TargetUri("/test")
   void test() {
-    testing.waitAndAssertTrace(
-        trace ->
-            trace
-                .hasRequestSatisying(
-                    request ->
-                        request.hasName("GET /Logback/test").hasSuccess(true).hasNoSampleRate())
-                .hasMessageCount(3)
-                .hasMessageSatisfying(
-                    message ->
-                        message
-                            .hasMessage("This is logback warn.")
-                            .hasSeverityLevel(SeverityLevel.WARNING)
-                            .hasProperty("SourceType", "Logger")
-                            .hasProperty("LoggerName", "smoketestapp")
-                            .hasPropertyKey("ThreadName")
-                            .hasProperty("MDC key", "MDC value")
-                            .hasNoSampleRate())
-                .hasMessageSatisfying(
-                    message ->
-                        message
-                            .hasMessage("This is logback error.")
-                            .hasSeverityLevel(SeverityLevel.ERROR)
-                            .hasProperty("SourceType", "Logger")
-                            .hasProperty("LoggerName", "smoketestapp")
-                            .hasPropertyKey("ThreadName")
-                            .hasNoSampleRate()));
+    testing.waitAndAssertTrace(trace ->
+        trace
+            .hasRequestSatisying(
+                request -> request.hasName("GET /Logback/test").hasSuccess(true).hasNoSampleRate())
+            .hasMessageCount(3)
+            .hasMessageSatisfying(message ->
+                message
+                    .hasMessage("This is logback warn.")
+                    .hasSeverityLevel(SeverityLevel.WARNING)
+                    .hasProperty("SourceType", "Logger")
+                    .hasProperty("LoggerName", "smoketestapp")
+                    .hasPropertyKey("ThreadName")
+                    .hasProperty("MDC key", "MDC value")
+                    .hasNoSampleRate())
+            .hasMessageSatisfying(message ->
+                message
+                    .hasMessage("This is logback error.")
+                    .hasSeverityLevel(SeverityLevel.ERROR)
+                    .hasProperty("SourceType", "Logger")
+                    .hasProperty("LoggerName", "smoketestapp")
+                    .hasPropertyKey("ThreadName")
+                    .hasNoSampleRate()));
 
     if (!isWildflyServer()) {
-      testing.waitAndAssertTrace(
-          trace ->
-              trace
-                  .hasMessageSatisfying(
-                      message ->
-                          message
-                              .hasMessage("This is logback warn.")
-                              .hasProperty("FileName", "LogbackServlet.java")
-                              .hasProperty(
-                                  "ClassName",
-                                  "com.microsoft.applicationinsights.smoketestapp.LogbackServlet")
-                              .hasProperty("MethodName", "doGet")
-                              .hasProperty("LineNumber", "26")
-                              .hasPropertiesSize(8))
-                  .hasMessageSatisfying(
-                      message ->
-                          message
-                              .hasMessage("This is logback error.")
-                              .hasProperty("FileName", "LogbackServlet.java")
-                              .hasProperty(
-                                  "ClassName",
-                                  "com.microsoft.applicationinsights.smoketestapp.LogbackServlet")
-                              .hasProperty("MethodName", "doGet")
-                              .hasProperty("LineNumber", "28")
-                              .hasPropertiesSize(7))
-                  .hasMessageSatisfying(message -> message.hasProperty("Marker", "aMarker")));
+      testing.waitAndAssertTrace(trace ->
+          trace
+              .hasMessageSatisfying(message ->
+                  message
+                      .hasMessage("This is logback warn.")
+                      .hasProperty("FileName", "LogbackServlet.java")
+                      .hasProperty(
+                          "ClassName",
+                          "com.microsoft.applicationinsights.smoketestapp.LogbackServlet")
+                      .hasProperty("MethodName", "doGet")
+                      .hasProperty("LineNumber", "26")
+                      .hasPropertiesSize(8))
+              .hasMessageSatisfying(message ->
+                  message
+                      .hasMessage("This is logback error.")
+                      .hasProperty("FileName", "LogbackServlet.java")
+                      .hasProperty(
+                          "ClassName",
+                          "com.microsoft.applicationinsights.smoketestapp.LogbackServlet")
+                      .hasProperty("MethodName", "doGet")
+                      .hasProperty("LineNumber", "28")
+                      .hasPropertiesSize(7))
+              .hasMessageSatisfying(message -> message.hasProperty("Marker", "aMarker")));
     } else {
-      testing.waitAndAssertTrace(
-          trace ->
-              trace
-                  .hasMessageSatisfying(
-                      message -> message.hasMessage("This is logback warn.").hasPropertiesSize(4))
-                  .hasMessageSatisfying(
-                      message ->
-                          message.hasMessage("This is logback error.").hasPropertiesSize(3)));
+      testing.waitAndAssertTrace(trace ->
+          trace
+              .hasMessageSatisfying(
+                  message -> message.hasMessage("This is logback warn.").hasPropertiesSize(4))
+              .hasMessageSatisfying(
+                  message -> message.hasMessage("This is logback error.").hasPropertiesSize(3)));
     }
   }
 
   @Test
   @TargetUri("/testWithException")
   void testWithException() {
-    testing.waitAndAssertTrace(
-        trace ->
-            trace
-                .hasRequestSatisying(
-                    request ->
-                        request
-                            .hasName("GET /Logback/testWithException")
-                            .hasSuccess(true)
-                            .hasNoSampleRate())
-                .hasExceptionCount(1)
-                .hasExceptionSatisfying(
-                    exception ->
-                        exception
-                            .hasExceptionType("java.lang.Exception")
-                            .hasExceptionMessage("Fake Exception")
-                            .hasSeverityLevel(SeverityLevel.ERROR)
-                            .hasProperty("Logger Message", "This is an exception!")
-                            .hasProperty("SourceType", "Logger")
-                            .hasProperty("LoggerName", "smoketestapp")
-                            .hasPropertyKey("ThreadName")
-                            .hasProperty("MDC key", "MDC value")
-                            .hasNoSampleRate()));
+    testing.waitAndAssertTrace(trace ->
+        trace
+            .hasRequestSatisying(request ->
+                request
+                    .hasName("GET /Logback/testWithException")
+                    .hasSuccess(true)
+                    .hasNoSampleRate())
+            .hasExceptionCount(1)
+            .hasExceptionSatisfying(exception ->
+                exception
+                    .hasExceptionType("java.lang.Exception")
+                    .hasExceptionMessage("Fake Exception")
+                    .hasSeverityLevel(SeverityLevel.ERROR)
+                    .hasProperty("Logger Message", "This is an exception!")
+                    .hasProperty("SourceType", "Logger")
+                    .hasProperty("LoggerName", "smoketestapp")
+                    .hasPropertyKey("ThreadName")
+                    .hasProperty("MDC key", "MDC value")
+                    .hasNoSampleRate()));
 
     if (!isWildflyServer()) {
-      testing.waitAndAssertTrace(
-          trace ->
-              trace.hasExceptionSatisfying(
-                  exception ->
-                      exception
-                          .hasProperty("FileName", "LogbackWithExceptionServlet.java")
-                          .hasProperty(
-                              "ClassName",
-                              "com.microsoft.applicationinsights.smoketestapp.LogbackWithExceptionServlet")
-                          .hasProperty("MethodName", "doGet")
-                          .hasProperty("LineNumber", "21")
-                          .hasPropertiesSize(9)));
+      testing.waitAndAssertTrace(trace ->
+          trace.hasExceptionSatisfying(exception ->
+              exception
+                  .hasProperty("FileName", "LogbackWithExceptionServlet.java")
+                  .hasProperty(
+                      "ClassName",
+                      "com.microsoft.applicationinsights.smoketestapp.LogbackWithExceptionServlet")
+                  .hasProperty("MethodName", "doGet")
+                  .hasProperty("LineNumber", "21")
+                  .hasPropertiesSize(9)));
     } else {
       testing.waitAndAssertTrace(
           trace -> trace.hasExceptionSatisfying(exception -> exception.hasPropertiesSize(5)));

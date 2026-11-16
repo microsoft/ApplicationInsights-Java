@@ -56,17 +56,16 @@ abstract class DetectUnexpectedOtelMetricsTest {
   @TargetUri("/app")
   void testApp() throws Exception {
     // verify no unexpected otel metrics, expect an TimeoutException being thrown
-    assertThatThrownBy(
-            () ->
-                testing.mockedIngestion.waitForItems(
-                    "MetricData",
-                    envelope -> {
-                      MetricData md = (MetricData) ((Data<?>) envelope.getData()).getBaseData();
-                      return !EXPECTED_METRIC_NAMES.contains(md.getMetrics().get(0).getName())
-                          && !md.getMetrics().get(0).getName().startsWith("otel.sdk.")
-                          && !md.getProperties().containsKey("_MS.MetricId");
-                    },
-                    1))
+    assertThatThrownBy(() ->
+            testing.mockedIngestion.waitForItems(
+                "MetricData",
+                envelope -> {
+                  MetricData md = (MetricData) ((Data<?>) envelope.getData()).getBaseData();
+                  return !EXPECTED_METRIC_NAMES.contains(md.getMetrics().get(0).getName())
+                      && !md.getMetrics().get(0).getName().startsWith("otel.sdk.")
+                      && !md.getProperties().containsKey("_MS.MetricId");
+                },
+                1))
         .isInstanceOf(TimeoutException.class);
   }
 

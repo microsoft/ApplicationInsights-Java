@@ -72,21 +72,20 @@ public class RequestAlertPipelineBuilderTest {
             "profile-configs/applicationinsights-trigger-example-1.json",
             "profile-configs/applicationinsights-trigger-example-2.json",
             "profile-configs/applicationinsights-trigger-example-3.json")
-        .map(
-            file ->
-                DynamicTest.dynamicTest(
-                    file,
-                    () -> {
-                      try (JsonReader reader =
-                          JsonProviders.createReader(
-                              RequestAlertPipelineBuilderTest.class
-                                  .getClassLoader()
-                                  .getResourceAsStream(file))) {
-                        AlertingConfig.RequestTrigger alertingConfig =
-                            AlertingConfig.RequestTrigger.fromJson(reader);
-                        Assertions.assertNotNull(alertingConfig);
-                      }
-                    }))
+        .map(file ->
+            DynamicTest.dynamicTest(
+                file,
+                () -> {
+                  try (JsonReader reader =
+                      JsonProviders.createReader(
+                          RequestAlertPipelineBuilderTest.class
+                              .getClassLoader()
+                              .getResourceAsStream(file))) {
+                    AlertingConfig.RequestTrigger alertingConfig =
+                        AlertingConfig.RequestTrigger.fromJson(reader);
+                    Assertions.assertNotNull(alertingConfig);
+                  }
+                }))
         .collect(Collectors.toList());
   }
 }

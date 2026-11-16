@@ -53,14 +53,13 @@ public class Telemetry extends Event implements JsonSerializable<Telemetry> {
     if (telemetry instanceof List) {
       StringJoiner joiner = new StringJoiner(",");
       ((List<Double>) telemetry)
-          .forEach(
-              it -> {
-                if (it == null) {
-                  joiner.add("null");
-                } else {
-                  joiner.add(Double.toString(it));
-                }
-              });
+          .forEach(it -> {
+            if (it == null) {
+              joiner.add("null");
+            } else {
+              joiner.add(Double.toString(it));
+            }
+          });
       this.telemetry = joiner.toString();
       this.version = LATEST_VERSION;
     } else if (telemetry instanceof String) {
@@ -80,23 +79,22 @@ public class Telemetry extends Event implements JsonSerializable<Telemetry> {
   }
 
   public static Telemetry fromJson(JsonReader jsonReader) throws IOException {
-    return jsonReader.readObject(
-        reader -> {
-          Telemetry deserializedValue = new Telemetry();
+    return jsonReader.readObject(reader -> {
+      Telemetry deserializedValue = new Telemetry();
 
-          while (reader.nextToken() != JsonToken.END_OBJECT) {
-            String fieldName = reader.getFieldName();
-            reader.nextToken();
-            if ("version".equals(fieldName)) {
-              deserializedValue.setVersion(reader.getInt());
-            } else if ("telemetry".equals(fieldName)) {
-              deserializedValue.setTelemetry(reader.getString());
-            } else {
-              reader.skipChildren();
-            }
-          }
+      while (reader.nextToken() != JsonToken.END_OBJECT) {
+        String fieldName = reader.getFieldName();
+        reader.nextToken();
+        if ("version".equals(fieldName)) {
+          deserializedValue.setVersion(reader.getInt());
+        } else if ("telemetry".equals(fieldName)) {
+          deserializedValue.setTelemetry(reader.getString());
+        } else {
+          reader.skipChildren();
+        }
+      }
 
-          return deserializedValue;
-        });
+      return deserializedValue;
+    });
   }
 }

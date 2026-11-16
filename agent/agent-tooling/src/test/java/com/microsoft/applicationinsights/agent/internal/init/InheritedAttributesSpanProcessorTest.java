@@ -50,19 +50,15 @@ public class InheritedAttributesSpanProcessorTest {
     await().until(() -> exporter.getFinishedSpanItems().size() == 2);
 
     assertThat(Collections.singleton(exporter.getFinishedSpanItems()))
-        .hasTracesSatisfyingExactly(
-            trace ->
-                trace.hasSpansSatisfyingExactly(
-                    childSpan ->
-                        childSpan.hasName("child").hasKind(INTERNAL).hasTotalAttributeCount(0),
-                    parentSpan ->
-                        parentSpan
-                            .hasName("parent")
-                            .hasKind(INTERNAL)
-                            .hasAttributesSatisfying(
-                                attributes ->
-                                    assertThat(attributes)
-                                        .containsOnly(entry(oneStringKey, "1")))));
+        .hasTracesSatisfyingExactly(trace ->
+            trace.hasSpansSatisfyingExactly(
+                childSpan -> childSpan.hasName("child").hasKind(INTERNAL).hasTotalAttributeCount(0),
+                parentSpan ->
+                    parentSpan
+                        .hasName("parent")
+                        .hasKind(INTERNAL)
+                        .hasAttributesSatisfying(attributes ->
+                            assertThat(attributes).containsOnly(entry(oneStringKey, "1")))));
   }
 
   @Test
@@ -84,24 +80,20 @@ public class InheritedAttributesSpanProcessorTest {
     await().until(() -> exporter.getFinishedSpanItems().size() == 2);
 
     assertThat(Collections.singleton(exporter.getFinishedSpanItems()))
-        .hasTracesSatisfyingExactly(
-            trace ->
-                trace.hasSpansSatisfyingExactly(
-                    childSpan ->
-                        childSpan
-                            .hasName("child")
-                            .hasKind(INTERNAL)
-                            .hasAttributesSatisfying(
-                                attributes ->
-                                    assertThat(attributes).containsOnly(entry(oneStringKey, "1"))),
-                    parentSpan ->
-                        parentSpan
-                            .hasName("parent")
-                            .hasKind(INTERNAL)
-                            .hasAttributesSatisfying(
-                                attributes ->
-                                    assertThat(attributes)
-                                        .containsOnly(entry(oneStringKey, "1")))));
+        .hasTracesSatisfyingExactly(trace ->
+            trace.hasSpansSatisfyingExactly(
+                childSpan ->
+                    childSpan
+                        .hasName("child")
+                        .hasKind(INTERNAL)
+                        .hasAttributesSatisfying(attributes ->
+                            assertThat(attributes).containsOnly(entry(oneStringKey, "1"))),
+                parentSpan ->
+                    parentSpan
+                        .hasName("parent")
+                        .hasKind(INTERNAL)
+                        .hasAttributesSatisfying(attributes ->
+                            assertThat(attributes).containsOnly(entry(oneStringKey, "1")))));
   }
 
   @Test
@@ -122,18 +114,15 @@ public class InheritedAttributesSpanProcessorTest {
     await().until(() -> exporter.getFinishedSpanItems().size() == 2);
 
     assertThat(Collections.singleton(exporter.getFinishedSpanItems()))
-        .hasTracesSatisfyingExactly(
-            trace ->
-                trace.hasSpansSatisfyingExactly(
-                    childSpan ->
-                        childSpan.hasName("child").hasKind(INTERNAL).hasTotalAttributeCount(0),
-                    parentSpan ->
-                        parentSpan
-                            .hasName("parent")
-                            .hasKind(INTERNAL)
-                            .hasAttributesSatisfying(
-                                attributes ->
-                                    assertThat(attributes).containsOnly(entry(oneLongKey, 1L)))));
+        .hasTracesSatisfyingExactly(trace ->
+            trace.hasSpansSatisfyingExactly(
+                childSpan -> childSpan.hasName("child").hasKind(INTERNAL).hasTotalAttributeCount(0),
+                parentSpan ->
+                    parentSpan
+                        .hasName("parent")
+                        .hasKind(INTERNAL)
+                        .hasAttributesSatisfying(attributes ->
+                            assertThat(attributes).containsOnly(entry(oneLongKey, 1L)))));
   }
 
   private Tracer newTracer(List<Configuration.InheritedAttribute> inheritedAttributes) {

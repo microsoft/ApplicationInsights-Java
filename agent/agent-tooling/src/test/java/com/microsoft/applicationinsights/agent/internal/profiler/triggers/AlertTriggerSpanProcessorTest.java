@@ -36,50 +36,47 @@ public class AlertTriggerSpanProcessorTest {
 
   @Test
   public void matchingFilterCausesAlert() throws InterruptedException {
-    run(
-        (spanExporter, alertCalled, timeSource) -> {
-          for (int i = 0; i < 10; i++) {
-            spanExporter.onEnd(buildSampleSpan("fooBar", 20000));
-            timeSource.increment(10000);
-          }
+    run((spanExporter, alertCalled, timeSource) -> {
+      for (int i = 0; i < 10; i++) {
+        spanExporter.onEnd(buildSampleSpan("fooBar", 20000));
+        timeSource.increment(10000);
+      }
 
-          Assertions.assertTrue(alertCalled.get());
-        });
+      Assertions.assertTrue(alertCalled.get());
+    });
   }
 
   @Test
   public void underThresholdDataDoesNotCauseAlert() throws InterruptedException {
-    run(
-        (spanExporter, alertCalled, timeSource) -> {
-          for (int i = 0; i < 100000; i += 10) {
-            timeSource.setNow(Instant.EPOCH.plus(i, ChronoUnit.MILLIS));
-            spanExporter.onEnd(buildSampleSpan("fooBar", 2000));
-          }
+    run((spanExporter, alertCalled, timeSource) -> {
+      for (int i = 0; i < 100000; i += 10) {
+        timeSource.setNow(Instant.EPOCH.plus(i, ChronoUnit.MILLIS));
+        spanExporter.onEnd(buildSampleSpan("fooBar", 2000));
+      }
 
-          Assertions.assertFalse(alertCalled.get());
-        });
+      Assertions.assertFalse(alertCalled.get());
+    });
   }
 
   @Test
   public void underThenOverThresholdDataDoesCauseAlert() throws InterruptedException {
-    run(
-        (spanExporter, alertCalled, timeSource) -> {
-          for (int i = 0; i < 100000; i += 10) {
-            timeSource.setNow(Instant.EPOCH.plus(i, ChronoUnit.MILLIS));
-            spanExporter.onEnd(buildSampleSpan("fooBar", 2000));
-          }
+    run((spanExporter, alertCalled, timeSource) -> {
+      for (int i = 0; i < 100000; i += 10) {
+        timeSource.setNow(Instant.EPOCH.plus(i, ChronoUnit.MILLIS));
+        spanExporter.onEnd(buildSampleSpan("fooBar", 2000));
+      }
 
-          Assertions.assertFalse(alertCalled.get());
+      Assertions.assertFalse(alertCalled.get());
 
-          for (int i = 100000; i < 200000; i += 10) {
-            timeSource.setNow(Instant.EPOCH.plus(i, ChronoUnit.MILLIS));
-            spanExporter.onEnd(buildSampleSpan("fooBar", 200000));
-          }
+      for (int i = 100000; i < 200000; i += 10) {
+        timeSource.setNow(Instant.EPOCH.plus(i, ChronoUnit.MILLIS));
+        spanExporter.onEnd(buildSampleSpan("fooBar", 200000));
+      }
 
-          Thread.sleep(100);
+      Thread.sleep(100);
 
-          Assertions.assertTrue(alertCalled.get());
-        });
+      Assertions.assertTrue(alertCalled.get());
+    });
   }
 
   private static ReadableSpan buildSampleSpan(String fooBar, int durationMillis) {
@@ -99,15 +96,14 @@ public class AlertTriggerSpanProcessorTest {
 
   @Test
   public void nonMatchingFilterDoesNotCauseAlert() throws InterruptedException {
-    run(
-        (spanExporter, alertCalled, timeSource) -> {
-          for (int i = 0; i < 10; i++) {
-            spanExporter.onEnd(buildSampleSpan("does-not-match", 20000));
-            timeSource.increment(10000);
-          }
+    run((spanExporter, alertCalled, timeSource) -> {
+      for (int i = 0; i < 10; i++) {
+        spanExporter.onEnd(buildSampleSpan("does-not-match", 20000));
+        timeSource.increment(10000);
+      }
 
-          Assertions.assertFalse(alertCalled.get());
-        });
+      Assertions.assertFalse(alertCalled.get());
+    });
   }
 
   private static void run(Handle handle) throws InterruptedException {

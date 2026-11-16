@@ -24,36 +24,32 @@ abstract class GrpcTest {
   @Test
   @TargetUri("/simple")
   void doSimpleTest() {
-    testing.waitAndAssertTrace(
-        trace ->
-            trace
-                .hasRequestSatisying(
-                    request ->
-                        request
-                            .hasName("GET /simple")
-                            .hasSuccess(true)
-                            .hasProperty("_MS.ProcessedByMetricExtractors", "True")
-                            .hasTag("ai.operation.name", "GET /simple")
-                            .hasNoParent())
-                .hasDependencySatisying(
-                    dependency ->
-                        dependency
-                            .hasName("example.Greeter/SayHello")
-                            .hasTarget("localhost:10203")
-                            .hasSuccess(true)
-                            .hasProperty("_MS.ProcessedByMetricExtractors", "True")
-                            .hasTag("ai.operation.name", "GET /simple")
-                            .hasParent(trace.getRequestId(0)))
-                .hasRequestSatisying(
-                    request ->
-                        request
-                            .hasName("example.Greeter/SayHello")
-                            .hasSuccess(true)
-                            .hasProperty("_MS.ProcessedByMetricExtractors", "True")
-                            .hasTag("ai.operation.name", "example.Greeter/SayHello")
-                            .hasParent(trace.getDependencyId(0)))
-                // auto-collected grpc events are suppressed by exporter because they are noisy
-                .hasMessageCount(0));
+    testing.waitAndAssertTrace(trace ->
+        trace
+            .hasRequestSatisying(request ->
+                request
+                    .hasName("GET /simple")
+                    .hasSuccess(true)
+                    .hasProperty("_MS.ProcessedByMetricExtractors", "True")
+                    .hasTag("ai.operation.name", "GET /simple")
+                    .hasNoParent())
+            .hasDependencySatisying(dependency ->
+                dependency
+                    .hasName("example.Greeter/SayHello")
+                    .hasTarget("localhost:10203")
+                    .hasSuccess(true)
+                    .hasProperty("_MS.ProcessedByMetricExtractors", "True")
+                    .hasTag("ai.operation.name", "GET /simple")
+                    .hasParent(trace.getRequestId(0)))
+            .hasRequestSatisying(request ->
+                request
+                    .hasName("example.Greeter/SayHello")
+                    .hasSuccess(true)
+                    .hasProperty("_MS.ProcessedByMetricExtractors", "True")
+                    .hasTag("ai.operation.name", "example.Greeter/SayHello")
+                    .hasParent(trace.getDependencyId(0)))
+            // auto-collected grpc events are suppressed by exporter because they are noisy
+            .hasMessageCount(0));
 
     testing.waitAndAssertMetric(
         "rpc.client.duration",
@@ -103,36 +99,32 @@ abstract class GrpcTest {
   @Test
   @TargetUri("/conversation")
   void doConversationTest() {
-    testing.waitAndAssertTrace(
-        trace ->
-            trace
-                .hasRequestSatisying(
-                    request ->
-                        request
-                            .hasName("GET /conversation")
-                            .hasSuccess(true)
-                            .hasProperty("_MS.ProcessedByMetricExtractors", "True")
-                            .hasTag("ai.operation.name", "GET /conversation")
-                            .hasNoParent())
-                .hasDependencySatisying(
-                    dependency ->
-                        dependency
-                            .hasName("example.Greeter/Conversation")
-                            .hasTarget("localhost:10203")
-                            .hasSuccess(true)
-                            .hasProperty("_MS.ProcessedByMetricExtractors", "True")
-                            .hasTag("ai.operation.name", "GET /conversation")
-                            .hasParent(trace.getRequestId(0)))
-                .hasRequestSatisying(
-                    request ->
-                        request
-                            .hasName("example.Greeter/Conversation")
-                            .hasSuccess(true)
-                            .hasProperty("_MS.ProcessedByMetricExtractors", "True")
-                            .hasTag("ai.operation.name", "example.Greeter/Conversation")
-                            .hasParent(trace.getDependencyId(0)))
-                // auto-collected grpc events are suppressed by exporter because they are noisy
-                .hasMessageCount(0));
+    testing.waitAndAssertTrace(trace ->
+        trace
+            .hasRequestSatisying(request ->
+                request
+                    .hasName("GET /conversation")
+                    .hasSuccess(true)
+                    .hasProperty("_MS.ProcessedByMetricExtractors", "True")
+                    .hasTag("ai.operation.name", "GET /conversation")
+                    .hasNoParent())
+            .hasDependencySatisying(dependency ->
+                dependency
+                    .hasName("example.Greeter/Conversation")
+                    .hasTarget("localhost:10203")
+                    .hasSuccess(true)
+                    .hasProperty("_MS.ProcessedByMetricExtractors", "True")
+                    .hasTag("ai.operation.name", "GET /conversation")
+                    .hasParent(trace.getRequestId(0)))
+            .hasRequestSatisying(request ->
+                request
+                    .hasName("example.Greeter/Conversation")
+                    .hasSuccess(true)
+                    .hasProperty("_MS.ProcessedByMetricExtractors", "True")
+                    .hasTag("ai.operation.name", "example.Greeter/Conversation")
+                    .hasParent(trace.getDependencyId(0)))
+            // auto-collected grpc events are suppressed by exporter because they are noisy
+            .hasMessageCount(0));
 
     testing.waitAndAssertMetric(
         "rpc.client.duration",

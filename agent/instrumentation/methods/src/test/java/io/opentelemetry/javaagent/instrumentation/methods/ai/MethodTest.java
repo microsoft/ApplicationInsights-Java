@@ -32,17 +32,15 @@ class MethodTest {
   @Test
   void methodTraced() {
     assertThat(new ConfigTracedCallable().call()).isEqualTo("Hello!");
-    testing.waitAndAssertTraces(
-        trace ->
-            trace.hasSpansSatisfyingExactly(
-                span ->
-                    span.hasName("ConfigTracedCallable.call")
-                        .hasKind(SpanKind.SERVER)
-                        .hasAttributesSatisfyingExactly(
-                            equalTo(
-                                CodeIncubatingAttributes.CODE_NAMESPACE,
-                                ConfigTracedCallable.class.getName()),
-                            equalTo(CodeIncubatingAttributes.CODE_FUNCTION, "call"))));
+    testing.waitAndAssertTraces(trace ->
+        trace.hasSpansSatisfyingExactly(span ->
+            span.hasName("ConfigTracedCallable.call")
+                .hasKind(SpanKind.SERVER)
+                .hasAttributesSatisfyingExactly(
+                    equalTo(
+                        CodeIncubatingAttributes.CODE_NAMESPACE,
+                        ConfigTracedCallable.class.getName()),
+                    equalTo(CodeIncubatingAttributes.CODE_FUNCTION, "call"))));
   }
 
   static class ConfigTracedCallable implements Callable<String> {
@@ -65,17 +63,15 @@ class MethodTest {
     traced.countDownLatch.countDown();
     assertThat(future.get(10, TimeUnit.SECONDS)).isEqualTo("Hello!");
 
-    testing.waitAndAssertTraces(
-        trace ->
-            trace.hasSpansSatisfyingExactly(
-                span ->
-                    span.hasName("ConfigTracedCompletableFuture.getResult")
-                        .hasKind(SpanKind.SERVER)
-                        .hasAttributesSatisfyingExactly(
-                            equalTo(
-                                CodeIncubatingAttributes.CODE_NAMESPACE,
-                                ConfigTracedCompletableFuture.class.getName()),
-                            equalTo(CodeIncubatingAttributes.CODE_FUNCTION, "getResult"))));
+    testing.waitAndAssertTraces(trace ->
+        trace.hasSpansSatisfyingExactly(span ->
+            span.hasName("ConfigTracedCompletableFuture.getResult")
+                .hasKind(SpanKind.SERVER)
+                .hasAttributesSatisfyingExactly(
+                    equalTo(
+                        CodeIncubatingAttributes.CODE_NAMESPACE,
+                        ConfigTracedCompletableFuture.class.getName()),
+                    equalTo(CodeIncubatingAttributes.CODE_FUNCTION, "getResult"))));
   }
 
   static class ConfigTracedCompletableFuture {

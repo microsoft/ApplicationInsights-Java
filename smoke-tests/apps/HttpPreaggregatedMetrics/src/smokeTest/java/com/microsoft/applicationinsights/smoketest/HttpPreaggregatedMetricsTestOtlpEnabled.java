@@ -53,11 +53,10 @@ abstract class HttpPreaggregatedMetricsTestOtlpEnabled {
     assertThat(metrics.size()).isEqualTo(3);
     // sort metrics based on result code
     metrics.sort(
-        Comparator.comparing(
-            obj -> {
-              MetricData metricData = (MetricData) ((Data<?>) obj.getData()).getBaseData();
-              return metricData.getProperties().get("dependency/resultCode");
-            }));
+        Comparator.comparing(obj -> {
+          MetricData metricData = (MetricData) ((Data<?>) obj.getData()).getBaseData();
+          return metricData.getProperties().get("dependency/resultCode");
+        }));
 
     // 1st pre-aggregated metric
     Envelope envelope1 = metrics.get(0);

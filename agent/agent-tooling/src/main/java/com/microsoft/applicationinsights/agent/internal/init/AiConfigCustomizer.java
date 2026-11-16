@@ -66,12 +66,11 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
 
     // enable capturing all mdc properties
     properties.put(
-        "otel.instrumentation.logback-appender.experimental.capture-mdc-attributes", "*");
-    properties.put("otel.instrumentation.log4j-appender.experimental.capture-mdc-attributes", "*");
+        "otel.instrumentation.logback-appender.experimental.mdc-attributes.included", "*");
+    // for log4j, this covers both MDC and context data
+    properties.put("otel.instrumentation.log4j-appender.experimental.mdc-attributes.included", "*");
     properties.put(
-        "otel.instrumentation.log4j-appender.experimental.capture-context-data-attributes", "*");
-    properties.put(
-        "otel.instrumentation.jboss-logmanager.experimental.capture-mdc-attributes", "*");
+        "otel.instrumentation.jboss-logmanager.experimental.mdc-attributes.included", "*");
 
     properties.put(
         "otel.instrumentation.log4j-appender.experimental.capture-map-message-attributes", "true");

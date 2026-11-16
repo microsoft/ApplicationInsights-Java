@@ -51,11 +51,10 @@ public class MockedOtlpIngestionServer {
   public List<Metric> extractMetricsFromRequests(HttpRequest[] requests) {
     return Arrays.stream(requests)
         .map(HttpRequest::getBody)
-        .flatMap(
-            body ->
-                Objects.requireNonNull(getExportMetricsServiceRequest(body))
-                    .getResourceMetricsList()
-                    .stream())
+        .flatMap(body ->
+            Objects.requireNonNull(getExportMetricsServiceRequest(body))
+                .getResourceMetricsList()
+                .stream())
         .flatMap(r -> r.getScopeMetricsList().stream())
         .flatMap(r -> r.getMetricsList().stream())
         .collect(Collectors.toList());

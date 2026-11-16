@@ -160,13 +160,12 @@ public class FirstEntryPoint implements LoggingCustomizer {
   private static Map<String, String> findEnvVariables() {
     Map<String, String> env = System.getenv();
     return env.entrySet().stream()
-        .map(
-            entry -> {
-              String key = entry.getKey();
-              String value = entry.getValue().toString();
-              String valueToDisplay = maskValueOfSensitiveKey(key, value);
-              return new SimpleEntry<>(key, valueToDisplay);
-            })
+        .map(entry -> {
+          String key = entry.getKey();
+          String value = entry.getValue().toString();
+          String valueToDisplay = maskValueOfSensitiveKey(key, value);
+          return new SimpleEntry<>(key, valueToDisplay);
+        })
         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
   }
 
@@ -193,15 +192,14 @@ public class FirstEntryPoint implements LoggingCustomizer {
   private static String findSystemProperties() {
     Properties properties = System.getProperties();
     StringBuilder propsBuilder = new StringBuilder();
-    properties.forEach(
-        (key, value) -> {
-          boolean firstProperty = propsBuilder.length() == 0;
-          if (!firstProperty) {
-            propsBuilder.append(", ");
-          }
-          String valueToDisplay = maskValueOfSensitiveKey(key.toString(), value.toString());
-          propsBuilder.append("(" + key + "=" + valueToDisplay + ")");
-        });
+    properties.forEach((key, value) -> {
+      boolean firstProperty = propsBuilder.length() == 0;
+      if (!firstProperty) {
+        propsBuilder.append(", ");
+      }
+      String valueToDisplay = maskValueOfSensitiveKey(key.toString(), value.toString());
+      propsBuilder.append("(" + key + "=" + valueToDisplay + ")");
+    });
     return propsBuilder.toString();
   }
 

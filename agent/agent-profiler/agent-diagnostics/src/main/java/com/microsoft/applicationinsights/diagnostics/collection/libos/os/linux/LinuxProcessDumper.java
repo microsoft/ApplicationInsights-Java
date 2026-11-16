@@ -73,15 +73,14 @@ public class LinuxProcessDumper implements ProcessDumper, Closeable {
     List<Integer> toRemove =
         usage.keySet().stream().filter(it -> !exclusions.contains(it)).collect(Collectors.toList());
 
-    toRemove.forEach(
-        exclusion -> {
-          LinuxProcess removed = usage.remove(exclusion);
-          try {
-            removed.close();
-          } catch (IOException e) {
-            logger.error("Failed to close process", e);
-          }
-        });
+    toRemove.forEach(exclusion -> {
+      LinuxProcess removed = usage.remove(exclusion);
+      try {
+        removed.close();
+      } catch (IOException e) {
+        logger.error("Failed to close process", e);
+      }
+    });
   }
 
   private LinuxProcess recordProcess(File candidate, int pid) throws IOException {

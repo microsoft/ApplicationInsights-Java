@@ -58,14 +58,13 @@ public class LinuxCGroupUsageDataReader implements CGroupUsageDataReader {
             cgroupCpuSystemReader.getUsage().getIncrement(),
             cgroupStatReader.getUser().getIncrement(),
             cgroupStatReader.getSystem().getIncrement())
-        .map(
-            value -> {
-              if (value == null) {
-                return -1.0d;
-              } else {
-                return value.doubleValue();
-              }
-            })
+        .map(value -> {
+          if (value == null) {
+            return -1.0d;
+          } else {
+            return value.doubleValue();
+          }
+        })
         .collect(Collectors.toList());
   }
 

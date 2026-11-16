@@ -179,11 +179,10 @@ public class PerformanceCounterInitializer {
 
         GlobalOpenTelemetry.getMeter("com.microsoft.applicationinsights.jmx")
             .gaugeBuilder(otelMetricName)
-            .buildWithCallback(
-                observableDoubleMeasurement -> {
-                  calculateAndRecordValueForAttribute(
-                      observableDoubleMeasurement, objectName, jmxAttributeData);
-                });
+            .buildWithCallback(observableDoubleMeasurement -> {
+              calculateAndRecordValueForAttribute(
+                  observableDoubleMeasurement, objectName, jmxAttributeData);
+            });
       }
     }
   }

@@ -36,21 +36,20 @@ class ApplicationInsightsWebTest {
     Code.setProperty();
 
     // then
-    testing.waitAndAssertTraces(
-        trace ->
-            trace.hasSpansSatisfyingExactly(
-                span ->
-                    span.hasName("Code.setProperty")
-                        .hasKind(SERVER)
-                        .hasNoParent()
-                        .hasAttributesSatisfyingExactly(
-                            equalTo(CodeIncubatingAttributes.CODE_NAMESPACE, "Code"),
-                            equalTo(CodeIncubatingAttributes.CODE_FUNCTION, "setProperty"),
-                            equalTo(stringKey("akey"), "avalue")),
-                span ->
-                    span.hasName("Code.internalSetProperty")
-                        .hasKind(INTERNAL)
-                        .hasParent(trace.getSpan(0))));
+    testing.waitAndAssertTraces(trace ->
+        trace.hasSpansSatisfyingExactly(
+            span ->
+                span.hasName("Code.setProperty")
+                    .hasKind(SERVER)
+                    .hasNoParent()
+                    .hasAttributesSatisfyingExactly(
+                        equalTo(CodeIncubatingAttributes.CODE_NAMESPACE, "Code"),
+                        equalTo(CodeIncubatingAttributes.CODE_FUNCTION, "setProperty"),
+                        equalTo(stringKey("akey"), "avalue")),
+            span ->
+                span.hasName("Code.internalSetProperty")
+                    .hasKind(INTERNAL)
+                    .hasParent(trace.getSpan(0))));
   }
 
   @Test
@@ -59,21 +58,20 @@ class ApplicationInsightsWebTest {
     Code.setUser();
 
     // then
-    testing.waitAndAssertTraces(
-        trace ->
-            trace.hasSpansSatisfyingExactly(
-                span ->
-                    span.hasName("Code.setUser")
-                        .hasKind(SERVER)
-                        .hasNoParent()
-                        .hasAttributesSatisfyingExactly(
-                            equalTo(CodeIncubatingAttributes.CODE_NAMESPACE, "Code"),
-                            equalTo(CodeIncubatingAttributes.CODE_FUNCTION, "setUser"),
-                            equalTo(EnduserIncubatingAttributes.ENDUSER_PSEUDO_ID, "myuser")),
-                span ->
-                    span.hasName("Code.internalSetUser")
-                        .hasKind(INTERNAL)
-                        .hasParent(trace.getSpan(0))));
+    testing.waitAndAssertTraces(trace ->
+        trace.hasSpansSatisfyingExactly(
+            span ->
+                span.hasName("Code.setUser")
+                    .hasKind(SERVER)
+                    .hasNoParent()
+                    .hasAttributesSatisfyingExactly(
+                        equalTo(CodeIncubatingAttributes.CODE_NAMESPACE, "Code"),
+                        equalTo(CodeIncubatingAttributes.CODE_FUNCTION, "setUser"),
+                        equalTo(EnduserIncubatingAttributes.ENDUSER_PSEUDO_ID, "myuser")),
+            span ->
+                span.hasName("Code.internalSetUser")
+                    .hasKind(INTERNAL)
+                    .hasParent(trace.getSpan(0))));
   }
 
   @Test
@@ -82,20 +80,19 @@ class ApplicationInsightsWebTest {
     Code.setName();
 
     // then
-    testing.waitAndAssertTraces(
-        trace ->
-            trace.hasSpansSatisfyingExactly(
-                span ->
-                    span.hasName("new name")
-                        .hasKind(SERVER)
-                        .hasNoParent()
-                        .hasAttributesSatisfyingExactly(
-                            equalTo(CodeIncubatingAttributes.CODE_NAMESPACE, "Code"),
-                            equalTo(CodeIncubatingAttributes.CODE_FUNCTION, "setName")),
-                span ->
-                    span.hasName("Code.internalSetName")
-                        .hasKind(INTERNAL)
-                        .hasParent(trace.getSpan(0))));
+    testing.waitAndAssertTraces(trace ->
+        trace.hasSpansSatisfyingExactly(
+            span ->
+                span.hasName("new name")
+                    .hasKind(SERVER)
+                    .hasNoParent()
+                    .hasAttributesSatisfyingExactly(
+                        equalTo(CodeIncubatingAttributes.CODE_NAMESPACE, "Code"),
+                        equalTo(CodeIncubatingAttributes.CODE_FUNCTION, "setName")),
+            span ->
+                span.hasName("Code.internalSetName")
+                    .hasKind(INTERNAL)
+                    .hasParent(trace.getSpan(0))));
   }
 
   @Test
@@ -104,21 +101,20 @@ class ApplicationInsightsWebTest {
     Code.setSuccess();
 
     // then
-    testing.waitAndAssertTraces(
-        trace ->
-            trace.hasSpansSatisfyingExactly(
-                span ->
-                    span.hasName("Code.setSuccess")
-                        .hasKind(SERVER)
-                        .hasNoParent()
-                        .hasStatus(StatusData.error())
-                        .hasAttributesSatisfyingExactly(
-                            equalTo(CodeIncubatingAttributes.CODE_NAMESPACE, "Code"),
-                            equalTo(CodeIncubatingAttributes.CODE_FUNCTION, "setSuccess")),
-                span ->
-                    span.hasName("Code.internalSetSuccess")
-                        .hasKind(INTERNAL)
-                        .hasParent(trace.getSpan(0))));
+    testing.waitAndAssertTraces(trace ->
+        trace.hasSpansSatisfyingExactly(
+            span ->
+                span.hasName("Code.setSuccess")
+                    .hasKind(SERVER)
+                    .hasNoParent()
+                    .hasStatus(StatusData.error())
+                    .hasAttributesSatisfyingExactly(
+                        equalTo(CodeIncubatingAttributes.CODE_NAMESPACE, "Code"),
+                        equalTo(CodeIncubatingAttributes.CODE_FUNCTION, "setSuccess")),
+            span ->
+                span.hasName("Code.internalSetSuccess")
+                    .hasKind(INTERNAL)
+                    .hasParent(trace.getSpan(0))));
   }
 
   @Test
@@ -127,22 +123,20 @@ class ApplicationInsightsWebTest {
     Code.setSource();
 
     // then
-    testing.waitAndAssertTraces(
-        trace ->
-            trace.hasSpansSatisfyingExactly(
-                span ->
-                    span.hasName("Code.setSource")
-                        .hasKind(SERVER)
-                        .hasNoParent()
-                        .hasAttributesSatisfyingExactly(
-                            equalTo(CodeIncubatingAttributes.CODE_NAMESPACE, "Code"),
-                            equalTo(CodeIncubatingAttributes.CODE_FUNCTION, "setSource"),
-                            equalTo(
-                                stringKey("applicationinsights.internal.source"), "the source")),
-                span ->
-                    span.hasName("Code.internalSetSource")
-                        .hasKind(INTERNAL)
-                        .hasParent(trace.getSpan(0))));
+    testing.waitAndAssertTraces(trace ->
+        trace.hasSpansSatisfyingExactly(
+            span ->
+                span.hasName("Code.setSource")
+                    .hasKind(SERVER)
+                    .hasNoParent()
+                    .hasAttributesSatisfyingExactly(
+                        equalTo(CodeIncubatingAttributes.CODE_NAMESPACE, "Code"),
+                        equalTo(CodeIncubatingAttributes.CODE_FUNCTION, "setSource"),
+                        equalTo(stringKey("applicationinsights.internal.source"), "the source")),
+            span ->
+                span.hasName("Code.internalSetSource")
+                    .hasKind(INTERNAL)
+                    .hasParent(trace.getSpan(0))));
   }
 
   @Test
@@ -151,20 +145,18 @@ class ApplicationInsightsWebTest {
     String spanId = Code.getId();
 
     // then
-    testing.waitAndAssertTraces(
-        trace -> {
-          trace.hasSpansSatisfyingExactly(
-              span ->
-                  span.hasName("Code.getId")
-                      .hasKind(SERVER)
-                      .hasNoParent()
-                      .hasAttributesSatisfyingExactly(
-                          equalTo(CodeIncubatingAttributes.CODE_NAMESPACE, "Code"),
-                          equalTo(CodeIncubatingAttributes.CODE_FUNCTION, "getId")),
-              span ->
-                  span.hasName("Code.internalGetId").hasKind(INTERNAL).hasParent(trace.getSpan(0)));
-          assertThat(trace.getSpan(0).getSpanId()).isEqualTo(spanId);
-        });
+    testing.waitAndAssertTraces(trace -> {
+      trace.hasSpansSatisfyingExactly(
+          span ->
+              span.hasName("Code.getId")
+                  .hasKind(SERVER)
+                  .hasNoParent()
+                  .hasAttributesSatisfyingExactly(
+                      equalTo(CodeIncubatingAttributes.CODE_NAMESPACE, "Code"),
+                      equalTo(CodeIncubatingAttributes.CODE_FUNCTION, "getId")),
+          span -> span.hasName("Code.internalGetId").hasKind(INTERNAL).hasParent(trace.getSpan(0)));
+      assertThat(trace.getSpan(0).getSpanId()).isEqualTo(spanId);
+    });
   }
 
   @Test
@@ -173,22 +165,21 @@ class ApplicationInsightsWebTest {
     String traceId = Code.getOperationId();
 
     // then
-    testing.waitAndAssertTraces(
-        trace -> {
-          trace.hasSpansSatisfyingExactly(
-              span ->
-                  span.hasName("Code.getOperationId")
-                      .hasKind(SERVER)
-                      .hasNoParent()
-                      .hasAttributesSatisfyingExactly(
-                          equalTo(CodeIncubatingAttributes.CODE_NAMESPACE, "Code"),
-                          equalTo(CodeIncubatingAttributes.CODE_FUNCTION, "getOperationId")),
-              span ->
-                  span.hasName("Code.internalGetOperationId")
-                      .hasKind(INTERNAL)
-                      .hasParent(trace.getSpan(0)));
-          assertThat(trace.getSpan(0).getTraceId()).isEqualTo(traceId);
-        });
+    testing.waitAndAssertTraces(trace -> {
+      trace.hasSpansSatisfyingExactly(
+          span ->
+              span.hasName("Code.getOperationId")
+                  .hasKind(SERVER)
+                  .hasNoParent()
+                  .hasAttributesSatisfyingExactly(
+                      equalTo(CodeIncubatingAttributes.CODE_NAMESPACE, "Code"),
+                      equalTo(CodeIncubatingAttributes.CODE_FUNCTION, "getOperationId")),
+          span ->
+              span.hasName("Code.internalGetOperationId")
+                  .hasKind(INTERNAL)
+                  .hasParent(trace.getSpan(0)));
+      assertThat(trace.getSpan(0).getTraceId()).isEqualTo(traceId);
+    });
   }
 
   @Test
@@ -197,23 +188,22 @@ class ApplicationInsightsWebTest {
     Code.setSessionId();
 
     // then
-    testing.waitAndAssertTraces(
-        trace ->
-            trace.hasSpansSatisfyingExactly(
-                span ->
-                    span.hasName("Code.setSessionId")
-                        .hasKind(SERVER)
-                        .hasNoParent()
-                        .hasAttributesSatisfyingExactly(
-                            equalTo(CodeIncubatingAttributes.CODE_NAMESPACE, "Code"),
-                            equalTo(CodeIncubatingAttributes.CODE_FUNCTION, "setSessionId"),
-                            equalTo(
-                                stringKey("applicationinsights.internal.session_id"),
-                                "the session id")),
-                span ->
-                    span.hasName("Code.internalSetSessionId")
-                        .hasKind(INTERNAL)
-                        .hasParent(trace.getSpan(0))));
+    testing.waitAndAssertTraces(trace ->
+        trace.hasSpansSatisfyingExactly(
+            span ->
+                span.hasName("Code.setSessionId")
+                    .hasKind(SERVER)
+                    .hasNoParent()
+                    .hasAttributesSatisfyingExactly(
+                        equalTo(CodeIncubatingAttributes.CODE_NAMESPACE, "Code"),
+                        equalTo(CodeIncubatingAttributes.CODE_FUNCTION, "setSessionId"),
+                        equalTo(
+                            stringKey("applicationinsights.internal.session_id"),
+                            "the session id")),
+            span ->
+                span.hasName("Code.internalSetSessionId")
+                    .hasKind(INTERNAL)
+                    .hasParent(trace.getSpan(0))));
   }
 
   @Test
@@ -222,23 +212,22 @@ class ApplicationInsightsWebTest {
     Code.setOperatingSystem();
 
     // then
-    testing.waitAndAssertTraces(
-        trace ->
-            trace.hasSpansSatisfyingExactly(
-                span ->
-                    span.hasName("Code.setOperatingSystem")
-                        .hasKind(SERVER)
-                        .hasNoParent()
-                        .hasAttributesSatisfyingExactly(
-                            equalTo(CodeIncubatingAttributes.CODE_NAMESPACE, "Code"),
-                            equalTo(CodeIncubatingAttributes.CODE_FUNCTION, "setOperatingSystem"),
-                            equalTo(
-                                stringKey("applicationinsights.internal.operating_system"),
-                                "the operating system")),
-                span ->
-                    span.hasName("Code.internalSetOperatingSystem")
-                        .hasKind(INTERNAL)
-                        .hasParent(trace.getSpan(0))));
+    testing.waitAndAssertTraces(trace ->
+        trace.hasSpansSatisfyingExactly(
+            span ->
+                span.hasName("Code.setOperatingSystem")
+                    .hasKind(SERVER)
+                    .hasNoParent()
+                    .hasAttributesSatisfyingExactly(
+                        equalTo(CodeIncubatingAttributes.CODE_NAMESPACE, "Code"),
+                        equalTo(CodeIncubatingAttributes.CODE_FUNCTION, "setOperatingSystem"),
+                        equalTo(
+                            stringKey("applicationinsights.internal.operating_system"),
+                            "the operating system")),
+            span ->
+                span.hasName("Code.internalSetOperatingSystem")
+                    .hasKind(INTERNAL)
+                    .hasParent(trace.getSpan(0))));
   }
 
   @Test
@@ -247,25 +236,23 @@ class ApplicationInsightsWebTest {
     Code.setOperatingSystemVersion();
 
     // then
-    testing.waitAndAssertTraces(
-        trace ->
-            trace.hasSpansSatisfyingExactly(
-                span ->
-                    span.hasName("Code.setOperatingSystemVersion")
-                        .hasKind(SERVER)
-                        .hasNoParent()
-                        .hasAttributesSatisfyingExactly(
-                            equalTo(CodeIncubatingAttributes.CODE_NAMESPACE, "Code"),
-                            equalTo(
-                                CodeIncubatingAttributes.CODE_FUNCTION,
-                                "setOperatingSystemVersion"),
-                            equalTo(
-                                stringKey("applicationinsights.internal.operating_system_version"),
-                                "the operating system version")),
-                span ->
-                    span.hasName("Code.internalSetOperatingSystemVersion")
-                        .hasKind(INTERNAL)
-                        .hasParent(trace.getSpan(0))));
+    testing.waitAndAssertTraces(trace ->
+        trace.hasSpansSatisfyingExactly(
+            span ->
+                span.hasName("Code.setOperatingSystemVersion")
+                    .hasKind(SERVER)
+                    .hasNoParent()
+                    .hasAttributesSatisfyingExactly(
+                        equalTo(CodeIncubatingAttributes.CODE_NAMESPACE, "Code"),
+                        equalTo(
+                            CodeIncubatingAttributes.CODE_FUNCTION, "setOperatingSystemVersion"),
+                        equalTo(
+                            stringKey("applicationinsights.internal.operating_system_version"),
+                            "the operating system version")),
+            span ->
+                span.hasName("Code.internalSetOperatingSystemVersion")
+                    .hasKind(INTERNAL)
+                    .hasParent(trace.getSpan(0))));
   }
 
   @Test

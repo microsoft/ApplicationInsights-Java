@@ -51,13 +51,12 @@ abstract class OpenTelemetryMetricTestToAmw {
     List<Envelope> metrics = testing.mockedIngestion.waitForMetricItems(name, 3);
 
     metrics.sort(
-        Comparator.comparing(
-            obj -> {
-              MetricData metricData = (MetricData) ((Data<?>) obj.getData()).getBaseData();
-              List<DataPoint> dataPointList = metricData.getMetrics();
-              DataPoint dataPoint = dataPointList.get(0);
-              return dataPoint.getValue();
-            }));
+        Comparator.comparing(obj -> {
+          MetricData metricData = (MetricData) ((Data<?>) obj.getData()).getBaseData();
+          List<DataPoint> dataPointList = metricData.getMetrics();
+          DataPoint dataPoint = dataPointList.get(0);
+          return dataPoint.getValue();
+        }));
 
     Envelope rdEnvelope = rdList.get(0);
     RequestData rd = (RequestData) ((Data<?>) rdEnvelope.getData()).getBaseData();
@@ -146,21 +145,17 @@ abstract class OpenTelemetryMetricTestToAmw {
   private void validateOtlpMetricsReceived() throws Exception {
     await()
         .atMost(10, SECONDS)
-        .untilAsserted(
-            () -> {
-              HttpRequest[] otlpRequests =
-                  testing
-                      .mockedOtlpIngestion
-                      .getCollectorServer()
-                      .retrieveRecordedRequests(request());
+        .untilAsserted(() -> {
+          HttpRequest[] otlpRequests =
+              testing.mockedOtlpIngestion.getCollectorServer().retrieveRecordedRequests(request());
 
-              assertThat(otlpRequests).isNotEmpty();
+          assertThat(otlpRequests).isNotEmpty();
 
-              List<Metric> otlpMetrics =
-                  testing.mockedOtlpIngestion.extractMetricsFromRequests(otlpRequests);
+          List<Metric> otlpMetrics =
+              testing.mockedOtlpIngestion.extractMetricsFromRequests(otlpRequests);
 
-              assertThat(otlpMetrics).hasSizeGreaterThanOrEqualTo(3);
-            });
+          assertThat(otlpMetrics).hasSizeGreaterThanOrEqualTo(3);
+        });
   }
 
   @Environment(TOMCAT_8_JAVA_8)

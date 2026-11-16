@@ -148,10 +148,9 @@ public class MockedProfilerSettingsServlet extends HttpServlet {
   protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
     Optional<Map.Entry<ProfilerState, String>> entry =
         CONFIGS.entrySet().stream()
-            .filter(
-                it ->
-                    ("/" + it.getKey().name() + "/api/profileragent/v4/settings")
-                        .equals(req.getPathInfo()))
+            .filter(it ->
+                ("/" + it.getKey().name() + "/api/profileragent/v4/settings")
+                    .equals(req.getPathInfo()))
             .findFirst();
 
     if (entry.isPresent()) {

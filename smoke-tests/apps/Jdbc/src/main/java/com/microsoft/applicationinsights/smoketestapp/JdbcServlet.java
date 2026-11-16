@@ -232,12 +232,11 @@ public class JdbcServlet extends HttpServlet {
   private static void setupMysql() throws Exception {
     Class.forName("com.mysql.jdbc.Driver");
     Connection connection =
-        getConnection(
-            () -> {
-              Connection connection1 = getMysqlConnection();
-              testConnection(connection1, "select 1");
-              return connection1;
-            });
+        getConnection(() -> {
+          Connection connection1 = getMysqlConnection();
+          testConnection(connection1, "select 1");
+          return connection1;
+        });
     setup(connection);
     connection.close();
   }
@@ -245,12 +244,11 @@ public class JdbcServlet extends HttpServlet {
   private static void setupPostgres() throws Exception {
     Class.forName("org.postgresql.Driver");
     Connection connection =
-        getConnection(
-            () -> {
-              Connection connection1 = getPostgresConnection();
-              testConnection(connection1, "select 1");
-              return connection1;
-            });
+        getConnection(() -> {
+          Connection connection1 = getPostgresConnection();
+          testConnection(connection1, "select 1");
+          return connection1;
+        });
     setup(connection);
     connection.close();
   }
@@ -258,12 +256,11 @@ public class JdbcServlet extends HttpServlet {
   private static void setupSqlServer() throws Exception {
     Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
     Connection connection =
-        getConnection(
-            () -> {
-              Connection connection1 = getSqlServerConnection();
-              testConnection(connection1, "select 1");
-              return connection1;
-            });
+        getConnection(() -> {
+          Connection connection1 = getSqlServerConnection();
+          testConnection(connection1, "select 1");
+          return connection1;
+        });
     setup(connection);
     connection.close();
   }
@@ -271,12 +268,11 @@ public class JdbcServlet extends HttpServlet {
   private static void setupOracle() throws Exception {
     Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
     Connection connection =
-        getConnection(
-            () -> {
-              Connection connection1 = getOracleConnection();
-              testConnection(connection1, "select 1 from dual");
-              return connection1;
-            });
+        getConnection(() -> {
+          Connection connection1 = getOracleConnection();
+          testConnection(connection1, "select 1 from dual");
+          return connection1;
+        });
     setup(connection);
     connection.close();
   }

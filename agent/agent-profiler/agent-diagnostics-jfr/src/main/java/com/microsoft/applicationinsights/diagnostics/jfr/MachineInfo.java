@@ -95,23 +95,22 @@ public class MachineInfo extends Event implements JsonSerializable<MachineInfo> 
   }
 
   public static MachineInfo fromJson(JsonReader jsonReader) throws IOException {
-    return jsonReader.readObject(
-        reader -> {
-          MachineInfo deserializedValue = new MachineInfo();
+    return jsonReader.readObject(reader -> {
+      MachineInfo deserializedValue = new MachineInfo();
 
-          while (reader.nextToken() != JsonToken.END_OBJECT) {
-            String fieldName = reader.getFieldName();
-            reader.nextToken();
-            if ("coreCount".equals(fieldName)) {
-              deserializedValue.setCoreCount(reader.getInt());
-            } else if ("schemaVersion".equals(fieldName)) {
-              deserializedValue.setSchemaVersion(reader.getInt());
-            } else {
-              reader.skipChildren();
-            }
-          }
+      while (reader.nextToken() != JsonToken.END_OBJECT) {
+        String fieldName = reader.getFieldName();
+        reader.nextToken();
+        if ("coreCount".equals(fieldName)) {
+          deserializedValue.setCoreCount(reader.getInt());
+        } else if ("schemaVersion".equals(fieldName)) {
+          deserializedValue.setSchemaVersion(reader.getInt());
+        } else {
+          reader.skipChildren();
+        }
+      }
 
-          return deserializedValue;
-        });
+      return deserializedValue;
+    });
   }
 }

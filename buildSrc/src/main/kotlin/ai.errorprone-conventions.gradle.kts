@@ -91,6 +91,15 @@ tasks {
 
         // Java 8 compatibility requires Scanner(InputStream, String) and URLDecoder.decode(String, Charset)
         disable("JdkObsolete")
+
+        // We don't require Javadoc on all public types
+        disable("MissingJavadoc")
+
+        // Markdown Javadoc comments (///) require JDK 23+, but we still target Java 8
+        disable("TraditionalJavadocToMarkdown")
+
+        // Suggests using Guava Preconditions but we don't use Guava
+        disable("PreferPreconditions")
       }
     }
   }

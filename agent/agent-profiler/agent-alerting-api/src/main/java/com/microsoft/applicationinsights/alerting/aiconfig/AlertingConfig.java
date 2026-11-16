@@ -51,23 +51,22 @@ public class AlertingConfig {
     }
 
     public static RequestFilter fromJson(JsonReader jsonReader) throws IOException {
-      return jsonReader.readObject(
-          reader -> {
-            RequestFilter deserializedRequestFilter = new RequestFilter();
-            while (reader.nextToken() != JsonToken.END_OBJECT) {
-              reader.nextToken();
-              String fieldName = reader.getFieldName();
-              if ("type".equals(fieldName)) {
-                deserializedRequestFilter.setType(
-                    RequestFilterType.valueOf(toEnumFormat(reader.getString())));
-              } else if ("value".equals(fieldName)) {
-                deserializedRequestFilter.setValue(reader.getString());
-              } else {
-                reader.skipChildren();
-              }
-            }
-            return deserializedRequestFilter;
-          });
+      return jsonReader.readObject(reader -> {
+        RequestFilter deserializedRequestFilter = new RequestFilter();
+        while (reader.nextToken() != JsonToken.END_OBJECT) {
+          reader.nextToken();
+          String fieldName = reader.getFieldName();
+          if ("type".equals(fieldName)) {
+            deserializedRequestFilter.setType(
+                RequestFilterType.valueOf(toEnumFormat(reader.getString())));
+          } else if ("value".equals(fieldName)) {
+            deserializedRequestFilter.setValue(reader.getString());
+          } else {
+            reader.skipChildren();
+          }
+        }
+        return deserializedRequestFilter;
+      });
     }
   }
 
@@ -118,23 +117,22 @@ public class AlertingConfig {
     }
 
     public static RequestAggregationConfig fromJson(JsonReader jsonReader) throws IOException {
-      return jsonReader.readObject(
-          reader -> {
-            RequestAggregationConfig deserializedRequestAggregationConfig =
-                new RequestAggregationConfig();
-            while (reader.nextToken() != JsonToken.END_OBJECT) {
-              reader.nextToken();
-              String fieldName = reader.getFieldName();
-              if ("thresholdMillis".equals(fieldName)) {
-                deserializedRequestAggregationConfig.setThresholdMillis(jsonReader.getInt());
-              } else if ("minimumSamples".equals(fieldName)) {
-                deserializedRequestAggregationConfig.setMinimumSamples(jsonReader.getInt());
-              } else {
-                reader.skipChildren();
-              }
-            }
-            return deserializedRequestAggregationConfig;
-          });
+      return jsonReader.readObject(reader -> {
+        RequestAggregationConfig deserializedRequestAggregationConfig =
+            new RequestAggregationConfig();
+        while (reader.nextToken() != JsonToken.END_OBJECT) {
+          reader.nextToken();
+          String fieldName = reader.getFieldName();
+          if ("thresholdMillis".equals(fieldName)) {
+            deserializedRequestAggregationConfig.setThresholdMillis(jsonReader.getInt());
+          } else if ("minimumSamples".equals(fieldName)) {
+            deserializedRequestAggregationConfig.setMinimumSamples(jsonReader.getInt());
+          } else {
+            reader.skipChildren();
+          }
+        }
+        return deserializedRequestAggregationConfig;
+      });
     }
   }
 
@@ -187,26 +185,25 @@ public class AlertingConfig {
     }
 
     public static RequestAggregation fromJson(JsonReader jsonReader) throws IOException {
-      return jsonReader.readObject(
-          reader -> {
-            RequestAggregation deserializedRequestAggregation = new RequestAggregation();
-            while (reader.nextToken() != JsonToken.END_OBJECT) {
-              reader.nextToken();
-              String fieldName = reader.getFieldName();
-              if ("type".equals(fieldName)) {
-                deserializedRequestAggregation.setType(
-                    RequestAggregationType.valueOf(toEnumFormat(reader.getString())));
-              } else if ("windowSizeMillis".equals(fieldName)) {
-                deserializedRequestAggregation.setWindowSizeMillis(jsonReader.getLong());
-              } else if ("configuration".equals(fieldName)) {
-                deserializedRequestAggregation.setConfiguration(
-                    RequestAggregationConfig.fromJson(jsonReader));
-              } else {
-                reader.skipChildren();
-              }
-            }
-            return deserializedRequestAggregation;
-          });
+      return jsonReader.readObject(reader -> {
+        RequestAggregation deserializedRequestAggregation = new RequestAggregation();
+        while (reader.nextToken() != JsonToken.END_OBJECT) {
+          reader.nextToken();
+          String fieldName = reader.getFieldName();
+          if ("type".equals(fieldName)) {
+            deserializedRequestAggregation.setType(
+                RequestAggregationType.valueOf(toEnumFormat(reader.getString())));
+          } else if ("windowSizeMillis".equals(fieldName)) {
+            deserializedRequestAggregation.setWindowSizeMillis(jsonReader.getLong());
+          } else if ("configuration".equals(fieldName)) {
+            deserializedRequestAggregation.setConfiguration(
+                RequestAggregationConfig.fromJson(jsonReader));
+          } else {
+            reader.skipChildren();
+          }
+        }
+        return deserializedRequestAggregation;
+      });
     }
   }
 
@@ -256,24 +253,22 @@ public class AlertingConfig {
     }
 
     public static RequestTriggerThreshold fromJson(JsonReader jsonReader) throws IOException {
-      return jsonReader.readObject(
-          reader -> {
-            RequestTriggerThreshold deserializedRequestTriggerThreshold =
-                new RequestTriggerThreshold();
-            while (reader.nextToken() != JsonToken.END_OBJECT) {
-              reader.nextToken();
-              String fieldName = reader.getFieldName();
-              if ("type".equals(fieldName)) {
-                deserializedRequestTriggerThreshold.setType(
-                    RequestTriggerThresholdType.valueOf(toEnumFormat(reader.getString())));
-              } else if ("value".equals(fieldName)) {
-                deserializedRequestTriggerThreshold.setValue(reader.getFloat());
-              } else {
-                reader.skipChildren();
-              }
-            }
-            return deserializedRequestTriggerThreshold;
-          });
+      return jsonReader.readObject(reader -> {
+        RequestTriggerThreshold deserializedRequestTriggerThreshold = new RequestTriggerThreshold();
+        while (reader.nextToken() != JsonToken.END_OBJECT) {
+          reader.nextToken();
+          String fieldName = reader.getFieldName();
+          if ("type".equals(fieldName)) {
+            deserializedRequestTriggerThreshold.setType(
+                RequestTriggerThresholdType.valueOf(toEnumFormat(reader.getString())));
+          } else if ("value".equals(fieldName)) {
+            deserializedRequestTriggerThreshold.setValue(reader.getFloat());
+          } else {
+            reader.skipChildren();
+          }
+        }
+        return deserializedRequestTriggerThreshold;
+      });
     }
   }
 
@@ -316,24 +311,23 @@ public class AlertingConfig {
     }
 
     public static RequestTriggerThrottling fromJson(JsonReader jsonReader) throws IOException {
-      return jsonReader.readObject(
-          reader -> {
-            RequestTriggerThrottling deserializedRequestTriggerThrottling =
-                new RequestTriggerThrottling();
-            while (reader.nextToken() != JsonToken.END_OBJECT) {
-              reader.nextToken();
-              String fieldName = reader.getFieldName();
-              if ("type".equals(fieldName)) {
-                deserializedRequestTriggerThrottling.setType(
-                    RequestTriggerThrottlingType.valueOf(toEnumFormat(reader.getString())));
-              } else if ("value".equals(fieldName)) {
-                deserializedRequestTriggerThrottling.setValue(reader.getLong());
-              } else {
-                reader.skipChildren();
-              }
-            }
-            return deserializedRequestTriggerThrottling;
-          });
+      return jsonReader.readObject(reader -> {
+        RequestTriggerThrottling deserializedRequestTriggerThrottling =
+            new RequestTriggerThrottling();
+        while (reader.nextToken() != JsonToken.END_OBJECT) {
+          reader.nextToken();
+          String fieldName = reader.getFieldName();
+          if ("type".equals(fieldName)) {
+            deserializedRequestTriggerThrottling.setType(
+                RequestTriggerThrottlingType.valueOf(toEnumFormat(reader.getString())));
+          } else if ("value".equals(fieldName)) {
+            deserializedRequestTriggerThrottling.setValue(reader.getLong());
+          } else {
+            reader.skipChildren();
+          }
+        }
+        return deserializedRequestTriggerThrottling;
+      });
     }
   }
 
@@ -428,33 +422,32 @@ public class AlertingConfig {
     }
 
     public static RequestTrigger fromJson(JsonReader jsonReader) throws IOException {
-      return jsonReader.readObject(
-          reader -> {
-            RequestTrigger deserializedRequestTrigger = new RequestTrigger();
-            while (reader.nextToken() != JsonToken.END_OBJECT) {
-              reader.nextToken();
-              String fieldName = reader.getFieldName();
-              if ("name".equals(fieldName)) {
-                deserializedRequestTrigger.setName(reader.getString());
-              } else if ("type".equals(fieldName)) {
-                deserializedRequestTrigger.setType(
-                    RequestTriggerType.valueOf(toEnumFormat(reader.getString())));
-              } else if ("filter".equals(fieldName)) {
-                deserializedRequestTrigger.setFilter(RequestFilter.fromJson(reader));
-              } else if ("aggregation".equals(fieldName)) {
-                deserializedRequestTrigger.setAggregation(RequestAggregation.fromJson(reader));
-              } else if ("threshold".equals(fieldName)) {
-                deserializedRequestTrigger.setThreshold(RequestTriggerThreshold.fromJson(reader));
-              } else if ("throttling".equals(fieldName)) {
-                deserializedRequestTrigger.setThrottling(RequestTriggerThrottling.fromJson(reader));
-              } else if ("profileDuration".equals(fieldName)) {
-                deserializedRequestTrigger.setProfileDuration(reader.getLong());
-              } else {
-                reader.skipChildren();
-              }
-            }
-            return deserializedRequestTrigger;
-          });
+      return jsonReader.readObject(reader -> {
+        RequestTrigger deserializedRequestTrigger = new RequestTrigger();
+        while (reader.nextToken() != JsonToken.END_OBJECT) {
+          reader.nextToken();
+          String fieldName = reader.getFieldName();
+          if ("name".equals(fieldName)) {
+            deserializedRequestTrigger.setName(reader.getString());
+          } else if ("type".equals(fieldName)) {
+            deserializedRequestTrigger.setType(
+                RequestTriggerType.valueOf(toEnumFormat(reader.getString())));
+          } else if ("filter".equals(fieldName)) {
+            deserializedRequestTrigger.setFilter(RequestFilter.fromJson(reader));
+          } else if ("aggregation".equals(fieldName)) {
+            deserializedRequestTrigger.setAggregation(RequestAggregation.fromJson(reader));
+          } else if ("threshold".equals(fieldName)) {
+            deserializedRequestTrigger.setThreshold(RequestTriggerThreshold.fromJson(reader));
+          } else if ("throttling".equals(fieldName)) {
+            deserializedRequestTrigger.setThrottling(RequestTriggerThrottling.fromJson(reader));
+          } else if ("profileDuration".equals(fieldName)) {
+            deserializedRequestTrigger.setProfileDuration(reader.getLong());
+          } else {
+            reader.skipChildren();
+          }
+        }
+        return deserializedRequestTrigger;
+      });
     }
   }
 

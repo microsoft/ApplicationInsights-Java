@@ -94,23 +94,18 @@ abstract class JmxMetricTest {
   private void verifyJmxMetricsSentToOtlpEndpoint() {
     await()
         .atMost(10, SECONDS)
-        .untilAsserted(
-            () -> {
-              HttpRequest[] requests =
-                  testing
-                      .mockedOtlpIngestion
-                      .getCollectorServer()
-                      .retrieveRecordedRequests(request());
+        .untilAsserted(() -> {
+          HttpRequest[] requests =
+              testing.mockedOtlpIngestion.getCollectorServer().retrieveRecordedRequests(request());
 
-              // verify metrics
-              List<Metric> metrics =
-                  testing.mockedOtlpIngestion.extractMetricsFromRequests(requests);
+          // verify metrics
+          List<Metric> metrics = testing.mockedOtlpIngestion.extractMetricsFromRequests(requests);
 
-              // check the jmx metrics that are applicable to all java versions
-              assertThat(metrics)
-                  .extracting(Metric::getName)
-                  .containsAll(jmxMetricsAllJavaVersionsOtlp);
-            });
+          // check the jmx metrics that are applicable to all java versions
+          assertThat(metrics)
+              .extracting(Metric::getName)
+              .containsAll(jmxMetricsAllJavaVersionsOtlp);
+        });
   }
 
   private void verifyJmxMetricsSentToBreeze() throws Exception {

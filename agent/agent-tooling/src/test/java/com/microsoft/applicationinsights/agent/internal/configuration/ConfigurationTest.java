@@ -115,10 +115,9 @@ class ConfigurationTest {
               + "\"role\":{\"name\":\"testrole\"}}";
       envVars.put("APPLICATIONINSIGHTS_CONFIGURATION_CONTENT", contentJson);
 
-      assertThatThrownBy(
-              () ->
-                  ConfigurationBuilder.create(
-                      Paths.get("."), null, this::envVars, this::systemProperties))
+      assertThatThrownBy(() ->
+              ConfigurationBuilder.create(
+                  Paths.get("."), null, this::envVars, this::systemProperties))
           .isInstanceOf(ConfigurationBuilder.ConfigurationException.class);
     } finally {
       DiagnosticsHelper.setAppSvcRpIntegratedAuto(false);
@@ -768,17 +767,15 @@ class ConfigurationTest {
             "profile-configs/applicationinsights-trigger-example-1.json",
             "profile-configs/applicationinsights-trigger-example-2.json",
             "profile-configs/applicationinsights-trigger-example-3.json")
-        .map(
-            file ->
-                DynamicTest.dynamicTest(
-                    file,
-                    () -> {
-                      Configuration config = loadConfiguration(file, true);
-                      Assertions.assertNotNull(config);
-                      Assertions.assertNotNull(config.preview.profiler.requestTriggerEndpoints);
-                      Assertions.assertTrue(
-                          !config.preview.profiler.requestTriggerEndpoints.isEmpty());
-                    }))
+        .map(file ->
+            DynamicTest.dynamicTest(
+                file,
+                () -> {
+                  Configuration config = loadConfiguration(file, true);
+                  Assertions.assertNotNull(config);
+                  Assertions.assertNotNull(config.preview.profiler.requestTriggerEndpoints);
+                  Assertions.assertTrue(!config.preview.profiler.requestTriggerEndpoints.isEmpty());
+                }))
         .collect(Collectors.toList());
   }
 

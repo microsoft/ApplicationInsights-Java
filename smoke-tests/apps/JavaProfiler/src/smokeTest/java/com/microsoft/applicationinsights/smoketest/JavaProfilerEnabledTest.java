@@ -36,17 +36,16 @@ abstract class JavaProfilerEnabledTest {
     metrics.stream()
         .map(it -> (MetricData) ((Data<?>) it.getData()).getBaseData())
         .filter(it -> it.getProperties().get("type").equals("0"))
-        .forEach(
-            it -> {
-              // 35 is flag for Java profiler
-              long bits = Long.parseLong(it.getProperties().get("feature")) & (0x1L << 35);
+        .forEach(it -> {
+          // 35 is flag for Java profiler
+          long bits = Long.parseLong(it.getProperties().get("feature")) & (0x1L << 35);
 
-              if (expectEnabled) {
-                Assertions.assertNotEquals(0, bits);
-              } else {
-                Assertions.assertEquals(0, bits);
-              }
-            });
+          if (expectEnabled) {
+            Assertions.assertNotEquals(0, bits);
+          } else {
+            Assertions.assertEquals(0, bits);
+          }
+        });
   }
 
   @Environment(JAVA_8)

@@ -51,18 +51,17 @@ public class AlertBreachJfrEvent extends Event implements JsonSerializable<Alert
 
   /** Deserialize a AlertBreachJfrEvent from a JSON reader */
   public static AlertBreachJfrEvent fromJson(JsonReader jsonReader) throws IOException {
-    return jsonReader.readObject(
-        reader -> {
-          AlertBreachJfrEvent event = new AlertBreachJfrEvent();
-          while (reader.nextToken() != JsonToken.END_OBJECT) {
-            String fieldName = reader.getFieldName();
-            reader.nextToken();
+    return jsonReader.readObject(reader -> {
+      AlertBreachJfrEvent event = new AlertBreachJfrEvent();
+      while (reader.nextToken() != JsonToken.END_OBJECT) {
+        String fieldName = reader.getFieldName();
+        reader.nextToken();
 
-            if ("alertBreach".equals(fieldName)) {
-              event.setAlertBreach(reader.getString());
-            }
-          }
-          return event;
-        });
+        if ("alertBreach".equals(fieldName)) {
+          event.setAlertBreach(reader.getString());
+        }
+      }
+      return event;
+    });
   }
 }
