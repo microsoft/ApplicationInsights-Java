@@ -65,4 +65,24 @@ public class AlternativeJfrConfigurationsTest {
               fileContent.contains("com.microsoft.applicationinsights.diagnostics.jfr.Telemetry"));
         });
   }
+
+  @Test
+  void continuousProfilingDefaultsToMinimalDiagnosisCpuProfile() {
+    Configuration.ProfilerConfiguration config = new Configuration.ProfilerConfiguration();
+
+    String fileContent = AlternativeJfrConfigurations.getContinuousProfileConfig(config).toString();
+
+    Assertions.assertTrue(fileContent.contains("jdk.ExecutionSample"));
+    Assertions.assertFalse(fileContent.contains("jdk.ThreadAllocationStatistics"));
+  }
+
+  @Test
+  void continuousProfilingCanUseDiagnosticCpuProfile() {
+    Configuration.ProfilerConfiguration config = new Configuration.ProfilerConfiguration();
+    config.continuousProfilingSettings = "diagnostic-cpu-profile.jfc";
+
+    String fileContent = AlternativeJfrConfigurations.getContinuousProfileConfig(config).toString();
+
+    Assertions.assertTrue(fileContent.contains("jdk.ThreadAllocationStatistics"));
+  }
 }

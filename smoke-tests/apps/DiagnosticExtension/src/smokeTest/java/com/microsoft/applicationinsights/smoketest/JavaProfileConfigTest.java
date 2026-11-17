@@ -79,4 +79,26 @@ abstract class JavaProfileConfigTest {
       super(testing, true);
     }
   }
+
+  @Environment(JAVA_11)
+  static class JavaProfilerTargetedMatchingTest extends JavaProfileConfigTest {
+    @RegisterExtension
+    static final SmokeTestExtension testing =
+        BASE_BUILDER.setProfilerEndpoint(ProfilerState.targetedMatching).build();
+
+    JavaProfilerTargetedMatchingTest() {
+      super(testing, true);
+    }
+  }
+
+  @Environment(JAVA_11)
+  static class JavaProfilerTargetedUnmatchedTest extends JavaProfileConfigTest {
+    @RegisterExtension
+    static final SmokeTestExtension testing =
+        BASE_BUILDER.setProfilerEndpoint(ProfilerState.targetedUnmatched).build();
+
+    JavaProfilerTargetedUnmatchedTest() {
+      super(testing, false);
+    }
+  }
 }

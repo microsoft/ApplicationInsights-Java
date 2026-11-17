@@ -4,6 +4,7 @@
 package com.microsoft.applicationinsights.agent.internal.profiler.config;
 
 import com.azure.json.JsonOptions;
+import com.azure.json.JsonProviders;
 import com.azure.json.JsonReader;
 import com.azure.json.implementation.DefaultJsonReader;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -78,5 +79,48 @@ public class ProfilerConfigurationTest {
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  @Test
+  void parsesTargetedCollectionPlan() throws IOException {
+    String configStr =
+        "{\"id\":\"an-id\",\"lastModified\":\"2026-07-24T13:58:12.447Z\","
+            + "\"enabledLastModified\":\"2026-07-24T13:58:12.447Z\",\"enabled\":true,"
+            + "\"collectionPlan\":\"\",\"targetedCollectionPlan\":{"
+            + "\"instances\":[{\"role\":\"frontend\",\"name\":\"vm-1\",\"future\":true}],"
+            + "\"immediateProfilingDuration\":120,"
+            + "\"expiration\":\"2026-08-17T19:00:00.0000000Z\","
+            + "\"settingsMoniker\":\"Portal_test\","
+            + "\"futureField\":\"ignored\"}}";
+
+    ProfilerConfiguration configuration;
+    try (JsonReader reader = JsonProviders.createReader(configStr)) {
+      configuration = ProfilerConfiguration.fromJson(reader);
+    }
+
+    TargetedCollectionPlan plan = configuration.getTargetedCollectionPlan();
+    Assertions.assertNotNull(plan);
+    Assertions.assertNull(plan.getRoles());
+    Assertions.assertEquals(1, plan.getInstances().size());
+    Assertions.assertEquals("frontend", plan.getInstances().get(0).getRole());
+    Assertions.assertEquals("vm-1", plan.getInstances().get(0).getName());
+    Assertions.assertEquals(120, plan.getImmediateProfilingDuration());
+    Assertions.assertEquals("2026-08-17T19:00:00.0000000Z", plan.getExpiration());
+    Assertions.assertEquals("Portal_test", plan.getSettingsMoniker());
+  }
+
+  @Test
+  void targetedCollectionPlanIsOptional() throws IOException {
+    String configStr =
+        "{\"id\":\"an-id\",\"lastModified\":\"2026-07-24T13:58:12.447Z\","
+            + "\"enabledLastModified\":\"2026-07-24T13:58:12.447Z\",\"enabled\":true,"
+            + "\"collectionPlan\":\"\"}";
+
+    ProfilerConfiguration configuration;
+    try (JsonReader reader = JsonProviders.createReader(configStr)) {
+      configuration = ProfilerConfiguration.fromJson(reader);
+    }
+
+    Assertions.assertNull(configuration.getTargetedCollectionPlan());
   }
 }

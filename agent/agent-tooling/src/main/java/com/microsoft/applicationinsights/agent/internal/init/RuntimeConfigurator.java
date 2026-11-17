@@ -152,6 +152,7 @@ public class RuntimeConfigurator {
               runtimeConfig.role.instance,
               telemetryClient);
         } catch (RuntimeException e) {
+          profilerStarted.set(false);
           logger.warn("Failed to initialize profiler", e);
         }
       } else {
@@ -167,7 +168,9 @@ public class RuntimeConfigurator {
         long intervalSeconds =
             Math.min(runtimeConfig.heartbeatIntervalSeconds, MINUTES.toSeconds(15));
         HeartbeatExporter.start(
-            intervalSeconds, telemetryClient::populateDefaults, heartbeatTelemetryItemsConsumer);
+            intervalSeconds,
+            telemetryClient::populateDefaultsForHeartbeat,
+            heartbeatTelemetryItemsConsumer);
       } else {
         logger.debug("Heartbeat has already started.");
       }

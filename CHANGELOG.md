@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+* Add Java agent support for ServiceProfiler targeted collection plans by cloud role or
+  role-qualified instance
+* Add `continuousProfilingSettings` to configure the JFC used by continuous profiling
+
 ### Bug fixes
 
 * Fix startup deprecation warning for `capture-mdc-attributes` by using the replacement
