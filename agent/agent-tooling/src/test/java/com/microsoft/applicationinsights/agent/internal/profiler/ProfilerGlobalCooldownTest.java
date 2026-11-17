@@ -6,6 +6,7 @@ package com.microsoft.applicationinsights.agent.internal.profiler;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.microsoft.applicationinsights.agent.internal.configuration.Configuration;
@@ -20,11 +21,13 @@ import io.opentelemetry.contrib.jfr.connection.Recording;
 import io.opentelemetry.contrib.jfr.connection.RecordingConfiguration;
 import io.opentelemetry.contrib.jfr.connection.RecordingOptions;
 import java.io.File;
+import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -123,5 +126,54 @@ class ProfilerGlobalCooldownTest {
     profiler.profileAndUpload(manualBreach(1), Duration.ofSeconds(1), noOpListener);
     // activeRecording should still be null (second profile was rejected)
     assertThat(profiler.isRecordingActive()).isFalse();
+  }
+
+  @Test
+  void periodicProfileRunsDiagnosticAction() {
+    Profiler profiler = createProfiler(0);
+    Runnable diagnosticAction = mock(Runnable.class);
+    AlertBreach periodicBreach =
+        manualBreach(1).toBuilder().setType(AlertMetricType.PERIODIC).build();
+
+    profiler.accept(periodicBreach, index -> {}, diagnosticAction);
+
+    verify(diagnosticAction).run();
+    assertThat(profiler.isRecordingActive()).isTrue();
+    profiler.clearActiveRecording();
+  }
+
+  @Test
+  void failedRecordingCreationCleansUpBeforeAnotherProfileCanStart() throws Exception {
+    Configuration.ProfilerConfiguration config = new Configuration.ProfilerConfiguration();
+    AtomicInteger recordingAttempts = new AtomicInteger();
+    File recordingFile = new File(tempDir, "recording.jfr");
+    Profiler profiler =
+        new Profiler(config, tempDir, timeSource) {
+          @Override
+          protected File createJfrFile(Duration duration) throws IOException {
+            recordingFile.createNewFile();
+            return recordingFile;
+          }
+
+          @Override
+          protected Recording createRecording(RecordingOptions opts, RecordingConfiguration cfg) {
+            if (recordingAttempts.getAndIncrement() == 0) {
+              throw new IllegalStateException("Recording creation failed");
+            }
+            return mock(Recording.class);
+          }
+        };
+    executor = Executors.newScheduledThreadPool(1);
+    profiler.initialize(mock(UploadService.class), executor, mock(FlightRecorderConnection.class));
+
+    profiler.profileAndUpload(manualBreach(1), Duration.ofSeconds(1), index -> {});
+
+    assertThat(profiler.isRecordingActive()).isFalse();
+    assertThat(recordingFile).doesNotExist();
+
+    profiler.profileAndUpload(manualBreach(1), Duration.ofSeconds(1), index -> {});
+
+    assertThat(profiler.isRecordingActive()).isTrue();
+    profiler.clearActiveRecording();
   }
 }

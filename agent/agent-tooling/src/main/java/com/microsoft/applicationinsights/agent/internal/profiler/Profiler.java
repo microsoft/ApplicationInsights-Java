@@ -394,8 +394,9 @@ public class Profiler {
           break;
       }
 
+      File recordingFile = null;
       try {
-        activeRecordingFile = createJfrFile(duration);
+        recordingFile = createJfrFile(duration);
 
         // As a fallback in case recording closing logic does not succeed, set the recording
         // duration to the expected duration plus 60 seconds
@@ -404,11 +405,14 @@ public class Profiler {
         RecordingOptions recordingOptions =
             recordingOptionsBuilder.duration(requestedDuration.toMillis() + " ms").build();
 
-        this.activeRecording = createRecording(recordingOptions, recordingConfiguration);
+        Recording recording = createRecording(recordingOptions, recordingConfiguration);
 
-        return activeRecording;
-      } catch (IOException e) {
-        logger.error("Failed to create jfr file", e);
+        activeRecordingFile = recordingFile;
+        activeRecording = recording;
+        return recording;
+      } catch (IOException | IllegalStateException e) {
+        logger.error("Failed to create JFR recording", e);
+        deleteFileQuietly(recordingFile);
         return null;
       }
     }
@@ -622,7 +626,7 @@ public class Profiler {
   }
 
   /** Action to be performed on a periodic profile request. */
-  private void performPeriodicProfile(UploadListener uploadListener) {
+  private void performPeriodicProfile(UploadListener uploadListener, Runnable diagnosticAction) {
     logger.info("Received periodic profile request");
 
     AlertBreach breach =
@@ -635,7 +639,8 @@ public class Profiler {
     profileAndUpload(
         breach,
         Duration.ofSeconds(breach.getAlertConfiguration().getProfileDurationSeconds()),
-        uploadListener);
+        uploadListener,
+        diagnosticAction);
   }
 
   /** Dispatch alert breach event to handler. */
@@ -648,7 +653,7 @@ public class Profiler {
       AlertBreach alertBreach, UploadListener uploadListener, Runnable diagnosticAction) {
 
     if (alertBreach.getType() == AlertMetricType.PERIODIC) {
-      performPeriodicProfile(uploadListener);
+      performPeriodicProfile(uploadListener, diagnosticAction);
     } else {
       profileAndUpload(
           alertBreach,
