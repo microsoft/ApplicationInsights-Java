@@ -9,6 +9,7 @@ import static java.util.concurrent.TimeUnit.MINUTES;
 
 import com.azure.monitor.opentelemetry.autoconfigure.implementation.utils.PropertyHelper;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.applicationinsights.agent.internal.common.FriendlyException;
 import com.microsoft.applicationinsights.agent.internal.diagnostics.DiagnosticsHelper;
@@ -1590,6 +1591,10 @@ public class Configuration {
     @Deprecated public String clientSecret;
     @Deprecated public String authorityHost;
 
+    // set when configured using APPLICATIONINSIGHTS_AUTHENTICATION_STRING, which replaces the
+    // "authentication" json configuration
+    @JsonIgnore public boolean fromAuthenticationStringEnvVar;
+
     public void validate() {
       if (!enabled) {
         return;
@@ -1619,8 +1624,9 @@ public class Configuration {
         if (isEmpty(tenantId)) {
           throw new FriendlyException(
               "AAD Authentication configuration of type Client Secret Identity is missing \"tenantId\".",
-              "Please provide a valid \"tenantId\" under the \"authentication\" configuration, "
-                  + "or add \"TenantId={TENANT_ID}\" to the APPLICATIONINSIGHTS_AUTHENTICATION_STRING environment variable. "
+              (fromAuthenticationStringEnvVar
+                      ? "Please add \"TenantId={TENANT_ID}\" to the APPLICATIONINSIGHTS_AUTHENTICATION_STRING environment variable. "
+                      : "Please provide a valid \"tenantId\" under the \"authentication\" configuration. ")
                   + "Learn more about authentication configuration here: https://docs.microsoft.com/en-us/azure/azure-monitor/app/java-standalone-config#authentication");
         }
 

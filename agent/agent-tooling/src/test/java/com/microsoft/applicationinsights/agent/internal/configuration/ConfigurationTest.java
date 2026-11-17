@@ -709,7 +709,21 @@ class ConfigurationTest {
     assertThat(configuration3.authentication.tenantId).isNull();
     assertThatThrownBy(configuration3.authentication::validate)
         .isInstanceOf(FriendlyException.class)
-        .hasMessageContaining("missing \"tenantId\"");
+        .hasMessageContaining("missing \"tenantId\"")
+        .hasMessageContaining(
+            "\"TenantId={TENANT_ID}\" to the APPLICATIONINSIGHTS_AUTHENTICATION_STRING")
+        .hasMessageNotContaining("under the \"authentication\" configuration");
+
+    Configuration.AadAuthentication jsonAuthentication = new Configuration.AadAuthentication();
+    jsonAuthentication.enabled = true;
+    jsonAuthentication.type = Configuration.AuthenticationType.CLIENTSECRET;
+    jsonAuthentication.clientId = "12345678";
+    jsonAuthentication.clientSecret = "clientsecret123";
+    assertThatThrownBy(jsonAuthentication::validate)
+        .isInstanceOf(FriendlyException.class)
+        .hasMessageContaining("missing \"tenantId\"")
+        .hasMessageContaining("under the \"authentication\" configuration")
+        .hasMessageNotContaining("APPLICATIONINSIGHTS_AUTHENTICATION_STRING");
 
     envVars.put(
         "APPLICATIONINSIGHTS_AUTHENTICATION_STRING",

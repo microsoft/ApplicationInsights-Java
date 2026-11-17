@@ -506,6 +506,7 @@ public class ConfigurationBuilder {
       if (authorization != null && authorization.equals("AAD")) {
         // Override any configuration from json
         config.authentication = new Configuration.AadAuthentication();
+        config.authentication.fromAuthenticationStringEnvVar = true;
         config.authentication.enabled = true;
         config.authentication.type = Configuration.AuthenticationType.SAMI;
         String clientId = keyValueMap.get("ClientId");
