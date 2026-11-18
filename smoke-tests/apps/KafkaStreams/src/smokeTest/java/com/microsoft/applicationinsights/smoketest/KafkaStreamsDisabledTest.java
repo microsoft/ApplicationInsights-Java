@@ -43,7 +43,7 @@ class KafkaStreamsDisabledTest {
         .containsExactly(entry("_MS.ProcessedByMetricExtractors", "True"));
     assertThat(rd.getSuccess()).isTrue();
 
-    // verify the topology processed the message, its log is no longer part of the same trace
+    // verify the topology processed the message, and that no span was current while it ran
     List<Envelope> mdList =
         testing.mockedIngestion.waitForItems(
             "MessageData", KafkaStreamsDisabledTest::isTopologyLog, 1);
@@ -52,8 +52,7 @@ class KafkaStreamsDisabledTest {
     assertThat(rdEnvelope.getSampleRate()).isNull();
     assertThat(mdEnvelope.getSampleRate()).isNull();
 
-    assertThat(mdEnvelope.getTags())
-        .doesNotContainEntry("ai.operation.id", rdEnvelope.getTags().get("ai.operation.id"));
+    assertThat(mdEnvelope.getTags()).doesNotContainKey("ai.operation.id");
 
     // sleep a bit and make sure no kafka "requests" or dependencies are reported
     Thread.sleep(5000);
