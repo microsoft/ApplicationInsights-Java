@@ -19,6 +19,7 @@ import static org.assertj.core.data.MapEntry.entry;
 
 import com.microsoft.applicationinsights.smoketest.schemav2.Data;
 import com.microsoft.applicationinsights.smoketest.schemav2.Envelope;
+import com.microsoft.applicationinsights.smoketest.schemav2.MessageData;
 import com.microsoft.applicationinsights.smoketest.schemav2.RemoteDependencyData;
 import com.microsoft.applicationinsights.smoketest.schemav2.RequestData;
 import java.util.List;
@@ -40,27 +41,29 @@ abstract class KafkaStreamsTest {
   @Test
   @TargetUri("/sendMessage")
   void doMostBasicTest() throws Exception {
-    // exactly one "input process" request is expected, which is created by the kafka-streams
-    // instrumentation (without it, the kafka-clients instrumentation creates duplicate ones)
     List<Envelope> rdList = testing.mockedIngestion.waitForItems("RequestData", 2);
 
     Envelope rdEnvelope1 = getRequestEnvelope(rdList, "GET /sendMessage");
     String operationId = rdEnvelope1.getTags().get("ai.operation.id");
-
-    // the "output publish" dependency is only part of the same operation when the kafka-streams
-    // instrumentation propagates the "input process" context into the topology
+    // "output publish" is only part of the same operation when the kafka-streams instrumentation
+    // makes "input process" the current span while the topology runs
     List<Envelope> rddList =
         testing.mockedIngestion.waitForItemsInOperation("RemoteDependencyData", 2, operationId);
+    List<Envelope> mdList =
+        testing.mockedIngestion.waitForItemsInOperation(
+            "MessageData", 1, operationId, KafkaStreamsTest::isTopologyLog);
     assertThat(testing.mockedIngestion.getCountForType("EventData")).isZero();
 
     Envelope rdEnvelope2 = getRequestEnvelope(rdList, "input process");
     Envelope rddEnvelope1 = getDependencyEnvelope(rddList, "input publish");
     Envelope rddEnvelope2 = getDependencyEnvelope(rddList, "output publish");
+    Envelope mdEnvelope = mdList.get(0);
 
     assertThat(rdEnvelope1.getSampleRate()).isNull();
     assertThat(rdEnvelope2.getSampleRate()).isNull();
     assertThat(rddEnvelope1.getSampleRate()).isNull();
     assertThat(rddEnvelope2.getSampleRate()).isNull();
+    assertThat(mdEnvelope.getSampleRate()).isNull();
 
     RequestData rd1 = (RequestData) ((Data<?>) rdEnvelope1.getData()).getBaseData();
     RequestData rd2 = (RequestData) ((Data<?>) rdEnvelope2.getData()).getBaseData();
@@ -76,17 +79,22 @@ abstract class KafkaStreamsTest {
     assertThat(rd1.getSuccess()).isTrue();
 
     assertThat(rdd1.getName()).isEqualTo("input publish");
+    assertThat(rdd1.getData()).isNull();
     assertThat(rdd1.getType()).isEqualTo("Queue Message | kafka");
     assertThat(rdd1.getTarget()).isEqualTo("input");
+    assertThat(rdd1.getProperties()).isEmpty();
     assertThat(rdd1.getSuccess()).isTrue();
 
     assertThat(rd2.getName()).isEqualTo("input process");
     assertThat(rd2.getSource()).isEqualTo("input");
+    assertThat(rd2.getProperties()).isEmpty();
     assertThat(rd2.getSuccess()).isTrue();
 
     assertThat(rdd2.getName()).isEqualTo("output publish");
+    assertThat(rdd2.getData()).isNull();
     assertThat(rdd2.getType()).isEqualTo("Queue Message | kafka");
     assertThat(rdd2.getTarget()).isEqualTo("output");
+    assertThat(rdd2.getProperties()).isEmpty();
     assertThat(rdd2.getSuccess()).isTrue();
 
     SmokeTestExtension.assertParentChild(rd1, rdEnvelope1, rddEnvelope1, "GET /sendMessage");
@@ -94,11 +102,17 @@ abstract class KafkaStreamsTest {
         rdd1.getId(), rddEnvelope1, rdEnvelope2, "GET /sendMessage", "input process", false);
     SmokeTestExtension.assertParentChild(
         rd2.getId(), rdEnvelope2, rddEnvelope2, "input process", "input process", false);
+    assertThat(mdEnvelope.getTags()).containsEntry("ai.operation.parentId", rd2.getId());
 
-    // make sure no duplicate "input process" requests or orphaned dependencies show up later
+    // sleep a bit and make sure no duplicate "process" requests or extra dependencies are reported
     SECONDS.sleep(5);
     assertThat(testing.mockedIngestion.getCountForType("RequestData")).isEqualTo(2);
     assertThat(testing.mockedIngestion.getCountForType("RemoteDependencyData")).isEqualTo(2);
+  }
+
+  private static boolean isTopologyLog(Envelope envelope) {
+    MessageData md = (MessageData) ((Data<?>) envelope.getData()).getBaseData();
+    return "processing: hello world!".equals(md.getMessage());
   }
 
   private static Envelope getRequestEnvelope(List<Envelope> envelopes, String name) {

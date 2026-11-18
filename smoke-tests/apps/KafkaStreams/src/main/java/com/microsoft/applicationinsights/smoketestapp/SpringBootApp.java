@@ -17,6 +17,8 @@ import org.apache.kafka.common.serialization.StringSerializer;
 import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.StreamsConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
@@ -26,6 +28,8 @@ public class SpringBootApp {
 
   static final String INPUT_TOPIC = "input";
   static final String OUTPUT_TOPIC = "output";
+
+  private static final Logger logger = LoggerFactory.getLogger(SpringBootApp.class);
 
   private static final String bootstrapAddress = System.getenv("KAFKA") + ":9092";
 
@@ -45,7 +49,12 @@ public class SpringBootApp {
     props.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes.StringSerde.class);
 
     StreamsBuilder builder = new StreamsBuilder();
-    builder.<String, String>stream(INPUT_TOPIC).mapValues(v -> v.toUpperCase()).to(OUTPUT_TOPIC);
+    builder.<String, String>stream(INPUT_TOPIC)
+        .mapValues(value -> {
+          logger.info("processing: {}", value);
+          return value.toUpperCase();
+        })
+        .to(OUTPUT_TOPIC);
 
     KafkaStreams streams = new KafkaStreams(builder.build(), props);
     streams.start();
