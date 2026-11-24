@@ -106,8 +106,21 @@ public class TestController {
     List<String> unexpected = new ArrayList<>();
     for (Enumeration<JarEntry> e = jarFile.entries(); e.hasMoreElements(); ) {
       JarEntry jarEntry = e.nextElement();
-      if (!acceptableJarEntry(jarEntry, expectedEntries)) {
+      if (!acceptableJarEntry(jarEntry, expectedEntries)
+          || (jarEntry.getName().contains("META-INF/native/")
+              && jarEntry.getName().contains("netty_quic"))) {
         unexpected.add(jarEntry.getName());
+      }
+    }
+    // Reactor Netty references these even when the optional HTTP/3 native transport is unavailable.
+    for (String requiredEntry :
+        new String[] {
+          "inst/io/netty/handler/codec/http3/Http3.classdata",
+          "inst/io/netty/handler/codec/quic/Quic.classdata"
+        }) {
+      if (jarFile.getJarEntry(requiredEntry) == null) {
+        jarFile.close();
+        throw new AssertionError("Missing HTTP transport class in agent jar: " + requiredEntry);
       }
     }
     jarFile.close();

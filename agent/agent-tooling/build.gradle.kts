@@ -91,5 +91,7 @@ dependencies {
 configurations {
   "implementation" {
     exclude(group = "net.bytebuddy", module = "byte-buddy") // we use byte-buddy-dep
+    // Agent HTTP clients use HTTP/1.1, not HTTP/3. Keep the QUIC Java classes for linkage.
+    exclude(group = "io.netty", module = "netty-codec-native-quic")
   }
 }

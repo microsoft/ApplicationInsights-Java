@@ -36,7 +36,6 @@ io.netty:netty-codec-dns:4.2.21.Final=runtimeClasspath
 io.netty:netty-codec-http2:4.2.21.Final=runtimeClasspath
 io.netty:netty-codec-http3:4.2.21.Final=runtimeClasspath
 io.netty:netty-codec-http:4.2.21.Final=runtimeClasspath
-io.netty:netty-codec-native-quic:4.2.21.Final=runtimeClasspath
 io.netty:netty-codec-socks:4.2.21.Final=runtimeClasspath
 io.netty:netty-common:4.2.21.Final=runtimeClasspath
 io.netty:netty-handler-proxy:4.2.21.Final=runtimeClasspath
