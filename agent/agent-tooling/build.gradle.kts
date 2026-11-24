@@ -47,7 +47,7 @@ dependencies {
   compileOnly("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure")
   compileOnly("io.opentelemetry:opentelemetry-extension-trace-propagators")
 
-  implementation("com.github.oshi:oshi-core:7.7.3") {
+  implementation("com.github.oshi:oshi-core:7.8.0") {
     exclude("org.slf4j", "slf4j-api")
   }
 
@@ -91,5 +91,7 @@ dependencies {
 configurations {
   "implementation" {
     exclude(group = "net.bytebuddy", module = "byte-buddy") // we use byte-buddy-dep
+    // Agent HTTP clients use HTTP/1.1, not HTTP/3. Keep the QUIC Java classes for linkage.
+    exclude(group = "io.netty", module = "netty-codec-native-quic")
   }
 }
