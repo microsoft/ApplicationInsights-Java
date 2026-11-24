@@ -245,6 +245,7 @@ public class AiConfigCustomizer implements Function<ConfigProperties, Map<String
     if (config.instrumentation.kafka.enabled) {
       properties.put("otel.instrumentation.kafka-clients.enabled", "true");
       properties.put("otel.instrumentation.kafka-clients-metrics.enabled", "false");
+      properties.put("otel.instrumentation.kafka-streams.enabled", "true");
       properties.put("otel.instrumentation.spring-kafka.enabled", "true");
       // this is needed to capture kafka.record.queue_time_ms
       properties.put("otel.instrumentation.kafka.experimental-span-attributes", "true");
