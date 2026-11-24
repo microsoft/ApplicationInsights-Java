@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-package io.opentelemetry.sdk.metrics.internal.view;
+package com.microsoft.applicationinsights.agent.internal.preagg;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.semconv.UserAgentAttributes;
