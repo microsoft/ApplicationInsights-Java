@@ -8,17 +8,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.data.MapEntry.entry;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.RegisterExtension;
 
 @Environment(TOMCAT_8_JAVA_8)
-@UseAgent("unmasked_applicationinsights.json")
-class JdbcUnmaskedTest {
-
-  @RegisterExtension static final SmokeTestExtension testing = SmokeTestExtension.create();
+@UseAgent("capture_params_applicationinsights.json")
+class JdbcCaptureParametersTest extends AbstractJdbcUnmasked {
 
   @Test
-  @TargetUri("/hsqldbStatement")
-  void hsqldbStatement() throws Exception {
+  @TargetUri("/hsqldbPreparedStatement")
+  void hsqldbPreparedStatementCapturesParameters() throws Exception {
     Telemetry telemetry = testing.getTelemetry(1);
 
     assertThat(telemetry.rd.getProperties())
@@ -26,11 +23,13 @@ class JdbcUnmaskedTest {
     assertThat(telemetry.rd.getSuccess()).isTrue();
 
     assertThat(telemetry.rdd1.getName()).isEqualTo("SELECT testdb.abc");
-    assertThat(telemetry.rdd1.getData()).isEqualTo("select * from abc where xyz = 'y'");
+    assertThat(telemetry.rdd1.getData()).isEqualTo("select * from abc where uvw = ? and xyz = ?");
     assertThat(telemetry.rdd1.getType()).isEqualTo("SQL");
     assertThat(telemetry.rdd1.getTarget()).isEqualTo("hsqldb | testdb");
-    assertThat(telemetry.rdd1.getProperties()).isEmpty();
     assertThat(telemetry.rdd1.getSuccess()).isTrue();
+
+    assertThat(telemetry.rdd1.getProperties())
+        .containsExactly(entry("db.query.parameter.0", "v"), entry("db.query.parameter.1", "y"));
 
     SmokeTestExtension.assertParentChild(
         telemetry.rd, telemetry.rdEnvelope, telemetry.rddEnvelope1, "GET /Jdbc/*");
